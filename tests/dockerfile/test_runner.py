@@ -7,7 +7,6 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
@@ -17,7 +16,6 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = registry.checks
 
@@ -278,7 +276,6 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self) -> None:
         registry.checks = self.orig_checks
-
 
 
 if __name__ == '__main__':

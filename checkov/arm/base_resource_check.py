@@ -39,7 +39,7 @@ class BaseResourceCheck(BaseCheck):
         # the "existing" key indicates a Bicep resource
         if "existing" in conf:
             if conf["existing"] is True:
-                # an existing is used to retrieve information about an already deployed one
+                # the existing keyword is used to retrieve information about an already deployed resource
                 return CheckResult.UNKNOWN
 
             self.api_version = conf["api_version"]

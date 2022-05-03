@@ -2,103 +2,99 @@ import asyncio
 import json
 import logging
 import os
+import time
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Tuple, Dict, Any
+from typing import Dict, Any
 
-from aiomultiprocess import Pool
+import requests
 
-from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import package_scanning_integration
+from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
 
-TWISTCLI_FILE_NAME = 'twistcli'
+SLEEP_DURATION = 2
+MAX_SLEEP_DURATION = 60
 
 
 class Scanner:
     def __init__(self) -> None:
-        self.twistcli_path = Path(TWISTCLI_FILE_NAME)
+        self.base_url = bc_integration.api_url
 
-    def setup_twictcli(self) -> None:
-        try:
-            if not self.twistcli_path.exists():
-                package_scanning_integration.download_twistcli(self.twistcli_path)
-        except Exception:
-            logging.error("Failed to setup twictcli for package scanning", exc_info=True)
-            raise
-
-    def cleanup_twictcli(self) -> None:
-        if self.twistcli_path.exists():
-            self.twistcli_path.unlink()
-        logging.info('twistcli file removed')
-
-    def scan(self, input_output_paths: "Iterable[Tuple[Path, Path]]", cleanup_twictcli: bool = True) \
+    def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
-        self.setup_twictcli()
-
         scan_results = asyncio.run(
-            self.run_scan_multi(
-                address=package_scanning_integration.get_proxy_address(),
-                bc_api_key=package_scanning_integration.get_bc_api_key(),
-                input_output_paths=input_output_paths,
-            )
+            self.run_scan_multi(input_paths=input_paths)
         )
-        if cleanup_twictcli:
-            self.cleanup_twictcli()
         return scan_results
 
     async def run_scan_multi(
-        self,
-        address: str,
-        bc_api_key: str,
-        input_output_paths: "Iterable[Tuple[Path, Path]]",
+            self,
+            input_paths: "Iterable[Path]",
     ) -> "Sequence[Dict[str, Any]]":
-        args = [
-            (
-                f"./{TWISTCLI_FILE_NAME} coderepo scan --address {address} --token {bc_api_key} --output-file '{output_path.absolute()}' '{input_path.absolute()}'",
-                input_path,
-                output_path,
-            )
-            for input_path, output_path in input_output_paths
-        ]
+
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results = []
-            for curr_arg in args:
-                scan_results.append(await self.run_scan(*curr_arg))
+            for input_path in input_paths:
+                scan_results.append(await self.run_scan(input_path))
         else:
-            async with Pool() as pool:
-                scan_results = await pool.starmap(self.run_scan, args)
+            scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         return scan_results
 
-    async def run_scan(
-        self,
-        command: str,
-        input_path: Path,
-        output_path: Path,
-    ) -> Dict[str, Any]:
+    async def run_scan(self, input_path: Path) -> dict:
         logging.info(f"Start to scan package file {input_path}")
-        process = await asyncio.create_subprocess_shell(
-            command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+
+        request_body = {
+            "compressedFileBody": compress_file_gzip_base64(str(input_path)),
+            "compressionMethod": "gzip",
+            "fileName": input_path.name
+        }
+
+        response = requests.request(
+            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan",
+            headers=bc_integration.get_default_headers("GET"),
+            data=request_body
         )
 
-        stdout, stderr = await process.communicate()
+        response.raise_for_status()
+        response_json = response.json()
 
-        # log output for debugging
-        logging.debug(stdout.decode())
+        if response_json["status"] == "already_exist":
+            return self.parse_api_result(input_path, response_json["outputData"])
 
-        exit_code = await process.wait()
+        return self.run_scan_busy_wait(input_path, response_json['id'])
 
-        if exit_code:
-            logging.error(f"Failed to scan package file {input_path}")
-            logging.error(stderr.decode())
-            return {}
+    def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict:
+        current_state = "Empty"
+        desired_state = "Result"
+        total_sleeping_time = 0
+        response = requests.Response()
 
-        logging.info(f"Successfully scanned package file {input_path}")
+        while current_state != desired_state:
+            response = requests.request(
+                "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
+                headers=bc_integration.get_default_headers("GET")
+            )
+            response_json = response.json()
+            current_state = response_json["outputType"]
 
-        # read and delete the report file
-        scan_result = json.loads(output_path.read_text())
-        output_path.unlink()
+            if current_state == "Error":
+                logging.error(response_json["outputData"])
+                return {}
 
-        return scan_result
+            if total_sleeping_time > MAX_SLEEP_DURATION:
+                logging.info(f"Timeout, slept for {total_sleeping_time}")
+                return {}
+
+            time.sleep(SLEEP_DURATION)
+            total_sleeping_time += SLEEP_DURATION
+
+        return self.parse_api_result(input_path, response.json()["outputData"])
+
+    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
+        raw_result = json.loads(decompress_file_gzip_base64(response))
+        raw_result['repository'] = str(origin_file_path)
+        return raw_result

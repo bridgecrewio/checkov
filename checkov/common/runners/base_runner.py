@@ -4,7 +4,7 @@ import itertools
 import os
 import re
 from abc import ABC, abstractmethod
-from typing import List, Dict, Optional, Any, Union, TYPE_CHECKING
+from typing import List, Dict, Optional, Any, Union, TYPE_CHECKING, Iterable
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
@@ -14,8 +14,6 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager
-
-IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 
 
 def strtobool(val: str) -> int:
@@ -34,6 +32,8 @@ def strtobool(val: str) -> int:
         raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
 
 
+CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
+IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
@@ -48,6 +48,10 @@ class BaseRunner(ABC):
     graph_manager: GraphManager | None = None
     graph_registry: Registry | None = None
 
+    def __init__(self, file_extensions: Optional[Iterable[str]] = [], file_names: Optional[Iterable[str]] = []):
+        self.file_extensions = file_extensions
+        self.file_names = file_names
+
     @abstractmethod
     def run(
             self,
@@ -58,6 +62,21 @@ class BaseRunner(ABC):
             collect_skip_comments: bool = True,
     ) -> Report:
         pass
+
+    def should_scan_file(self, filename: str) -> bool:
+        # runners that are always applicable can do nothing and be included
+        if not self.file_extensions and not self.file_names:
+            return True
+
+        basename = os.path.basename(filename)
+        if basename and self.file_names and basename in self.file_names:
+            return True
+
+        extension = os.path.splitext(filename)[1]
+        if extension and self.file_extensions and extension in self.file_extensions:
+            return True
+
+        return False
 
     def set_external_data(
             self,

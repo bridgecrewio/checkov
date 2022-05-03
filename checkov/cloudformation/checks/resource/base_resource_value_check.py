@@ -79,6 +79,12 @@ class BaseResourceValueCheck(BaseResourceCheck):
                         return CheckResult.PASSED
                     if value in expected_values:
                         return CheckResult.PASSED
+
+                    # handle boolean case sensitivity (e.g., CFN accepts the string "true" as a boolean)
+                    if isinstance(value, str) and value.lower() in ('true', 'false'):
+                        value = value.lower() == 'true'
+                        if value in expected_values:
+                            return CheckResult.PASSED
                     return CheckResult.FAILED
 
         return self.missing_block_result

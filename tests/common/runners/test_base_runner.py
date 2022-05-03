@@ -1,7 +1,10 @@
 import os
 import unittest
+from typing import Optional, List
 
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.output.report import Report
+from checkov.common.runners.base_runner import filter_ignored_paths, BaseRunner
+from checkov.runner_filter import RunnerFilter
 
 
 class TestBaseRunner(unittest.TestCase):
@@ -174,3 +177,45 @@ class TestBaseRunner(unittest.TestCase):
 
         # we expect .terraform and dir11/dir2 and dir33/dir2 to get filtered out
         self.assertEqual(set(remaining_dirs), expected)
+
+    def test_file_filter(self):
+        runner = Runner()
+
+        self.assertTrue(runner.should_scan_file('xyz.txt'))  # if a filename or extension list is not provided, return True
+
+        runner.file_extensions = ['.json', '.yaml']
+
+        self.assertTrue(runner.should_scan_file('test.json'))
+        self.assertTrue(runner.should_scan_file('test.yaml'))
+        self.assertTrue(runner.should_scan_file('absolute/path/test.yaml'))
+        self.assertFalse(runner.should_scan_file('test.tf'))
+
+        runner.file_names = ['Dockerfile', 'requirements.txt']
+
+        self.assertTrue(runner.should_scan_file('test.json'))
+        self.assertTrue(runner.should_scan_file('test.yaml'))
+        self.assertTrue(runner.should_scan_file('requirements.txt'))
+        self.assertTrue(runner.should_scan_file('Dockerfile'))
+        self.assertTrue(runner.should_scan_file('absolute/path/test.yaml'))
+        self.assertFalse(runner.should_scan_file('test.tf'))
+
+        runner.file_extensions = []
+
+        self.assertFalse(runner.should_scan_file('test.json'))
+        self.assertFalse(runner.should_scan_file('test.yaml'))
+        self.assertTrue(runner.should_scan_file('requirements.txt'))
+        self.assertTrue(runner.should_scan_file('Dockerfile'))
+        self.assertFalse(runner.should_scan_file('absolute/path/test.yaml'))
+        self.assertFalse(runner.should_scan_file('test.tf'))
+
+
+class Runner(BaseRunner):
+    def run(
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True,
+    ) -> Report:
+        pass

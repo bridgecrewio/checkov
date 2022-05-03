@@ -1,13 +1,11 @@
-import json
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List
+from typing import Set, Optional, Union, List
 
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 
 

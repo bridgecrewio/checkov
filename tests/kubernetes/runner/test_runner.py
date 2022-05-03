@@ -4,9 +4,7 @@ import os
 import unittest
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Any
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
@@ -16,7 +14,6 @@ from checkov.kubernetes.checks.resource.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = registry.checks
 

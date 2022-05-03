@@ -1,11 +1,8 @@
-from typing import Any
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class DefaultNamespace(BaseResourceCheck):
-
     def __init__(self):
         # CIS-1.5 5.7.4
         name = "The default namespace should not be used"
@@ -30,5 +27,6 @@ class DefaultNamespace(BaseResourceCheck):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = DefaultNamespace()

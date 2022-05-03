@@ -1,6 +1,5 @@
 import json
 import os
-import types
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
@@ -214,7 +213,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()
+        cfn_registry = get_graph_checks_registry("cloudformation").checks
+        tf_registry = get_graph_checks_registry("terraform").checks
+        k8s_registry = get_graph_checks_registry("kubernetes").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -256,6 +260,10 @@ def mock_custom_policies_response():
                 "title": "Cloned policy",
                 "severity": "CRITICAL",
                 "category": "General",
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
                 "resourceTypes": [
                     "aws_s3_bucket"
                 ],
@@ -264,9 +272,48 @@ def mock_custom_policies_response():
                 "createdBy": "mike+policies@bridgecrew.io",
                 "code": "null",
                 "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
+            },
+            {
+                "id": "kpande_AZR_1648821862291",
+                "code": "{\"and\":[{\"operator\":\"exists\",\"cond_type\":\"connection\",\"resource_types\":["
+                        "\"azurerm_subnet_network_security_group_association\"],\"connected_resource_types\":["
+                        "\"azurerm_subnet\",\"azurerm_network_security_group\"]},{\"value\":[\"azurerm_subnet\"],"
+                        "\"operator\":\"within\",\"attribute\":\"resource_type\",\"cond_type\":\"filter\"}]}",
+                "title": "Ensure subnet is associated with NSG",
+                "guideline": "Every subnet should be associated with NSG for controlling access to \nresources within "
+                             "the subnet.\n",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "Networking",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "CloudFormation",
+                    "Terraform"
+                ]
+            },
+            {
+                "id": "kpande_kubernetes_1650378013211",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "k8s policy",
+                "guideline": "meaningful guideline for k8s policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "Kubernetes",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "Kubernetes"
+                ]
             }
         ]
     }
+
 
 if __name__ == '__main__':
     unittest.main()

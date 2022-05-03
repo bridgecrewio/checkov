@@ -29,6 +29,8 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
 
     def scan_protocol_conf(self, protocol_name):
         """ scan tcp_options configuration"""
+        if 'source_port_range' not in protocol_name[0]:
+            return False
         max_port = protocol_name[0]['source_port_range'][0]['max'][0]
         min_port = protocol_name[0]['source_port_range'][0]['min'][0]
         if min_port <= self.port <= max_port:

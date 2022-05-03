@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Callable, Union
+from typing import Any, Dict, List, Callable
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry

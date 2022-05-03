@@ -1,5 +1,4 @@
-import re
-from typing import List, Optional, Any, Dict, Iterable, Set
+from typing import List, Optional, Any, Dict, Set
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver

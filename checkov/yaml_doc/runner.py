@@ -13,6 +13,10 @@ if TYPE_CHECKING:
 class Runner(ObjectRunner):
     check_type = CheckType.YAML
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.file_extensions = ['.yaml', '.yml']
+
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.yaml_doc.registry import registry
 

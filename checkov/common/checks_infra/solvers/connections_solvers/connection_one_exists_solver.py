@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any, Tuple
 from checkov.common.checks_infra.solvers import ConnectionExistsSolver
 from checkov.common.graph.checks_infra.enums import Operators
-from networkx import edge_dfs, DiGraph
+from networkx import DiGraph
 
 
 class ConnectionOneExistsSolver(ConnectionExistsSolver):

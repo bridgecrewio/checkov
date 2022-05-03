@@ -4,7 +4,6 @@ import io
 import logging
 import operator
 import os
-import shutil
 import subprocess  # nosec
 import tempfile
 from functools import reduce
@@ -26,6 +25,10 @@ class Runner(BaseRunner):
     check_type = CheckType.HELM
     helm_command = 'helm'
     system_deps = True
+
+    def __init__(self):
+        super().__init__()
+        self.file_names = ['Chart.yaml']
 
     @staticmethod
     def find_chart_directories(root_folder, files, excluded_paths):

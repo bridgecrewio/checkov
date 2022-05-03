@@ -1,7 +1,6 @@
 import unittest
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.checks.base_check import BaseCheck
 from checkov.runner_filter import RunnerFilter
 
 
@@ -341,6 +340,17 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
         self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
         self.assertTrue(instance.within_threshold(Severities[BcSeverities.HIGH]))
+
+    def test_within_threshold_special_severities(self):
+        instance = RunnerFilter(skip_checks=['MEDIUM'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.MODERATE]))
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.HIGH]))
+        instance = RunnerFilter(skip_checks=['HIGH'])
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.LOW]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.MEDIUM]))
+        self.assertFalse(instance.within_threshold(Severities[BcSeverities.IMPORTANT]))
+        self.assertTrue(instance.within_threshold(Severities[BcSeverities.CRITICAL]))
 
     def test_include_local_skip_local(self):
         instance = RunnerFilter(include_all_checkov_policies=False)

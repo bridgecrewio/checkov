@@ -24,13 +24,14 @@ class TestSecurityGroupUnrestrictedIngress22(unittest.TestCase):
             "oci_core_network_security_group_security_rule.fail",
             "oci_core_network_security_group_security_rule.fail1",
             "oci_core_network_security_group_security_rule.fail2",
+            "oci_core_network_security_group_security_rule.fail3",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

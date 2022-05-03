@@ -1,13 +1,8 @@
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
-from pathlib import Path
-from jinja2 import Environment, PackageLoader, select_autoescape
-from jinja2 import Template
 import click
 import jinja2
 import os
-import yaml
-import importlib
 
 CHECKOV_ROOT_DIRECTORY = os.path.join(".", "checkov")
 TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")

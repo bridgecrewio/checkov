@@ -126,18 +126,22 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
+
 class Runner(BaseRunner):
     kustomize_command = 'kustomize'
     kubectl_command = 'kubectl'
     check_type = CheckType.KUSTOMIZE
     system_deps = True
-    potentialBases = []
-    potentialOverlays = []
-    kustomizeProcessedFolderAndMeta = {}
-    kustomizeFileMappings = {}
     kustomizeSupportedFileTypes = ('kustomization.yaml', 'kustomization.yml')
-    templateRendererCommand = None
-    target_folder_path = ''
+
+    def __init__(self):
+        super().__init__(file_names=Runner.kustomizeSupportedFileTypes)
+        self.potentialBases = []
+        self.potentialOverlays = []
+        self.kustomizeProcessedFolderAndMeta = {}
+        self.kustomizeFileMappings = {}
+        self.templateRendererCommand = None
+        self.target_folder_path = ''
 
     def get_k8s_target_folder_path(self):
         return self.target_folder_path
@@ -165,8 +169,7 @@ class Runner(BaseRunner):
 
         return kustomizeDirectories
 
-    @staticmethod
-    def _parseKustomization(parseKustomizationData):
+    def _parseKustomization(self, parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
         # - OR, Multiple different Kustomize-powered deployments
@@ -182,7 +185,6 @@ class Runner(BaseRunner):
             kustomization_path = yaml_path
         else:
             return {}
-
 
         with open(kustomization_path, 'r') as kustomizationFile:
             metadata = {}
@@ -208,11 +210,11 @@ class Runner(BaseRunner):
 
             metadata['fileContent'] = fileContent
             metadata['filePath'] = f"{kustomization_path}"
-            if metadata['type'] == "base":
-                Runner.potentialBases.append(metadata['filePath'])
+            if metadata.get('type') == "base":
+                self.potentialBases.append(metadata['filePath'])
 
-            if metadata['type'] == "overlay":
-                Runner.potentialOverlays.append(metadata['filePath'])
+            if metadata.get('type') == "overlay":
+                self.potentialOverlays.append(metadata['filePath'])
                
         return metadata
 

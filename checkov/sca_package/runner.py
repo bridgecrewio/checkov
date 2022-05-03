@@ -1,12 +1,11 @@
 import logging
-import os
 from pathlib import Path
-from typing import Optional, List, Tuple, Set, Union, Sequence, Dict, Any
+from typing import Optional, List, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import BaseRunner, ignored_directories, strtobool
+from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
@@ -30,6 +29,7 @@ class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
     def __init__(self):
+        super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
 
@@ -39,11 +39,8 @@ class Runner(BaseRunner):
             files: Optional[List[str]] = None,
             runner_filter: RunnerFilter = RunnerFilter(),
             exclude_package_json: bool = True,
-            cleanup_twistcli: bool = True,
+            excluded_file_names: Set[str] = set()
     ) -> "Optional[Sequence[Dict[str, Any]]]":
-
-        if not strtobool(os.getenv("ENABLE_SCA_PACKAGE_SCAN", "False")):
-            return None
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -61,21 +58,22 @@ class Runner(BaseRunner):
         if runner_filter.excluded_paths:
             excluded_paths.update(runner_filter.excluded_paths)
 
-        input_output_paths = self.find_scannable_files(
+        input_paths = self.find_scannable_files(
             root_path=self._code_repo_path,
             files=files,
             excluded_paths=excluded_paths,
-            exclude_package_json=exclude_package_json
+            exclude_package_json=exclude_package_json,
+            excluded_file_names=excluded_file_names
         )
-        if not input_output_paths:
+        if not input_paths:
             # no packages found
             return None
 
-        logging.info(f"SCA package scanning will scan {len(input_output_paths)} files")
+        logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
         scanner = Scanner()
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_output_paths, cleanup_twistcli)
+        scan_results = scanner.scan(input_paths)
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
@@ -95,6 +93,8 @@ class Runner(BaseRunner):
             return report
 
         for result in scan_results:
+            if not result:
+                continue
             package_file_path = Path(result["repository"])
             if self._code_repo_path:
                 try:
@@ -135,9 +135,10 @@ class Runner(BaseRunner):
 
     def find_scannable_files(
             self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
-            exclude_package_json: bool = True
-    ) -> Set[Tuple[Path, Path]]:
-        input_output_paths: Set[Tuple[Path, Path]] = set()
+            exclude_package_json: bool = True,
+            excluded_file_names: Set[str] = set()
+    ) -> Set[Path]:
+        input_paths: Set[Path] = set()
         if root_path:
             input_paths = {
                 file_path
@@ -152,10 +153,10 @@ class Runner(BaseRunner):
                     file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
                 }
 
-            input_output_paths = {
-                (file_path, file_path.parent / f"{file_path.stem}_result.json")
+            input_paths = {
+                file_path
                 for file_path in input_paths
-                if file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths
+                if (file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths) and file_path.name not in excluded_file_names
             }
 
         for file in files or []:
@@ -164,6 +165,6 @@ class Runner(BaseRunner):
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
 
-            input_output_paths.add((file_path, file_path.parent / f"{file_path.stem}_result.json"))
+            input_paths.add(file_path)
 
-        return input_output_paths
+        return input_paths

@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
 
 

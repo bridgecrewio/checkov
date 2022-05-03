@@ -1,5 +1,5 @@
 import re
-from typing import List, Union, Dict, Optional
+from typing import List, Dict, Optional
 
 from packaging import version
 
