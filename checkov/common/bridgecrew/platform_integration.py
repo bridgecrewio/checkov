@@ -416,6 +416,9 @@ class BcPlatformIntegration(object):
         else:
             self.get_public_run_config()
 
+    def get_run_config_url(self):
+        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -429,7 +432,9 @@ class BcPlatformIntegration(object):
             headers = merge_dicts(get_auth_header(token), get_default_get_headers(self.bc_source, self.bc_source_version))
             if not self.http:
                 self.setup_http_manager()
-            request = self.http.request("GET", self.platform_run_config_url, headers=headers)
+            url = self.get_run_config_url()
+            logging.debug(f'Platform run config URL: {url}')
+            request = self.http.request("GET", url, headers=headers)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
             logging.debug("Got customer run config from Bridgecrew BE")
         except Exception:
