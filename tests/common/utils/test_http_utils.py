@@ -51,8 +51,23 @@ def test_request_wrapper_all_fail_with_http_error(mock_bc_integration):
         json={'error': "mocked client error"},
         status=403
     )
+    request_wrapper("GET", mock_url, {})
+    responses.assert_call_count(mock_url, 1)
+
+
+@responses.activate
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+def test_request_wrapper_all_fail_with_http_error_should_call_raise_for_status(mock_bc_integration):
+    # given
+    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
+    responses.add(
+        method=responses.GET,
+        url=mock_url,
+        json={'error': "mocked client error"},
+        status=403
+    )
     try:
-        request_wrapper("GET", mock_url, {})
+        request_wrapper("GET", mock_url, {}, should_call_raise_for_status=True)
         assert False, "\'request_wrapper\' is expected to fail in this scenario"
     except requests.exceptions.HTTPError:
         responses.assert_call_count(mock_url, 5)

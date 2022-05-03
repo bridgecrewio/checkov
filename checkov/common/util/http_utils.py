@@ -58,7 +58,8 @@ def get_default_post_headers(client: SourceType, client_version: str):
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
-def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = None, json: Optional[Any] = None):
+def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = None, json: Optional[Any] = None,
+                    should_call_raise_for_status: bool = False):
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
     # 'ConnectionError' instances that appeared:
@@ -74,7 +75,8 @@ def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = N
     for i in range(request_max_tries):
         try:
             response = requests.request(method, url, headers=headers, data=data, json=json)
-            response.raise_for_status()
+            if should_call_raise_for_status:
+                response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
             logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
