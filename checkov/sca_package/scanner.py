@@ -5,12 +5,13 @@ import os
 import time
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 import requests
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
+from checkov.common.util.http_utils import request_wrapper
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
@@ -55,7 +56,7 @@ class Scanner:
             "fileName": input_path.name
         }
 
-        response = self.request_wrapper(
+        response = request_wrapper(
             "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
             headers=bc_integration.get_default_headers("GET"),
             data=request_body
@@ -75,7 +76,7 @@ class Scanner:
         response = requests.Response()
 
         while current_state != desired_state:
-            response = self.request_wrapper(
+            response = request_wrapper(
                 "GET", f"{self._base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
                 headers=bc_integration.get_default_headers("GET")
             )
@@ -99,21 +100,3 @@ class Scanner:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
         return raw_result
-
-    def request_wrapper(self, method: str, url: str, headers: Any, data: Optional[Any] = None):
-        # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' instances
-        # that appears from time to time.
-        # errors that appeared:
-        # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
-        # * ('Connection aborted.', OSError(107, 'Socket not connected'))
-        for i in range(self._request_max_tries):
-            try:
-                response = requests.request(method, url, headers=headers, data=data)
-                response.raise_for_status()
-                return response
-            except requests.exceptions.ConnectionError as connection_error:
-                logging.error(f"Connection error on request {url}, payload:\n{data}")
-                if i != self._request_max_tries - 1:
-                    time.sleep(self._sleep_between_request_tries * (i + 1))
-                    continue
-                raise connection_error

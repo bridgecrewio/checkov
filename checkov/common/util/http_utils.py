@@ -1,6 +1,9 @@
 import json
 import requests
 import logging
+import time
+import os
+from typing import Optional, Any
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
@@ -53,3 +56,36 @@ def get_default_get_headers(client: SourceType, client_version: str):
 
 def get_default_post_headers(client: SourceType, client_version: str):
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
+
+
+def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = None, json: Optional[Any] = None):
+    # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
+    # instances that appears from time to time.
+    # 'ConnectionError' instances that appeared:
+    # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
+    # * 'Connection aborted.', OSError(107, 'Socket not connected').
+    # 'ConnectionError' instances that appeared:
+    # * 403 Client Error: Forbidden for url.
+    # * 504 Server Error: Gateway Time-out for url.
+
+    request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
+    sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
+
+    for i in range(request_max_tries):
+        try:
+            response = requests.request(method, url, headers=headers, data=data, json=json)
+            response.raise_for_status()
+            return response
+        except requests.exceptions.ConnectionError as connection_error:
+            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            if i != request_max_tries - 1:
+                time.sleep(sleep_between_request_tries * (i + 1))
+                continue
+            raise connection_error
+        except requests.exceptions.HTTPError as http_error:
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            status_code = http_error.response.status_code
+            if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
+                time.sleep(sleep_between_request_tries * (i + 1))
+                continue
+            raise http_error

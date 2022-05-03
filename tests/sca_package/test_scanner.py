@@ -1,9 +1,6 @@
 import asyncio
-import os
 from pathlib import Path
 import responses
-import requests
-from unittest import mock
 
 from checkov.sca_package.scanner import Scanner
 
@@ -75,35 +72,3 @@ def test_run_scan_fail_on_scan(mock_bc_integration):
     assert result == {}
     responses.assert_call_count(mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan", 1)
     assert len(responses.calls) >= 2
-
-
-@responses.activate
-@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
-def test_request_wrapper_all_fail(mock_bc_integration):
-    # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
-    responses.add(
-        method=responses.GET,
-        url=mock_url,
-        body=requests.exceptions.ConnectionError()
-    )
-    try:
-        Scanner().request_wrapper("GET", mock_url, {})
-        assert False, "\'request_wrapper\' is expected to fail in this scenario"
-    except requests.exceptions.ConnectionError:
-        responses.assert_call_count(mock_url, 5)
-
-
-@responses.activate
-@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
-def test_request_wrapper_with_success(mock_bc_integration, scan_result_success_response):
-    # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
-    responses.add(
-        method=responses.GET,
-        url=mock_url,
-        json=scan_result_success_response,
-        status=200
-    )
-    Scanner().request_wrapper("GET", mock_url, {})
-    responses.assert_call_count(mock_url, 1)
