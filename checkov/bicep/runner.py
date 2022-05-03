@@ -109,7 +109,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def set_definitions_raw(self, definitions_raw: Dict[str, List[Tuple[int, str]]]):
+    def set_definitions_raw(self, definitions_raw: Dict[str, List[Tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
