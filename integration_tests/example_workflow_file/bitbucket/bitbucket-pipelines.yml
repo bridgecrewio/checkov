@@ -20,7 +20,7 @@ pipelines:
   custom:
     sonar:
       - step:
-          image: python:3.8.2
+          image: python:latest
           script:
             - echo "Manual triggers for Sonar are awesome!"
     deployment-to-prod:
