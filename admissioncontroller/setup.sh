@@ -18,16 +18,18 @@ deployment=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissi
 configmap=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/checkovconfig.yaml
 admissionregistration=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/admissionconfiguration.yaml
 service=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/service.yaml
+whorfconfigmap=https://raw.githubusercontent.com/bridgecrewio/checkov/master/admissioncontroller/k8s/whorfconfig.yaml
 
 curl -o $k8sdir/deployment.yaml $deployment
 curl -o $k8sdir/service.yaml $service
+curl -o $k8sdir/whorfconfig.yaml $whorfconfigmap
 # Pop these into the temp directory as we'll make some customisations pipe in into the k8s dir
 curl -o $certdir/checkovconfig.yaml $configmap
 curl -o $certdir/admissionconfiguration.yaml $admissionregistration
 
 # the namespace
 ns=bridgecrew
-kubectl create ns $ns --dry-run=client -o yaml > $k8sdir/namespace.yaml
+kubectl create ns $ns --dry-run=client -o yaml | sed  '/^metadata:/p; s/^metadata:/  labels: {"whorf.ignore":"true"}/' > $k8sdir/namespace.yaml
 
 # the cluster (repository name)
 cluster=$1
@@ -59,6 +61,7 @@ kubectl apply -f $k8sdir/namespace.yaml
 kubectl apply -f $k8sdir/secret-apikey.yaml
 kubectl apply -f $k8sdir/secret.yaml
 kubectl apply -f $k8sdir/checkovconfig.yaml
+kubectl apply -f $k8sdir/whorfconfig.yaml
 kubectl apply -f $k8sdir/service.yaml
 kubectl apply -f $k8sdir/deployment.yaml
 kubectl apply -f $k8sdir/admissionconfiguration.yaml

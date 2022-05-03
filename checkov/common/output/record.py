@@ -18,6 +18,8 @@ DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratin
 
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
+ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
+
 class Record:
     check_id = ""
     check_name = ""
@@ -165,7 +167,7 @@ class Record:
         )
         code_lines = ""
         if self.code_block:
-            code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block)]))
+            code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:
             caller_file_details = colored(

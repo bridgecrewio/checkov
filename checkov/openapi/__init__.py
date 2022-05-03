@@ -1,1 +1,1 @@
-from checkov.openapi.checks.resource import *
+from checkov.openapi.checks.resource import *  # noqa

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -5,15 +7,14 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 
 class TillerService(BaseResourceCheck):
-
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that the Tiller Service (Helm v2) is deleted"
         id = "CKV_K8S_44"
         supported_resources = ["kubernetes_service"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "metadata" in conf and isinstance(conf["metadata"], list):
             metadata = conf.get("metadata")[0]
 

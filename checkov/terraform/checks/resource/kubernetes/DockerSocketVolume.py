@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -5,9 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 
 class DockerSocketVolume(BaseResourceCheck):
-
-    def __init__(self):
-
+    def __init__(self) -> None:
         # Exposing the socket gives container information and increases risk of exploit
         # read-only is not a solution but only makes it harder to exploit.
         # Location: Pod.spec.volumes[].hostPath.path
@@ -19,7 +19,7 @@ class DockerSocketVolume(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]):
         if "spec" not in conf:
             self.evaluated_keys = [""]
             return CheckResult.FAILED

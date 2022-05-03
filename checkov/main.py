@@ -15,10 +15,11 @@ from configargparse import ArgumentParser
 from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
-import checkov.logging_init  # should be imported before the others to ensure correct logging setup
+import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
+from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -79,6 +80,7 @@ DEFAULT_RUNNERS = (
     github_configuration_runner(),
     gitlab_configuration_runner(),
     bitbucket_configuration_runner(),
+    bitbucket_pipelines_runner(),
     kustomize_runner(),
     sca_package_runner(),
     github_actions_runner(),
@@ -287,6 +289,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         exit_code = runner_registry.print_reports([result], config, url=url)
         return exit_code
     elif config.file:
+        runner_registry.filter_runners_for_files(config.file)
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
         if baseline:
@@ -323,7 +326,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='IaC root directory (can not be used together with --file).')
     parser.add('--add-check', action='store_true', help="Generate a new check via CLI prompt")
     parser.add('-f', '--file', action='append',
-               help='IaC file(can not be used together with --directory)')
+               help='File to scan (can not be used together with --directory). With this option, Checkov will attempt '
+                    'to filter the runners based on the file type. For example, if you specify a ".tf" file, only the '
+                    'terraform and secrets frameworks will be included. You can further limit this (e.g., skip secrets) '
+                    'by using the --skip-framework argument.')
     parser.add('--skip-path', action='append',
                help='Path (file or directory) to skip, using regular expression logic, relative to current '
                     'working directory. Word boundaries are not implicit; i.e., specifying "dir1" will skip any '
@@ -355,12 +361,12 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=False,
                help='in case of CLI output, do not display code blocks')
     parser.add('--framework',
-               help='filter scan to run only on specific infrastructure code frameworks',
+               help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
-               default=['all'],
+               default=["all"],
                nargs="+")
     parser.add('--skip-framework',
-               help='filter scan to skip specific infrastructure code frameworks. \n'
+               help='Filter scan to skip specific infrastructure code frameworks. \n'
                     'will be included automatically for some frameworks if system dependencies '
                     'are missing.',
                choices=checkov_runners,
@@ -520,12 +526,4 @@ def normalize_config(config: Namespace) -> None:
 
 
 if __name__ == '__main__':
-    from timeit import default_timer as timer
-    from datetime import timedelta
-
-    start = timer()
-
-    run()
-
-    end = timer()
-    print(f"elapsed time: {timedelta(seconds=end - start)}")
+    sys.exit(run())

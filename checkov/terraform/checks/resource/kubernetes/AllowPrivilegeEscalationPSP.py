@@ -1,10 +1,9 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from typing import Any, List
 
 
 class AllowPrivilegeEscalationPSP(BaseResourceNegativeValueCheck):
-
     def __init__(self):
         # CIS-1.3 1.7.5
         # CIS-1.5 5.2.5

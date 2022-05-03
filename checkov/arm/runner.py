@@ -18,6 +18,9 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 class Runner(BaseRunner):
     check_type = CheckType.ARM
 
+    def __init__(self):
+        super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
+
     def run(
         self,
         root_folder: str,

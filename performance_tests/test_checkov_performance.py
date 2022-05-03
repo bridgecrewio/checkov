@@ -78,6 +78,7 @@ def test_cloudformation_performance(benchmark):
     benchmark(run_cloudformation_scan)
     assert benchmark.stats.stats.mean <= repo_threshold + (deviation_percent / 100) * repo_threshold
 
+
 @pytest.mark.benchmark(
     group="kubernetes-performance-tests",
     disable_gc=True,

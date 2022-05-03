@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from mock.mock import MagicMock
@@ -20,9 +19,6 @@ def test_run(mocker: MockerFixture, scan_result):
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
 
     # when
     report = Runner().run(root_folder=EXAMPLES_DIR)
@@ -72,9 +68,6 @@ def test_run_with_empty_scan_result(mocker: MockerFixture):
     scanner_mock.return_value.scan.return_value = []
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
 
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
-
     # when
     report = Runner().run(root_folder=EXAMPLES_DIR)
 
@@ -90,9 +83,6 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
 
     # when
     report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
@@ -121,9 +111,6 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
     scanner_mock.return_value.scan.return_value = scan_result
     mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
 
-    # needed till is ready for production use
-    mocker.patch.dict(os.environ, {"ENABLE_SCA_PACKAGE_SCAN": "True"})
-
     # when
     runner = Runner()
     real_result = runner.prepare_and_scan(root_folder=EXAMPLES_DIR)
@@ -134,47 +121,44 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
     assert runner._code_repo_path == EXAMPLES_DIR
 
 
-def test_prepare_and_scan_sca_package_scan_disabled(mocker: MockerFixture, scan_result):
-    # for now, sca-package scan is enabled only in case the virtual-env "ENABLE_SCA_PACKAGE_SCAN" is set to True
-    # here, we want to make sure that the scanner is disabled otherwise.
-    # this test should be removed (and also fails) as soon as we enable the scan regardless virtual-env
-    # "ENABLE_SCA_PACKAGE_SCAN", so feel free to delete it when it is fully ready for production
-
-    # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-
-    # when
-    runner = Runner()
-    real_result = runner.prepare_and_scan(root_folder=EXAMPLES_DIR)
-
-    # then
-    assert real_result is None
-
-
 def test_find_scannable_files():
     # when
-    input_output_paths = Runner().find_scannable_files(
+    input_paths = Runner().find_scannable_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
     )
 
     # then
-    assert len(input_output_paths) == 3
+    assert len(input_paths) == 3
+
+    assert input_paths == {
+        EXAMPLES_DIR / "go.sum",
+        EXAMPLES_DIR / "package-lock.json",
+        EXAMPLES_DIR / "requirements.txt"
+    }
+
+
+def test_find_scannable_files_exclude_go_and_requirements():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names=set({"go.sum", "package-lock.json"})
+    )
+
+    # then
+    assert len(input_output_paths) == 1
 
     assert input_output_paths == {
-        (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
-        (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
-        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
+        EXAMPLES_DIR / "requirements.txt"
     }
 
 
 def test_find_scannable_files_with_package_json():
     # when
-    input_output_paths = Runner().find_scannable_files(
+    input_paths = Runner().find_scannable_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
@@ -182,11 +166,11 @@ def test_find_scannable_files_with_package_json():
     )
 
     # then
-    assert len(input_output_paths) == 4
+    assert len(input_paths) == 4
 
-    assert input_output_paths == {
-        (EXAMPLES_DIR / "go.sum", EXAMPLES_DIR / "go_result.json"),
-        (EXAMPLES_DIR / "package.json", EXAMPLES_DIR / "package_result.json"),
-        (EXAMPLES_DIR / "package-lock.json", EXAMPLES_DIR / "package-lock_result.json"),
-        (EXAMPLES_DIR / "requirements.txt", EXAMPLES_DIR / "requirements_result.json"),
+    assert input_paths == {
+        EXAMPLES_DIR / "go.sum",
+        EXAMPLES_DIR / "package.json",
+        EXAMPLES_DIR / "package-lock.json",
+        EXAMPLES_DIR / "requirements.txt"
     }

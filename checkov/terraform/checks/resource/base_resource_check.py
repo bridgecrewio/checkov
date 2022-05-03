@@ -20,6 +20,7 @@ PROVIDER_PREFIXES = (
     "linode_",
     "oci_",
     "openstack_",
+    "yandex_",
 )
 
 

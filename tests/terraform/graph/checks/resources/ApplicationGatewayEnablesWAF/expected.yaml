@@ -1,0 +1,7 @@
+pass:
+  - "azurerm_application_gateway.network_pass_1"
+  - "azurerm_application_gateway.network_pass_2"
+fail:
+  - "azurerm_application_gateway.network_fail_1"
+  - "azurerm_application_gateway.network_fail_2"
+  - "azurerm_application_gateway.network_fail_3"

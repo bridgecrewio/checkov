@@ -32,6 +32,10 @@ class BaseResourceCheck(BaseCheck):
         registry.register(self)
 
     def scan_entity_conf(self, conf: ResourceAttributes, entity_type: str) -> CheckResult:
+        if conf["existing"] is True:
+            # the existing keyword is used to retrieve information about an already deployed resource
+            return CheckResult.UNKNOWN
+
         self.entity_type = entity_type
         self.api_version = conf["api_version"]
 

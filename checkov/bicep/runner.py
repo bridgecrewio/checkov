@@ -46,8 +46,9 @@ class Runner(BaseRunner):
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: GraphManager | None = None,
-        external_registries: list[BaseRegistry] | None = None,
+        external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        super().__init__(file_extensions=['.bicep'])
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
         self.graph_manager: BicepGraphManager = (

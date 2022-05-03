@@ -26,6 +26,7 @@ from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 
+
 class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
 
@@ -35,8 +36,9 @@ class Runner(BaseRunner):
         source: str = "CloudFormation",
         graph_class: Type[LocalGraph] = CloudformationLocalGraph,
         graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None,
+        external_registries: Optional[List[BaseRegistry]] = None
     ) -> None:
+        super().__init__(file_extensions=['.json', '.yml', '.yaml', '.template'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = (

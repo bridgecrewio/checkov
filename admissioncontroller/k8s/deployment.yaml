@@ -30,8 +30,8 @@ spec:
           capabilities:
             drop:
               - ALL
-              - NET_RAW
-        image: bridgecrew/whorf@sha256:6436d191aa4eaed68fd03f12c10021911eca8b5d8c750e3fcf45c98119e11c1b
+        image: bridgecrew/whorf@sha256:a186ddca83681578f3d6aa190c6afcd84ae91614cd59f15a83efc32caf85e37f
+        imagePullPolicy: Always
         resources:
           limits:
             cpu: "1"
@@ -59,7 +59,12 @@ spec:
         - name: BC_SOURCE
           value: admissionController
         - name: CKV_GITHUB_CONFIG_FETCH_DATA
-          value: "False"
+          value: "False"     
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: whorfconfig # The ConfigMap this value comes from.
+              key: debug        # Are we in debug mode?                     
         volumeMounts:
         - name: bridgecrew-secret
           readOnly: true
@@ -68,7 +73,7 @@ spec:
           readOnly: true
           mountPath: "/certs"
         - name: "config"
-          mountPath: "/app/config"
+          mountPath: "/app/config"          
         - name: "apptmp"
           mountPath: "/app/tmp"
         - name: "tmp"
@@ -87,8 +92,15 @@ spec:
         secret:
           secretName: admission-tls
       - name: "config"
-        configMap:
-          name: "checkovconfig"
+        projected: 
+          sources:
+          - configMap:
+              name: "checkovconfig"
+          - configMap:
+              name: "whorfconfig"  
+              items:
+              - key: "k8s.properties"
+                path: "k8s.properties"        
       - emptyDir: {}
         name: apptmp
       - emptyDir: {}

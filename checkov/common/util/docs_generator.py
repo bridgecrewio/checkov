@@ -9,6 +9,7 @@ from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
+from checkov.bitbucket_pipelines.registry import registry as bitbucket_pipelines_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
@@ -62,6 +63,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
                 printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
             for check in registry.checks:
+                if not check.resource_types:
+                    # only for platform custom polices with resource_types == all
+                    check.resource_types = ['all']
                 for rt in check.resource_types:
                     printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
 
@@ -75,8 +79,14 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         graph_registry.load_checks()
         add_from_repository(graph_registry, "resource", "Terraform")
     if any(x in framework_list for x in ("all", "cloudformation")):
+        graph_registry = get_graph_checks_registry("cloudformation")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Cloudformation")
         add_from_repository(cfn_registry, "resource", "Cloudformation")
     if any(x in framework_list for x in ("all", "kubernetes")):
+        graph_registry = get_graph_checks_registry("kubernetes")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Kubernetes")
         add_from_repository(k8_registry, "resource", "Kubernetes")
     if any(x in framework_list for x in ("all", "serverless")):
         add_from_repository(sls_registry, "resource", "serverless")
@@ -90,10 +100,15 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(gitlab_configuration_registry, "gitlab_configuration", "gitlab_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_configuration")):
         add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
+    if any(x in framework_list for x in ("all", "bitbucket_pipelines")):
+        add_from_repository(bitbucket_pipelines_registry, "bitbucket_pipelines", "bitbucket_pipelines")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
     if any(x in framework_list for x in ("all", "bicep")):
+        graph_registry = get_graph_checks_registry("bicep")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Bicep")
         add_from_repository(bicep_param_registry, "parameter", "Bicep")
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "openapi")):
