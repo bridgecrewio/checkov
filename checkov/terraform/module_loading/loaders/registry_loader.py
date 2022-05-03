@@ -3,6 +3,7 @@ from http import HTTPStatus
 from typing import List, Dict
 
 import requests
+from requests.exceptions import HTTPError
 
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
@@ -10,11 +11,10 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints,
 )
+from checkov.common.util.file_utils import extract_tar_archive
 
 
 class RegistryLoader(ModuleLoader):
-    REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
-
     modules_versions_cache: Dict[str, List[str]] = {}
 
     def __init__(self) -> None:
@@ -22,7 +22,8 @@ class RegistryLoader(ModuleLoader):
         self.module_version_url = ""
 
     def discover(self):
-        pass
+        self.REGISTRY_URL_PREFIX = os.getenv("REGISTRY_URL_PREFIX", "https://registry.terraform.io/v1/modules")
+        self.token = os.getenv("TFC_TOKEN", "")
 
     def _is_matching_loader(self) -> bool:
         # Since the registry loader is the first one to be checked,
@@ -34,6 +35,10 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(self.dest_dir):
             return True
 
+        if self.module_source.startswith("app.terraform.io"):
+            self.REGISTRY_URL_PREFIX = "https://app.terraform.io/api/registry/v1/modules"
+            self.module_source = self.module_source.replace("app.terraform.io/", "")
+
         self.module_version_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, "versions"))
         if not self.module_version_url.startswith(self.REGISTRY_URL_PREFIX):
             # Local paths don't get the prefix appended
@@ -41,9 +46,17 @@ class RegistryLoader(ModuleLoader):
         if self.module_version_url in RegistryLoader.modules_versions_cache.keys():
             return True
 
-        response = requests.get(url=self.module_version_url)
-        if response.status_code != HTTPStatus.OK:
-            return False
+        if self.module_source.startswith(self.REGISTRY_URL_PREFIX):
+            # TODO: implement registry url validation using remote service discovery
+            # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
+            pass
+        try:
+            response = requests.get(url=self.module_version_url, headers={"Authorization": f"Bearer {self.token}"})
+            response.raise_for_status()
+        except HTTPError as e:
+            self.logger.warning(e)
+            if response.status_code != HTTPStatus.OK:
+                return False
         else:
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
@@ -56,13 +69,32 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=self.dest_dir)
 
         best_version = self._find_best_version()
-
         request_download_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, best_version, "download"))
-        response = requests.get(url=request_download_url)
-        if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
-            return ModuleContent(dir=None)
+        try:
+            response = requests.get(url=request_download_url,  headers={"Authorization": f"Bearer {self.token}"})
+            response.raise_for_status()
+        except HTTPError as e:
+            self.logger.warning(e)
+            if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
+                return ModuleContent(dir=None)
         else:
-            return ModuleContent(dir=None, next_url=response.headers.get("X-Terraform-Get", ""))
+            # https://www.terraform.io/registry/api-docs#download-source-code-for-a-specific-module-version
+            module_source_url = response.headers.get('X-Terraform-Get', '')
+            self.logger.debug(f"Cloning module from: X-Terraform-Get: {module_source_url}")
+            if module_source_url.startswith("https://archivist.terraform.io/v1/object"):
+                try:
+                    self._download_registry_module_archive(module_source_url)
+                    return_dir = self.dest_dir
+                except Exception as e:
+                    str_e = str(e)
+                    if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
+                        self.logger.error(f"failed to get {self.module_source} because of {e}")
+                        return ModuleContent(dir=None, failed_url=self.module_source)
+                if self.inner_module:
+                    return_dir = os.path.join(self.dest_dir, self.inner_module)
+                return ModuleContent(dir=return_dir)
+            else:
+                return ModuleContent(dir=None, next_url=response.headers.get("X-Terraform-Get", ""))
 
     def _find_module_path(self) -> str:
         # to determine the exact path here would be almost a duplicate of the git_loader functionality
@@ -96,6 +128,16 @@ class RegistryLoader(ModuleLoader):
             self.module_source = module_source_components[0]
             self.dest_dir = self.dest_dir.split("//")[0]
             self.inner_module = module_source_components[1]
+
+    def _download_registry_module_archive(self, module_source_url) -> None:
+        download_path = os.path.join(self.dest_dir, 'module_source.tar.gz')
+        with requests.get(module_source_url, stream=True) as r:
+            r.raise_for_status()
+            os.makedirs(os.path.dirname(download_path), exist_ok=True)
+            with open(download_path, 'wb+') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        extract_tar_archive(source_path=download_path, dest_path=os.path.dirname(download_path))
 
 
 loader = RegistryLoader()

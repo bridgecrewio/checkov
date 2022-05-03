@@ -92,7 +92,9 @@ information, see `loader.ModuleLoader.load`.
         return content
 
     def register(self, loader: "ModuleLoader") -> None:
-        self.loaders.append(loader)
+        # delete
+        if type(loader).__name__ == "RegistryLoader":
+            self.loaders.append(loader)
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()
