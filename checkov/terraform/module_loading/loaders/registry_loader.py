@@ -38,6 +38,8 @@ class RegistryLoader(ModuleLoader):
         if self.module_source.startswith("app.terraform.io"):
             self.REGISTRY_URL_PREFIX = "https://app.terraform.io/api/registry/v1/modules"
             self.module_source = self.module_source.replace("app.terraform.io/", "")
+        else:
+            self.REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
 
         self.module_version_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, "versions"))
         if not self.module_version_url.startswith(self.REGISTRY_URL_PREFIX):
@@ -54,7 +56,7 @@ class RegistryLoader(ModuleLoader):
             response = requests.get(url=self.module_version_url, headers={"Authorization": f"Bearer {self.token}"})
             response.raise_for_status()
         except HTTPError as e:
-            self.logger.warning(e)
+            self.logger.debug(e)
             if response.status_code != HTTPStatus.OK:
                 return False
         else:
