@@ -73,7 +73,7 @@ class RegistryLoader(ModuleLoader):
         best_version = self._find_best_version()
         request_download_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, best_version, "download"))
         try:
-            response = requests.get(url=request_download_url,  headers={"Authorization": f"Bearer {self.token}"})
+            response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {self.token}"})
             response.raise_for_status()
         except HTTPError as e:
             self.logger.warning(e)
