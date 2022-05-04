@@ -18,6 +18,7 @@ class GitlabAccessTokenLoader(GenericGitLoader):
                 source = self.module_source.replace(":", "/")
                 self.module_source = f"git::https://{self.username}:{self.token}@{source}"
                 return True
+        return False
 
 
 loader = GitlabAccessTokenLoader()

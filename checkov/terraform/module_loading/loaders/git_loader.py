@@ -18,6 +18,8 @@ class ModuleSource:
 
 
 class GenericGitLoader(ModuleLoader):
+    def __init__(self):
+        super().__init__()
 
     def discover(self):
         pass
