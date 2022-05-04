@@ -154,7 +154,7 @@ resource "github_branch_protection" "pass" {
       data.github_user.example.node_id,
       github_team.example.node_id,
     ]
-    required_approving_review_count = 1
+    required_approving_review_count = 2
   }
 
   push_restrictions = [
