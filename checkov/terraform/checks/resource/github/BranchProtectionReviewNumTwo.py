@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class BranchProtectionReviewNumTwo(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure as least two approving reviews for PRs"
+        name = "Ensure at least two approving reviews for PRs"
         id = "CKV_GIT_5"
         supported_resources = ["github_branch_protection_v3", "github_branch_protection"]
         categories = [CheckCategories.GENERAL_SECURITY]
