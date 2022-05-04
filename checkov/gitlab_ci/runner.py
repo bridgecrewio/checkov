@@ -1,4 +1,4 @@
-from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -57,27 +57,36 @@ class Runner(YamlRunner, ImageReferencer):
 
         for job_name, job_object in workflow.items():
             if isinstance(job_object, dict):
-                for subjob in job_object.items():
-                    for key in subjob:
-                        if key in imagesKeys:
-                            if isinstance(subjob[1], dict):
-                                imagename = subjob[1]['name']
-                            elif isinstance(subjob[1], str):
-                                imagename = subjob[1]
-                            elif isinstance(subjob[1], list):
-                                for service in subjob[1]:
-                                    if isinstance(service, dict):
-                                        imagename = service['name']
-                                    elif isinstance(service, str):
-                                        imagename = service
-                                    if imagename:
-                                        image_id = self.pull_image(imagename)
-                                        if image_id:
-                                            images.add(image_id)
-                                        imagename = ""      
-                            if imagename:
-                                image_id = self.pull_image(imagename)
-                                if image_id:
-                                    images.add(image_id)
-                                imagename = ""
+                start_line = job_object.get('__startline__', 0)
+                end_line = job_object.get('__endline__', 0)
+                for key, subjob in job_object.items():
+                    if key in imagesKeys:
+                        if isinstance(subjob, dict):
+                            start_line = subjob.get('__startline__', 0)
+                            end_line = subjob.get('__endline__', 0)
+                            imagename = subjob['name']
+                        elif isinstance(subjob, str):
+                            imagename = subjob
+                        elif isinstance(subjob, list):
+                            for service in subjob:
+                                if isinstance(service, dict):
+                                    start_line = service.get('__startline__', 0)
+                                    end_line = service.get('__endline__', 0)
+                                    imagename = service['name']
+                                elif isinstance(service, str):
+                                    imagename = service
+                                if imagename:
+                                    image_id = self.pull_image(imagename)
+                                    if image_id:
+                                        image_obj = Image(file_path=file_path, name=imagename, image_id=image_id, start_line=start_line,
+                                                        end_line=end_line)
+                                        images.add(image_obj)
+                                    imagename = ""      
+                        if imagename:
+                            image_id = self.pull_image(imagename)
+                            if image_id:
+                                image_obj = Image(file_path=file_path, name=imagename, image_id=image_id, start_line=start_line,
+                                                  end_line=end_line)
+                                images.add(image_obj)
+                            imagename = ""
         return images
