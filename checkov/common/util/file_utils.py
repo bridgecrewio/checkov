@@ -41,4 +41,3 @@ def decompress_file_gzip_base64(compressed_file_body: str) -> str:
     except Exception:
         logging.exception("failed to extract package file")
         raise
-
