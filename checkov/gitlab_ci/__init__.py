@@ -1,1 +1,1 @@
-from checkov.gitlab_ci.checks import *
+from checkov.gitlab_ci.checks import * # noqa

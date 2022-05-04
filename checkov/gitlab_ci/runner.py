@@ -1,5 +1,3 @@
-import os
-
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.report import CheckType
 from checkov.gitlab_ci.checks.registry import registry
