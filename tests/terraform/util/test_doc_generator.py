@@ -1,13 +1,12 @@
 import inspect
+from pathlib import Path
+from typing import List, Set, Optional
 
 import pytest
 
-from typing import List, Set, Optional
-from pathlib import Path
-
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.output.report import CheckType
 from checkov.common.util.docs_generator import get_checks
-from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 
 def test_get_checks_returned_check_number():
@@ -25,9 +24,11 @@ def test_get_checks_returned_check_number():
     "input_frameworks,expected_frameworks",
     [
         (["all"], {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                   "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_actions", "OpenAPI"}),
+                   "github_configuration", "gitlab_configuration", "bitbucket_configuration", "bitbucket_pipelines",
+                   "github_actions", "OpenAPI"}),
         (None, {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                "github_configuration", "gitlab_configuration", "bitbucket_configuration", "github_actions", "OpenAPI"}),
+                "github_configuration", "bitbucket_pipelines", "gitlab_configuration", "bitbucket_configuration",
+                "github_actions", "OpenAPI"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],
