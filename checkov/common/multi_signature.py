@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 import inspect
 from abc import ABCMeta
 from functools import update_wrapper
-from typing import Callable, Any, TypeVar, Dict, List
+from typing import Callable, Any, TypeVar
 
-T = TypeVar("T")
+_MultiT = TypeVar("_MultiT")
+_MetaT = TypeVar("_MetaT", bound="MultiSignatureMeta")
 
 
 class MultiSignatureMeta(ABCMeta):
-    def __new__(mcs, name, bases, namespace, **kwargs):
+    def __new__(mcs, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> _MetaT:
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
         multi_signatures = {
             name: value
@@ -59,16 +62,16 @@ class multi_signature:
     """
 
     def __init__(self) -> None:
-        self.__wrappers__: Dict[Any, Callable[..., T]] = {}
+        self.__wrappers__: dict[Any, Callable[..., _MultiT]] = {}
 
-    def __call__(self, fn: Callable[..., T]) -> Callable[..., T]:
+    def __call__(self, fn: Callable[..., _MultiT]) -> Callable[..., _MultiT]:
         fn.add_signature = self.add_signature
         fn.__multi_signature_wrappers__ = self.__wrappers__
         return fn
 
     def add_signature(
-        self, *, args: List[str], varargs: Any = None, varkw: Any = None
-    ) -> Callable[[Callable[..., T]], Callable[..., T]]:
+        self, *, args: list[str], varargs: Any = None, varkw: Any = None
+    ) -> Callable[[Callable[..., _MultiT]], Callable[..., _MultiT]]:
         """
         Registers a new wrapper for the decorated function.
 
@@ -105,7 +108,7 @@ class multi_signature:
         >>>         return wrapper
         """
 
-        def wrapper(fn: Callable[..., T]) -> Callable[..., T]:
+        def wrapper(fn: Callable[..., _MultiT]) -> Callable[..., _MultiT]:
             self.__wrappers__[(tuple(args), varargs, varkw)] = fn
             return fn
 
