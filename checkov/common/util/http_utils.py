@@ -1,14 +1,20 @@
+from __future__ import annotations
+
 import json
 import requests
 import logging
 import time
 import os
-from typing import Optional, Any
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
+
+if TYPE_CHECKING:
+    from requests import Response
+
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +64,14 @@ def get_default_post_headers(client: SourceType, client_version: str):
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
-def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = None, json: Optional[Any] = None,
-                    should_call_raise_for_status: bool = False):
+def request_wrapper(
+    method: str,
+    url: str,
+    headers: dict[str, Any],
+    data: Any | None = None,
+    json: dict[str, Any] | None = None,
+    should_call_raise_for_status: bool = False
+) -> Response | None:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
     # 'ConnectionError' instances that appeared:
@@ -91,3 +103,5 @@ def request_wrapper(method: str, url: str, headers: Any, data: Optional[Any] = N
                 time.sleep(sleep_between_request_tries * (i + 1))
                 continue
             raise http_error
+
+    return None
