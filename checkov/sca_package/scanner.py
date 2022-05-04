@@ -11,6 +11,7 @@ import requests
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
+from checkov.common.util.http_utils import request_wrapper
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
@@ -18,7 +19,7 @@ MAX_SLEEP_DURATION = 60
 
 class Scanner:
     def __init__(self) -> None:
-        self.base_url = bc_integration.api_url
+        self._base_url = bc_integration.api_url
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -53,13 +54,13 @@ class Scanner:
             "fileName": input_path.name
         }
 
-        response = requests.request(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan",
-            headers=bc_integration.get_default_headers("GET"),
-            data=request_body
+        response = request_wrapper(
+            "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
+            headers=bc_integration.get_default_headers("POST"),
+            data=request_body,
+            should_call_raise_for_status=True
         )
 
-        response.raise_for_status()
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
@@ -74,8 +75,8 @@ class Scanner:
         response = requests.Response()
 
         while current_state != desired_state:
-            response = requests.request(
-                "GET", f"{self.base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
+            response = request_wrapper(
+                "GET", f"{self._base_url}/api/v1/vulnerabilities/scan-results/{scan_id}",
                 headers=bc_integration.get_default_headers("GET")
             )
             response_json = response.json()
