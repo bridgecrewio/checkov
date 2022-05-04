@@ -71,6 +71,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
     ids=["module_with_version", "inner_module_with_version"],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
+@mock.patch.dict(os.environ, {"GITHUB_TOKEN": ""}, clear=True)
 def test_load_terraform_registry(
     git_getter,
     source,
@@ -268,6 +269,7 @@ def test_load_github(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    print(os.getenv('GITHUB_TOKEN', 'didnt get anything'))
 
     # when
     content = registry.load(current_dir=str(current_dir), source=source, source_version="latest")
