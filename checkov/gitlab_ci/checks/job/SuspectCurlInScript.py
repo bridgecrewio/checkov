@@ -17,8 +17,11 @@ class SuspectCurlInScript(BaseGitlabCICheck):
 
     def scan_entity_conf(self, conf):
         if "curl" in conf:
-            if '$CI_' in conf:
-                return CheckResult.FAILED, conf
+            badstuff = ['curl','$CI_']
+            lines = conf.split("\n")
+            for line in lines:
+                if all(x in line for x in badstuff):
+                    return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
 check = SuspectCurlInScript()

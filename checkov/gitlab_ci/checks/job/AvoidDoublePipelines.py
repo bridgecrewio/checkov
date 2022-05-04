@@ -18,11 +18,12 @@ class AvoidDoublePipelines(BaseGitlabCICheck):
     def scan_entity_conf(self, conf):
         c = 0
         for x in conf:
-            value = x['if']
-            if value.startswith('$CI_PIPELINE_SOURCE'):
-                c = c + 1
-        if c > 1:
-            return CheckResult.FAILED, conf
+            if "if" in x:
+                value = x['if']
+                if value.startswith('$CI_PIPELINE_SOURCE'):
+                    c += 1
+                if c > 1:
+                    return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
         
 
