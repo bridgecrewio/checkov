@@ -126,13 +126,13 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types
+                check.resource_types = resources_types or []
             else:
                 check.resource_types = resource_type
 
             connected_resources_type = raw_check.get("connected_resource_types", [])
             if connected_resources_type == ["All"] or connected_resources_type == "all":
-                check.connected_resources_types = resources_types
+                check.connected_resources_types = resources_types or []
             else:
                 check.connected_resources_types = connected_resources_type
 
@@ -141,7 +141,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             if condition_type == "":
                 check.operator = "any"
             else:
-                check.operator = raw_check.get("operator")
+                check.operator = raw_check.get("operator", "")
             check.attribute = raw_check.get("attribute")
             check.attribute_value = raw_check.get("value")
 

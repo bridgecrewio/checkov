@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import annotations
+
 import re
 from typing import List, Optional, Tuple, Union
 
@@ -30,7 +32,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
 
-def get_compare_key(c):
+def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
     res = []
     for match in ID_PARTS_PATTERN.finditer(c[0]):
         ckv, framework, number = match.groups()
@@ -51,7 +53,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
 
 
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> \
-        List[Tuple[str, str, str, str, str]]:
+        List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = []
 

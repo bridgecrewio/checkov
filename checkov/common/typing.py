@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any
 
 from typing_extensions import TypedDict
 
@@ -13,7 +13,7 @@ class _CheckResult(TypedDict, total=False):
     result: "CheckResult"
     suppress_comment: str
     evaluated_keys: list[str]
-    results_configuration: Optional[dict]
+    results_configuration: dict[str, Any] | None
     check: BaseCheck
 
 
