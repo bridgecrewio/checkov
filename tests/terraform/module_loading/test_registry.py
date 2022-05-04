@@ -257,6 +257,7 @@ def test_load_generic_git(
     ids=["module", "module_with_version", "inner_module", "inner_module_with_version"],
 )
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
+@mock.patch.dict(os.environ, {"GITHUB_TOKEN": ""}, clear=True)
 def test_load_github(
     git_getter,
     source,
