@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -491,12 +493,13 @@ class Parser:
         source: str,
         download_external_modules: bool = False,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        parsing_errors: Optional[Dict[str, Exception]] = None,
-        excluded_paths: Optional[List[str]] = None,
-        vars_files: Optional[List[str]] = None,
-        external_modules_content_cache: Optional[Dict[str, ModuleContent]] = None
-    ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
-        tf_definitions: Dict[str, Dict[str, Any]] = {}
+        parsing_errors: dict[str, Exception] | None = None,
+        excluded_paths: list[str] | None = None,
+        vars_files: list[str] | None = None,
+        external_modules_content_cache: dict[str, ModuleContent] | None = None,
+        create_graph: bool = True,
+    ) -> tuple[Module | None, dict[str, dict[str, Any]]]:
+        tf_definitions: dict[str, dict[str, Any]] = {}
         self.parse_directory(directory=source_dir, out_definitions=tf_definitions, out_evaluations_context={},
                              out_parsing_errors=parsing_errors if parsing_errors is not None else {},
                              download_external_modules=download_external_modules,
@@ -505,7 +508,10 @@ class Parser:
         tf_definitions = self._clean_parser_types(tf_definitions)
         tf_definitions = self._serialize_definitions(tf_definitions)
 
-        module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        module = None
+        if create_graph:
+            module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+
         return module, tf_definitions
 
     def parse_hcl_module_from_tf_definitions(
