@@ -23,6 +23,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_ADORepositoryHasMinTwoReviewers(self):
+        self.go("ADORepositoryHasMinTwoReviewers")
+
     def test_RepositoryHasBranchProtection(self):
         self.go("RepositoryHasBranchProtection")
 
