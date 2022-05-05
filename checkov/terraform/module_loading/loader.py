@@ -78,7 +78,8 @@ There are three resulting states that can occur when calling this function:
         if os.path.exists(module_path):
             return ModuleContent(dir=module_path)
 
-        self.logger.debug(f"getting module {self.module_source} version: {self.version}")
+        self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
+                          f"{self.module_source} version: {self.version}")
         return self._load_module()
 
     @abstractmethod

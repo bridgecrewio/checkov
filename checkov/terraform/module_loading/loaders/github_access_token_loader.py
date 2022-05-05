@@ -21,4 +21,4 @@ class GithubAccessTokenLoader(GenericGitLoader):
         return False
 
 
-loader = GithubAccessTokenLoader()
+# loader = GithubAccessTokenLoader()

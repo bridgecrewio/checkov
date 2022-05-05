@@ -28,7 +28,7 @@ class RegistryLoader(ModuleLoader):
     def _is_matching_loader(self) -> bool:
         # Since the registry loader is the first one to be checked,
         # it shouldn't process any github modules
-        if self.module_source.startswith(("github.com", "bitbucket.org")):
+        if self.module_source.startswith(("github.com", "bitbucket.org", "git::")):
             return False
 
         self._process_inner_registry_module()
