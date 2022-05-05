@@ -26,6 +26,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
 
+    def test_CodecommitApprovalRulesAttached(self):
+        self.go("CodecommitApprovalRulesAttached")
+
     def test_RepositoryHasBranchProtection(self):
         self.go("RepositoryHasBranchProtection")
 
