@@ -1,0 +1,26 @@
+metadata:
+  name: "Ensure at least two approving reviews for PRs"
+  category: "GENERAL_SECURITY"
+  id: "CKV2_ADO_1"
+scope:
+  provider: "AZUREDEVOPS"
+definition:
+  and:
+    - resource_types:
+        - azuredevops_git_repository
+      connected_resource_types:
+        - azuredevops_branch_policy_min_reviewers
+      operator: exists
+      cond_type: connection
+    - cond_type: attribute
+      attribute: settings.reviewer_count
+      value: 2
+      operator: greater_than_or_equal
+      resource_types:
+        - azuredevops_branch_policy_min_reviewers
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azuredevops_git_repository
+      operator: within
+
