@@ -55,6 +55,39 @@ resource "aws_route" "aws_route_ok_2" {
   instance_id               = aws_instance.example.id
 }
 
+/*
+  In the tf plan files the instance id can be included but blank
+  "address": "aws_route_table.example",
+    "mode": "managed",
+    "type": "aws_route_table",
+    "name": "example",
+    "provider_name": "registry.terraform.io/hashicorp/aws",
+    "schema_version": 0,
+    "values": {
+      "route": [
+        {
+          "carrier_gateway_id": "",
+          "cidr_block": "0.0.0.0/0",
+          "destination_prefix_list_id": "",
+          "egress_only_gateway_id": "",
+          "gateway_id": "",
+  --->    "instance_id": "",
+          "ipv6_cidr_block": "",
+          "local_gateway_id": "",
+          "network_interface_id": "",
+          "transit_gateway_id": "",
+          "vpc_endpoint_id": "",
+          "vpc_peering_connection_id": ""
+        }
+      ],
+*/
+resource "aws_route" "aws_route_ok_blank_instance" {
+  route_table_id            = aws_route_table.example.id
+  destination_cidr_block    = "0.0.0.0/0"
+  gateway_id                = aws_internet_gateway.example.id
+  instance_id               = ""
+}
+
 resource "aws_route" "aws_route_not_ok" {
   route_table_id            = aws_route_table.example.id
   destination_cidr_block    = "0.0.0.0/0"

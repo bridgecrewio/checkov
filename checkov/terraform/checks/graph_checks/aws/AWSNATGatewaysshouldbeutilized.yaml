@@ -15,6 +15,12 @@ definition:
         - cond_type: "attribute"
           resource_types:
           - "aws_route_table"
+          attribute: "route.*.instance_id"
+          operator: "equals"
+          value: ""
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
           attribute: "route.*.cidr_block"
           operator: "not_contains"
           value: "0.0.0.0/0"
@@ -23,6 +29,12 @@ definition:
           - "aws_route"
           attribute: "instance_id"
           operator: "not_exists"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "instance_id"
+          operator: "equals"
+          value: ""
         - cond_type: "attribute"
           resource_types:
           - "aws_route"
