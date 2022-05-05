@@ -31,6 +31,7 @@ from checkov.runner_filter import RunnerFilter
                     "github_actions",
                     "gitlab_configuration",
                     "bitbucket_configuration",
+                    "bitbucket_pipelines",
                     "kustomize",
                     "sca_package",
                     "openapi",

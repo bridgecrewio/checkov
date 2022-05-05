@@ -68,6 +68,7 @@ class Parser:
         self.module_address_map = {}
         self.tf_var_files = tf_var_files
         self.scan_hcl = should_scan_hcl_files()
+        self.dirname_cache = {}
 
         if self.out_evaluations_context is None:
             self.out_evaluations_context = {}
@@ -360,7 +361,7 @@ class Parser:
             # Don't process a file in a directory other than the directory we're processing. For example,
             # if we're down dealing with <top_dir>/<module>/something.tf, we don't want to rescan files
             # up in <top_dir>.
-            if os.path.dirname(file) != root_dir:
+            if self.get_dirname(file) != root_dir:
                 continue
             # Don't process a file reference which has already been processed
             if file.endswith("]"):
@@ -431,7 +432,7 @@ class Parser:
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
-                                              os.path.dirname(path) == content.path()}
+                                              self.get_dirname(path) == content.path()}
 
                         if not module_definitions:
                             continue
@@ -696,6 +697,13 @@ class Parser:
             if ".tfvars" in path:
                 block = {var_name: {"default": default}}
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
+
+    def get_dirname(self, path: str) -> str:
+        dirname_path = self.dirname_cache.get(path)
+        if not dirname_path:
+            dirname_path = os.path.dirname(path)
+            self.dirname_cache[path] = dirname_path
+        return dirname_path
 
 
 def _load_or_die_quietly(file: os.PathLike, parsing_errors: Dict,
