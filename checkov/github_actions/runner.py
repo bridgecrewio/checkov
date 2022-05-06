@@ -1,6 +1,6 @@
 import os
 
-from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -52,8 +52,7 @@ class Runner(YamlRunner, ImageReferencer):
         #       options: --cpus 1
         Source: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-defining-credentials-for-a-container-registry
 
-        :return: List of container image short ids mentioned in the file.
-        Example return value for a file with node:14.16 image: ['sha256:6a353e22ce']
+        :return: List of container image classes ids mentioned in the file.
         """
 
         images = set()
@@ -64,6 +63,8 @@ class Runner(YamlRunner, ImageReferencer):
             if isinstance(job_object, dict):
                 container = job_object.get("container", {})
                 image = None
+                start_line = container.get('__startline__', 0)
+                end_line = container.get('__endline__', 0)
                 if isinstance(container, dict):
                     image = container.get("image", "")
                 elif isinstance(container, str):
@@ -71,6 +72,8 @@ class Runner(YamlRunner, ImageReferencer):
                 if image:
                     image_id = self.pull_image(image)
                     if image_id:
-                        images.add(image_id)
+                        image_obj = Image(file_path=file_path, name=image, image_id=image_id, start_line=start_line,
+                                          end_line=end_line)
+                        images.add(image_obj)
 
         return images

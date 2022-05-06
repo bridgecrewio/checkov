@@ -15,6 +15,7 @@ import dpath.util
 import requests
 import urllib3
 from botocore.exceptions import ClientError
+from botocore.config import Config
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
@@ -183,12 +184,19 @@ class BcPlatformIntegration(object):
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
                 self.credentials = response["creds"]
-                self.s3_client = boto3.client("s3",
-                                              aws_access_key_id=self.credentials["AccessKeyId"],
-                                              aws_secret_access_key=self.credentials["SecretAccessKey"],
-                                              aws_session_token=self.credentials["SessionToken"],
-                                              region_name=DEFAULT_REGION
-                                              )
+                config = Config(
+                    s3={
+                        "use_accelerate_endpoint": True,
+                    }
+                )
+                self.s3_client = boto3.client(
+                    "s3",
+                    aws_access_key_id=self.credentials["AccessKeyId"],
+                    aws_secret_access_key=self.credentials["SecretAccessKey"],
+                    aws_session_token=self.credentials["SessionToken"],
+                    region_name=DEFAULT_REGION,
+                    config=config,
+                )
                 self.platform_integration_configured = True
                 self.use_s3_integration = True
             except MaxRetryError:
@@ -408,6 +416,9 @@ class BcPlatformIntegration(object):
         else:
             self.get_public_run_config()
 
+    def get_run_config_url(self):
+        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -421,7 +432,9 @@ class BcPlatformIntegration(object):
             headers = merge_dicts(get_auth_header(token), get_default_get_headers(self.bc_source, self.bc_source_version))
             if not self.http:
                 self.setup_http_manager()
-            request = self.http.request("GET", self.platform_run_config_url, headers=headers)
+            url = self.get_run_config_url()
+            logging.debug(f'Platform run config URL: {url}')
+            request = self.http.request("GET", url, headers=headers)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
             logging.debug("Got customer run config from Bridgecrew BE")
         except Exception:

@@ -1,5 +1,4 @@
-
-resource "google_container_cluster" "fail1" {
+resource "google_container_cluster" "success1" {
   name               = var.name
   location           = var.location
   initial_node_count = 1
@@ -73,7 +72,7 @@ resource "google_container_cluster" "fail1" {
   resource_labels = var.resource_labels
 }
 
-resource "google_container_cluster" "fail2" {
+resource "google_container_cluster" "fail" {
   name               = var.name
   location           = var.location
   initial_node_count = 1
@@ -149,7 +148,7 @@ resource "google_container_cluster" "fail2" {
   resource_labels = var.resource_labels
 }
 
-resource "google_container_cluster" "success" {
+resource "google_container_cluster" "success2" {
   name               = var.name
   location           = var.location
   initial_node_count = 1

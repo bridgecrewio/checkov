@@ -10,16 +10,17 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 def test_build_graph_from_source_directory():
     # given
-    test_file = EXAMPLES_DIR / "playground.bicep"
+    existing_file = EXAMPLES_DIR / "existing.bicep"
+    playground_file = EXAMPLES_DIR / "playground.bicep"
     graph_manager = BicepGraphManager(db_connector=NetworkxConnector())
 
     # when
     local_graph, definitions = graph_manager.build_graph_from_source_directory(source_dir=str(EXAMPLES_DIR))
 
     # then
-    assert list(definitions.keys()) == [test_file]  # should no include 'malformed.bicep' file
+    assert set(definitions.keys()) == {existing_file, playground_file}  # should no include 'malformed.bicep' file
 
-    assert len(local_graph.vertices) == 24
+    assert len(local_graph.vertices) == 27
     assert len(local_graph.edges) == 29
 
     storage_account_idx = local_graph.vertices_by_name["diagsAccount"]  # vertices_by_name exists for BicepGraphManager
