@@ -6,7 +6,7 @@ from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
 class GithubAccessTokenLoader(GenericGitLoader):
     def discover(self):
         self.username = "x-access-token"
-        self.token = os.getenv('GITHUB_TOKEN', '')
+        self.token = os.getenv('GITHUB_PAT', '')
 
     def _is_matching_loader(self) -> bool:
         if self.token:
