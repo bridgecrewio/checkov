@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import cast, Type, TYPE_CHECKING, Any, List, Tuple
+from typing import cast, Type, TYPE_CHECKING, Any
 
 from pycep.typing import BicepJson
 from typing_extensions import Literal
@@ -109,7 +109,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def set_definitions_raw(self, definitions_raw: dict[Path, List[Tuple[int, str]]]) -> None:
+    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
