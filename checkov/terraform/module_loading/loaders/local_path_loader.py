@@ -10,6 +10,7 @@ from checkov.terraform.module_loading.loader import ModuleLoader
 class LocalPathLoader(ModuleLoader):
     def __init__(self) -> None:
         super().__init__()
+        self.discover()
         self.is_external = False
 
     def discover(self):

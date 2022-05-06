@@ -8,16 +8,10 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-
-old_gh_token = os.getenv('GITHUB_TOKEN', '')
-os.environ['GITHUB_TOKEN'] = ''
-
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
-
-os.environ['GITHUB_TOKEN'] = old_gh_token
 
 
 class TestModuleLoaderRegistry(unittest.TestCase):

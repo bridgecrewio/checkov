@@ -19,6 +19,7 @@ class RegistryLoader(ModuleLoader):
 
     def __init__(self) -> None:
         super().__init__()
+        self.discover()
         self.module_version_url = ""
 
     def discover(self):

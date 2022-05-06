@@ -24,15 +24,13 @@ class ModuleLoader(ABC):
         self.is_external = True
         self.inner_module: Optional[str] = None
         self.root_dir = ""  # root dir for storing external modules
-        self.discover()
 
     @abstractmethod
     def discover(self):
         """
             discover parameters from execution context of checkov. usually from env variable
         """
-        self.username = None
-        self.token = None
+        pass
 
     def load(
         self,
