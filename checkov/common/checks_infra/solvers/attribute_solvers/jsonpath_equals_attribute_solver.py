@@ -13,7 +13,7 @@ class JsonpathEqualsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return str(vertex.get(attribute)) == str(self.value)
+        return str(vertex.get(attribute)) == str(self.value)  # type:ignore[arg-type]  # due to attribute can be None
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
         if self.attribute:

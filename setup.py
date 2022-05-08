@@ -84,14 +84,14 @@ setup(
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
+        "checkov": ["py.typed"],
+        "checkov.bicep.checks.graph_checks": ["*.yaml"],
+        "checkov.common.util.templates": ["*.jinja2"],
         "checkov.terraform.checks.graph_checks": [
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
         ],
-        "checkov.common.util.templates": [
-            "*.jinja2"
-        ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
@@ -100,11 +100,14 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Topic :: Security",
         "Topic :: Software Development :: Build Tools",
+        "Typing :: Typed",
     ],
 )

@@ -12,7 +12,7 @@ class SubsetAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=SubsetAttributeSolver.to_set(value))
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        attr_val = SubsetAttributeSolver.to_set(vertex.get(attribute))
+        attr_val = SubsetAttributeSolver.to_set(vertex.get(attribute))  # type:ignore[arg-type]  # due to attribute can be None
         return attr_val.issubset(self.value)
 
     @staticmethod

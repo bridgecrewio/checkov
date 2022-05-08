@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 import importlib
 import importlib.util
@@ -7,11 +9,13 @@ import sys
 from abc import abstractmethod
 from collections import defaultdict
 from itertools import chain
-from typing import Generator, Tuple, Dict, List, Optional, Any
+from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
-from checkov.common.checks.base_check import BaseCheck
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
 
 
 class BaseCheckRegistry:

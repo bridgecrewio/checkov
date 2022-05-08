@@ -1,4 +1,6 @@
-from typing import Dict, Any, List, Optional
+from __future__ import annotations
+
+from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
@@ -38,8 +40,15 @@ from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
+if TYPE_CHECKING:
+    from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+    from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+    from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
+    from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
+    from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
-operators_to_attributes_solver_classes = {
+
+operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "equals": EqualsAttributeSolver,
     "not_equals": NotEqualsAttributeSolver,
     "regex_match": RegexMatchAttributeSolver,
@@ -64,20 +73,23 @@ operators_to_attributes_solver_classes = {
     "jsonpath_exists": JsonpathExistsAttributeSolver
 }
 
-operators_to_complex_solver_classes = {
+operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
     "and": AndSolver,
     "or": OrSolver,
 }
 
-operator_to_connection_solver_classes = {
+operator_to_connection_solver_classes: dict[str, Type[BaseConnectionSolver]] = {
     "exists": ConnectionExistsSolver,
     "one_exists": ConnectionOneExistsSolver,
     "not_exists": ConnectionNotExistsSolver
 }
 
-operator_to_complex_connection_solver_classes = {"and": AndConnectionSolver, "or": OrConnectionSolver}
+operator_to_complex_connection_solver_classes: dict[str, Type[ComplexConnectionSolver]] = {
+    "and": AndConnectionSolver,
+    "or": OrConnectionSolver,
+}
 
-operator_to_filter_solver_classes = {
+operator_to_filter_solver_classes: dict[str, Type[BaseFilterSolver]] = {
     "within": WithinFilterSolver,
 }
 
@@ -126,13 +138,13 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types
+                check.resource_types = resources_types or []
             else:
                 check.resource_types = resource_type
 
             connected_resources_type = raw_check.get("connected_resource_types", [])
             if connected_resources_type == ["All"] or connected_resources_type == "all":
-                check.connected_resources_types = resources_types
+                check.connected_resources_types = resources_types or []
             else:
                 check.connected_resources_types = connected_resources_type
 
@@ -141,7 +153,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             if condition_type == "":
                 check.operator = "any"
             else:
-                check.operator = raw_check.get("operator")
+                check.operator = raw_check.get("operator", "")
             check.attribute = raw_check.get("attribute")
             check.attribute_value = raw_check.get("value")
 

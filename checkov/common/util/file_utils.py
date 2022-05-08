@@ -21,7 +21,7 @@ def compress_file_gzip_base64(input_path: str) -> str:
         raise
 
 
-def decompress_file_gzip_base64(compressed_file_body: str) -> str:
+def decompress_file_gzip_base64(compressed_file_body: str) -> bytes:
     try:
         # 1. convert string to bytes
         # 2. decode base64 data

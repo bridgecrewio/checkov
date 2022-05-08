@@ -11,7 +11,7 @@ class LessThanOrEqualAttributeSolver(GreaterThanAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        if vertex.get(attribute) is None:
+        if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
 
         return not super()._get_operation(vertex, attribute)

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 from json import JSONDecoder
 from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
-from typing import List
+from typing import List, Any
 
 from json.scanner import NUMBER_RE
 
@@ -219,7 +221,7 @@ class Decoder(JSONDecoder):
         self.scan_once = py_make_scanner(self)
         self.newline_indexes = []
 
-    def decode(self, s):
+    def decode(self, s: str, _w: None = None) -> Any:
         """Overridden to retrieve indexes """
         self.newline_indexes = find_indexes(s)
         obj = super().decode(s)
