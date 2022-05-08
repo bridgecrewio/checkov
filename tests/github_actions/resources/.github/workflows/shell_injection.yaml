@@ -46,6 +46,9 @@ jobs:
         - name: Show issue title
           run: |
             echo "${{ github.event.issue.title }}"
+        - name: Show issue title no spaces
+          run: |
+            echo "${{github.event.issue.title}}"
         - name: Download and Extract Artifacts
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
