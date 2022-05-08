@@ -80,4 +80,4 @@ class BaseRbacK8sCheck(BaseK8Check):
 
     # Check if value is a K8s RBAC wildcard
     def is_wildcard(self, value: str) -> bool:
-        return value == "*" or value == "*/*"
+        return value == "*"
