@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 _ScannerCallableAlias: TypeAlias = Callable[
-    [str, "BaseCheck", "_SkippedCheck", dict[str, Any], str, str, dict[str, Any]], None
+    [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
 

@@ -42,7 +42,7 @@ class StrNode(str):
         return self
 
 
-class DictNode(dict[str, Any]):
+class DictNode("dict[str, Any]"):
     """Node class created based on the input class"""
 
     def __init__(self, x: dict[str, Any], start_mark: Mark, end_mark: Mark):
@@ -147,7 +147,7 @@ class DictNode(dict[str, Any]):
         raise TemplateAttributeError(f'{name} is invalid')
 
 
-class ListNode(list[Any]):
+class ListNode("list[Any]"):
     """Node class created based on the input class"""
 
     def __init__(self, x: list[Any], start_mark: Mark, end_mark: Mark) -> None:
