@@ -16,7 +16,7 @@ class Registry(BaseCheckRegistry):
         super().__init__()
 
     def register(self, check: BaseCheck) -> None:
-        if self._BaseCheckRegistry__loading_external_checks:
+        if self._BaseCheckRegistry__loading_external_checks:  # type:ignore[attr-defined]  # they exist
             RunnerFilter.notify_external_check(check.id)
 
         for entity in check.supported_entities:
@@ -25,9 +25,9 @@ class Registry(BaseCheckRegistry):
                 checks[entity].append(check)
                 self.entity_to_check_map[entity].add(check.id)
 
-        self._BaseCheckRegistry__all_registered_checks.append(check)
+        self._BaseCheckRegistry__all_registered_checks.append(check)  # type:ignore[attr-defined]  # they exist
 
-    def extract_entity_details(self, entity: dict[str, ParameterAttributes]) -> tuple[str, str, ParameterAttributes]:
+    def extract_entity_details(self, entity: dict[str, ParameterAttributes]) -> tuple[str, str, ParameterAttributes]:  # type:ignore[override]  # it's ok
         param_name, param = next(iter(entity.items()))
         param_type = param["type"]
         return param_type, param_name, param

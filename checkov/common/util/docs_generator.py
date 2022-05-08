@@ -56,7 +56,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> \
         List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
-    printable_checks_list = []
+    printable_checks_list: list[tuple[str, str, str, str, str]] = []
 
     def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str) -> None:
         nonlocal printable_checks_list
@@ -65,10 +65,10 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
                 printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
             for check in registry.checks:
-                if not check.resource_types:
+                if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
                     # only for platform custom polices with resource_types == all
-                    check.resource_types = ['all']
-                for rt in check.resource_types:
+                    check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
                     printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
 
     if any(x in framework_list for x in ("all", "terraform")):
@@ -120,7 +120,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
             if use_bc_ids:
                 check_id = metadata_integration.get_bc_id(check_id)
             printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
-    return sorted(printable_checks_list, key=get_compare_key)
+    return sorted(printable_checks_list, key=get_compare_key)  # type:ignore[arg-type]
 
 
 if __name__ == '__main__':

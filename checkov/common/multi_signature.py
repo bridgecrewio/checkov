@@ -3,17 +3,31 @@ from __future__ import annotations
 import inspect
 from abc import ABCMeta
 from functools import update_wrapper
-from typing import Callable, Any, TypeVar
+from types import CodeType
+from typing import Callable, Any, TypeVar, cast
+from typing_extensions import Protocol
 
 _MultiT = TypeVar("_MultiT")
-_MetaT = TypeVar("_MetaT", bound="MultiSignatureMeta")
+
+
+class _MultiSignataureMethod(Protocol):
+    __code__: CodeType
+    __multi_signature_wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., _MultiT]]
+
+    def __call__(self, *args: Any, **kwargs: Any) -> _MultiT:
+        ...
+
+    def add_signature(self, *, args: list[str], varargs: Any = None, varkw: Any = None) -> Callable[[Callable[..., _MultiT]], Callable[..., _MultiT]]:
+        ...
 
 
 class MultiSignatureMeta(ABCMeta):
-    def __new__(mcs, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> _MetaT:
+    __multi_signature_methods__: dict[str, _MultiSignataureMethod]
+
+    def __new__(mcs, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> MultiSignatureMeta:
         cls = super().__new__(mcs, name, bases, namespace, **kwargs)
-        multi_signatures = {
-            name: value
+        multi_signatures: dict[str, _MultiSignataureMethod] = {
+            name: value  # type:ignore[misc]
             for name, value in namespace.items()
             if hasattr(value, "__multi_signature_wrappers__") and inspect.isfunction(value)
             # isfunction, because function is not bound yet
@@ -22,13 +36,13 @@ class MultiSignatureMeta(ABCMeta):
         for base in bases:
             for name, value in getattr(base, "__multi_signature_methods__", {}).items():
                 if inspect.isfunction(value) and hasattr(value, "__multi_signature_wrappers__"):
-                    multi_signature_wrappers = getattr(value, "__multi_signature_wrappers__", False)
+                    multi_signature_wrappers = getattr(value, "__multi_signature_wrappers__", {})
                     if multi_signature_wrappers:
                         current_function = multi_signatures.get(name)
                         if current_function:
                             current_function.__multi_signature_wrappers__.update(multi_signature_wrappers)
                         else:
-                            multi_signatures[name] = value
+                            multi_signatures[name] = cast(_MultiSignataureMethod, value)
 
         cls.__multi_signature_methods__ = multi_signatures
         for name, value in multi_signatures.items():
@@ -39,15 +53,15 @@ class MultiSignatureMeta(ABCMeta):
                 continue
             # convert args into a tuple
             args, varargs, varkw = arguments
-            arguments = tuple(args), varargs, varkw
-            get_wrapper = value.__multi_signature_wrappers__.get(tuple(arguments), None)
+            multi_signature_key = tuple(args), varargs, varkw
+            get_wrapper = value.__multi_signature_wrappers__.get(tuple(multi_signature_key), None)
             if get_wrapper:
                 wrapper = get_wrapper(cls, wrapped)
                 update_wrapper(wrapper, wrapped)
                 setattr(cls, name, wrapper)
             else:
                 # unknown implementation
-                raise NotImplementedError(f"The signature {arguments} for {name} is not supported.")
+                raise NotImplementedError(f"The signature {multi_signature_key} for {name} is not supported.")
 
         return cls
 
@@ -64,10 +78,10 @@ class multi_signature:
     def __init__(self) -> None:
         self.__wrappers__: dict[Any, Callable[..., _MultiT]] = {}
 
-    def __call__(self, fn: Callable[..., _MultiT]) -> Callable[..., _MultiT]:
-        fn.add_signature = self.add_signature
-        fn.__multi_signature_wrappers__ = self.__wrappers__
-        return fn
+    def __call__(self, fn: Callable[..., _MultiT]) -> _MultiSignataureMethod:
+        fn.add_signature = self.add_signature  # type:ignore[attr-defined]
+        fn.__multi_signature_wrappers__ = self.__wrappers__  # type:ignore[attr-defined]
+        return cast(_MultiSignataureMethod, fn)
 
     def add_signature(
         self, *, args: list[str], varargs: Any = None, varkw: Any = None

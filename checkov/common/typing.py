@@ -1,12 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
+from typing_extensions import TypeAlias
 
 from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
     from checkov.common.models.enums import CheckResult
     from checkov.common.checks.base_check import BaseCheck
+
+
+_ScannerCallableAlias: TypeAlias = Callable[
+    [str, "BaseCheck", "_SkippedCheck", dict[str, Any], str, str, dict[str, Any]], None
+]
 
 
 class _CheckResult(TypedDict, total=False):
