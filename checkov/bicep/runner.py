@@ -60,7 +60,7 @@ class Runner(BaseRunner):
         self.context: dict[str, dict[str, Any]] = {}
         self.definitions: dict[Path, BicepJson] = {}
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
-        self.root_folder: Path | None = None
+        self.root_folder: str | Path | None = None
 
     def run(
         self,
