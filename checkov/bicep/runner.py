@@ -163,7 +163,7 @@ class Runner(BaseRunner):
                                 report.add_record(record=record)
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
-        return f"/{os.path.relpath(str(path), self.root_folder)}"
+        return f"/{os.path.relpath(path, self.root_folder)}"
 
     def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""
