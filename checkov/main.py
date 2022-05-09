@@ -134,9 +134,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
-                                 download_external_modules=convert_str_to_bool(config.download_external_modules),
+                                 download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
                                  external_modules_download_path=config.external_modules_download_path,
-                                 evaluate_variables=convert_str_to_bool(config.evaluate_variables),
+                                 evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package)

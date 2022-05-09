@@ -2,6 +2,7 @@ from checkov.terraform.checks.resource.aws import *  # noqa
 from checkov.terraform.checks.resource.gcp import *  # noqa
 from checkov.terraform.checks.resource.azure import *  # noqa
 from checkov.terraform.checks.resource.github import *  # noqa
+from checkov.terraform.checks.resource.gitlab import *  # noqa
 from checkov.terraform.checks.resource.linode import *  # noqa
 from checkov.terraform.checks.resource.oci import *  # noqa
 from checkov.terraform.checks.resource.openstack import *  # noqa

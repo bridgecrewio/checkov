@@ -80,5 +80,5 @@ class BaseConnectionSolver(BaseSolver):
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError
 
-    def _get_operation(self, *args: Any, **kwargs: Any):
+    def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError

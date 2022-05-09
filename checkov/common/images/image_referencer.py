@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import logging
 from abc import abstractmethod
+from typing import cast
 
 import docker
 
 
 class Image:
-
-    def __init__(self, file_path: str, name: str, image_id: str, start_line: int, end_line: int):
+    def __init__(self, file_path: str, name: str, image_id: str, start_line: int, end_line: int) -> None:
         """
 
         :param file_path: example: 'checkov/integration_tests/example_workflow_file/.github/workflows/vulnerable_container.yaml'
@@ -23,7 +25,6 @@ class Image:
 
 
 class ImageReferencer:
-
     @abstractmethod
     def is_workflow_file(self, file_path: str) -> bool:
         """
@@ -35,7 +36,7 @@ class ImageReferencer:
         return False
 
     @abstractmethod
-    def get_images(self, file_path: str) -> [Image]:
+    def get_images(self, file_path: str) -> list[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -53,7 +54,7 @@ class ImageReferencer:
             logging.info("Pulling docker image {}".format(image_name))
             client = docker.from_env()
             image = client.images.pull(image_name)
-            return image.short_id
+            return cast(str, image.short_id)
         except Exception:
             logging.debug(f"failed to pull docker image={image_name}", exc_info=True)
             return ""

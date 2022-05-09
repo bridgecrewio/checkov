@@ -28,6 +28,7 @@ from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager
 
@@ -54,7 +55,7 @@ class Runner(BaseRunner):
         self.graph_manager: BicepGraphManager = (
             graph_manager if graph_manager else BicepGraphManager(source=source, db_connector=db_connector)
         )
-        self.graph_registry = get_graph_checks_registry(self.check_type)
+        self.graph_registry: Registry = get_graph_checks_registry(self.check_type)
 
         self.context: dict[str, dict[str, Any]] = {}
         self.definitions: dict[Path, BicepJson] = {}

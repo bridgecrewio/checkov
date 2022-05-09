@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from abc import abstractmethod
 from collections.abc import Iterable
@@ -38,7 +40,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.entity_path = ""
         self.entity_type = ""
         self.guideline = guideline
-        self.benchmarks = {}
+        self.benchmarks: dict[str, list[str]] = {}
         self.severity = None
         self.bc_category = None
         if self.guideline:

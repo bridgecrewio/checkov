@@ -14,8 +14,9 @@ class RegexMatchAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         try:
-            return re.match(str(self.value), str(vertex.get(attribute))) is not None
+            return re.match(str(self.value), str(attr)) is not None
         except re.error as e:
-            logging.warn(f'failed to run regex {self.value} for attribute: {vertex.get(attribute)}, ', e)
+            logging.warn(f'failed to run regex {self.value} for attribute: {attr}, ', e)
             return False

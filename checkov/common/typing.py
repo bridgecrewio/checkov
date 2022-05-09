@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Callable
+from typing_extensions import TypeAlias
 
 from typing_extensions import TypedDict
 
@@ -9,11 +10,16 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
 
 
+_ScannerCallableAlias: TypeAlias = Callable[
+    [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
+]
+
+
 class _CheckResult(TypedDict, total=False):
     result: "CheckResult"
     suppress_comment: str
     evaluated_keys: list[str]
-    results_configuration: Optional[dict]
+    results_configuration: dict[str, Any] | None
     check: BaseCheck
 
 

@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 import jsonschema
 from jsonschema import validate
 
 
 class VCSSchema():
-    def __init__(self, schema) -> None:
+    def __init__(self, schema: dict[str, Any]) -> None:
         self.schema = schema
 
-    def validate(self, data) -> bool:
+    def validate(self, data: dict[str, Any]) -> bool:
         try:
             validate(instance=data, schema=self.schema)
         except jsonschema.exceptions.ValidationError:

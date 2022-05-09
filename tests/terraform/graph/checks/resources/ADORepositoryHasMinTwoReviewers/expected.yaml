@@ -1,0 +1,6 @@
+pass:
+    - "azuredevops_git_repository.pass"
+
+fail:
+    - "azuredevops_git_repository.fail"
+    - "azuredevops_git_repository.fail2"

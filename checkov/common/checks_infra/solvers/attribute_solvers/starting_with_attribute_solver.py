@@ -11,5 +11,5 @@ class StartingWithAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        attr = vertex.get(attribute)
+        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         return isinstance(attr, str) and attr.startswith(self.value)

@@ -24,7 +24,7 @@ class UpdateNotAlone(BaseDockerfileCheck):
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
     def scan_entity_conf(self, conf):
-        update_instruction = 0
+        update_instructions = []
         update_cnt = 0
         i = 0
         for instruction in conf:
@@ -33,14 +33,18 @@ class UpdateNotAlone(BaseDockerfileCheck):
 
                 if any(x in content for x in update_commands):
                     update_cnt = update_cnt + 1
-                    update_instruction = i
+                    update_instructions.append(i)
                 if any(x in content for x in install_commands):
                     update_cnt = update_cnt - 1
             i = i + 1
 
         if update_cnt <= 0:
             return CheckResult.PASSED, None
-        return CheckResult.FAILED, conf[update_instruction]
+        output = []
+        for i in update_instructions:
+            output.append(conf[i])
+            
+        return CheckResult.FAILED, output
 
 
 check = UpdateNotAlone()

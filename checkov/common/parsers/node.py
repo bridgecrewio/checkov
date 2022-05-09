@@ -1,5 +1,12 @@
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
+from typing import TYPE_CHECKING, Any, Type, Generator
+
+if TYPE_CHECKING:
+    from yaml._yaml import Mark
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -10,38 +17,35 @@ class TemplateAttributeError(AttributeError):
 
 class StrNode(str):
     """Node class created based on the input class"""
-    def __init__(self, x, start_mark, end_mark):
+
+    def __init__(self, x: str, start_mark: Mark, end_mark: Mark) -> None:
         try:
-            super().__init__(x)
+            super().__init__(x)  # type:ignore[call-arg]
         except TypeError:
             super().__init__()
         self.start_mark = start_mark
         self.end_mark = end_mark
 
     # pylint: disable=bad-classmethod-argument, unused-argument
-    def __new__(cls, x, start_mark=None, end_mark=None):
+    def __new__(cls, x: str, start_mark: Mark | None = None, end_mark: Mark | None = None) -> StrNode:
         return str.__new__(cls, x)
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
+    def __getattr__(self, name: str) -> Any:
+        raise TemplateAttributeError(f'{name} is invalid')
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: dict[int, Any]) -> StrNode:
         result = StrNode(self, self.start_mark, self.end_mark)
         memo[id(self)] = result
         return result
 
-    def __copy__(self):
+    def __copy__(self) -> StrNode:
         return self
-
-    @staticmethod
-    def __name__():
-        return '%s_node' % super().__name__
 
 
 class DictNode(dict):
     """Node class created based on the input class"""
 
-    def __init__(self, x, start_mark, end_mark):
+    def __init__(self, x: dict[str, Any], start_mark: Mark, end_mark: Mark):
         try:
             super().__init__(x)
         except TypeError:
@@ -50,7 +54,7 @@ class DictNode(dict):
         self.end_mark = end_mark
         self.condition_functions = ['Fn::If']
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: dict[int, Any]) -> DictNode:
         result = DictNode(self, self.start_mark, self.end_mark)
         memo[id(self)] = result
         for k, v in self.items():
@@ -58,10 +62,10 @@ class DictNode(dict):
 
         return result
 
-    def __copy__(self):
+    def __copy__(self) -> DictNode:
         return self
 
-    def is_function_returning_object(self, mappings=None):
+    def is_function_returning_object(self, _mappings: Any = None) -> bool:
         """
             Check if an object is using a function that could return an object
             Return True when
@@ -70,7 +74,6 @@ class DictNode(dict):
                 - !FindInMap [mapname, key, value] # or any mapname, key, value
             Otherwise False
         """
-        mappings = mappings or {}
         if len(self) == 1:
             for k, v in self.items():
                 if k in ['Fn::Select']:
@@ -85,16 +88,17 @@ class DictNode(dict):
 
         return False
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Any = None) -> Any:
         """ Override the default get """
         if isinstance(default, dict):
             default = DictNode(default, self.start_mark, self.end_mark)
         return super().get(key, default)
 
-    def get_safe(self, key, default=None, path=None, type_t=()):
-        """
-            Get values in format
-        """
+    def get_safe(
+        self, key: str, default: Any = None, path: list[str] | None = None, type_t: Type[tuple[Any, ...]] = tuple
+    ) -> list[tuple[tuple[Any, ...], list[str]]]:
+        """Get values in format"""
+
         path = path or []
         value = self.get(key, default)
         if not isinstance(value, dict):
@@ -108,8 +112,11 @@ class DictNode(dict):
 
         return results
 
-    def items_safe(self, path=None, type_t=()):
+    def items_safe(
+        self, path: list[int | str] | None = None, type_t: Type[tuple[Any, ...]] = tuple
+    ) -> Generator[tuple[Any, ...], Any, None]:
         """Get items while handling IFs"""
+
         path = path or []
         if len(self) == 1:
             for k, v in self.items():
@@ -117,7 +124,7 @@ class DictNode(dict):
                     if isinstance(v, list):
                         if len(v) == 3:
                             for i, if_v in enumerate(v[1:]):
-                                if isinstance(if_v, dict):
+                                if isinstance(if_v, DictNode):
                                     # yield from if_v.items_safe(path[:] + [k, i - 1])
                                     # Python 2.7 support
                                     for items, p in if_v.items_safe(path[:] + [k, i + 1]):
@@ -136,18 +143,14 @@ class DictNode(dict):
             if isinstance(self, type_t) or not type_t:
                 yield self, path[:]
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
-
-    @staticmethod
-    def __name__():
-        return f'{super().__name__}_node'
+    def __getattr__(self, name: str) -> Any:
+        raise TemplateAttributeError(f'{name} is invalid')
 
 
 class ListNode(list):
     """Node class created based on the input class"""
 
-    def __init__(self, x, start_mark, end_mark):
+    def __init__(self, x: list[Any], start_mark: Mark, end_mark: Mark) -> None:
         try:
             super().__init__(x)
         except TypeError:
@@ -156,7 +159,7 @@ class ListNode(list):
         self.end_mark = end_mark
         self.condition_functions = ['Fn::If']
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: dict[int, Any]) -> ListNode:
         result = ListNode([], self.start_mark, self.end_mark)
         memo[id(self)] = result
         for v in self:
@@ -164,14 +167,17 @@ class ListNode(list):
 
         return result
 
-    def __copy__(self):
+    def __copy__(self) -> ListNode:
         return self
 
-    def items_safe(self, path=None, type_t=()):
+    def items_safe(
+        self, path: list[int | str] | None = None, type_t: Type[tuple[Any, ...]] = tuple
+    ) -> Generator[tuple[Any, ...], Any, None]:
         """Get items while handling IFs"""
+
         path = path or []
         for i, v in enumerate(self):
-            if isinstance(v, dict):
+            if isinstance(v, DictNode):
                 for items, p in v.items_safe(path[:] + [i]):
                     if isinstance(items, type_t) or not type_t:
                         yield items, p
@@ -179,9 +185,5 @@ class ListNode(list):
                 if isinstance(v, type_t) or not type_t:
                     yield v, path[:] + [i]
 
-    def __getattr__(self, name):
-        raise TemplateAttributeError(f'{self.__name__}.{name} is invalid')
-
-    @staticmethod
-    def __name__():
-        return f'{super().__name__}_node'
+    def __getattr__(self, name: str) -> Any:
+        raise TemplateAttributeError(f'{name} is invalid')

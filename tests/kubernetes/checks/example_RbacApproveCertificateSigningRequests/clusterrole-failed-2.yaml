@@ -6,5 +6,5 @@ metadata:
   namespace: test
 rules:
 - apiGroups: ["certificates.k8s.io"]
-  resources: ["*/*"]
+  resources: ["*"]
   verbs: ["*"]

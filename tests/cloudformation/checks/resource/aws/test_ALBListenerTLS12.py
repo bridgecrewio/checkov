@@ -18,21 +18,27 @@ class TestALBListenerTLS12(unittest.TestCase):
 
         passing_resources = {
             'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSPASSED1',
-            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSPASSED2',
-            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPPASSED3'
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPPASSED2',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSED1',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSED2',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSPASSED3',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTCPPASSED4'
         }
 
         failing_resources = {
             'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSFAILED1',
-            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSFAILED2'
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPSFAILED2',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSFAILED1',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSFAILED2',
+            'AWS::ElasticLoadBalancingV2::Listener.ListenerTLSFAILED3'
         }
 
         unknown_resource = 'AWS::ElasticLoadBalancingV2::Listener.ListenerHTTPUnknown'
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 3)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['passed'], passing_resources.__len__())
+        self.assertEqual(summary['failed'], failing_resources.__len__())
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
         self.assertNotIn(unknown_resource, passed_check_resources)

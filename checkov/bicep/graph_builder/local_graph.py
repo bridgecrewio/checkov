@@ -280,6 +280,9 @@ class BicepLocalGraph(LocalGraph):
                 BicepLocalGraph.update_config_attribute(config[key], ".".join(key_parts[1:]), new_value)
         elif isinstance(config, list):
             key_idx = force_int(key_parts[0])
+            if key_idx is None:
+                return
+
             if len(key_parts) == 1:
                 BicepLocalGraph.update_config_value(config=config, key=key_idx, new_value=new_value)
                 return

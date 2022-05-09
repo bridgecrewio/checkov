@@ -64,7 +64,7 @@ def is_hash(s: str) -> bool:
     return any(pattern.search(s) for pattern in _hash_patterns)
 
 
-def string_has_secrets(s: str, *categories) -> bool:
+def string_has_secrets(s: str, *categories: str) -> bool:
     """
     Check whether the specified string has any matches for the regexes in the specified category(ies).
 
@@ -82,8 +82,8 @@ def string_has_secrets(s: str, *categories) -> bool:
 
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
-    if not categories or 'all' in categories:
-        categories = ['all']
+    if not categories or "all" in categories:
+        categories = ("all",)
 
     if is_hash(s):
         return False
