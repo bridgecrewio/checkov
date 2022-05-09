@@ -30,6 +30,7 @@ from checkov.runner_filter import RunnerFilter
                     "github_configuration",
                     "github_actions",
                     "gitlab_configuration",
+                    "gitlab_ci",
                     "bitbucket_configuration",
                     "bitbucket_pipelines",
                     "kustomize",
