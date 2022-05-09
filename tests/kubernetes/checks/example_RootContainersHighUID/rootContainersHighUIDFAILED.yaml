@@ -71,3 +71,20 @@ spec:
   - name: main2
     image: alpine
     command: ["/bin/sleep", "999999"]
+---
+# Pod securityContext is not a dict (FAILED)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod4
+spec:
+  securityContext:
+    runAsUser:65534
+    fsGroup:65534
+  containers:
+  - name: main
+    image: alpine
+    command: ["/bin/sleep", "999999"]
+  - name: main2
+    image: alpine
+    command: ["/bin/sleep", "999999"]
