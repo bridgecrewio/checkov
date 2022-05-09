@@ -90,4 +90,3 @@ class Runner(YamlRunner, ImageReferencer):
                                 images.add(image_obj)
                             imagename = ""
         return images
-
