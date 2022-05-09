@@ -11,7 +11,7 @@ class TestModuleFinder(unittest.TestCase):
     @staticmethod
     def get_src_dir():
         cur_dir = os.path.abspath(os.path.dirname(__file__))
-        return os.path.join(cur_dir, 'data', 'tf_module_downloader')
+        return os.path.join(cur_dir, 'data', 'tf_module_downloader', 'public_modules')
 
     def test_module_finder(self):
         modules = find_modules(self.get_src_dir())

@@ -5,13 +5,13 @@ from typing import List, Dict
 import requests
 from requests.exceptions import HTTPError
 
+from checkov.common.goget.registry.get_registry import RegistryGetter
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints,
 )
-from checkov.common.util.file_utils import extract_tar_archive
 
 
 class RegistryLoader(ModuleLoader):
@@ -58,8 +58,8 @@ class RegistryLoader(ModuleLoader):
             response.raise_for_status()
         except HTTPError as e:
             self.logger.debug(e)
-            if response.status_code != HTTPStatus.OK:
-                return False
+        if response.status_code != HTTPStatus.OK:
+            return False
         else:
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
@@ -82,11 +82,13 @@ class RegistryLoader(ModuleLoader):
                 return ModuleContent(dir=None)
         else:
             # https://www.terraform.io/registry/api-docs#download-source-code-for-a-specific-module-version
-            module_source_url = response.headers.get('X-Terraform-Get', '')
-            self.logger.debug(f"Cloning module from: X-Terraform-Get: {module_source_url}")
-            if module_source_url.startswith("https://archivist.terraform.io/v1/object"):
+            module_download_url = response.headers.get('X-Terraform-Get', '')
+            self.logger.debug(f"Cloning module from: X-Terraform-Get: {module_download_url}")
+            if module_download_url.startswith("https://archivist.terraform.io/v1/object"):
                 try:
-                    self._download_registry_module_archive(module_source_url)
+                    registry_getter = RegistryGetter(module_download_url)
+                    registry_getter.temp_dir = self.dest_dir
+                    registry_getter.do_get()
                     return_dir = self.dest_dir
                 except Exception as e:
                     str_e = str(e)
@@ -131,16 +133,9 @@ class RegistryLoader(ModuleLoader):
             self.module_source = module_source_components[0]
             self.dest_dir = self.dest_dir.split("//")[0]
             self.inner_module = module_source_components[1]
-
-    def _download_registry_module_archive(self, module_source_url) -> None:
-        download_path = os.path.join(self.dest_dir, 'module_source.tar.gz')
-        with requests.get(module_source_url, stream=True) as r:
-            r.raise_for_status()
-            os.makedirs(os.path.dirname(download_path), exist_ok=True)
-            with open(download_path, 'wb+') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-        extract_tar_archive(source_path=download_path, dest_path=os.path.dirname(download_path))
+        else:
+            self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name,
+                                         *self.module_source.split("/"), self.version)
 
 
 loader = RegistryLoader()

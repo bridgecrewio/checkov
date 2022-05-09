@@ -10,7 +10,7 @@ class GithubAccessTokenLoader(GenericGitLoader):
 
     def _is_matching_loader(self) -> bool:
         if self.token:
-            self.logger.debug("GITHUB_TOKEN found. Attempting to clone module using HTTP basic authentication.")
+            self.logger.debug("GITHUB_PAT found. Attempting to clone module using HTTP basic authentication.")
             if self.module_source.startswith("github.com"):
                 self.module_source = f"git::https://{self.username}:{self.token}@{self.module_source}"
                 return True
