@@ -35,12 +35,8 @@ class BaseK8sRootContainerCheck(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf:
-                if "jobTemplate" in conf["spec"]:
-                    if "spec" in conf["spec"]["jobTemplate"]:
-                        if "template" in conf["spec"]["jobTemplate"]["spec"]:
-                            if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+            if "spec" in conf and "jobTemplate" in conf["spec"] and "spec" in conf["spec"]["jobTemplate"] and "template" in conf["spec"]["jobTemplate"]["spec"] and "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
+                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
             inner_spec = self.get_inner_entry(conf, "spec")
             spec = inner_spec if inner_spec else spec
@@ -48,12 +44,11 @@ class BaseK8sRootContainerCheck(BaseK8Check):
 
     @staticmethod
     def check_runAsNonRoot(spec):
-        if spec.get("securityContext"):
-            if "runAsNonRoot" in spec["securityContext"]:
-                if spec["securityContext"]["runAsNonRoot"]:
-                    return "PASSED"
-                else:
-                    return "FAILED"
+        if spec.get("securityContext") and "runAsNonRoot" in spec["securityContext"]:
+            if spec["securityContext"]["runAsNonRoot"]:
+                return "PASSED"
+            else:
+                return "FAILED"
         return "ABSENT"
 
     @staticmethod
