@@ -22,6 +22,9 @@ class Runner(YamlRunner, ImageReferencer):
         """
         return file_path.endswith((".gitlab-ci.yml",".gitlab-ci.yaml"))
 
+    def included_paths(self):
+        return [".gitlab-ci.yml",".gitlab-ci.yaml"]
+
     def get_images(self, file_path):
         """
         Get container images mentioned in a file
@@ -87,3 +90,4 @@ class Runner(YamlRunner, ImageReferencer):
                                 images.add(image_obj)
                             imagename = ""
         return images
+
