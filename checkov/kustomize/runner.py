@@ -39,6 +39,8 @@ class K8sKustomizeRunner(K8sRunner):
                           report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
                           ):
         super().set_external_data(definitions, context, breadcrumbs)
+        
+    def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
         self.report_mutator_data = report_mutator_data
 
     def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None):
