@@ -7,18 +7,19 @@ from unittest import mock
 
 import pytest
 
-os.environ['GITHUB_PAT'] = 'ghp_xxxxxxxxxxxxxxxxx' # noqa
-os.environ['BITBUCKET_TOKEN'] = 'xxxxxxxxxxxxxxxxx' # noqa
-os.environ['GITLAB_TOKEN'] = 'glpat-xxxxxxxxxxxxxxxxx' # noqa
-
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader
-from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
-from checkov.terraform.module_loading.loaders.github_loader import GithubLoader
-from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
-from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader
-from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader
-from checkov.terraform.module_loading.loaders.gitlab_access_token_loader import GitlabAccessTokenLoader
+
+os.environ['GITHUB_PAT'] = 'ghp_xxxxxxxxxxxxxxxxx'
+os.environ['BITBUCKET_TOKEN'] = 'xxxxxxxxxxxxxxxxx'
+os.environ['GITLAB_TOKEN'] = 'glpat-xxxxxxxxxxxxxxxxx'
+
+from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader # noqa
+from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
+from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
+from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
+from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
+from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
+from checkov.terraform.module_loading.loaders.gitlab_access_token_loader import GitlabAccessTokenLoader # noqa
 
 
 class TestModuleLoaderRegistry(unittest.TestCase):
@@ -28,9 +29,6 @@ class TestModuleLoaderRegistry(unittest.TestCase):
     def tearDown(self) -> None:
         if os.path.exists(self.current_dir):
             shutil.rmtree(self.current_dir)
-        del os.environ['GITHUB_PAT']
-        del os.environ['BITBUCKET_TOKEN']
-        del os.environ['GITLAB_TOKEN']
 
     def test_load_terraform_registry(self):
         registry = ModuleLoaderRegistry(True, DEFAULT_EXTERNAL_MODULES_DIR)
@@ -418,6 +416,7 @@ def test_load_github_private(
     registry = ModuleLoaderRegistry(download_external_modules=True)
 
     # when
+    registry.loaders = [GithubAccessTokenLoader()]
     registry.load(current_dir=str(current_dir), source=source, source_version="latest")
 
     # then
@@ -459,6 +458,7 @@ def test_load_bitbucket_private(
     registry = ModuleLoaderRegistry(download_external_modules=True)
 
     # when
+    registry.loaders = [BitbucketAccessTokenLoader()]
     registry.load(current_dir=str(current_dir), source=source, source_version="latest")
 
     # then
@@ -494,12 +494,12 @@ def test_load_gitlab_private(
         expected_module_source,
         expected_inner_module,
 ):
-    git_getter.side_effect = [Exception(), None]
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
 
     # when
+    registry.loaders = [GitlabAccessTokenLoader()]
     registry.load(current_dir=str(current_dir), source=source, source_version="latest")
 
     # then
