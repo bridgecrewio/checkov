@@ -18,7 +18,7 @@ class ReverseShellNetcat(BaseGithubActionsCheck):
 
     def scan_entity_conf(self, conf):
         run = conf.get("run", "")
-        if (re.search("(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})",run)):
+        if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
             return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
