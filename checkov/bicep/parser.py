@@ -7,7 +7,6 @@ from collections.abc import Collection
 from pathlib import Path
 
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.parsers.node import DictNode
 from checkov.runner_filter import RunnerFilter
 from pycep import BicepParser
 from pycep.typing import BicepJson
@@ -71,12 +70,12 @@ class Parser:
 
     def create_definitions(
             self, root_folder: str,
-            files: Optional["Collection[Path]"] = None,
+            files: "Collection[Path] | None" = None,
             runner_filter: RunnerFilter = RunnerFilter(),
-    ) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
-        definitions = {}
-        definitions_raw = {}
-        parsing_errors = []
+    ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
+        definitions: dict[Path, BicepJson] = {}
+        definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+        parsing_errors: list[str] = []
         if files:
             definitions, definitions_raw, parsing_errors = self.get_files_definitions(file_paths=files)
 
