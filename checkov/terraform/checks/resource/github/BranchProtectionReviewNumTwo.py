@@ -20,7 +20,7 @@ class BranchProtectionReviewNumTwo(BaseResourceCheck):
             review = conf.get("required_pull_request_reviews")[0]
             if review.get("required_approving_review_count") and isinstance(review.get("required_approving_review_count"),list):
                 count = force_int(review.get("required_approving_review_count")[0])
-                if count >= 2:
+                if count and count >= 2:
                     return CheckResult.PASSED
         self.evaluated_keys = ["required_pull_request_reviews/[0]/required_approving_review_count"]
         return CheckResult.FAILED

@@ -18,7 +18,8 @@ class RequireTwoApprovalsToMerge(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         approvals = conf.get("approvals_before_merge")
         if approvals and isinstance(approvals, list):
-            if force_int(approvals[0]) >= 2:
+            num_approvals = force_int(approvals[0])
+            if num_approvals and num_approvals >= 2:
                 return CheckResult.PASSED
         self.evaluated_keys = ["approvals_before_merge"]
         return CheckResult.FAILED
