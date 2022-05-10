@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.util.type_forcers import force_int
 
 
 class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
@@ -36,9 +37,9 @@ class AbsSecurityListUnrestrictedIngress(BaseResourceCheck):
     def scan_protocol_conf(self, rule, protocol_name, idx):
         """ scan udp/tcp_options configuration"""
         if protocol_name in rule:
-            max_port = int(rule[protocol_name][0]['max'][0])
-            min_port = int(rule[protocol_name][0]['min'][0])
-            if min_port <= self.port and max_port >= self.port:
+            max_port = force_int(rule[protocol_name][0]['max'][0])
+            min_port = force_int(rule[protocol_name][0]['min'][0])
+            if min_port and max_port and min_port <= self.port <= max_port:
                 return CheckResult.SKIPPED
         self.evaluated_keys = [f'ingress_security_rules/[0]/[{idx}]/protocol/[0]/{protocol_name}']
         return CheckResult.FAILED
