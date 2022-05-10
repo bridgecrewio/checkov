@@ -95,7 +95,7 @@ class Runner(YamlRunner, ImageReferencer):
             for result in results:
                 image_name = result.get("image", None)
                 if image_name:
-                    image_id = self.pull_image(image_name)
+                    image_id = self.inspect(image_name)
                     image_obj = Image(file_path=file_path, name=image_name, image_id=image_id,
                                       start_line=result["__startline__"],
                                       end_line=result["__endline__"])
@@ -108,7 +108,7 @@ class Runner(YamlRunner, ImageReferencer):
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
-                    image_id = self.pull_image(root_image)
+                    image_id = self.inspect(root_image)
                     image_obj = Image(
                         file_path=file_path,
                         name=root_image,
