@@ -1,4 +1,3 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -20,8 +19,8 @@ class ImagePullPolicyAlways(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf.get('spec')[0]
-        if spec:
+        spec = conf.get('spec', [None])[0]
+        if isinstance(spec, dict) and spec:
             containers = spec.get("container")
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):

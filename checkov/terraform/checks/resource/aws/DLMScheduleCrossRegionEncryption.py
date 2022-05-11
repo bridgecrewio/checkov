@@ -18,11 +18,12 @@ class DLMScheduleCrossRegionEncryption(BaseResourceCheck):
                 schedules = policy.get("schedule")
                 for idx, schedule in enumerate(schedules):
                     if schedule.get("cross_region_copy_rule") and isinstance(schedule.get("cross_region_copy_rule"), list):
-                        cross = schedule.get("cross_region_copy_rule")[0]
-                        if cross.get("encrypted") == [True]:
-                            return CheckResult.PASSED
-                        self.evaluated_keys = [f"policy_details/schedule/{idx}/cross_region_copy_rule/encrypted"]
-                        return CheckResult.FAILED
+                        for c_idx, cross_schedule_rule in enumerate(schedule.get("cross_region_copy_rule")):
+                            if isinstance(cross_schedule_rule, dict) and cross_schedule_rule.get("encrypted") != [True]:
+                                self.evaluated_keys = [
+                                    f"policy_details/schedule/{idx}/cross_region_copy_rule/{c_idx}/encrypted"]
+                                return CheckResult.FAILED
+                        return CheckResult.PASSED
         return CheckResult.UNKNOWN
 
 
