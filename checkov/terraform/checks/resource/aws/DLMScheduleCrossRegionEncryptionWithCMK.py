@@ -19,9 +19,11 @@ class DLMScheduleCrossRegionEncryptionWithCMK(BaseResourceCheck):
                 for idx, schedule in enumerate(schedules):
                     if schedule.get("cross_region_copy_rule") and isinstance(schedule.get("cross_region_copy_rule"), list):
                         for c_idx, cross_schedule_rule in enumerate(schedule.get("cross_region_copy_rule")):
-                            self.evaluated_keys.append(f"policy_details/schedule/{idx}/cross_region_copy_rule/{c_idx}/encrypted")
-                            self.evaluated_keys.append(f"policy_details/schedule/{idx}/cross_region_copy_rule/{c_idx}/cmk_arn")
                             if cross_schedule_rule.get("encrypted") != [True] or not cross_schedule_rule.get("cmk_arn"):
+                                self.evaluated_keys = [
+                                    f"policy_details/schedule/{idx}/cross_region_copy_rule/{c_idx}/encrypted"]
+                                self.evaluated_keys = [
+                                    f"policy_details/schedule/{idx}/cross_region_copy_rule/{c_idx}/cmk_arn"]
                                 return CheckResult.FAILED
                         return CheckResult.PASSED
         return CheckResult.UNKNOWN

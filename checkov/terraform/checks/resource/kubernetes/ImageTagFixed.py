@@ -18,7 +18,7 @@ class ImageTagFixed(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
-        if isinstance(spec, dict):
+        if isinstance(spec, dict) and spec.get("container"):
             containers = spec.get("container")
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):
