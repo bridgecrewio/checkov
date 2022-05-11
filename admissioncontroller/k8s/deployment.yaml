@@ -30,7 +30,7 @@ spec:
           capabilities:
             drop:
               - ALL
-        image: bridgecrew/whorf@sha256:4c2ae16128be068731ce68f18733ad5277ce581c241c64d7ebf295602297327c
+        image: bridgecrew/whorf@sha256:017fa9d8040e6681a6b2d6db8f89877f86836d5a141b9cc931808ee332c5885b
         imagePullPolicy: Always
         resources:
           limits:
