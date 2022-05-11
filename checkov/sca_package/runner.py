@@ -23,7 +23,8 @@ SUPPORTED_PACKAGE_FILES = {
     "pom.xml",
     "requirements.txt",
     "Pipfile.lock",
-    "yarn.lock"
+    "yarn.lock",
+    "Gemfile"
 }
 
 
