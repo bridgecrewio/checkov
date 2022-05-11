@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# In order to run this script set the following environment variables:
+# BC_API_URL - your API url.
+# BC_KEY - generate API key via Platform.
+#
+# The working dir should be the checkov project dir.
+# For example: on /Users/ajbara/dev2/checkov dir run BC_API_URL=https://ws342vj2ze.execute-api.us-west-2.amazonaws.com/v1 BC_KEY=e74ebcef-e4fc-4b35-b7f9-1f5bd5c336a6 LOG_LEVEL=Info /Users/ajbara/dev2/checkov/integration_tests/run_integration_tests.sh
+
+
 
 prepare_data () {
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat.json
