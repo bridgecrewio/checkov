@@ -22,7 +22,8 @@ SUPPORTED_PACKAGE_FILES = {
     "package-lock.json",
     "pom.xml",
     "requirements.txt",
-    "Pipfile.lock"
+    "Pipfile.lock",
+    "yarn.lock"
 }
 
 
