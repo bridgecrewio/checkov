@@ -24,7 +24,7 @@ prepare_data () {
 
   python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   python checkov/main.py -s -d repositories/terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
-#  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True #cant run it on M1 mac
+#  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True #cant run it on M1 mac, docker image node:14.16 needed
   python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
 }
@@ -66,12 +66,6 @@ if [[ -z "$BC_API_URL" ]]; then
    exit 1
 fi
 
-docker run node:14.16
-if [ $? -ne 0 ]; then
-  echo "docker command failed."
-  exit 1
-fi
-
 # Create repositories dir
 mkdir repositories
 cd repositories
@@ -81,7 +75,9 @@ clone_repositories
 
 cd ..
 
-deactivate
+if [ ! -z "$VIRTUAL_ENV" ]; then
+  deactivate
+fi
 
 #activate virtual env
 ENV_PATH=$(pipenv --venv)
