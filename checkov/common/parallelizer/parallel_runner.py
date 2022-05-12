@@ -18,9 +18,10 @@ class ParallelRunner:
         self.os = platform.system()
 
     def run_function(self, func: Callable[[Any], _T], items: List[Any], group_size: Optional[int] = None, run_multiprocess: Optional[bool] = False) -> Iterator[_T]:
-        if not run_multiprocess and self.os == 'Windows' or os.getenv("PYCHARM_HOSTED") == "1":
+        if not run_multiprocess and (self.os == 'Windows' or os.getenv("PYCHARM_HOSTED") == "1"):
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug use multi threading
+            # Override this condition if run_multiprocess is set to True
             return self._run_function_multithreaded(func, items)
         else:
             return self._run_function_multiprocess(func, items, group_size)
