@@ -193,7 +193,7 @@ class Runner(BaseRunner):
                 return list()
 
         results = parallel_runner.run_function(
-            lambda f: list(_safe_scan(f)), files_to_scan)
+            lambda f: list(_safe_scan(f)), files_to_scan, run_multiprocess=True)
         for secrets_results in results:
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
