@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 import logging
+from collections.abc import Collection
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
