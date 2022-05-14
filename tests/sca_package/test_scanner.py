@@ -61,7 +61,7 @@ def test_run_scan_fail_on_scan(mock_bc_integration):
         json={
             "outputType": "Error",
             "outputData": "error_message"
-            },
+        },
         status=400,
     )
 

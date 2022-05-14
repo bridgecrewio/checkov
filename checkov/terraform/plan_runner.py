@@ -141,8 +141,9 @@ class Runner(TerraformRunner):
                     resource_defintion = resource[resource_type][resource_name]
                     entity_context['start_line'] = resource_defintion['start_line'][0]
                     entity_context['end_line'] = resource_defintion['end_line'][0]
-                    entity_context['code_lines'] = self.template_lines[
-                                                   entity_context['start_line']:entity_context['end_line']]
+                    entity_context["code_lines"] = self.template_lines[
+                        entity_context["start_line"]: entity_context["end_line"]
+                    ]
                     entity_context['address'] = resource_defintion['__address__']
                     return entity_context
         return entity_context

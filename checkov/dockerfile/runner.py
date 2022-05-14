@@ -114,15 +114,21 @@ class Runner(BaseRunner):
     def build_record(self, report, definitions_raw, docker_file_path, file_abs_path, check, check_result, startline, endline, result_instruction):
         codeblock = []
         self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
-        record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                code_block=codeblock,
-                                file_path=docker_file_path,
-                                file_line_range=[startline + 1,
-                                                 endline + 1],
-                                resource=f"{docker_file_path}.{result_instruction}",
-                                evaluations=None, check_class=check.__class__.__module__,
-                                file_abs_path=file_abs_path, entity_tags=None,
-                                severity=check.severity)
+        record = Record(
+            check_id=check.id,
+            bc_check_id=check.bc_id,
+            check_name=check.name,
+            check_result=check_result,
+            code_block=codeblock,
+            file_path=docker_file_path,
+            file_line_range=[startline + 1, endline + 1],
+            resource=f"{docker_file_path}.{result_instruction}",
+            evaluations=None,
+            check_class=check.__class__.__module__,
+            file_abs_path=file_abs_path,
+            entity_tags=None,
+            severity=check.severity,
+        )
         record.set_guideline(check.guideline)
         report.add_record(record=record)
 
