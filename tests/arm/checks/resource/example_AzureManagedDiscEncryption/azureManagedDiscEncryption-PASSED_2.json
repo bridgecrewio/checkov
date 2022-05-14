@@ -55,9 +55,9 @@
   },
   "resources": [
     {
-      "apiVersion": "2016-04-30-preview",
+      "apiVersion": "2021-12-01",
       "type": "Microsoft.Compute/disks",
-      "name": "enabled",
+      "name": "collectionEnabled",
       "location": "[variables('location')]",
       "properties": {
         "creationData": {
@@ -66,19 +66,21 @@
         },
         "accountType": "[variables('storageAccountType')]",
         "diskSizeGB": "[variables('diskSzie')]",
-        "encryptionSettings": {
+        "encryptionSettingsCollection": {
           "enabled": true,
-          "diskEncryptionKey": {
-            "sourceVault": {
-              "id": "[parameters('keyVaultResourceID')]"
+          "encryptionSettings": {
+            "diskEncryptionKey": {
+              "sourceVault": {
+                "id": "[parameters('keyVaultResourceID')]"
+              },
+              "secretUrl": "[parameters('keyVaultSecretUrl')]"
             },
-            "secretUrl": "[parameters('keyVaultSecretUrl')]"
-          },
-          "keyEncryptionKey": {
-            "sourceVault": {
-              "id": "[parameters('kekVaultResourceID')]"
-            },
-            "keyUrl": "[parameters('kekUrl')]"
+            "keyEncryptionKey": {
+              "sourceVault": {
+                "id": "[parameters('kekVaultResourceID')]"
+              },
+              "keyUrl": "[parameters('kekUrl')]"
+            }
           }
         }
       }
