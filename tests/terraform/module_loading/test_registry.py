@@ -19,7 +19,6 @@ from checkov.terraform.module_loading.loaders.github_loader import GithubLoader 
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
-from checkov.terraform.module_loading.loaders.gitlab_access_token_loader import GitlabAccessTokenLoader # noqa
 
 
 class TestModuleLoaderRegistry(unittest.TestCase):
@@ -469,43 +468,3 @@ def test_load_bitbucket_private(
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
 
-
-@pytest.mark.parametrize(
-    "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
-    [
-        (
-                "gitlab.com/kartikp10/terraform-aws-s3-bucket1",
-                "gitlab.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
-                "https://oauth2:glpat-xxxxxxxxxxxxxxxxx@gitlab.com/kartikp10/terraform-aws-s3-bucket1",
-                "gitlab.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
-                "git::https://oauth2:glpat-xxxxxxxxxxxxxxxxx@gitlab.com/kartikp10/terraform-aws-s3-bucket1",
-                "",
-        )
-    ],
-    ids=["module"],
-)
-@mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
-def test_load_gitlab_private(
-        git_getter,
-        source,
-        expected_content_path,
-        expected_git_url,
-        expected_dest_dir,
-        expected_module_source,
-        expected_inner_module,
-):
-    # given
-    current_dir = Path(__file__).parent / "tmp"
-    registry = ModuleLoaderRegistry(download_external_modules=True)
-
-    # when
-    registry.loaders = [GitlabAccessTokenLoader()]
-    registry.load(current_dir=str(current_dir), source=source, source_version="latest")
-
-    # then
-    git_getter.assert_called_with(expected_git_url, create_clone_and_result_dirs=False)
-
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GitlabAccessTokenLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
