@@ -7,18 +7,66 @@ import os
 import subprocess  # nosec
 import tempfile
 from functools import reduce
-from typing import Any
+from typing import Any, Type, Optional, List
 
 import yaml
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+
+from checkov.common.graph.graph_manager import GraphManager
+
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.registry import registry
+from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
+
+
+class K8sHelmRunner(k8_runner):
+    def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+                 db_connector: NetworkxConnector = NetworkxConnector(),
+                 source: str = "Kubernetes",
+                 graph_manager: Optional[GraphManager] = None,
+                 external_registries: Optional[List[BaseRegistry]] = None) -> None:
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
+        self.chart_dir_and_meta = []
+        self.check_type = CheckType.HELM
+
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                registry.load_external_checks(directory)
+        report = Report(self.check_type)
+        for chart_dir, chart_meta in self.chart_dir_and_meta:
+            try:
+                target_dir = os.path.join(root_folder, chart_dir)
+                chart_results = super().run(target_dir, external_checks_dir=external_checks_dir,
+                                            runner_filter=runner_filter, helmChart=chart_meta['name'])
+                logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
+                report.failed_checks += chart_results.failed_checks
+                report.passed_checks += chart_results.passed_checks
+                report.parsing_errors += chart_results.parsing_errors
+                report.skipped_checks += chart_results.skipped_checks
+                report.resources.update(chart_results.resources)
+
+            except Exception:
+                logging.warning(f"Failed to run Kubernetes runner on chart {chart_meta['name']}", exc_info=True)
+                # with tempfile.TemporaryDirectory() as save_error_dir:
+                # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
+                # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
+                # logging.debug(
+                #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
+                # shutil.move(target_dir, save_error_dir)
+
+                # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+        return report
 
 
 class Runner(BaseRunner):
@@ -29,7 +77,10 @@ class Runner(BaseRunner):
     def __init__(self):
         super().__init__()
         self.file_names = ['Chart.yaml']
-        self.processed_folders_and_chart_meta = []
+        self.target_folder_path = ''
+
+    def get_k8s_target_folder_path(self):
+        return self.target_folder_path
 
     @staticmethod
     def find_chart_directories(root_folder, files, excluded_paths):
@@ -147,11 +198,11 @@ class Runner(BaseRunner):
         chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories)
+        self.target_folder_path = tempfile.mkdtemp()
         for chart_dir, chart_meta in chart_dir_and_meta:
+            target_dir = os.path.join(self.target_folder_path, chart_dir)
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
-            target_dir = tempfile.mkdtemp()
-            self.processed_folders_and_chart_meta.append((target_dir, chart_meta))
             # dependency list is nicer to parse than dependency update.
             helmBinaryListChartDeps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir],
                                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
@@ -186,37 +237,13 @@ class Runner(BaseRunner):
                 )
 
             self._parse_output(target_dir, o)
+            return chart_dir_and_meta
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
-        self.convert_helm_to_k8s(root_folder, files, runner_filter)
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                registry.load_external_checks(directory)
-        report = Report(self.check_type)
-        for target_dir, chart_meta in self.processed_folders_and_chart_meta:
-            try:
-                k8s_runner = k8_runner()
-                chart_results = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir,
-                                               runner_filter=runner_filter, helmChart=chart_meta['name'])
-                logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
-                report.failed_checks += chart_results.failed_checks
-                report.passed_checks += chart_results.passed_checks
-                report.parsing_errors += chart_results.parsing_errors
-                report.skipped_checks += chart_results.skipped_checks
-                report.resources.update(chart_results.resources)
-
-            except Exception:
-                logging.warning(f"Failed to run Kubernetes runner on chart {chart_meta['name']}", exc_info=True)
-                # with tempfile.TemporaryDirectory() as save_error_dir:
-                # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
-                # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
-                # logging.debug(
-                #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
-                # shutil.move(target_dir, save_error_dir)
-
-                # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
-        return report
+        k8s_runner = K8sHelmRunner()
+        k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
+        return k8s_runner.run(k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter))
 
 
 def get_skipped_checks(entity_conf):
