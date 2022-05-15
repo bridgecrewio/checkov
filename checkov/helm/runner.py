@@ -212,7 +212,7 @@ class Runner(BaseRunner):
                     chart_results = k8s_runner.run(target_dir, external_checks_dir=external_checks_dir,
                                                    runner_filter=runner_filter, helmChart=chart_meta['name'])
                     logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
-                    fix_report_paths(chart_results, f'{target_dir}/')
+                    fix_report_paths(chart_results, target_dir)
                     report.failed_checks += chart_results.failed_checks
                     report.passed_checks += chart_results.passed_checks
                     report.parsing_errors += chart_results.parsing_errors
@@ -234,9 +234,9 @@ class Runner(BaseRunner):
 
 def fix_report_paths(report: Report, tmp_dir):
     for check in itertools.chain(report.failed_checks, report.passed_checks):
-        check.repo_file_path = check.repo_file_path.replace(tmp_dir, '')
-        check.file_abs_path = check.file_abs_path.replace(tmp_dir, '')
-    report.resources = {r.replace(tmp_dir, '') for r in report.resources}
+        check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
+        check.file_abs_path = check.file_abs_path.replace(tmp_dir, '', 1)
+    report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
 
 
 def get_skipped_checks(entity_conf):
