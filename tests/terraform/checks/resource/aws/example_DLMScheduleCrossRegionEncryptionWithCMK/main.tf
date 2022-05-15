@@ -35,6 +35,17 @@ resource "aws_dlm_lifecycle_policy" "pass" {
           interval_unit = "DAYS"
         }
       }
+
+      cross_region_copy_rule {
+        target    = "us-west-2"
+        encrypted = true
+        cmk_arn   = aws_kms_key.dlm_cross_region_copy_cmk.arn
+        copy_tags = true
+        retain_rule {
+          interval      = 20
+          interval_unit = "DAYS"
+        }
+      }
     }
 
     target_tags = {
@@ -72,6 +83,17 @@ resource "aws_dlm_lifecycle_policy" "fail" {
       }
 
       copy_tags = false
+
+      cross_region_copy_rule {
+        target    = "us-west-2"
+        encrypted = true
+        cmk_arn   = aws_kms_key.dlm_cross_region_copy_cmk.arn
+        copy_tags = true
+        retain_rule {
+          interval      = 20
+          interval_unit = "DAYS"
+        }
+      }
 
       cross_region_copy_rule {
         target    = "us-west-2"

@@ -5,8 +5,8 @@
   "variables": {},
   "resources": [
     {
-      "name": "testprofile",
-      "type": "microsoft.insights/logprofiles",
+      "name": "low",
+      "type": "Microsoft.Insights/logprofiles",
       "apiVersion": "2016-03-01",
       "location": "[resourceGroup().location]",
       "tags": {},

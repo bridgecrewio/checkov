@@ -13,8 +13,8 @@ class ReadonlyRootFilesystem(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf['spec'][0]
-        if spec.get("container"):
+        spec = conf.get('spec', [None])[0]
+        if isinstance(spec, dict) and spec.get("container"):
             containers = spec.get("container")
 
             for idx, container in enumerate(containers):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import itertools
 import logging
 import operator
 import os
@@ -49,6 +50,7 @@ class K8sHelmRunner(k8_runner):
                 target_dir = os.path.join(root_folder, chart_dir)
                 chart_results = super().run(target_dir, external_checks_dir=external_checks_dir,
                                             runner_filter=runner_filter, helmChart=chart_meta['name'])
+                fix_report_paths(chart_results, root_folder)
                 logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
                 report.failed_checks += chart_results.failed_checks
                 report.passed_checks += chart_results.passed_checks
@@ -244,6 +246,13 @@ class Runner(BaseRunner):
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
         return k8s_runner.run(k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter))
+
+
+def fix_report_paths(report: Report, tmp_dir):
+    for check in itertools.chain(report.failed_checks, report.passed_checks):
+        check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
+        check.file_abs_path = check.file_abs_path.replace(tmp_dir, '', 1)
+    report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
 
 
 def get_skipped_checks(entity_conf):
