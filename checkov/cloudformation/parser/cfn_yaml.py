@@ -81,8 +81,8 @@ class NodeConstructor(SafeConstructor):
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, False)
             value = self.construct_object(value_node, False)
-            if not isinstance(key, collections.Hashable):
-                raise ConstructorError("found unhashable key while constructing yaml map")
+            if isinstance(key, dict):
+                key = frozenset(key.keys()), frozenset(key.values())
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
