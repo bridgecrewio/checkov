@@ -27,6 +27,7 @@ class FixesIntegration(BaseIntegrationFeature):
         self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
     def is_valid(self) -> bool:
+        return True
         return (
             self.bc_integration.is_integration_configured()
             and not self.bc_integration.skip_fixes
@@ -104,6 +105,7 @@ class FixesIntegration(BaseIntegrationFeature):
             logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
             return None
         return fixes[0]
+
 
 
 integration = FixesIntegration(bc_integration)
