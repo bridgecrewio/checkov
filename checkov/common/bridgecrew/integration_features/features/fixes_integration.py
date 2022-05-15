@@ -94,6 +94,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
 
+
         if response.status_code != 200:
             error_message = extract_error_message(response)
             raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
