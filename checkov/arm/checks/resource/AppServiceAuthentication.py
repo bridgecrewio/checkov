@@ -22,7 +22,7 @@ class AppServiceAuthentication(BaseResourceCheck):
                 if "properties" in conf and "enabled" in conf["properties"]:
                     if str(conf["properties"]["enabled"]).lower() == "true":
                         return CheckResult.PASSED
-                return CheckResult.FAILED
+            return CheckResult.FAILED
         elif self.entity_type == "config":
             if "name" in conf and conf["name"] == "authsettings":
                 if "parent_type" in conf:
