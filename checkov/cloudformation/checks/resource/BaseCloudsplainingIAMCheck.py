@@ -1,6 +1,8 @@
 import json
 import logging
 from abc import abstractmethod
+
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -27,8 +29,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
             else:
                 policy_conf = [props_conf]
 
-            # Scan all policies
-            for policy in policy_conf:
+            def _scan_policy(policy):
                 policy_doc_key = 'PolicyDocument'
                 if isinstance(policy, dict) and policy_doc_key in policy.keys():
                     # When using unresolved Cfn functions, policy is an str
@@ -40,12 +41,20 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             policy_statement = PolicyDocument(converted_policy_doc)
                             violations = self.cloudsplaining_analysis(policy_statement)
                             if violations:
-                                logging.debug("detailed cloudsplaining finding: {}",json.dumps(violations))
+                                logging.debug("detailed cloudsplaining finding: {}", json.dumps(violations))
                                 return CheckResult.FAILED
                     except Exception:
                         # this might occur with templated iam policies where ARN is not in place or similar
                         logging.debug("could not run cloudsplaining analysis on policy {}", conf)
                         return CheckResult.UNKNOWN
+
+            # Scan all policies
+            results = parallel_runner.run_function(_scan_policy, policy_conf)
+
+            if CheckResult.FAILED in results:
+                return CheckResult.FAILED
+            elif CheckResult.UNKNOWN in results:
+                return CheckResult.UNKNOWN
             return CheckResult.PASSED
 
     @multi_signature()
