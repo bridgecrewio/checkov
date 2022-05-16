@@ -61,7 +61,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     printable_checks_list: list[tuple[str, str, str, str, str]] = []
     runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies)
 
-    def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str, runner_filter=runner_filter) -> None:
+    def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str, runner_filter: RunnerFilter=runner_filter) -> None:
         nonlocal printable_checks_list
         if isinstance(registry, BaseCheckRegistry):
             for entity, check in registry.all_checks():
