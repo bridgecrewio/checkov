@@ -50,7 +50,7 @@ class K8sHelmRunner(k8_runner):
                 target_dir = os.path.join(root_folder, chart_dir)
                 chart_results = super().run(target_dir, external_checks_dir=external_checks_dir,
                                             runner_filter=runner_filter, helmChart=chart_meta['name'])
-                fix_report_paths(chart_results, root_folder)
+                fix_report_paths(chart_results, target_dir)
                 logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
                 report.failed_checks += chart_results.failed_checks
                 report.passed_checks += chart_results.passed_checks
@@ -198,8 +198,8 @@ class Runner(BaseRunner):
 
     def convert_helm_to_k8s(self, root_folder, files, runner_filter):
         chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
-        chart_dir_and_meta = parallel_runner.run_function(
-            lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories)
+        chart_dir_and_meta = list(parallel_runner.run_function(
+            lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
         self.target_folder_path = tempfile.mkdtemp()
         for chart_dir, chart_meta in chart_dir_and_meta:
             target_dir = os.path.join(self.target_folder_path, chart_dir)
@@ -245,7 +245,7 @@ class Runner(BaseRunner):
             collect_skip_comments=True):
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
-        return k8s_runner.run(k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter))
+        return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
 
 
 def fix_report_paths(report: Report, tmp_dir):
