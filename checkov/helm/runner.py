@@ -206,9 +206,8 @@ class Runner(BaseRunner):
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             # dependency list is nicer to parse than dependency update.
-            helmBinaryListChartDeps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir],
-                                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-            o, e = helmBinaryListChartDeps.communicate()
+            helm_binary_list_chart_deps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+            o, e = helm_binary_list_chart_deps.communicate()
             if e:
                 if "Warning: Dependencies" in str(e, 'utf-8'):
                     logging.info(
