@@ -25,6 +25,8 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 class K8sHelmRunner(k8_runner):
+    check_type = CheckType.HELM
+
     def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
                  db_connector: NetworkxConnector = NetworkxConnector(),
                  source: str = "Kubernetes",
@@ -32,15 +34,15 @@ class K8sHelmRunner(k8_runner):
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta = []
-        self.check_type = CheckType.HELM
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                registry.load_external_checks(directory)
+    def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
+            runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True, helmChart: str = None) -> Report:
         report = Report(self.check_type)
         if not self.chart_dir_and_meta:
             return report
+        if external_checks_dir:
+            for directory in external_checks_dir:
+                registry.load_external_checks(directory)
         for chart_dir, chart_meta in self.chart_dir_and_meta:
             try:
                 target_dir = os.path.join(root_folder, chart_dir)
@@ -77,11 +79,11 @@ class Runner(BaseRunner):
         self.file_names = ['Chart.yaml']
         self.target_folder_path = ''
 
-    def get_k8s_target_folder_path(self):
+    def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
 
     @staticmethod
-    def find_chart_directories(root_folder, files, excluded_paths):
+    def find_chart_directories(root_folder: str, files: list[str], excluded_paths: list[str]) -> List[str]:
         chart_directories = []
         if not excluded_paths:
             excluded_paths = []
@@ -101,7 +103,7 @@ class Runner(BaseRunner):
         return chart_directories
 
     @staticmethod
-    def parse_helm_dependency_output(o):
+    def parse_helm_dependency_output(o: bytes) -> dict:
         output = o.decode('utf-8')
         chart_dependencies = {}
         if "WARNING" in output:
@@ -127,7 +129,7 @@ class Runner(BaseRunner):
                 logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
         return chart_meta
 
-    def check_system_deps(self):
+    def check_system_deps(self) -> str | None:
         # Ensure local system dependancies are available and of the correct version.
         # Returns framework names to skip if deps fail.
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
@@ -146,7 +148,7 @@ class Runner(BaseRunner):
             logging.info(f"Error running necessary tools to process {self.check_type} checks.")
             return self.check_type
 
-    def _parse_output(self, target_dir, output):
+    def _parse_output(self, target_dir: str, output: bytes) -> None:
         output = str(output, 'utf-8')
         reader = io.StringIO(output)
         cur_source_file = None
@@ -192,7 +194,7 @@ class Runner(BaseRunner):
         if cur_writer:
             cur_writer.close()
 
-    def convert_helm_to_k8s(self, root_folder, files, runner_filter):
+    def convert_helm_to_k8s(self, root_folder: str, files: list[str], runner_filter: RunnerFilter) -> list[tuple[Any, dict[str, Any]]]:
         chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
@@ -236,21 +238,21 @@ class Runner(BaseRunner):
             self._parse_output(target_dir, o)
             return chart_dir_and_meta
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
-            collect_skip_comments=True):
+    def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
+            runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
         return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
 
 
-def fix_report_paths(report: Report, tmp_dir):
+def fix_report_paths(report: Report, tmp_dir: str) -> None:
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
         check.file_abs_path = check.file_abs_path.replace(tmp_dir, '', 1)
     report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
 
 
-def get_skipped_checks(entity_conf):
+def get_skipped_checks(entity_conf: dict) -> List:
     skipped = []
     metadata = {}
     if not isinstance(entity_conf, dict):
