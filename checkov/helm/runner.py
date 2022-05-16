@@ -48,10 +48,10 @@ class K8sHelmRunner(k8_runner):
                                             runner_filter=runner_filter, helmChart=chart_meta['name'])
                 fix_report_paths(chart_results, target_dir)
                 logging.debug(f"Sucessfully ran k8s scan on {chart_meta['name']}. Scan dir : {target_dir}")
-                report.failed_checks += chart_results.failed_checks
-                report.passed_checks += chart_results.passed_checks
-                report.parsing_errors += chart_results.parsing_errors
-                report.skipped_checks += chart_results.skipped_checks
+                report.failed_checks.extend(chart_results.failed_checks)
+                report.passed_checks.extend(chart_results.passed_checks)
+                report.parsing_errors.extend(chart_results.parsing_errors)
+                report.skipped_checks.extend(chart_results.skipped_checks)
                 report.resources.update(chart_results.resources)
 
             except Exception:
@@ -110,7 +110,7 @@ class Runner(BaseRunner):
         else:
             lines = output.split('\n')
             for line in lines:
-                if line != "" and "NAME" not in line:
+                if line and "NAME" not in line:
                     chart_name, chart_version, chart_repo, chart_status = line.split("\t")
                     chart_dependencies.update({chart_name.rstrip(): {'chart_name': chart_name.rstrip(),
                                                                      'chart_version': chart_version.rstrip(),
