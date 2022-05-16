@@ -3,22 +3,16 @@ from __future__ import annotations
 import io
 import itertools
 import logging
-import operator
 import os
 import subprocess  # nosec
 import tempfile
-from functools import reduce
 from typing import Any, Type, Optional, List
-
 import yaml
+
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-
 from checkov.common.graph.graph_manager import GraphManager
-
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
-
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -279,26 +273,3 @@ def get_skipped_checks(entity_conf):
                     logging.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                     continue
     return skipped
-
-
-def _get_from_dict(data_dict, map_list):
-    return reduce(operator.getitem, map_list, data_dict)
-
-
-def _set_in_dict(data_dict, map_list, value):
-    _get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
-def find_lines(node, kv):
-    if isinstance(node, str):
-        return node
-    if isinstance(node, list):
-        for i in node:
-            for x in find_lines(i, kv):
-                yield x
-    elif isinstance(node, dict):
-        if kv in node:
-            yield node[kv]
-        for j in node.values():
-            for x in find_lines(j, kv):
-                yield x
