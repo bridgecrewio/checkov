@@ -39,6 +39,8 @@ class K8sHelmRunner(k8_runner):
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
         report = Report(self.check_type)
+        if not self.chart_dir_and_meta:
+            return report
         for chart_dir, chart_meta in self.chart_dir_and_meta:
             try:
                 target_dir = os.path.join(root_folder, chart_dir)
