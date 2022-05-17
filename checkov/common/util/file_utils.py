@@ -10,9 +10,8 @@ def convert_to_unix_path(path: str) -> str:
 
 
 def extract_tar_archive(source_path: str, dest_path: str) -> None:
-    tar = tarfile.open(source_path)
-    tar.extractall(path=dest_path)
-    tar.close()
+    with tarfile.open(source_path) as tar:
+        tar.extractall(path=dest_path)
 
 
 def compress_file_gzip_base64(input_path: str) -> str:
