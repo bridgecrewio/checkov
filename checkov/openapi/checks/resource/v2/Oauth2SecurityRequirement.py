@@ -16,7 +16,7 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override] # return type is different than the base class
         security_values = conf.get("security", [{}])
         security_definitions = conf.get("securityDefinitions", {})
         non_oauth2_keys = []
@@ -29,6 +29,8 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
                 non_oauth2_keys.append(auth_key)
 
         for auth_dict in security_values:
+            if not isinstance(auth_dict, dict):
+                return CheckResult.UNKNOWN, conf
             for key, auth_list in auth_dict.items():
                 if key in self.irrelevant_keys:
                     continue

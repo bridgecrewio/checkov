@@ -19,6 +19,7 @@ from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
 from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry
 from checkov.gitlab.registry import registry as gitlab_configuration_registry
+from checkov.gitlab_ci.checks.registry import registry as gitlab_ci_jobs_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
 from checkov.serverless.registry import sls_registry
@@ -98,6 +99,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")
     if any(x in framework_list for x in ("all", "github_actions")):
         add_from_repository(github_actions_jobs_registry, "jobs", "github_actions")
+    if any(x in framework_list for x in ("all", "gitlab_ci")):
+        add_from_repository(gitlab_ci_jobs_registry, "jobs", "gitlab_ci")        
     if any(x in framework_list for x in ("all", "gitlab_configuration")):
         add_from_repository(gitlab_configuration_registry, "gitlab_configuration", "gitlab_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_configuration")):

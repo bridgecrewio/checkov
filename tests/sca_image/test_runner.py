@@ -24,7 +24,7 @@ def test_image_referencer_trigger_image_flow_calls(mocker: MockerFixture, image_
 
     image_id_encoded = quote_plus(image_id)
 
-    mocker.patch('checkov.common.images.image_referencer.ImageReferencer.pull_image', return_value=image_id)
+    mocker.patch('checkov.common.images.image_referencer.ImageReferencer.inspect', return_value=image_id)
     mocker.patch('checkov.sca_image.runner.Runner.execute_scan', return_value=empty_report,
                  side_effect=create_output_path)
 

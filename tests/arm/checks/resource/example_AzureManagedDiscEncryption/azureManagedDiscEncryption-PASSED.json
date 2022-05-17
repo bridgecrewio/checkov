@@ -57,7 +57,7 @@
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/disks",
-      "name": "[parameters('managedDiskName')]",
+      "name": "enabled",
       "location": "[variables('location')]",
       "properties": {
         "creationData": {

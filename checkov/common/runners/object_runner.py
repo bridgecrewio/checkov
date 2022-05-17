@@ -67,8 +67,8 @@ class Runner(BaseRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
                 self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
 
         for file_path in definitions.keys():
@@ -98,6 +98,9 @@ class Runner(BaseRunner):
                 report.add_record(record)
 
         return report
+
+    def included_paths(self):
+        return None
 
     def get_resource(self, file_path: str, key: str, supported_entities: list[str]) -> str:
         return f"{file_path}.{key}"

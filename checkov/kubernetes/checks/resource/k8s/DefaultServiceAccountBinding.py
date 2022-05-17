@@ -18,7 +18,7 @@ class DefaultServiceAccountBinding(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
-        if "subjects" in conf:
+        if "subjects" in conf and isinstance(conf["subjects"], list):
             for subject in conf["subjects"]:
                 if subject["kind"] == "ServiceAccount":
                     if subject["name"] == "default":

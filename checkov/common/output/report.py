@@ -36,6 +36,7 @@ class CheckType:
     GITHUB_CONFIGURATION = "github_configuration"
     GITHUB_ACTIONS = "github_actions"
     GITLAB_CONFIGURATION = "gitlab_configuration"
+    GITLAB_CI = "gitlab_ci"
     BITBUCKET_CONFIGURATION = "bitbucket_configuration"
     HELM = "helm"
     JSON = "json"
