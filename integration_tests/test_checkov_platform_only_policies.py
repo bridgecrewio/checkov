@@ -12,7 +12,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestCheckovPlatformOnlyPolicies(unittest.TestCase):
 
     def test_no_ckv_ids(self):
-        checks_list_path = os.path.join(current_dir, '..', 'checkov_checks_list.txt')
+        checks_list_path = os.path.join(current_dir, 'checkov_checks_list.txt')
         if sys.version_info[1] == 7 and platform.system() == 'Linux':
             with open(checks_list_path, encoding='utf-8') as f:
                 for i, line in enumerate(f):
