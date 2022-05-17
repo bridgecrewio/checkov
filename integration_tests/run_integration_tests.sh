@@ -27,6 +27,7 @@ prepare_data () {
 #  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True #cant run it on M1 mac, docker image node:14.16 needed
   python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
+  python checkov/main.py -s --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
 }
 
 clone_repositories () {
