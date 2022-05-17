@@ -28,8 +28,7 @@ from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.openapi.checks.registry import openapi_registry
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
-    integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
@@ -57,9 +56,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
     print("\n\n---\n\n")
 
 
-def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-               include_all_checkov_policies: bool = True) -> \
-        List[Tuple[str, str, int, int, str]]:
+def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False, include_all_checkov_policies: bool = True) -> List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list: list[tuple[str, str, str, str, str]] = []
     runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies)
@@ -77,8 +74,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                 if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
                     if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
                         # only for platform custom polices with resource_types == all
-                        check.resource_types = [
-                            'all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
                     for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
                         printable_checks_list.append(
                             (check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
