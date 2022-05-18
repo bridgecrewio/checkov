@@ -58,7 +58,7 @@ setup(
         "policyuniverse",
         "typing-extensions>=4.1.0",
         "cachetools",
-        "cyclonedx-python-lib>=0.11.0,<1.0.0",
+        "cyclonedx-python-lib>=2.4.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",

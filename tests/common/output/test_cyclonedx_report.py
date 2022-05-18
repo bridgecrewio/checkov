@@ -1,31 +1,49 @@
-import unittest
-from os.path import dirname, join
+import os
+from pathlib import Path
 
-from checkov.common.runners.runner_registry import RunnerRegistry
-from checkov.runner_filter import RunnerFilter
-from checkov.terraform.plan_runner import Runner as tf_plan_runner
-from checkov.terraform.runner import Runner as tf_graph_runner
+from pytest_mock import MockerFixture
 
-
-class TestCycloneDxReport(unittest.TestCase):
-
-    def test_valid_cyclonedx_bom(self):
-        runners = (tf_graph_runner(), tf_plan_runner(),)
-        registry = RunnerRegistry("", RunnerFilter(), *runners)
-        scan_reports = registry.run(files=[
-            join(dirname(__file__), 'fixtures/main.tf')
-        ])
-
-        self.assertEqual(len(scan_reports), 2)
-        r = scan_reports[0]
-
-        cyclonedx_bom = r.get_cyclonedx_bom()
-        # outputter = get_instance(bom=cyclonedx_bom)
-        # outputter.output_to_file(filename='/tmp/test.xml', allow_overwrite=True)
-        self.assertEqual(len(cyclonedx_bom.get_components()), 1)
-        first_component = cyclonedx_bom.get_components()[0]
-        self.assertEqual(len(first_component.get_vulnerabilities()), 4)
+from checkov.common.output.cyclonedx import CycloneDX
+from checkov.terraform.runner import Runner
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_valid_cyclonedx_bom():
+    # given
+    test_file = Path(__file__).parent / "fixtures/main.tf"
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    # when
+    cyclonedx = CycloneDX(
+        passed_checks=report.passed_checks,
+        failed_checks=report.failed_checks,
+        skipped_checks=report.skipped_checks,
+    )
+    output = cyclonedx.get_xml_output()
+
+    # then
+    assert len(cyclonedx.bom.components) == 1
+    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+
+    assert "http://cyclonedx.org/schema/bom/1.4" in output
+
+
+def test_create_schema_version_1_3(mocker: MockerFixture):
+    # given
+    test_file = Path(__file__).parent / "fixtures/main.tf"
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    mocker.patch.dict(os.environ, {"CHECKOV_CYCLONEDX_SCHEMA_VERSION": "1.3"})
+
+    # when
+    cyclonedx = CycloneDX(
+        passed_checks=report.passed_checks,
+        failed_checks=report.failed_checks,
+        skipped_checks=report.skipped_checks,
+    )
+    output = cyclonedx.get_xml_output()
+
+    # then
+    assert len(cyclonedx.bom.components) == 1
+    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+
+    assert "http://cyclonedx.org/schema/bom/1.3" in output
