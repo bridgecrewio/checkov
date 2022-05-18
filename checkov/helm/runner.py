@@ -45,7 +45,7 @@ class K8sHelmRunner(k8_runner):
                 registry.load_external_checks(directory)
         for chart_dir, chart_meta in self.chart_dir_and_meta:
             try:
-                target_dir = os.path.join(root_folder, chart_dir)
+                target_dir = f'{root_folder}{chart_dir}'
                 chart_results = super().run(target_dir, external_checks_dir=external_checks_dir,
                                             runner_filter=runner_filter, helmChart=chart_meta['name'])
                 fix_report_paths(chart_results, target_dir)
@@ -181,7 +181,9 @@ class Runner(BaseRunner):
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
         self.target_folder_path = tempfile.mkdtemp()
+        processed_chart_dir_and_meta = []
         for chart_dir, chart_meta in chart_dir_and_meta:
+            processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
             target_dir = chart_dir.replace(root_folder, self.target_folder_path)
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
@@ -218,7 +220,7 @@ class Runner(BaseRunner):
                 )
 
             self._parse_output(target_dir, o)
-        return chart_dir_and_meta
+        return processed_chart_dir_and_meta
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
