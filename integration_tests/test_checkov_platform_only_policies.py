@@ -20,7 +20,7 @@ class TestCheckovPlatformOnlyPolicies(unittest.TestCase):
                         # skip the header lines
                         continue
                     line = "".join(line.split())
-                    if type(line) == str and line:
+                    if line and isinstance(line, str):
                         if line == "---":
                             # end of table
                             continue
