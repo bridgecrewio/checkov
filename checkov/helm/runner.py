@@ -45,7 +45,7 @@ class K8sHelmRunner(k8_runner):
                 registry.load_external_checks(directory)
         for chart_dir, chart_meta in self.chart_dir_and_meta:
             try:
-                target_dir = os.path.join(root_folder, chart_dir)
+                target_dir = f'{root_folder}{chart_dir}'
                 chart_results = super().run(target_dir, external_checks_dir=external_checks_dir,
                                             runner_filter=runner_filter, helmChart=chart_meta['name'])
                 fix_report_paths(chart_results, target_dir)
@@ -101,24 +101,6 @@ class Runner(BaseRunner):
                     chart_directories.append(root)
 
         return chart_directories
-
-    @staticmethod
-    def parse_helm_dependency_output(o: bytes) -> dict:
-        output = o.decode('utf-8')
-        chart_dependencies = {}
-        if "WARNING" in output:
-            # Helm  output showing no deps, example: 'WARNING: no dependencies at helm-charts/charts/prometheus-kafka-exporter/charts\n'
-            pass
-        else:
-            lines = output.split('\n')
-            for line in lines:
-                if line and "NAME" not in line:
-                    chart_name, chart_version, chart_repo, chart_status = line.split("\t")
-                    chart_dependencies.update({chart_name.rstrip(): {'chart_name': chart_name.rstrip(),
-                                                                     'chart_version': chart_version.rstrip(),
-                                                                     'chart_repo': chart_repo.rstrip(),
-                                                                     'chart_status': chart_status.rstrip()}})
-        return chart_dependencies
 
     @staticmethod
     def parse_helm_chart_details(chart_path: str) -> dict[str, Any]:
@@ -199,13 +181,17 @@ class Runner(BaseRunner):
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
         self.target_folder_path = tempfile.mkdtemp()
+        processed_chart_dir_and_meta = []
         for chart_dir, chart_meta in chart_dir_and_meta:
-            target_dir = os.path.join(self.target_folder_path, chart_dir)
+            processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
+            target_dir = chart_dir.replace(root_folder, self.target_folder_path)
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             # dependency list is nicer to parse than dependency update.
             helm_binary_list_chart_deps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = helm_binary_list_chart_deps.communicate()
+            logging.debug(
+                f"Ran helm command to get dependency output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
             if e:
                 if "Warning: Dependencies" in str(e, 'utf-8'):
                     logging.info(
@@ -213,8 +199,6 @@ class Runner(BaseRunner):
                 else:
                     logging.info(
                         f"Error processing helm dependancies for {chart_meta['name']} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
-
-            self.parse_helm_dependency_output(o)
 
             helm_command_args = [self.helm_command, 'template', '--dependency-update', chart_dir]
             if runner_filter.var_files:
@@ -227,7 +211,7 @@ class Runner(BaseRunner):
                 proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 logging.debug(
-                    f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}")
+                    f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
 
             except Exception:
                 logging.info(
@@ -236,7 +220,7 @@ class Runner(BaseRunner):
                 )
 
             self._parse_output(target_dir, o)
-            return chart_dir_and_meta
+        return processed_chart_dir_and_meta
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
