@@ -107,26 +107,28 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
-                else: 
-                    kustomizeResourceID = "Unknown error. This is a bug."
-                code_lines = entity_context.get("code_lines")
-                file_line_range = self.line_range(code_lines)
+                    code_lines = entity_context.get("code_lines")
+                    file_line_range = self.line_range(code_lines)
 
-                record = Record(
-                    check_id=check.id,
-                    check_name=check.name,
-                    check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
-                    file_path=realKustomizeEnvMetadata['filePath'],
-                    file_line_range=file_line_range,
-                    resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
-                    evaluations={},
-                    check_class=check.__class__.__module__,
-                    file_abs_path=entity_file_abs_path,
-                    severity=check.severity
-                )
-                record.set_guideline(check.guideline)
-                report.add_record(record=record)
+                    record = Record(
+                        check_id=check.id,
+                        check_name=check.name,
+                        check_result=check_result,
+                        code_block=entity_context.get("code_lines"),
+                        file_path=realKustomizeEnvMetadata['filePath'],
+                        file_line_range=file_line_range,
+                        resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
+                        evaluations={},
+                        check_class=check.__class__.__module__,
+                        file_abs_path=entity_file_abs_path,
+                        severity=check.severity
+                    )
+                    record.set_guideline(check.guideline)
+                    report.add_record(record=record)
+                else:
+                    logging.warning(
+                        f"entity_file_abs_path {entity_file_abs_path} is not present in kustomizeFileMappings: {json.dumps(kustomizeFileMappings)}")
+
 
         return report
 
