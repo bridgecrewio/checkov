@@ -39,10 +39,10 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                 if not isinstance(policy, dict) or policy_doc_key not in policy.keys():
                     continue
                 policy_statement = None
-                try:
+                policy_name = policy.get("PolicyName")
+                if isinstance(policy_name, str):
                     policy_statement = self.policy_document_cache.get(self.entity_path, {}).get(policy.get("PolicyName"))
-                except Exception:
-                    pass
+
                 try:
                     if not policy_statement:
                         # When using unresolved Cfn functions, policy is an str
