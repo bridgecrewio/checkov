@@ -467,4 +467,3 @@ def test_load_bitbucket_private(
     assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
-
