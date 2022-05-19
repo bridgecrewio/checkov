@@ -1,5 +1,4 @@
 import os
-from abc import abstractmethod
 
 BC_FROM_BRANCH = os.getenv('BC_FROM_BRANCH', "")
 BC_TO_BRANCH = os.getenv('BC_TO_BRANCH', "")
@@ -14,4 +13,3 @@ BC_AUTHOR_URL = os.getenv('BC_AUTHOR_URL', "")
 BC_RUN_ID = os.getenv('BC_RUN_ID', "")
 BC_RUN_URL = os.getenv('BC_RUN_URL', "")
 BC_REPOSITORY_URL = os.getenv('BC_REPOSITORY_URL', "")
-

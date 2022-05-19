@@ -22,9 +22,6 @@ from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 from checkov.common.bridgecrew.run_metadata.registry import registry
-
-CI_METADATA_EXTRACTOR = registry.get_extractor()
-
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
@@ -57,6 +54,7 @@ SIGNUP_HEADER = merge_dicts({
     'Accept': 'application/json',
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
+CI_METADATA_EXTRACTOR = registry.get_extractor()
 
 
 class BcPlatformIntegration(object):
