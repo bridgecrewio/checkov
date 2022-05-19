@@ -23,5 +23,8 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "private_ipv6_google_access"
 
+    def get_expected_values(self):
+        return ["ENABLE_OUTBOUND_VM_ACCESS_TO_GOOGLE", "ENABLE_BIDIRECTIONAL_ACCESS_TO_GOOGLE"]
+
 
 check = GoogleSubnetworkLoggingEnabled()
