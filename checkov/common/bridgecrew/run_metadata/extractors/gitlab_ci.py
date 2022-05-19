@@ -1,9 +1,9 @@
 import os
 
-from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import AbsRunMetaDataExtractor
+from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import RunMetaDataExtractor
 
 
-class GitLabRunMetadataExtractor(AbsRunMetaDataExtractor):
+class GitLabRunMetadataExtractor(RunMetaDataExtractor):
     def is_current_ci(self):
         if os.getenv("GITLAB_CI", ""):
             return True

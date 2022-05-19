@@ -1,3 +1,21 @@
+# Implementing CI Metadata extractor
+CI/CD jobs have environment variables that can enrich the execution context.
+Attributes like:
+1. Author of the run
+2. Commit sha
+3. Pull request ID
+4. Link to the host running the CI 
+
+Those attributed can be added by reading environment variables published on the public docs of CI/CD vendors.
+Examples: 
+https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+https://docs.github.com/en/actions/learn-github-actions/environment-variables
+
+## How to implement a new Run metadata extractor?
+You'll need to implement a new class derrived from RunMetaDataExtractor and commit it into the directory `checkov/common/bridgecrew/run_metadata/extractors`.
+Example:
+
+```python
 import os
 
 from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import RunMetaDataExtractor
@@ -38,3 +56,5 @@ class GithubActionsRunMetadataExtractor(RunMetaDataExtractor):
 
 
 extractor = GithubActionsRunMetadataExtractor()
+
+```

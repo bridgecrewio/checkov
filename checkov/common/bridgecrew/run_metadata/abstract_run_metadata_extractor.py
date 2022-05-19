@@ -15,7 +15,7 @@ from checkov.common.bridgecrew.run_metadata.ci_variables import (
 )
 
 
-class AbsRunMetaDataExtractor:
+class RunMetaDataExtractor:
     from_branch = ""
     to_branch = ""
     pr_id = ""
