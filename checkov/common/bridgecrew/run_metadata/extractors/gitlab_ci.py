@@ -3,26 +3,26 @@ import os
 from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import AbsRunMetaDataExtractor
 
 
-class GithubActionsRunMetadataExtractor(AbsRunMetaDataExtractor):
+class GitLabRunMetadataExtractor(AbsRunMetaDataExtractor):
     def is_current_ci(self):
-        if os.getenv("GITHUB_ACTIONS", ""):
+        if os.getenv("GITLAB_CI", ""):
             return True
         return False
 
     def __init__(self):
-        server_url = os.getenv('GITHUB_SERVER_URL', '')
+        server_url = os.getenv('CI_SERVER_URL', '')
         from_branch = os.getenv('GIT_BRANCH', "master")
-        to_branch = os.getenv('GITHUB_BASE_REF', "")
-        pr_id = os.getenv("$GITHUB_REF", "//").split("/")
-        repository = os.getenv('GITHUB_REPOSITORY', "")
-        pr_url = f"{server_url}/{repository}/pull/{pr_id}"
-        commit_hash = os.getenv("GITHUB_SHA", "")
-        commit_url = f"{server_url}/{repository}/commit/${commit_hash}"
-        author_name = os.getenv("GITHUB_ACTOR", "")
+        to_branch = os.getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME', "")
+        pr_id = os.getenv("CI_MERGE_REQUEST_ID", "")
+        pr_url = os.getenv("CI_MERGE_REQUEST_PROJECT_URL", "")
+        commit_hash = os.getenv("CI_COMMIT_SHORT_SHA", "")
+        repository_url = os.getenv("CI_PROJECT_URL", "")
+        long_commit_hash = os.getenv("CI_COMMIT_SHA", "")
+        commit_url = f"{repository_url}/-/commit/${long_commit_hash}"
+        author_name = os.getenv("CI_COMMIT_AUTHOR", "")
         author_url = f"{server_url}/{author_name}"
-        run_id = os.getenv("GITHUB_RUN_NUMBER", "")
-        run_url = f"{server_url}/{repository}/actions/runs/{run_id}"
-        repository_url = f"{server_url}/{repository}"
+        run_id = os.getenv("CI_PIPELINE_ID", "")
+        run_url = os.getenv("CI_PIPELINE_URL", "")
 
         super().__init__(from_branch=from_branch,
                          to_branch=to_branch,
@@ -37,4 +37,4 @@ class GithubActionsRunMetadataExtractor(AbsRunMetaDataExtractor):
                          repository_url=repository_url)
 
 
-extractor = GithubActionsRunMetadataExtractor()
+extractor = GitLabRunMetadataExtractor()
