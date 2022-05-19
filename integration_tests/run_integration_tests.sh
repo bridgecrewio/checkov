@@ -53,6 +53,7 @@ delete_reports () {
   rm -r checkov_report*
   rm -r checkov_config_report_terragoat*
   rm results.sarif
+  rm checkov_checks_list.txt
 }
 
 echo $BC_KEY
