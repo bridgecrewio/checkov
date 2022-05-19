@@ -5,6 +5,7 @@ from typing import List, Dict
 import requests
 from requests.exceptions import HTTPError
 
+from checkov.common.models.consts import TFC_HOST_NAME
 from checkov.common.goget.registry.get_registry import RegistryGetter
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
@@ -36,9 +37,9 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(self.dest_dir):
             return True
 
-        if self.module_source.startswith("app.terraform.io"):
-            self.REGISTRY_URL_PREFIX = "https://app.terraform.io/api/registry/v1/modules"
-            self.module_source = self.module_source.replace("app.terraform.io/", "")
+        if self.module_source.startswith(TFC_HOST_NAME):
+            self.REGISTRY_URL_PREFIX = f"https://{TFC_HOST_NAME}/api/registry/v1/modules"
+            self.module_source = self.module_source.replace(f"{TFC_HOST_NAME}/", "")
         else:
             self.REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
 
