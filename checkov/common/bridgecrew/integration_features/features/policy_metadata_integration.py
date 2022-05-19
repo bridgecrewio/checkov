@@ -59,6 +59,8 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
                     if use_prisma_metadata and metadata.get('descriptiveTitle'):
                         check.name = metadata['descriptiveTitle']
+                else:
+                    check.bc_id = None
         except Exception:
             self.integration_feature_failures = True
             logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
