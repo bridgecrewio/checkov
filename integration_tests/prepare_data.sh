@@ -36,5 +36,5 @@ then
   export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True
   pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
-
+  LOG_LEVEL=DEBUG GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
 fi

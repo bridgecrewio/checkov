@@ -21,6 +21,8 @@ class GenericGitLoader(ModuleLoader):
     def __init__(self):
         super().__init__()
         self.module_source_prefix = "git::https://"
+        self.token = ""
+        self.username = ""
         self.discover()
 
     @property
