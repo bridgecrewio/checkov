@@ -17,4 +17,3 @@ panos_api_key_pattern = re.compile(r"^LUFRPT1[a-zA-Z0-9]+==\Z")  # nosec
 SLS_DEFAULT_VAR_PATTERN = re.compile(r"\${([^{}]+?)}")
 YAML_COMMENT_MARK = '#'
 TFC_HOST_NAME = "app.terraform.io"
-
