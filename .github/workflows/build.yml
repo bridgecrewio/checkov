@@ -58,7 +58,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
           TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
