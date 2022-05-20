@@ -5,7 +5,7 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from cyclonedx.model import XsUri
+from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType
 from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory
@@ -45,6 +45,44 @@ class CycloneDX:
         except Exception:
             # Unable to determine current version of 'checkov'
             this_tool = Tool(vendor="bridgecrew", name="checkov", version="UNKNOWN")
+
+        this_tool.external_references.update(
+            [
+                ExternalReference(
+                    reference_type=ExternalReferenceType.BUILD_SYSTEM,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/actions"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.DISTRIBUTION,
+                    url=XsUri("https://pypi.org/project/checkov/"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.DOCUMENTATION,
+                    url=XsUri("https://www.checkov.io/1.Welcome/What%20is%20Checkov.html"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.ISSUE_TRACKER,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/issues"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.LICENSE,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/blob/master/LICENSE"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.SOCIAL,
+                    url=XsUri("https://twitter.com/bridgecrewio"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.VCS,
+                    url=XsUri("https://github.com/bridgecrewio/checkov"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.WEBSITE,
+                    url=XsUri("https://www.checkov.io/"),
+                ),
+            ]
+        )
+
         bom.metadata.tools.add(this_tool)
 
         for check in itertools.chain(self.passed_checks, self.skipped_checks):

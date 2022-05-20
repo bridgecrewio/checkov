@@ -11,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from json import dumps
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional, cast
+from typing import List, Dict, Any, Tuple, Optional, cast, TYPE_CHECKING
 
 from typing_extensions import Literal
 
@@ -19,19 +19,21 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
-from checkov.common.output.baseline import Baseline
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
+
+if TYPE_CHECKING:
+    from checkov.common.output.baseline import Baseline
+    from checkov.common.runners.base_runner import BaseRunner
+    from checkov.runner_filter import RunnerFilter
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]

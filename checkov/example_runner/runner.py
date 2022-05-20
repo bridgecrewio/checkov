@@ -23,7 +23,7 @@ class Runner(YamlRunner):
     # ...
     #   MY_TYPE = "my_type"
     #
-    check_type = CheckType.MY_TYPE
+    check_type = CheckType.MY_TYPE  # type:ignore[attr-defined]  # just used as an example
 
     # Define your block type
     block_type_registries = {

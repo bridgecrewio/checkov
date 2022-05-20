@@ -27,3 +27,13 @@ class _SkippedCheck(TypedDict, total=False):
     bc_id: str | None
     id: str
     suppress_comment: str
+
+
+class _BaselineFinding(TypedDict):
+    resource: str
+    check_ids: list[str]
+
+
+class _BaselineFailedChecks(TypedDict):
+    file: str
+    findings: list[_BaselineFinding]

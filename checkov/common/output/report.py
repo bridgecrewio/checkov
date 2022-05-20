@@ -408,6 +408,11 @@ class Report:
                 severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
+                if not record.vulnerability_details:
+                    # this shouldn't normally happen
+                    logging.warning(f"Vulnerability check without details {record.file_path}")
+                    continue
+
                 check_id = record.vulnerability_details["id"]
                 test_name_detail = f"{record.vulnerability_details['package_name']}: {record.vulnerability_details['package_version']}"
                 class_name = f"{record.file_path}.{record.vulnerability_details['package_name']}"
@@ -482,17 +487,21 @@ class Report:
         failure_output = []
 
         if self.check_type == CheckType.SCA_PACKAGE:
-            failure_output.extend(
-                [
-                    "",
-                    f"Description: {record.description}",
-                    f"Link: {record.vulnerability_details.get('link')}",
-                    f"Published Date: {record.vulnerability_details.get('published_date')}",
-                    f"Base Score: {record.vulnerability_details.get('cvss')}",
-                    f"Vector: {record.vulnerability_details.get('vector')}",
-                    f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
-                ]
-            )
+            if record.vulnerability_details:
+                failure_output.extend(
+                    [
+                        "",
+                        f"Description: {record.description}",
+                        f"Link: {record.vulnerability_details.get('link')}",
+                        f"Published Date: {record.vulnerability_details.get('published_date')}",
+                        f"Base Score: {record.vulnerability_details.get('cvss')}",
+                        f"Vector: {record.vulnerability_details.get('vector')}",
+                        f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                    ]
+                )
+            else:
+                # this shouldn't normally happen
+                logging.warning(f"Vulnerability check without details {record.file_path}")
 
         failure_output.extend(
             [
