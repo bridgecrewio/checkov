@@ -26,9 +26,12 @@ class ALBDropHttpHeaders(BaseResourceCheck):
             if isinstance(lb_attributes, list):
                 for item in lb_attributes:
                     key = item.get('Key')
-                    value = item.get('Value')
-                    if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
-                        return CheckResult.PASSED
+                    if key == 'routing.http.drop_invalid_header_fields.enabled':
+                        value = item.get('Value')
+                        if type(value) == bool:
+                            value = str(value).lower()
+                        if value == "true":
+                            return CheckResult.PASSED
             return CheckResult.FAILED
 
         # If lb is not alb then check is not valid
