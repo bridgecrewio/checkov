@@ -11,7 +11,7 @@ from cyclonedx.model.component import Component
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory
 from cyclonedx.output import SchemaVersion, get_instance
 
-if sys.version_info >= (3, 8, 0):
+if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
 else:
     from importlib_metadata import version as meta_version
@@ -40,12 +40,14 @@ class CycloneDX:
     def create_bom(self) -> Bom:
         bom = Bom()
 
+        version = "UNKNOWN"
         try:
-            this_tool = Tool(vendor="bridgecrew", name="checkov", version=meta_version("checkov"))
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
         except Exception:
             # Unable to determine current version of 'checkov'
-            this_tool = Tool(vendor="bridgecrew", name="checkov", version="UNKNOWN")
+            pass
 
+        this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
         this_tool.external_references.update(
             [
                 ExternalReference(
@@ -89,9 +91,9 @@ class CycloneDX:
             component = Component.for_file(absolute_file_path=check.file_abs_path, path_for_bom=check.file_path)
 
             if bom.has_component(component=component):
-                component = bom.get_component_by_purl(
+                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
                     purl=component.purl
-                )  # type:ignore[assignment]  # the previous line checks, if exists
+                )
 
             bom.components.add(component)
 
@@ -101,9 +103,9 @@ class CycloneDX:
             )
 
             if bom.has_component(component=component):
-                component = bom.get_component_by_purl(
+                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
                     purl=component.purl
-                )  # type:ignore[assignment]  # the previous line checks, if exists
+                )
 
             if failed_check.guideline:
                 vulnerability = Vulnerability(
