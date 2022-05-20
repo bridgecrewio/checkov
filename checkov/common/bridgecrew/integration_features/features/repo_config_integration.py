@@ -1,16 +1,25 @@
 import logging
+from typing import Optional
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severity, Severities
+
+
+class CodeCategoryConfiguration:
+    def __init__(self, soft_fail_threshold: Severity, hard_fail_threshold: Severity):
+        self.soft_fail_threshold = soft_fail_threshold
+        self.hard_fail_threshold = hard_fail_threshold
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
         super().__init__(bc_integration, order=0)
         self.skip_paths = []
-        self.code_review_threshold = None
-        self.code_review_skip_policies = set()
+        self.images_config: Optional[CodeCategoryConfiguration] = None
+        self.sca_config: Optional[CodeCategoryConfiguration] = None
+        self.secrets_config: Optional[CodeCategoryConfiguration] = None
+        self.iac_config: Optional[CodeCategoryConfiguration] = None
 
     def is_valid(self) -> bool:
         return (
@@ -26,6 +35,11 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
+            # It is possible that they will have two different and conflicting rules for this repo - one for the VCS
+            # integration that matches the value of --repo-id (org/repo), and one for the CLI upload repo (e.g., customer_org/repo).
+            # For the skip paths, we can just combine the lists and call it good. For enforcement rules, we will have
+            # to decide which rule to take: we can take the lowest severity for each category, or just take one or the other.
+
             vcs_config = self.bc_integration.customer_run_config_response['vcsConfig']
 
             for section in vcs_config['scannedFiles']['sections']:
@@ -37,23 +51,42 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             self.skip_paths = set(self.skip_paths)
             logging.debug(f'Skipping the following paths based on platform settings: {self.skip_paths}')
 
-            code_reviews = vcs_config['codeReviews']
-            if code_reviews['enabled']:
-                for section in code_reviews['sections']:
-                    repos = section['repos']
-                    if any(repo for repo in repos if self.bc_integration.repo_matches(repo)):
-                        logging.debug(f'Found code reviews config section for repo: {section}')
-                        severity_level = section['rule']['severityLevel']
-                        if not self.code_review_threshold or Severities[severity_level].level < self.code_review_threshold.level:
-                            logging.debug(f'Severity threshold of {severity_level} is lower than {self.code_review_threshold}')
-                            self.code_review_threshold = Severities[severity_level]
-                        self.code_review_skip_policies.update(section['rule']['excludePolicies'])
-                logging.debug(f'Found the following code review policy exclusions: {self.code_review_skip_policies}')
+            enforcement_rules_config = self.bc_integration.customer_run_config_response['enforcementRules']
+            rules = enforcement_rules_config['rules']
+            default_rule = next(r for r in rules if r['mainRule'] is True)
+            other_rules = [r for r in rules if r != default_rule]
+
+            matched_rules = []
+
+            for rule in other_rules:
+                if any(repo for repo in rule['repositories'] if self.bc_integration.repo_matches(repo['accountName'])):
+                    matched_rules.append(rule)
+
+            if len(matched_rules) > 1:
+                logging.warning(f'Found {len(matched_rules)} enforcement rules for the specified repo. This likely means '
+                                f'that one rule was created for the VCS repo, and another rule for the CLI repo.')  # TODO explain the behavior
+                selected_rule = matched_rules[0]  # TODO temporary
+            elif len(matched_rules) == 0:
+                logging.info('Did not find any enforcement rules for the specified repo; using the default rule')
+                selected_rule = default_rule
             else:
-                logging.info('Code reviews are disabled in the platform, so will not be applied to this run')
+                logging.info('Found exactly one matching enforcement rule for the specified repo')
+                selected_rule = matched_rules[0]
+
+            self.images_config = RepoConfigIntegration._get_code_category_object(selected_rule['codeCategories']['IMAGES'])
+            self.sca_config = RepoConfigIntegration._get_code_category_object(selected_rule['codeCategories']['OPEN_SOURCE'])
+            self.secrets_config = RepoConfigIntegration._get_code_category_object(selected_rule['codeCategories']['SECRETS'])
+            self.iac_config = RepoConfigIntegration._get_code_category_object(selected_rule['codeCategories']['IAC'])
+
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
+            logging.debug("Scanning without applying scanning configs from the platform.", exc_info=True)
+
+    @staticmethod
+    def _get_code_category_object(code_category) -> CodeCategoryConfiguration:
+        soft_fail_threshold = Severities[code_category['softFailThreshold']]
+        hard_fail_threshold = Severities[code_category['hardFailThreshold']]
+        return CodeCategoryConfiguration(soft_fail_threshold, hard_fail_threshold)
 
     @staticmethod
     def _convert_raw_check(policy):
