@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
-from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
+from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
 
 
-class Oauth2SecurityRequirement(BaseOpenapiCheck):
+class Oauth2SecurityRequirement(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_2"
         name = "Ensure that if the security scheme is not of type 'oauth2', the array value must be empty"
@@ -16,7 +16,7 @@ class Oauth2SecurityRequirement(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override] # return type is different than the base class
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override] # return type is different than the base class
         security_values = conf.get("security", [{}])
         security_definitions = conf.get("securityDefinitions", {})
         non_oauth2_keys = []
