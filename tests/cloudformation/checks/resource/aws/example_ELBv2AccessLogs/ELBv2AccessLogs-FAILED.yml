@@ -7,7 +7,7 @@ Resources:
       LoadBalancerAttributes:
       - Key: access_logs.s3.enabled
         Value: "false"
-      - Key: access_logs.s3.bucket 
+      - Key: access_logs.s3.bucket
         Value: MyBucket
       Subnets:
       - SubnetID0
@@ -29,3 +29,15 @@ Resources:
       Subnets:
       - SubnetID0
       - SubnetID1
+  Resource3:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyLB
+      LoadBalancerAttributes:
+        - Key: access_logs.s3.enabled
+          Value: false
+        - Key: access_logs.s3.bucket
+          Value: MyBucket
+      Subnets:
+        - SubnetID0
+        - SubnetID1

@@ -15,8 +15,12 @@ class RedShiftSSL(BaseResourceCheck):
         params = conf.get("Properties", {}).get("Parameters", {})
 
         for param in params:
-            if param.get("ParameterName") == "require_ssl" and param.get("ParameterValue") == "true":
-                return CheckResult.PASSED
+            if param.get("ParameterName") == "require_ssl":
+                value = param.get("ParameterValue")
+                if isinstance(value, bool):
+                    value = str(value).lower()
+                if value == "true":
+                    return CheckResult.PASSED
 
         return CheckResult.FAILED
 

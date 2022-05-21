@@ -9,5 +9,8 @@ ignore_templates:
   - tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
   # includes tests with booleans as strings
   - tests/cloudformation/checks/resource/aws/example_ECRImageScanning/*
+  - tests/cloudformation/checks/resource/aws/example_ALBDropHttpHeaders/*
+  - tests/cloudformation/checks/resource/aws/example_ELBv2AccessLogs/*
+  - tests/cloudformation/checks/resource/aws/example_RedShiftSSL/*
 ignore_checks:
   - W
