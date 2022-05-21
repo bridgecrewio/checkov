@@ -18,7 +18,7 @@ class ELBv2AccessLogs(BaseResourceCheck):
                         if 'Key' in item.keys() and 'Value' in item.keys():
                             if item['Key'] == "access_logs.s3.enabled":
                                 value = item['Value']
-                                if type(value) == bool:
+                                if isinstance(value, bool):
                                     value = str(value).lower()
                                 if value == "true":
                                     return CheckResult.PASSED

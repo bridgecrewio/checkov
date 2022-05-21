@@ -17,7 +17,7 @@ class RedShiftSSL(BaseResourceCheck):
         for param in params:
             if param.get("ParameterName") == "require_ssl":
                 value = param.get("ParameterValue")
-                if type(value) == bool:
+                if isinstance(value, bool):
                     value = str(value).lower()
                 if value == "true":
                     return CheckResult.PASSED

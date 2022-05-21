@@ -8,6 +8,14 @@ Resources:
       Parameters:
         - ParameterName: "enable_user_activity_logging"
           ParameterValue: "true"
+  RedshiftParameterGroupDefault2:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: parameter group
+      ParameterGroupFamily: redshift-1.0
+      Parameters:
+        - ParameterName: "enable_user_activity_logging"
+          ParameterValue: true
   RedshiftParameterGroupDisabled:
     Type: AWS::Redshift::ClusterParameterGroup
     Properties:
@@ -16,3 +24,11 @@ Resources:
       Parameters:
         - ParameterName: "require_ssl"
           ParameterValue: "false"
+  RedshiftParameterGroupDisabled2:
+    Type: AWS::Redshift::ClusterParameterGroup
+    Properties:
+      Description: parameter group
+      ParameterGroupFamily: redshift-1.0
+      Parameters:
+        - ParameterName: "require_ssl"
+          ParameterValue: false
