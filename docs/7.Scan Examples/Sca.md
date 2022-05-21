@@ -1,7 +1,7 @@
 ---
 layout: default
 published: true
-title: OpenAPI configuration scanning
+title: SCA scanning
 nav_order: 20
 ---
 
@@ -13,9 +13,6 @@ In order to use this feature, you first need to create an [API token using Bridg
 ```
 ### Running in CLI
 TODO: FILL HERE
-
-```bash
-checkov -d . --framework openapi
 ```
 
 ### Example output
