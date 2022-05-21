@@ -21,8 +21,6 @@ class TestSecurityDefinitions(unittest.TestCase):
         passing_resources = {
             "/pass1.yaml",
             "/pass1.json",
-            "/pass2.yaml",
-            "/pass2.json",
         }
         failing_resources = {
             "/fail1.yaml",
