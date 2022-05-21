@@ -18,7 +18,7 @@ class BaseOpenapiCheckV2(BaseOpenapiCheck):
         )
 
     @abstractmethod
-    def scan_openapi_conf(self, conf: Dict[str, Any], entity_type: str) -> Tuple[CheckResult, Dict[str, Any]]:
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         raise NotImplementedError()
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
