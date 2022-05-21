@@ -8,7 +8,7 @@ nav_order: 1
 
 |    | Id            | Type     | Entity              | Policy                                                                                    | IaC     |
 |----|---------------|----------|---------------------|-------------------------------------------------------------------------------------------|---------|
-|  0 | CKV_OPENAPI_1 | resource | securityDefinitions | Ensure that securityDefinitions is defined and not empty.                                 | OpenAPI |
+|  0 | CKV_OPENAPI_1 | resource | securityDefinitions | Ensure that securityDefinitions is defined and not empty in documents with version 2.0    | OpenAPI |
 |  1 | CKV_OPENAPI_2 | resource | security            | Ensure that if the security scheme is not of type 'oauth2', the array value must be empty | OpenAPI |
 |  2 | CKV_OPENAPI_3 | resource | components          | Ensure that security schemes don't allow cleartext credentials over unencrypted channel   | OpenAPI |
 |  3 | CKV_OPENAPI_4 | resource | security            | Ensure that the global security field has rules defined                                   | OpenAPI |
