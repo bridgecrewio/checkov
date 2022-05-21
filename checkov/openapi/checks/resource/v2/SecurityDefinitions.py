@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict, Tuple
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.common.parsers.node import DictNode
@@ -16,7 +16,7 @@ class SecurityDefinitions(BaseOpenapiCheckV2):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_openapi_conf(self, conf: Dict[str, Any], entity_type: str) -> Tuple[CheckResult, Dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_openapi_conf(self, conf: Dict[str, Any], entity_type: str) -> Tuple[CheckResult, Dict[str, Any]]:
         self.evaluated_keys = ["securityDefinitions"]
         if "securityDefinitions" not in conf:
             return CheckResult.FAILED, conf
