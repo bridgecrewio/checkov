@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Any, Dict, Tuple
+from typing import Iterable, Any
 from abc import abstractmethod
 from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
