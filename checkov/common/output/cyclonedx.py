@@ -40,12 +40,11 @@ class CycloneDX:
     def create_bom(self) -> Bom:
         bom = Bom()
 
-        version = "UNKNOWN"
         try:
             version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
         except Exception:
             # Unable to determine current version of 'checkov'
-            pass
+            version = "UNKNOWN"
 
         this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
         this_tool.external_references.update(
