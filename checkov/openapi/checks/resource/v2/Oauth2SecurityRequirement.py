@@ -9,7 +9,7 @@ from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiChe
 class Oauth2SecurityRequirement(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_2"
-        name = "Ensure that if the security scheme is not of type 'oauth2', the array value must be empty"
+        name = "Ensure that if the security scheme is not of type 'oauth2', the array value must be empty - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ['security']
         self.irrelevant_keys = ['__startline__', '__endline__']
