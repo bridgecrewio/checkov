@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import os
-from pathlib import Path
-from typing import Optional
 import logging
+import os
 from collections.abc import Collection
+from pathlib import Path
+from typing import Any
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
@@ -38,7 +38,7 @@ def clean_file_path(file_path: Path) -> Path:
 
 
 def get_folder_definitions(
-    root_folder: str, excluded_paths: Optional[list[str]]
+    root_folder: str, excluded_paths: list[str] | None
 ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]], list[str]]:
     files_list: set[Path] = set()
     for root, d_names, f_names in os.walk(root_folder):
@@ -74,3 +74,26 @@ def create_definitions(
         logging.warning(f"[bicep] found errors while parsing definitions: {parsing_errors}")
 
     return definitions, definitions_raw
+
+
+def adjust_value(element_name: str, value: Any) -> Any:
+    """Adjusts the value, if the 'element_name' references a nested key
+
+    Ex:
+    element_name = publicKey.keyData
+    value = {"keyData": "key-data", "path": "path"}
+
+    returns new_value = "key-data"
+    """
+
+    if "." in element_name and isinstance(value, dict):
+        key_parts = element_name.split(".")
+        new_value = value.get(key_parts[1])
+
+        if new_value is None:
+            # couldn't find key in in value object
+            return None
+
+        return adjust_value(".".join(key_parts[1:]), new_value)
+
+    return value
