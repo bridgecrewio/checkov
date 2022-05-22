@@ -1,7 +1,7 @@
 import os
 import unittest
 from checkov.terraform.plan_parser import parse_tf_plan
-
+from checkov.common.parsers.node import StrNode
 
 class TestPlanFileParser(unittest.TestCase):
 
@@ -14,8 +14,8 @@ class TestPlanFileParser(unittest.TestCase):
         resource_attributes = next(iter(resource_definition.values()))
         resource_tags = resource_attributes['tags'][0]
         for tag_key, tag_value in resource_tags.items():
-            if tag_key not in ['start_line', 'end_line']:
-                self.assertIsInstance(tag_value, str)
+            if tag_key not in ['__startline__', '__endline__', 'start_line', 'end_line']:
+                self.assertIsInstance(tag_value, StrNode)
 
     def test_more_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
