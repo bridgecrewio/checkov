@@ -21,6 +21,7 @@ from typing_extensions import Literal, TypeAlias
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
 from checkov.bicep.graph_builder.variable_rendering.renderer import BicepVariableRenderer
+from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import filter_sub_keys
@@ -303,7 +304,7 @@ class BicepLocalGraph(LocalGraph):
 
     @staticmethod
     def update_config_value(config: list[Any] | dict[str, Any], key: int | str, new_value: Any) -> None:
-        new_value = BicepLocalGraph.adjust_value(config[key], new_value)  # type:ignore[index]
+        new_value = adjust_value(config[key], new_value)  # type:ignore[index]
         if new_value is None:
             # couldn't find key in in value object
             return
@@ -331,29 +332,6 @@ class BicepLocalGraph(LocalGraph):
                 return BicepLocalGraph.adjust_key(config, new_key, new_key_parts)
 
         return key, key_parts
-
-    @staticmethod
-    def adjust_value(element_name: str, value: Any) -> Any:
-        """Adjusts the value, if the 'element_name' references a nested key
-
-        Ex:
-        element_name = publicKey.keyData
-        value = {"keyData": "key-data", "path": "path"}
-
-        returns new_value = "key-data"
-        """
-
-        if "." in element_name:
-            key_parts = element_name.split(".")
-            new_value = value.get(key_parts[1])
-
-            if new_value is None:
-                # couldn't find key in in value object
-                return None
-
-            return BicepLocalGraph.adjust_value(".".join(key_parts[1:]), new_value)
-
-        return value
 
     def get_resources_types_in_graph(self) -> list[str]:
         pass
