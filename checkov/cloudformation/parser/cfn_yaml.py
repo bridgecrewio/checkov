@@ -16,6 +16,7 @@ from yaml.constructor import SafeConstructor
 from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
+from charset_normalizer import from_path
 
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
 
@@ -33,9 +34,11 @@ FN_PREFIX = 'Fn::'
 
 LOGGER = logging.getLogger(__name__)
 
+
 class ContentType(str, Enum):
     CFN = "CFN"
     SLS = "SLS"
+    TFPLAN = "TFPLAN"
 
 
 class CfnParseError(ConstructorError):
@@ -59,10 +62,24 @@ class NodeConstructor(SafeConstructor):
     Node Constructors for loading different types in Yaml
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, content_type: ContentType = None):
         # Call the base class constructor
         super(NodeConstructor, self).__init__()
+        self.add_constructor(
+            u'tag:yaml.org,2002:map',
+            NodeConstructor.construct_yaml_map)
 
+        self.add_constructor(
+            u'tag:yaml.org,2002:str',
+            NodeConstructor.construct_yaml_str)
+
+        self.add_constructor(
+            u'tag:yaml.org,2002:seq',
+            NodeConstructor.construct_yaml_seq)
+        if content_type != ContentType.TFPLAN:
+            NodeConstructor.add_constructor(
+                u'tag:yaml.org,2002:null',
+                NodeConstructor.construct_yaml_null_error)
         self.filename = filename
 
     # To support lazy loading, the original constructors first yield
@@ -112,23 +129,6 @@ class NodeConstructor(SafeConstructor):
             node.start_mark.line, node.start_mark.column, ' ')
 
 
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:map',
-    NodeConstructor.construct_yaml_map)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:str',
-    NodeConstructor.construct_yaml_str)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:seq',
-    NodeConstructor.construct_yaml_seq)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:null',
-    NodeConstructor.construct_yaml_null_error)
-
-
 class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver):
     """
     Class for marked loading YAML
@@ -136,7 +136,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
 
     # pylint: disable=non-parent-init-called,super-init-not-called
 
-    def __init__(self, stream, filename):
+    def __init__(self, stream, filename, content_type: ContentType = None):
         Reader.__init__(self, stream)
         Scanner.__init__(self)
         if cyaml:
@@ -146,7 +146,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         Composer.__init__(self)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)
-        NodeConstructor.__init__(self, filename)
+        NodeConstructor.__init__(self, filename, content_type)
 
     def construct_mapping(self, node, deep=False):
         mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
@@ -193,11 +193,11 @@ def construct_getatt(node):
     raise ValueError('Unexpected node type: {}'.format(type(node.value)))
 
 
-def loads(yaml_string, fname=None):
+def loads(yaml_string, fname=None, content_type: ContentType = None):
     """
     Load the given YAML string
     """
-    loader = MarkedLoader(yaml_string, fname)
+    loader = MarkedLoader(yaml_string, fname, content_type)
     loader.add_multi_constructor('!', multi_constructor)
 
     template = loader.get_single_data()
@@ -214,13 +214,19 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     """
 
     file_path = filename if isinstance(filename, Path) else Path(filename)
-    content = file_path.read_text()
+    try:
+        content = file_path.read_text()
+    except UnicodeDecodeError:
+        LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
+        content = str(from_path(filename).best())
 
     if content_type == ContentType.CFN and "Resources" not in content:
         return {}, []
     elif content_type == ContentType.SLS and "provider" not in content:
         return {}, []
+    elif content_type == ContentType.TFPLAN and "planned_values" not in content:
+        return {}, []
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
-    return (loads(content, filename), file_lines)
+    return loads(content, filename, content_type), file_lines

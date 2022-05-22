@@ -555,6 +555,22 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
+    def test_runner_line_numbers(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_resource_reference/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        failed_check = report.failed_checks[0]
+        self.assertEqual(failed_check.file_line_range, [13, 19])
+
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
 
