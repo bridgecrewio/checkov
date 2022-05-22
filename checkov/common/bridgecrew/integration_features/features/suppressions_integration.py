@@ -29,9 +29,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def is_valid(self) -> bool:
         return (
-                self.bc_integration.is_integration_configured()
-                and not self.bc_integration.skip_download
-                and not self.integration_feature_failures
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_download
+            and not self.integration_feature_failures
         )
 
     def pre_scan(self) -> None:

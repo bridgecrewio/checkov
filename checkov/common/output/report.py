@@ -249,9 +249,9 @@ class Report:
 
     def is_empty(self) -> bool:
         return (
-                len(self.passed_checks + self.failed_checks + self.skipped_checks)
-                + len(self.parsing_errors)
-                == 0
+            len(self.passed_checks + self.failed_checks + self.skipped_checks)
+            + len(self.parsing_errors)
+            == 0
         )
 
     def print_console(
@@ -297,12 +297,14 @@ class Report:
 
         if created_baseline_path:
             output_data += colored(
-                    f"Created a checkov baseline file at {created_baseline_path}",
-                    "blue",)
+                f"Created a checkov baseline file at {created_baseline_path}",
+                "blue",
+            )
         if baseline:
             output_data += colored(
-                    f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                    "blue",)
+                f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
+                "blue",
+            )
         return output_data
 
     @staticmethod
@@ -435,10 +437,11 @@ class Report:
                 ]
             )
         output_data = tabulate(
-                result,
-                headers=["check_id", "file", "resource", "check_name", "guideline"],
-                tablefmt="github",
-                showindex=True,) + "\n\n---\n\n"
+            result,
+            headers=["check_id", "file", "resource", "check_name", "guideline"],
+            tablefmt="github",
+            showindex=True,
+        ) + "\n\n---\n\n"
         print(output_data)
         return output_data
 
