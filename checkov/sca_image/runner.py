@@ -62,7 +62,7 @@ class Runner(PackageRunner):
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
-            output_path = Path('results.json')
+            output_path = Path(f'results-{image_id}.json')
             scan_result = asyncio.run(self.execute_scan(image_id, output_path))
             self.upload_results_to_cache(output_path, image_id)
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
