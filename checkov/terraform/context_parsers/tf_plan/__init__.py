@@ -16,6 +16,7 @@ def parse(filename, out_parsing_errors: Dict[str, str]):
         (template, template_lines) = cfn_yaml.load(filename, ContentType.TFPLAN)
     except Exception as e:
         out_parsing_errors[filename] = str(e)
+        return None, None
 
     if (
         template is not None
