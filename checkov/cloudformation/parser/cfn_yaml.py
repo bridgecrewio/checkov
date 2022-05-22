@@ -65,15 +65,15 @@ class NodeConstructor(SafeConstructor):
     def __init__(self, filename, content_type: ContentType = None):
         # Call the base class constructor
         super(NodeConstructor, self).__init__()
-        NodeConstructor.add_constructor(
+        self.add_constructor(
             u'tag:yaml.org,2002:map',
             NodeConstructor.construct_yaml_map)
 
-        NodeConstructor.add_constructor(
+        self.add_constructor(
             u'tag:yaml.org,2002:str',
             NodeConstructor.construct_yaml_str)
 
-        NodeConstructor.add_constructor(
+        self.add_constructor(
             u'tag:yaml.org,2002:seq',
             NodeConstructor.construct_yaml_seq)
         if content_type != ContentType.TFPLAN:
