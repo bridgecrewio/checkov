@@ -19,4 +19,3 @@ class LambdaFunctionURLAuth(BaseResourceNegativeValueCheck):
 
 
 check = LambdaFunctionURLAuth()
-
