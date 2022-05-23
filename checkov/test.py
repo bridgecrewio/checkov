@@ -134,6 +134,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.var_file:
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+    print(config)
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
@@ -228,8 +231,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
-                     include_all_checkov_policies=config.include_all_checkov_policies)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
         return None
 
     baseline = None
@@ -367,7 +369,6 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
                default=["all"],
-               env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure code frameworks. \n'
@@ -471,7 +472,6 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
     parser.add('--evaluate-variables',
                help="evaluate the values of variables and locals",
-               env_var="CKV_EVAL_VARS",
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
