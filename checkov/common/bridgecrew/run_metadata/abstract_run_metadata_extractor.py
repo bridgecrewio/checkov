@@ -39,18 +39,17 @@ class RunMetaDataExtractor:
                  run_id,
                  run_url,
                  repository_url):
-        if self.is_current_ci():
-            self.from_branch = from_branch
-            self.to_branch = to_branch
-            self.pr_id = pr_id
-            self.pr_url = pr_url
-            self.commit_hash = commit_hash
-            self.commit_url = commit_url
-            self.author_name = author_name
-            self.author_url = author_url
-            self.run_id = run_id
-            self.run_url = run_url
-            self.repository_url = repository_url
+        self.from_branch = from_branch
+        self.to_branch = to_branch
+        self.pr_id = pr_id
+        self.pr_url = pr_url
+        self.commit_hash = commit_hash
+        self.commit_url = commit_url
+        self.author_name = author_name
+        self.author_url = author_url
+        self.run_id = run_id
+        self.run_url = run_url
+        self.repository_url = repository_url
         self.override_metadata_from_env_variables()
         registry.register(extractor=self)
 
