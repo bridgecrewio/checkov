@@ -12,7 +12,7 @@ https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 https://docs.github.com/en/actions/learn-github-actions/environment-variables
 
 ## How to implement a new Run metadata extractor?
-You'll need to implement a new class derrived from RunMetaDataExtractor and commit it into the directory `checkov/common/bridgecrew/run_metadata/extractors`.
+You'll need to implement a new class derived from RunMetaDataExtractor and commit it into the directory `checkov/common/bridgecrew/run_metadata/extractors`.
 Example:
 
 ```python
