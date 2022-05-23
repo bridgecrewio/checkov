@@ -1,5 +1,8 @@
+from __future__ import annotations
+
+from collections.abc import Collection
 from copy import deepcopy
-from typing import Union, Dict, Any, List, Optional
+from typing import Union, Dict, Any, List
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
@@ -64,8 +67,8 @@ class Block:
         self.get_origin_attributes(base_attributes)
 
         if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency  # type:ignore[attr-defined]
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num  # type:ignore[attr-defined]
 
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
@@ -110,11 +113,17 @@ class Block:
         self,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: Optional[int],
-        previous_breadcrumbs: List[BreadcrumbMetadata],
-        attribute_at_dest: Optional[str],
+        change_origin_id: int | None,
+        previous_breadcrumbs: list[BreadcrumbMetadata],
+        attribute_at_dest: str | None,
         transform_step: bool = False,
     ) -> None:
+        self.update_inner_attribute(
+            attribute_key=attribute_key,
+            nested_attributes=self.attributes,
+            value_to_update=attribute_value
+        )
+
         if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
@@ -141,13 +150,44 @@ class Block:
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
 
+    def update_inner_attribute(
+        self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
+    ) -> None:
+        split_key = attribute_key.split(".")
+        i = 1
+        curr_key = ".".join(split_key[0:i])
+        if isinstance(nested_attributes, list):
+            if curr_key.isnumeric():
+                curr_key_int = int(curr_key)
+                if curr_key_int < len(nested_attributes):
+                    if not isinstance(nested_attributes[curr_key_int], dict):
+                        nested_attributes[curr_key_int] = value_to_update
+                    else:
+                        self.update_inner_attribute(
+                            ".".join(split_key[i:]), nested_attributes[curr_key_int], value_to_update
+                        )
+            else:
+                for inner in nested_attributes:
+                    self.update_inner_attribute(curr_key, inner, value_to_update)
+        elif isinstance(nested_attributes, dict):
+            while curr_key not in nested_attributes and i <= len(split_key):
+                i += 1
+                curr_key = ".".join(split_key[0:i])
+            if attribute_key in nested_attributes.keys():
+                nested_attributes[attribute_key] = value_to_update
+            if len(split_key) == 1 and len(curr_key) > 0:
+                nested_attributes[curr_key] = value_to_update
+            elif curr_key in nested_attributes.keys():
+                self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+
     @staticmethod
-    def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: Optional[str]):
+    def _should_add_previous_breadcrumbs(
+        change_origin_id: int | None, previous_breadcrumbs: list[BreadcrumbMetadata], attribute_at_dest: str | None
+    ) -> bool:
         return not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id
 
     @staticmethod
-    def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]):
+    def _should_set_changed_attributes(change_origin_id: int | None, attribute_at_dest: str | None) -> bool:
         return True
 
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
@@ -168,14 +208,14 @@ class Block:
     def get_inner_attributes(
         cls,
         attribute_key: str,
-        attribute_value: Union[str, List[str], Dict[str, Any]],
+        attribute_value: str | List[str] | dict[str, Any],
         strip_list: bool = True  # used by subclass
-    ) -> Dict[str, Any]:
-        inner_attributes: Dict[str, Any] = {}
+    ) -> dict[str, Any]:
+        inner_attributes: dict[str, Any] = {}
 
         if isinstance(attribute_value, (dict, list)):
             inner_attributes[attribute_key] = [None] * len(attribute_value) if isinstance(attribute_value, list) else {}
-            iterator: Union[range, List[str]] = range(len(attribute_value)) if isinstance(
+            iterator: Collection[int] | Collection[str] = range(len(attribute_value)) if isinstance(
                 attribute_value, list
             ) else list(
                 attribute_value.keys()
@@ -183,11 +223,11 @@ class Block:
             for key in iterator:
                 if key != "":
                     inner_key = f"{attribute_key}.{key}"
-                    inner_value = attribute_value[key]
+                    inner_value = attribute_value[key]  # type:ignore[index]
                     inner_attributes.update(cls.get_inner_attributes(inner_key, inner_value))
                     inner_attributes[attribute_key][key] = inner_attributes[inner_key]
                 else:
-                    del attribute_value[key]
+                    del attribute_value[key]  # type:ignore[arg-type]
         else:
             inner_attributes[attribute_key] = attribute_value
         return inner_attributes

@@ -3,20 +3,20 @@ from __future__ import annotations
 from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
-from checkov.openapi.checks.base_openapi_check import BaseOpenapiCheck
+from checkov.openapi.checks.resource.v3.BaseOpenapiCheckV3 import BaseOpenapiCheckV3
 
 
-class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheck):
+class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheckV3):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_3"
-        name = "Ensure that security schemes don't allow cleartext credentials over unencrypted channel"
+        name = "Ensure that security schemes don't allow cleartext credentials over unencrypted channel - version 3.x.y files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["components"]
         self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         security_schemes = conf.get("components", {}).get("securitySchemes", {})
         paths = conf.get('paths', {})
 
