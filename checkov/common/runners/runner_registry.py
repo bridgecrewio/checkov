@@ -17,6 +17,8 @@ from typing_extensions import Literal
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
+    integration as repo_config_integration, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.baseline import Baseline
@@ -103,6 +105,22 @@ class RunnerRegistry:
             logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
                           exc_info=True)
 
+    @staticmethod
+    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> Tuple[bool, List[str], List[str]]:
+        if not config.use_platform_enforcement_rules:
+            return config.soft_fail, config.soft_fail_on, config.hard_fail_on
+        else:
+            code_category_type = CodeCategoryMapping[report_type]
+            config = repo_config_integration.code_category_configs.get(code_category_type)
+            if not config:
+                raise Exception(f'Could not find an enforcement rule config for category {code_category_type} (runner: {report_type})')
+
+            # the soft fail threshold will just be implicit
+            # for simplicity, just use an empty hard fail list of full soft-fail is on
+            # (otherwise we have to change the get_exit_code logic)
+            soft_fail = config.is_global_soft_fail()
+            return soft_fail, [], [] if soft_fail else [config.hard_fail_threshold.name]
+
     def print_reports(
             self,
             scan_reports: List[Report],
@@ -137,7 +155,8 @@ class RunnerRegistry:
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
             logging.debug(f'Getting exit code for report {report.check_type}')
-            exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
+            soft_fail, soft_fail_on, hard_fail_on = self.get_fail_thresholds(config, report.check_type)
+            exit_codes.append(report.get_exit_code(soft_fail, soft_fail_on, hard_fail_on))
 
         if "cli" in config.output:
             cli_output = ''

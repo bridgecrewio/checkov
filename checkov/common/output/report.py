@@ -26,6 +26,7 @@ from checkov.version import version
 
 init(autoreset=True)
 
+
 @dataclass
 class CheckType:
     BITBUCKET_PIPELINES = "bitbucket_pipelines"
@@ -50,6 +51,7 @@ class CheckType:
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
+
 
 SEVERITY_TO_SARIF_LEVEL = {
     "critical": "error",

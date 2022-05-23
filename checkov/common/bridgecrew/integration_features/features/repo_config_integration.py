@@ -1,15 +1,60 @@
 import logging
-from typing import Optional
+from dataclasses import dataclass
+from typing import Optional, Dict
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severity, Severities
+from checkov.common.bridgecrew.severities import Severity, Severities, get_highest_severity_below_level, BcSeverities
+from checkov.common.output.report import CheckType
+
+
+@dataclass
+class CodeCategoryType:
+    IAC = "IAC"
+    OPEN_SOURCE = "OPEN_SOURCE"
+    SECRETS = "SECRETS"
+    IMAGES = "IMAGES"
+    SUPPLY_CHAIN = "SUPPLY_CHAIN"
+
+
+CodeCategoryMapping = {
+    CheckType.BITBUCKET_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.ARM: CodeCategoryType.IAC,
+    CheckType.BICEP: CodeCategoryType.IAC,
+    CheckType.CLOUDFORMATION: CodeCategoryType.IAC,
+    CheckType.DOCKERFILE: CodeCategoryType.IAC,
+    CheckType.GITHUB_CONFIGURATION: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.GITHUB_ACTIONS: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.GITLAB_CONFIGURATION: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.GITLAB_CI: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.BITBUCKET_CONFIGURATION: '',
+    CheckType.HELM: CodeCategoryType.IAC,
+    CheckType.JSON: CodeCategoryType.IAC,
+    CheckType.YAML: CodeCategoryType.IAC,
+    CheckType.KUBERNETES: CodeCategoryType.IAC,
+    CheckType.KUSTOMIZE: CodeCategoryType.IAC,
+    CheckType.OPENAPI: CodeCategoryType.IAC,
+    CheckType.SCA_PACKAGE: CodeCategoryType.OPEN_SOURCE,
+    CheckType.SCA_IMAGE: CodeCategoryType.IMAGES,
+    CheckType.SECRETS: CodeCategoryType.SECRETS,
+    CheckType.SERVERLESS: CodeCategoryType.IAC,
+    CheckType.TERRAFORM: CodeCategoryType.IAC,
+    CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC
+}
 
 
 class CodeCategoryConfiguration:
-    def __init__(self, soft_fail_threshold: Severity, hard_fail_threshold: Severity):
+    def __init__(self, category: str, soft_fail_threshold: Severity, hard_fail_threshold: Severity):
+        self.category = category
         self.soft_fail_threshold = soft_fail_threshold
         self.hard_fail_threshold = hard_fail_threshold
+
+    def is_global_soft_fail(self) -> bool:
+        return self.hard_fail_threshold == Severities[BcSeverities.OFF]
+
+    def get_skip_check_threshold(self) -> Severity:
+        severity = get_highest_severity_below_level(self.soft_fail_threshold.level)
+        return severity or Severities[BcSeverities.NONE]
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
@@ -17,10 +62,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.skip_paths = set()
         self.enforcement_rule = None
-        self.images_config: Optional[CodeCategoryConfiguration] = None
-        self.sca_config: Optional[CodeCategoryConfiguration] = None
-        self.secrets_config: Optional[CodeCategoryConfiguration] = None
-        self.iac_config: Optional[CodeCategoryConfiguration] = None
+        self.code_category_configs: Dict[str, CodeCategoryConfiguration] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -49,10 +91,12 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.debug("Scanning without applying scanning configs from the platform.", exc_info=True)
 
     @staticmethod
-    def _get_code_category_object(code_category) -> CodeCategoryConfiguration:
-        soft_fail_threshold = Severities[code_category['softFailThreshold']]
-        hard_fail_threshold = Severities[code_category['hardFailThreshold']]
-        return CodeCategoryConfiguration(soft_fail_threshold, hard_fail_threshold)
+    def _get_code_category_object(code_category_config, code_category_type: str) -> Optional[CodeCategoryConfiguration]:
+        if code_category_type not in code_category_config:
+            return None
+        soft_fail_threshold = Severities[code_category_config[code_category_type]['softFailThreshold']]
+        hard_fail_threshold = Severities[code_category_config[code_category_type]['hardFailThreshold']]
+        return CodeCategoryConfiguration(code_category_type, soft_fail_threshold, hard_fail_threshold)
 
     def _set_exclusion_paths(self, vcs_config) -> None:
         for section in vcs_config['scannedFiles']['sections']:
@@ -104,13 +148,13 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.info('Found exactly one matching enforcement rule for the specified repo')
             self.enforcement_rule = matched_rules[0]
 
-        logging.debug(f'Using the following enforcement rule:')
+        logging.debug(f'Selected the following enforcement rule (it will not be applied unless --use-platform-enforcement-rules is specified):')
         logging.debug(self.enforcement_rule)
 
-        self.images_config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories']['IMAGES'])
-        self.sca_config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories']['OPEN_SOURCE'])
-        self.secrets_config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories']['SECRETS'])
-        self.iac_config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories']['IAC'])
+        for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:
+            config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'], code_category_type)
+            if config:
+                self.code_category_configs[code_category_type] = config
 
     @staticmethod
     def _convert_raw_check(policy):
