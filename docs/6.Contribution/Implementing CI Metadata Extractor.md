@@ -6,7 +6,7 @@ Attributes like:
 3. Pull request ID
 4. Link to the host running the CI 
 
-Those attributed can be added by reading environment variables published on the public docs of CI/CD vendors.
+Those attributes can be added by reading environment variables published on the public docs of CI/CD vendors.
 Examples: 
 https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 https://docs.github.com/en/actions/learn-github-actions/environment-variables
