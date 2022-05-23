@@ -117,11 +117,14 @@ class RunnerFilter(object):
         )
 
         if should_skip_check:
-            return False
+            result = False
         elif should_run_check:
-            return True
+            result = True
         else:
-            return False
+            result = False
+
+        logging.debug(f'Should run check {check_id}: {result}')
+        return result
 
     @staticmethod
     def check_matches(check_id: str,
