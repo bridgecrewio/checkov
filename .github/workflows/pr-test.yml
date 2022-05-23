@@ -27,6 +27,25 @@ jobs:
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
 
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: 3.7
+    - name: Install pipenv
+      run: |
+        python -m pip install --no-cache-dir --upgrade pipenv
+    - name: Install dependencies
+      run: |
+        pipenv --python 3.7
+        pipenv install --dev
+        pipenv run pip install typed-ast  # for some reason this has an old version
+    - name: Run Mypy
+      run: |
+        pipenv run mypy
+
   unit-tests:
     strategy:
       fail-fast: true
