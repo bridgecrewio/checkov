@@ -228,8 +228,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
-                     include_all_checkov_policies=config.include_all_checkov_policies)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
         return None
 
     baseline = None
