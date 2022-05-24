@@ -65,8 +65,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VAsetPeriodicScansOnSQL(self):
         self.go("VAsetPeriodicScansOnSQL")
 
-    def test_CloudFrontHasSecurityHeadersPolicy(self):
-        self.go("CloudFrontHasSecurityHeadersPolicy")
+    def test_CloudFrontHasResponseHeadersPolicy(self):
+        self.go("CloudFrontHasResponseHeadersPolicy")
 
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
