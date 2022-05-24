@@ -2,7 +2,6 @@ import os
 from typing import Union, Dict, Any, List, Optional, Set
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
-from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
@@ -61,43 +60,6 @@ class TerraformBlock(Block):
                 return attribute[1]
 
         return None
-
-    def update_attribute(
-        self, attribute_key: str, attribute_value: Any, change_origin_id: int,
-            previous_breadcrumbs: List[BreadcrumbMetadata], attribute_at_dest: str
-    ) -> None:
-        self.update_inner_attribute(attribute_key, self.attributes, attribute_value)
-        super().update_attribute(attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest)
-
-    def update_inner_attribute(
-        self, attribute_key: str, nested_attributes: Union[List[Any], Dict[str, Any]], value_to_update: Any
-    ) -> None:
-        split_key = attribute_key.split(".")
-        i = 1
-        curr_key = ".".join(split_key[0:i])
-        if isinstance(nested_attributes, list):
-            if curr_key.isnumeric():
-                curr_key_int = int(curr_key)
-                if curr_key_int < len(nested_attributes):
-                    if not isinstance(nested_attributes[curr_key_int], dict):
-                        nested_attributes[curr_key_int] = value_to_update
-                    else:
-                        self.update_inner_attribute(
-                            ".".join(split_key[i:]), nested_attributes[curr_key_int], value_to_update
-                        )
-            else:
-                for inner in nested_attributes:
-                    self.update_inner_attribute(curr_key, inner, value_to_update)
-        elif isinstance(nested_attributes, dict):
-            while curr_key not in nested_attributes and i <= len(split_key):
-                i += 1
-                curr_key = ".".join(split_key[0:i])
-            if attribute_key in nested_attributes.keys():
-                nested_attributes[attribute_key] = value_to_update
-            if len(split_key) == 1 and len(curr_key) > 0:
-                nested_attributes[curr_key] = value_to_update
-            elif curr_key in nested_attributes.keys():
-                self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
 
     @classmethod
     def get_inner_attributes(
