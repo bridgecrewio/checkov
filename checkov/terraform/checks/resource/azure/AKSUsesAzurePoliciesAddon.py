@@ -11,7 +11,7 @@ class AKSUsesAzurePoliciesAddon(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "addon_profile/[0]/azure_policy/[0]/enabled"
+        return "azure_policy_enabled"
 
 
 check = AKSUsesAzurePoliciesAddon()
