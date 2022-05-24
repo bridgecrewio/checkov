@@ -141,7 +141,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package, use_enforcement_rules=config.use_platform_enforcement_rules)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -226,6 +226,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     integration_feature_registry.run_pre_scan()
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    if config.use_platform_enforcement_rules:
+        runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
@@ -450,7 +453,8 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
                     'these values: any check with a severity below the selected rule\'s soft-fail threshold will be '
                     'skipped; any check with a severity equal to or greater than the rule\'s hard-fail threshold will '
-                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list.')
+                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list.'
+                    'Requires a BC or PC platform API key.')
     parser.add('--no-guide', action='store_true',
                default=False,
                help='Deprecated - use --skip-download')
@@ -534,8 +538,10 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         config.include_all_checkov_policies = True
 
     if config.use_platform_enforcement_rules and (config.soft_fail or config.hard_fail_on or config.soft_fail_on or config.check or config.skip_check):
-        parser.error(
-            'Cannot use --use-platform-enforcement rules with any of --soft-fail, --hard-fail-on, --soft-fail-on, --check, or --skip-check')
+        parser.error('Cannot use --use-platform-enforcement rules with any of --soft-fail, --hard-fail-on, --soft-fail-on, --check, or --skip-check')
+
+    if config.use_platform_enforcement_rules and not config.bc_api_key:
+        parser.error('Must specify an API key with --use-platform-enforcement-rules')
 
 
 if __name__ == '__main__':
