@@ -4,7 +4,8 @@ from typing import Optional, List, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record

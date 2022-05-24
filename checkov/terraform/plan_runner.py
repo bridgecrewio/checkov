@@ -7,7 +7,8 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry

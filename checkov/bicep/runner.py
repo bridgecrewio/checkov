@@ -20,7 +20,8 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import CheckType, Report
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.suppression import collect_suppressions_for_report

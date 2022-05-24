@@ -4,7 +4,7 @@ import logging
 from typing import Any, Callable
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 

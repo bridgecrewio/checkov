@@ -3,8 +3,7 @@ import fnmatch
 from collections.abc import Iterable
 from typing import Set, Optional, Union, List
 
-from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
-    integration as repo_config_integration, CodeCategoryMapping
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR

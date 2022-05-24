@@ -11,7 +11,8 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports, CheckType
+from checkov.common.output.report import Report, merge_reports
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph

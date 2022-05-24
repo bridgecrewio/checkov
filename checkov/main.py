@@ -28,7 +28,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner

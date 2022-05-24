@@ -5,7 +5,7 @@ from typing import List, Set, Optional
 import pytest
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.docs_generator import get_checks
 
 

@@ -5,7 +5,7 @@ import os
 import io
 from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner

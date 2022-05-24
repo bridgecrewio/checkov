@@ -9,7 +9,8 @@ from typing import List, Optional, Dict, Any, Type
 import yaml
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner

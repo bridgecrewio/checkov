@@ -15,7 +15,8 @@ from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer, Image
-from checkov.common.output.report import Report, CheckType, merge_reports
+from checkov.common.output.report import Report, merge_reports
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.dockerfile.utils import is_docker_file

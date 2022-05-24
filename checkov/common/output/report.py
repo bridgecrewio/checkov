@@ -4,7 +4,6 @@ import json
 import logging
 import sys
 from collections.abc import Iterable
-from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set
 
 from colorama import init
@@ -17,6 +16,7 @@ from termcolor import colored
 
 from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -25,32 +25,6 @@ from checkov.runner_filter import RunnerFilter
 from checkov.version import version
 
 init(autoreset=True)
-
-
-@dataclass
-class CheckType:
-    BITBUCKET_PIPELINES = "bitbucket_pipelines"
-    ARM = "arm"
-    BICEP = "bicep"
-    CLOUDFORMATION = "cloudformation"
-    DOCKERFILE = "dockerfile"
-    GITHUB_CONFIGURATION = "github_configuration"
-    GITHUB_ACTIONS = "github_actions"
-    GITLAB_CONFIGURATION = "gitlab_configuration"
-    GITLAB_CI = "gitlab_ci"
-    BITBUCKET_CONFIGURATION = "bitbucket_configuration"
-    HELM = "helm"
-    JSON = "json"
-    YAML = "yaml"
-    KUBERNETES = "kubernetes"
-    KUSTOMIZE = "kustomize"
-    OPENAPI = "openapi"
-    SCA_PACKAGE = "sca_package"
-    SCA_IMAGE = "sca_image"
-    SECRETS = "secrets"
-    SERVERLESS = "serverless"
-    TERRAFORM = "terraform"
-    TERRAFORM_PLAN = "terraform_plan"
 
 
 SEVERITY_TO_SARIF_LEVEL = {

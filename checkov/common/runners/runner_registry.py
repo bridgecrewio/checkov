@@ -15,10 +15,11 @@ from typing import List, Dict, Any, Tuple, Optional, cast
 
 from typing_extensions import Literal
 
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
-    integration as repo_config_integration, CodeCategoryMapping
+    integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.baseline import Baseline
