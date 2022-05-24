@@ -158,7 +158,8 @@ nav_order: 1
 | 147 | CKV_AWS_195 | resource | AWS::Glue::Crawler                        | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 148 | CKV_AWS_195 | resource | AWS::Glue::DevEndpoint                    | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 149 | CKV_AWS_195 | resource | AWS::Glue::Job                            | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
-| 150 | CKV2_AWS_33 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync is protected by WAF                                                                                                                                                                       | Cloudformation |
+| 150 | CKV_AWS_258 | resource | AWS::Lambda::Url                          | Ensure that Lambda function URLs AuthType is not None                                                                                                                                                    | Cloudformation |
+| 151 | CKV2_AWS_33 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync is protected by WAF                                                                                                                                                                       | Cloudformation |
 
 
 ---
