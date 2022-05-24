@@ -22,7 +22,7 @@ jobs:
           python-version: 3.7
       - name: Install cfn-lint
         run: |
-          pip install cfn-lint==0.53.0
+          pip install -U cfn-lint
       - name: Lint Cloudformation templates
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
