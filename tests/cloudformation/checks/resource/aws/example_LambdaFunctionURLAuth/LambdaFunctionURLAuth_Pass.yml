@@ -4,5 +4,4 @@ Resources:
     Type: AWS::Lambda::Url
     Properties:
       AuthType: AWS_IAM
-      Qualifier: Alias Name
       TargetFunctionArn: arn:aws:lambda:us-west-2:123456789012:function:my-function
