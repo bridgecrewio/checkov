@@ -2,9 +2,8 @@ import ast
 from typing import Generator, Tuple, List
 
 from . import __version__ as version
-from . node_type_weights import get_node_weights
 from . model_parts_info import get_model_parts_info
-from . ordering_errors import get_class_members_errors
+from . class_members_errors import get_class_members_errors
 
 
 class ClassAttributesChecker:
@@ -38,12 +37,11 @@ class ClassAttributesChecker:
         cls.options = options
 
     def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
-        weight_info = get_node_weights(self.options)
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
         errors: List[Tuple[int, int, str]] = []
 
         for class_def in classes:
-            model_parts_info = get_model_parts_info(class_def, weight_info)
+            model_parts_info = get_model_parts_info(class_def)
             errors += get_class_members_errors(model_parts_info)
 
         for lineno, col_offset, error_msg in errors:

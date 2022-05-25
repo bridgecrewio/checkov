@@ -2,35 +2,6 @@ import ast
 from typing import Tuple, List, Union
 
 
-def get_ordering_errors(model_parts_info) -> List[Tuple[int, int, str]]:
-    errors = []
-    for model_part, next_model_part in zip(model_parts_info, model_parts_info[1:] + [None]):
-        if (
-            next_model_part
-            and model_part['model_name'] == next_model_part['model_name']
-            and model_part['weight'] > next_model_part['weight']
-        ):
-            errors.append((
-                model_part['node'].lineno,
-                model_part['node'].col_offset,
-                'CCE001 {0}.{1} should be after {0}.{2}'.format(
-                    model_part['model_name'],
-                    get_node_name(model_part['node'], model_part['type']),
-                    get_node_name(next_model_part['node'], next_model_part['type']),
-                ),
-            ))
-        if model_part['type'] in ['expression', 'if']:
-            errors.append((
-                model_part['node'].lineno,
-                model_part['node'].col_offset,
-                'CCE002 Class level expression detected in class {0}, line {1}'.format(
-                    model_part['model_name'],
-                    model_part['node'].lineno,
-                ),
-            ))
-    return errors
-
-
 def get_class_members_errors(model_parts_info) -> List[Tuple[int, int, str]]:
     errors = []
     forbidden_types = ['field']

@@ -2,17 +2,15 @@ import ast
 from typing import Mapping
 
 
-def get_model_parts_info(model_ast, weights: Mapping[str, int]):
+def get_model_parts_info(model_ast):
     parts_info = []
     for child_node in model_ast.body:
         node_type = get_model_node_type(child_node)
-        if node_type in weights:
-            parts_info.append({
-                'model_name': model_ast.name,
-                'node': child_node,
-                'type': node_type,
-                'weight': weights[node_type],
-            })
+        parts_info.append({
+            'model_name': model_ast.name,
+            'node': child_node,
+            'type': node_type
+        })
     return parts_info
 
 
