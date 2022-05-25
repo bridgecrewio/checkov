@@ -42,7 +42,7 @@ class ClassAttributesChecker:
 
         for class_def in classes:
             model_parts_info = get_model_parts_info(class_def)
-            errors += get_class_members_errors(model_parts_info)
+            errors += get_class_members_errors(model_parts_info, class_def)
 
         for lineno, col_offset, error_msg in errors:
             yield lineno, col_offset, error_msg, type(self)

@@ -2,9 +2,11 @@ import ast
 from typing import Tuple, List, Union
 
 
-def get_class_members_errors(model_parts_info) -> List[Tuple[int, int, str]]:
+def get_class_members_errors(model_parts_info, class_def: ast.ClassDef) -> List[Tuple[int, int, str]]:
     errors = []
     forbidden_types = ['field']
+    if skip_dataclasses(class_def):
+        return errors
     for model_part in model_parts_info:
         if model_part['type'] in forbidden_types:
             node_name = get_node_name(model_part['node'], model_part['type'])
@@ -14,6 +16,15 @@ def get_class_members_errors(model_parts_info) -> List[Tuple[int, int, str]]:
                     f"CCE003 Class level {model_part['type']} '{node_name}' detected in class {model_part['model_name']}",
                 ))
     return errors
+
+
+def skip_dataclasses(class_def: ast.ClassDef) -> bool:
+    if class_def.decorator_list is not None:
+        decorator: ast.Load
+        for decorator in class_def.decorator_list:
+            if decorator.id == 'dataclass':
+                return True
+    return False
 
 
 def get_node_name(node, node_type: str):
