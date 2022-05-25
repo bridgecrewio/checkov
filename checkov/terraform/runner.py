@@ -181,6 +181,8 @@ class Runner(BaseRunner):
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
                     connected_node_data = self.get_connected_node(entity, root_folder)
+                    if os.name == 'nt':
+                        root_folder = os.path.split(full_file_path)[0]
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

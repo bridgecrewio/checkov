@@ -95,7 +95,11 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, runner_filter):
         for full_file_path, definition in self.tf_definitions.items():
-            scanned_file = f"/{os.path.relpath(full_file_path)}"
+            if os.name == 'nt':
+                temp = os.path.split(full_file_path)[0]
+                scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
+            else:
+                scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
