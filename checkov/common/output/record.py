@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import re
 from pathlib import Path
@@ -21,25 +23,6 @@ OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) 
 ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
 
 class Record:
-    check_id = ""
-    check_name = ""
-    check_result = None
-    check_class = ""
-    code_block: List[Tuple[int, str]] = []
-    file_path = ""
-    file_line_range: List[int] = []
-    caller_file_path = None  # When created from a module
-    caller_file_line_range = None  # When created from a module
-    resource = ""
-    guideline = None
-    fixed_definition = None
-    entity_tags = None
-    severity = None
-    description = None  # used by SARIF output
-    short_description = None  # used by SARIF output
-    vulnerability_details = None  # Stores package vulnerability details
-    connected_node = None
-
     def __init__(
         self,
         check_id: str,
@@ -59,7 +42,7 @@ class Record:
         resource_address: Optional[str] = None,
         severity: Optional[Severity] = None,
         bc_category: Optional[str] = None,
-        benchmarks: Optional[Dict[str, list]] = None,
+        benchmarks: dict[str, list[str]] | None = None,
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
@@ -85,16 +68,17 @@ class Record:
         self.check_class = check_class
         self.fixed_definition = None
         self.entity_tags = entity_tags
-        self.caller_file_path = caller_file_path
-        self.caller_file_line_range = caller_file_line_range
+        self.caller_file_path = caller_file_path  # When created from a module
+        self.caller_file_line_range = caller_file_line_range  # When created from a module
         self.resource_address = resource_address
         self.severity = severity
         self.bc_category = bc_category
         self.benchmarks = benchmarks
-        self.description = description
-        self.short_description = short_description
-        self.vulnerability_details = vulnerability_details
+        self.description = description  # used by SARIF output
+        self.short_description = short_description  # used by SARIF output
+        self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
+        self.guideline: str | None = None
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:

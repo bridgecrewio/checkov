@@ -23,6 +23,12 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_ADORepositoryHasMinTwoReviewers(self):
+        self.go("ADORepositoryHasMinTwoReviewers")
+
+    def test_CodecommitApprovalRulesAttached(self):
+        self.go("CodecommitApprovalRulesAttached")
+
     def test_RepositoryHasBranchProtection(self):
         self.go("RepositoryHasBranchProtection")
 
@@ -244,6 +250,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_S3KMSEncryptedByDefault(self):
         self.go("S3KMSEncryptedByDefault")
+
+    def test_S3BucketReplicationConfiguration(self):
+        self.go("S3BucketReplicationConfiguration")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(

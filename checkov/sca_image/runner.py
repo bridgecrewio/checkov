@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
@@ -31,7 +33,7 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.base_url = bc_integration.api_url
-        self.image_referencers: Optional[ImageReferencer] = None
+        self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
         return is_docker_file(os.path.basename(filename))  # type:ignore[no-any-return]
@@ -60,7 +62,7 @@ class Runner(PackageRunner):
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
-            output_path = Path('results.json')
+            output_path = Path(f'results-{image_id}.json')
             scan_result = asyncio.run(self.execute_scan(image_id, output_path))
             self.upload_results_to_cache(output_path, image_id)
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")

@@ -4,7 +4,7 @@ from checkov.common.graph.graph_builder.variable_rendering.vertex_reference impo
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
-class TerraformVertexReference(VertexReference):
+class TerraformVertexReference(VertexReference[BlockType]):
     def __init__(self, block_type: Union[str, BlockType], sub_parts: List[str], origin_value: str) -> None:
         super().__init__(block_type, sub_parts, origin_value)
 

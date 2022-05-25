@@ -11,4 +11,4 @@ class WithinAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return vertex.get(attribute) in self.value
+        return vertex.get(attribute) in self.value  # type:ignore[arg-type]  # due to attribute can be None

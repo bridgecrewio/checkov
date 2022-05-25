@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.39",
+        "bc-python-hcl2==0.3.40",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -56,9 +56,9 @@ setup(
         "argcomplete",
         "detect-secrets",
         "policyuniverse",
-        "typing-extensions",
+        "typing-extensions>=4.1.0",
         "cachetools",
-        "cyclonedx-python-lib>=0.11.0,<1.0.0",
+        "cyclonedx-python-lib>=2.4.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
@@ -66,7 +66,7 @@ setup(
         "jsonpath_ng",
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.4",
+        "pycep-parser==0.3.6",
         "charset-normalizer",
     ],
     license="Apache License 2.0",
@@ -84,14 +84,14 @@ setup(
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
+        "checkov": ["py.typed"],
+        "checkov.bicep.checks.graph_checks": ["*.yaml"],
+        "checkov.common.util.templates": ["*.jinja2"],
         "checkov.terraform.checks.graph_checks": [
             "aws/*.yaml",
             "gcp/*.yaml",
             "azure/*.yaml",
         ],
-        "checkov.common.util.templates": [
-            "*.jinja2"
-        ]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
@@ -100,11 +100,14 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Topic :: Security",
         "Topic :: Software Development :: Build Tools",
+        "Typing :: Typed",
     ],
 )

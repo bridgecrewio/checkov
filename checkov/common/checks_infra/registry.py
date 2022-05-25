@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Any, TYPE_CHECKING
 
 import yaml
 
@@ -14,13 +14,16 @@ from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.runner_filter import RunnerFilter
 from checkov.common.checks_infra.resources_types import resources_types
 
+if TYPE_CHECKING:
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+
 CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
 
 
 class Registry(BaseRegistry):
     def __init__(self, checks_dir: str, parser: BaseGraphCheckParser = BaseGraphCheckParser()) -> None:
         super().__init__(parser)
-        self.checks = []
+        self.checks: list[BaseGraphCheck] = []
         self.parser = parser
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
@@ -57,7 +60,7 @@ class Registry(BaseRegistry):
         self._load_checks_from_dir(dir, True)
 
     @staticmethod
-    def _get_resource_types(check_json: Dict[str, Dict[str, Any]]) -> Optional[List[str]]:
+    def _get_resource_types(check_json: dict[str, dict[str, Any]]) -> list[str] | None:
         provider = check_json.get("scope", {}).get("provider", "").lower()
         return resources_types.get(provider)
 

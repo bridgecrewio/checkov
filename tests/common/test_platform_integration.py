@@ -92,6 +92,13 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertTrue(get_source_type('xyz').upload_results)
         self.assertTrue(get_source_type(None).upload_results)
 
+    def test_run_config_url(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '00000000-0000-0000-0000-000000000000'
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=bc'))
+        instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc'))
+
 
 def mock_customer_run_config():
     return {

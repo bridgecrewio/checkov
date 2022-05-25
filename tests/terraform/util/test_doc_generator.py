@@ -25,10 +25,10 @@ def test_get_checks_returned_check_number():
     [
         (["all"], {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
                    "github_configuration", "gitlab_configuration", "bitbucket_configuration", "bitbucket_pipelines",
-                   "github_actions", "OpenAPI"}),
+                   "github_actions", "OpenAPI", "gitlab_ci"}),
         (None, {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
                 "github_configuration", "bitbucket_pipelines", "gitlab_configuration", "bitbucket_configuration",
-                "github_actions", "OpenAPI"}),
+                "github_actions", "OpenAPI", "gitlab_ci"}),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],

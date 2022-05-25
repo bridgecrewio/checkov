@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import itertools
 import json
@@ -6,8 +8,10 @@ import os
 import re
 from abc import abstractmethod
 from collections import defaultdict
+from collections.abc import Iterable
 from json import dumps
-from typing import List, Union, Dict, Any, Tuple, Optional
+from pathlib import Path
+from typing import List, Dict, Any, Tuple, Optional, cast, TYPE_CHECKING
 
 from typing_extensions import Literal
 
@@ -15,19 +19,21 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
-from checkov.common.output.baseline import Baseline
+from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
-from checkov.common.util.ext_cyclonedx_xml import ExtXml
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
+
+if TYPE_CHECKING:
+    from checkov.common.output.baseline import Baseline
+    from checkov.common.runners.base_runner import BaseRunner
+    from checkov.runner_filter import RunnerFilter
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -62,11 +68,11 @@ class RunnerRegistry:
             external_checks_dir: Optional[List[str]] = None,
             files: Optional[List[str]] = None,
             collect_skip_comments: bool = True,
-            repo_root_for_plan_enrichment: Optional[List[Union[str, os.PathLike]]] = None,
+            repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
-            reports = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
+            reports: Iterable[Report] = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                            runner_filter=self.runner_filter,
                                            collect_skip_comments=collect_skip_comments)]
         else:
@@ -80,7 +86,7 @@ class RunnerRegistry:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports
 
-    def _handle_report(self, scan_report, repo_root_for_plan_enrichment):
+    def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
@@ -117,7 +123,7 @@ class RunnerRegistry:
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
-        data_outputs = defaultdict(str)
+        data_outputs: dict[str, str] = defaultdict(str)
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
@@ -178,8 +184,8 @@ class RunnerRegistry:
             if config.compact and report_jsons:
                 self.strip_code_blocks_from_json(report_jsons)
             if not report_jsons:
-                print(dumps(Report(None).get_summary(), indent=4, cls=CustomJSONEncoder))
-                data_outputs['json'] = json.dumps(Report(None).get_summary(), cls=CustomJSONEncoder)
+                print(dumps(Report("").get_summary(), indent=4, cls=CustomJSONEncoder))
+                data_outputs['json'] = json.dumps(Report("").get_summary(), cls=CustomJSONEncoder)
             elif len(report_jsons) == 1:
                 print(dumps(report_jsons[0], indent=4, cls=CustomJSONEncoder))
                 data_outputs['json'] = json.dumps(report_jsons[0], cls=CustomJSONEncoder)
@@ -198,7 +204,7 @@ class RunnerRegistry:
                     for report in junit_reports
                 ]
             else:
-                test_suites = [Report(None).get_test_suite(properties=properties)]
+                test_suites = [Report("").get_test_suite(properties=properties)]
 
             data_outputs['junitxml'] = Report.get_junit_xml_string(test_suites)
             print(data_outputs['junitxml'])
@@ -216,9 +222,16 @@ class RunnerRegistry:
                     report.failed_checks += r.failed_checks
             else:
                 report = cyclonedx_reports[0]
-            cyclonedx_output = ExtXml(bom=report.get_cyclonedx_bom())
-            print(cyclonedx_output.output_as_string())
-            data_outputs['cyclonedx'] = cyclonedx_output.output_as_string()
+
+            cyclonedx = CycloneDX(
+                passed_checks=report.passed_checks,
+                failed_checks=report.failed_checks,
+                skipped_checks=report.skipped_checks,
+            )
+            cyclonedx_output = cyclonedx.get_xml_output()
+
+            print(cyclonedx_output)
+            data_outputs["cyclonedx"] = cyclonedx_output
             output_formats.remove("cyclonedx")
             if output_formats:
                 print(OUTPUT_DELIMITER)
@@ -234,7 +247,7 @@ class RunnerRegistry:
                                          data=data_outputs[output],
                                          data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
-        return exit_code
+        return cast(Literal[0, 1], exit_code)
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
@@ -245,7 +258,7 @@ class RunnerRegistry:
             return
         self.runners = [runner for runner in self.runners if runner.check_type in self.runner_filter.framework]
 
-    def filter_runners_for_files(self, files: List[str]):
+    def filter_runners_for_files(self, files: List[str]) -> None:
         if not files:
             return
 
@@ -264,11 +277,11 @@ class RunnerRegistry:
                 record.set_guideline(guideline)
 
     @staticmethod
-    def get_enriched_resources(repo_roots: List[Union[str, os.PathLike]]) -> Dict[str, Dict[str, Any]]:
+    def get_enriched_resources(repo_roots: list[str | Path]) -> dict[str, dict[str, Any]]:
         repo_definitions = {}
         for repo_root in repo_roots:
-            tf_definitions = {}
-            parsing_errors = {}
+            tf_definitions: dict[str, Any] = {}
+            parsing_errors: dict[str, Exception] = {}
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
@@ -306,11 +319,11 @@ class RunnerRegistry:
                             }
         return enriched_resources
 
-    def _get_image_referencing_runners(self):
+    def _get_image_referencing_runners(self) -> set[ImageReferencer]:
         image_referencing_runners = set()
         for runner in self.runners:
             if issubclass(runner.__class__, ImageReferencer):
-                image_referencing_runners.add(runner)
+                image_referencing_runners.add(cast(ImageReferencer, runner))
 
         return image_referencing_runners
 

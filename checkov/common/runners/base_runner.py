@@ -55,9 +55,9 @@ class BaseRunner(ABC):
     @abstractmethod
     def run(
             self,
-            root_folder: str,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
+            root_folder: str | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
     ) -> Report:

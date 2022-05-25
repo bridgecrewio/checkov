@@ -1,0 +1,4 @@
+fail:
+  - "aws_codecommit_repository.fail"
+pass:
+  - "aws_codecommit_repository.pass"

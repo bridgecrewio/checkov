@@ -1,24 +1,40 @@
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
 from checkov.common.checks.enums import BlockType
+from checkov.common.typing import _SkippedCheck, _ScannerCallableAlias
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self._scanner = {
+        self._scanner: dict[str, _ScannerCallableAlias] = {
             BlockType.ARRAY: self._scan_array,
             BlockType.OBJECT: self._scan_object,
         }
 
     def _scan_array(
-            self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_info: _SkippedCheck,
+        entity: dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: dict[str, Any],
+    ) -> None:
         if isinstance(entity, dict):
             analayzed_dict = entity.get(entity_type, {})
             for item, item_conf in analayzed_dict.items():
                 if '__startline__' != item and '__endline__' != item:
-                    result = self.update_result(
+                    self.update_result(
                         check,
                         item_conf,
                         item,
@@ -43,8 +59,15 @@ class Registry(BaseCheckRegistry):
                         break
 
     def _scan_object(
-            self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_info: _SkippedCheck,
+        entity: dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: dict[str, Any],
+    ) -> None:
         if entity_name in entity:
             self.update_result(
                 check,
@@ -57,23 +80,30 @@ class Registry(BaseCheckRegistry):
             )
 
     def _scan_document(
-            self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_info: _SkippedCheck,
+        entity: dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: dict[str, Any],
+    ) -> None:
         self.update_result(
             check, entity, entity_name, entity_type, results, scanned_file, skip_info
         )
 
     def _scan(
-            self,
-            scanned_file,
-            checks,
-            skipped_checks,
-            runner_filter,
-            entity,
-            entity_name,
-            entity_type,
-            results,
-    ):
+        self,
+        scanned_file: str,
+        checks: list[BaseCheck],
+        skipped_checks: list[_SkippedCheck],
+        runner_filter: RunnerFilter,
+        entity: dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: dict[str, Any],
+    ) -> None:
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
@@ -101,8 +131,14 @@ class Registry(BaseCheckRegistry):
                     results,
                 )
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
-        results = {}
+    def scan(  # type:ignore[override]  # return type is different than the base class
+        self,
+        scanned_file: str,
+        entity: dict[str, Any],
+        skipped_checks: list[_SkippedCheck],
+        runner_filter: RunnerFilter,
+    ) -> dict[str, Any]:
+        results: dict[str, Any] = {}
 
         if not entity:
             return results
@@ -134,15 +170,15 @@ class Registry(BaseCheckRegistry):
         return results
 
     def update_result(
-            self,
-            check,
-            entity_configuration,
-            entity_name,
-            entity_type,
-            results,
-            scanned_file,
-            skip_info,
-    ):
+        self,
+        check: BaseCheck,
+        entity_configuration: dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: dict[str, Any],
+        scanned_file: str,
+        skip_info: _SkippedCheck,
+    ) -> CheckResult:
         check_result = self.run_check(
             check,
             entity_configuration,
@@ -180,3 +216,7 @@ class Registry(BaseCheckRegistry):
 
     def get_key(self, entity_type: str, entity_name: str, check_id: str, file_path: str) -> str:
         return f'{entity_type}.{entity_name}.{check_id}'
+
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
+        # not used, but is an abstractmethod
+        pass

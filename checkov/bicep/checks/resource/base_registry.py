@@ -21,7 +21,7 @@ class Registry(BaseCheckRegistry):
 
     def register(self, check: BaseCheck) -> None:
         # a copy of the original method to be able to prioritize Bicep styled checks over the ARM equivalent
-        if self._BaseCheckRegistry__loading_external_checks:
+        if self._BaseCheckRegistry__loading_external_checks:  # type:ignore[attr-defined]  # they exist
             RunnerFilter.notify_external_check(check.id)
 
         # don't add an ARM check, if a Bicep graph check exists for it
@@ -47,9 +47,9 @@ class Registry(BaseCheckRegistry):
             checks[entity].append(check)
             self.check_id_to_enitity_map.setdefault(check.id, []).append(entity)
 
-        self._BaseCheckRegistry__all_registered_checks.append(check)
+        self._BaseCheckRegistry__all_registered_checks.append(check)  # type:ignore[attr-defined]  # they exist
 
-    def extract_entity_details(self, entity: dict[str, ResourceAttributes]) -> tuple[str, str, ResourceAttributes]:
+    def extract_entity_details(self, entity: dict[str, ResourceAttributes]) -> tuple[str, str, ResourceAttributes]:  # type:ignore[override]  # it's ok
         resource_name, resource = next(iter(entity.items()))
         resource_type = resource["type"]
         return resource_type, resource_name, resource

@@ -42,6 +42,7 @@ from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
+from checkov.gitlab_ci.runner import Runner as gitlab_ci_runner
 from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -79,6 +80,7 @@ DEFAULT_RUNNERS = (
     yaml_runner(),
     github_configuration_runner(),
     gitlab_configuration_runner(),
+    gitlab_ci_runner(),
     bitbucket_configuration_runner(),
     bitbucket_pipelines_runner(),
     kustomize_runner(),
@@ -134,9 +136,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
-                                 download_external_modules=convert_str_to_bool(config.download_external_modules),
+                                 download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
                                  external_modules_download_path=config.external_modules_download_path,
-                                 evaluate_variables=convert_str_to_bool(config.evaluate_variables),
+                                 evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package)
@@ -226,7 +228,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
         return None
 
     baseline = None

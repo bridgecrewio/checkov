@@ -16,9 +16,9 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(framework='github_actions', checks=checks)
         )
-        self.assertEqual(len(report.failed_checks), 6)
+        self.assertEqual(len(report.failed_checks), 7)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 18)
+        self.assertEqual(len(report.passed_checks), 35)
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 

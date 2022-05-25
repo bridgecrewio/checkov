@@ -17,17 +17,20 @@ class TestRedShiftSSL(unittest.TestCase):
 
         passing_resources = {
             "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupEnabled",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupEnabledBool",
         }
         failing_resources = {
             "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDefault",
             "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDisabled",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDefault2",
+            "AWS::Redshift::ClusterParameterGroup.RedshiftParameterGroupDisabled2",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

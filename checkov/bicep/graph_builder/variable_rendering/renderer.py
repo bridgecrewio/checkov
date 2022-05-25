@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from pycep.transformer import BicepElement
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
+from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
 
@@ -41,8 +42,12 @@ class BicepVariableRenderer(VariableRenderer):
             vertex = self.local_graph.vertices[dest_index]
 
             if vertex.block_type == BlockType.PARAM:
-                default = vertex.attributes.get("default")
-                if default:
-                    return "default", default
+                new_value = vertex.attributes.get("default")
+                if new_value:
+                    new_value = adjust_value(element_name=origin_value, value=new_value)
+                    return "default", new_value
+            elif vertex.block_type == BlockType.VAR:
+                new_value = adjust_value(element_name=origin_value, value=vertex.attributes["value"])
+                return "value", new_value
 
         return None, None

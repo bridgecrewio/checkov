@@ -12,4 +12,4 @@ class JsonpathExistsAttributeSolver(JsonpathEqualsAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return vertex.get(attribute) is not None
+        return vertex.get(attribute) is not None  # type:ignore[arg-type]  # due to attribute can be None

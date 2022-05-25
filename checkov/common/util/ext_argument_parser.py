@@ -1,24 +1,30 @@
+from __future__ import annotations
+
 from io import StringIO
+from typing import Any, TYPE_CHECKING, cast
 
 import configargparse
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 
+if TYPE_CHECKING:
+    import argparse
+
 
 class ExtArgumentParser(configargparse.ArgumentParser):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.fields_to_sanitize = set()
+        self.fields_to_sanitize: set[Any] = set()
 
-    def add(self, *args, **kwargs):
+    def add(self, *args: Any, **kwargs: Any) -> None:
         if kwargs.pop('sanitize', False):
             self.fields_to_sanitize.add(args[0])
         super().add(*args, **kwargs)
 
     def format_values(self, sanitize: bool = False) -> str:
         if not sanitize:
-            return super().format_values()
+            return cast(str, super().format_values())
 
         source_key_to_display_value_map = {
             configargparse._COMMAND_LINE_SOURCE_KEY: "Command Line Args: ",
@@ -53,7 +59,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
 
         return r.getvalue()
 
-    def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False):
+    def write_config_file(self, parsed_namespace: argparse.Namespace, output_file_paths: list[str], exit_after: bool = False) -> None:
         """
         Write the given settings to output files. Overrides write_config_file from the class ArgumentParser for
         correcting types of some attributes (example: check, skip_check)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from checkov.common.util.type_forcers import force_int
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
 
@@ -18,8 +19,8 @@ class BranchProtectionReviewNumTwo(BaseResourceCheck):
         if conf.get("required_pull_request_reviews") and isinstance(conf.get("required_pull_request_reviews"), list):
             review = conf.get("required_pull_request_reviews")[0]
             if review.get("required_approving_review_count") and isinstance(review.get("required_approving_review_count"),list):
-                count = review.get("required_approving_review_count")[0]
-                if count >= 2:
+                count = force_int(review.get("required_approving_review_count")[0])
+                if count and count >= 2:
                     return CheckResult.PASSED
         self.evaluated_keys = ["required_pull_request_reviews/[0]/required_approving_review_count"]
         return CheckResult.FAILED

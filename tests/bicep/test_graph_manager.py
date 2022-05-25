@@ -35,7 +35,7 @@ def test_build_graph_from_source_directory():
         "api_version": "2019-06-01",
         "existing": False,
         "config": {
-            "name": "diagStorageAccountName",
+            "name": "diags${uniqueString(resourceGroup().id)}",
             "location": {
                 "function": {
                     "type": "resource_group",
@@ -76,7 +76,7 @@ def test_build_graph_from_definitions():
         "api_version": "2019-06-01",
         "existing": False,
         "config": {
-            "name": "diagStorageAccountName",
+            "name": "diags${uniqueString(resourceGroup().id)}",
             "location": {
                 "function": {
                     "type": "resource_group",

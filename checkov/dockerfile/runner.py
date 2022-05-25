@@ -67,29 +67,70 @@ class Runner(BaseRunner):
                 endline = len(definitions_raw[docker_file_path]) - 1
                 result_instruction = ""
                 if result_configuration:
-                    startline = result_configuration['startline']
-                    endline = result_configuration['endline']
-                    result_instruction = result_configuration["instruction"]
-
-                codeblock = []
-                self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
-                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                code_block=codeblock,
-                                file_path=docker_file_path,
-                                file_line_range=[startline + 1,
-                                                 endline + 1],
-                                resource=f"{docker_file_path}.{result_instruction}",
-                                evaluations=None, check_class=check.__class__.__module__,
-                                file_abs_path=file_abs_path, entity_tags=None,
-                                severity=check.severity)
-                record.set_guideline(check.guideline)
-                report.add_record(record=record)
+                    if isinstance(result_configuration,list):
+                        for res in result_configuration:
+                            startline = res['startline']
+                            endline = res['endline']
+                            result_instruction = res["instruction"]
+                            self.build_record(report, 
+                                              definitions_raw, 
+                                              docker_file_path, 
+                                              file_abs_path, 
+                                              check, 
+                                              check_result, 
+                                              startline, 
+                                              endline, 
+                                              result_instruction)
+                    else:
+                        startline = result_configuration['startline']
+                        endline = result_configuration['endline']
+                        result_instruction = result_configuration["instruction"]
+                        self.build_record(report, 
+                                          definitions_raw, 
+                                          docker_file_path, 
+                                          file_abs_path, 
+                                          check, 
+                                          check_result, 
+                                          startline,
+                                          endline, 
+                                          result_instruction)
+                else:
+                    self.build_record(report, 
+                                      definitions_raw, 
+                                      docker_file_path, 
+                                      file_abs_path, 
+                                      check, 
+                                      check_result, 
+                                      startline, 
+                                      endline, 
+                                      result_instruction)
 
         return report
 
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
+
+    def build_record(self, report, definitions_raw, docker_file_path, file_abs_path, check, check_result, startline, endline, result_instruction):
+        codeblock = []
+        self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
+        record = Record(
+            check_id=check.id,
+            bc_check_id=check.bc_id,
+            check_name=check.name,
+            check_result=check_result,
+            code_block=codeblock,
+            file_path=docker_file_path,
+            file_line_range=[startline + 1, endline + 1],
+            resource=f"{docker_file_path}.{result_instruction}",
+            evaluations=None,
+            check_class=check.__class__.__module__,
+            file_abs_path=file_abs_path,
+            entity_tags=None,
+            severity=check.severity,
+        )
+        record.set_guideline(check.guideline)
+        report.add_record(record=record)
 
 
 def get_files_definitions(files: List[str], filepath_fn=None) \

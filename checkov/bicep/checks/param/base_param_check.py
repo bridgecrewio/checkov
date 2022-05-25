@@ -30,7 +30,7 @@ class BaseParamCheck(BaseCheck):
         self.supported_type = supported_type
         registry.register(self)
 
-    def scan_entity_conf(self, conf: ParameterAttributes, entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: ParameterAttributes, entity_type: str) -> CheckResult:  # type:ignore[override]  # it's ok
         self.entity_type = entity_type
 
         return self.scan_param_conf(conf)

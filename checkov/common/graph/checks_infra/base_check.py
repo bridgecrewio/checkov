@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
@@ -28,11 +30,15 @@ class BaseGraphCheck:
         self.benchmarks: Dict[str, List[str]] = {}
         self.severity: Optional[Severity] = None
         self.bc_category: Optional[str] = None
+        self.frameworks: list[str] = []
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        if not self.solver:
+            raise AttributeError("solver attribute was not set")
+
         return self.solver.run(graph_connector=graph_connector)
 
     def get_output_id(self, use_bc_ids: bool) -> str:

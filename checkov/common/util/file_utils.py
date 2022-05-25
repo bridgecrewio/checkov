@@ -1,3 +1,4 @@
+import tarfile
 import base64
 import gzip
 import io
@@ -6,6 +7,11 @@ import logging
 
 def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
+
+
+def extract_tar_archive(source_path: str, dest_path: str) -> None:
+    with tarfile.open(source_path) as tar:
+        tar.extractall(path=dest_path)
 
 
 def compress_file_gzip_base64(input_path: str) -> str:
@@ -21,7 +27,7 @@ def compress_file_gzip_base64(input_path: str) -> str:
         raise
 
 
-def decompress_file_gzip_base64(compressed_file_body: str) -> str:
+def decompress_file_gzip_base64(compressed_file_body: str) -> bytes:
     try:
         # 1. convert string to bytes
         # 2. decode base64 data

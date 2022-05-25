@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, Dict, List, Callable
 
 from checkov.common.checks.base_check import BaseCheck
@@ -96,8 +98,13 @@ class Registry(BaseCheckRegistry):
                     results,
                 )
 
-    def scan(self, scanned_file: str, entity: Dict[str, Any], skipped_checks: List[_SkippedCheck],
-             runner_filter: RunnerFilter) -> Dict[str, Any]:
+    def scan(  # type:ignore[override]  # return type is different than the base class
+        self,
+        scanned_file: str,
+        entity: Dict[str, Any],
+        skipped_checks: List[_SkippedCheck],
+        runner_filter: RunnerFilter
+    ) -> Dict[str, Any]:
         results: Dict[str, Any] = {}
 
         if not entity:
@@ -173,3 +180,7 @@ class Registry(BaseCheckRegistry):
             "results_configuration": entity_configuration,
         }
         return result
+
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
+        # not used, but is an abstractmethod
+        pass

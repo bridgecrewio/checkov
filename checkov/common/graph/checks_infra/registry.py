@@ -15,7 +15,7 @@ class BaseRegistry:
         self.checks: List[BaseGraphCheck] = []
         self.parser = parser
 
-    def load_checks(self):
+    def load_checks(self) -> None:
         raise NotImplementedError
 
     def run_checks(

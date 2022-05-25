@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from typing import Any, Dict, List
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
-from checkov.common.typing import _SkippedCheck
+from checkov.common.typing import _SkippedCheck, _ScannerCallableAlias
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.enums import BlockType
 import jmespath
@@ -12,7 +14,7 @@ import jmespath
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
         super().__init__()
-        self._scanner = {
+        self._scanner: dict[str, _ScannerCallableAlias] = {
             BlockType.ARRAY: self._scan_yaml_array,
             BlockType.OBJECT: self._scan_yaml_object,
         }
@@ -126,8 +128,13 @@ class Registry(BaseCheckRegistry):
                     results,
                 )
 
-    def scan(self, scanned_file: str, entity: Dict[str, Any], skipped_checks: List[_SkippedCheck],
-             runner_filter: RunnerFilter) -> Dict[str, Any]:
+    def scan(  # type:ignore[override]  # return type is different than the base class
+        self,
+        scanned_file: str,
+        entity: Dict[str, Any],
+        skipped_checks: List[_SkippedCheck],
+        runner_filter: RunnerFilter
+    ) -> Dict[str, Any]:
         results: Dict[str, Any] = {}
 
         if not entity:
@@ -219,3 +226,7 @@ class Registry(BaseCheckRegistry):
         if "__startline__" and "__endline__" in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration["__startline__"]}:{entity_configuration["__endline__"]}]'
         return f'{entity_type}.{entity_name}.{check.id}'
+
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
+        # not used, but is an abstractmethod
+        pass

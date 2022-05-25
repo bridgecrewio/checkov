@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 
-class NetworkxConnector(DBConnector):
+class NetworkxConnector(DBConnector[nx.DiGraph]):
     def __init__(self) -> None:
         self.graph = nx.DiGraph()
 

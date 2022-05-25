@@ -31,7 +31,7 @@ class BaseResourceCheck(BaseCheck):
         self.supported_resources = supported_resources
         registry.register(self)
 
-    def scan_entity_conf(self, conf: ResourceAttributes, entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: ResourceAttributes, entity_type: str) -> CheckResult:  # type:ignore[override]  # it's ok
         if conf["existing"] is True:
             # the existing keyword is used to retrieve information about an already deployed resource
             return CheckResult.UNKNOWN

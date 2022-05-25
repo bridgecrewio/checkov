@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -36,7 +38,7 @@ class VariableRenderer(ABC):
         edges_to_render = self.local_graph.get_in_edges(end_vertices_indexes)
         end_vertices_indexes = set()
         loops = 0
-        evaluated_edges_cache = [[], []]
+        evaluated_edges_cache: list[list[Edge]] = [[], []]
         duplicates_count = 0
         while edges_to_render:
             evaluated_edges_two_iter_ago = evaluated_edges_cache[-2]

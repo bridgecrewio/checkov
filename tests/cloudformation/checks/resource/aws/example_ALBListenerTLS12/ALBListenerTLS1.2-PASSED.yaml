@@ -15,10 +15,11 @@ Conditions:
       - !Ref UseHttps
       - 'true'
 Resources:
-  LoadBalancer:
+  ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Name: CheckovTest
+      Type: application
       Subnets: !Ref Subnets
       SecurityGroups:
         - sg-1234567
@@ -26,7 +27,7 @@ Resources:
   ListenerHTTPSPASSED1:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref LoadBalancer
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 443
       Protocol: HTTPS
       Certificates:
@@ -36,23 +37,10 @@ Resources:
         - Type: forward
           TargetGroupArn: default-target-group
 
-  ListenerHTTPSPASSED2:
+  ListenerHTTPPASSED2:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      LoadBalancerArn: !Ref LoadBalancer
-      Port: 443
-      Protocol: TLS
-      Certificates:
-        - CertificateArn: test-cert
-      SslPolicy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: default-target-group
-
-  ListenerHTTPPASSED3:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref LoadBalancer
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: 80
       Protocol: HTTP
       DefaultActions:
@@ -68,6 +56,9 @@ Resources:
   ListenerHTTPUnknown:
      Type: AWS::ElasticLoadBalancingV2::Listener
      Properties:
+       LoadBalancerArn: !Ref ApplicationLoadBalancer
+       Port: 80
+       Protocol: HTTP
        DefaultActions: !If
         - IsHttps
         -
@@ -80,6 +71,59 @@ Resources:
         -
           - TargetGroupArn: default-target-group
             Type: forward
-       LoadBalancerArn: !Ref LoadBalancer
-       Port: 80
-       Protocol: HTTP
+
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Type: network
+      Subnets: !Ref Subnets
+
+  ListenerTLSPASSED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSPASSED2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-2-Ext2-2021-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSPASSED3:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-TLS13-1-3-2021-06
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTCPPASSED4:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group

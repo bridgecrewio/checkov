@@ -14,15 +14,15 @@ from checkov.terraform.runner import Runner as tf_runner
 performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
-        'threshold': 15.0
+        'threshold': 13.0
     },
     'cloudformation': {
         'repo_name': 'aws-cloudformation-templates',
-        'threshold': 700.0
+        'threshold': 300.0
     },
     'kubernetes': {
         'repo_name': 'kubernetes-yaml-templates',
-        'threshold': 450.0
+        'threshold': 400.0
     }
 }
 

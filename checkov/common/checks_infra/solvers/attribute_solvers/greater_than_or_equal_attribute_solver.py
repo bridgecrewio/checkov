@@ -13,7 +13,7 @@ class GreaterThanOrEqualAttributeSolver(BaseAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
 
-        vertex_attr = vertex.get(attribute)
+        vertex_attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         attr_float = force_float(vertex_attr)
         value_float = force_float(self.value)
 

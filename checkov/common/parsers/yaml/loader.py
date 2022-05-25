@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import Any, TYPE_CHECKING
 
 import yaml
 from yaml.loader import SafeLoader
 
+if TYPE_CHECKING:
+    from yaml import MappingNode
 
-def loads(content: str) -> Dict[str, Any]:
+
+def loads(content: str) -> list[dict[str, Any]]:
     """
     Load the given YAML string
     """
@@ -19,7 +24,7 @@ def loads(content: str) -> Dict[str, Any]:
     return template
 
 
-def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
+def load(filename: Path) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
     """
     Load the given YAML file
     """
@@ -35,8 +40,8 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
 
 class SafeLineLoader(SafeLoader):
-    def construct_mapping(self, node, deep=False):
-        mapping = super(SafeLineLoader, self).construct_mapping(node, deep=deep)
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
+        mapping = super().construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1

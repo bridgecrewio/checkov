@@ -57,6 +57,8 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
+          TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
@@ -142,7 +144,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions bicep openapi bitbucket_pipelines all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"

@@ -18,8 +18,8 @@ class ReadinessProbe(BaseResourceValueCheck):
         return "spec/[0]/container/[0]/readiness_probe/[0]"
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf.get('spec')[0]
-        if spec:
+        spec = conf.get('spec', [None])[0]
+        if isinstance(spec, dict) and spec:
             containers = spec.get("container")
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):
