@@ -1,17 +1,14 @@
+from __future__ import annotations
+
 import argparse
-import itertools
 import json
 import logging
-import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import List, Dict, Union, Any, Optional, Set
+from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
 
 from colorama import init
-from cyclonedx.model.bom import Bom, Tool
-from cyclonedx.model.component import Component
-from cyclonedx.model.vulnerability import Vulnerability
-from junit_xml import TestCase, TestSuite, to_xml_report_string
+from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate
 from termcolor import colored
 
@@ -23,6 +20,9 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
 from checkov.version import version
+
+if TYPE_CHECKING:
+    from checkov.common.output.baseline import Baseline
 
 init(autoreset=True)
 
@@ -104,53 +104,7 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_cyclonedx_bom(self) -> Bom:
-        bom = Bom()
-
-        if sys.version_info >= (3, 8, 0):
-            from importlib.metadata import version as meta_version
-        else:
-            from importlib_metadata import version as meta_version
-
-        try:
-            this_tool = Tool(vendor='bridgecrew', name='checkov', version=meta_version('checkov'))
-        except Exception:
-            # Unable to determine current version of 'checkov'
-            this_tool = Tool(vendor='bridgecrew', name='checkov', version='UNKNOWN')
-        bom.get_metadata().add_tool(this_tool)
-
-        for check in itertools.chain(self.passed_checks, self.skipped_checks):
-            component = Component.for_file(
-                absolute_file_path=check.file_abs_path,
-                path_for_bom=check.file_path
-            )
-
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(purl=component.get_purl())
-
-            bom.add_component(component=component)
-
-        for failed_check in self.failed_checks:
-            component = Component.for_file(
-                absolute_file_path=failed_check.file_abs_path,
-                path_for_bom=failed_check.file_path
-            )
-
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(purl=component.get_purl())
-
-            component.add_vulnerability(
-                Vulnerability(
-                    id=failed_check.check_id, source_name='checkov',
-                    description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
-                    advisories=[failed_check.guideline]
-                )
-            )
-            bom.add_component(component=component)
-
-        return bom
-
-    def get_dict(self, is_quiet=False, url="") -> dict:
+    def get_dict(self, is_quiet: bool = False, url: str = "") -> dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -175,10 +129,10 @@ class Report:
             }
 
     def get_exit_code(
-            self,
-            soft_fail: bool,
-            soft_fail_on: Optional[list] = None,
-            hard_fail_on: Optional[list] = None,
+        self,
+        soft_fail: bool,
+        soft_fail_on: list[str] | None = None,
+        hard_fail_on: list[str] | None = None,
     ) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
@@ -249,18 +203,18 @@ class Report:
 
     def is_empty(self) -> bool:
         return (
-                len(self.passed_checks + self.failed_checks + self.skipped_checks)
-                + len(self.parsing_errors)
-                == 0
+            len(self.passed_checks + self.failed_checks + self.skipped_checks)
+            + len(self.parsing_errors)
+            == 0
         )
 
     def print_console(
-            self,
-            is_quiet=False,
-            is_compact=False,
-            created_baseline_path=None,
-            baseline=None,
-            use_bc_ids=False,
+        self,
+        is_quiet: bool = False,
+        is_compact: bool = False,
+        created_baseline_path: str | None = None,
+        baseline: Baseline | None = None,
+        use_bc_ids: bool = False,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -297,12 +251,14 @@ class Report:
 
         if created_baseline_path:
             output_data += colored(
-                    f"Created a checkov baseline file at {created_baseline_path}",
-                    "blue",)
+                f"Created a checkov baseline file at {created_baseline_path}",
+                "blue",
+            )
         if baseline:
             output_data += colored(
-                    f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
-                    "blue",)
+                f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
+                "blue",
+            )
         return output_data
 
     @staticmethod
@@ -420,9 +376,9 @@ class Report:
 
     @staticmethod
     def get_junit_xml_string(ts: List[TestSuite]) -> str:
-        return to_xml_report_string(ts)
+        return cast(str, to_xml_report_string(ts))
 
-    def print_failed_github_md(self, use_bc_ids=False) -> str:
+    def print_failed_github_md(self, use_bc_ids: bool = False) -> str:
         result = []
         for record in self.failed_checks:
             result.append(
@@ -435,10 +391,11 @@ class Report:
                 ]
             )
         output_data = tabulate(
-                result,
-                headers=["check_id", "file", "resource", "check_name", "guideline"],
-                tablefmt="github",
-                showindex=True,) + "\n\n---\n\n"
+            result,
+            headers=["check_id", "file", "resource", "check_name", "guideline"],
+            tablefmt="github",
+            showindex=True,
+        ) + "\n\n---\n\n"
         print(output_data)
         return output_data
 
@@ -454,6 +411,11 @@ class Report:
                 severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
+                if not record.vulnerability_details:
+                    # this shouldn't normally happen
+                    logging.warning(f"Vulnerability check without details {record.file_path}")
+                    continue
+
                 check_id = record.vulnerability_details["id"]
                 test_name_detail = f"{record.vulnerability_details['package_name']}: {record.vulnerability_details['package_version']}"
                 class_name = f"{record.file_path}.{record.vulnerability_details['package_name']}"
@@ -528,17 +490,21 @@ class Report:
         failure_output = []
 
         if self.check_type == CheckType.SCA_PACKAGE:
-            failure_output.extend(
-                [
-                    "",
-                    f"Description: {record.description}",
-                    f"Link: {record.vulnerability_details.get('link')}",
-                    f"Published Date: {record.vulnerability_details.get('published_date')}",
-                    f"Base Score: {record.vulnerability_details.get('cvss')}",
-                    f"Vector: {record.vulnerability_details.get('vector')}",
-                    f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
-                ]
-            )
+            if record.vulnerability_details:
+                failure_output.extend(
+                    [
+                        "",
+                        f"Description: {record.description}",
+                        f"Link: {record.vulnerability_details.get('link')}",
+                        f"Published Date: {record.vulnerability_details.get('published_date')}",
+                        f"Base Score: {record.vulnerability_details.get('cvss')}",
+                        f"Vector: {record.vulnerability_details.get('vector')}",
+                        f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                    ]
+                )
+            else:
+                # this shouldn't normally happen
+                logging.warning(f"Vulnerability check without details {record.file_path}")
 
         failure_output.extend(
             [
@@ -612,15 +578,15 @@ class Report:
         return report
 
 
-def merge_reports(base_report, report_to_merge):
+def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.passed_checks.extend(report_to_merge.passed_checks)
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
 
 
-def remove_duplicate_results(report):
-    def dedupe_records(origin_records):
+def remove_duplicate_results(report: Report) -> Report:
+    def dedupe_records(origin_records: list[Record]) -> list[Record]:
         record_cache = []
         new_records = []
         for record in origin_records:
@@ -633,24 +599,3 @@ def remove_duplicate_results(report):
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)
     return report
-
-
-def report_to_cyclonedx(report: Report) -> Bom:
-    bom = Bom()
-
-    for failed_check in report.failed_checks:
-        component = Component.for_file(
-            absolute_file_path=failed_check.file_abs_path,
-            path_for_bom=failed_check.file_path
-        )
-
-        component.add_vulnerability(
-            Vulnerability(
-                id=failed_check.check_id, source_name='checkov',
-                description=f'Resource: {failed_check.resource}. {failed_check.check_name}',
-                advisories=[failed_check.guideline]
-            )
-        )
-        bom.add_component(component=component)
-
-    return bom

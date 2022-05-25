@@ -118,6 +118,8 @@ class BaseK8sContainerCheck(BaseK8Check):
         self, evaluated_key_prefix: str, container_type: str, metadata: Dict[str, Any], containers: List[Dict[str, Any]]
     ) -> CheckResult:
         """Check containers for possible violations."""
+        if not isinstance(containers, list):
+            return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
             result = self.scan_container_conf(metadata, container)
 

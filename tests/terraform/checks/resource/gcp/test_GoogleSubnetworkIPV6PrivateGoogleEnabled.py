@@ -18,7 +18,8 @@ class TestGoogleIPV6PrivateGoogleEnabled(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "google_compute_subnetwork.pass",
+            "google_compute_subnetwork.pass_out",
+            "google_compute_subnetwork.pass_bidi",
         }
 
         failing_resources = {
@@ -29,11 +30,11 @@ class TestGoogleIPV6PrivateGoogleEnabled(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 4)  # 1 unknown
+        self.assertEqual(summary["resource_count"], 5)  # 1 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

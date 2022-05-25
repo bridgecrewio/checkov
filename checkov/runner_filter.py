@@ -98,10 +98,10 @@ class RunnerFilter(object):
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
-                run_severity or
-                explicit_run or
-                implicit_run or
-                (is_external and self.all_external)
+            run_severity or
+            explicit_run or
+            implicit_run or
+            (is_external and self.all_external)
         )
 
         if not should_run_check:
@@ -111,17 +111,20 @@ class RunnerFilter(object):
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
         should_skip_check = (
-                skip_severity or
-                explicit_skip or
-                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
+            skip_severity or
+            explicit_skip or
+            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
         )
 
         if should_skip_check:
-            return False
+            result = False
         elif should_run_check:
-            return True
+            result = True
         else:
-            return False
+            result = False
+
+        logging.debug(f'Should run check {check_id}: {result}')
+        return result
 
     @staticmethod
     def check_matches(check_id: str,

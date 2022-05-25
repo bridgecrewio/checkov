@@ -18,6 +18,10 @@ v2 - OpenAPI 2.0.
 v3 - OpenAPI 3.  
 generic - for both OpenAPI 2 and 3.
 
+In case the check is for OpenAPI version 2.0, use parent class `BaseOpenapiCheckV2` and override check method `scan_openapi_conf`
+In case the check is for OpenAPI version 3, use parent class `BaseOpenapiCheckV3` and override check method `scan_openapi_conf`
+In case the check is a generic check for OpenAPI version 2.0 and 3, use parent class `BaseOpenapiCheck` and override check method `scan_entity_conf`
+
 ```python
 from __future__ import annotations
 from typing import Any

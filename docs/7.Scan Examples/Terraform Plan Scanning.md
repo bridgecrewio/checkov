@@ -78,7 +78,7 @@ In case third-party modules are stored in a private repository or a private Terr
 
 | Variable Name          | Description                                                                |
 |------------------------|----------------------------------------------------------------------------|
-| GITHUB_TOKEN           | Github personal access token with read access to the private repository    |
+| GITHUB_PAT             | Github personal access token with read access to the private repository    |
 | BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository |
 | TFC_TOKEN              | Terraform Cloud token which can access the private registry                |
 | BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD         |
