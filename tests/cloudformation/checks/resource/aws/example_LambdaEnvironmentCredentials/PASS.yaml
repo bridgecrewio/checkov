@@ -22,6 +22,19 @@ Resources:
       Runtime: nodejs12.x
       Role: arn:aws:iam::123456789012:role/lambda-role
       Handler: index.handler
+      Environment: None
+      Code:
+        ZipFile: |
+          print('hi')
+      Description: Invoke a function during stack creation.
+      TracingConfig:
+        Mode: Active
+  EnvNull:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs12.x
+      Role: arn:aws:iam::123456789012:role/lambda-role
+      Handler: index.handler
       Code:
         ZipFile: |
           print('hi')

@@ -18,7 +18,7 @@ class AdminPolicyDocument(BaseFunctionCheck):
         :return: <CheckResult>
         """
         key = IAM_ROLE_STATEMENTS_TOKEN
-        if key in conf.keys():
+        if conf.get(key):
             for statement in conf[key]:
                 if 'Action' in statement and statement.get('Effect') == 'Allow' and '*' in statement['Action'] \
                         and '*' in statement['Resource']:

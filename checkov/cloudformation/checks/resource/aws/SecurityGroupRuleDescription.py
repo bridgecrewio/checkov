@@ -19,12 +19,14 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
 
         if conf['Type'] == 'AWS::EC2::SecurityGroup':
             if 'Properties' in conf:
-                if 'SecurityGroupIngress' in conf['Properties']:
-                    for rule in conf['Properties']['SecurityGroupIngress']:
+                security_group_ingress_rules = conf.get('Properties', {}).get('SecurityGroupIngress')
+                if security_group_ingress_rules:
+                    for rule in security_group_ingress_rules:
                         if isinstance(rule, dict) and ('Description' not in rule or not rule['Description']):
                             return CheckResult.FAILED
-                if 'SecurityGroupEgress' in conf['Properties']:
-                    for rule in conf['Properties']['SecurityGroupEgress']:
+                security_group_egress_rules = conf.get('Properties', {}).get('SecurityGroupEgress')
+                if security_group_egress_rules:
+                    for rule in security_group_egress_rules:
                         if isinstance(rule, dict) and ('Description' not in rule.keys() or not rule['Description']):
                             return CheckResult.FAILED
                 return CheckResult.PASSED
