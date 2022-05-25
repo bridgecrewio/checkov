@@ -3,7 +3,7 @@ import os
 
 from flake8.options.manager import OptionManager
 
-from flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes_order.checker import ClassAttributesOrderChecker
+from flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes.checker import ClassAttributesOrderChecker
 
 
 def run_validator_for_test_file(filename, max_annotations_complexity=None,

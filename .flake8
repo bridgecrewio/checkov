@@ -8,6 +8,6 @@ extend-exclude = .github, .pytest_cache, admissioncontroller, bin, docs, github_
 
 [flake8:local-plugins]
 extension =
-  CCE = flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes_order.checker:ClassAttributesOrderChecker
+  CCE = flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes.checker:ClassAttributesChecker
 paths =
-  checkov/flake8_plugins/flake8_class_attributes_plugin/flake8_class_attributes_order
+  . flake8_plugins/flake8_class_attributes_plugin/flake8_class_attributes

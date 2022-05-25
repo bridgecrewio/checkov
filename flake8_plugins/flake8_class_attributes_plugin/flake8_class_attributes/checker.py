@@ -2,14 +2,14 @@ import ast
 from typing import Generator, Tuple, List
 
 from . import __version__ as version
-from node_type_weights import get_node_weights
-from model_parts_info import get_model_parts_info
-from ordering_errors import get_class_members_errors
+from . node_type_weights import get_node_weights
+from . model_parts_info import get_model_parts_info
+from . ordering_errors import get_class_members_errors
 
 
-class ClassAttributesOrderChecker:
+class ClassAttributesChecker:
 
-    name = 'flake8-class-attributes-order'
+    name = 'flake8-class-attributes'
     version = version
     options = None
 
