@@ -22,7 +22,6 @@ Resources:
       Runtime: nodejs12.x
       Role: arn:aws:iam::123456789012:role/lambda-role
       Handler: index.handler
-      Environment: None
       Code:
         ZipFile: |
           print('hi')
@@ -35,6 +34,7 @@ Resources:
       Runtime: nodejs12.x
       Role: arn:aws:iam::123456789012:role/lambda-role
       Handler: index.handler
+      Environment: None
       Code:
         ZipFile: |
           print('hi')
