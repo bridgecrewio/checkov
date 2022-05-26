@@ -45,8 +45,8 @@ class BaseK8sRootContainerCheck(BaseK8Check):
     @staticmethod
     def check_runAsNonRoot(spec):
         security_context = spec.get("securityContext")
-        if security_context and isinstance(security_context, dict) and "runAsNonRoot" in spec["securityContext"]:
-            if spec["securityContext"]["runAsNonRoot"]:
+        if security_context and isinstance(security_context, dict) and "runAsNonRoot" in security_context:
+            if security_context["runAsNonRoot"]:
                 return "PASSED"
             else:
                 return "FAILED"
