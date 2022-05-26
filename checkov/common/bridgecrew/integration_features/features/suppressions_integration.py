@@ -67,21 +67,24 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         # holds the checks that are still not suppressed
         still_failed_checks = []
-        for failed_check in scan_report.failed_checks:
-            relevant_suppressions = self.suppressions.get(failed_check.check_id)
+        still_passed_checks = []
+        for check in scan_report.failed_checks + scan_report.passed_checks:
+            relevant_suppressions = self.suppressions.get(check.check_id)
 
-            applied_suppression = self._check_suppressions(failed_check,
-                                                           relevant_suppressions) if relevant_suppressions else None
+            applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
-                failed_check.check_result = {
+                check.check_result = {
                     'result': CheckResult.SKIPPED,
                     'suppress_comment': applied_suppression['comment']
                 }
-                scan_report.skipped_checks.append(failed_check)
+                scan_report.skipped_checks.append(check)
+            elif check.check_result['result'] == CheckResult.FAILED:
+                still_failed_checks.append(check)
             else:
-                still_failed_checks.append(failed_check)
+                still_passed_checks.append(check)
 
         scan_report.failed_checks = still_failed_checks
+        scan_report.passed_checks = still_passed_checks
 
     def _check_suppressions(self, record, suppressions):
         """
