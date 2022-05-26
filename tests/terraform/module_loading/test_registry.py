@@ -1,6 +1,4 @@
 import os
-import shutil
-import unittest
 from contextlib import ExitStack as does_not_raise
 from pathlib import Path
 from unittest import mock
@@ -8,11 +6,6 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-
-os.environ['GITHUB_PAT'] = 'ghp_xxxxxxxxxxxxxxxxx'
-os.environ['BITBUCKET_TOKEN'] = 'xxxxxxxxxxxxxxxxx'
-os.environ['GITLAB_TOKEN'] = 'glpat-xxxxxxxxxxxxxxxxx'
-
 from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader # noqa
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
 from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
@@ -376,6 +369,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
     ],
     ids=["module"],
 )
+@mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_github_private(
     git_getter,
@@ -420,6 +414,7 @@ def test_load_github_private(
     ],
     ids=["module"],
 )
+@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_bitbucket_private(
     git_getter,
