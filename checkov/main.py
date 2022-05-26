@@ -222,6 +222,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.skip_download = True
 
     bc_integration.get_platform_run_config()
+    bc_integration.get_prisma_build_policies(config.filter)
 
     integration_feature_registry.run_pre_scan()
 
@@ -495,6 +496,8 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
+    parser.add('--filter', help='query string to filter policies based on Prisma Cloud policy metadata. Can only be '
+                                'used with Prisma Cloud')
 
 
 def get_external_checks_dir(config: Any) -> Any:

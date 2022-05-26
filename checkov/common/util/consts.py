@@ -9,3 +9,7 @@ DEV_API_POST_HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
 }
+
+PRISMA_API_GET_HEADERS = {
+    'Accept': 'application/json; charset=UTF-8'
+}

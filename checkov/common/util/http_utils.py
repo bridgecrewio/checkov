@@ -8,7 +8,7 @@ import os
 from typing import Any, TYPE_CHECKING, cast
 
 from checkov.common.bridgecrew.bc_source import SourceType
-from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
+from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
@@ -44,6 +44,12 @@ def get_auth_header(token: str) -> dict[str, str]:
     }
 
 
+def get_prisma_auth_header(token: str) -> dict[str, str]:
+    return {
+        'x-redlock-auth': token
+    }
+
+
 def get_version_headers(client: str, client_version: str) -> dict[str, str]:
     return {
         'x-api-client': client,
@@ -62,6 +68,10 @@ def get_default_get_headers(client: SourceType, client_version: str) -> dict[str
 
 def get_default_post_headers(client: SourceType, client_version: str) -> dict[str, Any]:
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
+
+
+def get_prisma_get_headers() -> dict[str, str]:
+    return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
 
 
 def request_wrapper(

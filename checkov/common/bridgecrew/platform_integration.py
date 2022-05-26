@@ -44,7 +44,7 @@ from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers
+    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -86,8 +86,10 @@ class BcPlatformIntegration(object):
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.prisma_policies_url = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
@@ -104,6 +106,7 @@ class BcPlatformIntegration(object):
         """
         if self.prisma_api_url:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
+            self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
         else:
             self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
@@ -440,11 +443,56 @@ class BcPlatformIntegration(object):
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
 
+    def get_prisma_build_policies(self, filter_string: Optional[str] = "") -> None:
+        """
+        Get Prisma Policy for enriching runConfig with metadata
+        Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
+        :param filter_string: comma separated filter string. Example, policy.label=["A","B"],cloud.type=["aws"]
+        :return:
+        """
+        if self.skip_download is True:
+            logging.debug("Skipping prisma policy API call")
+            return
+        if not self.is_prisma_integration():
+            return
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception(
+                "Tried to get prisma build policy metadata, "
+                "but the API key was missing or the integration was not set up")
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
+            request = self.http.request("GET", self.prisma_policies_url, headers=headers,
+                                        fields=self.parse_prisma_policy_filter(filter_string))
+            self.prisma_policies_response = json.loads(request.data.decode("utf8"))
+            logging.debug("Got Prisma build policy metadata")
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+
+    @staticmethod
+    def parse_prisma_policy_filter(filter_string: str) -> str:
+        """
+        Converts the filter string to a dict. For example:
+        'policy.label=label,cloud.type=aws' becomes -->
+        {'policy.label': 'label1', 'cloud.type': 'aws'}
+        Note that the API does not accept lists https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policies-v2
+        This is not allowed: policy.label=label1,label2
+        """
+        filter_params = {}
+        if filter_string:
+            for f in filter_string.split(','):
+                f_name = f.split('=')[0]
+                f_value = f.split('=')[1]
+                filter_params[f_name] = f_value
+        return filter_params
+
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
             return
-
         try:
             headers = {}
             if not self.http:
