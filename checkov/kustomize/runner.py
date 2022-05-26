@@ -20,6 +20,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
+import multiprocessing
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -292,7 +293,8 @@ class Runner(BaseRunner):
             self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name'] = checkovKustomizeEnvNameByPath
             logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
 
-    def _get_parsed_output(self, filePath, extractDir, output):
+    @staticmethod
+    def _get_parsed_output(filePath, extractDir, output, sharedKustomizeFileMappings):
         cur_source_file = None
         cur_writer = None
         last_line_dashes = False
@@ -316,7 +318,7 @@ class Runner(BaseRunner):
                 if source != cur_source_file:
                     if cur_writer:
                         # Here we are about to close a "complete" file. The function will validate it looks like a K8S manifest before continuing.
-                        self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
+                        Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
                     file_path = os.path.join(extractDir, str(source))
                     parent = os.path.dirname(file_path)
                     os.makedirs(parent, exist_ok=True)
@@ -333,65 +335,90 @@ class Runner(BaseRunner):
             line_num += 1
         return cur_writer
 
-    def _get_kubectl_output(self, filePath):
+    @staticmethod
+    def _get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta):
         # Template out the Kustomizations to Kubernetes YAML
-        if self.templateRendererCommand == "kubectl":
+        if templateRendererCommand == "kubectl":
             templateRenderCommandOptions = "kustomize"
-        if self.templateRendererCommand == "kustomize":
+        if templateRendererCommand == "kustomize":
             templateRenderCommandOptions = "build"
-        proc = subprocess.Popen([self.templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+        proc = subprocess.Popen([templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
-            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {self.kustomizeProcessedFolderAndMeta[filePath]['type']}.")
+            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {kustomizeProcessedFolderAndMeta[filePath]['type']}.")
         return output
 
-    def _get_env_or_base_path_prefix(self, filePath) -> str:
+    @staticmethod
+    def _get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta) -> str:
         env_or_base_path_prefix = None
-        if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
-            if 'calculated_bases' not in self.kustomizeProcessedFolderAndMeta[filePath]:
+        if kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
+            if 'calculated_bases' not in kustomizeProcessedFolderAndMeta[filePath]:
                 logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {filePath}")
                 env_or_base_path_prefix = ""
             else:
-                basePathParents = pathlib.Path(self.kustomizeProcessedFolderAndMeta[filePath]['calculated_bases']).parents
+                basePathParents = pathlib.Path(kustomizeProcessedFolderAndMeta[filePath]['calculated_bases']).parents
                 mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
-                env_or_base_path_prefix = f"{mostSignificantBasePath}/{self.kustomizeProcessedFolderAndMeta[filePath]['overlay_name']}"
+                env_or_base_path_prefix = f"{mostSignificantBasePath}/{kustomizeProcessedFolderAndMeta[filePath]['overlay_name']}"
 
-        if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == "base":
+        if kustomizeProcessedFolderAndMeta[filePath]['type'] == "base":
             # Validated base last three parents as a path
-            basePathParents = pathlib.Path(self.kustomizeProcessedFolderAndMeta[filePath]['filePath']).parents
+            basePathParents = pathlib.Path(kustomizeProcessedFolderAndMeta[filePath]['filePath']).parents
             mostSignificantBasePath = "/" + basePathParents._parts[-4] + "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2]
             env_or_base_path_prefix = mostSignificantBasePath
 
         return env_or_base_path_prefix
 
+    @staticmethod
+    def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
+        logging.debug(f"Kustomization at {filePath} likley a {kustomizeProcessedFolderAndMeta[filePath]['type']}")
+        try:
+            output = Runner._get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta)
+        except Exception:
+            logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
+            return None
+
+        env_or_base_path_prefix = Runner._get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta)
+        if env_or_base_path_prefix is None:
+            logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
+            return None
+
+        extractDir = target_folder_path + env_or_base_path_prefix
+        os.makedirs(extractDir, exist_ok=True)
+
+        logging.debug(f"Kustomize: Temporary directory for {filePath} at {extractDir}")
+        output = str(output, 'utf-8')
+        cur_writer = Runner._get_parsed_output(filePath, extractDir, output, sharedKustomizeFileMappings)
+        if cur_writer:
+            Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
+
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
         kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
-        self.target_folder_path = tempfile.mkdtemp()
+        self.target_folder_path = '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca'
         for filePath in self.kustomizeProcessedFolderAndMeta:    
-            logging.debug(f"Kustomization at {filePath} likley a {self.kustomizeProcessedFolderAndMeta[filePath]['type']}")
             if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
                 self._handle_overlay_case(filePath)
-            try:
-                output = self._get_kubectl_output(filePath)
-            except Exception:
-                logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
-                continue
+        
+        manager = multiprocessing.Manager()
+        sharedKustomizeFileMappings = manager.dict()
+        jobs = []
+        for filePath in self.kustomizeProcessedFolderAndMeta:
+            p = multiprocessing.Process(target=Runner._run_kustomize_parser,
+                                        args=(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
+                                              self.templateRendererCommand, self.target_folder_path))
+            jobs.append(p)
+            p.start()
 
-            env_or_base_path_prefix = self._get_env_or_base_path_prefix(filePath)
-            if env_or_base_path_prefix is None:
-                logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
-                continue
+        for proc in jobs:
+            proc.join()
 
-            extractDir = self.target_folder_path + env_or_base_path_prefix
-            os.makedirs(extractDir, exist_ok=True)
+        self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
-            logging.debug(f"Kustomize: Temporary directory for {filePath} at {extractDir}")
-            output = str(output, 'utf-8')
-            cur_writer = self._get_parsed_output(filePath, extractDir, output)
-            if cur_writer:
-                self._curWriterValidateStoreMapAndClose(cur_writer, filePath)
+        x = {'/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/base', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Service-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/ConfigMap-my-app-dev-app-config-dev-m8mmbmmk9h.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/ConfigMap-my-app-prod-app-config-prod-h4mftk42t9.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Secret-my-app-dev-credentials-dev-24f844b6g2.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-certs-prod-g8h8m565ch.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-credentials-prod-6mfm448f88.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Deployment-my-app-dev-my-app-dev.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Deployment-my-app-prod-my-app-prod.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod'}
+        y = {'/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/base', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Service-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/ConfigMap-my-app-dev-app-config-dev-m8mmbmmk9h.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/ConfigMap-my-app-prod-app-config-prod-h4mftk42t9.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Secret-my-app-dev-credentials-dev-24f844b6g2.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-certs-prod-g8h8m565ch.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-credentials-prod-6mfm448f88.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Deployment-my-app-dev-my-app-dev.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Deployment-my-app-prod-my-app-prod.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod'}
+        shared_items = {k: x[k] for k in x if k in y and x[k] == y[k]}
+        print(len(shared_items))
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
@@ -419,7 +446,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def _curWriterValidateStoreMapAndClose(self, cur_writer, FilePath):
+    def _curWriterValidateStoreMapAndClose(cur_writer, FilePath, sharedKustomizeFileMappings):
         currentFileName = cur_writer.name
         cur_writer.close()
         # Now we have a complete k8s manifest as we closed the writer, and it's temporary file name (currentFileName) plus the original file templated out (FilePath)
@@ -444,10 +471,8 @@ class Runner(BaseRunner):
                     filename = f"{'-'.join(itemName)}.yaml"
                     newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename) 
                     os.rename(currentFileName, newFullPathFilename) 
-                    self.kustomizeFileMappings[newFullPathFilename] = FilePath
-                
+                    sharedKustomizeFileMappings[newFullPathFilename] = FilePath
                 else:
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
-
         except IsADirectoryError:
             pass
