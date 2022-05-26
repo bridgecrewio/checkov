@@ -31,6 +31,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_terraform_registry(self):
         registry = ModuleLoaderRegistry(True, DEFAULT_EXTERNAL_MODULES_DIR)
+        registry.module_content_cache = {}
         registry.root_dir = self.current_dir
         source = "terraform-aws-modules/security-group/aws"
         content = registry.load(current_dir=self.current_dir, source=source, source_version="~> 3.0")
@@ -44,6 +45,7 @@ class TestModuleLoaderRegistry(unittest.TestCase):
 
     def test_load_terraform_registry_check_cache(self):
         registry = ModuleLoaderRegistry(download_external_modules=True)
+        registry.module_content_cache = {}
         registry.root_dir = self.current_dir
         source1 = "git::https://github.com/bridgecrewio/checkov_not_working1.git"
         registry.load(current_dir=self.current_dir, source=source1, source_version="latest")
@@ -91,6 +93,7 @@ def test_load_terraform_registry(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     content = registry.load(current_dir=str(current_dir), source=source, source_version=source_version)
@@ -208,6 +211,7 @@ def test_load_generic_git(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     content = registry.load(current_dir=str(current_dir), source=source, source_version="latest")
@@ -275,6 +279,7 @@ def test_load_github(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     content = registry.load(current_dir=str(current_dir), source=source, source_version="latest")
@@ -343,6 +348,7 @@ def test_load_bitbucket(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     content = registry.load(current_dir=str(current_dir), source=source, source_version="latest")
@@ -373,6 +379,7 @@ def test_load_local_path(git_getter, source, expected_content_path, expected_exc
     # given
     current_dir = Path(__file__).parent
     registry = ModuleLoaderRegistry()
+    registry.module_content_cache = {}
 
     # when
     with expected_exception:
@@ -413,6 +420,7 @@ def test_load_github_private(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     registry.loaders = [GithubAccessTokenLoader()]
@@ -455,6 +463,7 @@ def test_load_bitbucket_private(
     # given
     current_dir = Path(__file__).parent / "tmp"
     registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
 
     # when
     registry.loaders = [BitbucketAccessTokenLoader()]
