@@ -95,7 +95,7 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, runner_filter):
         for full_file_path, definition in self.tf_definitions.items():
-            if os.name == 'nt':
+            if platform.system() == "Windows"::
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
             else:
