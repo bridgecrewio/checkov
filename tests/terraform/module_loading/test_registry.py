@@ -472,6 +472,7 @@ def test_load_terraform_registry_check_cache():
     current_dir = str(Path(__file__).parent / "tmp")
     registry = ModuleLoaderRegistry(download_external_modules=True)
     registry.module_content_cache = {}
+    registry.root_dir = current_dir
 
     source1 = "git::https://github.com/bridgecrewio/checkov_not_working1.git"
     source2 = "git::https://github.com/bridgecrewio/checkov_not_working2.git"
@@ -486,3 +487,6 @@ def test_load_terraform_registry_check_cache():
     # then
     assert source1 in registry.failed_urls_cache
     assert source2 in registry.failed_urls_cache
+
+    if os.path.exists(current_dir):
+        shutil.rmtree(current_dir)
