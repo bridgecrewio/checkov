@@ -231,7 +231,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
         return None
 
     baseline = None

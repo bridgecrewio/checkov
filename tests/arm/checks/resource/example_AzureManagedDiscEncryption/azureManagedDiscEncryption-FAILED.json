@@ -370,7 +370,7 @@
       "dependsOn": []
     },
     {
-      "name": "[variables('Front VM Clone')]",
+      "name": "default",
       "type": "Microsoft.Compute/disks",
       "location": "[resourceGroup().location]",
       "apiVersion": "2016-04-30-preview",

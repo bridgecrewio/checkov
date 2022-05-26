@@ -44,16 +44,20 @@ class ImageReferencer:
         """
         return []
 
-    def pull_image(self, image_name: str) -> str:
+    def inspect(self, image_name: str) -> str:
         """
 
-        :param image_name: name of the image to be pulled locally using a "docker pull X" command
-        :return: short image id sha that is pulled locally. In case pull has failed None will be returned.
+        :param image_name: name of the image to be inspected locally using a "docker inspect X". If image does not exist try to pull it locally.
+        :return: short image id sha that is inspected. In case inspect has failed None will be returned.
         """
         try:
-            logging.info("Pulling docker image {}".format(image_name))
+            logging.info("Inspecting docker image {}".format(image_name))
             client = docker.from_env()
-            image = client.images.pull(image_name)
+            try:
+                image = client.images.get(image_name)
+            except Exception:
+                image = client.images.pull(image_name)
+                return cast(str, image.short_id)
             return cast(str, image.short_id)
         except Exception:
             logging.debug(f"failed to pull docker image={image_name}", exc_info=True)

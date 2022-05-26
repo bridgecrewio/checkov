@@ -18,8 +18,8 @@ class LivenessProbe(BaseResourceValueCheck):
         return "spec/[0]/container/[0]/liveness_probe/[0]"
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf.get('spec')[0]
-        if spec:
+        spec = conf.get('spec', [None])[0]
+        if spec and isinstance(spec, dict):
             containers = spec.get("container")
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):

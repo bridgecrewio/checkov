@@ -14,9 +14,9 @@ class PrivilegedContainersPSP(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf["spec"][0]
+        spec = conf.get('spec', [None])[0]
         # for psp
-        if spec.get("privileged") == [True]:
+        if isinstance(spec, dict) and spec.get("privileged") == [True]:
             self.evaluated_keys = ["spec/[0]/privileged"]
             return CheckResult.FAILED
 

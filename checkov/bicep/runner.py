@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import logging
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
@@ -7,6 +8,7 @@ from typing import cast, Type, TYPE_CHECKING, Any
 from pycep.typing import BicepJson
 from typing_extensions import Literal
 
+from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -61,6 +63,7 @@ class Runner(BaseRunner):
         self.context: dict[str, dict[str, Any]] = {}
         self.definitions: dict[Path, BicepJson] = {}
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+        self.root_folder: str | Path | None = None
 
     def run(
         self,
@@ -71,6 +74,7 @@ class Runner(BaseRunner):
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(Runner.check_type)
+        self.root_folder = root_folder
 
         if not self.context or not self.definitions:
             file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
@@ -89,7 +93,7 @@ class Runner(BaseRunner):
                     if CHECKOV_CREATE_GRAPH:
                         self.graph_registry.load_external_checks(directory)
 
-            self.context = {}  # TODO: create context
+            self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
             if CHECKOV_CREATE_GRAPH:
                 logging.info("Creating Bicep graph")
@@ -110,6 +114,9 @@ class Runner(BaseRunner):
 
         return report
 
+    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
+        self.definitions_raw = definitions_raw
+
     def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds Python check results to given report"""
 
@@ -127,8 +134,8 @@ class Runner(BaseRunner):
 
                         if results:
                             file_code_lines = self.definitions_raw[file_path]
-                            start_line = cast(int, conf["__start_line__"])  # it is always set for the main block types
-                            end_line = cast(int, conf["__end_line__"])  # it is always set for the main block types
+                            start_line = conf["__start_line__"]
+                            end_line = conf["__end_line__"]
 
                             cleaned_path = clean_file_path(file_path)
                             resource_id = f"{conf['type']}.{name}"
@@ -150,7 +157,7 @@ class Runner(BaseRunner):
                                     check_name=check.name,
                                     check_result=check_result,
                                     code_block=file_code_lines[start_line - 1 : end_line],
-                                    file_path=str(cleaned_path),
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                     file_line_range=[start_line, end_line],
                                     resource=resource_id,
                                     check_class=check.__class__.__module__,
@@ -160,6 +167,9 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+
+    def extract_file_path_from_abs_path(self, path: Path) -> str:
+        return f"/{os.path.relpath(path, self.root_folder)}"
 
     def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""

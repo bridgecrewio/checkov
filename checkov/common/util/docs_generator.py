@@ -29,7 +29,7 @@ from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.openapi.checks.registry import openapi_registry
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-
+from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 
@@ -45,32 +45,39 @@ def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int,
     return res
 
 
-def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> None:
+def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
+                 include_all_checkov_policies: bool = True) -> None:
     framework_list = frameworks if frameworks else ["all"]
-    printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids)
+    printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids,
+                                       include_all_checkov_policies=include_all_checkov_policies)
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
 
-def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False) -> \
-        List[Tuple[str, str, int, int, str]]:
+def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False, include_all_checkov_policies: bool = True) -> List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list: list[tuple[str, str, str, str, str]] = []
+    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies)
 
-    def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str) -> None:
+    def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str,
+                            runner_filter: RunnerFilter = runner_filter) -> None:
         nonlocal printable_checks_list
         if isinstance(registry, BaseCheckRegistry):
             for entity, check in registry.all_checks():
-                printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
+                if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
+                    printable_checks_list.append(
+                        (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
             for check in registry.checks:
-                if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                    # only for platform custom polices with resource_types == all
-                    check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                    printable_checks_list.append((check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
+                if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
+                    if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        # only for platform custom polices with resource_types == all
+                        check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                    for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        printable_checks_list.append(
+                            (check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
 
     if any(x in framework_list for x in ("all", "terraform")):
         add_from_repository(resource_registry, "resource", "Terraform")
@@ -100,7 +107,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False)
     if any(x in framework_list for x in ("all", "github_actions")):
         add_from_repository(github_actions_jobs_registry, "jobs", "github_actions")
     if any(x in framework_list for x in ("all", "gitlab_ci")):
-        add_from_repository(gitlab_ci_jobs_registry, "jobs", "gitlab_ci")        
+        add_from_repository(gitlab_ci_jobs_registry, "jobs", "gitlab_ci")
     if any(x in framework_list for x in ("all", "gitlab_configuration")):
         add_from_repository(gitlab_configuration_registry, "gitlab_configuration", "gitlab_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_configuration")):

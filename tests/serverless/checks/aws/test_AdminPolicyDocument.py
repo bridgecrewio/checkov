@@ -18,7 +18,7 @@ class TestAdminPolicyDocument(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 1,
+        self.assertEqual(summary['passed'], 2,
                          f"Passed checks: {[fc.file_path for fc in report.passed_checks]}")
         self.assertEqual(summary['failed'], 6,
                          f"Failed checks: {[fc.file_path for fc in report.failed_checks]}")
