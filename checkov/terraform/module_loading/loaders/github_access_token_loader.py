@@ -19,15 +19,6 @@ class GithubAccessTokenLoader(GenericGitLoader):
                 source = self.module_source.replace(":", "/")
                 self.module_source = f"git::https://{self.username}:{self.token}@{source}"
                 return True
-        else:
-            # https://www.terraform.io/docs/modules/sources.html#github
-            if self.module_source.startswith(self.module_source_prefix):
-                self.module_source = f"git::https://{self.module_source}"
-                return True
-            if self.module_source.startswith(f"git@{self.module_source_prefix}"):
-                source = self.module_source.replace(":", "/")
-                self.module_source = f"git::ssh://{source}"
-                return True
 
         return False
 
