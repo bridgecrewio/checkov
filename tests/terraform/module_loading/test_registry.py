@@ -467,9 +467,9 @@ def test_load_bitbucket_private(
     assert git_loader.inner_module == expected_inner_module
 
 
-def test_load_terraform_registry_check_cache():
+def test_load_terraform_registry_check_cache(tmp_path: Path):
     # given
-    current_dir = str(Path(__file__).parent / "tmp")
+    current_dir = str(tmp_path / "cache_check")
     registry = ModuleLoaderRegistry(download_external_modules=True)
     registry.module_content_cache = {}
     registry.root_dir = current_dir
@@ -487,6 +487,3 @@ def test_load_terraform_registry_check_cache():
     # then
     assert source1 in registry.failed_urls_cache
     assert source2 in registry.failed_urls_cache
-
-    if os.path.exists(current_dir):
-        shutil.rmtree(current_dir)
