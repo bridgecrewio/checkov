@@ -4,7 +4,6 @@
 max-line-length = 120
 # E501 doesn't work with black together
 ignore = E127,E128,E129,E203,E231,E302,E303,E305,E501,E731,W291,W292,W293,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116
-extend-exclude = .github, .pytest_cache, admissioncontroller/*, bin/*, docs/*, github_action_resources/*, integration_tests/*, kubernetes/*, performance_tests/*, venv/*, tests/*, flake8_plugins/*, checkov/arm/*, checkov/bitbucket/*, checkov/bitbucket_pipelines/*, checkov/cloudformation/*, checkov/common/*, checkov/dockerfile/*, checkov/github/*, checkov/github_actions/*, checkov/gitlab/*, checkov/gitlab_ci/*, checkov/json_doc/*, checkov/kubernetes/*, checkov/sca_image/*, checkov/sca_package/*, checkov/secrets/*, checkov/serverless/*, checkov/terraform/*, checkov/yaml_doc/*, checkov/openapi/*, checkov/example_runner/*, checkov/bicep/*, checkov/kustomize/*, checkov/helm/*
 
 [flake8:local-plugins]
 extension =
