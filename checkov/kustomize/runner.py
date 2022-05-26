@@ -375,12 +375,12 @@ class Runner(BaseRunner):
             output = Runner._get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta)
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
-            return None
+            return
 
         env_or_base_path_prefix = Runner._get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta)
         if env_or_base_path_prefix is None:
             logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
-            return None
+            return
 
         extractDir = target_folder_path + env_or_base_path_prefix
         os.makedirs(extractDir, exist_ok=True)
@@ -395,7 +395,7 @@ class Runner(BaseRunner):
         kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
-        self.target_folder_path = '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca'
+        self.target_folder_path = tempfile.mkdtemp()
         for filePath in self.kustomizeProcessedFolderAndMeta:    
             if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
                 self._handle_overlay_case(filePath)
@@ -414,11 +414,6 @@ class Runner(BaseRunner):
             proc.join()
 
         self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
-
-        x = {'/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/base', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Service-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/ConfigMap-my-app-dev-app-config-dev-m8mmbmmk9h.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/ConfigMap-my-app-prod-app-config-prod-h4mftk42t9.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Secret-my-app-dev-credentials-dev-24f844b6g2.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-certs-prod-g8h8m565ch.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-credentials-prod-6mfm448f88.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Deployment-my-app-dev-my-app-dev.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Deployment-my-app-prod-my-app-prod.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod'}
-        y = {'/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/base', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Service-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/ConfigMap-my-app-dev-app-config-dev-m8mmbmmk9h.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/ConfigMap-my-app-prod-app-config-prod-h4mftk42t9.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Secret-my-app-dev-credentials-dev-24f844b6g2.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/mini-kustomize/overlays/custom-metadata-labels/Deployment-default-my-app.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/custom-metadata-labels', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-certs-prod-g8h8m565ch.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Secret-my-app-prod-credentials-prod-6mfm448f88.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/dev/Deployment-my-app-dev-my-app-dev.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/dev', '/var/folders/h8/2_k7z67j3lbf0k11z96xt2rw0000gp/T/tmp43eo5nca/dev/mini-kustomize/base/overlays/prod/Deployment-my-app-prod-my-app-prod.yaml': '/Users/arosenfeld/Desktop/dev/mini-kustomize/overlays/prod'}
-        shared_items = {k: x[k] for k in x if k in y and x[k] == y[k]}
-        print(len(shared_items))
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
