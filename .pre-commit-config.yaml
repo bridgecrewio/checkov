@@ -7,7 +7,7 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
-        additional_dependencies: ['dlint']
+        additional_dependencies: ['dlint', 'typing_extensions']
   - repo: https://github.com/isidentical/teyit  # unit test formatter
     rev: 0.4.2
     hooks:
