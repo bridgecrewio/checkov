@@ -2,6 +2,7 @@ import copy
 import dataclasses
 import logging
 import os
+import platform
 from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
@@ -181,7 +182,7 @@ class Runner(BaseRunner):
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
                     connected_node_data = self.get_connected_node(entity, root_folder)
-                    if os.name == 'nt':
+                    if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     record = Record(
                         check_id=check.id,

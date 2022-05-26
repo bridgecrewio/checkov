@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import platform
+
 from typing import Optional, List
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -95,7 +97,7 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, runner_filter):
         for full_file_path, definition in self.tf_definitions.items():
-            if platform.system() == "Windows"::
+            if platform.system() == "Windows":
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
             else:
