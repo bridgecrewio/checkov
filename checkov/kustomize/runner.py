@@ -1,3 +1,4 @@
+import copy
 import io
 import logging
 import os
@@ -401,7 +402,9 @@ class Runner(BaseRunner):
                 self._handle_overlay_case(filePath)
         
         manager = multiprocessing.Manager()
-        sharedKustomizeFileMappings = manager.dict()
+        # make sure we have new dict
+        sharedKustomizeFileMappings = copy.copy(manager.dict())
+        sharedKustomizeFileMappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(target=Runner._run_kustomize_parser,
