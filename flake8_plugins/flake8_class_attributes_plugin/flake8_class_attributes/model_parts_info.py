@@ -1,5 +1,4 @@
 import ast
-from typing import Mapping
 
 
 def get_model_parts_info(model_ast):

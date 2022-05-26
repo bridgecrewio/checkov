@@ -10,11 +10,7 @@ def get_class_members_errors(model_parts_info, class_def: ast.ClassDef) -> List[
     for model_part in model_parts_info:
         if model_part['type'] in forbidden_types:
             node_name = get_node_name(model_part['node'], model_part['type'])
-            errors.append((
-                    model_part['node'].lineno,
-                    model_part['node'].col_offset,
-                    f"CCE003 Class level {model_part['type']} '{node_name}' detected in class {model_part['model_name']}",
-                ))
+            errors.append((model_part['node'].lineno, model_part['node'].col_offset, f"CCE003 Class level {model_part['type']} '{node_name}' detected in class {model_part['model_name']}",))
     return errors
 
 
