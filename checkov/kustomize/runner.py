@@ -404,7 +404,7 @@ class Runner(BaseRunner):
         
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        sharedKustomizeFileMappings = copy.deepcopy(manager.dict())
+        sharedKustomizeFileMappings = copy.copy(manager.dict())
         sharedKustomizeFileMappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
