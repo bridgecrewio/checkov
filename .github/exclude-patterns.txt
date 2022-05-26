@@ -16,6 +16,7 @@ tests/terraform/runner/resources/example/example.tf
 tests/terraform/checks/provider/aws/test_credentials.py
 tests/terraform/checks/resource/aws/test_EC2Credentials.py
 tests/terraform/checks/provider/openstack/test_credentials.py
+tests/terraform/module_loading/test_registry.py
 tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
@@ -24,3 +25,5 @@ docs/5.Contribution/New-Provider.md
 docs/2.Basics/Scanning Credentials and Secrets.md
 tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-FAILED.yaml
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
+checkov/terraform/module_loading/loaders/github_access_token_loader.py
+checkov/terraform/module_loading/loaders/git_loader.py
