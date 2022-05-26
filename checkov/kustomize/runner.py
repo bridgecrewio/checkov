@@ -22,6 +22,7 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 import multiprocessing
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -403,7 +404,7 @@ class Runner(BaseRunner):
         
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        sharedKustomizeFileMappings = copy.copy(manager.dict())
+        sharedKustomizeFileMappings = copy.deepcopy(manager.dict())
         sharedKustomizeFileMappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
