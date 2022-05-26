@@ -43,17 +43,6 @@ class TestModuleLoaderRegistry(unittest.TestCase):
         )
         self.assertRegex(content.path(), f"^{expected_content_path}/v3.*")
 
-    def test_load_terraform_registry_check_cache(self):
-        registry = ModuleLoaderRegistry(download_external_modules=True)
-        registry.module_content_cache = {}
-        registry.root_dir = self.current_dir
-        source1 = "git::https://github.com/bridgecrewio/checkov_not_working1.git"
-        registry.load(current_dir=self.current_dir, source=source1, source_version="latest")
-        self.assertIn(source1, registry.failed_urls_cache)
-        source2 = "git::https://github.com/bridgecrewio/checkov_not_working2.git"
-        registry.load(current_dir=self.current_dir, source=source2, source_version="latest")
-        self.assertIn(source1 in registry.failed_urls_cache and source2, registry.failed_urls_cache)
-
 
 @pytest.mark.parametrize(
     "source, source_version, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
@@ -476,3 +465,25 @@ def test_load_bitbucket_private(
     assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
+
+
+def test_load_terraform_registry_check_cache(tmp_path: Path):
+    # given
+    current_dir = str(tmp_path / "cache_check")
+    registry = ModuleLoaderRegistry(download_external_modules=True)
+    registry.module_content_cache = {}
+    registry.root_dir = current_dir
+
+    source1 = "git::https://github.com/bridgecrewio/checkov_not_working1.git"
+    source2 = "git::https://github.com/bridgecrewio/checkov_not_working2.git"
+
+    # when
+    registry.load(current_dir=current_dir, source=source1, source_version="latest")
+
+    assert source1 in registry.failed_urls_cache
+
+    registry.load(current_dir=current_dir, source=source2, source_version="latest")
+
+    # then
+    assert source1 in registry.failed_urls_cache
+    assert source2 in registry.failed_urls_cache
