@@ -20,8 +20,10 @@ def get_class_members_errors(model_parts_info, class_def: ast.ClassDef) -> List[
 
 def skip_dataclasses(class_def: ast.ClassDef) -> bool:
     if class_def.decorator_list is not None:
-        decorator: ast.Load
         for decorator in class_def.decorator_list:
+            if not isinstance(decorator, ast.Load):
+                return True
+            decorator: ast.Load
             if decorator.id == 'dataclass':
                 return True
     return False
