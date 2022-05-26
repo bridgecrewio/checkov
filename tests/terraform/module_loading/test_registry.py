@@ -1,6 +1,4 @@
 import os
-import shutil
-import unittest
 from contextlib import ExitStack as does_not_raise
 from pathlib import Path
 from unittest import mock
@@ -8,14 +6,7 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-
-os.environ['GITHUB_PAT'] = 'ghp_xxxxxxxxxxxxxxxxx'
-os.environ['BITBUCKET_TOKEN'] = 'xxxxxxxxxxxxxxxxx'
-os.environ['GITLAB_TOKEN'] = 'glpat-xxxxxxxxxxxxxxxxx'
-
-from checkov.terraform.module_loading.loaders.bitbucket_loader import BitbucketLoader # noqa
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader # noqa
-from checkov.terraform.module_loading.loaders.github_loader import GithubLoader # noqa
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
@@ -259,7 +250,7 @@ def test_load_github(
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GithubLoader))
+    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GithubAccessTokenLoader))
     assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
@@ -329,7 +320,7 @@ def test_load_bitbucket(
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, BitbucketLoader))
+    git_loader = next(loader for loader in registry.loaders if isinstance(loader, BitbucketAccessTokenLoader))
     assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
     assert git_loader.module_source == expected_module_source
     assert git_loader.inner_module == expected_inner_module
@@ -376,6 +367,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
     ],
     ids=["module"],
 )
+@mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_github_private(
     git_getter,
@@ -420,6 +412,7 @@ def test_load_github_private(
     ],
     ids=["module"],
 )
+@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_bitbucket_private(
     git_getter,
