@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
@@ -16,6 +17,7 @@ from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
@@ -145,9 +147,13 @@ class Report:
         :return: Exit code 0 or 1.
         """
 
-        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}')
+        hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
+        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
-        if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
+        if self.parsing_errors and hard_fail_on_parsing_errors:
+            logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
+            return 1
+        elif not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
             logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
         elif not soft_fail_on and not hard_fail_on and self.failed_checks:
