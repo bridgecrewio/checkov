@@ -119,6 +119,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v4.4.0
@@ -258,6 +260,8 @@ jobs:
     needs: bump-version
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: get versions
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
