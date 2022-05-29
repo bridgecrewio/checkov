@@ -405,8 +405,8 @@ class Runner(BaseRunner):
         if platform.system() == 'Windows':
             sharedKustomizeFileMappings = {}
             for filePath in self.kustomizeProcessedFolderAndMeta:
-                    Runner._run_kustomize_parser(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
-                                                self.templateRendererCommand, self.target_folder_path)
+                Runner._run_kustomize_parser(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
+                                             self.templateRendererCommand, self.target_folder_path)
             self.kustomizeFileMappings = sharedKustomizeFileMappings
             return
         
