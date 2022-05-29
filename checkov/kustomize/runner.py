@@ -22,7 +22,7 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 import multiprocessing
-from checkov.common.parallelizer.parallel_runner import parallel_runner
+import platform
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -402,22 +402,28 @@ class Runner(BaseRunner):
             if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
                 self._handle_overlay_case(filePath)
         
-        manager = multiprocessing.Manager()
-        # make sure we have new dict
-        sharedKustomizeFileMappings = copy.copy(manager.dict())
-        sharedKustomizeFileMappings.clear()
-        jobs = []
-        for filePath in self.kustomizeProcessedFolderAndMeta:
-            p = multiprocessing.Process(target=Runner._run_kustomize_parser,
-                                        args=(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
-                                              self.templateRendererCommand, self.target_folder_path))
-            jobs.append(p)
-            p.start()
+        if platform.system() == 'Windows':
+            sharedKustomizeFileMappings = {}
+            for filePath in self.kustomizeProcessedFolderAndMeta:
+                    Runner._run_kustomize_parser(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
+                                                self.templateRendererCommand, self.target_folder_path)
+        else:
+            manager = multiprocessing.Manager()
+            # make sure we have new dict
+            sharedKustomizeFileMappings = copy.copy(manager.dict())
+            sharedKustomizeFileMappings.clear()
+            jobs = []
+            for filePath in self.kustomizeProcessedFolderAndMeta:
+                p = multiprocessing.Process(target=Runner._run_kustomize_parser,
+                                            args=(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
+                                                self.templateRendererCommand, self.target_folder_path))
+                jobs.append(p)
+                p.start()
 
-        for proc in jobs:
-            proc.join()
+            for proc in jobs:
+                proc.join()
 
-        self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
+            self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
