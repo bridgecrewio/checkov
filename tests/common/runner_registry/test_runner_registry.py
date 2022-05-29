@@ -104,32 +104,6 @@ class TestRunnerRegistry(unittest.TestCase):
         assert 'code_block' not in output
         assert 'connected_node' not in output
 
-    def test_non_compact_json_output(self):
-        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
-        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
-        runner_registry = RunnerRegistry(
-            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
-        )
-        reports = runner_registry.run(root_folder=test_files_dir)
-
-        config = argparse.Namespace(
-            file=['./example_s3_tf/main.tf'],
-            compact=False,
-            output=['json'],
-            quiet=False,
-            soft_fail=False,
-            soft_fail_on=None,
-            hard_fail_on=None,
-            output_file_path=None,
-        )
-
-        with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_reports(scan_reports=reports, config=config)
-
-        output = captured_output.getvalue()
-
-        assert 'code_block' in output
-
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
@@ -173,6 +147,35 @@ class TestRunnerRegistry(unittest.TestCase):
         )
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'secrets'})
+
+
+def test_non_compact_json_output(capsys):
+    # given
+    test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+    )
+    reports = runner_registry.run(root_folder=test_files_dir)
+
+    config = argparse.Namespace(
+        file=['./example_s3_tf/main.tf'],
+        compact=False,
+        output=['json'],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=None,
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    # then
+    captured = capsys.readouterr()
+
+    assert 'code_block' in captured.out
 
 
 if __name__ == "__main__":
