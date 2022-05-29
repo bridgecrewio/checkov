@@ -17,9 +17,9 @@ class AdminPolicyDocument(BaseFunctionCheck):
         :param conf: aws_kms_key configuration
         :return: <CheckResult>
         """
-        key = IAM_ROLE_STATEMENTS_TOKEN
-        if key in conf.keys():
-            for statement in conf[key]:
+        statements = conf.get(IAM_ROLE_STATEMENTS_TOKEN)
+        if statements and isinstance(statements, list):
+            for statement in statements:
                 if 'Action' in statement and statement.get('Effect') == 'Allow' and '*' in statement['Action'] \
                         and '*' in statement['Resource']:
                     return CheckResult.FAILED

@@ -54,11 +54,11 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             self.policy_document_cache[self.entity_path][policy.get("PolicyName")] = policy_statement
                     violations = self.cloudsplaining_analysis(policy_statement)
                     if violations:
-                        logging.debug("detailed cloudsplaining finding: {}", json.dumps(violations))
+                        logging.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
                         return CheckResult.FAILED
                 except Exception:
                     # this might occur with templated iam policies where ARN is not in place or similar
-                    logging.debug("could not run cloudsplaining analysis on policy {}", conf)
+                    logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
                     return CheckResult.UNKNOWN
             return CheckResult.PASSED
 

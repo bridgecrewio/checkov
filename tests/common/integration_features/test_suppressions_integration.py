@@ -3,7 +3,9 @@ import unittest
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.output.report import Report
 
 
 class TestSuppressionsIntegration(unittest.TestCase):
@@ -425,6 +427,57 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertTrue(suppressions_integration._check_suppression(record3, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record5, suppression))
+
+    def test_apply_suppressions_to_report(self):
+        instance = BcPlatformIntegration()
+
+        suppressions_integration = SuppressionsIntegration(instance)
+
+        suppression = {
+            "suppressionType": "Policy",
+            "id": "7caab873-7400-47f9-8b3f-82b33d0463ed",
+            "policyId": "BC_AWS_GENERAL_31",
+            "comment": "No justification comment provided.",
+            "checkovPolicyId": "CKV_AWS_79",
+        }
+
+        suppressions_integration.suppressions = {suppression['checkovPolicyId']: [suppression]}
+
+        record1 = Record(check_id='CKV_AWS_79', check_name=None, check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record2 = Record(check_id='CKV_AWS_1', check_name=None, check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record3 = Record(check_id='CKV_AWS_79', check_name=None,
+                         check_result={'result': CheckResult.PASSED, 'evaluated_keys': ['multi_az']},
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record4 = Record(check_id='CKV_AWS_2', check_name=None,
+                         check_result={'result': CheckResult.PASSED, 'evaluated_keys': ['multi_az']},
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+
+        report = Report('terraform')
+        report.add_record(record1)
+        report.add_record(record2)
+        report.add_record(record3)
+        report.add_record(record4)
+
+        suppressions_integration._apply_suppressions_to_report(report)
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, 'CKV_AWS_1')
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(report.passed_checks[0].check_id, 'CKV_AWS_2')
+        self.assertEqual(len(report.skipped_checks), 2)
 
 
 if __name__ == '__main__':

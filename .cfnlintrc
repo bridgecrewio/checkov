@@ -12,5 +12,7 @@ ignore_templates:
   - tests/cloudformation/checks/resource/aws/example_ALBDropHttpHeaders/*
   - tests/cloudformation/checks/resource/aws/example_ELBv2AccessLogs/*
   - tests/cloudformation/checks/resource/aws/example_RedShiftSSL/*
+  - tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/*
+  - tests/cloudformation/checks/resource/aws/example_SecurityGroupRuleDescription/*
 ignore_checks:
   - W
