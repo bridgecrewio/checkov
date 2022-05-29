@@ -466,7 +466,7 @@ class Runner(BaseRunner):
                         itemName.append(currentYamlObject['metadata']['name'])
                     else:
                         itemName.append("noname")
-            
+
                     filename = f"{'-'.join(itemName)}.yaml"
                     newFullPathFilename = str(pathlib.Path(currentFileName).parent / filename) 
                     os.rename(currentFileName, newFullPathFilename) 
