@@ -10,6 +10,10 @@ on:
       - 'INTHEWILD.md'
       - 'README.md'
       - '.github/**'
+      - 'admissioncontroller/checkov-requirements.txt'
+      - admissioncontroller/k8s/deployment.yaml
+      - checkov/version.py
+      - kubernetes/requirements.txt
 
 concurrency:
   group: 'build'
