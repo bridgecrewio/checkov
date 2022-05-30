@@ -13,13 +13,8 @@ Fixes # (issue)
 *Include a description of what makes it a violation and any relevant external links.*
 
 ### Fix
-*How do I fix the issue in code and/or in runtime?*
+*How does someone fix the issue in code and/or in runtime?*
 
-### Category
-Kubernetes, IAM, Networking, Storage, Compute, Public, Secrets, Supply Chain, Monitoring
-
-### Severity
-LOW, MEDIUM, HIGH, CRITICAL
 
 ## Checklist:
 
@@ -28,5 +23,5 @@ LOW, MEDIUM, HIGH, CRITICAL
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] I have added tests that prove my feature, policy, or fix is effective and works
-- [ ] New and existing pytest tests pass locally with my changes
+- [ ] New and existing tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
