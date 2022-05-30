@@ -125,15 +125,13 @@ def _find_child_modules(child_modules: ListNode) -> List[Dict[str, Dict[str, Any
     return resource_blocks
 
 
-def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tuple[Optional[Dict[str, Dict[str, Any]]], Optional[List[Tuple[int, str]]]]:
+def parse_tf_plan(tf_defintions: Dict[str, Dict[str, Any]], template_lines: Dict[str, List[Tuple[int, str]]], tf_plan_file: str, out_parsing_errors: Dict[str, str]):
     """
     :type tf_plan_file: str - path to plan file
-    :rtype: tf_definition dictionary
     """
-    tf_defintions: Dict[str, Dict[str, Any]] = {}
     tf_defintions[tf_plan_file] = {}
     tf_defintions[tf_plan_file]["resource"] = []
-    template, template_lines = parse(tf_plan_file, out_parsing_errors)
+    template, template_lines[tf_plan_file] = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
     for resource in template.get("planned_values", {}).get("root_module", {}).get("resources", []):
@@ -154,7 +152,6 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     resource_blocks = _find_child_modules(child_modules)
     for resource in resource_blocks:
         tf_defintions[tf_plan_file]["resource"].append(resource)
-    return tf_defintions, template_lines
 
 
 def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
