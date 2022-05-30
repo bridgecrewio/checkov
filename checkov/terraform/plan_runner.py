@@ -1,7 +1,17 @@
 import json
 import logging
 import os
-from typing import Optional, List
+from typing import Optional, List, Type
+
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+
+from checkov.terraform.graph_manager import TerraformGraphManager
+
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -19,19 +29,24 @@ from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 class TerraformPlanRunner(TerraformRunner):
     check_type = CheckType.TERRAFORM_PLAN
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, graph_class: Type[LocalGraph] = TerraformLocalGraph,
+                 graph_manager: Optional[TerraformGraphManager] = None,
+                 db_connector: NetworkxConnector = NetworkxConnector(),
+                 external_registries: Optional[List[BaseRegistry]] = None,
+                 source: str = "Terraform"):
+        super().__init__(graph_class=graph_class, graph_manager=graph_manager, db_connector=db_connector,
+                         external_registries=external_registries, source=source)
         self.tf_definitions = {}
         self.template_lines = {}
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True
     ) -> Report:
         report = Report(self.check_type)
         parsing_errors = {}
@@ -79,7 +94,8 @@ class TerraformPlanRunner(TerraformRunner):
 
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                                    check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, resource_address=entity_address, evaluations=None,
@@ -89,7 +105,8 @@ class TerraformPlanRunner(TerraformRunner):
                     report.add_record(record=record)
 
     def get_entity_context_and_evaluations(self, entity):
-        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."), entity[CustomAttributes.FILE_PATH])
+        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
+                                              entity[CustomAttributes.FILE_PATH])
         raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
@@ -97,7 +114,8 @@ class TerraformPlanRunner(TerraformRunner):
         entity_context = {}
 
         if full_file_path not in self.tf_definitions:
-            logging.debug(f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
+            logging.debug(
+                f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
             return entity_context
 
         for resource in self.tf_definitions.get(full_file_path, {}).get('resource', []):
@@ -109,8 +127,7 @@ class TerraformPlanRunner(TerraformRunner):
                     entity_context['start_line'] = resource_defintion['start_line'][0]
                     entity_context['end_line'] = resource_defintion['end_line'][0]
                     entity_context["code_lines"] = self.template_lines[full_file_path][
-                        entity_context["start_line"]: entity_context["end_line"]
-                    ]
+                                                   entity_context["start_line"]: entity_context["end_line"]]
                     entity_context['address'] = resource_defintion['__address__']
                     return entity_context
         return entity_context
@@ -130,12 +147,12 @@ class Runner(BaseRunner):
     }
 
     def run(
-        self,
-        root_folder: Optional[str] = None,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: Optional[str] = None,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True
     ) -> Report:
         parsing_errors = {}
         tf_definitions, template_lines = self.get_tf_definitions(root_folder, files, runner_filter, parsing_errors)
