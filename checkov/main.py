@@ -366,6 +366,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
                default=["all"],
+               env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure code frameworks. \n'
@@ -469,6 +470,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
     parser.add('--evaluate-variables',
                help="evaluate the values of variables and locals",
+               env_var="CKV_EVAL_VARS",
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
