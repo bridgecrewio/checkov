@@ -53,6 +53,7 @@ class K8sKustomizeRunner(K8sRunner):
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'], 
         kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
+        originalRootFolder = self.report_mutator_data['originalRootFolder']
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
             entity_context = self.context[k8_file][resource_id]
@@ -70,7 +71,8 @@ class K8sKustomizeRunner(K8sRunner):
             file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
+                check_result=check_result, code_block=code_lines,
+                file_path=f"/{os.path.relpath(realKustomizeEnvMetadata['filePath'], originalRootFolder)}",
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.severity)
@@ -148,13 +150,15 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = {}
         self.templateRendererCommand = None
         self.target_folder_path = ''
+        self.original_root_folder = ''
 
     def get_k8s_target_folder_path(self):
         return self.target_folder_path
 
     def get_kustomize_metadata(self):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
-                'kustomizeFileMappings': self.kustomizeFileMappings}
+                'kustomizeFileMappings': self.kustomizeFileMappings,
+                'originalRootFolder': self.original_root_folder}
 
     @staticmethod
     def _findKustomizeDirectories(root_folder, files, excluded_paths):
@@ -394,6 +398,7 @@ class Runner(BaseRunner):
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
+        self.original_root_folder = root_folder
         kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
