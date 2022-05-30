@@ -123,6 +123,7 @@ class Runner(BaseRunner):
         super().__init__()
         self.file_extensions = ['.json']  # override what gets set from the TF runner
         self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.tf_plan_runner = TerraformPlanRunner()
 
     block_type_registries = {
         'resource': resource_registry,
@@ -138,10 +139,9 @@ class Runner(BaseRunner):
     ) -> Report:
         parsing_errors = {}
         tf_definitions, template_lines = self.get_tf_definitions(root_folder, files, runner_filter, parsing_errors)
-        tf_plan_runner = TerraformPlanRunner()
-        tf_plan_runner.tf_definitions = tf_definitions
-        tf_plan_runner.template_lines = template_lines
-        report = tf_plan_runner.run(root_folder, external_checks_dir, files, runner_filter, collect_skip_comments)
+        self.tf_plan_runner.tf_definitions = tf_definitions
+        self.tf_plan_runner.template_lines = template_lines
+        report = self.tf_plan_runner.run(root_folder, external_checks_dir, files, runner_filter, collect_skip_comments)
         report.add_parsing_errors(parsing_errors.keys())
         return report
 
