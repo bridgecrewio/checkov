@@ -9,7 +9,7 @@ class RunMetadataExtractorsRegistry():
 
     def get_extractor(self):
         for extractor in self.extractors:
-            if extractor.is_current_ci:
+            if extractor.is_current_ci():
                 return extractor
 
 
