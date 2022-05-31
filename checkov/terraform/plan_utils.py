@@ -38,7 +38,7 @@ def create_definitions(
     tf_definitions = {}
     definitions_raw = {}
     if files:
-        files = [os.path.abspath(file) for file in files]
+        files = [os.path.realpath(file) for file in files]
         for file in files:
             if file.endswith(".json"):
                 current_tf_definitions, current_definitions_raw = parse_tf_plan(file, out_parsing_errors)
