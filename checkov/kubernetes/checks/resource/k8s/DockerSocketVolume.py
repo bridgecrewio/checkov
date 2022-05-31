@@ -42,7 +42,7 @@ class DockerSocketVolume(BaseK8Check):
             for v in volumes:
                 if not v.get("hostPath"):
                     continue
-                if v["hostPath"].get(["path"]) == "/var/run/docker.sock":
+                if v["hostPath"].get("path") == "/var/run/docker.sock":
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
