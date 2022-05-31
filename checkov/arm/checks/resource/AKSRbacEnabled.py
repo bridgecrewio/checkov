@@ -19,9 +19,7 @@ class AKSRbacEnabled(BaseResourceCheck):
                 return CheckResult.FAILED
 
         properties = conf.get('properties')
-        if not properties:
-            return CheckResult.FAILED
-        if not isinstance(properties, DictNode):
+        if not properties or not isinstance(properties, DictNode):
             return CheckResult.FAILED
         enableRBAC = properties.get('enableRBAC')
         if str(enableRBAC).lower() == "true":
