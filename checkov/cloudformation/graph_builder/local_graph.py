@@ -343,7 +343,10 @@ class CloudformationLocalGraph(LocalGraph):
     def _is_of_type(cfndict, identifier, *template_sections):
         if isinstance(identifier, str):
             for ts in template_sections:
-                if cfndict.get(ts, {}).get(identifier):
+                ts_var = cfndict.get(ts, {})
+                if ts_var is None:
+                    continue
+                if ts_var.get(identifier):
                     return True
         return False
 
