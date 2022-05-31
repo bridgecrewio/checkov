@@ -152,6 +152,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
+        print(node)
         mapping['__startline__'] = node.start_mark.line + 1
         mapping['__endline__'] = node.end_mark.line + 1
         return mapping
@@ -197,6 +198,7 @@ def loads(yaml_string, fname=None, content_type: ContentType = None):
     """
     Load the given YAML string
     """
+    print(yaml_string)
     loader = MarkedLoader(yaml_string, fname, content_type)
     loader.add_multi_constructor('!', multi_constructor)
 

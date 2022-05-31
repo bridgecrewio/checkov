@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import os
 import uuid
 from abc import abstractmethod
-from typing import Optional
 
 
-class BaseGetter(object):
+class BaseGetter:
     def __init__(self, url: str) -> None:
         self.url = url
-        self.temp_dir: Optional[str] = None
+        self.temp_dir = ""
 
     def get(self) -> str:
         current_directory = os.getcwd()

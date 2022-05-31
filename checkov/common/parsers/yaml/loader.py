@@ -24,7 +24,7 @@ def loads(content: str) -> list[dict[str, Any]]:
     return template
 
 
-def load(filename: Path) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
+def load(filename: str | Path) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
     """
     Load the given YAML file
     """
@@ -41,7 +41,7 @@ def load(filename: Path) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
 
 class SafeLineLoader(SafeLoader):
     def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
-        mapping = super().construct_mapping(node, deep=deep)
+        mapping: dict[str, Any] = super().construct_mapping(node, deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
