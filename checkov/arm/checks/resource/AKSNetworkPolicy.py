@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-from common.parsers.node import DictNode
+from checkov.common.parsers.node import DictNode
 
 
 class AKSNetworkPolicy(BaseResourceCheck):
