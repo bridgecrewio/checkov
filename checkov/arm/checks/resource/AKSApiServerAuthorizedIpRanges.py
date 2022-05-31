@@ -14,7 +14,6 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-
         if "apiVersion" in conf:
             if conf["apiVersion"] in ["2017-08-31", "2018-03-31"]:
                 # ApiServerAuthorizedIpRanges not supported in these API versions
