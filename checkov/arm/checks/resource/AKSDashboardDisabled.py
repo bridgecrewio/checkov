@@ -22,13 +22,13 @@ class AKSDashboardDisabled(BaseResourceCheck):
             return CheckResult.FAILED
         if not isinstance(properties, DictNode):
             return CheckResult.FAILED
-        addonProfiles = conf["properties"].get("addonProfiles")
-        if not isinstance(addonProfiles, DictNode):
+        addon_profiles = conf["properties"].get("addonProfiles")
+        if not isinstance(addon_profiles, DictNode):
             return CheckResult.FAILED
-        kubeDashboard = addonProfiles.get("kubeDashboard")
-        if not isinstance(kubeDashboard, DictNode):
+        kube_dashboard = addon_profiles.get("kubeDashboard")
+        if not isinstance(kube_dashboard, DictNode):
             return CheckResult.FAILED
-        enabled = kubeDashboard.get("enabled")
+        enabled = kube_dashboard.get("enabled")
         if enabled is None:
             return CheckResult.FAILED
         if str(enabled).lower() == "false":

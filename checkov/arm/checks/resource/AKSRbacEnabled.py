@@ -23,8 +23,8 @@ class AKSRbacEnabled(BaseResourceCheck):
             return CheckResult.FAILED
         if not isinstance(properties, DictNode):
             return CheckResult.FAILED
-        enableRBAC = properties.get('enableRBAC')
-        if str(enableRBAC).lower() == "true":
+        enable_RBAC = properties.get('enableRBAC')
+        if str(enable_RBAC).lower() == "true":
             return CheckResult.PASSED
         return CheckResult.FAILED
 

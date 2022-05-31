@@ -32,11 +32,11 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
                     return CheckResult.FAILED
                 if not isinstance(properties, DictNode):
                     return CheckResult.FAILED
-                apiServerAccessProfile = properties.get('apiServerAccessProfile')
-                if not apiServerAccessProfile:
+                api_server_access_profile = properties.get('apiServerAccessProfile')
+                if not api_server_access_profile:
                     return CheckResult.FAILED
-                authorizedIPRanges = apiServerAccessProfile.get('authorizedIPRanges')
-                if authorizedIPRanges:
+                authorized_ip_ranges = api_server_access_profile.get('authorizedIPRanges')
+                if authorized_ip_ranges:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
