@@ -18,9 +18,7 @@ class AKSDashboardDisabled(BaseResourceCheck):
                 return CheckResult.FAILED
 
         properties = conf.get("properties")
-        if properties is None:
-            return CheckResult.FAILED
-        if not isinstance(properties, DictNode):
+        if properties is None or not isinstance(properties, DictNode):
             return CheckResult.FAILED
         addonProfiles = conf["properties"].get("addonProfiles")
         if not isinstance(addonProfiles, DictNode):
