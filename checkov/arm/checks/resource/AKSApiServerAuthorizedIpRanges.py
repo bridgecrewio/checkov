@@ -35,7 +35,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
                 apiServerAccessProfile = properties.get('apiServerAccessProfile')
                 if not apiServerAccessProfile:
                     return CheckResult.FAILED
-                authorizedIPRanges = apiServerAccessProfile.get(authorizedIPRanges)
+                authorizedIPRanges = apiServerAccessProfile.get('authorizedIPRanges')
                 if authorizedIPRanges:
                     return CheckResult.PASSED
         return CheckResult.FAILED
