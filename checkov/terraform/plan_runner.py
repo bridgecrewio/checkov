@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from typing import Optional, List, Type
@@ -12,11 +11,11 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import filter_ignored_paths, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.plan_parser import parse_tf_plan
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 
 
@@ -32,7 +31,7 @@ class Runner(TerraformRunner):
                          external_registries=external_registries, source=source)
         self.file_extensions = ['.json']  # override what gets set from the TF runner
         self.definitions = None
-        self.template_lines = None
+        self.context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
     block_type_registries = {
@@ -49,8 +48,9 @@ class Runner(TerraformRunner):
     ) -> Report:
         report = Report(self.check_type)
         parsing_errors = {}
-        if self.definitions is None or self.template_lines is None:
-            self.definitions, self.template_lines = self.get_tf_definitions(root_folder, files, runner_filter, parsing_errors)
+        if self.definitions is None or self.context is None:
+            self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
                 graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 self.graph_manager.save_graph(graph)
@@ -66,36 +66,6 @@ class Runner(TerraformRunner):
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
         return report
-
-    def get_tf_definitions(self, root_folder, files, runner_filter, parsing_errors):
-        if root_folder:
-            files = [] if not files else files
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                for file in f_names:
-                    file_ending = os.path.splitext(file)[1]
-                    if file_ending == '.json':
-                        try:
-                            with open(f'{root}/{file}') as f:
-                                content = json.load(f)
-                            if isinstance(content, dict) and content.get('terraform_version'):
-                                files.append(os.path.join(root, file))
-                        except Exception as e:
-                            logging.debug(f'Failed to load json file {root}/{file}, skipping')
-                            logging.debug('Failure message:')
-                            logging.debug(e, stack_info=True)
-                            parsing_errors[file] = str(e)
-        tf_definitions = {}
-        template_lines = {}
-        if files:
-            files = [os.path.abspath(file) for file in files]
-            for file in files:
-                if file.endswith(".json"):
-                    parse_tf_plan(tf_definitions, template_lines, file, parsing_errors)
-                else:
-                    logging.debug(f'Failed to load {file} as is not a .json file, skipping')
-        return tf_definitions, template_lines
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         for full_file_path, definition in self.definitions.items():
@@ -142,23 +112,5 @@ class Runner(TerraformRunner):
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path):
-        entity_context = {}
-
-        if full_file_path not in self.definitions:
-            logging.debug(
-                f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
-            return entity_context
-
-        for resource in self.definitions.get(full_file_path, {}).get('resource', []):
-            resource_type = definition_path[0]
-            if resource_type in resource.keys():
-                resource_name = definition_path[1]
-                if resource_name in resource[resource_type].keys():
-                    resource_defintion = resource[resource_type][resource_name]
-                    entity_context['start_line'] = resource_defintion['start_line'][0]
-                    entity_context['end_line'] = resource_defintion['end_line'][0]
-                    entity_context["code_lines"] = self.template_lines[full_file_path][
-                                                   entity_context["start_line"]: entity_context["end_line"]]
-                    entity_context['address'] = resource_defintion['__address__']
-                    return entity_context
-        return entity_context
+        entity_id = ".".join(definition_path)
+        return self.context.get(full_file_path, {}).get(entity_id)
