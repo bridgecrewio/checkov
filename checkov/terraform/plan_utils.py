@@ -41,7 +41,9 @@ def create_definitions(
         files = [os.path.abspath(file) for file in files]
         for file in files:
             if file.endswith(".json"):
-                parse_tf_plan(tf_definitions, definitions_raw, file, out_parsing_errors)
+                current_tf_definitions, current_definitions_raw = parse_tf_plan(file, out_parsing_errors)
+                tf_definitions[file] = current_tf_definitions
+                definitions_raw[file] = current_definitions_raw
             else:
                 logging.debug(f'Failed to load {file} as is not a .json file, skipping')
     return tf_definitions, definitions_raw

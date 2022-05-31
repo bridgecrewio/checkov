@@ -8,9 +8,8 @@ class TestPlanFileParser(unittest.TestCase):
     def test_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_tags/tfplan.json"
-        tf_definitions = {}
-        parse_tf_plan(tf_definitions, {}, valid_plan_path, {})
-        file_resource_definition = next(iter(tf_definitions.values()))['resource'][0]
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
         resource_tags = resource_attributes['tags'][0]
@@ -21,8 +20,7 @@ class TestPlanFileParser(unittest.TestCase):
     def test_more_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_tags_variety/tfplan.json"
-        tf_definitions = {}
-        parse_tf_plan(tf_definitions, {}, valid_plan_path, {})
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         # TODO: this should also verify the flattening but at least shows it parses now.
         assert True
 
@@ -31,9 +29,8 @@ class TestPlanFileParser(unittest.TestCase):
     def test_simple_type_booleans_clean(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_booleans/tfplan.json"
-        tf_definitions = {}
-        parse_tf_plan(tf_definitions, {}, valid_plan_path, {})
-        file_resource_definition = next(iter(tf_definitions.values()))['resource'][0]
+        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+        file_resource_definition = tf_definition['resource'][0]
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
         self.assertTrue(resource_attributes['metadata'][0]['a'][0])
