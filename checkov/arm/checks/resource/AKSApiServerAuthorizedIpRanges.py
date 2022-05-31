@@ -28,9 +28,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
             else:
                 # ApiServerAuthorizedIpRanges fully supported in all future API versions
                 properties = conf.get('properties')
-                if not properties:
-                    return CheckResult.FAILED
-                if not isinstance(properties, DictNode):
+                if not properties or not isinstance(properties, DictNode):
                     return CheckResult.FAILED
                 apiServerAccessProfile = properties.get('apiServerAccessProfile')
                 if not apiServerAccessProfile:
