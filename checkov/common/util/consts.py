@@ -9,3 +9,5 @@ DEV_API_POST_HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
 }
+
+PARSE_ERROR_FAIL_FLAG = 'CKV_PARSE_ERROR_FAIL'
