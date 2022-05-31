@@ -36,12 +36,14 @@ class DockerSocketVolume(BaseK8Check):
 
         # Evaluate volumes
         if spec:
-            if "volumes" in spec and spec.get("volumes"):
-                for v in spec["volumes"]:
-                    if v.get("hostPath"):
-                        if "path" in v["hostPath"]:
-                            if v["hostPath"]["path"] == "/var/run/docker.sock":
-                                return CheckResult.FAILED
+            volumes = spec.get("volumes", [])
+            if not isinstance(volumes, list):
+                return CheckResult.UNKNOWN
+            for v in volumes:
+                if not v.get("hostPath"):
+                    continue
+                if v["hostPath"].get("path") == "/var/run/docker.sock":
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 check = DockerSocketVolume()

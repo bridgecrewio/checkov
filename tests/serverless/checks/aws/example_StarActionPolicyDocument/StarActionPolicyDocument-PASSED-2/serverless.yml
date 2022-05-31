@@ -1,0 +1,17 @@
+service: my-sls-service
+
+provider:
+  name: aws
+  runtime: python3.7
+  stackName: lambda-${self:service.name}
+  tag: ${opt:tag}
+
+functions:
+  myFunc:
+    name: myFunc
+    tags:
+      RESOURCE: lambda
+      PUBLIC: false
+    handler: Handler.handle
+    timeout: 600
+    memorySize: 320
