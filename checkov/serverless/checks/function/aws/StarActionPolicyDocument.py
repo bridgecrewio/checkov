@@ -23,6 +23,8 @@ class StarActionPolicyDocument(BaseFunctionCheck):
         if not statements:
             return CheckResult.PASSED
         for statement in statements:
+            if not isinstance(statement, dict):
+                return CheckResult.UNKNOWN
             if 'Action' in statement and '*' in statement['Action'] and statement.get('Effect') == 'Allow':
                 return CheckResult.FAILED
         return CheckResult.PASSED
