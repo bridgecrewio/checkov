@@ -227,7 +227,6 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     elif content_type == ContentType.TFPLAN and "planned_values" not in content:
         return {}, []
 
-    content = content.replace('\t', '    ')
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     return loads(content, filename, content_type), file_lines
