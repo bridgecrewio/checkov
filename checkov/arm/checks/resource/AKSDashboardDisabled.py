@@ -27,7 +27,7 @@ class AKSDashboardDisabled(BaseResourceCheck):
         if not isinstance(kube_dashboard, DictNode):
             return CheckResult.FAILED
         enabled = kube_dashboard.get("enabled")
-        if enabled and str(enabled).lower() == "false":
+        if enabled is not None and str(enabled).lower() == "false":
             return CheckResult.PASSED
         return CheckResult.FAILED
 
