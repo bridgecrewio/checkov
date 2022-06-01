@@ -17,10 +17,10 @@ def parse(filename: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tu
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             (template, template_lines) = loader.load(filename)
 
-        if template:
+        if template and template_lines:
             if isinstance(template, list):
                 for t in template:
-                    if t and (isinstance(t, dict) or isinstance(t, list)):
+                    if t and isinstance(t, (list, dict)):
                         return t, template_lines
             else:
                 return None
