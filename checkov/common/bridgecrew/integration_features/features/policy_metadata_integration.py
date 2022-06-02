@@ -5,7 +5,6 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.util.data_structures_utils import merge_dicts
 
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
@@ -136,18 +135,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     self.pc_to_ckv_id_mapping[custom_policy['pcPolicyId']] = custom_policy['id']
 
     def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata):
-        for metadata in prisma_policy_metadata:
-            ckv_id = self.get_ckv_id_from_pc_id(metadata.get('policyId'))
-            self.filtered_policy_ids.append(ckv_id)
-            if ckv_id:
-                pc_metadata = {
-                    'labels': metadata.get('labels', []),
-                    'policyMode': metadata.get('policyMode', ''),
-                    'enabled': metadata.get('enabled', ''),
-                    'cloudType': metadata.get('cloudType', ''),
-                    'is_filtered': True
-                }
-                self.check_metadata[ckv_id] = merge_dicts(self.check_metadata[ckv_id], pc_metadata)
+        if isinstance(prisma_policy_metadata, list):
+            for metadata in prisma_policy_metadata:
+                ckv_id = self.get_ckv_id_from_pc_id(metadata.get('policyId'))
+                self.filtered_policy_ids.append(ckv_id)
 
 
 integration = PolicyMetadataIntegration(bc_integration)
