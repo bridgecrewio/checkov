@@ -16,7 +16,7 @@ from checkov.common.parsers.json.errors import DecodeError
 LOGGER = logging.getLogger(__name__)
 
 
-def load(filename: str, allow_nulls: bool = True) -> tuple[dict[str, Any], tuple[int, str]]:
+def load(filename: str, allow_nulls: bool = True) -> tuple[dict[str, Any], list[tuple[int, str]]]:
     """
     Load the given JSON file
     """
@@ -26,17 +26,19 @@ def load(filename: str, allow_nulls: bool = True) -> tuple[dict[str, Any], tuple
             content = fp.read()
     except UnicodeDecodeError:
         LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
-        content = str(from_path(filename).best())
+        content = str(from_path(filename).best())  # type:ignore[arg-type]  # somehow str is not recognized as PathLike
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     return (json.loads(content, cls=Decoder, allow_nulls=allow_nulls), file_lines)
 
 
-def parse(filename: str, allow_nulls: bool = True, out_parsing_errors: Dict[str, str] = {}) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None, None]:
+def parse(
+    filename: str, allow_nulls: bool = True, out_parsing_errors: Dict[str, str] | None = None
+) -> tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None]:
     template = None
     template_lines = None
-    error = None
+    error: Exception | None = None
     try:
         (template, template_lines) = load(filename, allow_nulls)
     except DecodeError as e:
@@ -54,6 +56,8 @@ def parse(filename: str, allow_nulls: bool = True, out_parsing_errors: Dict[str,
         error = e
 
     if error:
+        if out_parsing_errors is None:
+            out_parsing_errors = {}
         out_parsing_errors[filename] = str(error)
 
     return (template, template_lines)

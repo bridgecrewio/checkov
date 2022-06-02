@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.parsers.node import DictNode
 
 
 class AKSRbacEnabled(BaseResourceCheck):
@@ -17,10 +18,12 @@ class AKSRbacEnabled(BaseResourceCheck):
                 # No enableRBAC option to configure
                 return CheckResult.FAILED
 
-        if "properties" in conf:
-            if "enableRBAC" in conf["properties"]:
-                if str(conf["properties"]["enableRBAC"]).lower() == "true":
-                    return CheckResult.PASSED
+        properties = conf.get('properties')
+        if not properties or not isinstance(properties, DictNode):
+            return CheckResult.FAILED
+        enable_RBAC = properties.get('enableRBAC')
+        if str(enable_RBAC).lower() == "true":
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = AKSRbacEnabled()

@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List
+from typing import Set, Optional, Union, List, TYPE_CHECKING
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.bridgecrew.severities import Severity, Severities
-from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 
 class RunnerFilter(object):
@@ -93,12 +98,12 @@ class RunnerFilter(object):
             self.enforcement_rule_configs[report_type] = config.get_skip_check_threshold()
 
     def should_run_check(
-            self,
-            check: Optional[BaseCheck] = None,
-            check_id: Optional[str] = None,
-            bc_check_id: Optional[str] = None,
-            severity: Optional[Severity] = None,
-            report_type: Optional[str] = None
+        self,
+        check: BaseCheck | BaseGraphCheck | None = None,
+        check_id: str | None = None,
+        bc_check_id: str | None = None,
+        severity: Severity | None = None,
+        report_type: str | None = None
     ) -> bool:
         if check:
             check_id = check.id

@@ -14,5 +14,7 @@ ignore_templates:
   - tests/cloudformation/checks/resource/aws/example_RedShiftSSL/*
   - tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/*
   - tests/cloudformation/checks/resource/aws/example_SecurityGroupRuleDescription/*
+  - tests/cloudformation/checks/resource/aws/example_SecurityGroupRuleDescription
+  - tests/cloudformation/checks/resource/aws/example_SecurityGroupUnrestrictedIngress22/SecurityGroupUnrestrictedIngress22-UNKNOWN.yaml
 ignore_checks:
   - W

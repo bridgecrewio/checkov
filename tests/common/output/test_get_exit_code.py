@@ -1,9 +1,11 @@
+import os
 import unittest
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 
 
 class TestGetExitCode(unittest.TestCase):
@@ -127,6 +129,11 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(combined_test_soft_fail_sev_hard_fail_id, 1)
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev, 1)
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev_fail, 0)
+
+        os.environ[PARSE_ERROR_FAIL_FLAG] = 'true'
+        r.add_parsing_error('some_file.tf')
+        self.assertEqual(r.get_exit_code(soft_fail=False, soft_fail_on=None, hard_fail_on=None), 1)
+        del os.environ[PARSE_ERROR_FAIL_FLAG]
 
 
 if __name__ == '__main__':

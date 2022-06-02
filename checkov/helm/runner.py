@@ -26,14 +26,13 @@ K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
 
 class K8sHelmRunner(k8_runner):
-    check_type = CheckType.HELM
-
     def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
                  db_connector: NetworkxConnector = NetworkxConnector(),
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
+        self.check_type = CheckType.HELM
         self.chart_dir_and_meta = []
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
