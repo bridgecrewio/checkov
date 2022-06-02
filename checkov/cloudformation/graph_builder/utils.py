@@ -54,7 +54,8 @@ def get_referenced_vertices_in_value(
     if isinstance(value, dict):
         for key, sub_value in value.items():
             if key == IntrinsicFunctions.GET_ATT:
-                sub_value = '.'.join(sub_value) if isinstance(sub_value, list) else sub_value
+                sub_value = '.'.join(sub_value) if \
+                    isinstance(sub_value, list) and all(isinstance(s, str) for s in sub_value) else sub_value
             references_vertices += get_referenced_vertices_in_value(
                 sub_value, vertices_block_name_map
             )

@@ -217,7 +217,7 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
 
 def validate_properties_in_resources_are_dict(template: DictNode) -> bool:
     template_resources = template.get("Resources")
-    for resource in template_resources.values():
-        if 'Properties' in resource and not isinstance(resource['Properties'], DictNode):
+    for resource_name, resource in template_resources.items():
+        if 'Properties' in resource and not isinstance(resource['Properties'], DictNode) or "." in resource_name:
             return False
     return True

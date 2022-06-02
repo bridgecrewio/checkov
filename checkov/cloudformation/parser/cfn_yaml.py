@@ -165,9 +165,14 @@ def multi_constructor(loader, tag_suffix, node):
     if tag_suffix not in UNCONVERTED_SUFFIXES:
         tag_suffix = '{}{}'.format(FN_PREFIX, tag_suffix)
 
-    constructor = None
     if tag_suffix == 'Fn::GetAtt':
         constructor = construct_getatt
+    elif tag_suffix == "Ref" and (isinstance(node.value, list) or isinstance(node.value, dict)):
+        raise CfnParseError(
+            filename="",
+            message='Invalid !Ref: {}'.format(node.value),
+            line_number=0,
+            column_number=0)
     elif isinstance(node, ScalarNode):
         constructor = loader.construct_scalar
     elif isinstance(node, SequenceNode):
