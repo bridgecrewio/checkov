@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List
+from typing import Set, Optional, Union, List, TYPE_CHECKING
 
 from checkov.common.bridgecrew.severities import Severity, Severities
-from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 
 class RunnerFilter(object):
@@ -79,11 +84,13 @@ class RunnerFilter(object):
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = None
 
-    def should_run_check(self,
-                         check: Optional[BaseCheck] = None,
-                         check_id: Optional[str] = None,
-                         bc_check_id: Optional[str] = None,
-                         severity: Optional[Severity] = None) -> bool:
+    def should_run_check(
+        self,
+        check: BaseCheck | BaseGraphCheck | None = None,
+        check_id: str | None = None,
+        bc_check_id: str | None = None,
+        severity: Severity | None = None,
+    ) -> bool:
         if check:
             check_id = check.id
             bc_check_id = check.bc_id
@@ -113,17 +120,20 @@ class RunnerFilter(object):
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
         should_skip_check = (
-                skip_severity or
-                explicit_skip or
-                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
+            skip_severity or
+            explicit_skip or
+            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
         )
 
         if should_skip_check:
-            return False
+            result = False
         elif should_run_check:
-            return True
+            result = True
         else:
-            return False
+            result = False
+
+        logging.debug(f'Should run check {check_id}: {result}')
+        return result
 
     @staticmethod
     def check_matches(check_id: str,

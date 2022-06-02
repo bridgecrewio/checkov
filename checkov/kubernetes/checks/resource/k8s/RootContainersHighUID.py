@@ -24,10 +24,12 @@ class RootContainersHighUID(BaseK8sRootContainerCheck):
             results = {"pod": {}, "container": []}
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 10000)
 
-            if spec.get("containers"):
-                for c in spec["containers"]:
-                    cresults = {"runAsUser": self.check_runAsUser(c, 10000)}
-                    results["container"].append(cresults)
+            containers = spec.get("containers", [])
+            if not isinstance(containers, list):
+                return CheckResult.UNKNOWN
+            for c in containers:
+                cresults = {"runAsUser": self.check_runAsUser(c, 10000)}
+                results["container"].append(cresults)
 
             # Evaluate pass / fail - Container values override Pod values
             # Pod runAsUser >= 10000, no override at container (PASSED)

@@ -133,8 +133,8 @@ class Runner(BaseRunner):
 
                         if results:
                             file_code_lines = self.definitions_raw[file_path]
-                            start_line = cast(int, conf["__start_line__"])  # it is always set for the main block types
-                            end_line = cast(int, conf["__end_line__"])  # it is always set for the main block types
+                            start_line = conf["__start_line__"]
+                            end_line = conf["__end_line__"]
 
                             cleaned_path = clean_file_path(file_path)
                             resource_id = f"{conf['type']}.{name}"

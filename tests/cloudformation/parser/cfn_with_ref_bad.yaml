@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "data-stage"
+
+Parameters:
+  ElasticsearchInstanceType:
+    Type: String
+    Default: r5.large.elasticsearch
+
+Resources:
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: !Join
+          - "-"
+          - - !Ref AWS::StackName
+            - "20200325"
+      ElasticsearchVersion: !Ref [1]
+      ElasticsearchClusterConfig:
+        InstanceCount: '1'
+        InstanceType: !Ref ElasticsearchInstanceType

@@ -57,8 +57,8 @@ class CloudformationLocalGraph(LocalGraph):
             if not isinstance(attributes, dict):
                 attributes = DictNode({}, resource.start_mark, resource.end_mark)
             attributes["resource_type"] = resource_type
-            attributes["__startline__"] = resource["__startline__"]
-            attributes["__endline__"] = resource["__endline__"]
+            attributes["__startline__"] = resource.get("__startline__")
+            attributes["__endline__"] = resource.get("__endline__")
             attributes.start_mark = resource.start_mark
             attributes.end_mark = attributes.end_mark
             return attributes
@@ -343,7 +343,10 @@ class CloudformationLocalGraph(LocalGraph):
     def _is_of_type(cfndict, identifier, *template_sections):
         if isinstance(identifier, str):
             for ts in template_sections:
-                if cfndict.get(ts, {}).get(identifier):
+                ts_var = cfndict.get(ts, {})
+                if ts_var is None:
+                    continue
+                if ts_var.get(identifier):
                     return True
         return False
 

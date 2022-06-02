@@ -23,10 +23,12 @@ class RootContainers(BaseK8sRootContainerCheck):
             results["pod"]["runAsNonRoot"] = self.check_runAsNonRoot(spec)
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 1)
 
-            if spec.get("containers"):
-                for c in spec["containers"]:
-                    cresults = {"runAsNonRoot": self.check_runAsNonRoot(c), "runAsUser": self.check_runAsUser(c, 1)}
-                    results["container"].append(cresults)
+            containers = spec.get("containers", [])
+            if not isinstance(containers, list):
+                return CheckResult.UNKNOWN
+            for c in containers:
+                cresults = {"runAsNonRoot": self.check_runAsNonRoot(c), "runAsUser": self.check_runAsUser(c, 1)}
+                results["container"].append(cresults)
 
             # Evaluate pass / fail
             # Container values override Pod values
