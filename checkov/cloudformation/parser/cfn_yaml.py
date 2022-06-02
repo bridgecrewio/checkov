@@ -219,13 +219,11 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     """
     Load the given YAML file
     """
-
-    file_path = filename if isinstance(filename, Path) else Path(filename)
     try:
-        content = file_path.read_text()
-    except UnicodeDecodeError:
-        LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
         content = str(from_path(filename).best())
+    except UnicodeDecodeError as e:
+        LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
+        raise e
 
     if content_type == ContentType.CFN and "Resources" not in content:
         return {}, []
