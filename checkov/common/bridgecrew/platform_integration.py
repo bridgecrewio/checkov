@@ -76,6 +76,7 @@ class BcPlatformIntegration(object):
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         self.prisma_policies_url = None
+        self.prisma_policy_filters_url = None
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.prisma_policies_response = None
@@ -96,6 +97,7 @@ class BcPlatformIntegration(object):
         if self.prisma_api_url:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
             self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
+            self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
         else:
             self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
@@ -469,13 +471,36 @@ class BcPlatformIntegration(object):
                 self.setup_http_manager()
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
-            # Only fetch enabled build policies.
-            query_params['policy.enabled'] = True
-            query_params['policy.subtype'] = 'build'
-            request = self.http.request("GET", self.prisma_policies_url, headers=headers,
-                                        fields=query_params)
-            self.prisma_policies_response = json.loads(request.data.decode("utf8"))
-            logging.debug("Got Prisma build policy metadata")
+            if self.is_valid_policy_filter(query_params):
+                # Only fetch enabled build policies.
+                query_params['policy.enabled'] = True
+                query_params['policy.subtype'] = 'build'
+                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)
+                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
+                logging.debug("Got Prisma build policy metadata")
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+
+    def is_valid_policy_filter(self, policy_filter: Dict) -> bool:
+        if not policy_filter:
+            return True
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
+            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)
+            valid_filters = json.loads(request.data.decode("utf8"))
+            for filter_name, filter_value in policy_filter.items():
+                if filter_name not in valid_filters.keys():
+                    logging.error(f"Invalid filter name: {filter_name}")
+                    return False
+                elif filter_value not in valid_filters.get(filter_name).get('options'):
+                    logging.error(f"Invalid filter value: {filter_value}"
+                                  f"Available options: {valid_filters.get(filter_name).get('options')}")
+                    return False
+            return True
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 

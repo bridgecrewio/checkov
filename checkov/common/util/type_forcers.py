@@ -127,8 +127,11 @@ def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict:
     """
     filter_params = {}
     if filter_string:
-        for f in filter_string.split(','):
-            f_name = f.split('=')[0]
-            f_value = f.split('=')[1]
-            filter_params[f_name] = f_value
+        try:
+            for f in filter_string.split(','):
+                f_name = f.split('=')[0]
+                f_value = f.split('=')[1]
+                filter_params[f_name] = f_value
+        except IndexError as e:
+            logging.debug(f"Invalid filter format: {e}")
     return filter_params
