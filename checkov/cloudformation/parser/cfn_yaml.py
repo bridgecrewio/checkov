@@ -99,6 +99,8 @@ class NodeConstructor(SafeConstructor):
             value = self.construct_object(value_node, False)
             if isinstance(key, dict):
                 key = frozenset(key.keys()), frozenset(key.values())
+            if isinstance(key, list):
+                key = frozenset(key)
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
