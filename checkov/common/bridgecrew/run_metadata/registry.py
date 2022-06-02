@@ -11,6 +11,8 @@ class RunMetadataExtractorsRegistry():
         for extractor in self.extractors:
             if extractor.is_current_ci():
                 return extractor
-
+        for extractor in self.extractors:
+            if extractor.__class__.__name__ == 'DefaultRunMetadataExtractor':
+                return extractor
 
 registry = RunMetadataExtractorsRegistry()
