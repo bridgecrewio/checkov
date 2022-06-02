@@ -130,6 +130,7 @@ class Runner(BaseRunner):
                             entity={name: conf},
                             skipped_checks=[],
                             runner_filter=runner_filter,
+                            report_type=CheckType.BICEP
                         )
 
                         if results:

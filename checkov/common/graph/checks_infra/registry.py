@@ -1,6 +1,6 @@
 import concurrent.futures
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from networkx import DiGraph
 
@@ -19,10 +19,10 @@ class BaseRegistry:
         raise NotImplementedError
 
     def run_checks(
-        self, graph_connector: DiGraph, runner_filter: RunnerFilter
+        self, graph_connector: DiGraph, runner_filter: RunnerFilter, report_type: Optional[str] = None
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         check_results = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c)]
+        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
                 [executor.submit(self.run_check_parallel, check, check_results, graph_connector)

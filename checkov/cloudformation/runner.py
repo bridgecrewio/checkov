@@ -124,7 +124,7 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
                             skipped_checks = resource_context.get("skipped_checks")
                             entity = {resource_name: resource}
-                            results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
+                            results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter, report_type=CheckType.CLOUDFORMATION)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
                                 record = Record(

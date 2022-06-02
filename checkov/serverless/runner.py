@@ -120,7 +120,7 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
 
                             entity = {resource_name: resource}
-                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
+                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter, report_type=CheckType.SERVERLESS)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             for check, check_result in results.items():
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,

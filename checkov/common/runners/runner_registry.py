@@ -116,7 +116,9 @@ class RunnerRegistry:
             code_category_type = CodeCategoryMapping[report_type]
             config = repo_config_integration.code_category_configs.get(code_category_type)
             if not config:
-                raise Exception(f'Could not find an enforcement rule config for category {code_category_type} (runner: {report_type})')
+                # this can happen if Checkov supports a type that is not yet platformized (e.g., Supply Chain at the time of this comment)
+                logging.debug(f'Could not find an enforcement rule config for category {code_category_type} (runner: {report_type}). Falling back to the CLI args')
+                return config.soft_fail, config.soft_fail_on, config.hard_fail_on
 
             # the soft fail threshold will just be implicit
             # for simplicity, just use an empty hard fail list of full soft-fail is on

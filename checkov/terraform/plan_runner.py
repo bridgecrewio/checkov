@@ -95,7 +95,7 @@ class Runner(TerraformRunner):
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
 
-                results = registry.scan(scanned_file, entity, [], runner_filter)
+                results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                     check_result=check_result,

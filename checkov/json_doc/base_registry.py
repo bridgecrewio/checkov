@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Callable
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
@@ -74,7 +75,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=CheckType.JSON):
                 scanner: Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None] = self._scanner.get(check.block_type, self._scan_json_document)
                 if check.path:
                     target = entity

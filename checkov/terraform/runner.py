@@ -328,7 +328,7 @@ class Runner(BaseRunner):
                     variables_evaluations[var_name] = dataclasses.asdict(context_info)
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                       entity_context_path)
-            results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
+            results = registry.scan(scanned_file, entity, skipped_checks, runner_filter, report_type=CheckType.TERRAFORM)
             absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)

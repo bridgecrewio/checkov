@@ -61,7 +61,7 @@ class Runner(BaseRunner):
             instructions = definitions[docker_file_path]
 
             results = registry.scan(docker_file_path, instructions, skipped_checks,
-                                    runner_filter)
+                                    runner_filter, report_type=CheckType.DOCKERFILE)
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
                 startline = 0
