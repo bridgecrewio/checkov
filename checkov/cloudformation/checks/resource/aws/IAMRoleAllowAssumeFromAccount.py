@@ -8,7 +8,7 @@ ACCOUNT_ACCESS = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
 
 class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure IAM role allows only specific principals in account to assume it"
+        name = "Ensure AWS IAM policy does not allow assume role permission across all services"
         id = "CKV_AWS_61"
         supported_resources = ['AWS::IAM::Role']
         categories = [CheckCategories.IAM]
