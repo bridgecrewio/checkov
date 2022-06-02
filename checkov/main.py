@@ -37,7 +37,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
-from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.util.type_forcers import convert_str_to_bool, convert_prisma_policy_filter_to_dict
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -225,6 +225,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     bc_integration.get_prisma_build_policies(config.filter)
 
     integration_feature_registry.run_pre_scan()
+
+    if integration_feature_registry.features[0].__dict__.get('filtered_policy_ids'):
+        runner_filter.filtered_policy_ids = integration_feature_registry.features[0].__dict__.get('filtered_policy_ids')
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
@@ -528,6 +531,9 @@ def normalize_config(config: Namespace) -> None:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
+
+    if config.filter and not (config.bc_api_key and config.prisma_api_url):
+        logger.warning('--filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
 if __name__ == '__main__':

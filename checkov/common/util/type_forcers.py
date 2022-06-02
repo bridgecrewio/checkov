@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from json import JSONDecodeError
-from typing import TypeVar, overload, Any
+from typing import TypeVar, overload, Any, Dict
 
 import yaml
 
@@ -115,3 +115,20 @@ def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> li
         return csv_string_arg[0].split(',')
     else:
         return csv_string_arg
+
+
+def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict:
+    """
+    Converts the filter string to a dict. For example:
+    'policy.label=label,cloud.type=aws' becomes -->
+    {'policy.label': 'label1', 'cloud.type': 'aws'}
+    Note that the API does not accept lists https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policies-v2
+    This is not allowed: policy.label=label1,label2
+    """
+    filter_params = {}
+    if filter_string:
+        for f in filter_string.split(','):
+            f_name = f.split('=')[0]
+            f_value = f.split('=')[1]
+            filter_params[f_name] = f_value
+    return filter_params
