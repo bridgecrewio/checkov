@@ -37,9 +37,9 @@ then
   echo "running image referencing"
   pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
-  echo "running tfc"
-  GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
   echo "running list"
   pipenv run checkov --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
+  echo "running tfc"
+  GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
 
 fi
