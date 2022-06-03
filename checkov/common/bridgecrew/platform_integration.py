@@ -32,7 +32,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
-from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -448,7 +448,7 @@ class BcPlatformIntegration(object):
 
     def get_prisma_build_policies(self, policy_filter: Dict) -> None:
         """
-        Get Prisma Policy for enriching runConfig with metadata
+        Get Prisma policy for enriching runConfig with metadata
         Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
         :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
         :return:
@@ -472,12 +472,11 @@ class BcPlatformIntegration(object):
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
             if self.is_valid_policy_filter(query_params):
-                # Only fetch enabled build policies.
-                query_params['policy.enabled'] = True
-                query_params['policy.subtype'] = 'build'
                 request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
+            else:
+                logging.warning("Skipping get prisma build policies. --filter will not be applied.")
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
@@ -494,12 +493,21 @@ class BcPlatformIntegration(object):
             valid_filters = json.loads(request.data.decode("utf8"))
             for filter_name, filter_value in policy_filter.items():
                 if filter_name not in valid_filters.keys():
-                    logging.error(f"Invalid filter name: {filter_name}")
+                    logging.warning(f"Invalid filter name: {filter_name}")
                     return False
-                elif filter_value not in valid_filters.get(filter_name).get('options'):
-                    logging.error(f"Invalid filter value: {filter_value}"
-                                  f"Available options: {valid_filters.get(filter_name).get('options')}")
+                elif filter_value not in valid_filters.get(filter_name).get('options', []):
+                    logging.warning(f"Invalid filter value: {filter_value}")
+                    logging.warning(f"Available options: {valid_filters.get(filter_name).get('options')}")
                     return False
+                elif filter_name == 'policy.subtype' and filter_value != 'build':
+                    logging.warning(f"Filter value not allowed: {filter_value}")
+                    logging.warning(f"Available options: build")
+                    return False
+                elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
+                    logging.warning(f"Filter value not allowed: {filter_value}")
+                    logging.warning(f"Available options: True")
+                    return False
+            logging.debug("--filter is valid")
             return True
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
