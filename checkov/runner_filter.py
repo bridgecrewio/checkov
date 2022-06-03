@@ -107,10 +107,10 @@ class RunnerFilter(object):
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
-                run_severity or
-                explicit_run or
-                implicit_run or
-                (is_external and self.all_external)
+            run_severity or
+            explicit_run or
+            implicit_run or
+            (is_external and self.all_external)
         )
 
         if not should_run_check:

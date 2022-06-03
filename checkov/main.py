@@ -37,7 +37,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
-from checkov.common.util.type_forcers import convert_str_to_bool, convert_prisma_policy_filter_to_dict
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
