@@ -8,7 +8,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 import boto3
 import dpath.util
@@ -471,7 +471,10 @@ class BcPlatformIntegration(object):
                 self.setup_http_manager()
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
-            if self.is_valid_policy_filter(query_params):
+            if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
+                # If enabled and subtype are not explicitly set, use the only acceptable values.
+                query_params['policy.enabled'] = True
+                query_params['policy.subtype'] = 'build'
                 request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
@@ -480,9 +483,7 @@ class BcPlatformIntegration(object):
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
-    def is_valid_policy_filter(self, policy_filter: Dict) -> bool:
-        if not policy_filter:
-            return True
+    def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -490,27 +491,35 @@ class BcPlatformIntegration(object):
                 self.setup_http_manager()
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
             request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)
-            valid_filters = json.loads(request.data.decode("utf8"))
-            for filter_name, filter_value in policy_filter.items():
-                if filter_name not in valid_filters.keys():
-                    logging.warning(f"Invalid filter name: {filter_name}")
-                    return False
-                elif filter_value not in valid_filters.get(filter_name).get('options', []):
-                    logging.warning(f"Invalid filter value: {filter_value}")
-                    logging.warning(f"Available options: {valid_filters.get(filter_name).get('options')}")
-                    return False
-                elif filter_name == 'policy.subtype' and filter_value != 'build':
-                    logging.warning(f"Filter value not allowed: {filter_value}")
-                    logging.warning(f"Available options: build")
-                    return False
-                elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
-                    logging.warning(f"Filter value not allowed: {filter_value}")
-                    logging.warning(f"Available options: True")
-                    return False
-            logging.debug("--filter is valid")
-            return True
+            return json.loads(request.data.decode("utf8"))
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            return {}
+
+    @staticmethod
+    def is_valid_policy_filter(policy_filter: Dict[str, str], valid_filters: Dict[str, Dict[str, Any]] = {}) -> bool:
+        if not policy_filter:
+            return False
+        if not valid_filters:
+            return False
+        for filter_name, filter_value in policy_filter.items():
+            if filter_name not in valid_filters.keys():
+                logging.warning(f"Invalid filter name: {filter_name}")
+                return False
+            elif filter_value not in valid_filters.get(filter_name).get('options', []):
+                logging.warning(f"Invalid filter value: {filter_value}")
+                logging.warning(f"Available options: {valid_filters.get(filter_name).get('options')}")
+                return False
+            elif filter_name == 'policy.subtype' and filter_value != 'build':
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: build")
+                return False
+            elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: True")
+                return False
+        logging.debug("--filter is valid")
+        return True
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
