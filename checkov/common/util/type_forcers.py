@@ -117,7 +117,7 @@ def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> li
         return csv_string_arg
 
 
-def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict:
+def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
     """
     Converts the filter string to a dict. For example:
     'policy.label=label,cloud.type=aws' becomes -->
