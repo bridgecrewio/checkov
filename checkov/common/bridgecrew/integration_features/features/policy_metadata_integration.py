@@ -1,3 +1,4 @@
+import json
 import logging
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -138,8 +139,12 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
     def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata):
         if isinstance(prisma_policy_metadata, list):
             for metadata in prisma_policy_metadata:
-                ckv_id = self.get_ckv_id_from_pc_id(metadata.get('policyId'))
-                self.filtered_policy_ids.append(ckv_id)
+                logging.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")
+                pc_id = metadata.get('policyId')
+                if pc_id:
+                    ckv_id = self.get_ckv_id_from_pc_id(pc_id)
+                    if ckv_id:
+                        self.filtered_policy_ids.append(ckv_id)
 
 
 integration = PolicyMetadataIntegration(bc_integration)

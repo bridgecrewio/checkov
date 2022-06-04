@@ -456,14 +456,14 @@ class BcPlatformIntegration(object):
         if self.skip_download is True:
             logging.debug("Skipping prisma policy API call")
             return
+        if not policy_filter:
+            return
         if not self.is_prisma_integration():
             return
         if not self.bc_api_key or not self.is_integration_configured():
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
-        if not policy_filter:
-            return
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
