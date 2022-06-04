@@ -222,7 +222,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.skip_download = True
 
     bc_integration.get_platform_run_config()
-    bc_integration.get_prisma_build_policies(config.filter)
+    bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
 
@@ -503,8 +503,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
-    parser.add('--filter', help='query string to filter policies based on Prisma Cloud policy metadata. Can only be '
-                                'used with Prisma Cloud')
+    parser.add('--policy-metadata-filter',
+               help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
+                    'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
+                    'information on allowed filters.Format: policy.label=test,cloud.type=aws ')
 
 
 def get_external_checks_dir(config: Any) -> Any:
@@ -536,7 +538,7 @@ def normalize_config(config: Namespace) -> None:
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
 
-    if config.filter and not (config.bc_api_key and config.prisma_api_url):
+    if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
         logger.warning('--filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
