@@ -83,7 +83,7 @@ class RunnerFilter(object):
         self.all_external = all_external
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
-        self.filtered_policy_ids: List[str] = filtered_policy_ids
+        self.filtered_policy_ids: List[str] = filtered_policy_ids or []
 
     def should_run_check(
         self,

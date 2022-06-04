@@ -120,7 +120,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def _handle_customer_run_config(self, run_config):
         self.check_metadata = run_config['policyMetadata']
-        for (ckv_id, pol) in self.check_metadata.items():
+        for ckv_id, pol in self.check_metadata.items():
             self.bc_to_ckv_id_mapping[pol['id']] = ckv_id
             if self.bc_integration.is_prisma_integration() and pol.get('pcPolicyId'):
                 self.pc_to_ckv_id_mapping[pol['pcPolicyId']] = ckv_id
@@ -131,8 +131,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     self.check_metadata[custom_policy['id']] = {
                         'guideline': custom_policy['guideline']
                     }
-                if custom_policy.get('pcPolicyId'):
-                    self.pc_to_ckv_id_mapping[custom_policy['pcPolicyId']] = custom_policy['id']
+                pc_policy_id = custom_policy.get('pcPolicyId')
+                if pc_policy_id:
+                    self.pc_to_ckv_id_mapping[pc_policy_id] = custom_policy['id']
 
     def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata):
         if isinstance(prisma_policy_metadata, list):

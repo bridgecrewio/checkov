@@ -128,7 +128,7 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
-            if check_id in filtered_policy_ids or not filtered_policy_ids:
+            if not filtered_policy_ids or check_id in filtered_policy_ids:
                 if use_bc_ids:
                     check_id = metadata_integration.get_bc_id(check_id)
                 printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
