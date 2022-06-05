@@ -66,7 +66,7 @@ setup(
         "jsonpath_ng",
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.6",
+        "pycep-parser==0.3.7",
         "charset-normalizer",
     ],
     license="Apache License 2.0",
