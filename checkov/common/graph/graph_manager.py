@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class GraphManager:
-    def __init__(self, db_connector: DBConnector, parser: Parser | None, source: str = "") -> None:
+    def __init__(self, db_connector: DBConnector[nx.DiGraph], parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser

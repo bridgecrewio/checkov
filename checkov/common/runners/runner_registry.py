@@ -58,10 +58,6 @@ class RunnerRegistry:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
 
-    @abstractmethod
-    def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
-        raise NotImplementedError()
-
     def run(
             self,
             root_folder: Optional[str] = None,
@@ -76,11 +72,16 @@ class RunnerRegistry:
                                            runner_filter=self.runner_filter,
                                            collect_skip_comments=collect_skip_comments)]
         else:
-            reports = parallel_runner.run_function(
-                lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                          runner_filter=self.runner_filter,
-                                          collect_skip_comments=collect_skip_comments),
-                self.runners, 1)
+            def _parallel_run(runner: BaseRunner) -> Report:
+                return runner.run(
+                    root_folder=root_folder,
+                    external_checks_dir=external_checks_dir,
+                    files=files,
+                    runner_filter=self.runner_filter,
+                    collect_skip_comments=collect_skip_comments,
+                )
+
+            reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         for scan_report in reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
@@ -213,9 +214,9 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            if cyclonedx_reports:
+            if len(cyclonedx_reports) > 1:
                 # More than one Report - combine Reports first
-                report = Report(None)
+                report = Report("")
                 for r in cyclonedx_reports:
                     report.passed_checks += r.passed_checks
                     report.skipped_checks += r.skipped_checks

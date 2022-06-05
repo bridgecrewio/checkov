@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import Any, TYPE_CHECKING, Callable
 
 from checkov.common.output.record import Record
@@ -16,12 +17,11 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-
     def _load_files(
         self,
         files_to_load: list[str],
-        definitions: dict[str, dict[str, Any]],
-        definitions_raw: dict[str, tuple[int, str]],
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
+        definitions_raw: dict[str, list[tuple[int, str]]],
         filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
@@ -46,8 +46,8 @@ class Runner(BaseRunner):
     ) -> Report:
         registry = self.import_registry()
 
-        definitions: dict[str, dict[str, Any]] = {}
-        definitions_raw: dict[str, tuple[int, str]] = {}
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        definitions_raw: dict[str, list[tuple[int, str]]] = {}
 
         report = Report(self.check_type)
 
@@ -72,14 +72,19 @@ class Runner(BaseRunner):
                 self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
 
         for file_path in definitions.keys():
-            results = registry.scan(file_path, definitions[file_path], [], runner_filter)
+            results = registry.scan(file_path, definitions[file_path], [], runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
                 check = result.pop("check", None)  # use pop to remove Check class which is not serializable from
+                if check is None:
+                    continue
+
                 # result record
-                end, start = self.get_start_end_lines(end, result_config, start)
+                if result_config:
+                    end, start = self.get_start_end_lines(end, result_config, start)
+
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
@@ -88,7 +93,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),
+                    resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -99,10 +104,10 @@ class Runner(BaseRunner):
 
         return report
 
-    def included_paths(self):
-        return None
+    def included_paths(self) -> Iterable[str]:
+        return []
 
-    def get_resource(self, file_path: str, key: str, supported_entities: list[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os.path
@@ -7,8 +9,9 @@ from collections import namedtuple
 from concurrent import futures
 from json import JSONDecodeError
 from os import path
+from pathlib import Path
 from time import sleep
-from typing import Optional, List, Dict
+from typing import List, Dict, TYPE_CHECKING, Any, cast
 
 import boto3
 import dpath.util
@@ -20,7 +23,9 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
+from typing_extensions import TypeGuard
 from urllib3.exceptions import HTTPError, MaxRetryError
+
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
@@ -33,6 +38,14 @@ from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers
 from checkov.version import version as checkov_version
+
+if TYPE_CHECKING:
+    import argparse
+    from botocore.client import BaseClient
+    from checkov.common.bridgecrew.bc_source import SourceType
+    from checkov.common.output.report import Report
+    from requests import Response
+
 
 SLEEP_SECONDS = 1
 
@@ -57,21 +70,21 @@ SIGNUP_HEADER = merge_dicts({
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
 
-class BcPlatformIntegration(object):
-    def __init__(self):
+class BcPlatformIntegration:
+    def __init__(self) -> None:
         self.bc_api_key = read_key()
-        self.s3_client = None
-        self.bucket = None
-        self.credentials = None
-        self.repo_path = None
-        self.repo_id = None
-        self.repo_branch = None
+        self.s3_client: BaseClient | None = None
+        self.bucket: str | None = None
+        self.credentials: dict[str, str] | None = None
+        self.repo_path: str | None = None
+        self.repo_id: str | None = None
+        self.repo_branch: str | None = None
         self.skip_fixes = False
         self.skip_download = False
-        self.bc_source = None
-        self.bc_source_version = None
-        self.timestamp = None
-        self.scan_reports = []
+        self.bc_source: SourceType | None = None
+        self.bc_source_version: str | None = None
+        self.timestamp: str | None = None
+        self.scan_reports: list[Report] = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         self.setup_api_urls()
@@ -79,11 +92,11 @@ class BcPlatformIntegration(object):
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
-        self.http = None
+        self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.bc_skip_mapping = False
         self.cicd_details = {}
 
-    def setup_api_urls(self):
+    def setup_api_urls(self) -> None:
         """
         API URLs vary depending upon whether the platform is Bridgecrew or Prisma Cloud.
         Bridgecrew has one default that can be used when initializing the class,
@@ -103,7 +116,7 @@ class BcPlatformIntegration(object):
         return self.bc_api_key and not self.is_bc_token(self.bc_api_key)
 
     @staticmethod
-    def is_bc_token(token: str) -> bool:
+    def is_bc_token(token: str) -> TypeGuard[str]:
         return re.match(UUID_V4_PATTERN, token) is not None
 
     @cached(TTLCache(maxsize=1, ttl=540))
@@ -122,10 +135,10 @@ class BcPlatformIntegration(object):
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
             raise BridgecrewAuthError()
-        token = json.loads(request.data.decode("utf8"))['token']
+        token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
-    def setup_http_manager(self, ca_certificate=os.getenv('BC_CA_BUNDLE', None)):
+    def setup_http_manager(self, ca_certificate: str | None = os.getenv('BC_CA_BUNDLE', None)) -> None:
         """
         bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
         :param ca_certificate: an optional CA bundle to be used by both libraries.
@@ -145,8 +158,16 @@ class BcPlatformIntegration(object):
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def setup_bridgecrew_credentials(self, repo_id, skip_fixes=False, skip_download=False, source=None,
-                                     source_version=None, repo_branch=None, prisma_api_url=None):
+    def setup_bridgecrew_credentials(
+        self,
+        repo_id: str,
+        skip_fixes: bool = False,
+        skip_download: bool = False,
+        source: SourceType | None = None,
+        source_version: str | None = None,
+        repo_branch: str | None = None,
+        prisma_api_url: str | None = None,
+    ) -> None:
         """
         Setup credentials against Bridgecrew's platform.
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
@@ -167,13 +188,13 @@ class BcPlatformIntegration(object):
             self.setup_api_urls()
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
-        if self.bc_source.upload_results:
+        if self.bc_source and self.bc_source.upload_results:
             try:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
-                self.credentials = response["creds"]
+                self.credentials = cast(dict[str, str], response["creds"])
                 config = Config(
                     s3={
                         "use_accelerate_endpoint": True,
@@ -208,7 +229,7 @@ class BcPlatformIntegration(object):
 
         self.platform_integration_configured = True
 
-    def get_s3_role(self, repo_id):
+    def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
         token = self.get_auth_token()
         request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
@@ -233,14 +254,20 @@ class BcPlatformIntegration(object):
         repo_full_path = response["path"]
         return repo_full_path, response
 
-    def is_integration_configured(self):
+    def is_integration_configured(self) -> bool:
         """
         Checks if Bridgecrew integration is fully configured based in input params.
         :return: True if the integration is configured, False otherwise
         """
         return self.platform_integration_configured
 
-    def persist_repository(self, root_dir, files=None, excluded_paths=None, included_paths: Optional[List[str]] = None):
+    def persist_repository(
+        self,
+        root_dir: str | Path,
+        files: list[str] | None = None,
+        excluded_paths: list[str] | None = None,
+        included_paths: list[str] | None = None,
+    ) -> None:
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
         that are specified will be persisted.
@@ -275,10 +302,10 @@ class BcPlatformIntegration(object):
 
         self.persist_files(files_to_persist)
 
-    def persist_git_configuration(self, root_dir, git_config_folders: List[str]):
+    def persist_git_configuration(self, root_dir: str | Path, git_config_folders: list[str]) -> None:
         if not self.use_s3_integration:
             return
-        files_to_persist: List[FileToPersist] = []
+        files_to_persist: list[FileToPersist] = []
 
         for git_config_folder in git_config_folders:
             if not os.path.isdir(git_config_folder):
@@ -296,7 +323,7 @@ class BcPlatformIntegration(object):
 
         self.persist_files(files_to_persist)
 
-    def persist_scan_results(self, scan_reports):
+    def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
@@ -311,12 +338,12 @@ class BcPlatformIntegration(object):
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
-    def persist_image_scan_results(self, report: Dict[str, any], file_path: str, image_name: str, branch: str) -> None:
+    def persist_image_scan_results(self, report: dict[str, Any], file_path: str, image_name: str, branch: str) -> None:
         target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
-    def commit_repository(self, branch):
+    def commit_repository(self, branch: str) -> str | None:
         """
         :param branch: branch to be persisted
         Finalize the repository's scanning in bridgecrew's platform.
@@ -324,7 +351,7 @@ class BcPlatformIntegration(object):
         try_num = 0
         while try_num < MAX_RETRIES:
             if not self.use_s3_integration:
-                return
+                return None
 
             request = None
             response = None
@@ -350,7 +377,7 @@ class BcPlatformIntegration(object):
                                                                 get_user_agent_header()
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
-                url = response.get("url", None)
+                url: str = response.get("url", None)
                 return url
             except HTTPError:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
@@ -371,7 +398,9 @@ class BcPlatformIntegration(object):
                     raise Exception(
                         f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
 
-    def persist_files(self, files_to_persist: List[FileToPersist]):
+        return None
+
+    def persist_files(self, files_to_persist: list[FileToPersist]) -> None:
         logging.info(f"Persisting {len(files_to_persist)} files")
         with futures.ThreadPoolExecutor() as executor:
             futures.wait(
@@ -381,7 +410,7 @@ class BcPlatformIntegration(object):
             )
         logging.info(f"Done persisting {len(files_to_persist)} files")
 
-    def _persist_file(self, full_file_path, s3_file_key):
+    def _persist_file(self, full_file_path: str, s3_file_key: str) -> None:
         tries = MAX_RETRIES
         curr_try = 0
         file_object_key = os.path.join(self.repo_path, s3_file_key).replace("\\", "/")
@@ -404,7 +433,7 @@ class BcPlatformIntegration(object):
             logging.error(
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
-    def get_platform_run_config(self):
+    def get_platform_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping downloading configs from platform")
             return
@@ -414,7 +443,7 @@ class BcPlatformIntegration(object):
         else:
             self.get_public_run_config()
 
-    def get_run_config_url(self):
+    def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
 
     def get_customer_run_config(self) -> None:
@@ -446,7 +475,7 @@ class BcPlatformIntegration(object):
             return
 
         try:
-            headers = {}
+            headers: dict[str, Any] = {}
             if not self.http:
                 self.setup_http_manager()
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
@@ -456,7 +485,7 @@ class BcPlatformIntegration(object):
             logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}",
                             exc_info=True)
 
-    def onboarding(self):
+    def onboarding(self) -> None:
         if not self.bc_api_key:
             print(Style.BRIGHT + colored(
                 "\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
@@ -539,7 +568,7 @@ class BcPlatformIntegration(object):
         else:
             print("No argument given. Try ` --help` for further information")
 
-    def get_report_to_platform(self, args, scan_reports):
+    def get_report_to_platform(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
         if self.bc_api_key:
 
             if args.directory:
@@ -550,7 +579,7 @@ class BcPlatformIntegration(object):
 
     # Added this to generate a default repo_id for cli scans for upload to the platform
     # whilst also persisting a cli repo_id into the object
-    def persist_bc_api_key(self, args):
+    def persist_bc_api_key(self, args: argparse.Namespace) -> str | None:
         if args.bc_api_key:
             self.bc_api_key = args.bc_api_key
         else:
@@ -560,35 +589,35 @@ class BcPlatformIntegration(object):
 
     # Added this to generate a default repo_id for cli scans for upload to the platform
     # whilst also persisting a cli repo_id into the object
-    def persist_repo_id(self, args):
+    def persist_repo_id(self, args: argparse.Namespace) -> str:
         if args.repo_id is None:
             if CI_METADATA_EXTRACTOR.from_branch:
                 self.repo_id = CI_METADATA_EXTRACTOR.from_branch
             if args.directory:
                 basename = path.basename(os.path.abspath(args.directory[0]))
-                self.repo_id = "cli_repo/" + basename
+                self.repo_id = f"cli_repo/{basename}"
             if args.file:
                 # Get the base path of the file based on it's absolute path
                 basename = os.path.basename(os.path.dirname(os.path.abspath(args.file[0])))
-                self.repo_id = "cli_repo/" + basename
+                self.repo_id = f"cli_repo/{basename}"
 
         else:
             self.repo_id = args.repo_id
         return self.repo_id
 
-    def get_repository(self, args):
+    def get_repository(self, args: argparse.Namespace) -> str:
         if CI_METADATA_EXTRACTOR.from_branch:
             return CI_METADATA_EXTRACTOR.from_branch
         basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
-        repo_id = "cli_repo/" + basename
+        repo_id = f"cli_repo/{basename}"
         return repo_id
 
-    def get_api_token(self, email, org):
+    def get_api_token(self, email: str, org: str) -> tuple[str, Response]:
         response = self._create_bridgecrew_account(email, org)
         bc_api_token = response.json()["checkovSignup"]
         return bc_api_token, response
 
-    def _upload_run(self, args, scan_reports):
+    def _upload_run(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
         print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
@@ -602,7 +631,7 @@ class BcPlatformIntegration(object):
             "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
             'green', attrs=['bold']) + Style.RESET_ALL)
 
-    def _create_bridgecrew_account(self, email, org):
+    def _create_bridgecrew_account(self, email: str, org: str) -> Response:
         """
         Create new bridgecrew account
         :param email: email of account owner
@@ -621,61 +650,51 @@ class BcPlatformIntegration(object):
             raise Exception("failed to create a bridgecrew account. An organization with this name might already "
                             "exist with this email address. Please login bridgecrew.cloud to retrieve access key")
 
-    def _input_orgname(self):
-        valid = False
-        result = None
-        while not valid:
-            result = str(
-                input(
-                    'Organization name: ')).lower().strip()  # nosec
+    def _input_orgname(self) -> str:
+        while True:
+            result = str(input('Organization name: ')).lower().strip()  # nosec
             # remove spaces and special characters
             result = ''.join(e for e in result if e.isalnum())
             if result:
-                valid = True
+                break
         return result
 
-    def _input_visualize_results(self):
-        valid = False
-        result = None
-        while not valid:
+    def _input_visualize_results(self) -> str:
+        while True:
             result = str(input('Visualize results? (y/n): ')).lower().strip()  # nosec
             if result[:1] in ["y", "n"]:
-                valid = True
+                break
         return result
 
-    def _input_levelup_results(self):
-        valid = False
-        result = None
-        while not valid:
+    def _input_levelup_results(self) -> str:
+        while True:
             result = str(input('Level up? (y/n): ')).lower().strip()  # nosec
             if result[:1] in ["y", "n"]:
-                valid = True
+                break
         return result
 
-    def _input_email(self):
-        valid_email = False
-        email = ''
-        while not valid_email:
+    def _input_email(self) -> str:
+        while True:
             email = str(input('E-Mail: ')).lower().strip()  # nosec
             if re.search(EMAIL_PATTERN, email):
-                valid_email = True
+                break
             else:
                 print("email should match the following pattern: {}".format(EMAIL_PATTERN))
         return email
 
     @staticmethod
-    def loading_output(msg):
+    def loading_output(msg: str) -> None:
         with trange(ACCOUNT_CREATION_TIME) as t:
             for _ in t:
                 t.set_description(msg)
                 t.set_postfix(refresh=False)
                 sleep(SLEEP_SECONDS)
 
-    def repo_matches(self, repo_name):
+    def repo_matches(self, repo_name: str) -> bool:
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
         return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
 
-    def get_default_headers(self, request_type: str) -> dict:
+    def get_default_headers(self, request_type: str) -> dict[str, Any]:
         if request_type.upper() == "GET":
             return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
                                {"Authorization": self.get_auth_token()})
