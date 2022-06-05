@@ -507,7 +507,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--policy-metadata-filter',
                help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
                     'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
-                    'information on allowed filters.Format: policy.label=test,cloud.type=aws ')
+                    'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
 
 
 def get_external_checks_dir(config: Any) -> Any:
