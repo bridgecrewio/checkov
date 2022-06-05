@@ -479,7 +479,7 @@ class BcPlatformIntegration(object):
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
             else:
-                logging.warning("Skipping get prisma build policies. --filter will not be applied.")
+                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
@@ -518,7 +518,7 @@ class BcPlatformIntegration(object):
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning(f"Available options: True")
                 return False
-        logging.debug("--filter is valid")
+        logging.debug("--policy-metadata-filter is valid")
         return True
 
     def get_public_run_config(self) -> None:

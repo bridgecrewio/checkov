@@ -22,6 +22,8 @@ from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
@@ -226,9 +228,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     integration_feature_registry.run_pre_scan()
 
-    if integration_feature_registry.features[0].__dict__.get('filtered_policy_ids'):
-        runner_filter.filtered_policy_ids = integration_feature_registry.features[0].__dict__.get('filtered_policy_ids')
-        logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
+    runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
+    logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
@@ -539,7 +540,7 @@ def normalize_config(config: Namespace) -> None:
         config.include_all_checkov_policies = True
 
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
-        logger.warning('--filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
+        logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
 if __name__ == '__main__':
