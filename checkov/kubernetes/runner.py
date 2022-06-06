@@ -40,7 +40,7 @@ class Runner(BaseRunner):
         self.definitions_raw = {}
         self.report_mutator_data = None
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True, helmChart=None):
+    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
         if self.context is None or self.definitions is None:
             if files or root_folder:
@@ -67,15 +67,15 @@ class Runner(BaseRunner):
                 self.graph_manager.save_graph(local_graph)
                 self.definitions = local_graph.definitions
 
-        report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments, helmChart=helmChart)
+        report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
         if CHECKOV_CREATE_GRAPH:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter, helmChart=helmChart)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
         return report
 
-    def check_definitions(self, root_folder, runner_filter, report, collect_skip_comments=True, helmChart=None,):
+    def check_definitions(self, root_folder, runner_filter, report, collect_skip_comments=True):
         for k8_file in self.definitions.keys():
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
@@ -103,7 +103,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, helmChart) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
         report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results)
