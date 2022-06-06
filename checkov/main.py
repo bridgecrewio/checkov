@@ -22,6 +22,8 @@ from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
@@ -222,13 +224,18 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.skip_download = True
 
     bc_integration.get_platform_run_config()
+    bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
+
+    runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
+    logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
+                     include_all_checkov_policies=config.include_all_checkov_policies, filtered_policy_ids=runner_filter.filtered_policy_ids)
         return None
 
     baseline = None
@@ -366,6 +373,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
                default=["all"],
+               env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure code frameworks. \n'
@@ -469,6 +477,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
     parser.add('--evaluate-variables',
                help="evaluate the values of variables and locals",
+               env_var="CKV_EVAL_VARS",
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
@@ -495,6 +504,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
+    parser.add('--policy-metadata-filter',
+               help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
+                    'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
+                    'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
 
 
 def get_external_checks_dir(config: Any) -> Any:
@@ -525,6 +538,9 @@ def normalize_config(config: Namespace) -> None:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
+
+    if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
+        logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
 if __name__ == '__main__':

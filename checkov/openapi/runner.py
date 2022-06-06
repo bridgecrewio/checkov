@@ -30,21 +30,22 @@ class Runner(YamlRunner, JsonRunner):
 
         return None
 
-    def parse_format(self, f: str, func: Callable[
-        [Runner, str], tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None]) \
-            -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        parsed_file: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None \
-            = func(self, f)
+    def parse_format(self,
+        f: str,
+        func: Callable[[JsonRunner | YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+        parsed_file = func(self, f)
         if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
-            return parsed_file
+            return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
 
         return None
 
-    def get_start_end_lines(self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int) \
-            -> tuple[int, int]:
+    def get_start_end_lines(
+        self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
+    ) -> tuple[int, int]:
         start_end_line: tuple[int, int]
         if hasattr(result_config, "start_mark"):
-            start_end_line = JsonRunner.get_start_end_lines(self, end, result_config, start)
+            start_end_line = JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[arg-type]
             return start_end_line
         elif '__startline__' in result_config or isinstance(result_config, list):
             start_end_line = YamlRunner.get_start_end_lines(self, end, result_config, start)

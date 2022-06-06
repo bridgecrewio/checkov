@@ -99,6 +99,8 @@ class NodeConstructor(SafeConstructor):
             value = self.construct_object(value_node, False)
             if isinstance(key, dict):
                 key = frozenset(key.keys()), frozenset(key.values())
+            if isinstance(key, list):
+                key = frozenset(key)
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
@@ -165,9 +167,14 @@ def multi_constructor(loader, tag_suffix, node):
     if tag_suffix not in UNCONVERTED_SUFFIXES:
         tag_suffix = '{}{}'.format(FN_PREFIX, tag_suffix)
 
-    constructor = None
     if tag_suffix == 'Fn::GetAtt':
         constructor = construct_getatt
+    elif tag_suffix == "Ref" and (isinstance(node.value, list) or isinstance(node.value, dict)):
+        raise CfnParseError(
+            filename="",
+            message='Invalid !Ref: {}'.format(node.value),
+            line_number=0,
+            column_number=0)
     elif isinstance(node, ScalarNode):
         constructor = loader.construct_scalar
     elif isinstance(node, SequenceNode):
@@ -212,13 +219,11 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     """
     Load the given YAML file
     """
-
-    file_path = filename if isinstance(filename, Path) else Path(filename)
     try:
-        content = file_path.read_text()
-    except UnicodeDecodeError:
-        LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
         content = str(from_path(filename).best())
+    except UnicodeDecodeError as e:
+        LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
+        raise e
 
     if content_type == ContentType.CFN and "Resources" not in content:
         return {}, []

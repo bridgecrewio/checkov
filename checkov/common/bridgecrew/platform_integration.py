@@ -8,7 +8,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 import boto3
 import dpath.util
@@ -21,20 +21,7 @@ from colorama import Style
 from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
-
-from checkov.common.bridgecrew.ci_variables import (
-    BC_TO_BRANCH,
-    BC_PR_ID,
-    BC_PR_URL,
-    BC_COMMIT_HASH,
-    BC_COMMIT_URL,
-    BC_AUTHOR_NAME,
-    BC_AUTHOR_URL,
-    BC_RUN_ID,
-    BC_RUN_URL,
-    BC_REPOSITORY_URL,
-    BC_FROM_BRANCH,
-)
+from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
@@ -44,7 +31,8 @@ from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers
+    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -67,6 +55,7 @@ SIGNUP_HEADER = merge_dicts({
     'Accept': 'application/json',
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
+CI_METADATA_EXTRACTOR = registry.get_extractor()
 
 
 class BcPlatformIntegration(object):
@@ -86,8 +75,11 @@ class BcPlatformIntegration(object):
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.prisma_policies_url = None
+        self.prisma_policy_filters_url = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
@@ -104,6 +96,8 @@ class BcPlatformIntegration(object):
         """
         if self.prisma_api_url:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
+            self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
+            self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
         else:
             self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
@@ -126,7 +120,8 @@ class BcPlatformIntegration(object):
         if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
         if '::' not in self.bc_api_key:
-            raise ValueError("A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
+            raise ValueError(
+                "A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
         username, password = self.bc_api_key.split('::')
         request = self.http.request("POST", f"{self.prisma_api_url}/login",
                                     body=json.dumps({"username": username, "password": password}),
@@ -146,7 +141,8 @@ class BcPlatformIntegration(object):
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED', ca_certs=ca_certificate)
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
+                                                 ca_certs=ca_certificate)
             except KeyError:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
@@ -230,7 +226,8 @@ class BcPlatformIntegration(object):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
             if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
-                raise BridgecrewAuthError("Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
+                raise BridgecrewAuthError(
+                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
                 request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),
@@ -341,12 +338,17 @@ class BcPlatformIntegration(object):
 
                 request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",
                                             body=json.dumps(
-                                                {"path": self.repo_path, "branch": branch, "to_branch": BC_TO_BRANCH,
-                                                 "pr_id": BC_PR_ID, "pr_url": BC_PR_URL,
-                                                 "commit_hash": BC_COMMIT_HASH, "commit_url": BC_COMMIT_URL,
-                                                 "author": BC_AUTHOR_NAME, "author_url": BC_AUTHOR_URL,
-                                                 "run_id": BC_RUN_ID, "run_url": BC_RUN_URL,
-                                                 "repository_url": BC_REPOSITORY_URL}),
+                                                {"path": self.repo_path, "branch": branch,
+                                                 "to_branch": CI_METADATA_EXTRACTOR.to_branch,
+                                                 "pr_id": CI_METADATA_EXTRACTOR.pr_id,
+                                                 "pr_url": CI_METADATA_EXTRACTOR.pr_url,
+                                                 "commit_hash": CI_METADATA_EXTRACTOR.commit_hash,
+                                                 "commit_url": CI_METADATA_EXTRACTOR.commit_url,
+                                                 "author": CI_METADATA_EXTRACTOR.author_name,
+                                                 "author_url": CI_METADATA_EXTRACTOR.author_url,
+                                                 "run_id": CI_METADATA_EXTRACTOR.run_id,
+                                                 "run_url": CI_METADATA_EXTRACTOR.run_url,
+                                                 "repository_url": CI_METADATA_EXTRACTOR.repository_url}),
                                             headers=merge_dicts({"Authorization": self.get_auth_token(),
                                                                  "Content-Type": "application/json",
                                                                  'x-api-client': self.bc_source.name,
@@ -367,7 +369,8 @@ class BcPlatformIntegration(object):
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
                 elif try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
                                                         response.get('message', '')):
-                    logging.info(f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
+                    logging.info(
+                        f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1
                     sleep(SLEEP_SECONDS)
                 else:
@@ -397,7 +400,8 @@ class BcPlatformIntegration(object):
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
+                                  exc_info=True)
                     raise
             except Exception:
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
@@ -425,11 +429,13 @@ class BcPlatformIntegration(object):
             return
 
         if not self.bc_api_key or not self.is_integration_configured():
-            raise Exception("Tried to get customer run config, but the API key was missing or the integration was not set up")
+            raise Exception(
+                "Tried to get customer run config, but the API key was missing or the integration was not set up")
 
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_auth_header(token), get_default_get_headers(self.bc_source, self.bc_source_version))
+            headers = merge_dicts(get_auth_header(token),
+                                  get_default_get_headers(self.bc_source, self.bc_source_version))
             if not self.http:
                 self.setup_http_manager()
             url = self.get_run_config_url()
@@ -440,11 +446,85 @@ class BcPlatformIntegration(object):
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
 
+    def get_prisma_build_policies(self, policy_filter: Dict) -> None:
+        """
+        Get Prisma policy for enriching runConfig with metadata
+        Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
+        :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
+        :return:
+        """
+        if self.skip_download is True:
+            logging.debug("Skipping prisma policy API call")
+            return
+        if not policy_filter:
+            return
+        if not self.is_prisma_integration():
+            return
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception(
+                "Tried to get prisma build policy metadata, "
+                "but the API key was missing or the integration was not set up")
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
+            query_params = convert_prisma_policy_filter_to_dict(policy_filter)
+            if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
+                # If enabled and subtype are not explicitly set, use the only acceptable values.
+                query_params['policy.enabled'] = True
+                query_params['policy.subtype'] = 'build'
+                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)
+                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
+                logging.debug("Got Prisma build policy metadata")
+            else:
+                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+
+    def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
+            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)
+            return json.loads(request.data.decode("utf8"))
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            return {}
+
+    @staticmethod
+    def is_valid_policy_filter(policy_filter: Dict[str, str], valid_filters: Dict[str, Dict[str, Any]] = {}) -> bool:
+        if not policy_filter:
+            return False
+        if not valid_filters:
+            return False
+        for filter_name, filter_value in policy_filter.items():
+            if filter_name not in valid_filters.keys():
+                logging.warning(f"Invalid filter name: {filter_name}")
+                return False
+            elif filter_value not in valid_filters.get(filter_name).get('options', []):
+                logging.warning(f"Invalid filter value: {filter_value}")
+                logging.warning(f"Available options: {valid_filters.get(filter_name).get('options')}")
+                return False
+            elif filter_name == 'policy.subtype' and filter_value != 'build':
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: build")
+                return False
+            elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: True")
+                return False
+        logging.debug("--policy-metadata-filter is valid")
+        return True
+
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
             return
-
         try:
             headers = {}
             if not self.http:
@@ -453,59 +533,79 @@ class BcPlatformIntegration(object):
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}", exc_info=True)
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}",
+                            exc_info=True)
 
     def onboarding(self):
         if not self.bc_api_key:
-            print(Style.BRIGHT + colored("\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
-                                         attrs=['bold']) + colored(
+            print(Style.BRIGHT + colored(
+                "\nWould you like to “level up” your Checkov powers for free?  The upgrade includes: \n\n", 'green',
+                attrs=['bold']) + colored(
                 u"\u2022 " + "Command line docker Image scanning\n"
                              u"\u2022 " + "Software Composition Analysis\n"
                                           u"\u2022 " + "Centralized policy management\n"
                                                        u"\u2022 " + "Free bridgecrew.cloud account with API access\n"
-                u"\u2022 " + "Auto-fix remediation suggestions\n"
-                u"\u2022 " + "Enabling of VS Code Plugin\n"
-                u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
-                u"\u2022 " + "Integration with GitHub for:\n"
-                "\t" + u"\u25E6 " + "\tAutomated Pull Request scanning\n"
-                "\t" + u"\u25E6 " + "\tAuto remediation PR generation\n"
-                u"\u2022 " + "Integration with up to 100 cloud resources for:\n"
-                "\t" + u"\u25E6 " + "\tAutomated cloud resource checks\n"
-                "\t" + u"\u25E6 " + "\tResource drift detection\n"
-                "\n"           
-                "\n" + "and much more...",'yellow') +
-                colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
-                "To Level-up, press 'y'... \n",
-                'cyan') + Style.RESET_ALL)
+                                                                    u"\u2022 " + "Auto-fix remediation suggestions\n"
+                                                                                 u"\u2022 " + "Enabling of VS Code Plugin\n"
+                                                                                              u"\u2022 " + "Dashboard visualisation of Checkov scans\n"
+                                                                                                           u"\u2022 " + "Integration with GitHub for:\n"
+                                                                                                                        "\t" + u"\u25E6 " + "\tAutomated Pull Request scanning\n"
+                                                                                                                                            "\t" + u"\u25E6 " + "\tAuto remediation PR generation\n"
+                                                                                                                                                                u"\u2022 " + "Integration with up to 100 cloud resources for:\n"
+                                                                                                                                                                             "\t" + u"\u25E6 " + "\tAutomated cloud resource checks\n"
+                                                                                                                                                                                                 "\t" + u"\u25E6 " + "\tResource drift detection\n"
+                                                                                                                                                                                                                     "\n"
+                                                                                                                                                                                                                     "\n" + "and much more...",
+                'yellow') +
+                  colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
+                          "To Level-up, press 'y'... \n",
+                          'cyan') + Style.RESET_ALL)
             reply = self._input_levelup_results()
             if reply[:1] == 'y':
                 print(Style.BRIGHT + colored("\nOk, let’s get you started on creating your free account! \n"
-                "\nEnter your email address to begin: ",'green', attrs=['bold']) + colored(" // This will be used as your login at https://bridgecrew.cloud.\n", 'green'))
+                                             "\nEnter your email address to begin: ", 'green',
+                                             attrs=['bold']) + colored(
+                    " // This will be used as your login at https://bridgecrew.cloud.\n", 'green'))
                 if not self.bc_api_key:
                     email = self._input_email()
                     print(Style.BRIGHT + colored("\nLooks good!"
-                    "\nNow choose an Organisation Name: ",'green', attrs=['bold']) + colored(" // This will enable collaboration with others who you can add to your team.\n", 'green'))
+                                                 "\nNow choose an Organisation Name: ", 'green',
+                                                 attrs=['bold']) + colored(
+                        " // This will enable collaboration with others who you can add to your team.\n", 'green'))
                     org = self._input_orgname()
                     print(Style.BRIGHT + colored("\nAmazing!"
-                    "\nWe are now generating a personal API key to immediately enable some new features… ",'green', attrs=['bold']))
+                                                 "\nWe are now generating a personal API key to immediately enable some new features… ",
+                                                 'green', attrs=['bold']))
 
                     bc_api_token, response = self.get_api_token(email, org)
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print(Style.BRIGHT + colored("\nComplete!", 'green', attrs=['bold']))
                         print('\nSaving API key to {}'.format(bridgecrew_file))
-                        print(Style.BRIGHT + colored("\nCheckov will automatically check this location for a key.  If you forget it you’ll find it here\nhttps://bridgecrew.cloud/integrations/api-token\n\n",'green'))
+                        print(Style.BRIGHT + colored(
+                            "\nCheckov will automatically check this location for a key.  If you forget it you’ll find it here\nhttps://bridgecrew.cloud/integrations/api-token\n\n",
+                            'green'))
                         persist_key(self.bc_api_key)
-                        print(Style.BRIGHT + colored("Checkov Dashboard is configured, opening https://bridgecrew.cloud to explore your new powers.", 'green', attrs=['bold']))
+                        print(Style.BRIGHT + colored(
+                            "Checkov Dashboard is configured, opening https://bridgecrew.cloud to explore your new powers.",
+                            'green', attrs=['bold']))
                         print(Style.BRIGHT + colored("FYI - check your inbox for login details! \n", 'green'))
 
-                        print(Style.BRIGHT + colored("Congratulations! You’ve just super-sized your Checkov!  Why not test-drive image scanning now:",'cyan'))
+                        print(Style.BRIGHT + colored(
+                            "Congratulations! You’ve just super-sized your Checkov!  Why not test-drive image scanning now:",
+                            'cyan'))
 
-                        print(Style.BRIGHT + colored("\ncheckov --docker-image ubuntu --dockerfile-path /Users/bob/workspaces/bridgecrew/Dockerfile --repo-id bob/test --branch master\n",'white'))
+                        print(Style.BRIGHT + colored(
+                            "\ncheckov --docker-image ubuntu --dockerfile-path /Users/bob/workspaces/bridgecrew/Dockerfile --repo-id bob/test --branch master\n",
+                            'white'))
 
-                        print(Style.BRIGHT + colored("Or download our VS Code plugin:  https://github.com/bridgecrewio/checkov-vscode \n", 'cyan',attrs=['bold']))
+                        print(Style.BRIGHT + colored(
+                            "Or download our VS Code plugin:  https://github.com/bridgecrewio/checkov-vscode \n",
+                            'cyan', attrs=['bold']))
 
-                        print(Style.BRIGHT + colored("Interested in contributing to Checkov as an open source developer.  We thought you’d never ask.  Check us out at: \nhttps://github.com/bridgecrewio/checkov/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22 \n", 'white', attrs=['bold']))
+                        print(Style.BRIGHT + colored(
+                            "Interested in contributing to Checkov as an open source developer.  We thought you’d never ask.  Check us out at: \nhttps://github.com/bridgecrewio/checkov/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22 \n",
+                            'white', attrs=['bold']))
 
                     else:
                         print(
@@ -542,8 +642,8 @@ class BcPlatformIntegration(object):
     # whilst also persisting a cli repo_id into the object
     def persist_repo_id(self, args):
         if args.repo_id is None:
-            if BC_FROM_BRANCH:
-                self.repo_id = BC_FROM_BRANCH
+            if CI_METADATA_EXTRACTOR.from_branch:
+                self.repo_id = CI_METADATA_EXTRACTOR.from_branch
             if args.directory:
                 basename = path.basename(os.path.abspath(args.directory[0]))
                 self.repo_id = "cli_repo/" + basename
@@ -557,8 +657,8 @@ class BcPlatformIntegration(object):
         return self.repo_id
 
     def get_repository(self, args):
-        if BC_FROM_BRANCH:
-            return BC_FROM_BRANCH
+        if CI_METADATA_EXTRACTOR.from_branch:
+            return CI_METADATA_EXTRACTOR.from_branch
         basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
         repo_id = "cli_repo/" + basename
         return repo_id
@@ -579,7 +679,8 @@ class BcPlatformIntegration(object):
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n", 'green', attrs=['bold']) + Style.RESET_ALL)
+            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
+            'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _create_bridgecrew_account(self, email, org):
         """

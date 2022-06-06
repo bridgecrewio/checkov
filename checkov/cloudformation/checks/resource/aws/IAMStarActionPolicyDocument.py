@@ -44,7 +44,7 @@ def check_policy(policy_block):
     if policy_block:
         if isinstance(policy_block, str):
             policy_block = ast.literal_eval(policy_block)
-        if 'Statement' in policy_block.keys():
+        if isinstance(policy_block, dict) and 'Statement' in policy_block.keys():
             for statement in force_list(policy_block['Statement']):
                 if 'Action' in statement and statement.get('Effect', ['Allow']) == 'Allow' and '*' in force_list(
                         statement['Action']):

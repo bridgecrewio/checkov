@@ -391,6 +391,26 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=['HIGH'], include_all_checkov_policies=False)
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
 
+    def test_should_run_only_filtered_policies(self):
+        instance = RunnerFilter(checks=['HIGH'], include_all_checkov_policies=False,
+                                filtered_policy_ids=["NOT_CKV_AWS_789"])
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH]))
+
+    def test_should_skip_explicit_run_if_not_filtered(self):
+        instance = RunnerFilter(checks=['CKV_AWS_789'], include_all_checkov_policies=False,
+                                filtered_policy_ids=["NOT_CKV_AWS_789"])
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_should_skip_filtered_policy(self):
+        instance = RunnerFilter(skip_checks=['CKV_AWS_789'], include_all_checkov_policies=False,
+                                filtered_policy_ids=["CKV_AWS_789"])
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_should_run_if_no_filtered_policies(self):
+        instance = RunnerFilter(checks=['CKV_AWS_789'], include_all_checkov_policies=False,
+                                filtered_policy_ids=[])
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
 
 if __name__ == '__main__':
     unittest.main()

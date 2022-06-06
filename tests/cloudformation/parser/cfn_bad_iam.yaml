@@ -1,0 +1,32 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Test bad IAM policies
+Resources:
+  rIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: {}
+      Policies:
+      - PolicyName: String
+        PolicyDocument:
+          Version: 'blah'
+          BadProperty: test
+          Statement: "Test"
+  rIamUser:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 'blah'
+        Statement:
+        - Resource: '*'
+          Effect: 'NotAllow'
+          Principal: [123456789012]
+  rIamPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+      - Fn::If:
+        - cCondition
+        - Statement: {}
+        - Statement: []

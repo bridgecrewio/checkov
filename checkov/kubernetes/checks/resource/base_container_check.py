@@ -11,6 +11,7 @@ from checkov.kubernetes.checks.resource.registry import registry
 class BaseK8sContainerCheck(BaseK8Check):
     TEMPLATE_ENTITIES = (
         "Deployment",
+        "DeploymentConfig",
         "DaemonSet",
         "Job",
         "ReplicaSet",
