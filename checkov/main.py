@@ -494,12 +494,12 @@ def add_parser_args(parser: ArgumentParser) -> None:
         ),
         default=None,
     )
+    parser.add('--output-baseline-as-skipped',
+        help="output checks that are skipped due to baseline file presence",
+        action='store_true', default=False)
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
-    parser.add('--output-baseline-as-skipped',
-            help="output checks that are skipped due to baseline file presence",
-            action='store_true', default=False)
 
 
 def get_external_checks_dir(config: Any) -> Any:

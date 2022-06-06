@@ -69,15 +69,15 @@ class Baseline:
             scan_report.skipped_checks = [
                 check for check in scan_report.skipped_checks if self._is_check_in_baseline(check)
             ]
-            failed_checks = []
-            for check in scan_report.failed_checks:
-                if not self._is_check_in_baseline(check):
-                    failed_checks.append(check)
-                elif self.output_skipped:
-                    check.check_result["suppress_comment"] = "baseline-skipped"
-                    check.check_result["result"] = CheckResult.SKIPPED
-                    scan_report.skipped_checks.append(check)
-            scan_report.failed_checks = failed_checks
+            if self.output_skipped:
+                for check in scan_report.failed_checks:
+                    if self._is_check_in_baseline(check):
+                        check.check_result["suppress_comment"] = "baseline-skipped"
+                        check.check_result["result"] = CheckResult.SKIPPED
+                        scan_report.skipped_checks.append(check)
+            scan_report.failed_checks = [
+                check for check in scan_report.failed_checks if not self._is_check_in_baseline(check)
+            ]
 
     def _is_check_in_baseline(self, check: Record) -> bool:
         failed_check_id = check.check_id
