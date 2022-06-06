@@ -32,12 +32,13 @@ def collect_suppressions_for_context(code_lines: list[tuple[int, int | str]]) ->
 
     skipped_checks = []
     bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
-    for _, line in code_lines:
-        skip_search = re.search(COMMENT_REGEX, str(line))
+    for line_number, line_text in code_lines:
+        skip_search = re.search(COMMENT_REGEX, str(line_text))
         if skip_search:
             skipped_check: _SkippedCheck = {
                 "id": skip_search.group(2),
                 "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
+                "line_number": line_number
             }
             # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
             if bc_id_mapping and skipped_check["id"] in bc_id_mapping:

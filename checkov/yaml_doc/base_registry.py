@@ -102,7 +102,7 @@ class Registry(BaseCheckRegistry):
             results: Dict[str, Any],
     ) -> None:
         for check in checks:
-            skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
+            skip_info = ([x for x in skipped_checks if (x["id"] == check.id and entity["__startline__"] <= x['line_number'] <= entity["__endline__"])] or [{}])[0]
 
             if runner_filter.should_run_check(check=check):
                 scanner = self._scanner.get(check.block_type, self._scan_yaml_document)

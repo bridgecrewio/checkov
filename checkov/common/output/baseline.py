@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from checkov.common.models.enums import CheckResult
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,10 +12,11 @@ if TYPE_CHECKING:
 
 
 class Baseline:
-    def __init__(self) -> None:
+    def __init__(self, output_skipped: bool = False) -> None:
         self.path = ""
         self.path_failed_checks_map: dict[str, list[_BaselineFinding]] = defaultdict(list)
         self.failed_checks: list[_BaselineFailedChecks] = []
+        self.output_skipped = output_skipped
 
     def add_findings_from_report(self, report: Report) -> None:
         for check in report.failed_checks:
@@ -67,6 +69,12 @@ class Baseline:
             scan_report.skipped_checks = [
                 check for check in scan_report.skipped_checks if self._is_check_in_baseline(check)
             ]
+            if self.output_skipped:
+                for check in scan_report.failed_checks:
+                    if self._is_check_in_baseline(check):
+                        check.check_result["suppress_comment"] = "baseline-skipped"
+                        check.check_result["result"] = CheckResult.SKIPPED
+                        scan_report.skipped_checks.append(check)
             scan_report.failed_checks = [
                 check for check in scan_report.failed_checks if not self._is_check_in_baseline(check)
             ]
