@@ -27,6 +27,7 @@ class _SkippedCheck(TypedDict, total=False):
     bc_id: str | None
     id: str
     suppress_comment: str
+    line_number: int | None
 
 
 class _BaselineFinding(TypedDict):
