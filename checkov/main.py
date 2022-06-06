@@ -199,7 +199,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         except Exception:
             if bc_integration.prisma_api_url:
-                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
                           'Please check your Prisma Cloud API token and URL and try again.'
             else:
                 message = 'An error occurred setting up the Bridgecrew platform integration. ' \
