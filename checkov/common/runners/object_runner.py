@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
+
 from abc import abstractmethod
 from typing import Any, TYPE_CHECKING, Callable
 
@@ -82,6 +84,8 @@ class Runner(BaseRunner):
                 check = result.pop("check", None)  # use pop to remove Check class which is not serializable from
                 # result record
                 end, start = self.get_start_end_lines(end, result_config, start)
+                if platform.system() == "Windows":
+                    root_folder = os.path.split(file_path)[0]
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
