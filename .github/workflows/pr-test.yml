@@ -11,7 +11,7 @@ jobs:
         with:
           python-version: 3.9
       - name: pre-commit
-        uses: pre-commit/action@v2.0.3
+        uses: pre-commit/action@v3.0.0
 
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
