@@ -65,7 +65,7 @@ def parse(
 
     if isinstance(template, dict):
         resources = template.get(TemplateSections.RESOURCES.value, None)
-        if resources:
+        if resources and isinstance(resources, dict):
             if "__startline__" in resources:
                 del resources["__startline__"]
             if "__endline__" in resources:
