@@ -126,7 +126,8 @@ def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
     This is not allowed: policy.label=label1,label2
     """
     filter_params = {}
-    if filter_string:
+    if isinstance(filter_string, str) and filter_string:
+        filter_string = "".join(filter_string.split())
         try:
             for f in filter_string.split(','):
                 f_name, f_value = f.split('=')
