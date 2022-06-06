@@ -40,6 +40,22 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_runner_object_skip_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources", "object", "skip")
+        checks_dir = os.path.join(current_dir, "checks", "object")
+        runner = Runner()
+        report = runner.run(
+            root_folder=valid_dir_path,
+            external_checks_dir=[checks_dir],
+            runner_filter=RunnerFilter(framework="all", checks=["CKV_FOO_1", "CKV_FOO_2"]),
+        )
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.failed_checks, [])
+        self.assertEqual(len(report.skipped_checks), 1)
+        report.print_console()
+
     def test_runner_array_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = os.path.join(current_dir, "resources", "array", "fail")

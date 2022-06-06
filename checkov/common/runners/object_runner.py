@@ -10,6 +10,7 @@ from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
+from checkov.common.util.suppression import collect_suppressions_for_context
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -72,7 +73,8 @@ class Runner(BaseRunner):
                 self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
 
         for file_path in definitions.keys():
-            results = registry.scan(file_path, definitions[file_path], [], runner_filter)
+            skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
