@@ -8,7 +8,7 @@ from concurrent import futures
 from json import JSONDecodeError
 from os import path
 from time import sleep
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 
 import boto3
 import dpath.util
@@ -31,7 +31,8 @@ from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers
+    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 SLEEP_SECONDS = 1
@@ -74,8 +75,11 @@ class BcPlatformIntegration(object):
         self.scan_reports = []
         self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.prisma_policies_url = None
+        self.prisma_policy_filters_url = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
@@ -92,6 +96,8 @@ class BcPlatformIntegration(object):
         """
         if self.prisma_api_url:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
+            self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
+            self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
         else:
             self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
@@ -440,11 +446,85 @@ class BcPlatformIntegration(object):
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
 
+    def get_prisma_build_policies(self, policy_filter: Dict) -> None:
+        """
+        Get Prisma policy for enriching runConfig with metadata
+        Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
+        :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
+        :return:
+        """
+        if self.skip_download is True:
+            logging.debug("Skipping prisma policy API call")
+            return
+        if not policy_filter:
+            return
+        if not self.is_prisma_integration():
+            return
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception(
+                "Tried to get prisma build policy metadata, "
+                "but the API key was missing or the integration was not set up")
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
+            query_params = convert_prisma_policy_filter_to_dict(policy_filter)
+            if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
+                # If enabled and subtype are not explicitly set, use the only acceptable values.
+                query_params['policy.enabled'] = True
+                query_params['policy.subtype'] = 'build'
+                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)
+                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
+                logging.debug("Got Prisma build policy metadata")
+            else:
+                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+
+    def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            if not self.http:
+                self.setup_http_manager()
+            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
+            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)
+            return json.loads(request.data.decode("utf8"))
+        except Exception:
+            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            return {}
+
+    @staticmethod
+    def is_valid_policy_filter(policy_filter: Dict[str, str], valid_filters: Dict[str, Dict[str, Any]] = {}) -> bool:
+        if not policy_filter:
+            return False
+        if not valid_filters:
+            return False
+        for filter_name, filter_value in policy_filter.items():
+            if filter_name not in valid_filters.keys():
+                logging.warning(f"Invalid filter name: {filter_name}")
+                return False
+            elif filter_value not in valid_filters.get(filter_name).get('options', []):
+                logging.warning(f"Invalid filter value: {filter_value}")
+                logging.warning(f"Available options: {valid_filters.get(filter_name).get('options')}")
+                return False
+            elif filter_name == 'policy.subtype' and filter_value != 'build':
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: build")
+                return False
+            elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
+                logging.warning(f"Filter value not allowed: {filter_value}")
+                logging.warning(f"Available options: True")
+                return False
+        logging.debug("--policy-metadata-filter is valid")
+        return True
+
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
             return
-
         try:
             headers = {}
             if not self.http:
