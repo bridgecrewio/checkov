@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
+
 from abc import abstractmethod
 from collections.abc import Iterable
 from typing import Any, TYPE_CHECKING, Callable
@@ -84,9 +86,9 @@ class Runner(BaseRunner):
                     continue
 
                 # result record
-                if result_config:
-                    end, start = self.get_start_end_lines(end, result_config, start)
-
+                end, start = self.get_start_end_lines(end, result_config, start)
+                if platform.system() == "Windows":
+                    root_folder = os.path.split(file_path)[0]
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,

@@ -1,5 +1,7 @@
 import logging
 import os
+import platform
+
 from typing import Optional, List, Type
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -69,7 +71,11 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         for full_file_path, definition in self.definitions.items():
-            scanned_file = f"/{os.path.relpath(full_file_path)}"
+            if platform.system() == "Windows":
+                temp = os.path.split(full_file_path)[0]
+                scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
+            else:
+                scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
