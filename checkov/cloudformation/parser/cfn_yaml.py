@@ -3,6 +3,7 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
+import platform
 from enum import Enum
 from pathlib import Path
 from typing import List, Tuple
@@ -219,11 +220,19 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     """
     Load the given YAML file
     """
-    try:
-        content = str(from_path(filename).best())
-    except UnicodeDecodeError as e:
-        LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
-        raise e
+    if platform.system() == "Windows":
+        try:
+            content = str(from_path(filename).best())
+        except UnicodeDecodeError as e:
+            LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
+            raise e
+    else:
+        file_path = filename if isinstance(filename, Path) else Path(filename)
+        try:
+            content = file_path.read_text()
+        except UnicodeDecodeError:
+            LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
+            content = str(from_path(filename).best())
 
     if content_type == ContentType.CFN and "Resources" not in content:
         return {}, []
