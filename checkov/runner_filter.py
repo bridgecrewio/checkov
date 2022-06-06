@@ -34,7 +34,8 @@ class RunnerFilter(object):
             excluded_paths: Optional[List[str]] = None,
             all_external: bool = False,
             var_files: Optional[List[str]] = None,
-            skip_cve_package: Optional[List[str]] = None
+            skip_cve_package: Optional[List[str]] = None,
+            filtered_policy_ids: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -82,6 +83,7 @@ class RunnerFilter(object):
         self.all_external = all_external
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
+        self.filtered_policy_ids = filtered_policy_ids or []
 
     def should_run_check(
         self,
@@ -101,7 +103,7 @@ class RunnerFilter(object):
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
         implicit_run = not self.checks and not self.check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
-
+        is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
@@ -113,6 +115,11 @@ class RunnerFilter(object):
 
         if not should_run_check:
             return False
+
+        # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
+        # It can, however, be skipped.
+        if not is_policy_filtered:
+            should_run_check = False
 
         skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
@@ -153,3 +160,8 @@ class RunnerFilter(object):
     @staticmethod
     def is_external_check(check_id: str) -> bool:
         return check_id in RunnerFilter.__EXTERNAL_CHECK_IDS
+
+    def is_policy_filtered(self, check_id: str) -> bool:
+        if not self.filtered_policy_ids:
+            return True
+        return check_id in self.filtered_policy_ids

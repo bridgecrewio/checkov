@@ -46,20 +46,23 @@ def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int,
 
 
 def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-                 include_all_checkov_policies: bool = True) -> None:
+                 include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> None:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids,
-                                       include_all_checkov_policies=include_all_checkov_policies)
+                                       include_all_checkov_policies=include_all_checkov_policies,
+                                       filtered_policy_ids=filtered_policy_ids or [])
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
 
-def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False, include_all_checkov_policies: bool = True) -> List[Tuple[str, str, int, int, str]]:
+def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
+               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list: list[tuple[str, str, str, str, str]] = []
-    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies)
+    filtered_policy_ids = filtered_policy_ids or []
+    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies, filtered_policy_ids=filtered_policy_ids)
 
     def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str,
                             runner_filter: RunnerFilter = runner_filter) -> None:
@@ -127,9 +130,10 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
-            if use_bc_ids:
-                check_id = metadata_integration.get_bc_id(check_id)
-            printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
+            if not filtered_policy_ids or check_id in filtered_policy_ids:
+                if use_bc_ids:
+                    check_id = metadata_integration.get_bc_id(check_id)
+                printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)  # type:ignore[arg-type]
 
 
