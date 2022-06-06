@@ -32,7 +32,8 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
+    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
+    get_auth_error_message
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -222,13 +223,7 @@ class BcPlatformIntegration(object):
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
-            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
-            error_message = f'Received unexpected response from platform (status code {request.status}). Please verify ' \
-                            f'that your API token is valid and has permissions to call the {platform_type} APIs.'
-            if platform_type == PRISMA_PLATFORM:
-                error_message += 'The key must be associated with a Developer or Sys Admin role / permission group.'
-            else:
-                error_message += 'The key must be associated with any role besides Auditor.'
+            error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
         response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
@@ -452,10 +447,7 @@ class BcPlatformIntegration(object):
             request = self.http.request("GET", url, headers=headers)
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             if request.status != 200:
-                error_message = f'Received unexpected response from platform (status code {request.status}). Please verify ' \
-                                f'that your API token is valid and has permissions to call the {platform_type} APIs. '
-                if platform_type == PRISMA_PLATFORM:
-                    error_message += 'The key must be associated with a Developer or Sys Admin role / permission group.'
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
