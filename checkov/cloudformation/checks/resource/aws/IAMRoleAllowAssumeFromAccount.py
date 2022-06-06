@@ -6,6 +6,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 ACCOUNT_ACCESS = re.compile(r'\d{12}|arn:aws:iam::\d{12}:root')
 
+
 class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
     def __init__(self):
         name = "Ensure AWS IAM policy does not allow assume role permission across all services"
@@ -15,7 +16,7 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'AssumeRolePolicyDocument' in conf['Properties']:
+        if conf.get('Properties') and 'AssumeRolePolicyDocument' in conf['Properties']:
             assume_role_policy_doc = conf['Properties']['AssumeRolePolicyDocument']
             if isinstance(assume_role_policy_doc, dict) and 'Fn::Sub' in assume_role_policy_doc.keys():
                 policy_fn_sub_block = assume_role_policy_doc['Fn::Sub']
