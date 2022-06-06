@@ -42,9 +42,21 @@ class K8sHelmRunner(k8_runner):
         if external_checks_dir:
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
-        chart_results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
-        fix_report_paths(chart_results, root_folder)
-        return chart_results
+        try:
+            chart_results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+            fix_report_paths(chart_results, root_folder)
+            return chart_results
+        except Exception:
+            logging.warning(f"Failed to run Kubernetes runner on charts {self.chart_dir_and_meta}", exc_info=True)
+            # with tempfile.TemporaryDirectory() as save_error_dir:
+            # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
+            # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
+            # logging.debug(
+            #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
+            # shutil.move(target_dir, save_error_dir)
+
+            # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+            return report
 
 
 class Runner(BaseRunner):
