@@ -86,7 +86,8 @@ class Runner(BaseRunner):
                     continue
 
                 # result record
-                end, start = self.get_start_end_lines(end, result_config, start)
+                if result_config:
+                    end, start = self.get_start_end_lines(end, result_config, start)
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
                 record = Record(
