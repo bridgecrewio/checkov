@@ -34,9 +34,11 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
 from checkov.common.output.report import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header
+    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
+    get_auth_error_message
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -140,6 +142,7 @@ class BcPlatformIntegration:
                                     body=json.dumps({"username": username, "password": password}),
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
+            logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
@@ -241,7 +244,8 @@ class BcPlatformIntegration:
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
-            raise BridgecrewAuthError()
+            error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
+            raise BridgecrewAuthError(error_message)
         response = json.loads(request.data.decode("utf8"))
         while ('Message' in response or 'message' in response):
             if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
@@ -470,8 +474,13 @@ class BcPlatformIntegration:
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+            if request.status != 200:
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
-            logging.debug("Got customer run config from Bridgecrew BE")
+            logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
 
@@ -560,7 +569,8 @@ class BcPlatformIntegration:
                 self.setup_http_manager()
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
-            logging.debug("Got checkov mappings and guidelines from Bridgecrew BE")
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+            logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}",
                             exc_info=True)

@@ -199,7 +199,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         except Exception:
             if bc_integration.prisma_api_url:
-                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
                           'Please check your Prisma Cloud API token and URL and try again.'
             else:
                 message = 'An error occurred setting up the Bridgecrew platform integration. ' \
@@ -253,6 +253,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
+            if not os.path.exists(root_folder):
+                logger.error(f'Directory {root_folder} does not exist; skipping it')
+                continue
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file)
