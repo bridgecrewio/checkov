@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from collections import defaultdict
 from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
@@ -80,7 +82,7 @@ class LocalGraph:
         attribute_key: str,
         attribute_value: Any,
         change_origin_id: int,
-        attribute_at_dest: Optional[Union[str, List[str]]],
+        attribute_at_dest: str | None,
         transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
@@ -97,5 +99,5 @@ class LocalGraph:
             encryption_result = self._graph_resource_encryption_manager.get_encryption_result(vertex)
             if not encryption_result:
                 continue
-            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.enctypted
+            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.encrypted
             vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason

@@ -164,7 +164,7 @@ class Runner(BaseRunner):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
 
