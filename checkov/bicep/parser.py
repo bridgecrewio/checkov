@@ -18,8 +18,8 @@ class Parser:
 
         try:
             template = self.bicep_parser.parse(text=content)
-        except Exception:
-            logging.error(f"[bicep] Couldn't parse {file_path}", exc_info=True)
+        except Exception as e:
+            logging.warning(f"[bicep] Couldn't parse {file_path}: {e}")
             return None, None
 
         file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
