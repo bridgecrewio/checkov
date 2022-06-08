@@ -128,16 +128,32 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=["LOW"])
         self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
+    def test_should_run_severity1_lowercase(self):
+        instance = RunnerFilter(checks=["low"])
+        self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
+
     def test_should_run_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
+        self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.HIGH]))
+
+    def test_should_run_severity2_lowercase(self):
+        instance = RunnerFilter(skip_checks=["low"])
         self.assertTrue(instance.should_run_check(check_id='', severity=Severities[BcSeverities.HIGH]))
 
     def test_should_skip_severity1(self):
         instance = RunnerFilter(checks=["HIGH"])
         self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
+    def test_should_skip_severity1_lowercase(self):
+        instance = RunnerFilter(checks=["high"])
+        self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
+
     def test_should_skip_severity2(self):
         instance = RunnerFilter(skip_checks=["LOW"])
+        self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
+
+    def test_should_skip_severity2_lowercase(self):
+        instance = RunnerFilter(skip_checks=["low"])
         self.assertFalse(instance.should_run_check(check_id='', severity=Severities[BcSeverities.LOW]))
 
     def test_should_run_check_id(self):
@@ -241,6 +257,12 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertEqual(instance.check_threshold, Severities[BcSeverities.LOW])
         self.assertEqual(instance.checks, [])
 
+    def test_check_severity_split_two_sev_lowercase(self):
+        instance = RunnerFilter(checks=['MEDIUM', 'low'])
+        # should take the lowest severity
+        self.assertEqual(instance.check_threshold, Severities[BcSeverities.LOW])
+        self.assertEqual(instance.checks, [])
+
     def test_check_severity_split_skip_one_sev(self):
         instance = RunnerFilter(skip_checks=['MEDIUM'])
         self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
@@ -248,6 +270,12 @@ class TestRunnerFilter(unittest.TestCase):
 
     def test_check_severity_split_skip_two_sev(self):
         instance = RunnerFilter(skip_checks=['LOW', 'MEDIUM'])
+        # should take the highest severity
+        self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(instance.skip_checks, [])
+
+    def test_check_severity_split_skip_two_sev_lowercase(self):
+        instance = RunnerFilter(skip_checks=['LOW', 'medium'])
         # should take the highest severity
         self.assertEqual(instance.skip_check_threshold, Severities[BcSeverities.MEDIUM])
         self.assertEqual(instance.skip_checks, [])

@@ -50,14 +50,16 @@ class RunnerFilter(object):
 
         # split out check/skip thresholds so we can access them easily later
         for val in (checks or []):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not self.check_threshold or self.check_threshold.level > Severities[val].level:
                     self.check_threshold = Severities[val]
             else:
                 self.checks.append(val)
 
         for val in (skip_checks or []):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
                     self.skip_check_threshold = Severities[val]
             else:
