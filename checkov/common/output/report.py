@@ -164,7 +164,8 @@ class Report:
         soft_fail_threshold = None
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(soft_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
                     soft_fail_threshold = Severities[val]
             else:
@@ -177,7 +178,8 @@ class Report:
         hard_fail_threshold = None
         # hard fail on the lowest threshold in the list
         for val in convert_csv_string_arg_to_list(hard_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
             else:
