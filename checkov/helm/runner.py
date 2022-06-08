@@ -175,6 +175,11 @@ class Runner(BaseRunner):
         for chart_dir, chart_meta in chart_dir_and_meta:
             processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
             target_dir = chart_dir.replace(root_folder, f'{self.target_folder_path}/')
+            target_dir.replace("//", "/")
+            if target_dir.endswith('/'):
+                target_dir = target_dir[:-1]
+            if target_dir.endswith(chart_meta["name"]):
+                target_dir = target_dir[:-len(chart_meta["name"])]
             logging.info(
                 f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
             # dependency list is nicer to parse than dependency update.
