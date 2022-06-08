@@ -98,10 +98,17 @@ class NodeConstructor(SafeConstructor):
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, False)
             value = self.construct_object(value_node, False)
-            if isinstance(key, dict):
-                key = frozenset(key.keys()), frozenset(key.values())
-            if isinstance(key, list):
-                key = frozenset(key)
+            try:
+                if isinstance(key, dict):
+                    key = frozenset(key.keys()), frozenset(key.values())
+                if isinstance(key, list):
+                    key = frozenset(key)
+            except TypeError:
+                raise CfnParseError(
+                    self.filename,
+                    'Unable to construct key {} (line {})'.format(
+                        key, key_node.start_mark.line + 1),
+                    key_node.start_mark.line, key_node.start_mark.column, key)
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
