@@ -19,7 +19,7 @@ class SecurityOperations(BaseOpenapiCheck):
         self.evaluated_keys = ['paths']
 
         paths = conf.get('paths', {})
-        if paths is not None:
+        if isinstance(paths, dict):
             for path, http_method in paths.items():
                 if self.is_start_end_line(path):
                     continue
