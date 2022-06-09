@@ -19,19 +19,21 @@ class SecurityOperations(BaseOpenapiCheck):
         self.evaluated_keys = ['paths']
 
         paths = conf.get('paths', {})
-        for path, http_method in paths.items():
-            if self.is_start_end_line(path):
-                continue
-            for op_name, op_val in http_method.items():
-                if self.is_start_end_line(op_name):
+        if paths is not None:
+            for path, http_method in paths.items():
+                if self.is_start_end_line(path):
                     continue
-                self.evaluated_keys = ['security']
-                if 'security' not in op_val:
-                    return CheckResult.FAILED, conf
+                if isinstance(http_method, dict):
+                    for op_name, op_val in http_method.items():
+                        if self.is_start_end_line(op_name):
+                            continue
+                        self.evaluated_keys = ['security']
+                        if 'security' not in op_val:
+                            return CheckResult.FAILED, conf
 
-                security = op_val['security']
-                if not security:
-                    return CheckResult.FAILED, paths
+                        security = op_val['security']
+                        if not security:
+                            return CheckResult.FAILED, paths
 
         return CheckResult.PASSED, conf
 
