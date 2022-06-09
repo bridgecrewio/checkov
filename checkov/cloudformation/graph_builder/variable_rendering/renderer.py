@@ -285,8 +285,8 @@ class CloudformationVariableRenderer(VariableRenderer):
 
     def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> (
             Optional[str], Optional[str]):
-        if isinstance(value, list):
-            # TODO: Render values of list type
+        if isinstance(value, list) or isinstance(value, dict):
+            # TODO: Render values of list/dict types
             return None, None
         evaluated_value = None
         attribute_at_dest = None
