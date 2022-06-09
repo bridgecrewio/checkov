@@ -65,7 +65,10 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
-        return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        try:
+            return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        except Exception:
+            return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
         return ','.join(supported_entities)
