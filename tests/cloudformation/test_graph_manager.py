@@ -13,7 +13,8 @@ class TestCloudformationGraphManager(TestCase):
     def test_build_graph_from_source_directory_no_rendering(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False,
+                                                                                   excluded_paths=["skip*"])
 
         expected_resources_by_file = {
             os.path.join(root_dir, "no_properties.yaml"): [
