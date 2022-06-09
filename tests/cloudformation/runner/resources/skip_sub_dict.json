@@ -1,0 +1,81 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Stack",
+    "Parameters": {
+        "RequirePostfix": {
+            "Type": "String",
+            "AllowedValues": [
+                "Yes",
+                "No"
+            ]
+        },
+        "MaxPriority": {
+            "Type": "String",
+            "AllowedValues": [
+                "high",
+                "low",
+                "ticket",
+                "notify"
+            ]
+        }
+    },
+    "Mappings": {
+        "Blobs": {
+            "Code": {
+                "userdata": "set -eux -o pipefail\n\n# usage: complete_asg_lifecycle asg_name lifecycle_name [CONTINUE|ABANDON]\ncomplete_asg_lifecycle() (\n  instance_id=\"$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\"\n)\nget_instance_id() { curl -s http://169.254.169.254/latest/meta-data/instance-id; }\nget_az() { curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone; }\n\ncleanup() {\n  code=\"$?\"\n  (( !code )) || complete_asg_lifecycle \"$StackName\" StartupLifecycleHook ABANDON\n}\ntrap cleanup EXIT\n\nsetup_monitoring --asg \"$StackName-\" /var/log/squid/{access.log,cache.log}\n\n# disable source/destination check\nINSTANCE_ID=\"$(get_instance_id)\"\n\n# get the EIP for this instance and use it instead of the default\nif [ -n \"$SquidEIP\" ]; then\nfi\n\n# trust the rhui certs\nln -s /etc/pki/rhui/cdn.redhat.com-chain.crt /etc/pki/ca-trust/source/anchors\nupdate-ca-trust\n\n# install squid\nyum install -y squid\nmv /etc/squid /etc/squid.base\nln -s /etc/ssl/squid/ /etc/squid.base/ssl\ncp -r /etc/squid.base /etc/squid-current\nln -sfT /etc/squid-current /etc/squid\n\nmkdir -p /etc/systemd/system/squid.service.d\ncat >/etc/systemd/system/squid.service.d/shutdown.conf <<EOF\n[Unit]\nRequires=squid-shutdown.service\nEOF\n\nscript=/usr/local/bin/kill-instance.sh\ncat >/etc/systemd/system/squid-shutdown.service <<EOF\n[Unit]\nRequires=squid.service\nAfter=squid.service\n[Service]\nEnvironment=AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION\nRemainAfterExit=yes\nExecStop=$script $INSTANCE_ID\nExecStop=/bin/sleep 10\nEOF\ncat >\"$script\" <<EOF\n#!/bin/bash\naws autoscaling set-instance-health --instance-id \\$1 --health-status Unhealthy\necho \"\\$output\"\nEOF\nchmod +x \"$script\"\n\nscript=/usr/local/bin/healthcheck.sh\ncat >/etc/systemd/system/proxy-healthcheck.service <<EOF\n[Unit]\nAfter=network.service\n[Service]\nEnvironment=AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION\nExecStart=$script $TargetGroup\nRestart=always\nEOF\ncat >\"$script\" <<'EOF'\n#!/bin/bash\nset -eu -o pipefail\ntarget_group=\"$1\"\nEOF\nchmod +x \"$script\"\n\nsystemctl daemon-reload\nsystemctl enable squid\nsystemctl enable --now proxy-healthcheck\n\n# configure iptables\niptables -t nat -A PREROUTING -s 0.0.0.0/0 -p tcp --dport 80 -j REDIRECT --to-port 3129\niptables -t nat -A PREROUTING -s 0.0.0.0/0 -p tcp --dport 443 -j REDIRECT --to-port 3130\nINSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\niptables -t nat -A PREROUTING -s 0.0.0.0/0 -p tcp --dport 25 -j DNAT --to-destination $INSTANCE_IP\n\n# create ssl certificate\nmkdir -p /etc/ssl/squid\n(\n  cd /etc/ssl/squid\n  openssl genrsa -out squid.key 4096\n  openssl req -new -key squid.key -out squid.csr -subj \"/CN=squid.proxy\"\n  openssl x509 -req -days 3650 -in squid.csr -signkey squid.key -out squid.crt\n  cat squid.key squid.crt >squid.pem\n  chmod -R 400 *\n)\n\n# configure squid\ncat > /usr/local/bin/squid-config-refresh.sh << EOF\n#!/bin/bash\nset -eu -o pipefail\n\nold=\"\\$(readlink /etc/squid)\"\nnew=\"/etc/squid-\\$(date +%s)\"\nonexit() {\n  code=\\$?\n  put-custom-metric.sh SquidConfigStatus \\$code\n  (( code )) && ln -sfT \"\\$old\" /etc/squid && rm -rf \"\\$new\"\n}\ntrap onexit EXIT\n\nrm -rf \"\\$new\"\ncp -r /etc/squid.base \"\\$new\"\naws s3 cp --recursive --quiet $ProxyConfigLocation \"\\$new\"\nchmod a+x \"\\$new\"\nchmod -R a+r \"\\$new\"\nmy_ip=\"\\$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\"\nsed -i \"s/LOCAL_IP/\\$my_ip/g\" \"\\$new/squid.conf\"\n\nif diff --brief --recursive \"\\$old\" \"\\$new\"; then\n  echo 'Config has not changed' >&2\n  rm -rf \"\\$new\"\n  exit\nfi\n\necho 'Config has changed, reloading' >&2\nln -sfT \"\\$new\" /etc/squid\nsquid -k parse\n! squid -k parse 2>&1 | fgrep FATAL\nsystemctl start squid\nsleep 15\nsystemctl reload squid\nrm -rf \"\\$old\" || true\nEOF\nchmod +x /usr/local/bin/squid-config-refresh.sh\nsquid-config-refresh.sh || true\n\nsubnets=$(aws ec2 describe-subnets --filters Name=availability-zone,Values=$(get_az) | jq -r '.Subnets|map(.SubnetId)|join(\",\")')\nroute_tables=\"$(aws ec2 describe-route-tables --route-table-ids ${RouteTables//,/ } --filters Name=association.subnet-id,Values=\"$subnets\" | jq -r .RouteTables[].RouteTableId)\"\n\ncat >/usr/local/bin/takeover-route.sh <<EOF\n#!/bin/bash\nset \"\\$@\" --\nsystemctl is-active squid || exit 1\nhealth=\"\\$(\n  aws elbv2 describe-target-health --target-group-arn $TargetGroup --targets Id=$INSTANCE_ID \\\n  | jq -r '.TargetHealthDescriptions[].TargetHealth.State'\n)\"\n[ \"\\$health\" != healthy ] && exit 1\nif [ -n '$SquidEIP' ]; then\n    current_nat=\"\\$(\n        aws ec2 describe-network-interfaces --filters=Name=association.allocation-id,Values=$SquidEIP \\\n        | jq -r .NetworkInterfaces[0].Attachment.InstanceId\n    )\"\n    [ \"\\$current_nat\" != $INSTANCE_ID ] && exit 1\nfi\n\nfor route in $route_tables; do\n    current=\"\\$(\n      aws ec2 describe-route-tables --route-table-ids \\$route \\\n      | jq -r '.RouteTables[].Routes[] | select(.DestinationCidrBlock==\"0.0.0.0/0\").InstanceId'\n    )\"\n    if [ \"\\$current\" != $INSTANCE_ID ]; then\n      echo Taking over \\$route >&2\n      args=( --destination-cidr-block 0.0.0.0/0 --route-table-id \\$route --instance-id $INSTANCE_ID )\n      aws ec2 replace-route \"\\${args[@]}\" || aws ec2 create-route \"\\${args[@]}\"\n    fi\ndone\nEOF\nchmod +x /usr/local/bin/takeover-route.sh\n\n# configure cron jobs\ncrontab << EOF\nPATH=$PATH\n* * * * * squid-config-refresh.sh\n0 15 * * * sleep $((NUM*3600)); yum -y update --security\n0 0 * * * squid -k rotate\n*/10 * * * * AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION takeover-route.sh\nEOF\n\n# configure email relay for Data Squids only\nrun_postfix_config() {\n  cat > /usr/local/bin/postfix-config-refresh.sh << EOF\n#!/bin/bash\nset -eu -o pipefail\n\nyum install cyrus-sasl-plain -y\nmv /etc/postfix/main.cf /etc/postfix/main.cf.orig\naws s3 cp \"$ProxyConfigLocation\"-mail/main.cf /etc/postfix/main.cf\naws s3 cp \"$ProxyConfigLocation\"-mail/recipient_whitelist /etc/postfix/recipient_whitelist\nmy_ip=\"\\$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\"\naws ssm put-parameter --name \"/config/email/relay$NUM\" --value \"\\$my_ip\" --type String --overwrite --region ap-southeast-2\nsed -i \"s/LOCAL_IP/\\$my_ip/g\" /etc/postfix/main.cf\necho \"mynetworks = $VpcCidr, 127.0.0.0/8\" >> /etc/postfix/main.cf\nmail_user=\"\\$(aws secretsmanager get-secret-value --secret-id proxy/email --region ap-southeast-2 --query SecretString|jq -r .|jq -r '.user')\"\nmail_password=\"\\$(aws secretsmanager get-secret-value --secret-id proxy/email --region ap-southeast-2 --query SecretString|jq -r .|jq -r '.secret')\"\necho \"email-smtp.ap-southeast-2.amazonaws.com \\$mail_user:\\$mail_password\" > /etc/postfix/relay_creds\npostmap /etc/postfix/recipient_whitelist\npostmap /etc/postfix/relay_creds\nrm /etc/postfix/recipient_whitelist\nrm /etc/postfix/relay_creds\nsystemctl restart postfix\nEOF\n\n  chmod +x /usr/local/bin/postfix-config-refresh.sh && postfix-config-refresh.sh\n\n  # modify crontab to add postfix config refresh\n  crontab << EOF\nPATH=$PATH\n* * * * * squid-config-refresh.sh\n0 15 * * * sleep $((NUM*3600)); yum -y update --security\n0 0 * * * squid -k rotate\n*/10 * * * * AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION takeover-route.sh\n*/30 * * * * postfix-config-refresh.sh\nEOF\n}\n\nif [[ $RequirePostfix == \"Yes\" ]]; then\n  run_postfix_config;\nfi\n\ncomplete_asg_lifecycle \"$StackName\" StartupLifecycleHook CONTINUE\nuntil takeover-route.sh -x; do sleep 10; done",
+                "lambda": "redacted"
+            }
+        }
+    },
+    "Resources": {
+        "LaunchConfiguration1": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "AssociatePublicIpAddress": true,
+                "InstanceType": {
+                    "Ref": "SquidInstanceType"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize" : "50",
+                            "Encrypted": true
+                        }
+                    }
+                ],
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Sub": [
+                            "#!/bin/bash\n\nRequirePostfix=${RequirePostfix}\nVpcCidr=${VpcCidr}\nProxyConfigLocation=s3://${ProxyConfigBucket}/${ProxyConfigPath}\nStackName=${AWS::StackName}\nexport AWS_DEFAULT_REGION=${AWS::Region}\nASGName=${ASGName}\nSquidEIP=${SquidEIP}\nTargetGroup=${ProxyTargetGroup}\nRouteTables=${RouteTables}\nProxyLambda=${TransparentProxyLambda}\nNUM=1\n${UserData}\n",
+                            {
+                                "RouteTables": {
+                                    "Ref": "RouteTables"
+                                },
+                                "ASGName": "AutoScalingGroup1",
+                                "SquidEIP": {
+                                    "Fn::Select": [
+                                        1,
+                                        {
+                                            "Ref": "SquidEIPs"
+                                        }
+                                    ]
+                                },
+                                "UserData": {
+                                    "Fn::FindInMap": [
+                                        "Blobs",
+                                        "Code",
+                                        "userdata"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
