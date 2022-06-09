@@ -12,10 +12,10 @@ class JsonpathEqualsAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types,
                          attribute=attribute, value=value)
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         return str(vertex.get(attribute)) == str(self.value)  # type:ignore[arg-type]  # due to attribute can be None
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
         if self.attribute:
             attribute_matches = []
             parsed_attr = parse(self.attribute)

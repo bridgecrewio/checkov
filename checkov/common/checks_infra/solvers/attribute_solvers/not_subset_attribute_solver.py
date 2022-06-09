@@ -11,5 +11,5 @@ class NotSubsetAttributeSolver(SubsetAttributeSolver):
         super().__init__(resource_types=resource_types,
                          attribute=attribute, value=value)
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         return not super()._get_operation(vertex, attribute)

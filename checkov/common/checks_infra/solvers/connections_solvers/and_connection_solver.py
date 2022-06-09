@@ -14,7 +14,7 @@ class AndConnectionSolver(ComplexConnectionSolver):
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         if not self.vertices_under_resource_types:
             return [], []
         subgraph = graph_connector.subgraph(graph_connector)

@@ -113,9 +113,9 @@ class Block:
         self,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int | None,
+        change_origin_id: int,
         previous_breadcrumbs: list[BreadcrumbMetadata],
-        attribute_at_dest: str | None,
+        attribute_at_dest: str,
         transform_step: bool = False,
     ) -> None:
         self.update_inner_attribute(

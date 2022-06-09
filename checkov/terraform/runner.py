@@ -51,7 +51,7 @@ class Runner(BaseRunner):
         db_connector: NetworkxConnector = NetworkxConnector(),
         external_registries: Optional[List[BaseRegistry]] = None,
         source: str = "Terraform",
-        graph_class: Type[LocalGraph] = TerraformLocalGraph,
+        graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: Optional[TerraformGraphManager] = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])

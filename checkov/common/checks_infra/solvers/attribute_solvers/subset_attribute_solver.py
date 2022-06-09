@@ -11,7 +11,7 @@ class SubsetAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types,
                          attribute=attribute, value=SubsetAttributeSolver.to_set(value))
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         attr_val = SubsetAttributeSolver.to_set(vertex.get(attribute))  # type:ignore[arg-type]  # due to attribute can be None
         return attr_val.issubset(self.value)
 

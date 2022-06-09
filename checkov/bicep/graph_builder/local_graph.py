@@ -43,7 +43,7 @@ class BicepElements(str, Enum):
     OUTPUTS: Literal["outputs"] = "outputs"
 
 
-class BicepLocalGraph(LocalGraph):
+class BicepLocalGraph(LocalGraph[BicepBlock]):
     def __init__(self, definitions: dict[Path, BicepJson]) -> None:
         super().__init__()
         self.vertices: list[BicepBlock] = []

@@ -17,6 +17,9 @@ class WithinFilterSolver(BaseFilterSolver):
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> Callable[..., bool]:
         def op(check: dict[str, Any]) -> bool:
+            if not self.attribute:
+                return False
+
             val = check.get(self.attribute)
             return bool(val) and (val in self.value)
         return op

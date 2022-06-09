@@ -11,7 +11,7 @@ class EqualsAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types,
                          attribute=attribute, value=value)
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         attr_val = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         if type(attr_val) == bool or type(self.value) == bool:
             # handle cases like str(False) == "false"

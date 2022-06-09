@@ -11,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from json import dumps
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional, cast, TYPE_CHECKING
+from typing import List, Dict, Any, Tuple, Optional, cast, TYPE_CHECKING, TypeVar
 
 from typing_extensions import Literal
 
@@ -32,8 +32,10 @@ from checkov.terraform.runner import Runner as tf_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
-    from checkov.common.runners.base_runner import BaseRunner
+    from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
+
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
@@ -41,16 +43,12 @@ OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
 class RunnerRegistry:
-    runners: List[BaseRunner] = []
-    scan_reports: List[Report] = []
-    banner = ""
-
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: BaseRunner) -> None:
+    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
-        self.scan_reports = []
+        self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
         self.tool = tool_name
@@ -72,7 +70,7 @@ class RunnerRegistry:
                                            runner_filter=self.runner_filter,
                                            collect_skip_comments=collect_skip_comments)]
         else:
-            def _parallel_run(runner: BaseRunner) -> Report:
+            def _parallel_run(runner: _BaseRunner) -> Report:
                 return runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -266,7 +264,7 @@ class RunnerRegistry:
         self.runners = [runner for runner in self.runners if any(runner.should_scan_file(file) for file in files)]
         logging.debug(f'Filtered runners based on file type(s). Result: {[r.check_type for r in self.runners]}')
 
-    def remove_runner(self, runner: BaseRunner) -> None:
+    def remove_runner(self, runner: _BaseRunner) -> None:
         if runner in self.runners:
             self.runners.remove(runner)
 
@@ -321,7 +319,7 @@ class RunnerRegistry:
         return enriched_resources
 
     def _get_image_referencing_runners(self) -> set[ImageReferencer]:
-        image_referencing_runners = set()
+        image_referencing_runners: set[ImageReferencer] = set()
         for runner in self.runners:
             if issubclass(runner.__class__, ImageReferencer):
                 image_referencing_runners.add(cast(ImageReferencer, runner))

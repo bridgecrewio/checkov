@@ -23,6 +23,6 @@ class ConnectionNotExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed, failed = super().get_operation(graph_connector)
         return failed, passed

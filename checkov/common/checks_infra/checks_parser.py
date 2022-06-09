@@ -184,7 +184,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             ),
         }
 
-        solver = type_to_solver.get(check.type)
+        solver = type_to_solver.get(check.type)  # type:ignore[arg-type]  # if not str will return None
         if not solver:
             raise NotImplementedError(f"solver type {check.type} with operator {check.operator} is not supported")
         return solver

@@ -21,7 +21,7 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed, failed = super().get_operation(graph_connector)
         failed = [f for f in failed if f not in passed]
         return passed, failed
