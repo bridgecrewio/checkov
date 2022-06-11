@@ -103,6 +103,10 @@ jobs:
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Install pyston
+        if: ${{ matrix.python == '3.8' }}
+        run: |
+          pipenv run pip install pyston_lite_autoload
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -163,13 +167,11 @@ jobs:
           pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-benchmark
           pipenv run python setup.py sdist bdist_wheel
-          
-          if [[ "${{matrix.python}}" != "pyston" ]]; then
-            bash -c 'pipenv run pip install dist/checkov-*.whl'
-          else
-            bash -c 'pipenv run pip install --python-version 3.8 dist/checkov-*.whl'
-            pipenv run pip uninstall pyston_lite_autoload
-          fi
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Install pyston
+        if: ${{ matrix.python == '3.8' }}
+        run: |
+          pipenv run pip install pyston_lite_autoload
       - name: Clone terraform-aws-components
         run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
         working-directory: ${{ env.working-directory }}
