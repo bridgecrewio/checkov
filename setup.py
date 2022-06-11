@@ -68,6 +68,7 @@ setup(
         "prettytable>=3.0.0",
         "pycep-parser==0.3.7",
         "charset-normalizer",
+        "pyston_lite_autoload; python_version=='3.8' and platform_system=='Linux'",
     ],
     license="Apache License 2.0",
     name="checkov",

@@ -66,6 +66,10 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
+      - name: Install pyston
+        if: ${{ matrix.python == '3.8' }}
+        run: |
+          pipenv run pip install pyston_lite_autoload
       - uses: imranismail/setup-kustomize@v1
       - name: Unit tests
         env:
@@ -119,15 +123,18 @@ jobs:
           pipenv run pytest integration_tests -k 'not api_key'
 
   performance-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: [ "3.7", "3.8" ]
     env:
       working-directory: ./performance_tests
-      python-version: 3.7
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
-          python-version: ${{ env.python-version }}
+          python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
       - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - uses: imranismail/setup-kustomize@v1
@@ -136,8 +143,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
-          pipenv --python ${{ env.python-version }}
-          pipenv run pip install --upgrade pip==22.0.3
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-benchmark
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
