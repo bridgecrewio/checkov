@@ -20,6 +20,14 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 
+# set of check IDs with lifecycle condition
+TF_LIFECYCLE_CHECK_IDS = {
+    "CKV_AWS_217",
+    "CKV_AWS_233",
+    "CKV_AWS_237",
+    "CKV_GCP_82",
+}
+
 
 class Runner(TerraformRunner):
     check_type = CheckType.TERRAFORM_PLAN
@@ -101,6 +109,10 @@ class Runner(TerraformRunner):
 
                 results = registry.scan(scanned_file, entity, [], runner_filter)
                 for check, check_result in results.items():
+                    if check.id in TF_LIFECYCLE_CHECK_IDS:
+                        # can't be evaluated in TF plan
+                        continue
+
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                     check_result=check_result,
                                     code_block=entity_code_lines, file_path=scanned_file,
