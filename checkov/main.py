@@ -17,6 +17,7 @@ from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
+from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
@@ -90,7 +91,8 @@ DEFAULT_RUNNERS = (
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
-    sca_image_runner()
+    sca_image_runner(),
+    argo_workflows_runner(),
 )
 
 
