@@ -8,6 +8,7 @@ on:
 jobs:
   update-coverage:
     runs-on: [ self-hosted, public, linux, x64 ]
+    environment: release
     steps:
       - uses: actions/checkout@v3
         with:
