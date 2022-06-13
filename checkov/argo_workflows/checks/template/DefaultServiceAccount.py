@@ -19,7 +19,7 @@ class DefaultServiceAccount(BaseArgoWorkflowsCheck):
             block_type=BlockType.OBJECT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         if "serviceAccountName" in conf.keys() and conf["serviceAccountName"] != "default":
             return CheckResult.PASSED, conf
 

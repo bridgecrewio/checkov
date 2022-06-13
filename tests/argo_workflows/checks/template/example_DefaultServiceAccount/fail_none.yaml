@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  generateName: archive-location-
+  generateName: hello-world-
 spec:
   entrypoint: whalesay
   templates:
@@ -10,6 +10,3 @@ spec:
       image: docker/whalesay:latest
       command: [cowsay]
       args: ["hello world"]
-    # archiveLocation allows configuring the archive location for a specific step
-    archiveLocation:
-      archiveLogs: true
