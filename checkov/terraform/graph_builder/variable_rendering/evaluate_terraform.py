@@ -31,11 +31,17 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluated_value.replace("\n", "")
     evaluated_value = evaluated_value.replace(",,", ",")
 
-    # if we try to strip interpolations but that does not help, then restore interpolations so that we can identify them later
-    value_before_interpolations = evaluated_value
+    # if we try to strip interpolations but that does not help evaluation, then we should add them back in the case that
+    # the interpolated string is part of a substring, so it can be identified by the "is_variable_dependent" method.
+    # For example, the value "abc-${var.x}-xyz" will not be identified as a variable if we remove the interpolation
+    # However, if the full value is just an interpolated variable, like ${var.xyz}, then we can leave them off, because
+    # it won't affect that method and breaks certain policies and other logic that was written in a specific way
+    value_before_removing_interpolations = evaluated_value
     if not keep_interpolations:
         evaluated_value = remove_interpolation(evaluated_value)
-    value_after_interpolations = evaluated_value
+    if '${' + evaluated_value + '}' == value_before_removing_interpolations:
+        value_before_removing_interpolations = evaluated_value
+    value_after_removing_interpolations = evaluated_value
 
     evaluated_value = evaluate_map(evaluated_value)
     evaluated_value = evaluate_list_access(evaluated_value)
@@ -48,8 +54,8 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
 
     if callable(second_evaluated_value):
         return evaluated_value
-    elif not keep_interpolations and second_evaluated_value == value_after_interpolations:
-        return value_before_interpolations
+    elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
+        return value_before_removing_interpolations
     else:
         return second_evaluated_value
 
