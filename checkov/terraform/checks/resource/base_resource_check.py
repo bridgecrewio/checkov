@@ -6,7 +6,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.parser_functions import handle_dynamic_values
-from checkov.terraform.parser_utils import find_var_blocks
+from checkov.common.util.parser_utils import find_var_blocks
 
 
 PROVIDER_PREFIXES = (

@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.common.util.var_utils import is_terraform_variable_dependent, is_cloudformation_variable_dependent
 
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
@@ -88,3 +89,11 @@ class BaseAttributeSolver(BaseSolver):
         pattern_without_index = re.compile(pattern)
 
         return pattern_with_index, pattern_without_index
+
+    @staticmethod
+    def _is_variable_dependant(value: str) -> bool:
+        if is_terraform_variable_dependent(value):
+            return True
+        if is_cloudformation_variable_dependent(value):
+            return True
+        return False

@@ -5,7 +5,7 @@ from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
 
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.common.util.type_forcers import force_int
-from checkov.terraform.parser_utils import find_var_blocks
+from checkov.common.util.parser_utils import find_var_blocks
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
@@ -30,8 +30,13 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
         return input_str if callable(evaluated_value) else evaluated_value
     evaluated_value = evaluated_value.replace("\n", "")
     evaluated_value = evaluated_value.replace(",,", ",")
+
+    # if we try to strip interpolations but that does not help, then restore interpolations so that we can identify them later
+    value_before_interpolations = evaluated_value
     if not keep_interpolations:
         evaluated_value = remove_interpolation(evaluated_value)
+    value_after_interpolations = evaluated_value
+
     evaluated_value = evaluate_map(evaluated_value)
     evaluated_value = evaluate_list_access(evaluated_value)
     evaluated_value = strip_double_quotes(evaluated_value)
@@ -41,7 +46,12 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_json_types(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
-    return evaluated_value if callable(second_evaluated_value) else second_evaluated_value
+    if callable(second_evaluated_value):
+        return evaluated_value
+    elif not keep_interpolations and second_evaluated_value == value_after_interpolations:
+        return value_before_interpolations
+    else:
+        return second_evaluated_value
 
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
