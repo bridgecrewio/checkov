@@ -17,8 +17,9 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheckV3):
                          block_type=BlockType.DOCUMENT)
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
-        security_schemes = conf.get("components", {}).get("securitySchemes", {})
-        paths = conf.get('paths', {})
+        components = conf.get("components", {}) or {}
+        security_schemes = components.get("securitySchemes", {}) or {}
+        paths = conf.get('paths', {}) or {}
 
         if isinstance(security_schemes, list):
             security_schemes = security_schemes[0]
