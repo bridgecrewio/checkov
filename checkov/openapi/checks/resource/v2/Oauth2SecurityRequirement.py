@@ -17,8 +17,8 @@ class Oauth2SecurityRequirement(BaseOpenapiCheckV2):
                          block_type=BlockType.DOCUMENT)
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
-        security_values = conf.get("security", [{}])
-        security_definitions = conf.get("securityDefinitions", {})
+        security_values = conf.get("security", [{}]) or [{}]
+        security_definitions = conf.get("securityDefinitions", {}) or {}
         non_oauth2_keys = []
 
         for auth_key, auth_dict in security_definitions.items():
