@@ -91,9 +91,9 @@ class BaseAttributeSolver(BaseSolver):
         return pattern_with_index, pattern_without_index
 
     @staticmethod
-    def _is_variable_dependant(value: str) -> bool:
-        if is_terraform_variable_dependent(value):
+    def _is_variable_dependant(value: str, source: str) -> bool:
+        if source == 'Terraform' and is_terraform_variable_dependent(value):
             return True
-        if is_cloudformation_variable_dependent(value):
+        elif source == 'CloudFormation' and is_cloudformation_variable_dependent(value):
             return True
         return False

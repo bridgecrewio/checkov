@@ -1,6 +1,7 @@
 from typing import List, Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
+from .base_attribute_solver import BaseAttributeSolver
 from .greater_than_or_equal_attribute_solver import GreaterThanOrEqualAttributeSolver
 
 
@@ -13,5 +14,11 @@ class LessThanAttributeSolver(GreaterThanOrEqualAttributeSolver):
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
+
+        attr_val = vertex.get(attribute)
+        # if this value contains an underendered variable, then we cannot evaluate the check,
+        # so return True (since we cannot return UNKNOWN)
+        if BaseAttributeSolver._is_variable_dependant(attr_val, vertex['source_']):
+            return True
 
         return not super()._get_operation(vertex, attribute)
