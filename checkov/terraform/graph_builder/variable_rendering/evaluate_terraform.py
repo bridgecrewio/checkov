@@ -36,12 +36,12 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     # For example, the value "abc-${var.x}-xyz" will not be identified as a variable if we remove the interpolation
     # However, if the full value is just an interpolated variable, like ${var.xyz}, then we can leave them off, because
     # it won't affect that method and breaks certain policies and other logic that was written in a specific way
-    value_before_removing_interpolations = evaluated_value
+    # value_before_removing_interpolations = evaluated_value
     if not keep_interpolations:
         evaluated_value = remove_interpolation(evaluated_value)
-    if '${' + evaluated_value + '}' == value_before_removing_interpolations:
-        value_before_removing_interpolations = evaluated_value
-    value_after_removing_interpolations = evaluated_value
+    # if '${' + evaluated_value + '}' == value_before_removing_interpolations:
+    #     value_before_removing_interpolations = evaluated_value
+    # value_after_removing_interpolations = evaluated_value
 
     evaluated_value = evaluate_map(evaluated_value)
     evaluated_value = evaluate_list_access(evaluated_value)
@@ -52,12 +52,14 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_json_types(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
-    if callable(second_evaluated_value):
-        return evaluated_value
-    elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
-        return value_before_removing_interpolations
-    else:
-        return second_evaluated_value
+    return evaluated_value if callable(second_evaluated_value) else second_evaluated_value
+
+    # if callable(second_evaluated_value):
+    #     return evaluated_value
+    # elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
+    #     return value_before_removing_interpolations
+    # else:
+    #     return second_evaluated_value
 
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
