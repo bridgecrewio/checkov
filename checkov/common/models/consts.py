@@ -4,7 +4,21 @@ from checkov.common.util.config_utils import should_scan_hcl_files
 
 SCAN_HCL_FLAG = "CKV_SCAN_HCL"
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template"]
-SUPPORTED_FILES = ["Dockerfile"]
+SUPPORTED_PACKAGE_FILES = {
+    "bower.json",
+    "build.gradle",
+    "build.gradle.kts",
+    "go.sum",
+    "gradle.properties",
+    "METADATA",
+    "npm-shrinkwrap.json",
+    "package.json",
+    "package-lock.json",
+    "pom.xml",
+    "requirements.txt"
+}
+SUPPORTED_FILES = SUPPORTED_PACKAGE_FILES.union({"Dockerfile"})
+
 if should_scan_hcl_files():
     SUPPORTED_FILE_EXTENSIONS.append(".hcl")
 ANY_VALUE = "CKV_ANY"
