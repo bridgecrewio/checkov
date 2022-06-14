@@ -96,4 +96,5 @@ class BaseAttributeSolver(BaseSolver):
             return True
         elif source == 'CloudFormation' and is_cloudformation_variable_dependent(value):
             return True
+
         return False
