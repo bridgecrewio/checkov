@@ -94,7 +94,8 @@ class BaseAttributeSolver(BaseSolver):
     def _is_variable_dependant(value: str, source: str) -> bool:
         if source == 'Terraform' and is_terraform_variable_dependent(value):
             return True
-        elif source == 'CloudFormation' and is_cloudformation_variable_dependent(value):
-            return True
+        # TODO add logic for CloudFormation
+        # elif source == 'CloudFormation' and is_cloudformation_variable_dependent(value):
+        #     return True
 
         return False
