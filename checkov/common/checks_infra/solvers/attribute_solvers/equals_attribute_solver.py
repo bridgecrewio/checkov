@@ -16,7 +16,7 @@ class EqualsAttributeSolver(BaseAttributeSolver):
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
         # handle edge cases in some policies that explicitly look for blank values
-        if self.value != '' and BaseAttributeSolver._is_variable_dependant(attr_val, vertex['source_']):
+        if self.value != '' and self._is_variable_dependant(attr_val, vertex['source_']):
             return True
         if type(attr_val) == bool or type(self.value) == bool:
             # handle cases like str(False) == "false"

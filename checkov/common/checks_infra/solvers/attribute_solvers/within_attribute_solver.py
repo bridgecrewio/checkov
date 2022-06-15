@@ -14,6 +14,6 @@ class WithinAttributeSolver(BaseAttributeSolver):
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
-        if BaseAttributeSolver._is_variable_dependant(attr, vertex['source_']):
+        if self._is_variable_dependant(attr, vertex['source_']):
             return True
         return attr in self.value

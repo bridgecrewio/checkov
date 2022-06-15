@@ -16,7 +16,7 @@ class GreaterThanOrEqualAttributeSolver(BaseAttributeSolver):
         vertex_attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
-        if BaseAttributeSolver._is_variable_dependant(vertex_attr, vertex['source_']):
+        if self._is_variable_dependant(vertex_attr, vertex['source_']):
             return True
         attr_float = force_float(vertex_attr)
         value_float = force_float(self.value)
