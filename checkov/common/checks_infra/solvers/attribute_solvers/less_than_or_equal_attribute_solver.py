@@ -15,7 +15,7 @@ class LessThanOrEqualAttributeSolver(GreaterThanAttributeSolver):
         if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
 
-        attr_val = vertex.get(attribute)
+        attr_val = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
         if BaseAttributeSolver._is_variable_dependant(attr_val, vertex['source_']):

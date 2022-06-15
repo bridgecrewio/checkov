@@ -11,9 +11,9 @@ class WithinAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        attr = vertex.get(attribute)
+        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
         if BaseAttributeSolver._is_variable_dependant(attr, vertex['source_']):
             return True
-        return attr in self.value  # type:ignore[arg-type]  # due to attribute can be None
+        return attr in self.value
