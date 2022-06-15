@@ -52,8 +52,6 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_json_types(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
-    # return evaluated_value if callable(second_evaluated_value) else second_evaluated_value
-
     if callable(second_evaluated_value):
         return evaluated_value
     elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
