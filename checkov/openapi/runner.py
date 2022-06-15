@@ -47,6 +47,7 @@ class Runner(YamlRunner, JsonRunner):
         except ValueError:
             logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
             return None
+        return None
 
     def get_start_end_lines(
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
