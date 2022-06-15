@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import cast
 
 import docker
@@ -36,7 +37,7 @@ class ImageReferencer:
         return False
 
     @abstractmethod
-    def get_images(self, file_path: str) -> list[Image]:
+    def get_images(self, file_path: str) -> Iterable[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected

@@ -16,7 +16,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
 
 
 class _CheckResult(TypedDict, total=False):
-    result: "CheckResult"
+    result: "CheckResult" | tuple["CheckResult", dict[str, Any]]
     suppress_comment: str
     evaluated_keys: list[str]
     results_configuration: dict[str, Any] | None

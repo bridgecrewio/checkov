@@ -10,12 +10,14 @@ import checkov.common.parsers.yaml.loader as loader
 logger = logging.getLogger(__name__)
 
 
-def parse(filename: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+def parse(
+    filename: str, file_content: str | None = None
+) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
     template = None
     template_lines = None
     try:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            (template, template_lines) = loader.load(filename)
+            (template, template_lines) = loader.load(filename, file_content)
 
         if template and template_lines:
             if isinstance(template, list):
