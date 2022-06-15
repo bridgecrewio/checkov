@@ -156,25 +156,6 @@ class Runner(BaseRunner):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
 
-    @staticmethod
-    def _findKustomizeDirectories(root_folder, files, excluded_paths):
-        kustomizeDirectories = []
-        if not excluded_paths:
-            excluded_paths = []
-        if files:
-            logging.info('Running with --file argument; file must be a kustomization.yaml file')
-            for file in files:
-                if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
-                    kustomizeDirectories.append(os.path.dirname(file))
-
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, excluded_paths)
-                filter_ignored_paths(root, f_names, excluded_paths)
-                [kustomizeDirectories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
-
-        return kustomizeDirectories
-
     def _parseKustomization(self, parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
@@ -394,7 +375,7 @@ class Runner(BaseRunner):
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
-        kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
+        kustomizeDirectories = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         self.target_folder_path = tempfile.mkdtemp()
@@ -483,3 +464,22 @@ class Runner(BaseRunner):
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
         except IsADirectoryError:
             pass
+
+
+def find_kustomize_directories(root_folder, files, excluded_paths):
+    kustomize_directories = []
+    if not excluded_paths:
+        excluded_paths = []
+    if files:
+        logging.info('Running with --file argument; file must be a kustomization.yaml file')
+        for file in files:
+            if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
+                kustomize_directories.append(os.path.dirname(file))
+
+    if root_folder:
+        for root, d_names, f_names in os.walk(root_folder):
+            filter_ignored_paths(root, d_names, excluded_paths)
+            filter_ignored_paths(root, f_names, excluded_paths)
+            [kustomize_directories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
+
+        return kustomize_directories

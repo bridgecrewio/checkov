@@ -73,26 +73,6 @@ class Runner(BaseRunner):
         return self.target_folder_path
 
     @staticmethod
-    def find_chart_directories(root_folder: str, files: list[str], excluded_paths: list[str]) -> List[str]:
-        chart_directories = []
-        if not excluded_paths:
-            excluded_paths = []
-        if files:
-            logging.info('Running with --file argument; checking for Helm Chart.yaml files')
-            for file in files:
-                if os.path.basename(file) == 'Chart.yaml':
-                    chart_directories.append(os.path.dirname(file))
-
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, excluded_paths)
-                filter_ignored_paths(root, f_names, excluded_paths)
-                if 'Chart.yaml' in f_names:
-                    chart_directories.append(root)
-
-        return chart_directories
-
-    @staticmethod
     def parse_helm_chart_details(chart_path: str) -> dict[str, Any]:
         with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
             try:
@@ -167,7 +147,7 @@ class Runner(BaseRunner):
             cur_writer.close()
 
     def convert_helm_to_k8s(self, root_folder: str, files: list[str], runner_filter: RunnerFilter) -> list[tuple[Any, dict[str, Any]]]:
-        chart_directories = self.find_chart_directories(root_folder, files, runner_filter.excluded_paths)
+        chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
         self.target_folder_path = tempfile.mkdtemp()
@@ -256,3 +236,23 @@ def get_skipped_checks(entity_conf: dict) -> List:
                     logging.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                     continue
     return skipped
+
+
+def find_chart_directories(root_folder: str, files: list[str], excluded_paths: list[str]) -> List[str]:
+    chart_directories = []
+    if not excluded_paths:
+        excluded_paths = []
+    if files:
+        logging.info('Running with --file argument; checking for Helm Chart.yaml files')
+        for file in files:
+            if os.path.basename(file) == 'Chart.yaml':
+                chart_directories.append(os.path.dirname(file))
+
+    if root_folder:
+        for root, d_names, f_names in os.walk(root_folder):
+            filter_ignored_paths(root, d_names, excluded_paths)
+            filter_ignored_paths(root, f_names, excluded_paths)
+            if 'Chart.yaml' in f_names:
+                chart_directories.append(root)
+
+    return chart_directories
