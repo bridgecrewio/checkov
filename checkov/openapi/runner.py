@@ -46,7 +46,6 @@ class Runner(YamlRunner, JsonRunner):
                 return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
         except ValueError:
             logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
-            return None
         return None
 
     def get_start_end_lines(
