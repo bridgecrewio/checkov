@@ -40,11 +40,13 @@ class Runner(YamlRunner, JsonRunner):
         f: str,
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        parsed_file = func(self, f)
-        if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
-            return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
-
-        return None
+        try:
+            parsed_file = func(self, f)
+            if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
+                return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
+        except ValueError:
+            logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
+            return None
 
     def get_start_end_lines(
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
