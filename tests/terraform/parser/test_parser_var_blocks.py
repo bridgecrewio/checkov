@@ -3,7 +3,7 @@ import unittest
 
 from typing import List, Tuple
 
-from checkov.terraform.parser_utils import VarBlockMatch as VBM, split_merge_args, find_var_blocks
+from checkov.common.util.parser_utils import VarBlockMatch as VBM, split_merge_args, find_var_blocks
 
 
 class TestParserInternals(unittest.TestCase):

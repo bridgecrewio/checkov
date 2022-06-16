@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List, Union, Any
 
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
 
 #
 # Functions defined in this file implement terraform functions.
