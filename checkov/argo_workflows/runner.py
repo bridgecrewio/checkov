@@ -115,6 +115,11 @@ class Runner(YamlRunner, ImageReferencer):
                         image = self.extract_image(file_path=file_path, container=container)
                         if image:
                             images.add(image)
+                    script = template.get("script")
+                    if script:
+                        image = self.extract_image(file_path=file_path, container=script)
+                        if image:
+                            images.add(image)
 
         return images
 

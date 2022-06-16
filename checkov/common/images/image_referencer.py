@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import cast
+from typing import cast, Any
 
 import docker
 
@@ -23,6 +23,18 @@ class Image:
         self.image_id = image_id
         self.name = name
         self.file_path = file_path
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+
+        return False
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.file_path, self.name, self.image_id, self.start_line, self.end_line))
 
 
 class ImageReferencer:
