@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
@@ -27,7 +28,7 @@ def collect_suppressions_for_report(code_lines: list[tuple[int, str]]) -> dict[s
     return suppressions
 
 
-def collect_suppressions_for_context(code_lines: list[tuple[int, int | str]]) -> list[_SkippedCheck]:
+def collect_suppressions_for_context(code_lines: Iterable[tuple[int, int | str]]) -> list[_SkippedCheck]:
     """Searches for suppressions in a config block to be used in a context"""
 
     skipped_checks = []

@@ -60,7 +60,7 @@ class Runner(BaseRunner):
         self.graph_registry: Registry = get_graph_checks_registry(self.check_type)
 
         self.context: dict[str, dict[str, Any]] = {}
-        self.definitions: dict[Path, BicepJson] = {}
+        self.definitions: dict[Path, BicepJson] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
         self.root_folder: str | Path | None = None
 

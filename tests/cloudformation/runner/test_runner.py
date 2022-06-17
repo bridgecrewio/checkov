@@ -329,6 +329,14 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
 
+    def test_skip_sub_dict_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "skip_sub_dict.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 0)
+
     def test_parsing_error_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid.json")

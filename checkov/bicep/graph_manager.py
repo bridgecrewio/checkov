@@ -12,11 +12,12 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 
 if TYPE_CHECKING:
+    import networkx as nx
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
 
 
 class BicepGraphManager(GraphManager):
-    def __init__(self, db_connector: DBConnector, source: str = "Bicep") -> None:
+    def __init__(self, db_connector: DBConnector[nx.DiGraph], source: str = "Bicep") -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(

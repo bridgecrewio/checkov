@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from typing import Any, Callable
+
+from typing_extensions import TypeAlias
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
+
+_ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
+_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +38,14 @@ class Runner(YamlRunner, JsonRunner):
 
     def parse_format(self,
         f: str,
-        func: Callable[[JsonRunner | YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]
+        func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        parsed_file = func(self, f)
-        if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
-            return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
-
+        try:
+            parsed_file = func(self, f)
+            if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
+                return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
+        except ValueError:
+            logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
         return None
 
     def get_start_end_lines(
@@ -59,7 +67,10 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
-        return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        try:
+            return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        except Exception:
+            return False
 
-    def get_resource(self, file_path: str, key: str, supported_entities: list[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
         return ','.join(supported_entities)

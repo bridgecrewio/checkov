@@ -6,7 +6,7 @@ import logging
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
@@ -64,12 +64,12 @@ SEVERITY_TO_SARIF_LEVEL = {
 
 class Report:
     def __init__(self, check_type: str):
-        self.check_type: str = check_type
-        self.passed_checks: List[Record] = []
-        self.failed_checks: List[Record] = []
-        self.skipped_checks: List[Record] = []
-        self.parsing_errors: List[str] = []
-        self.resources: Set[str] = set()
+        self.check_type = check_type
+        self.passed_checks: list[Record] = []
+        self.failed_checks: list[Record] = []
+        self.skipped_checks: list[Record] = []
+        self.parsing_errors: list[str] = []
+        self.resources: set[str] = set()
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -106,7 +106,7 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str = "") -> dict[str, Any]:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None) -> dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -164,7 +164,8 @@ class Report:
         soft_fail_threshold = None
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(soft_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
                     soft_fail_threshold = Severities[val]
             else:
@@ -177,7 +178,8 @@ class Report:
         hard_fail_threshold = None
         # hard fail on the lowest threshold in the list
         for val in convert_csv_string_arg_to_list(hard_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
             else:
