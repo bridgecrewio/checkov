@@ -27,6 +27,9 @@ class SecurityRequirement(BaseOpenapiCheckV2):
         if 'paths' not in conf:
             return CheckResult.FAILED, conf
         paths = conf['paths']
+        if not isinstance(paths, dict):
+            return CheckResult.FAILED, conf
+
         for path, http_method in paths.items():
             if self.is_start_end_line(path):
                 continue
