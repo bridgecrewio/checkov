@@ -14,7 +14,7 @@ from checkov.terraform.runner import Runner as tf_runner
 performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
-        'threshold': 13.0
+        'threshold': 15.0
     },
     'cloudformation': {
         'repo_name': 'aws-cloudformation-templates',
