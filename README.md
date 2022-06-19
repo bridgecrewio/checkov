@@ -92,7 +92,7 @@ sudo apt install python3-pip
 sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
 ```
 
-or using homebrew (MacOS only)
+or using [homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
 ```sh
 brew install checkov
