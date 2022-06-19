@@ -56,7 +56,6 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_DIRS" ]; then
   done
 fi
 
-[[ -n "$INPUT_CHECK" ]] &&  ="--check $INPUT_CHECK"
 CHECK_FLAG=""
 if [ -n "$INPUT_CHECK" ]; then
   IFS=', ' read -r -a checks <<< "$INPUT_CHECK"
