@@ -62,6 +62,8 @@ class Module:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
+                if not isinstance(attributes, dict):
+                    continue
                 provider_name = name
                 alias = attributes.get("alias")
                 if alias:

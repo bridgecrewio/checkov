@@ -89,10 +89,10 @@ class BaseK8sContainerCheck(BaseK8Check):
             return CheckResult.UNKNOWN
 
         containers: List[Dict[str, Any]] = (
-            spec.get("containers", []) if "containers" in self.supported_container_types else []
+            spec.get("containers", []) if "containers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
         init_containers: List[Dict[str, Any]] = (
-            spec.get("initContainers", []) if "initContainers" in self.supported_container_types else []
+            spec.get("initContainers", []) if "initContainers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
 
         result = self._check_containers(
