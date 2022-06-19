@@ -36,21 +36,23 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.BICEP
+    check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
-    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
+    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
         "parameters": param_registry,
         "resources": resource_registry,
     }
 
     def __init__(
         self,
-        db_connector: NetworkxConnector = NetworkxConnector(),
+        db_connector: NetworkxConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        db_connector = db_connector or NetworkxConnector()
+
         super().__init__(file_extensions=['.bicep'])
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
@@ -69,10 +71,11 @@ class Runner(BaseRunner):
         root_folder: str | Path | None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
         report = Report(Runner.check_type)
+        runner_filter = runner_filter or RunnerFilter()
         self.root_folder = root_folder
 
         if not self.context or not self.definitions:

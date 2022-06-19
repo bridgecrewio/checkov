@@ -9,7 +9,7 @@ WORKFLOW_DIRECTORY = ".github/workflows/"
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.GITHUB_ACTIONS
+    check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
     def __init__(self):
         super().__init__()
@@ -59,7 +59,7 @@ class Runner(YamlRunner, ImageReferencer):
 
         workflow, workflow_line_numbers = self._parse_file(file_path)
         jobs = workflow.get("jobs", {})
-        for job_name, job_object in jobs.items():
+        for job_object in jobs.values():
             if isinstance(job_object, dict):
                 container = job_object.get("container", {})
                 image = None

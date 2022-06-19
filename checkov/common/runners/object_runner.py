@@ -44,9 +44,10 @@ class Runner(BaseRunner):
         root_folder: str | None = None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         registry = self.import_registry()
 
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}

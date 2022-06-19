@@ -35,6 +35,7 @@ pre-commit = "*"
 flake8 = "*"
 dlint = "*"
 mypy = "*"
+flake8-bugbear = "*"
 
 [packages]
 #

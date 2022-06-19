@@ -10,7 +10,7 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 
 class Runner(ObjectRunner):
-    check_type = CheckType.JSON
+    check_type = CheckType.JSON  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
