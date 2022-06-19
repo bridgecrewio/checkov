@@ -34,7 +34,7 @@ class Module:
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
     ) -> None:
         self.source = source
-        if self._block_type_to_func.get(block_type):
+        if block_type in self._block_type_to_func:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
