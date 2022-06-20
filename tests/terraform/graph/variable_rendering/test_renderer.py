@@ -40,6 +40,15 @@ class TestRenderer(TestCase):
 
         self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.template_bucket')
 
+    def test_render_variable(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_variable')
+        graph_manager = TerraformGraphManager('acme', ['acme'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        expected_resource = {'region': "us-west-2", 'bucket': "Storage bucket", "acl": "acl", "force_destroy": True}
+
+        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.storage_bucket')
+
     def test_render_local_from_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME,
                                      '../resources/variable_rendering/render_local_from_variable')

@@ -14,6 +14,7 @@ on:
       - admissioncontroller/k8s/deployment.yaml
       - checkov/version.py
       - kubernetes/requirements.txt
+      - coverage.svg
 
 concurrency:
   group: 'build'
@@ -29,7 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
@@ -70,7 +71,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -99,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -132,7 +133,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv

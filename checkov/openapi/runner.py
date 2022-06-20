@@ -40,10 +40,12 @@ class Runner(YamlRunner, JsonRunner):
         f: str,
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        parsed_file = func(self, f)
-        if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
-            return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
-
+        try:
+            parsed_file = func(self, f)
+            if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
+                return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
+        except ValueError:
+            logger.debug(f"Could not parse {f}, skipping file", exc_info=True)
         return None
 
     def get_start_end_lines(
@@ -65,7 +67,10 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
-        return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        try:
+            return bool(conf and ('swagger' in conf or 'openapi' in conf))
+        except Exception:
+            return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
         return ','.join(supported_entities)
