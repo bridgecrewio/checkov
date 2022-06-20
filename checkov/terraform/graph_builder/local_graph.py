@@ -206,7 +206,8 @@ class TerraformLocalGraph(LocalGraph):
                                 self._create_edge(origin_node_index, dest_node_index, attribute_key)
                             break
 
-            if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source'):
+            if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
+                    and isinstance(vertex.attributes.get('source')[0], str):
                 target_path = vertex.path
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
