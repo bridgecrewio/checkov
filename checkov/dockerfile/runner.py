@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
@@ -7,14 +8,18 @@ from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.dockerfile.utils import is_docker_file
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
+FRAMEWORK = os.path.basename(Path(__file__).parent)
+
 
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
+    pbar = ProgressBar()
 
     def should_scan_file(self, filename: str) -> bool:
         return is_docker_file(os.path.basename(filename))
@@ -42,9 +47,9 @@ class Runner(BaseRunner):
                         files_list.append(file_path)
 
         definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
-
+        self.pbar.initiate(len(definitions), FRAMEWORK)
         for docker_file_path in definitions.keys():
-
+            self.pbar.set_additional_data({'Current File Scanned': docker_file_path})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -61,57 +66,60 @@ class Runner(BaseRunner):
 
             results = registry.scan(docker_file_path, instructions, skipped_checks,
                                     runner_filter)
+
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
                 startline = 0
                 endline = len(definitions_raw[docker_file_path]) - 1
                 result_instruction = ""
                 if result_configuration:
-                    if isinstance(result_configuration,list):
+                    if isinstance(result_configuration, list):
                         for res in result_configuration:
                             startline = res['startline']
                             endline = res['endline']
                             result_instruction = res["instruction"]
-                            self.build_record(report, 
-                                              definitions_raw, 
-                                              docker_file_path, 
-                                              file_abs_path, 
-                                              check, 
-                                              check_result, 
-                                              startline, 
-                                              endline, 
+                            self.build_record(report,
+                                              definitions_raw,
+                                              docker_file_path,
+                                              file_abs_path,
+                                              check,
+                                              check_result,
+                                              startline,
+                                              endline,
                                               result_instruction)
                     else:
                         startline = result_configuration['startline']
                         endline = result_configuration['endline']
                         result_instruction = result_configuration["instruction"]
-                        self.build_record(report, 
-                                          definitions_raw, 
-                                          docker_file_path, 
-                                          file_abs_path, 
-                                          check, 
-                                          check_result, 
+                        self.build_record(report,
+                                          definitions_raw,
+                                          docker_file_path,
+                                          file_abs_path,
+                                          check,
+                                          check_result,
                                           startline,
-                                          endline, 
+                                          endline,
                                           result_instruction)
                 else:
-                    self.build_record(report, 
-                                      definitions_raw, 
-                                      docker_file_path, 
-                                      file_abs_path, 
-                                      check, 
-                                      check_result, 
-                                      startline, 
-                                      endline, 
+                    self.build_record(report,
+                                      definitions_raw,
+                                      docker_file_path,
+                                      file_abs_path,
+                                      check,
+                                      check_result,
+                                      startline,
+                                      endline,
                                       result_instruction)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
 
-    def build_record(self, report, definitions_raw, docker_file_path, file_abs_path, check, check_result, startline, endline, result_instruction):
+    def build_record(self, report, definitions_raw, docker_file_path, file_abs_path, check, check_result, startline,
+                     endline, result_instruction):
         codeblock = []
         self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
         record = Record(

@@ -26,6 +26,7 @@ from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.suppression import collect_suppressions_for_report
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -34,10 +35,12 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager
 
+FRAMEWORK = os.path.basename(Path(__file__).parent)
+
 
 class Runner(BaseRunner):
     check_type = CheckType.BICEP
-
+    pbar = ProgressBar()
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
         "parameters": param_registry,
         "resources": resource_registry,
@@ -104,6 +107,8 @@ class Runner(BaseRunner):
                     vertices=local_graph.vertices, root_folder=root_folder
                 )
 
+        self.pbar.initiate(len(self.definitions), FRAMEWORK)
+
         # run Python checks
         self.add_python_check_results(report=report, runner_filter=runner_filter)
 
@@ -120,6 +125,7 @@ class Runner(BaseRunner):
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': str(file_path)})
             for block_type, registry in Runner.block_type_registries.items():
                 block_type_confs = definition.get(block_type)
                 if block_type_confs:
@@ -166,6 +172,8 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+            self.pbar.update()
+        self.pbar.close()
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
         return f"/{os.path.relpath(path, self.root_folder)}"

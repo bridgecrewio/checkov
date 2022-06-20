@@ -1,6 +1,9 @@
 import logging
 import os
+from pathlib import Path
 from typing import Optional, List, Dict, Tuple
+
+from tqdm import tqdm
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
@@ -8,15 +11,18 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.ARM
+    pbar = ProgressBar()
 
     def __init__(self):
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
@@ -55,8 +61,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for arm_file in definitions.keys():
+        self.pbar.initiate(len(definitions), FRAMEWORK)
 
+        for arm_file in definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': arm_file})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -136,7 +144,8 @@ class Runner(BaseRunner):
                                                 severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 

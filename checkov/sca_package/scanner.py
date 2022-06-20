@@ -13,19 +13,25 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
 from checkov.common.util.http_utils import request_wrapper
 
+from checkov.common.util.tqdm_utils import ProgressBar
+
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Scanner:
     def __init__(self) -> None:
         self._base_url = bc_integration.api_url
+        self.pbar = ProgressBar()
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
+        self.pbar.initiate(len(input_paths), FRAMEWORK)  # type: ignore
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
         )
+        self.pbar.close()
         return scan_results
 
     async def run_scan_multi(
@@ -33,7 +39,7 @@ class Scanner:
             input_paths: "Iterable[Path]",
     ) -> "Sequence[Dict[str, Any]]":
 
-        if os.getenv("PYCHARM_HOSTED") == "1":
+        if os.getenv("PYCHARM_HOSTED") == "0":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
@@ -46,6 +52,7 @@ class Scanner:
         return scan_results
 
     async def run_scan(self, input_path: Path) -> dict:
+        self.pbar.set_additional_data({'Current File Scanned': str(input_path)})
         logging.info(f"Start to scan package file {input_path}")
 
         request_body = {
@@ -98,4 +105,5 @@ class Scanner:
     def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
+        self.pbar.update()
         return raw_result

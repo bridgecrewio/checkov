@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Optional, List, Type
+
+from tqdm import tqdm
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
@@ -24,11 +27,15 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
+    pbar = ProgressBar()
 
     def __init__(
         self,
@@ -95,6 +102,8 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        self.pbar.initiate(len(self.definitions), FRAMEWORK)
+
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
@@ -107,7 +116,7 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report):
         for file_abs_path, definition in self.definitions.items():
-
+            self.pbar.set_additional_data({'Current File Scanned': file_abs_path})
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
 
             if isinstance(definition, dict) and TemplateSections.RESOURCES in definition.keys():
@@ -149,6 +158,8 @@ class Runner(BaseRunner):
                                         record = GraphRecord(record, breadcrumb)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+            self.pbar.update()
+        self.pbar.close()
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)

@@ -1,10 +1,12 @@
 import logging
 import os
+from pathlib import Path
 from typing import List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -39,12 +41,15 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
+FRAMEWORK = os.path.basename(Path(__file__).parent)
+
 
 class Runner(BaseRunner):
     check_type = CheckType.SERVERLESS
 
     def __init__(self):
         super().__init__(file_names=SLS_FILE_MASK)
+        self.pbar = ProgressBar()
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
@@ -80,8 +85,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for sls_file, sls_file_data in definitions.items():
+        self.pbar.initiate(len(definitions), FRAMEWORK)
 
+        for sls_file, sls_file_data in definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': sls_file})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -206,7 +213,8 @@ class Runner(BaseRunner):
                                     entity_tags=tags, severity=check.severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 
