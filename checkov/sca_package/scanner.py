@@ -23,11 +23,11 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 class Scanner:
     def __init__(self) -> None:
         self._base_url = bc_integration.api_url
-        self.pbar = ProgressBar()
+        self.pbar = ProgressBar(FRAMEWORK)
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
-        self.pbar.initiate(len(input_paths), FRAMEWORK)  # type: ignore
+        self.pbar.initiate(len(input_paths))  # type: ignore
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
         )

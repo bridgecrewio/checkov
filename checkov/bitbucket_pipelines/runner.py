@@ -1,16 +1,23 @@
+import os
+from pathlib import Path
+
 import jmespath
 
 from checkov.bitbucket_pipelines.registry import registry
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.yaml_doc.runner import Runner as YamlRunner
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.BITBUCKET_PIPELINES
 
     def __init__(self):
-        super().__init__()
+        self.pbar = ProgressBar(FRAMEWORK)
+        super().__init__(self.pbar)
 
     def require_external_checks(self):
         return False

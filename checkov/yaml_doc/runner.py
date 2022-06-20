@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from checkov.common.output.report import CheckType
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.runners.object_runner import Runner as ObjectRunner
+from checkov.common.util.tqdm_utils import ProgressBar
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
 class Runner(ObjectRunner):
     check_type = CheckType.YAML
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, pbar: ProgressBar = None) -> None:
+        super().__init__(pbar)
         self.file_extensions = ['.yaml', '.yml']
 
     def import_registry(self) -> BaseCheckRegistry:

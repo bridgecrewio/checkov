@@ -22,7 +22,7 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 class Runner(BaseRunner):
     check_type = CheckType.ARM
-    pbar = ProgressBar()
+    pbar = ProgressBar(FRAMEWORK)
 
     def __init__(self):
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
@@ -61,7 +61,7 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        self.pbar.initiate(len(definitions), FRAMEWORK)
+        self.pbar.initiate(len(definitions))
 
         for arm_file in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': arm_file})

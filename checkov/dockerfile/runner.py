@@ -19,7 +19,7 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
-    pbar = ProgressBar()
+    pbar = ProgressBar(FRAMEWORK)
 
     def should_scan_file(self, filename: str) -> bool:
         return is_docker_file(os.path.basename(filename))
@@ -47,7 +47,7 @@ class Runner(BaseRunner):
                         files_list.append(file_path)
 
         definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
-        self.pbar.initiate(len(definitions), FRAMEWORK)
+        self.pbar.initiate(len(definitions))
         for docker_file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': docker_file_path})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,

@@ -1,10 +1,21 @@
+import os
+from pathlib import Path
+
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+FRAMEWORK = os.path.basename(Path(__file__).parent)
+
+
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.GITLAB_CI
+
+    def __init__(self):
+        self.pbar = ProgressBar(FRAMEWORK)
+        super().__init__(self.pbar)
 
     def require_external_checks(self):
         return False

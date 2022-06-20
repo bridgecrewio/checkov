@@ -49,7 +49,7 @@ class Runner(BaseRunner):
 
     def __init__(self):
         super().__init__(file_names=SLS_FILE_MASK)
-        self.pbar = ProgressBar()
+        self.pbar = ProgressBar(FRAMEWORK)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         report = Report(self.check_type)
@@ -85,7 +85,7 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        self.pbar.initiate(len(definitions), FRAMEWORK)
+        self.pbar.initiate(len(definitions))
 
         for sls_file, sls_file_data in definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': sls_file})

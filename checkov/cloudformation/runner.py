@@ -35,7 +35,7 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
-    pbar = ProgressBar()
+    pbar = ProgressBar(FRAMEWORK)
 
     def __init__(
         self,
@@ -102,7 +102,7 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
-        self.pbar.initiate(len(self.definitions), FRAMEWORK)
+        self.pbar.initiate(len(self.definitions))
 
         # run checks
         self.check_definitions(root_folder, runner_filter, report)

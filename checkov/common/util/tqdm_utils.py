@@ -3,28 +3,29 @@ import sys
 
 from tqdm import tqdm
 
-DEFAULT_BAR_FORMAT = '{l_bar}{bar}| [{n_fmt}/{total_fmt}] {postfix}'
-SLOW_RUNNER_BAR_FORMAT = '{l_bar}{bar}| [{n_fmt}/{total_fmt}] [Slow Runner Warning] {postfix}'
+DEFAULT_BAR_FORMAT = '{l_bar}{bar:20}| [{n_fmt}/{total_fmt}] {postfix}'
+SLOW_RUNNER_BAR_FORMAT = '{l_bar}{bar:20}| [{n_fmt}/{total_fmt}] [Slow Runner Warning] {postfix}'
 
 SLOW_RUNNERS = {'sca_package'}
 LOGS_ENABLED = os.environ.get('LOG_LEVEL', False)
 
 
 class ProgressBar:
-    def __init__(self) -> None:
+    def __init__(self, framework) -> None:
         self.pbar = None
         self.is_off = not self.should_show_progress_bar()
+        self.framework = framework
 
-    def initiate(self, total: int, framework: str) -> None:
+    def initiate(self, total: int) -> None:
         if total <= 0:
-            tqdm.write(f'{framework} framework has 0 files to process, no progress bar to show')
+            tqdm.write(f'{self.framework} framework has 0 files to process, no progress bar to show')
             self.is_off = True
 
         if self.is_off:
             return
 
-        self.pbar = tqdm(total=total, colour=self.get_progress_bar_color(framework),
-                         bar_format=self.get_progress_bar_format(framework), desc=f'[ {framework} framework ]')
+        self.pbar = tqdm(total=total, colour=self.get_progress_bar_color(self.framework),
+                         bar_format=self.get_progress_bar_format(self.framework), desc=f'[ {self.framework} framework ]')
 
     def update(self, value: int = 1) -> None:
         if self.is_off:

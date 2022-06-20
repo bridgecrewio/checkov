@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any, Callable
 
 from typing_extensions import TypeAlias
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 
@@ -15,13 +18,15 @@ _ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str], tuple[dict[st
 _ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(YamlRunner, JsonRunner):
     check_type = CheckType.OPENAPI
 
     def __init__(self) -> None:
-        super().__init__()
+        self.pbar = ProgressBar(FRAMEWORK)
+        super().__init__(self.pbar)
         self.file_extensions = ['.json', '.yml', '.yaml']
 
     def import_registry(self) -> BaseCheckRegistry:

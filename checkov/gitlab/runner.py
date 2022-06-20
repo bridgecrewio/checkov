@@ -1,7 +1,13 @@
+import os
+from pathlib import Path
+
 from checkov.common.output.report import CheckType
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.gitlab.dal import Gitlab
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(JsonRunner):
@@ -9,7 +15,8 @@ class Runner(JsonRunner):
 
     def __init__(self):
         self.gitlab = Gitlab()
-        super().__init__()
+        self.pbar = ProgressBar(FRAMEWORK)
+        super().__init__(self.pbar)
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):

@@ -40,7 +40,7 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 class Runner(BaseRunner):
     check_type = CheckType.BICEP
-    pbar = ProgressBar()
+    pbar = ProgressBar(FRAMEWORK)
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
         "parameters": param_registry,
         "resources": resource_registry,
@@ -107,7 +107,7 @@ class Runner(BaseRunner):
                     vertices=local_graph.vertices, root_folder=root_folder
                 )
 
-        self.pbar.initiate(len(self.definitions), FRAMEWORK)
+        self.pbar.initiate(len(self.definitions))
 
         # run Python checks
         self.add_python_check_results(report=report, runner_filter=runner_filter)

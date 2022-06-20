@@ -12,8 +12,8 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 class Runner(ObjectRunner):
     check_type = CheckType.JSON
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, pbar=None) -> None:
+        super().__init__(pbar)
         self.file_extensions = ['.json']
 
     def import_registry(self) -> BaseCheckRegistry:
