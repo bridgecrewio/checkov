@@ -19,4 +19,4 @@ class JsonpathNotExistsAttributeSolver(JsonpathExistsAttributeSolver):
         return super().get_operation(vertex)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return not super()._get_operation(vertex, attribute)  # type:ignore[arg-type]  # due to attribute can be None
+        return not super()._get_operation(vertex, attribute)
