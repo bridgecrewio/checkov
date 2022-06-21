@@ -368,7 +368,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'include checks by ID even if they are not in the platform, without using this flag.')
     parser.add('--quiet', action='store_true',
                default=False,
-               help='in case of CLI output, display only failed checks')
+               help='in case of CLI output, display only failed checks. Also disables progress bars')
     parser.add('--compact', action='store_true',
                default=False,
                help='in case of CLI output, do not display code blocks')
