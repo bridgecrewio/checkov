@@ -32,8 +32,7 @@ class Runner(BaseRunner):
         source: str = "Kubernetes",
         graph_manager: Optional[GraphManager] = None,
         external_registries: Optional[List[BaseRegistry]] = None,
-        pbar: ProgressBar = None,
-        framework: str = FRAMEWORK
+        pbar: ProgressBar = ProgressBar(FRAMEWORK),
     ) -> None:
         super().__init__(file_extensions=['.yml', '.yaml'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -45,7 +44,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
         self.report_mutator_data = None
-        self.pbar = pbar if pbar else ProgressBar(framework)
+        self.pbar = pbar
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         if not runner_filter.show_progress_bar:

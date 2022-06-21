@@ -5,7 +5,7 @@ from colorama import Fore, Back
 from tqdm import tqdm  # type: ignore
 
 DEFAULT_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}]{postfix}' % (Fore.WHITE, Fore.RESET)
-SLOW_RUNNER_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}] %s[Slow Runner Warning]%s {postfix}' %\
+SLOW_RUNNER_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}] %s[Slow Runner Warning]%s{postfix}' %\
                          (Fore.LIGHTBLACK_EX, Fore.RESET, Back.YELLOW, Back.RESET)
 
 SLOW_RUNNERS = {'sca_package', 'terraform', 'cloudformation', 'helm', 'kubernetes', 'kustomize', 'secrets'}

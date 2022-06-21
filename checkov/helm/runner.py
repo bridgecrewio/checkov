@@ -33,7 +33,7 @@ class K8sHelmRunner(k8_runner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None,
-                 pbar: ProgressBar = None) -> None:
+                 pbar: ProgressBar = ProgressBar(FRAMEWORK)) -> None:
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, pbar)
         self.check_type = CheckType.HELM
         self.chart_dir_and_meta = []

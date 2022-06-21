@@ -34,7 +34,7 @@ class K8sKustomizeRunner(K8sRunner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None,
-                 pbar: ProgressBar = None) -> None:
+                 pbar: ProgressBar = ProgressBar(FRAMEWORK)) -> None:
 
         self.pbar = pbar
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, self.pbar)
