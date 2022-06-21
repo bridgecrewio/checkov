@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from checkov.common.util.tqdm_utils import ProgressBar
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.output.report import CheckType
 from checkov.common.parsers.json import parse
@@ -12,7 +14,7 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 class Runner(ObjectRunner):
     check_type = CheckType.JSON
 
-    def __init__(self, pbar=None) -> None:
+    def __init__(self, pbar: ProgressBar | None = None) -> None:
         super().__init__(pbar)
         self.file_extensions = ['.json']
 

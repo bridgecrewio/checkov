@@ -62,7 +62,6 @@ class BaseRunner(ABC):
             files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
-            show_progress_bar: bool = True
     ) -> Report:
         pass
 

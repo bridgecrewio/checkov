@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class Runner(ObjectRunner):
     check_type = CheckType.YAML
 
-    def __init__(self, pbar: ProgressBar = None) -> None:
+    def __init__(self, pbar: ProgressBar | None = None) -> None:
         super().__init__(pbar)
         self.file_extensions = ['.yaml', '.yml']
 

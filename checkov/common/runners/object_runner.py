@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    def __init__(self, pbar: ProgressBar = None):
+    def __init__(self, pbar: ProgressBar | None = None):
         self.pbar = pbar if pbar else ProgressBar('')
         super().__init__()
 
@@ -50,7 +50,7 @@ class Runner(BaseRunner):
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
+        collect_skip_comments: bool = True
     ) -> Report:
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
