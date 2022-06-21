@@ -11,7 +11,8 @@ from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -60,12 +61,12 @@ class Runner(BaseRunner):
     pbar = ProgressBar(FRAMEWORK)
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True
     ) -> Report:
         current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
@@ -119,6 +120,9 @@ class Runner(BaseRunner):
             ]
         }) as settings:
             report = Report(self.check_type)
+            if not runner_filter.show_progress_bar:
+                self.pbar.turn_off_progress_bar()
+
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
@@ -141,7 +145,9 @@ class Runner(BaseRunner):
                     continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity):
+                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
+                                                                               bc_check_id=bc_check_id,
+                                                                               severity=severity):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -172,12 +178,12 @@ class Runner(BaseRunner):
 
             return report
 
-
     def _scan_files(self, files_to_scan, secrets):
         # implemented the scan function like secrets.scan_files
         def _safe_scan(f, pbar):
             full_file_path = os.path.join(secrets.root, f)
             file_size = os.path.getsize(full_file_path)
+            pbar.set_additional_data({'Current File Scanned': str(f)})
             if file_size > MAX_FILE_SIZE > 0:
                 logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
                              f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
@@ -196,6 +202,7 @@ class Runner(BaseRunner):
                 logging.warning(f"Secret scanning:could not process file {f}")
                 logging.debug("Complete trace:", exc_info=True)
                 return list()
+
         self.pbar.initiate(len(files_to_scan))
         results = parallel_runner.run_function(
             func=lambda f: list(_safe_scan(f, self.pbar)), items=files_to_scan,
@@ -207,13 +214,14 @@ class Runner(BaseRunner):
 
     @staticmethod
     def search_for_suppression(
-        check_id: str,
-        bc_check_id: str,
-        severity: Severity,
-        secret: PotentialSecret,
-        runner_filter: RunnerFilter
+            check_id: str,
+            bc_check_id: str,
+            severity: Severity,
+            secret: PotentialSecret,
+            runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id,
+                                              severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

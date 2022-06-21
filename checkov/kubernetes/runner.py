@@ -2,6 +2,7 @@ import logging
 import operator
 import os
 from functools import reduce
+from pathlib import Path
 from typing import Type, Optional, List
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -13,11 +14,14 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
@@ -27,7 +31,9 @@ class Runner(BaseRunner):
         db_connector: NetworkxConnector = NetworkxConnector(),
         source: str = "Kubernetes",
         graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None
+        external_registries: Optional[List[BaseRegistry]] = None,
+        pbar: ProgressBar = None,
+        framework: str = FRAMEWORK
     ) -> None:
         super().__init__(file_extensions=['.yml', '.yaml'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -39,8 +45,12 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
         self.report_mutator_data = None
+        self.pbar = pbar if pbar else ProgressBar(framework)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         if self.context is None or self.definitions is None:
             if files or root_folder:
@@ -66,7 +76,7 @@ class Runner(BaseRunner):
                     report.add_resource(f'{file_abs_path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
                 self.definitions = local_graph.definitions
-
+        self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
         if CHECKOV_CREATE_GRAPH:
@@ -77,6 +87,7 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report, collect_skip_comments=True):
         for k8_file in self.definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': str(k8_file)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -100,7 +111,8 @@ class Runner(BaseRunner):
                 variable_evaluations = {}
 
                 report = self.mutateKubernetesResults(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:

@@ -12,6 +12,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -24,14 +25,19 @@ from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 import multiprocessing
 import platform
 
+FRAMEWORK = os.path.basename(pathlib.Path(__file__).parent)
+
 
 class K8sKustomizeRunner(K8sRunner):
     def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
                  db_connector: NetworkxConnector = NetworkxConnector(),
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
-                 external_registries: Optional[List[BaseRegistry]] = None) -> None:
-        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
+                 external_registries: Optional[List[BaseRegistry]] = None,
+                 pbar: ProgressBar = None) -> None:
+
+        self.pbar = pbar
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries, self.pbar)
         self.report_mutator_data = {}
         self.check_type = CheckType.KUSTOMIZE
 
@@ -148,6 +154,7 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = {}
         self.templateRendererCommand = None
         self.target_folder_path = ''
+        self.pbar = ProgressBar(FRAMEWORK)
 
     def get_k8s_target_folder_path(self):
         return self.target_folder_path
@@ -428,10 +435,13 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
         try:
-            k8s_runner = K8sKustomizeRunner()
+            k8s_runner = K8sKustomizeRunner(pbar=self.pbar)
             # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
             target_dir = self.get_k8s_target_folder_path()
             k8s_runner.report_mutator_data = self.get_kustomize_metadata()

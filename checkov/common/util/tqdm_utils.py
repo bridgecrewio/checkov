@@ -1,17 +1,17 @@
 import os
 import sys
 
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
-DEFAULT_BAR_FORMAT = '{l_bar}{bar:20}| [{n_fmt}/{total_fmt}] {postfix}'
-SLOW_RUNNER_BAR_FORMAT = '{l_bar}{bar:20}| [{n_fmt}/{total_fmt}] [Slow Runner Warning] {postfix}'
+DEFAULT_BAR_FORMAT = '{l_bar}{bar:20}|[{n_fmt}/{total_fmt}]{postfix}'
+SLOW_RUNNER_BAR_FORMAT = '{l_bar}{bar:20}|[{n_fmt}/{total_fmt}] [Slow Runner Warning] {postfix}'
 
 SLOW_RUNNERS = {'sca_package'}
 LOGS_ENABLED = os.environ.get('LOG_LEVEL', False)
 
 
 class ProgressBar:
-    def __init__(self, framework) -> None:
+    def __init__(self, framework: str) -> None:
         self.pbar = None
         self.is_off = not self.should_show_progress_bar()
         self.framework = framework
@@ -24,8 +24,12 @@ class ProgressBar:
         if self.is_off:
             return
 
-        self.pbar = tqdm(total=total, colour=self.get_progress_bar_color(self.framework),
-                         bar_format=self.get_progress_bar_format(self.framework), desc=f'[ {self.framework} framework ]')
+        if self.pbar is not None:
+            self.pbar.reset(total)
+        else:
+            self.pbar = tqdm(total=total, colour=self.get_progress_bar_color(self.framework),
+                             bar_format=self.get_progress_bar_format(self.framework),
+                             desc=f'[ {self.framework} framework ]')
 
     def update(self, value: int = 1) -> None:
         if self.is_off:
@@ -47,6 +51,9 @@ class ProgressBar:
             return
         self.pbar.set_postfix(data)  # type: ignore
 
+    def turn_off_progress_bar(self) -> None:
+        self.is_off = True
+
     @staticmethod
     def should_show_progress_bar() -> bool:
         if all([not LOGS_ENABLED, sys.__stdout__.isatty()]):
@@ -64,4 +71,3 @@ class ProgressBar:
         if framework in SLOW_RUNNERS:
             return SLOW_RUNNER_BAR_FORMAT
         return DEFAULT_BAR_FORMAT
-

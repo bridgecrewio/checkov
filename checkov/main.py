@@ -143,7 +143,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter

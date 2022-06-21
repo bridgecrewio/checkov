@@ -52,6 +52,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         registry = self.import_registry()
 
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
@@ -81,6 +84,7 @@ class Runner(BaseRunner):
 
         self.pbar.initiate(len(definitions))
         for file_path in definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': str(file_path)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():
