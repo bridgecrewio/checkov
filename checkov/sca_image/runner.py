@@ -157,13 +157,9 @@ class Runner(PackageRunner):
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                self.pbar.initiate(len(f_names))
                 for file in f_names:
-                    self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
-                    self.pbar.update()
-            self.pbar.close()
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
