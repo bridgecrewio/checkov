@@ -113,7 +113,7 @@ class Runner(BaseRunner):
         self.pbar.initiate(len(self.definitions))
 
         # run Python checks
-        self.add_python_check_results(report=report, runner_filter=runner_filter)
+        self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH:
@@ -124,11 +124,11 @@ class Runner(BaseRunner):
     def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
-    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None) -> None:
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
-            self.pbar.set_additional_data({'Current File Scanned': str(file_path)})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             for block_type, registry in Runner.block_type_registries.items():
                 block_type_confs = definition.get(block_type)
                 if block_type_confs:

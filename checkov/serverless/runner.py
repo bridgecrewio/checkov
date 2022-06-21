@@ -91,7 +91,7 @@ class Runner(BaseRunner):
         self.pbar.initiate(len(definitions))
 
         for sls_file, sls_file_data in definitions.items():
-            self.pbar.set_additional_data({'Current File Scanned': sls_file})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(sls_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).

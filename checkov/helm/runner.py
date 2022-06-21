@@ -4,6 +4,7 @@ import io
 import itertools
 import logging
 import os
+import pathlib
 import subprocess  # nosec
 import tempfile
 from typing import Any, Type, Optional, List
@@ -16,12 +17,14 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
+FRAMEWORK = os.path.basename(pathlib.Path(__file__).parent)
 
 
 class K8sHelmRunner(k8_runner):
@@ -29,10 +32,12 @@ class K8sHelmRunner(k8_runner):
                  db_connector: NetworkxConnector = NetworkxConnector(),
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
-                 external_registries: Optional[List[BaseRegistry]] = None) -> None:
-        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
+                 external_registries: Optional[List[BaseRegistry]] = None,
+                 pbar: ProgressBar = None) -> None:
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries, pbar)
         self.check_type = CheckType.HELM
         self.chart_dir_and_meta = []
+        self.pbar = pbar
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
@@ -68,6 +73,7 @@ class Runner(BaseRunner):
         super().__init__()
         self.file_names = ['Chart.yaml']
         self.target_folder_path = ''
+        self.pbar = ProgressBar(FRAMEWORK)
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -219,7 +225,10 @@ class Runner(BaseRunner):
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
-        k8s_runner = K8sHelmRunner()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
+        k8s_runner = K8sHelmRunner(self.pbar)
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
         return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
 

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class Runner(BaseRunner):
     def __init__(self, pbar: ProgressBar = None):
-        self.pbar = pbar
+        self.pbar = pbar if pbar else ProgressBar('')
         super().__init__()
 
     def _load_files(
@@ -84,7 +84,7 @@ class Runner(BaseRunner):
 
         self.pbar.initiate(len(definitions))
         for file_path in definitions.keys():
-            self.pbar.set_additional_data({'Current File Scanned': str(file_path)})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():

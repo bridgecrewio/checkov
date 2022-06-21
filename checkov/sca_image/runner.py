@@ -148,7 +148,7 @@ class Runner(PackageRunner):
         if files:
             self.pbar.initiate(len(files))
             for file in files:
-                self.pbar.set_additional_data({'Current File Scanned': str(file)})
+                self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
@@ -159,7 +159,7 @@ class Runner(PackageRunner):
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 self.pbar.initiate(len(f_names))
                 for file in f_names:
-                    self.pbar.set_additional_data({'Current File Scanned': str(file)})
+                    self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
                     self.pbar.update()

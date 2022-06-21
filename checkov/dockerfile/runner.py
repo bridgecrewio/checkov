@@ -52,7 +52,7 @@ class Runner(BaseRunner):
         definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
         self.pbar.initiate(len(definitions))
         for docker_file_path in definitions.keys():
-            self.pbar.set_additional_data({'Current File Scanned': docker_file_path})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(docker_file_path, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).

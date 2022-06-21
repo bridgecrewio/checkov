@@ -21,9 +21,10 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Scanner:
-    def __init__(self, pbar: ProgressBar = None) -> None:
+    def __init__(self, pbar: ProgressBar = None, root_folder: str | Path | None = None) -> None:
         self._base_url = bc_integration.api_url
         self.pbar = pbar
+        self.root_folder = root_folder
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
@@ -52,7 +53,7 @@ class Scanner:
         return scan_results
 
     async def run_scan(self, input_path: Path) -> dict:
-        self.pbar.set_additional_data({'Current File Scanned': str(input_path)})
+        self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
         logging.info(f"Start to scan package file {input_path}")
 
         request_body = {

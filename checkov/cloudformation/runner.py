@@ -119,9 +119,8 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report):
         for file_abs_path, definition in self.definitions.items():
-            self.pbar.set_additional_data({'Current File Scanned': file_abs_path})
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
-
+            self.pbar.set_additional_data({'Current File Scanned': cf_file})
             if isinstance(definition, dict) and TemplateSections.RESOURCES in definition.keys():
                 for resource_name, resource in definition[TemplateSections.RESOURCES].items():
                     resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)

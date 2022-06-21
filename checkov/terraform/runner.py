@@ -254,7 +254,7 @@ class Runner(BaseRunner):
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.definitions.items():
-            self.pbar.set_additional_data({'Current File Scanned': str(full_file_path)})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
             abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")

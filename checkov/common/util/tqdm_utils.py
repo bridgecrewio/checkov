@@ -1,12 +1,14 @@
 import os
 import sys
 
+from colorama import Fore, Back
 from tqdm import tqdm  # type: ignore
 
-DEFAULT_BAR_FORMAT = '{l_bar}{bar:20}|[{n_fmt}/{total_fmt}]{postfix}'
-SLOW_RUNNER_BAR_FORMAT = '{l_bar}{bar:20}|[{n_fmt}/{total_fmt}] [Slow Runner Warning] {postfix}'
+DEFAULT_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}]{postfix}' % (Fore.WHITE, Fore.RESET)
+SLOW_RUNNER_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}] %s[Slow Runner Warning]%s {postfix}' %\
+                         (Fore.LIGHTBLACK_EX, Fore.RESET, Back.YELLOW, Back.RESET)
 
-SLOW_RUNNERS = {'sca_package'}
+SLOW_RUNNERS = {'sca_package', 'terraform', 'cloudformation', 'helm', 'kubernetes', 'kustomize', 'secrets'}
 LOGS_ENABLED = os.environ.get('LOG_LEVEL', False)
 
 
@@ -18,7 +20,7 @@ class ProgressBar:
 
     def initiate(self, total: int) -> None:
         if total <= 0:
-            tqdm.write(f'{self.framework} framework has 0 files to process, no progress bar to show')
+            # tqdm.write(f'{self.framework} framework has 0 files to process, no progress bar to show')
             self.is_off = True
 
         if self.is_off:
@@ -27,7 +29,7 @@ class ProgressBar:
         if self.pbar is not None:
             self.pbar.reset(total)
         else:
-            self.pbar = tqdm(total=total, colour=self.get_progress_bar_color(self.framework),
+            self.pbar = tqdm(total=total,
                              bar_format=self.get_progress_bar_format(self.framework),
                              desc=f'[ {self.framework} framework ]')
 
@@ -59,12 +61,6 @@ class ProgressBar:
         if all([not LOGS_ENABLED, sys.__stdout__.isatty()]):
             return True
         return False
-
-    @staticmethod
-    def get_progress_bar_color(framework: str) -> str:
-        if framework in SLOW_RUNNERS:
-            return 'white'
-        return 'green'
 
     @staticmethod
     def get_progress_bar_format(framework: str) -> str:

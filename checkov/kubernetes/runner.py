@@ -87,7 +87,7 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report, collect_skip_comments=True):
         for k8_file in self.definitions.keys():
-            self.pbar.set_additional_data({'Current File Scanned': str(k8_file)})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(k8_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
