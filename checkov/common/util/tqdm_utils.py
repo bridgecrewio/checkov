@@ -20,7 +20,6 @@ class ProgressBar:
 
     def initiate(self, total: int) -> None:
         if total <= 0:
-            # tqdm.write(f'{self.framework} framework has 0 files to process, no progress bar to show')
             self.is_off = True
 
         if self.is_off:

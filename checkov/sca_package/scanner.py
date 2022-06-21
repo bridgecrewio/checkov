@@ -40,7 +40,7 @@ class Scanner:
             input_paths: "Iterable[Path]",
     ) -> "Sequence[Dict[str, Any]]":
 
-        if os.getenv("PYCHARM_HOSTED") == "0":
+        if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
