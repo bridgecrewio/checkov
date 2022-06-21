@@ -10,36 +10,6 @@ definition:
       attribute: replication_configuration.rules.*.status
       operator: equals
       value: Enabled
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: replication_configuration.rules.*.status
-      operator: starting_with
-      value: "module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: replication_configuration.rules.*.status
-      operator: starting_with
-      value: "data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: replication_configuration.rules.*.status
-      operator: starting_with
-      value: "var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: replication_configuration.rules.*.status
-      operator: starting_with
-      value: "local."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: replication_configuration.rules.*.status
-      operator: starting_with
-      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -52,40 +22,9 @@ definition:
           connected_resource_types:
             - aws_s3_bucket_replication_configuration
           operator: exists
-        - or:
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: starting_with
-              value: "module."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: starting_with
-              value: "data."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: starting_with
-              value: "var."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: starting_with
-              value: "local."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: starting_with
-              value: "\"${"
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_replication_configuration
-              attribute: rule.*.status
-              operator: equals
-              value: Enabled
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket_replication_configuration
+          attribute: rule.*.status
+          operator: equals
+          value: Enabled
