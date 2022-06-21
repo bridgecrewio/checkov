@@ -59,6 +59,7 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 class Runner(BaseRunner):
     check_type = CheckType.SECRETS
     pbar = ProgressBar(FRAMEWORK)
+    pbar.turn_off_progress_bar()
 
     def run(
             self,
