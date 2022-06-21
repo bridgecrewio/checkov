@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from typing import Optional, List, Set, Union, Sequence, Dict, Any
 
@@ -7,18 +8,22 @@ from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
-    def __init__(self):
+    def __init__(self, pbar: ProgressBar = None):
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
+        self.pbar = pbar if pbar else ProgressBar(FRAMEWORK)
 
     def prepare_and_scan(
             self,
@@ -58,7 +63,7 @@ class Runner(BaseRunner):
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
-        scanner = Scanner()
+        scanner = Scanner(self.pbar)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan(input_paths)
 
@@ -73,6 +78,9 @@ class Runner(BaseRunner):
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)

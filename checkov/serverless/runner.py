@@ -52,6 +52,9 @@ class Runner(BaseRunner):
         self.pbar = ProgressBar(FRAMEWORK)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None

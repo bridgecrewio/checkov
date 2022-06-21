@@ -35,6 +35,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None

@@ -21,9 +21,9 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Scanner:
-    def __init__(self) -> None:
+    def __init__(self, pbar: ProgressBar = None) -> None:
         self._base_url = bc_integration.api_url
-        self.pbar = ProgressBar(FRAMEWORK)
+        self.pbar = pbar
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":

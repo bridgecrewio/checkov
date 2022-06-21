@@ -18,16 +18,20 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
+from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.dockerfile.utils import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
+
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE
 
     def __init__(self) -> None:
-        super().__init__()
+        self.pbar = ProgressBar(FRAMEWORK)
+        super().__init__(pbar=self.pbar)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
@@ -125,6 +129,9 @@ class Runner(PackageRunner):
             collect_skip_comments: bool = True,
             **kwargs: str
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
@@ -139,17 +146,24 @@ class Runner(PackageRunner):
             logging.debug("No resources to scan.")
             return report
         if files:
+            self.pbar.initiate(len(files))
             for file in files:
+                self.pbar.set_additional_data({'Current File Scanned': str(file)})
                 self.iterate_image_files(file, report, runner_filter)
+                self.pbar.update()
+            self.pbar.close()
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                self.pbar.initiate(len(f_names))
                 for file in f_names:
+                    self.pbar.set_additional_data({'Current File Scanned': str(file)})
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
-
+                    self.pbar.update()
+            self.pbar.close()
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
