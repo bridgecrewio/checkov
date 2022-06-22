@@ -47,3 +47,4 @@ class Operators:
     OR = 'or'
     JSONPATH_EQUALS = 'jsonpath_equals'
     JSONPATH_EXISTS = 'jsonpath_exists'
+    JSONPATH_NOT_EXISTS = 'jsonpath_not_exists'
