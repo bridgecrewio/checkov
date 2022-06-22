@@ -20,7 +20,6 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -42,12 +41,10 @@ from checkov.terraform.tag_providers import get_resource_tags
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.TERRAFORM
-    pbar = ProgressBar(FRAMEWORK)
 
     def __init__(
         self,

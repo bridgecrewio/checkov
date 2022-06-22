@@ -1,12 +1,10 @@
 import logging
 import os
-from pathlib import Path
 from typing import List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -41,15 +39,12 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
-FRAMEWORK = os.path.basename(Path(__file__).parent)
-
 
 class Runner(BaseRunner):
     check_type = CheckType.SERVERLESS
 
     def __init__(self):
         super().__init__(file_names=SLS_FILE_MASK)
-        self.pbar = ProgressBar(FRAMEWORK)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         if not runner_filter.show_progress_bar:

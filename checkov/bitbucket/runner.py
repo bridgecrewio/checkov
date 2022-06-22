@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 from checkov.bitbucket.dal import Bitbucket
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
@@ -12,10 +11,9 @@ FRAMEWORK = os.path.basename(Path(__file__).parent)
 class Runner(JsonRunner):
     check_type = "bitbucket_configuration"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.bitbucket = Bitbucket()
-        self.pbar = ProgressBar(FRAMEWORK)
-        super().__init__(self.pbar)
+        super().__init__()
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):

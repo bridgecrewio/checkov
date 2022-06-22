@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-from pathlib import Path
 from typing import Optional, List, Type
 
 from checkov.cloudformation import cfn_utils
@@ -25,15 +24,11 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
-
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
-    pbar = ProgressBar(FRAMEWORK)
 
     def __init__(
         self,

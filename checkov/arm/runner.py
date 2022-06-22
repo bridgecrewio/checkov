@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
@@ -9,20 +8,17 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
 
 ARM_POSSIBLE_ENDINGS = [".json"]
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.ARM
-    pbar = ProgressBar(FRAMEWORK)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
 
     def run(

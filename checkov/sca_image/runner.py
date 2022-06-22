@@ -18,20 +18,16 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.dockerfile.utils import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
-
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE
 
     def __init__(self) -> None:
-        self.pbar = ProgressBar(FRAMEWORK)
-        super().__init__(pbar=self.pbar)
+        super().__init__()
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"

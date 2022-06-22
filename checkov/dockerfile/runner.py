@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
@@ -8,18 +7,14 @@ from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.dockerfile.utils import is_docker_file
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
-FRAMEWORK = os.path.basename(Path(__file__).parent)
-
 
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
-    pbar = ProgressBar(FRAMEWORK)
 
     def should_scan_file(self, filename: str) -> bool:
         return is_docker_file(os.path.basename(filename))

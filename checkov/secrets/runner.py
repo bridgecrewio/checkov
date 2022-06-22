@@ -3,7 +3,6 @@ import linecache
 import logging
 import os
 import re
-from pathlib import Path
 from typing import Optional, List
 
 from detect_secrets import SecretsCollection
@@ -24,7 +23,6 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 
 SECRET_TYPE_TO_ID = {
@@ -53,13 +51,10 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Runner(BaseRunner):
     check_type = CheckType.SECRETS
-    pbar = ProgressBar(FRAMEWORK)
-    pbar.turn_off_progress_bar()
 
     def run(
             self,

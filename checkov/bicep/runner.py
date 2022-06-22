@@ -26,7 +26,6 @@ from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.suppression import collect_suppressions_for_report
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -35,12 +34,9 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager
 
-FRAMEWORK = os.path.basename(Path(__file__).parent)
-
 
 class Runner(BaseRunner):
     check_type = CheckType.BICEP
-    pbar = ProgressBar(FRAMEWORK)
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
         "parameters": param_registry,
         "resources": resource_registry,
