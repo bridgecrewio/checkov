@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 import jmespath
 
 from checkov.bitbucket_pipelines.registry import registry
