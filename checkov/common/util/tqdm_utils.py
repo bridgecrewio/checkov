@@ -11,7 +11,7 @@ SLOW_RUNNER_BAR_FORMAT = '{l_bar}%s{bar:20}%s|[{n_fmt}/{total_fmt}] %s[Slow Runn
                          (Fore.LIGHTBLACK_EX, Fore.RESET, Back.YELLOW, Back.RESET)
 
 SLOW_RUNNERS = {'sca_package', 'terraform', 'cloudformation', 'helm', 'kubernetes', 'kustomize', 'secrets'}
-LOGS_ENABLED = os.environ.get('LOG_LEVEL', False)
+LOGS_ENABLED = os.getenv('LOG_LEVEL', False)
 
 
 class ProgressBar:
@@ -37,22 +37,34 @@ class ProgressBar:
     def update(self, value: int = 1) -> None:
         if self.is_off:
             return
-        self.pbar.update(value)  # type: ignore
+        if not self.pbar:
+            raise AttributeError('Progress bar was not initiated, cannot update')
+
+        self.pbar.update(value)
 
     def set_description(self, desc: str) -> None:
         if self.is_off:
             return
-        self.pbar.set_description(desc=desc)  # type: ignore
+        if not self.pbar:
+            raise AttributeError('Progress bar was not initiated, cannot set description')
+
+        self.pbar.set_description(desc=desc)
 
     def close(self) -> None:
         if self.is_off:
             return
-        self.pbar.close()  # type: ignore
+        if not self.pbar:
+            raise AttributeError('Progress bar was not initiated, cannot close')
+
+        self.pbar.close()
 
     def set_additional_data(self, data: dict[str, str]) -> None:
         if self.is_off:
             return
-        self.pbar.set_postfix(data)  # type: ignore
+        if not self.pbar:
+            raise AttributeError('Progress bar was not initiated, cannot set additional data')
+
+        self.pbar.set_postfix(data)
 
     def turn_off_progress_bar(self) -> None:
         self.is_off = True

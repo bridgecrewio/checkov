@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 
-from tqdm import tqdm
-
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.record import Record

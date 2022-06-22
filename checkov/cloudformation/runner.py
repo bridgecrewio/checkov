@@ -6,8 +6,6 @@ import os
 from pathlib import Path
 from typing import Optional, List, Type
 
-from tqdm import tqdm
-
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry

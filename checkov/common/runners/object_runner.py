@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class Runner(BaseRunner):
     def __init__(self, pbar: ProgressBar | None = None):
-        self.pbar = pbar if pbar else ProgressBar('')
+        self.pbar = pbar or ProgressBar('')
         super().__init__()
 
     def _load_files(
