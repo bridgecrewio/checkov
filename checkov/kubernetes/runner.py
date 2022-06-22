@@ -14,17 +14,16 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
-from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.kubernetes_utils import create_definitions, build_definitions_context, get_skipped_checks, get_resource_id
 from checkov.runner_filter import RunnerFilter
 
-FRAMEWORK = os.path.basename(Path(__file__).parent)
-
 
 class Runner(BaseRunner):
+    check_type = CheckType.KUBERNETES
+
     def __init__(
         self,
         graph_class: Type[LocalGraph] = KubernetesLocalGraph,
@@ -32,11 +31,9 @@ class Runner(BaseRunner):
         source: str = "Kubernetes",
         graph_manager: Optional[GraphManager] = None,
         external_registries: Optional[List[BaseRegistry]] = None,
-        pbar: ProgressBar = ProgressBar(FRAMEWORK),
     ) -> None:
         super().__init__(file_extensions=['.yml', '.yaml'])
         self.external_registries = [] if external_registries is None else external_registries
-        self.check_type = CheckType.KUBERNETES
         self.graph_class = graph_class
         self.graph_manager = \
             graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
@@ -44,7 +41,6 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
         self.report_mutator_data = None
-        self.pbar = pbar
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
         if not runner_filter.show_progress_bar:
