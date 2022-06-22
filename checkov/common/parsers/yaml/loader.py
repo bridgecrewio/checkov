@@ -24,13 +24,14 @@ def loads(content: str) -> list[dict[str, Any]]:
     return template
 
 
-def load(filename: str | Path) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
+def load(filename: str | Path, content: str | None = None) -> tuple[list[dict[str, Any]], list[tuple[int, str]]]:
     """
     Load the given YAML file
     """
 
-    file_path = filename if isinstance(filename, Path) else Path(filename)
-    content = file_path.read_text()
+    if not content:
+        file_path = filename if isinstance(filename, Path) else Path(filename)
+        content = file_path.read_text()
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 

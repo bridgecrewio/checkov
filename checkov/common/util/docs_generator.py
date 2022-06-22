@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
 
+from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
@@ -117,6 +118,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_pipelines")):
         add_from_repository(bitbucket_pipelines_registry, "bitbucket_pipelines", "bitbucket_pipelines")
+    if any(x in framework_list for x in ("all", "argo_workflows")):
+        add_from_repository(argo_workflows_registry, "argo_workflows", "Argo Workflows")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")

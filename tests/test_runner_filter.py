@@ -17,6 +17,7 @@ from checkov.runner_filter import RunnerFilter
             ["all"],
             ["terraform", "secrets"],
             {
+                "argo_workflows",
                 "arm",
                 "bicep",
                 "cloudformation",
