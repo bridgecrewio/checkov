@@ -1,3 +1,4 @@
+import pathlib
 from pathlib import Path
 
 from mock.mock import MagicMock
@@ -119,6 +120,22 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
     assert real_result is not None
     assert runner._check_class == 'mock.mock.MagicMock'
     assert runner._code_repo_path == EXAMPLES_DIR
+
+
+def test_is_supported_package_file_valid_go_sum_():
+    assert Runner.is_supported_package_file(file_path=pathlib.Path("/tmp/go.sum"), excluded_paths={".external_modules"})
+
+
+def test_is_supported_package_file_valid_go_sum_with_empty_excluded_paths():
+    assert Runner.is_supported_package_file(file_path=pathlib.Path("/tmp/go.sum"), excluded_paths=set())
+
+
+def test_is_supported_package_file_invalid_go_sum():
+    assert not Runner.is_supported_package_file(file_path=pathlib.Path("/tmp/go.sum1"), excluded_paths=set())
+
+
+def test_is_supported_package_file_valid_go_sum_in_excluded_path():
+    assert not Runner.is_supported_package_file(pathlib.Path("/tmp/.external_modules/go.sum"), excluded_paths={".external_modules"})
 
 
 def test_find_scannable_files():

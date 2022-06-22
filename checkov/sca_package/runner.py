@@ -120,6 +120,10 @@ class Runner(BaseRunner):
             report.add_resource(record.resource)
             report.add_record(record)
 
+    @staticmethod
+    def is_supported_package_file(file_path: Path, excluded_paths: Set[str]):
+        return file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
+
     def find_scannable_files(
             self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
             exclude_package_json: bool = True,
@@ -130,7 +134,7 @@ class Runner(BaseRunner):
             input_paths = {
                 file_path
                 for file_path in root_path.glob("**/*")
-                if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
+                if self.is_supported_package_file(file_path, excluded_paths)
             }
 
             package_lock_parent_paths = set()
