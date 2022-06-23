@@ -12,7 +12,6 @@ SLOW_RUNNER_BAR_FORMAT = f'{{l_bar}}{Fore.LIGHTBLACK_EX}{{bar:20}}{Fore.RESET}|[
                          f' {Back.YELLOW}[Slow Runner Warning]{Back.RESET}{{postfix}}'
 SLOW_RUNNERS = {CheckType.SCA_PACKAGE, CheckType.TERRAFORM, CheckType.CLOUDFORMATION, CheckType.HELM,
                 CheckType.KUBERNETES, CheckType.KUSTOMIZE, CheckType.SECRETS}
-DISABLED_PROGRESS_BARS = {CheckType.SECRETS}
 LOGS_ENABLED = os.getenv('LOG_LEVEL', False)
 
 
@@ -71,8 +70,9 @@ class ProgressBar:
     def turn_off_progress_bar(self) -> None:
         self.is_off = True
 
-    def should_show_progress_bar(self) -> bool:
-        if all([not LOGS_ENABLED, sys.__stdout__.isatty(), self.framework not in DISABLED_PROGRESS_BARS]):
+    @staticmethod
+    def should_show_progress_bar() -> bool:
+        if all([not LOGS_ENABLED, sys.__stdout__.isatty()]):
             return True
         return False
 

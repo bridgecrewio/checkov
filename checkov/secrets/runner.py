@@ -133,7 +133,9 @@ class Runner(BaseRunner):
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            self._scan_files(files_to_scan, secrets)
+            self.pbar.initiate(len(files_to_scan))
+            self._scan_files(files_to_scan, secrets, self.pbar)
+            self.pbar.close()
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -174,17 +176,17 @@ class Runner(BaseRunner):
 
             return report
 
-    def _scan_files(self, files_to_scan, secrets):
+    @staticmethod
+    def _scan_files(files_to_scan, secrets, pbar):
         # implemented the scan function like secrets.scan_files
-        def _safe_scan(f, pbar):
+        def _safe_scan(f, secrets):
             full_file_path = os.path.join(secrets.root, f)
             file_size = os.path.getsize(full_file_path)
-            pbar.set_additional_data({'Current File Scanned': str(f)})
             if file_size > MAX_FILE_SIZE > 0:
                 logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
                              f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
                              f'to 0 or {file_size + 1}')
-                return list()
+                return f, list()
             try:
                 start_time = datetime.datetime.now()
                 file_results = list(scan.scan_file(full_file_path))
@@ -192,21 +194,21 @@ class Runner(BaseRunner):
                 run_time = end_time - start_time
                 if run_time > datetime.timedelta(seconds=10):
                     logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
-                pbar.update()
-                return file_results
+                return f, file_results
             except Exception:
                 logging.warning(f"Secret scanning:could not process file {f}")
                 logging.debug("Complete trace:", exc_info=True)
-                return list()
+                return f, list()
 
-        self.pbar.initiate(len(files_to_scan))
         results = parallel_runner.run_function(
-            func=lambda f: list(_safe_scan(f, self.pbar)), items=files_to_scan,
+            func=lambda f: list((_safe_scan(f, secrets))), items=files_to_scan,
             run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true")
-        self.pbar.close()
-        for secrets_results in results:
+
+        for filename, secrets_results in results:
+            pbar.set_additional_data({'Current File Scanned': str(filename)})
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
+            pbar.update()
 
     @staticmethod
     def search_for_suppression(
