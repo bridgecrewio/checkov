@@ -3,15 +3,10 @@ from __future__ import annotations
 import os
 import sys
 
-from checkov.common.output.report import CheckType
-from colorama import Fore, Back
+from colorama import Fore
 from tqdm import tqdm  # type: ignore
 
 DEFAULT_BAR_FORMAT = f'{{l_bar}}{Fore.WHITE}{{bar:20}}{Fore.RESET}|[{{n_fmt}}/{{total_fmt}}]{{postfix}}'
-SLOW_RUNNER_BAR_FORMAT = f'{{l_bar}}{Fore.LIGHTBLACK_EX}{{bar:20}}{Fore.RESET}|[{{n_fmt}}/{{total_fmt}}]' \
-                         f' {Back.YELLOW}[Slow Runner Warning]{Back.RESET}{{postfix}}'
-SLOW_RUNNERS = {CheckType.SCA_PACKAGE, CheckType.TERRAFORM, CheckType.CLOUDFORMATION, CheckType.HELM,
-                CheckType.KUBERNETES, CheckType.KUSTOMIZE, CheckType.SECRETS}
 LOGS_ENABLED = os.getenv('LOG_LEVEL', False)
 
 
@@ -32,7 +27,7 @@ class ProgressBar:
             self.pbar.reset(total)
         else:
             self.pbar = tqdm(total=total,
-                             bar_format=self.get_progress_bar_format(self.framework),
+                             bar_format=DEFAULT_BAR_FORMAT,
                              desc=f'[ {self.framework} framework ]')
 
     def update(self, value: int = 1) -> None:
@@ -75,9 +70,3 @@ class ProgressBar:
         if all([not LOGS_ENABLED, sys.__stdout__.isatty()]):
             return True
         return False
-
-    @staticmethod
-    def get_progress_bar_format(framework: str) -> str:
-        if framework in SLOW_RUNNERS:
-            return SLOW_RUNNER_BAR_FORMAT
-        return DEFAULT_BAR_FORMAT
