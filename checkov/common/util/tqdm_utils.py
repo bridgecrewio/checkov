@@ -6,8 +6,11 @@ import sys
 from colorama import Fore
 from tqdm import tqdm  # type: ignore
 
+from checkov.common.util.type_forcers import convert_str_to_bool
+
 DEFAULT_BAR_FORMAT = f'{{l_bar}}{Fore.WHITE}{{bar:20}}{Fore.RESET}|[{{n_fmt}}/{{total_fmt}}]{{postfix}}'
 LOGS_ENABLED = os.getenv('LOG_LEVEL', False)
+RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", "False"))
 
 
 class ProgressBar:
@@ -67,6 +70,6 @@ class ProgressBar:
 
     @staticmethod
     def should_show_progress_bar() -> bool:
-        if all([not LOGS_ENABLED, sys.__stdout__.isatty()]):
+        if all([not LOGS_ENABLED, not RUN_IN_DOCKER, sys.__stdout__.isatty()]):
             return True
         return False
