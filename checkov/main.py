@@ -149,6 +149,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
+        runner_registry.filter_runner_framework()
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
