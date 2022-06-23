@@ -48,6 +48,8 @@ class SecurityRequirement(BaseOpenapiCheckV2):
 
     def is_requirements_defined(self, security: list[dict[str, Any]], security_definitions: dict[str, Any]) -> bool:
         for scheme in security:
+            if not isinstance(scheme, dict):
+                return False
             for scheme_type, _ in scheme.items():
                 if scheme_type not in security_definitions:
                     return False
