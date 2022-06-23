@@ -19,5 +19,6 @@ ignore_templates:
   - tests/cloudformation/checks/resource/*
   - tests/cloudformation/checks/resource/aws/example_IAMStarActionPolicyDocument/cfn_bad_iam_pass.yaml
   - tests/cloudformation/checks/resource/aws/example_IAMRoleAllowAssumeFromAccount/UNKNOWN.yml
+  - tests/cloudformation/checks/resource/aws/example_cloudfrontDistribution/CloudfrontDistributionEncryption-UNKNOWN.yaml
 ignore_checks:
   - W
