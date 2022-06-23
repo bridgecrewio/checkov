@@ -186,7 +186,7 @@ class Runner(BaseRunner):
                 logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
                              f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
                              f'to 0 or {file_size + 1}')
-                return f, list()
+                return os.path.relpath(f, secrets.root), list()
             try:
                 start_time = datetime.datetime.now()
                 file_results = list(scan.scan_file(full_file_path))
@@ -194,11 +194,11 @@ class Runner(BaseRunner):
                 run_time = end_time - start_time
                 if run_time > datetime.timedelta(seconds=10):
                     logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
-                return f, file_results
+                return os.path.relpath(f, secrets.root), file_results
             except Exception:
                 logging.warning(f"Secret scanning:could not process file {f}")
                 logging.debug("Complete trace:", exc_info=True)
-                return f, list()
+                return os.path.relpath(f, secrets.root), list()
 
         results = parallel_runner.run_function(
             func=lambda f: list((_safe_scan(f, secrets))), items=files_to_scan,
