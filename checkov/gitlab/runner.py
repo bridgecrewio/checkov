@@ -13,6 +13,9 @@ class Runner(JsonRunner):
 
     def run(self, root_folder=None, external_checks_dir=None, files=None,
             runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.prepare_data()
 
         report = super().run(root_folder=self.gitlab.gitlab_conf_dir_path, external_checks_dir=external_checks_dir,

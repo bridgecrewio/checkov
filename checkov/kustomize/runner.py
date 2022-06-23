@@ -31,9 +31,11 @@ class K8sKustomizeRunner(K8sRunner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
+
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.report_mutator_data = {}
         self.check_type = CheckType.KUSTOMIZE
+        self.pbar.turn_off_progress_bar()
 
     def set_external_data(self,
                           definitions: Optional[Dict[str, Dict[str, Any]]],
@@ -409,6 +411,9 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
         try:

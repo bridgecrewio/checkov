@@ -15,7 +15,7 @@ from checkov.sca_package.scanner import Scanner
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
@@ -58,7 +58,7 @@ class Runner(BaseRunner):
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
-        scanner = Scanner()
+        scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan(input_paths)
 
@@ -73,6 +73,9 @@ class Runner(BaseRunner):
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)

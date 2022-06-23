@@ -3,8 +3,13 @@ from checkov.common.output.report import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+
+
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.GITLAB_CI
+
+    def __init__(self):
+        super().__init__()
 
     def require_external_checks(self):
         return False

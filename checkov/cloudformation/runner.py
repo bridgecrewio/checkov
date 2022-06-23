@@ -57,6 +57,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
 
@@ -95,6 +98,8 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        self.pbar.initiate(len(self.definitions))
+
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
@@ -107,9 +112,8 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report):
         for file_abs_path, definition in self.definitions.items():
-
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
-
+            self.pbar.set_additional_data({'Current File Scanned': cf_file})
             if isinstance(definition, dict) and TemplateSections.RESOURCES in definition.keys():
                 for resource_name, resource in definition[TemplateSections.RESOURCES].items():
                     resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)
@@ -149,6 +153,8 @@ class Runner(BaseRunner):
                                         record = GraphRecord(record, breadcrumb)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+            self.pbar.update()
+        self.pbar.close()
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)

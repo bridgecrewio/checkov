@@ -20,6 +20,9 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
+    def __init__(self) -> None:
+        super().__init__()
+
     def _load_files(
         self,
         files_to_load: list[str],
@@ -45,8 +48,11 @@ class Runner(BaseRunner):
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
         runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
+        collect_skip_comments: bool = True
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         registry = self.import_registry()
 
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
@@ -74,7 +80,9 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
                 self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
 
+        self.pbar.initiate(len(definitions))
         for file_path in definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():
@@ -106,7 +114,8 @@ class Runner(BaseRunner):
                     severity=check.severity,
                 )
                 report.add_record(record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
     def included_paths(self) -> Iterable[str]:

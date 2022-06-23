@@ -18,7 +18,7 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 class Runner(BaseRunner):
     check_type = CheckType.ARM
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
 
     def run(
@@ -29,6 +29,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None
@@ -55,8 +58,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for arm_file in definitions.keys():
+        self.pbar.initiate(len(definitions))
 
+        for arm_file in definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(arm_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -136,7 +141,8 @@ class Runner(BaseRunner):
                                                 severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 

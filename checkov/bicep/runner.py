@@ -37,7 +37,6 @@ if TYPE_CHECKING:
 
 class Runner(BaseRunner):
     check_type = CheckType.BICEP
-
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
         "parameters": param_registry,
         "resources": resource_registry,
@@ -72,6 +71,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(Runner.check_type)
         self.root_folder = root_folder
 
@@ -104,8 +106,10 @@ class Runner(BaseRunner):
                     vertices=local_graph.vertices, root_folder=root_folder
                 )
 
+        self.pbar.initiate(len(self.definitions))
+
         # run Python checks
-        self.add_python_check_results(report=report, runner_filter=runner_filter)
+        self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH:
@@ -116,10 +120,11 @@ class Runner(BaseRunner):
     def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
-    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None) -> None:
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             for block_type, registry in Runner.block_type_registries.items():
                 block_type_confs = definition.get(block_type)
                 if block_type_confs:
@@ -166,6 +171,8 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+            self.pbar.update()
+        self.pbar.close()
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
         return f"/{os.path.relpath(path, self.root_folder)}"
