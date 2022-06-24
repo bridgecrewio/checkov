@@ -29,6 +29,7 @@ from checkov.common.checks_infra.solvers import (
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
+    JsonpathNotEqualsAttributeSolver,
     JsonpathExistsAttributeSolver,
     JsonpathNotExistsAttributeSolver,
     SubsetAttributeSolver,
@@ -71,6 +72,7 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
+    "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
     "jsonpath_exists": JsonpathExistsAttributeSolver,
     "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
 }
