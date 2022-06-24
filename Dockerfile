@@ -1,5 +1,7 @@
 FROM python:3.10-alpine
 
+ENV RUN_IN_DOCKER=True
+
 RUN apk add --no-cache git util-linux bash openssl curl
 
 RUN apk add --no-cache --virtual .build_deps build-base libffi-dev \
