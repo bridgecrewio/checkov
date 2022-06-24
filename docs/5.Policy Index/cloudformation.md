@@ -159,7 +159,9 @@ nav_order: 1
 | 148 | CKV_AWS_195 | resource | AWS::Glue::DevEndpoint                    | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 149 | CKV_AWS_195 | resource | AWS::Glue::Job                            | Ensure Glue component has a security configuration associated                                                                                                                                            | Cloudformation |
 | 150 | CKV_AWS_258 | resource | AWS::Lambda::Url                          | Ensure that Lambda function URLs AuthType is not None                                                                                                                                                    | Cloudformation |
-| 151 | CKV2_AWS_33 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync is protected by WAF                                                                                                                                                                       | Cloudformation |
+| 151 | CKV_AWS_260 | resource | AWS::EC2::SecurityGroup                   | Ensure no security groups allow ingress from 0.0.0.0:0 to port 80                                                                                                                                        | Cloudformation |
+| 152 | CKV_AWS_260 | resource | AWS::EC2::SecurityGroupIngress            | Ensure no security groups allow ingress from 0.0.0.0:0 to port 80                                                                                                                                        | Cloudformation |
+| 153 | CKV2_AWS_33 | resource | AWS::AppSync::GraphQLApi                  | Ensure AppSync is protected by WAF                                                                                                                                                                       | Cloudformation |
 
 
 ---
