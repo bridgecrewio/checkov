@@ -16,6 +16,7 @@ ignore_templates:
   - tests/cloudformation/checks/resource/aws/example_SecurityGroupRuleDescription/*
   - tests/cloudformation/checks/resource/aws/example_SecurityGroupRuleDescription
   - tests/cloudformation/checks/resource/aws/example_SecurityGroupUnrestrictedIngress22/SecurityGroupUnrestrictedIngress22-UNKNOWN.yaml
+  - tests/cloudformation/checks/resource/aws/example_SecurityGroupUnrestrictedIngress80/SecurityGroupUnrestrictedIngress80-UNKNOWN.yaml
   - tests/cloudformation/checks/resource/*
   - tests/cloudformation/checks/resource/aws/example_IAMStarActionPolicyDocument/cfn_bad_iam_pass.yaml
   - tests/cloudformation/checks/resource/aws/example_IAMRoleAllowAssumeFromAccount/UNKNOWN.yml
