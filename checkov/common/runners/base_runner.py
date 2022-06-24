@@ -8,8 +8,10 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any, TYPE_CHECKING
 
+from checkov.common.util.tqdm_utils import ProgressBar
+
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -53,6 +55,7 @@ class BaseRunner(ABC):
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
+        self.pbar = ProgressBar(self.check_type)
 
     @abstractmethod
     def run(

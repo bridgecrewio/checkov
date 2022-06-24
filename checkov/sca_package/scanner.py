@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import logging
@@ -13,19 +15,26 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
 from checkov.common.util.http_utils import request_wrapper
 
+from checkov.common.util.tqdm_utils import ProgressBar
+
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
+FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Scanner:
-    def __init__(self) -> None:
+    def __init__(self, pbar: ProgressBar = None, root_folder: str | Path | None = None) -> None:
         self._base_url = bc_integration.api_url
+        self.pbar = pbar
+        self.root_folder = root_folder
 
     def scan(self, input_paths: "Iterable[Path]") \
             -> "Sequence[Dict[str, Any]]":
+        self.pbar.initiate(len(input_paths))  # type: ignore
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
         )
+        self.pbar.close()
         return scan_results
 
     async def run_scan_multi(
@@ -46,6 +55,7 @@ class Scanner:
         return scan_results
 
     async def run_scan(self, input_path: Path) -> dict:
+        self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
         logging.info(f"Start to scan package file {input_path}")
 
         request_body = {
@@ -98,4 +108,5 @@ class Scanner:
     def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
+        self.pbar.update()
         return raw_result

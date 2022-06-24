@@ -30,9 +30,10 @@ class K8sHelmRunner(k8_runner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
-        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.check_type = CheckType.HELM
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta = []
+        self.pbar.turn_off_progress_bar()
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
@@ -156,24 +157,26 @@ class Runner(BaseRunner):
             processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
             target_dir = chart_dir.replace(root_folder, f'{self.target_folder_path}/')
             target_dir.replace("//", "/")
+            chart_name = chart_meta.get('name', chart_meta.get('Name'))
+            chart_version = chart_meta.get('version', chart_meta.get('Version'))
             if target_dir.endswith('/'):
                 target_dir = target_dir[:-1]
-            if target_dir.endswith(chart_meta["name"]):
-                target_dir = target_dir[:-len(chart_meta["name"])]
+            if target_dir.endswith(chart_name):
+                target_dir = target_dir[:-len(chart_name)]
             logging.info(
-                f"Processing chart found at: {chart_dir}, name: {chart_meta['name']}, version: {chart_meta['version']}")
+                f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
             # dependency list is nicer to parse than dependency update.
             helm_binary_list_chart_deps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = helm_binary_list_chart_deps.communicate()
             logging.debug(
-                f"Ran helm command to get dependency output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+                f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
             if e:
                 if "Warning: Dependencies" in str(e, 'utf-8'):
                     logging.info(
-                        f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                        f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
                 else:
                     logging.info(
-                        f"Error processing helm dependancies for {chart_meta['name']} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                        f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
             helm_command_args = [self.helm_command, 'template', '--dependency-update', chart_dir]
             if runner_filter.var_files:
@@ -186,11 +189,11 @@ class Runner(BaseRunner):
                 proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 logging.debug(
-                    f"Ran helm command to template chart output. Chart: {chart_meta['name']}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+                    f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
 
             except Exception:
                 logging.info(
-                    f"Error processing helm chart {chart_meta['name']} at dir: {chart_dir}. Working dir: {target_dir}.",
+                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
                     exc_info=True,
                 )
 
@@ -199,6 +202,9 @@ class Runner(BaseRunner):
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
         return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)

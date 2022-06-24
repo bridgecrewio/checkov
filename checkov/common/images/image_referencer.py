@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import cast
+from collections.abc import Iterable
+from typing import cast, Any
 
 import docker
 
@@ -23,6 +24,18 @@ class Image:
         self.name = name
         self.file_path = file_path
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+
+        return False
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.file_path, self.name, self.image_id, self.start_line, self.end_line))
+
 
 class ImageReferencer:
     @abstractmethod
@@ -36,7 +49,7 @@ class ImageReferencer:
         return False
 
     @abstractmethod
-    def get_images(self, file_path: str) -> list[Image]:
+    def get_images(self, file_path: str) -> Iterable[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected

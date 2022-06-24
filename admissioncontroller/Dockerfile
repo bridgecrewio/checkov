@@ -1,6 +1,8 @@
 # This dockerfile is built from the parent dir, hence the addition of `admissioncontroller/` everywhere
 FROM python:3.9.7-slim
 
+ENV RUN_IN_DOCKER=True
+
 RUN apt-get update -y && apt-get install -y python3-pip python-dev
 WORKDIR /app
 COPY admissioncontroller/requirements.txt /app/requirements.txt

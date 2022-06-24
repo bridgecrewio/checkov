@@ -31,6 +31,7 @@ init(autoreset=True)
 @dataclass
 class CheckType:
     BITBUCKET_PIPELINES = "bitbucket_pipelines"
+    ARGO_WORKFLOWS = "argo_workflows"
     ARM = "arm"
     BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"
@@ -398,14 +399,18 @@ class Report:
                     record.guideline,
                 ]
             )
-        output_data = tabulate(
-            result,
-            headers=["check_id", "file", "resource", "check_name", "guideline"],
-            tablefmt="github",
-            showindex=True,
-        ) + "\n\n---\n\n"
-        print(output_data)
-        return output_data
+        if result:
+            table = tabulate(
+                result,
+                headers=["check_id", "file", "resource", "check_name", "guideline"],
+                tablefmt="github",
+                showindex=True,
+            )
+            output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
+            print(output_data)
+            return output_data
+        else:
+            return "\n\n---\n\n"
 
     def get_test_suite(self, properties: Optional[Dict[str, Any]] = None, use_bc_ids: bool = False) -> TestSuite:
         """Creates a test suite for the JUnit XML report"""

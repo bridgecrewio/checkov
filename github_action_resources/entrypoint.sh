@@ -17,7 +17,6 @@ export BC_SOURCE=githubActions
 
 # Actions pass inputs as $INPUT_<input name> environment variables
 #
-[[ -n "$INPUT_CHECK" ]] && CHECK_FLAG="--check $INPUT_CHECK"
 [[ -n "$INPUT_SKIP_CHECK" ]] && SKIP_CHECK_FLAG="--skip-check $INPUT_SKIP_CHECK"
 [[ -n "$INPUT_FRAMEWORK" ]] && FRAMEWORK_FLAG="--framework $INPUT_FRAMEWORK"
 [[ -n "$INPUT_OUTPUT_FORMAT" ]] && OUTPUT_FLAG="--output $INPUT_OUTPUT_FORMAT"
@@ -54,6 +53,15 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_DIRS" ]; then
   for d in "${extchecks_dir[@]}"
   do
     EXTCHECK_DIRS_FLAG="$EXTCHECK_DIRS_FLAG --external-checks-dir $d"
+  done
+fi
+
+CHECK_FLAG=""
+if [ -n "$INPUT_CHECK" ]; then
+  IFS=', ' read -r -a checks <<< "$INPUT_CHECK"
+  for d in "${checks[@]}"
+  do
+    CHECK_FLAG="$CHECK_FLAG --check $d"
   done
 fi
 

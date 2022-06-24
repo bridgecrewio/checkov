@@ -26,6 +26,9 @@ class Runner(JsonRunner):
         collect_skip_comments: bool = True
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.prepare_data()
 
         report = super().run(root_folder=self.bitbucket.bitbucket_conf_dir_path, external_checks_dir=external_checks_dir,

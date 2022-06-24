@@ -29,10 +29,11 @@ from checkov.common.checks_infra.solvers import (
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
-    JsonpathExistsAttributeSolver
+    JsonpathExistsAttributeSolver,
+    JsonpathNotExistsAttributeSolver,
+    SubsetAttributeSolver,
+    NotSubsetAttributeSolver
 )
-from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -70,7 +71,8 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
-    "jsonpath_exists": JsonpathExistsAttributeSolver
+    "jsonpath_exists": JsonpathExistsAttributeSolver,
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {

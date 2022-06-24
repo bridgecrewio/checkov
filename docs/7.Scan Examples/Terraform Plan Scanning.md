@@ -43,6 +43,17 @@ Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 		228 |                 "arn": "arn:aws:s3:::mybucket",
 ```
 
+### Ignored checks
+
+Since the Terraform checks are used for both normal templates and plan files, some of those are not applicable for a plan file.
+They evaluate the `lifecycle` block, which is only relevant for the CLI and are not stored in the plan file itself.
+
+Following checks will be ignored;
+- CKV_AWS_217 
+- CKV_AWS_233
+- CKV_AWS_237 
+- CKV_GCP_82
+
 ## Scanning Third-Party Terraform Modules
 Third-party Terraform modules often reduce complexity for deploying services made up of many objects.
 

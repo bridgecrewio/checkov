@@ -1,0 +1,38 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cronjob-securityContext-passed
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: "test-job0"
+              image: "nginx:alpine"
+              imagePullPolicy: Always
+              resources:
+                requests:
+                  cpu: 100m
+                  ephemeral-storage: 1Mi
+                  memory: 512Mi
+                limits:
+                  cpu: 100m
+                  ephemeral-storage: 10Gi
+                  memory: 512Mi
+              securityContext:
+                privileged: false
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - all
+          restartPolicy: OnFailure

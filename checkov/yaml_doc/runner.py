@@ -23,10 +23,9 @@ class Runner(ObjectRunner):
         return registry
 
     def _parse_file(
-        self, f: str
+        self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = parse(f)
-        return content
+        return parse(f, file_content)
 
     def get_start_end_lines(
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
