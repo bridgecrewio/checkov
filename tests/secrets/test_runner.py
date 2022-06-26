@@ -200,7 +200,7 @@ class TestRunnerValid(unittest.TestCase):
 
         censored_line = Runner.omit_secret_value_from_line(secret, line)
 
-        self.assertEqual(censored_line, 'access_key: "AKIA****************"')
+        self.assertEqual(censored_line, 'access_key: "AKIAI***************"')
 
     def tearDown(self) -> None:
         metadata_integration.check_metadata = self.orig_metadata

@@ -238,9 +238,11 @@ class Runner(BaseRunner):
 
     @staticmethod
     def omit_secret_value_from_line(secret: str, line_text: str) -> str:
-        secret_index = line_text.index(secret)
         secret_length = len(secret)
-        censored_line = line_text[:secret_index + 4] + \
-                        '*' * (secret_length - 4) + \
-                        line_text[secret_index + secret_length:]
+        secret_len_to_expose = secret_length // 4
+
+        secret_index = line_text.index(secret)
+        censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
+                        f'{"*" * (secret_length - secret_len_to_expose)}' \
+                        f'{line_text[secret_index + secret_length:]}'
         return censored_line
