@@ -81,6 +81,7 @@ setup(
     include_package_data=True,
     package_dir={
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
+        "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
