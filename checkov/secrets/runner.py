@@ -159,13 +159,14 @@ class Runner(BaseRunner):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+                line_text_censored = self.omit_secret_value_from_line(secret.secret_value, line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
                     check_name=secret.type,
                     check_result=result,
-                    code_block=[(secret.line_number, line_text)],
+                    code_block=[(secret.line_number, line_text_censored)],
                     file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
@@ -234,3 +235,12 @@ class Runner(BaseRunner):
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 }
         return None
+
+    @staticmethod
+    def omit_secret_value_from_line(secret: str, line_text: str) -> str:
+        secret_index = line_text.index(secret)
+        secret_length = len(secret)
+        censored_line = line_text[:secret_index + 4] + \
+                        '*' * (secret_length - 4) + \
+                        line_text[secret_index + secret_length:]
+        return censored_line
