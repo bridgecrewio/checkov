@@ -31,12 +31,16 @@ def test_to_dict():
                 ],
             },
             {
-                "file": "/main_copy.tf",
+                "file": "/main_2.tf",
                 "findings": [
                     {
                         "resource": "aws_s3_bucket.destination_2",
                         "check_ids": ["CKV2_AWS_6", "CKV_AWS_18"],
-                    }
+                    },
+                    {
+                        "resource": "aws_s3_bucket.destination_3",
+                        "check_ids": ["CKV2_AWS_6", "CKV_AWS_18"],
+                    },
                 ],
             },
         ]
