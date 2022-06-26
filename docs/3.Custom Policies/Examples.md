@@ -149,6 +149,43 @@ definition:
           operator: "within"
 ```
 
+## Simple Connection State Block and Filter and Attribute Blocks - Data block example
+
+```yaml
+---
+metadata:
+ name: "Ensure admin groups are not created"
+ id: "CKV2_AZURE_999"
+ category: "IAM"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - azuredevops_group_membership
+    - or:
+        - cond_type: connection
+          resource_types:
+            - azuredevops_group_membership
+          connected_resource_types:
+            - data.azuredevops_group
+          operator: not_exists
+        - and:
+          - cond_type: connection
+            resource_types:
+              - azuredevops_group_membership
+            connected_resource_types:
+              - data.azuredevops_group
+            operator: exists
+          - cond_type: attribute
+            resource_types:
+              - data.azuredevops_group
+            attribute: name
+            operator: not_equals
+            value: "Build Administrators"
+```
+
 ## Complex Definition - Connection State Block and Filter and Attribute Blocks - Example 1
 
 ```yaml
