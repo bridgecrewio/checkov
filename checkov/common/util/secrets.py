@@ -1,7 +1,14 @@
 import itertools
+import logging
 import re
 
 # secret categories for use as constants
+from typing import Any
+
+from checkov.common.checks.base_check import BaseCheck
+
+from checkov.common.models.enums import CheckCategories, CheckResult
+
 AWS = 'aws'
 AZURE = 'azure'
 GCP = 'gcp'
@@ -54,6 +61,8 @@ _patterns = {k: [re.compile(p, re.DOTALL) for p in v] for k, v in _secrets_regex
 _patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
 
 _hash_patterns = list(map(lambda regex: re.compile(regex, re.IGNORECASE), ['^[a-f0-9]{32}$', '^[a-f0-9]{40}$']))
+
+
 def is_hash(s: str) -> bool:
     """
     Checks whether a string is a MD5 or SHA1 hash
@@ -92,3 +101,47 @@ def string_has_secrets(s: str, *categories: str) -> bool:
         if any([pattern.search(s) for pattern in _patterns[c]]):
             return True
     return False
+
+
+def omit_multiple_secret_values_from_line(secrets: list[str], line_text: str) -> str:
+    censored_line = line_text
+    for secret in secrets:
+        censored_line = omit_secret_value_from_line(secret, censored_line)
+    return censored_line
+
+
+def omit_secret_value_from_line(secret: str, line_text: str) -> str:
+    secret_length = len(secret)
+    secret_len_to_expose = secret_length // 4
+
+    try:
+        secret_index = line_text.index(secret)
+    except ValueError:
+        return line_text
+    except TypeError:
+        print(line_text)
+        print(secret)
+
+    censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
+                    f'{"*" * (secret_length - secret_len_to_expose)}' \
+                    f'{line_text[secret_index + secret_length:]}'
+    return censored_line
+
+
+def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult],
+                                  entity_code_lines: list[tuple[int, str]],
+                                  entity_config: dict[str, Any]) -> list[tuple[int, str]]:
+    if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
+        censored_code_lines = []
+        secrets = [secret for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')]
+        if not secrets:
+            logging.debug(f"Secret was not saved in {check.id}, can't omit")
+            return entity_code_lines
+
+        for idx, line in entity_code_lines:
+            censored_line = omit_multiple_secret_values_from_line(secrets, line)
+            censored_code_lines.append((idx, censored_line))
+    else:
+        censored_code_lines = entity_code_lines
+
+    return censored_code_lines

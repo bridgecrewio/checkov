@@ -23,6 +23,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 
 SECRET_TYPE_TO_ID = {
@@ -159,7 +160,7 @@ class Runner(BaseRunner):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
-                line_text_censored = self.omit_secret_value_from_line(secret.secret_value, line_text)
+                line_text_censored = omit_secret_value_from_line(secret.secret_value, line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
@@ -235,14 +236,3 @@ class Runner(BaseRunner):
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 }
         return None
-
-    @staticmethod
-    def omit_secret_value_from_line(secret: str, line_text: str) -> str:
-        secret_length = len(secret)
-        secret_len_to_expose = secret_length // 4
-
-        secret_index = line_text.index(secret)
-        censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                        f'{"*" * (secret_length - secret_len_to_expose)}' \
-                        f'{line_text[secret_index + secret_length:]}'
-        return censored_line

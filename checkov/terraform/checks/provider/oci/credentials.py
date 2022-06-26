@@ -17,6 +17,7 @@ class OciCredentials(BaseProviderCheck):
         if key in conf.keys():
             if not conf[key]:
                 return CheckResult.PASSED
+
             return CheckResult.FAILED
         else:
             return CheckResult.PASSED

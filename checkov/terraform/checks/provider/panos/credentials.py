@@ -21,11 +21,11 @@ class PanosCredentials(BaseProviderCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
-    @staticmethod
-    def secret_found(conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
+    def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
             value = conf[field][0]
             if not isinstance(value, str) or re.match(pattern, value) is not None:
+                conf[f'{self.id}_secret'] = value
                 return True
         return False
 
