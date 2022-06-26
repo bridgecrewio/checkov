@@ -536,8 +536,8 @@ class Parser:
                 try:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
                 except Exception as e:
-                    logging.error(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.error(e, exc_info=True)
+                    logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
+                    logging.warning(e, exc_info=True)
         return module, tf_definitions
 
     @staticmethod
