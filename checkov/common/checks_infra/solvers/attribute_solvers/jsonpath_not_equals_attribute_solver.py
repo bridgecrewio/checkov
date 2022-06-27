@@ -13,7 +13,7 @@ class JsonpathNotEqualsAttributeSolver(JsonpathEqualsAttributeSolver):
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
         if self.attribute:
             attribute_matches = self._get_attribute_matches(vertex)
-            if len(attribute_matches) == 0:  # the jsonpath is not found, so the check passes
+            if not attribute_matches:  # the jsonpath is not found, so the check passes
                 return True
 
         return super().get_operation(vertex)
