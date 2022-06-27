@@ -29,7 +29,8 @@ class PanosCredentials(BaseProviderCheck):
         if field in conf.keys():
             value = conf[field][0]
             if not isinstance(value, str) or re.match(pattern, value) is not None:
-                conf[f'{self.id}_secret'] = value
+                if isinstance(value, str):
+                    conf[f'{self.id}_secret'] = value
                 return True
         return False
 

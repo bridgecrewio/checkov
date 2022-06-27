@@ -194,14 +194,6 @@ class TestRunnerValid(unittest.TestCase):
             else:
                 self.assertIsNone(fc.bc_check_id)
 
-    def test_omit_secret_value_from_line(self):
-        secret = 'AKIAIOSFODNN7EXAMPLE'
-        line = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
-
-        censored_line = Runner.omit_secret_value_from_line(secret, line)
-
-        self.assertEqual(censored_line, 'access_key: "AKIAI***************"')
-
     def tearDown(self) -> None:
         metadata_integration.check_metadata = self.orig_metadata
 

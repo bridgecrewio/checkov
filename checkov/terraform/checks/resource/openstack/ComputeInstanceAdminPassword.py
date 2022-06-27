@@ -14,6 +14,8 @@ class ComputeInstanceAdminPassword(BaseResourceNegativeValueCheck):
 
     def scan_resource_conf(self, conf):
         admin_pass = conf.get('admin_pass')
+        if isinstance(admin_pass, list):
+            admin_pass = admin_pass[0]
         if admin_pass:  # should be missing, or an empty string
             conf[f'{self.id}_secret'] = admin_pass
             return CheckResult.FAILED
