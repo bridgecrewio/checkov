@@ -18,7 +18,7 @@ class SecureStringParameterNoHardcodedValue(BaseParamCheck):
             return CheckResult.UNKNOWN
         default_value = conf.get("default")
         if default_value:  # should be missing, or an empty string
-            conf[f'{self.id}_secret'] = default_value
+            conf["CKV_AZURE_131_secret"] = default_value
             return CheckResult.FAILED
         else:
             return CheckResult.PASSED
