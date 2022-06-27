@@ -18,8 +18,9 @@ class SecureStringParameterNoHardcodedValue(BaseParamCheck):
         if not any(decorator["type"] == "secure" for decorator in conf["decorators"]):
             # if the decorator '@secure()' is not set, then it is a normal string
             return CheckResult.UNKNOWN
-
-        if conf["default"]:  # should be missing, or an empty string
+        default_value = conf.get("default")
+        if default_value:  # should be missing, or an empty string
+            conf[f'{self.id}_secret'] = default_value
             return CheckResult.FAILED
         else:
             return CheckResult.PASSED

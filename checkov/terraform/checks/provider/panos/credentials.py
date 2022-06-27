@@ -15,11 +15,15 @@ class PanosCredentials(BaseProviderCheck):
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        result = CheckResult.PASSED
         if self.secret_found(conf, "api_key", panos_api_key_pattern):
-            return CheckResult.FAILED
-        if conf.get("password"):
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+            result = CheckResult.FAILED
+
+        password = conf.get("password")
+        if password:
+            conf[f'{self.id}_secret_pwd'] = password
+            result = CheckResult.FAILED
+        return result
 
     def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
