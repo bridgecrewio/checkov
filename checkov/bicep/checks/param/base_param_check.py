@@ -4,10 +4,15 @@ from abc import abstractmethod
 from collections.abc import Iterable
 
 from pycep.typing import ParameterAttributes
+from typing_extensions import NotRequired
 
 from checkov.bicep.checks.param.registry import registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+
+
+class CheckovParameterAttributes(ParameterAttributes):
+    CKV_AZURE_131_secret: NotRequired[str]
 
 
 class BaseParamCheck(BaseCheck):
@@ -30,11 +35,11 @@ class BaseParamCheck(BaseCheck):
         self.supported_type = supported_type
         registry.register(self)
 
-    def scan_entity_conf(self, conf: ParameterAttributes, entity_type: str) -> CheckResult:  # type:ignore[override]  # it's ok
+    def scan_entity_conf(self, conf: CheckovParameterAttributes, entity_type: str) -> CheckResult:  # type:ignore[override]  # it's ok
         self.entity_type = entity_type
 
         return self.scan_param_conf(conf)
 
     @abstractmethod
-    def scan_param_conf(self, conf: ParameterAttributes) -> CheckResult:
+    def scan_param_conf(self, conf: CheckovParameterAttributes) -> CheckResult:
         raise NotImplementedError()

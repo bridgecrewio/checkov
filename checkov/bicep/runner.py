@@ -25,6 +25,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
 
@@ -155,12 +156,15 @@ class Runner(BaseRunner):
                                 elif check.bc_id and check.bc_id in suppressions.keys():
                                     check_result = suppressions[check.bc_id]
 
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    file_code_lines[start_line - 1 : end_line],
+                                                                                    conf)
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=check_result,
-                                    code_block=file_code_lines[start_line - 1 : end_line],
+                                    code_block=censored_code_lines,
                                     file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                     file_line_range=[start_line, end_line],
                                     resource=resource_id,

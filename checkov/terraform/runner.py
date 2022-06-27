@@ -13,14 +13,14 @@ from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, remove_duplicate_results, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
-from checkov.common.util.secrets import omit_secret_value_from_line, omit_secret_value_from_checks
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
