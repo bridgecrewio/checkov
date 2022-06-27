@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Enabled:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceID
+      DBName: !Ref DBName
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref DBAllocatedStorage
+      Engine: MySQL
+      EngineVersion: "8.0.16"
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      MonitoringInterval: '60'
+      MonitoringRoleArn: 'arn:aws:iam::123456789012:role/rds-monitoring-role'
