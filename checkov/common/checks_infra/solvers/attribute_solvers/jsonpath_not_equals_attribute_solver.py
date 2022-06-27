@@ -16,7 +16,13 @@ class JsonpathNotEqualsAttributeSolver(JsonpathEqualsAttributeSolver):
             if not attribute_matches:  # the jsonpath is not found, so the check passes
                 return True
 
-        return super().get_operation(vertex)
+            return self.resource_type_pred(vertex, self.resource_types) and all(
+                self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
+            )
+
+        return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
+            vertex=vertex, attribute=self.attribute
+        )
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return not super()._get_operation(vertex, attribute)
