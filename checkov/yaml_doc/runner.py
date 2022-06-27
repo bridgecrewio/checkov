@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class Runner(ObjectRunner):
-    check_type = CheckType.YAML
+    check_type = CheckType.YAML  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()

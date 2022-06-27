@@ -19,7 +19,6 @@ from checkov.common.util.tqdm_utils import ProgressBar
 
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
-FRAMEWORK = os.path.basename(Path(__file__).parent)
 
 
 class Scanner:
@@ -28,8 +27,7 @@ class Scanner:
         self.pbar = pbar
         self.root_folder = root_folder
 
-    def scan(self, input_paths: "Iterable[Path]") \
-            -> "Sequence[Dict[str, Any]]":
+    def scan(self, input_paths: Iterable[Path]) -> Sequence[dict[str, Any]]:
         self.pbar.initiate(len(input_paths))  # type: ignore
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
@@ -54,7 +52,7 @@ class Scanner:
 
         return scan_results
 
-    async def run_scan(self, input_path: Path) -> dict:
+    async def run_scan(self, input_path: Path) -> dict[str, Any]:
         self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
         logging.info(f"Start to scan package file {input_path}")
 
@@ -78,7 +76,7 @@ class Scanner:
 
         return self.run_scan_busy_wait(input_path, response_json['id'])
 
-    def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict:
+    def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict[str, Any]:
         current_state = "Empty"
         desired_state = "Result"
         total_sleeping_time = 0
@@ -105,8 +103,8 @@ class Scanner:
 
         return self.parse_api_result(input_path, response.json()["outputData"])
 
-    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
-        raw_result = json.loads(decompress_file_gzip_base64(response))
+    def parse_api_result(self, origin_file_path: Path, response: str) -> dict[str, Any]:
+        raw_result: dict[str, Any] = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
         self.pbar.update()
         return raw_result

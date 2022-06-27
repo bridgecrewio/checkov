@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
-from typing import Any, Callable
+from typing import Any, Callable  # noqa: F401  # Callable is used in the TypeAlias
 
 from typing_extensions import TypeAlias
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Runner(YamlRunner, JsonRunner):
-    check_type = CheckType.OPENAPI
+    check_type = CheckType.OPENAPI  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
@@ -38,7 +38,8 @@ class Runner(YamlRunner, JsonRunner):
 
         return None
 
-    def parse_format(self,
+    def parse_format(
+        self,
         f: str,
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
