@@ -111,11 +111,8 @@ class Runner(BaseRunner):
                             results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
                                                                  runner_filter)
                             for check, check_result in results.items():
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    entity_code_lines,
-                                                                                    parameter_details)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=censored_code_lines, file_path=arm_file,
+                                                code_block=entity_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
