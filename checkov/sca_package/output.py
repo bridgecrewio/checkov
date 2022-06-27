@@ -88,8 +88,8 @@ def create_report_record(
             if parsed_version > parsed_current_version:
                 fixed_versions.append(parsed_version)
 
-        lowest_fixed_version = str(min(fixed_versions))
-
+        if fixed_versions:
+            lowest_fixed_version = str(min(fixed_versions))
 
     details = {
         "id": cve_id,
