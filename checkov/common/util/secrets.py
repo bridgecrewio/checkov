@@ -7,6 +7,10 @@ import re
 # secret categories for use as constants
 from typing import Any
 
+from pycep.typing import ParameterAttributes, ResourceAttributes
+
+from checkov.common.typing import _CheckResult
+
 from checkov.common.checks.base_check import BaseCheck
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -127,12 +131,13 @@ def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     return censored_line
 
 
-def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult],
+def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
                                   entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any]) -> list[tuple[int, str]]:
+                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes) ->\
+        list[tuple[int, str]]:
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
         censored_code_lines = []
-        secrets = [secret for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')]
+        secrets = [str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')]
         if not secrets:
             logging.debug(f"Secret was not saved in {check.id}, can't omit")
             return entity_code_lines
