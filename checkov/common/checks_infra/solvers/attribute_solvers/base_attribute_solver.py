@@ -12,7 +12,9 @@ from concurrent.futures import ThreadPoolExecutor
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.util.var_utils import is_terraform_variable_dependent, is_cloudformation_variable_dependent
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
@@ -32,7 +34,7 @@ class BaseAttributeSolver(BaseSolver):
         failed_vertices: List[Dict[str, Any]] = []
         for _, data in graph_connector.nodes(data=True):
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
-                    and data.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
+                    and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
 
         concurrent.futures.wait(jobs)

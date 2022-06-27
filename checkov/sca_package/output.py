@@ -82,11 +82,14 @@ def create_report_record(
     fixed_versions: List[Union[packaging_version.Version, packaging_version.LegacyVersion]] = []
     status = vulnerability_details.get("status") or "open"
     if status != "open":
-        fixed_versions = [
-            packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
-        ]
-        lowest_fixed_version = str(min(fixed_versions))
+        parsed_current_version = packaging_version.parse(package_version)
+        for version in status.replace("fixed in", "").split(","):
+            parsed_version = packaging_version.parse(version.strip())
+            if parsed_version > parsed_current_version:
+                fixed_versions.append(parsed_version)
 
+        if fixed_versions:
+            lowest_fixed_version = str(min(fixed_versions))
 
     details = {
         "id": cve_id,
