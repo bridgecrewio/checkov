@@ -118,9 +118,6 @@ def omit_secret_value_from_line(secret: str, line_text: str) -> str:
         secret_index = line_text.index(secret)
     except ValueError:
         return line_text
-    except TypeError:
-        print(line_text)
-        print(secret)
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
                     f'{"*" * (secret_length - secret_len_to_expose)}' \
