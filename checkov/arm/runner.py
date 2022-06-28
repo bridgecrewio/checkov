@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Optional, List, Dict, Tuple
@@ -17,7 +19,7 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.ARM
+    check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
@@ -27,9 +29,10 @@ class Runner(BaseRunner):
         root_folder: str,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
