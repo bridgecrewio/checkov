@@ -24,8 +24,9 @@ MAX_SLEEP_DURATION = 60
 class Scanner:
     def __init__(self, pbar: ProgressBar = None, root_folder: str | Path | None = None) -> None:
         self._base_url = bc_integration.api_url
-        self.pbar = pbar or ProgressBar('')
-        if not pbar:
+        self.pbar = pbar
+        if not self.pbar:
+            self.pbar = ProgressBar('')
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
