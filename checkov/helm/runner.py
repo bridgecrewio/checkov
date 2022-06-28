@@ -20,6 +20,7 @@ from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 
 K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
 
@@ -69,6 +70,8 @@ class Runner(BaseRunner):
         super().__init__()
         self.file_names = ['Chart.yaml']
         self.target_folder_path = ''
+        self.root_folder = ''
+        self.runner_filter = None
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -147,57 +150,65 @@ class Runner(BaseRunner):
         if cur_writer:
             cur_writer.close()
 
+    def _convert_chart_to_k8s(self, chart_item):
+        (chart_dir, chart_meta) = chart_item
+        target_dir = chart_dir.replace(self.root_folder, f'{self.target_folder_path}/')
+        target_dir.replace("//", "/")
+        chart_name = chart_meta.get('name', chart_meta.get('Name'))
+        chart_version = chart_meta.get('version', chart_meta.get('Version'))
+        if target_dir.endswith('/'):
+            target_dir = target_dir[:-1]
+        if target_dir.endswith(chart_name):
+            target_dir = target_dir[:-len(chart_name)]
+        logging.info(
+            f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
+        # dependency list is nicer to parse than dependency update.
+        helm_binary_list_chart_deps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+        o, e = helm_binary_list_chart_deps.communicate()
+        logging.debug(
+            f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+        if e:
+            if "Warning: Dependencies" in str(e, 'utf-8'):
+                logging.info(
+                    f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+            else:
+                logging.info(
+                    f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+
+        helm_command_args = [self.helm_command, 'template', '--dependency-update', chart_dir]
+        if self.runner_filter.var_files:
+            for var in self.runner_filter.var_files:
+                helm_command_args.append("--values")
+                helm_command_args.append(var)
+
+        try:
+            # --dependency-update needed to pull in deps before templating.
+            proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+            o, e = proc.communicate()
+            logging.debug(
+                f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+
+        except Exception:
+            logging.info(
+                f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
+                exc_info=True,
+            )
+
+        self._parse_output(target_dir, o)
+
     def convert_helm_to_k8s(self, root_folder: str, files: list[str], runner_filter: RunnerFilter) -> list[tuple[Any, dict[str, Any]]]:
+        self.root_folder = root_folder
+        self.runner_filter = runner_filter
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
         self.target_folder_path = tempfile.mkdtemp()
+
         processed_chart_dir_and_meta = []
         for chart_dir, chart_meta in chart_dir_and_meta:
             processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
-            target_dir = chart_dir.replace(root_folder, f'{self.target_folder_path}/')
-            target_dir.replace("//", "/")
-            chart_name = chart_meta.get('name', chart_meta.get('Name'))
-            chart_version = chart_meta.get('version', chart_meta.get('Version'))
-            if target_dir.endswith('/'):
-                target_dir = target_dir[:-1]
-            if target_dir.endswith(chart_name):
-                target_dir = target_dir[:-len(chart_name)]
-            logging.info(
-                f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
-            # dependency list is nicer to parse than dependency update.
-            helm_binary_list_chart_deps = subprocess.Popen([self.helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-            o, e = helm_binary_list_chart_deps.communicate()
-            logging.debug(
-                f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
-            if e:
-                if "Warning: Dependencies" in str(e, 'utf-8'):
-                    logging.info(
-                        f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
-                else:
-                    logging.info(
-                        f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
-            helm_command_args = [self.helm_command, 'template', '--dependency-update', chart_dir]
-            if runner_filter.var_files:
-                for var in runner_filter.var_files:
-                    helm_command_args.append("--values")
-                    helm_command_args.append(var)
-
-            try:
-                # --dependency-update needed to pull in deps before templating.
-                proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                logging.debug(
-                    f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
-
-            except Exception:
-                logging.info(
-                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
-                    exc_info=True,
-                )
-
-            self._parse_output(target_dir, o)
+        parallel_runner.run_function(self._convert_chart_to_k8s, chart_dir_and_meta)
         return processed_chart_dir_and_meta
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
