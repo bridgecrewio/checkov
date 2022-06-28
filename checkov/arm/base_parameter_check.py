@@ -1,15 +1,8 @@
 from abc import abstractmethod
 
-from pycep.typing import ParameterAttributes
-from typing_extensions import NotRequired
-
 from checkov.arm.registry import arm_parameter_registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.multi_signature import multi_signature
-
-
-class CheckovParameterAttributes(ParameterAttributes):
-    CKV_AZURE_131_secret: NotRequired[str]
 
 
 class BaseParameterCheck(BaseCheck):
@@ -19,12 +12,12 @@ class BaseParameterCheck(BaseCheck):
         self.supported_resources = supported_resources
         arm_parameter_registry.register(self)
 
-    def scan_entity_conf(self, conf: CheckovParameterAttributes, entity_type):
+    def scan_entity_conf(self, conf, entity_type):
         return self.scan_resource_conf(conf, entity_type)
 
     @multi_signature()
     @abstractmethod
-    def scan_resource_conf(self, conf: CheckovParameterAttributes, entity_type):
+    def scan_resource_conf(self, conf, entity_type):
         raise NotImplementedError()
 
     @classmethod
