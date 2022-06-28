@@ -12,7 +12,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class CheckovParameterAttributes(ParameterAttributes):
-    CKV_AZURE_131_secret: NotRequired[str]
+    CKV_AZURE_131_secret: NotRequired[str]  # noqa
 
 
 class BaseParamCheck(BaseCheck):

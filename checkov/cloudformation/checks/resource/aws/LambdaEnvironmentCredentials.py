@@ -27,7 +27,7 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                         secrets = get_secrets_from_string(str(value), AWS, GENERAL)
                         if secrets:
                             self.evaluated_keys = [f"Properties/Environment/Variables/{var_name}"]
-                            for idx, secret in secrets:
+                            for idx, secret in enumerate(secrets):
                                 conf[f'{self.id}_secret_{idx}'] = secret
                             return CheckResult.FAILED
 
