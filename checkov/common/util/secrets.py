@@ -133,7 +133,7 @@ def omit_secret_value_from_line(secret: str, line_text: str) -> str:
 
 def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
                                   entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes) ->\
+                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes) -> \
         list[tuple[int, str]]:
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
         censored_code_lines = []
@@ -149,3 +149,23 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
         censored_code_lines = entity_code_lines
 
     return censored_code_lines
+
+
+def get_secrets_from_string(s: str, *categories: str) -> list[str]:
+    # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
+    # explicitly so we don't do any duplication
+    if not categories or "all" in categories:
+        categories = ("all",)
+
+    if is_hash(s):
+        return list()
+
+    secrets: list[str] = []
+    for c in categories:
+        matches: list[str] = []
+        for pattern in _patterns[c]:
+            _matches = re.finditer(pattern, s)
+            matches.extend([str(match.group()) for match in _matches])
+        if matches:
+            secrets.extend(matches)
+    return secrets

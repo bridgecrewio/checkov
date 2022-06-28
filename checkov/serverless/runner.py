@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -127,8 +128,11 @@ class Runner(BaseRunner):
                             results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    resource)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=sls_file,
+                                                code_block=censored_code_lines, file_path=sls_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
@@ -159,8 +163,11 @@ class Runner(BaseRunner):
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
+                            censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                entity_code_lines,
+                                                                                item_content)
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=sls_file,
+                                            code_block=censored_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
@@ -182,8 +189,11 @@ class Runner(BaseRunner):
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
+                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                        entity_code_lines,
+                                                                        resource)
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=sls_file,
+                                    code_block=censored_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
