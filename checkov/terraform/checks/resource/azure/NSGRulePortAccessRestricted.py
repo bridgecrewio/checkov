@@ -50,6 +50,8 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
             destination_port_ranges = rule_conf.get("destination_port_ranges")
             source_address_prefix = rule_conf.get("source_address_prefix")
             source_address_prefixes = rule_conf.get("source_address_prefixes")
+            if not isinstance(source_address_prefixes, list):
+                continue
 
             if (
                 access
