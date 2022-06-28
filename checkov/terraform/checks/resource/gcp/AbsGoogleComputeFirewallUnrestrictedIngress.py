@@ -20,7 +20,7 @@ class AbsGoogleComputeFirewallUnrestrictedIngress(BaseResourceCheck):
                 if 'ports' in block:
                     if self._is_port_in_range(block['ports']):
                         source_ranges_list = conf.get('source_ranges', [])
-                        if len(source_ranges_list) > 0:
+                        if source_ranges_list:
                             source_ranges = source_ranges_list[0]
                             if "0.0.0.0/0" in source_ranges:  # nosec
                                 self.evaluated_keys = [f'allow/[{allow_blocks.index(block)}]/ports', 'source_ranges']
