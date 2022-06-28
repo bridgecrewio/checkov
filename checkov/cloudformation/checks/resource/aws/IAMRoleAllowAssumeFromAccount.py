@@ -26,7 +26,10 @@ class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
                 else:
                     assume_role_block = json.loads(policy_fn_sub_block)
             elif isinstance(assume_role_policy_doc, str):
-                assume_role_block = json.loads(assume_role_policy_doc)
+                try:
+                    assume_role_block = json.loads(assume_role_policy_doc)
+                except Exception as e:
+                    return CheckResult.UNKNOWN
             else:
                 assume_role_block = assume_role_policy_doc
         else:

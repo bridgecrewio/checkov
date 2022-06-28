@@ -30,6 +30,8 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheckV3):
                 return CheckResult.FAILED, security_scheme
 
         for key, path in paths.items():
+            if not path:
+                continue
             if key in self.irrelevant_keys:
                 continue
             for operation in path:
