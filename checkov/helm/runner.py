@@ -208,7 +208,7 @@ class Runner(BaseRunner):
         for chart_dir, chart_meta in chart_dir_and_meta:
             processed_chart_dir_and_meta.append((chart_dir.replace(root_folder, ""), chart_meta))
 
-        parallel_runner.run_function(self._convert_chart_to_k8s, chart_dir_and_meta)
+        list(parallel_runner.run_function(lambda cd: self._convert_chart_to_k8s(cd), chart_dir_and_meta))
         return processed_chart_dir_and_meta
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
