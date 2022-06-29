@@ -45,6 +45,7 @@ class Operators:
     WITHIN = 'within'
     AND = 'and'
     OR = 'or'
+    NOT = 'not'
     JSONPATH_EQUALS = 'jsonpath_equals'
     JSONPATH_NOT_EQUALS = 'jsonpath_not_equals'
     JSONPATH_EXISTS = 'jsonpath_exists'

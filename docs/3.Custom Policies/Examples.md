@@ -372,3 +372,18 @@ definition:
           operator: "equals"
           value: "22"
 ```
+
+## Using a wildcard to evaluate all elements of a list
+
+The following policy will pass if and only if all of the `cidr_blocks` arrays within the `ingress` blocks of a security group do not contain `0.0.0.0/0`.
+
+```yaml
+definition:
+  not:
+    cond_type: attribute
+    resource_types:
+      - "aws_security_group"
+    attribute: "ingress.*.cidr_blocks"
+    operator: "contains"
+    value: "0.0.0.0/0"
+```
