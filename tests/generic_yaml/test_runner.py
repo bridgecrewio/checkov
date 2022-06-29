@@ -114,7 +114,7 @@ class TestRunnerValid(unittest.TestCase):
             external_checks_dir=[checks_dir],
             runner_filter=RunnerFilter(framework="all", checks=["CKV_COMPLEX_1"]),
         )
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
