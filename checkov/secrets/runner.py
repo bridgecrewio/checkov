@@ -50,6 +50,12 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+ADDED_TO_SECRET_SCAN_FILES_NAMES = ['settings.py', 'main.py', 'application.py', 'config.py', 'app.js', 'config.js', 'dev.js',
+                              'default.json', 'config.json', 'appsettings.json', 'credentials.json', 'db.properties',
+                              'application.properties', 'private.pem', 'privtaekey.pem', 'ndex.php', 'config.php',
+                              'config.xml', 'strings.xml', 'config.yml', 'travis.yml', 'docker-compose.yml',
+                              'secrets.yml', 'app.module.ts', 'environment.ts', 'Dockerfile']
+ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env']
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
@@ -127,7 +133,13 @@ class Runner(BaseRunner):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
-                        if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                        if runner_filter.secret_scan_extension_by_file_type:
+                            if file == 'Dockerfile' or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES or f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                                files_to_scan.append(os.path.join(root, file))
+                        elif runner_filter.secret_scan_extension_by_file_name:
+                            if file in ADDED_TO_SECRET_SCAN_FILES_NAMES or f".{file.split('.')[-1]}" == '.env' or f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                                files_to_scan.append(os.path.join(root, file))
+                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 

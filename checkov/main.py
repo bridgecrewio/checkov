@@ -145,7 +145,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
+                                 secret_scan_extension_by_file_name=config.secret_scan_extension_by_file_name,
+                                 secret_scan_extension_by_file_type=config.secret_scan_extension_by_file_type)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -517,6 +519,16 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
                     'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
                     'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
+    parser.add('--secret-scan-extension-by-file-name', default=False,
+               help='scan secret for all files and not only for ".tf", ".yml", ".yaml", ".json", ".template" and add: '
+                    '"settings.py", "main.py", "application.py", "config.py", "app.js", "config.js", "dev.js",'
+                    '"default.json" "config.json", "appsettings.json", "credentials.json", "db.properties",'
+                    '"application.properties", "private.pem", "privtaekey.pem", "ndex.php", "config.php",'
+                    '"config.xml", "strings.xml", "config.yml", "travis.yml", "docker-compose.yml",'
+                    '"secrets.yml", "app.module.ts", "environment.ts", "Dockerfile"')
+    parser.add('--secret-scan-extension-by-file-type', default=False,
+               help='scan secret for all files and not only for ".tf", ".yml", ".yaml", ".json", ".template" and add: '
+                    '".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile"')
 
 
 def get_external_checks_dir(config: Any) -> Any:
