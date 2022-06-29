@@ -227,7 +227,7 @@ class Registry(BaseCheckRegistry):
                        entity_type: str,
                        scanned_file: str,
                        skip_info: _SkippedCheck) -> str:
-        if STARTLINE_MARK and ENDLINE_MARK in entity_configuration:
+        if STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
         if isinstance(entity_configuration, list):
             start_line = None
