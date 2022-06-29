@@ -70,8 +70,11 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
+        # 'info' object is required in v2.0 and v3:
+        # https://swagger.io/specification/v2/#schema
+        # https://swagger.io/specification/#schema
         try:
-            return bool(conf and ('swagger' in conf or 'openapi' in conf))
+            return bool(('swagger' in conf or 'openapi' in conf) and isinstance(conf['info'], dict))
         except Exception:
             return False
 
