@@ -13,7 +13,7 @@ import requests
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
-from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import TWISTCLI_FILE_NAME, ImageScanner
+from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.util.file_utils import compress_file_gzip_base64, decompress_file_gzip_base64
@@ -58,26 +58,20 @@ class Scanner:
             scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         if any(scan_result["vulnerabilities"] is None for scan_result in scan_results):
-            self.setup_twistcli()
+            image_scanner.setup_twistcli()
 
             if os.getenv("PYCHARM_HOSTED") == "1":
                 # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
                 logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
-                scan_twist_results = []
-                for idx, input_path in enumerate(input_paths):
-                    if scan_results[idx]["vulnerabilities"] is None:
-                        scan_twist_results.append(await self.execute_twistcli_scan(input_path))
+                scan_results = [
+                    await self.execute_twistcli_scan(input_path) if scan_results[idx]["vulnerabilities"] is None else
+                    scan_results[idx] for idx, input_path in enumerate(input_paths)
+                ]
             else:
-                scan_twist_results = await asyncio.gather(*[
-                    self.execute_twistcli_scan(input_path) for idx, input_path in enumerate(input_paths) if scan_results[idx]["vulnerabilities"] is None
+                scan_results = await asyncio.gather(*[
+                    self.execute_twistcli_scan(input_path) if scan_results[idx]["vulnerabilities"] is None else scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ])
-
-            i = 0
-            for idx, input_path in enumerate(input_paths):
-                if scan_results[idx]["vulnerabilities"] is None:
-                    scan_results[idx] = scan_twist_results[i]
-                    i += 1
 
         return scan_results
 
@@ -164,19 +158,3 @@ class Scanner:
         scan_result: Dict[str, Any] = json.loads(output_path.read_text())
         output_path.unlink()
         return scan_result
-
-    def setup_twistcli(self):
-        image_scanner = ImageScanner()
-        try:
-            if image_scanner.should_download():
-                if not os.path.exists(bridgecrew_dir):
-                    try:
-                        os.makedirs(bridgecrew_dir)
-                    except FileExistsError:
-                        # In multi-processing, this might meet a race condition
-                        pass
-                image_scanner.cleanup_scan()
-                docker_image_scanning_integration.download_twistcli(image_scanner.twistcli_path)
-        except Exception:
-            logging.error("Failed to setup docker image scanning", exc_info=True)
-            raise
