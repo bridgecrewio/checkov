@@ -92,10 +92,11 @@ class Runner(BaseRunner):
                     continue
 
                 # result record
-                if result_config and isinstance(result_config, (list, dict)):
-                    end, start = self.get_start_end_lines(end, result_config, start)
-                else:
-                    continue
+                if result_config:
+                    if isinstance(result_config, (list, dict)):
+                        end, start = self.get_start_end_lines(end, result_config, start)
+                    else:
+                        continue
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
                 record = Record(
