@@ -115,6 +115,39 @@ definition:
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                                              |
 
 
+### Evaluating list attributes
+
+You may use a wildcard (`*`) to evaluate all of the items within a list. You may use multiple wildcards to evaluated nested lists. If *any* item in the list matches the condition, then the condition passes.
+
+For example, consider the following resource:
+
+```
+resource "aws_security_group" "sg" {
+  ...
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    ...
+  }
+  ingress {
+    cidr_blocks = ["192.168.1.0/24"]
+    ...
+  }
+}
+```
+
+The following definition will return `true`, because one of the CIDR blocks contains `0.0.0.0/0`:
+
+```yaml
+cond_type: attribute
+resource_types:
+  - "aws_security_group"
+attribute: "ingress.*.cidr_blocks"
+operator: "contains"
+value: "0.0.0.0/0"
+```
+
+Note that switching the operator to `not_contains` will still result in the evaluation being `true`, because there is also an element that does *not* contain `0.0.0.0/0`. If you want to write a policy that fails if any CIDR block contains `0.0.0.0/0`, consider the `not` operator, described below.
+
 ## Connection State Block
 
 A Connection State Block indicates a type of resource that has or does not have a connection to another type of resource.
