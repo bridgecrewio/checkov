@@ -22,10 +22,11 @@ class Runner(YamlRunner, JsonRunner):
 
     def __init__(self) -> None:
         super().__init__()
-        self.file_extensions = ['.json', '.yml', '.yaml']
+        self.file_extensions = [".json", ".yml", ".yaml"]
 
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
+
         return openapi_registry
 
     def _parse_file(
@@ -58,7 +59,7 @@ class Runner(YamlRunner, JsonRunner):
         if hasattr(result_config, "start_mark"):
             start_end_line = JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[arg-type]
             return start_end_line
-        elif '__startline__' in result_config or isinstance(result_config, list):
+        elif "__startline__" in result_config or isinstance(result_config, list):
             start_end_line = YamlRunner.get_start_end_lines(self, end, result_config, start)
             return start_end_line
 
@@ -74,9 +75,14 @@ class Runner(YamlRunner, JsonRunner):
         # https://swagger.io/specification/v2/#schema
         # https://swagger.io/specification/#schema
         try:
-            return bool(conf and ('swagger' in conf or 'openapi' in conf) and isinstance(conf['info'], dict))   # type:ignore[override]
+            return bool(
+                conf
+                and isinstance(conf, dict)
+                and ("swagger" in conf or "openapi" in conf)
+                and isinstance(conf["info"], dict)
+            )
         except Exception:
             return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
-        return ','.join(supported_entities)
+        return ",".join(supported_entities)
