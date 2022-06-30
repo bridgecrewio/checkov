@@ -20,6 +20,7 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
@@ -179,6 +180,18 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+                        elif conf.get("existing") is False:
+                            # resources without checks, but not existing ones
+
+                            cleaned_path = clean_file_path(file_path)
+                            resource_id = f"{conf['type']}.{name}"
+                            report.extra_resources.add(
+                                ExtraResource(
+                                    file_abs_path=str(file_path.absolute()),
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                    resource=resource_id,
+                                )
+                            )
             self.pbar.update()
         self.pbar.close()
 
