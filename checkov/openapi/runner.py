@@ -74,7 +74,7 @@ class Runner(YamlRunner, JsonRunner):
         # https://swagger.io/specification/v2/#schema
         # https://swagger.io/specification/#schema
         try:
-            return bool(('swagger' in conf or 'openapi' in conf) and isinstance(conf['info'], dict))
+            return bool(conf and ('swagger' in conf or 'openapi' in conf) and isinstance(conf['info'], dict))
         except Exception:
             return False
 
