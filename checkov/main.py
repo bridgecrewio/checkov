@@ -523,7 +523,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_SECRETS_SCAN_TYPE',
                action='append',
                help='add scan secret for requested files. You can specify this argument multiple times to add '
-                    'multiple file types. for scann all types (".tf", ".yml", ".yaml", ".json", '
+                    'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
                     '".template", ".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile", '
                     '".java", ".rb", ".go", ".cs", ".txt") specify the argument with `--secrets-scan-file-type all`. '
                     'default scan will be for ".tf", ".yml", ".yaml", ".json", ".template" and exclude "Pipfile.lock", "yarn.lock", "package-lock.json", "requirements.txt"')
