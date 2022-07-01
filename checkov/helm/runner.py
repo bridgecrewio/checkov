@@ -22,8 +22,6 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 
-K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
-
 
 class K8sHelmRunner(k8_runner):
     def __init__(self, graph_class: Type[LocalGraph] = KubernetesLocalGraph,
@@ -194,7 +192,13 @@ class Runner(BaseRunner):
                 exc_info=True,
             )
 
-        self._parse_output(target_dir, o)
+        try:
+            self._parse_output(target_dir, o)
+        except Exception:
+            logging.info(
+                f"Error parsing output {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
+                exc_info=True,
+            )
 
     def convert_helm_to_k8s(self, root_folder: str, files: list[str], runner_filter: RunnerFilter) -> list[tuple[Any, dict[str, Any]]]:
         self.root_folder = root_folder
