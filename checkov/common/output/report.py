@@ -25,6 +25,7 @@ from checkov.version import version
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
+    from checkov.common.output.extra_resource import ExtraResource
 
 init(autoreset=True)
 
@@ -71,6 +72,7 @@ class Report:
         self.skipped_checks: list[Record] = []
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
+        self.extra_resources: set[ExtraResource] = set()
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:

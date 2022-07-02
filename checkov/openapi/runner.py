@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
-from typing import Any, Callable
+from typing import Any, Callable  # noqa: F401  # Callable is used in the TypeAlias
 
 from typing_extensions import TypeAlias
 
@@ -18,14 +18,15 @@ logger = logging.getLogger(__name__)
 
 
 class Runner(YamlRunner, JsonRunner):
-    check_type = CheckType.OPENAPI
+    check_type = CheckType.OPENAPI  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
-        self.file_extensions = ['.json', '.yml', '.yaml']
+        self.file_extensions = [".json", ".yml", ".yaml"]
 
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.openapi.checks.registry import openapi_registry
+
         return openapi_registry
 
     def _parse_file(
@@ -38,7 +39,8 @@ class Runner(YamlRunner, JsonRunner):
 
         return None
 
-    def parse_format(self,
+    def parse_format(
+        self,
         f: str,
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
@@ -57,7 +59,7 @@ class Runner(YamlRunner, JsonRunner):
         if hasattr(result_config, "start_mark"):
             start_end_line = JsonRunner.get_start_end_lines(self, end, result_config, start)  # type:ignore[arg-type]
             return start_end_line
-        elif '__startline__' in result_config or isinstance(result_config, list):
+        elif "__startline__" in result_config or isinstance(result_config, list):
             start_end_line = YamlRunner.get_start_end_lines(self, end, result_config, start)
             return start_end_line
 
@@ -69,10 +71,18 @@ class Runner(YamlRunner, JsonRunner):
     def is_valid(self, conf: dict[str, Any] | list[dict[str, Any]] | None) -> bool:
         """validate openAPI configuration."""
         # 'swagger' is a required element on v2.0, and 'openapi' is required on v3.
+        # 'info' object is required in v2.0 and v3:
+        # https://swagger.io/specification/v2/#schema
+        # https://swagger.io/specification/#schema
         try:
-            return bool(conf and ('swagger' in conf or 'openapi' in conf))
+            return bool(
+                conf
+                and isinstance(conf, dict)
+                and ("swagger" in conf or "openapi" in conf)
+                and isinstance(conf["info"], dict)
+            )
         except Exception:
             return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
-        return ','.join(supported_entities)
+        return ",".join(supported_entities)

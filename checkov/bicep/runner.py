@@ -20,11 +20,13 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import CheckType, Report
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
 
@@ -36,20 +38,23 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.BICEP
-    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
+    check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
+
+    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
         "parameters": param_registry,
         "resources": resource_registry,
     }
 
     def __init__(
         self,
-        db_connector: NetworkxConnector = NetworkxConnector(),
+        db_connector: NetworkxConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        db_connector = db_connector or NetworkxConnector()
+
         super().__init__(file_extensions=['.bicep'])
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
@@ -68,9 +73,10 @@ class Runner(BaseRunner):
         root_folder: str | Path | None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -155,12 +161,15 @@ class Runner(BaseRunner):
                                 elif check.bc_id and check.bc_id in suppressions.keys():
                                     check_result = suppressions[check.bc_id]
 
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    file_code_lines[start_line - 1 : end_line],
+                                                                                    conf)
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=check_result,
-                                    code_block=file_code_lines[start_line - 1 : end_line],
+                                    code_block=censored_code_lines,
                                     file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                     file_line_range=[start_line, end_line],
                                     resource=resource_id,
@@ -171,6 +180,18 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+                        elif conf.get("existing") is False:
+                            # resources without checks, but not existing ones
+
+                            cleaned_path = clean_file_path(file_path)
+                            resource_id = f"{conf['type']}.{name}"
+                            report.extra_resources.add(
+                                ExtraResource(
+                                    file_abs_path=str(file_path.absolute()),
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                    resource=resource_id,
+                                )
+                            )
             self.pbar.update()
         self.pbar.close()
 

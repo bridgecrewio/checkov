@@ -20,9 +20,6 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    def __init__(self) -> None:
-        super().__init__()
-
     def _load_files(
         self,
         files_to_load: list[str],
@@ -47,9 +44,10 @@ class Runner(BaseRunner):
         root_folder: str | None = None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 

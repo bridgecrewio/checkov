@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Optional, List, Dict, Tuple
@@ -8,6 +10,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
@@ -16,7 +19,7 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.ARM
+    check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
@@ -26,9 +29,10 @@ class Runner(BaseRunner):
         root_folder: str,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -133,8 +137,11 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(parameter_details)
                             results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    parameter_details)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=arm_file,
+                                                code_block=censored_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,

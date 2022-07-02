@@ -17,6 +17,7 @@ from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_or_equal
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_attribute_solver import LessThanAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_or_equal_attribute_solver import LessThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_equals_attribute_solver import JsonpathEqualsAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_not_equals_attribute_solver import JsonpathNotEqualsAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_exists_attribute_solver import JsonpathExistsAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_not_exists_attribute_solver import JsonpathNotExistsAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver  # noqa
