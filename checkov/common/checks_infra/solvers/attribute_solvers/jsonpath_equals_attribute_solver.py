@@ -6,7 +6,7 @@ from jsonpath_ng.ext import parse
 
 
 class JsonpathEqualsAttributeSolver(BaseAttributeSolver):
-    operator = Operators.JSONPATH_EQUALS
+    operator = Operators.JSONPATH_EQUALS  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types,

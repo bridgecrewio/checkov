@@ -9,7 +9,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 
 
 class OrConnectionSolver(ComplexConnectionSolver):
-    operator = Operators.OR
+    operator = Operators.OR  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)

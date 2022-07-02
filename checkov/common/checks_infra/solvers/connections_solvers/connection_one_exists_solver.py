@@ -5,7 +5,7 @@ from networkx import DiGraph
 
 
 class ConnectionOneExistsSolver(ConnectionExistsSolver):
-    operator = Operators.ONE_EXISTS
+    operator = Operators.ONE_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,

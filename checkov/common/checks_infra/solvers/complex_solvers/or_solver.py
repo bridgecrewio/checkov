@@ -8,7 +8,7 @@ from operator import or_
 
 
 class OrSolver(BaseComplexSolver):
-    operator = Operators.OR
+    operator = Operators.OR  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)

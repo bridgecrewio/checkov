@@ -5,7 +5,7 @@ from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver
 
 
 class EqualsAttributeSolver(BaseAttributeSolver):
-    operator = Operators.EQUALS
+    operator = Operators.EQUALS  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types,

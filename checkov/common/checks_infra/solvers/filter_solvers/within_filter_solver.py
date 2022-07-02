@@ -7,7 +7,7 @@ from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver impor
 
 
 class WithinFilterSolver(BaseFilterSolver):
-    operator = Operators.WITHIN
+    operator = Operators.WITHIN  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: list[str], attribute: str, value: Any) -> None:
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)

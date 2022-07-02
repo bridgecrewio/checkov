@@ -8,7 +8,7 @@ from operator import and_
 
 
 class AndSolver(BaseComplexSolver):
-    operator = Operators.AND
+    operator = Operators.AND  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)

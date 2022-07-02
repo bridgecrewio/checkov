@@ -7,7 +7,7 @@ from checkov.common.checks_infra.solvers.connections_solvers.connection_exists_s
 
 
 class ConnectionNotExistsSolver(ConnectionExistsSolver):
-    operator = Operators.NOT_EXISTS
+    operator = Operators.NOT_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,

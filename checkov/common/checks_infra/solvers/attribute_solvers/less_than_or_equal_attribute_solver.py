@@ -5,7 +5,7 @@ from .greater_than_attribute_solver import GreaterThanAttributeSolver
 
 
 class LessThanOrEqualAttributeSolver(GreaterThanAttributeSolver):
-    operator = Operators.LESS_THAN_OR_EQUAL
+    operator = Operators.LESS_THAN_OR_EQUAL  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)

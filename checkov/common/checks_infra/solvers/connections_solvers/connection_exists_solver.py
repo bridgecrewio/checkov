@@ -9,7 +9,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 
 
 class ConnectionExistsSolver(BaseConnectionSolver):
-    operator = Operators.EXISTS
+    operator = Operators.EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,

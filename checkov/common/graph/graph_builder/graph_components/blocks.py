@@ -11,7 +11,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 
 
 class Block:
-    __slots__ =  (
+    __slots__ = (
         "attributes",
         "block_type",
         "breadcrumbs",

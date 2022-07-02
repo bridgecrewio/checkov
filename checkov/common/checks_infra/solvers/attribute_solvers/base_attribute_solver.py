@@ -19,7 +19,7 @@ WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
 class BaseAttributeSolver(BaseSolver):
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(SolverType.ATTRIBUTE)

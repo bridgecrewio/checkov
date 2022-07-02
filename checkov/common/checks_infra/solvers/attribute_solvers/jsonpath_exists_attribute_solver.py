@@ -5,7 +5,7 @@ from checkov.common.graph.checks_infra.enums import Operators
 
 
 class JsonpathExistsAttributeSolver(JsonpathEqualsAttributeSolver):
-    operator = Operators.JSONPATH_EXISTS
+    operator = Operators.JSONPATH_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types,

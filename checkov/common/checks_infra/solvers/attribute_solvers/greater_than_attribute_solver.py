@@ -6,7 +6,7 @@ from checkov.common.util.type_forcers import force_float
 
 
 class GreaterThanAttributeSolver(BaseAttributeSolver):
-    operator = Operators.GREATER_THAN
+    operator = Operators.GREATER_THAN  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)

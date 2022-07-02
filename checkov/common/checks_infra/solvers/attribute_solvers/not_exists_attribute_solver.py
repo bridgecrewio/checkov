@@ -5,7 +5,7 @@ from .exists_attribute_solver import ExistsAttributeSolver
 
 
 class NotExistsAttributeSolver(ExistsAttributeSolver):
-    operator = Operators.NOT_EXISTS
+    operator = Operators.NOT_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
