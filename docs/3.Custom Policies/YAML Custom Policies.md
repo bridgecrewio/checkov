@@ -41,6 +41,7 @@ The policy definition consists of:
 * **Logical Operator(s)** (optional)
 * **Filter**(optional)
 
+The top level object under `definition` must be a single object (not a list). It can be an attribute block, a connection block, or a logical operator (`and`, `or`, `not`).
 
 ## Types of Definition Blocks
 
@@ -49,6 +50,9 @@ The policy definition consists of:
 
 ### Using AND/OR Logic
 A policy definition may include multiple blocks (**Attribute**, **Connection state** or both), associated by **AND/OR** logic.
+
+### Using NOT Logic
+A policy definition may include any block (**Attribute**, **Connection state**, or **AND/OR**) underneath a `not` block to invert the statement.
 
 ## Attribute Blocks
 
@@ -96,7 +100,9 @@ definition:
 | Subset                | `subset`                |
 | Not Subset            | `not_subset`            |
 | Json Path Equals      | `jsonpath_equals`       |
+| Json Path Not Equals      | `jsonpath_not_equals`       |
 | Json Path Exists      | `jsonpath_exists`       |
+| Json Path Not Exists      | `jsonpath_not_exists`       |
 
 ### Attribute Condition: Keys and Values
 
@@ -105,9 +111,42 @@ definition:
 | `cond_type` | string | Must be `attribute`                                                                                                                                                                                                                                                                                      |
 | `resource_type` | collection of strings | Use either `all` or `[resource types from list]`                                                                                                                                                                                                                                                         |
 | `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period`                                                                                                                                                                                                                  |
-| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `jsonpath_equals`, `jsonpath_exists` |
+| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `jsonpath_equals`, `jsonpath_not_equals`, `jsonpath_exists`, `jsonpath_not_exists` |
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                                              |
 
+
+### Evaluating list attributes
+
+You may use a wildcard (`*`) to evaluate all of the items within a list. You may use multiple wildcards to evaluated nested lists. If *any* item in the list matches the condition, then the condition passes.
+
+For example, consider the following resource:
+
+```
+resource "aws_security_group" "sg" {
+  ...
+  ingress {
+    cidr_blocks = ["0.0.0.0/0"]
+    ...
+  }
+  ingress {
+    cidr_blocks = ["192.168.1.0/24"]
+    ...
+  }
+}
+```
+
+The following definition will return `true`, because one of the CIDR blocks contains `0.0.0.0/0`:
+
+```yaml
+cond_type: attribute
+resource_types:
+  - "aws_security_group"
+attribute: "ingress.*.cidr_blocks"
+operator: "contains"
+value: "0.0.0.0/0"
+```
+
+Note that switching the operator to `not_contains` will still result in the evaluation being `true`, because there is also an element that does *not* contain `0.0.0.0/0`. If you want to write a policy that fails if any CIDR block contains `0.0.0.0/0`, consider the `not` operator, described below.
 
 ## Connection State Block
 
@@ -188,9 +227,10 @@ definition:
 
 The Bridgecrew platform allows you to combine definition blocks using AND/OR operators.
 
-* The top-level logical operator is the first key below \"definition\" (and not an item in a collection). It defines the relationship of all of the definition blocks in the specific YAML policy definition.
+* The top-level logical operator is the first key below \"definition\" (and not an item in a collection). Most policies will start with an `and` or `or` key here, with multiple conditions nested within that.
 * Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources.
 Every other logical operator applies within a collection. For example, you can use AND/OR logic in a collection of key-value pairs.
+* The value for the `and` or `or` key must be a list; each element of the list must be a valid definition on its own (i.e., a combination of attribute conditions, connection conditions, nested AND/OR, etc).
 
 ### Example
 
@@ -200,12 +240,49 @@ The logic in the policy definition shown below is:
 ```yaml
 #....
 defintion:
-           and:
-               - #filter block 1
-               - #block 2
-               - or:
-                   - #block 3
-                   - #block 4
+  and:
+  - #filter block 1
+  - #block 2
+  - or:
+    - #block 3
+    - #block 4
 ```
 
 [See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
+
+## Using NOT Logic
+
+You can use `not` in the same places that you may use `and` and `or` to invert the nested condition definition. The value of the `not` element in the policy may be either a list containing exactly one element (which can also be nested more deeply), or any other type of block.
+
+### Example
+
+The definition below inverts the example in the previous section.
+
+```yaml
+#....
+defintion:
+  not:
+    and:
+    - #filter block 1
+    - #block 2
+    - or:
+      - #block 3
+      - #block 4
+```
+
+The following code is also valid (the child of `not` is a list of length 1):
+
+```yaml
+#....
+defintion:
+  not:
+  - and:
+    - #filter block 1
+    - #block 2
+    - or:
+      - #block 3
+      - #block 4
+```
+
+[See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
+

@@ -24,6 +24,7 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
 
@@ -57,6 +58,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
 
@@ -95,6 +99,8 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        self.pbar.initiate(len(self.definitions))
+
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
@@ -107,9 +113,8 @@ class Runner(BaseRunner):
 
     def check_definitions(self, root_folder, runner_filter, report):
         for file_abs_path, definition in self.definitions.items():
-
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
-
+            self.pbar.set_additional_data({'Current File Scanned': cf_file})
             if isinstance(definition, dict) and TemplateSections.RESOURCES in definition.keys():
                 for resource_name, resource in definition[TemplateSections.RESOURCES].items():
                     resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)
@@ -127,12 +132,15 @@ class Runner(BaseRunner):
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    resource)
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=check_result,
-                                    code_block=entity_code_lines,
+                                    code_block=censored_code_lines,
                                     file_path=cf_file,
                                     file_line_range=entity_lines_range,
                                     resource=resource_id,
@@ -149,6 +157,8 @@ class Runner(BaseRunner):
                                         record = GraphRecord(record, breadcrumb)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+            self.pbar.update()
+        self.pbar.close()
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)

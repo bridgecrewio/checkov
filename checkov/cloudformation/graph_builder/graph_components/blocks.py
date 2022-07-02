@@ -8,6 +8,8 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 
 class CloudformationBlock(Block):
+    __slots__ = ("condition", "metadata")
+
     def __init__(
         self,
         name: str,

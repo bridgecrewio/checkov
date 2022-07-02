@@ -17,6 +17,7 @@ from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
+from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
@@ -90,7 +91,8 @@ DEFAULT_RUNNERS = (
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
-    sca_image_runner()
+    sca_image_runner(),
+    argo_workflows_runner(),
 )
 
 
@@ -143,10 +145,11 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
+        runner_registry.filter_runner_framework()
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
@@ -368,7 +371,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'include checks by ID even if they are not in the platform, without using this flag.')
     parser.add('--quiet', action='store_true',
                default=False,
-               help='in case of CLI output, display only failed checks')
+               help='in case of CLI output, display only failed checks. Also disables progress bars')
     parser.add('--compact', action='store_true',
                default=False,
                help='in case of CLI output, do not display code blocks')

@@ -18,5 +18,5 @@ class RegexMatchAttributeSolver(BaseAttributeSolver):
         try:
             return re.match(str(self.value), str(attr)) is not None
         except re.error as e:
-            logging.warn(f'failed to run regex {self.value} for attribute: {attr}, ', e)
+            logging.warning(f'failed to run regex {self.value} for attribute: {attr}, {str(e)}')
             return False

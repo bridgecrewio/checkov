@@ -10,6 +10,8 @@ _BlockT = TypeVar("_BlockT", bound="BlockType")
 
 
 class VertexReference(ABC, Generic[_BlockT]):
+    __slots__ = ("block_type", "sub_parts", "origin_value")
+
     def __init__(self, block_type: str | _BlockT, sub_parts: list[str], origin_value: str) -> None:
         self.block_type: _BlockT = self.block_type_str_to_enum(block_type) if isinstance(block_type, str) else block_type
         self.sub_parts = sub_parts

@@ -42,7 +42,7 @@ jobs:
           python -m pip install --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@v9
+        uses: tj-actions/verify-changed-files@v10
         id: changed_files
         with:
           files: Pipfile.lock

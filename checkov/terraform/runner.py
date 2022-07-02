@@ -3,6 +3,7 @@ import dataclasses
 import logging
 import os
 import platform
+from pathlib import Path
 from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
@@ -19,6 +20,7 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -84,6 +86,9 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter = RunnerFilter(),
         collect_skip_comments: bool = True
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
@@ -126,6 +131,7 @@ class Runner(BaseRunner):
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
+        self.pbar.initiate(len(self.definitions))  # type: ignore
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         report.add_parsing_errors(list(parsing_errors.keys()))
@@ -235,7 +241,8 @@ class Runner(BaseRunner):
             logging.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
+    def check_tf_definition(self, report: Report, root_folder: Path, runner_filter: RunnerFilter,
+                            collect_skip_comments=True) -> None:
         parser_registry.reset_definitions_context()
         if not self.context:
             definitions_context = {}
@@ -245,11 +252,14 @@ class Runner(BaseRunner):
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
             abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
+            self.pbar.update()
+        self.pbar.close()
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
                        scanned_file, runner_filter, module_referrer: Optional[str]):
@@ -336,12 +346,14 @@ class Runner(BaseRunner):
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             for check, check_result in results.items():
+                censored_code_lines = omit_secret_value_from_checks(check, check_result, entity_code_lines,
+                                                                    entity_config)
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_code_lines,
+                    code_block=censored_code_lines,
                     file_path=scanned_file,
                     file_line_range=entity_lines_range,
                     resource=entity_id,

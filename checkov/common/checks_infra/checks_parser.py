@@ -19,6 +19,7 @@ from checkov.common.checks_infra.solvers import (
     NotEndingWithAttributeSolver,
     AndSolver,
     OrSolver,
+    NotSolver,
     ConnectionExistsSolver,
     ConnectionNotExistsSolver,
     AndConnectionSolver,
@@ -29,10 +30,12 @@ from checkov.common.checks_infra.solvers import (
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
-    JsonpathExistsAttributeSolver
+    JsonpathNotEqualsAttributeSolver,
+    JsonpathExistsAttributeSolver,
+    JsonpathNotExistsAttributeSolver,
+    SubsetAttributeSolver,
+    NotSubsetAttributeSolver
 )
-from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -70,12 +73,15 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
-    "jsonpath_exists": JsonpathExistsAttributeSolver
+    "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
+    "jsonpath_exists": JsonpathExistsAttributeSolver,
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
     "and": AndSolver,
     "or": OrSolver,
+    "not": NotSolver,
 }
 
 operator_to_connection_solver_classes: dict[str, Type[BaseConnectionSolver]] = {
@@ -122,6 +128,12 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             check.type = SolverType.COMPLEX
             check.operator = complex_operator
             sub_solvers = raw_check.get(complex_operator, [])
+
+            # this allows flexibility for specifying the child conditions, and makes "not" more intuitive by
+            # not requiring an actual list
+            if isinstance(sub_solvers, dict):
+                sub_solvers = [sub_solvers]
+
             for sub_solver in sub_solvers:
                 check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
             resources_types_of_sub_solvers = [

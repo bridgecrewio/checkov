@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from operator import itemgetter
+
 from checkov.common.models.enums import CheckResult
 from typing import Any, TYPE_CHECKING
 
@@ -56,9 +58,9 @@ class Baseline:
             formatted_findings = []
             for finding in findings:
                 formatted_findings.append({"resource": finding["resource"], "check_ids": finding["check_ids"]})
-            failed_checks_list.append({"file": file, "findings": formatted_findings})
+            failed_checks_list.append({"file": file, "findings": sorted(formatted_findings, key=itemgetter("resource"))})
 
-        resp = {"failed_checks": failed_checks_list}
+        resp = {"failed_checks": sorted(failed_checks_list, key=itemgetter("file"))}
         return resp
 
     def compare_and_reduce_reports(self, scan_reports: list[Report]) -> None:
