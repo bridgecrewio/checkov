@@ -32,7 +32,9 @@ from checkov.common.checks_infra.solvers import (
     JsonpathExistsAttributeSolver,
     JsonpathNotExistsAttributeSolver,
     SubsetAttributeSolver,
-    NotSubsetAttributeSolver
+    NotSubsetAttributeSolver,
+    IsEmptyAttributeSolver,
+    IsNotEmptyAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -72,7 +74,9 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "not_subset": NotSubsetAttributeSolver,
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
     "jsonpath_exists": JsonpathExistsAttributeSolver,
-    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver,
+    "is_empty": IsEmptyAttributeSolver,
+    "is_not_empty": IsNotEmptyAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
