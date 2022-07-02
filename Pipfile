@@ -40,7 +40,7 @@ mypy = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.43"
+bc-python-hcl2 = "==0.3.42"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
