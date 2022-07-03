@@ -41,7 +41,7 @@ flake8-bugbear = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.42"
+bc-python-hcl2 = "==0.3.44"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
