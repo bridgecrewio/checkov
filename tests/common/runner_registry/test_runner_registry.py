@@ -148,6 +148,13 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'secrets'})
 
+        runner_filter = RunnerFilter(framework=['all'], runners=checkov_runners)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['manifest.json'])
+        self.assertIn("kubernetes", set(r.check_type for r in runner_registry.runners))
+
 
 def test_non_compact_json_output(capsys):
     # given
