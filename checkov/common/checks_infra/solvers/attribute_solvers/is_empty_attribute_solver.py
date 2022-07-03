@@ -18,4 +18,4 @@ class IsEmptyAttributeSolver(BaseAttributeSolver):
         if self._is_variable_dependant(attr, vertex["source_"]):
             return True
 
-        return attr == ""
+        return len(attr) == 0
