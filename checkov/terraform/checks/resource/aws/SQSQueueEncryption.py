@@ -11,6 +11,11 @@ class SQSQueueEncryption(BaseResourceValueCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
+    def scan_resource_conf(self, conf):
+        if conf.get('sqs_managed_sse_enabled'):
+            return CheckResult.PASSED
+        return super().scan_resource_conf(conf)
+
     def get_inspected_key(self):
         return 'kms_master_key_id'
 
