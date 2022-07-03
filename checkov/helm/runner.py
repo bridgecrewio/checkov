@@ -75,12 +75,13 @@ class Runner(BaseRunner):
         return self.target_folder_path
 
     @staticmethod
-    def parse_helm_chart_details(chart_path: str) -> dict[str, Any]:
+    def parse_helm_chart_details(chart_path: str) -> dict[str, Any] | None:
         with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
             try:
                 chart_meta = yaml.safe_load(chartyaml)
             except yaml.YAMLError:
                 logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
+                return None
         return chart_meta
 
     def check_system_deps(self) -> str | None:
@@ -206,6 +207,8 @@ class Runner(BaseRunner):
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, self.parse_helm_chart_details(cd)), chart_directories))
+        # remove parsing failures
+        chart_dir_and_meta = [chart_meta for chart_meta in chart_dir_and_meta if chart_meta[1]]
         self.target_folder_path = tempfile.mkdtemp()
 
         processed_chart_dir_and_meta = []
