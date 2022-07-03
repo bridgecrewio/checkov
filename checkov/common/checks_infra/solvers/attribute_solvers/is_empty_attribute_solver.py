@@ -1,5 +1,5 @@
 from typing import List, Optional, Any, Dict
-
+from collections.abc import Sized
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
@@ -18,7 +18,7 @@ class IsEmptyAttributeSolver(BaseAttributeSolver):
         if self._is_variable_dependant(attr, vertex["source_"]):
             return True
 
-        if isinstance(attr, (list, dict)):
+        if isinstance(attr, (list, Sized)):
             return len(attr) == 0
 
-        return attr == ""
+        return False
