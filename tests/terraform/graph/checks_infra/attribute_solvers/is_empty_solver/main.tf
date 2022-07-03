@@ -11,9 +11,17 @@ resource "aws_security_group" "sg2" {
   ingress {
     from_port = "5432"
     protocol = "tcp"
-    security_groups = [
-      "sg-id-0"
-    ]
+    cidr_blocks = ["0.0.0.0/0"]
+    self = "false"
+    to_port = "1234"
+  }
+}
+
+resource "aws_security_group" "sg3" {
+  ingress {
+    from_port = "5432"
+    protocol = ""
+    cidr_blocks = []
     self = "false"
     to_port = "1234"
   }
