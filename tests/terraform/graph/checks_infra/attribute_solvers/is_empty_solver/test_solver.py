@@ -10,7 +10,7 @@ class TestIsEmptySolver(TestBaseSolver):
         self.checks_dir = TEST_DIRNAME
         super(TestIsEmptySolver, self).setUp()
 
-    def test_is_not_empty_solver_simple(self):
+    def test_is_empty_solver_simple(self):
         root_folder = './'
         check_id = "SGPorts"
         should_pass = ['aws_security_group.aws_security_group_public']
