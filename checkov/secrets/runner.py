@@ -23,6 +23,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 
@@ -132,11 +133,11 @@ class Runner(BaseRunner):
                     for file in f_names:
                         if runner_filter.secrets_scan_file_type:
                             if 'all' in runner_filter.secrets_scan_file_type:
-                                if 'Dockerfile' in file or f".{file.split('.')[-1]}" in (ADDED_TO_SECRET_SCAN_FILES_TYPES + SUPPORTED_FILE_EXTENSIONS):
+                                if is_docker_file(file) or f".{file.split('.')[-1]}" in (ADDED_TO_SECRET_SCAN_FILES_TYPES + SUPPORTED_FILE_EXTENSIONS):
                                     files_to_scan.append(os.path.join(root, file))
                             else:
                                 if 'Dockerfile' in runner_filter.secrets_scan_file_type:
-                                    if 'Dockerfile' in file:
+                                    if is_docker_file(file):
                                         files_to_scan.append(os.path.join(root, file))
                                 if f".{file.split('.')[-1]}" in runner_filter.secrets_scan_file_type:
                                     files_to_scan.append(os.path.join(root, file))
