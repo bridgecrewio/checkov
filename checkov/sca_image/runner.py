@@ -36,7 +36,7 @@ class Runner(PackageRunner):
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
-        return is_docker_file(os.path.basename(filename))  # type:ignore[no-any-return]
+        return is_docker_file(os.path.basename(filename))
 
     def scan(
             self,
