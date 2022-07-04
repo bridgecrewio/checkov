@@ -246,7 +246,15 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['all']))
-        self.assertEqual(len(report.failed_checks), 9)
+        self.assertEqual(len(report.failed_checks), 13)
+
+    def test_runner_requested_file_only_dockerfile(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['Dockerfile']))
+        self.assertEqual(len(report.failed_checks), 4)
 
 
 if __name__ == '__main__':

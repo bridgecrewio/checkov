@@ -53,7 +53,8 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
-                                    '.go', '.cs', '.txt']
+                                    '.go', '.cs', '.txt'] + SUPPORTED_FILE_EXTENSIONS
+
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
@@ -131,12 +132,13 @@ class Runner(BaseRunner):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
-                        if runner_filter.secrets_scan_file_type:
+                        secrets_scan_file_type = runner_filter.secrets_scan_file_type
+                        if secrets_scan_file_type:
                             if 'all' in runner_filter.secrets_scan_file_type:
-                                if is_docker_file(file) or f".{file.split('.')[-1]}" in (ADDED_TO_SECRET_SCAN_FILES_TYPES + SUPPORTED_FILE_EXTENSIONS):
+                                if is_docker_file(file) or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES:
                                     files_to_scan.append(os.path.join(root, file))
                             else:
-                                if 'Dockerfile' in runner_filter.secrets_scan_file_type:
+                                if 'dockerfile' in (file_type.lower() for file_type in secrets_scan_file_type):
                                     if is_docker_file(file):
                                         files_to_scan.append(os.path.join(root, file))
                                 if f".{file.split('.')[-1]}" in runner_filter.secrets_scan_file_type:
