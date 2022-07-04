@@ -24,6 +24,7 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
 
@@ -131,12 +132,15 @@ class Runner(BaseRunner):
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    resource)
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=check_result,
-                                    code_block=entity_code_lines,
+                                    code_block=censored_code_lines,
                                     file_path=cf_file,
                                     file_line_range=entity_lines_range,
                                     resource=resource_id,

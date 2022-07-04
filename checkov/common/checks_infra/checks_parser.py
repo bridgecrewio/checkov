@@ -19,6 +19,7 @@ from checkov.common.checks_infra.solvers import (
     NotEndingWithAttributeSolver,
     AndSolver,
     OrSolver,
+    NotSolver,
     ConnectionExistsSolver,
     ConnectionNotExistsSolver,
     AndConnectionSolver,
@@ -33,7 +34,9 @@ from checkov.common.checks_infra.solvers import (
     JsonpathExistsAttributeSolver,
     JsonpathNotExistsAttributeSolver,
     SubsetAttributeSolver,
-    NotSubsetAttributeSolver
+    NotSubsetAttributeSolver,
+    IsEmptyAttributeSolver,
+    IsNotEmptyAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -74,12 +77,15 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
     "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
     "jsonpath_exists": JsonpathExistsAttributeSolver,
-    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver,
+    "is_empty": IsEmptyAttributeSolver,
+    "is_not_empty": IsNotEmptyAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
     "and": AndSolver,
     "or": OrSolver,
+    "not": NotSolver,
 }
 
 operator_to_connection_solver_classes: dict[str, Type[BaseConnectionSolver]] = {
@@ -126,6 +132,12 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             check.type = SolverType.COMPLEX
             check.operator = complex_operator
             sub_solvers = raw_check.get(complex_operator, [])
+
+            # this allows flexibility for specifying the child conditions, and makes "not" more intuitive by
+            # not requiring an actual list
+            if isinstance(sub_solvers, dict):
+                sub_solvers = [sub_solvers]
+
             for sub_solver in sub_solvers:
                 check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
             resources_types_of_sub_solvers = [

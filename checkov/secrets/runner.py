@@ -23,6 +23,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 
 SECRET_TYPE_TO_ID = {
@@ -171,13 +172,14 @@ class Runner(BaseRunner):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+                line_text_censored = omit_secret_value_from_line(secret.secret_value, line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
                     check_name=secret.type,
                     check_result=result,
-                    code_block=[(secret.line_number, line_text)],
+                    code_block=[(secret.line_number, line_text_censored)],
                     file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,

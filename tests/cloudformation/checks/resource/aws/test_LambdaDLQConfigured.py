@@ -6,7 +6,7 @@ from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestLambdaEnvironmentCredentials(unittest.TestCase):
+class TestLambdaDLQConfigured(unittest.TestCase):
     def test_summary(self):
         test_files_dir = Path(__file__).parent / "example_LambdaDLQConfigured"
 
