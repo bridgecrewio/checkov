@@ -520,7 +520,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
     parser.add('--secrets-scan-file-type',
                default=[],
-               env_var='CKV_SECRETS_SCAN_TYPE',
+               env_var='CKV_SECRETS_SCAN_FILE_TYPE',
                action='append',
                help='add scan secret for requested files. You can specify this argument multiple times to add '
                     'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
