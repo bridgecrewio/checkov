@@ -796,6 +796,7 @@
                 "sha256:34601966f3b4792fb36b6a80a94a9cc46afa7d51fa6278b4f4b1eec8676a4aec",
                 "sha256:557e8355d586a3a7d518f9d122991f273eaab2d0c9229d5feffc9dbbebe3760a"
             ],
+            "markers": "python_version == '3.8'",
             "version": "==2.3.4.1"
         },
         "pyston-lite-autoload": {
@@ -803,6 +804,7 @@
                 "sha256:d2b74f4a1e34ef84ac1974f1eb84133e57171d2f96e96bd0cab574ae1d5fdbcf"
             ],
             "index": "pypi",
+            "markers": "python_version == '3.8'",
             "version": "==2.3.4.1"
         },
         "python-dateutil": {
