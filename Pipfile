@@ -77,7 +77,6 @@ jsonschema = "~=3.0"
 prettytable = ">=3.0.0"
 pycep-parser = "==0.3.7"
 charset-normalizer = "*"
-pytest = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.7"
