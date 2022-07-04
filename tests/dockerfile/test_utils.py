@@ -1,4 +1,4 @@
-from checkov.dockerfile.utils import is_docker_file
+from checkov.common.util.dockerfile import is_docker_file
 
 VALID_DOCKER_FILE_NAMES = ["Dockerfile", "dockerfile", "Dockerfile.prod", "Dockerfile.Product1", "dev.Dockerfile",
                            "team1.product.dockerfile"]

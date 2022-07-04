@@ -36,7 +36,8 @@ class RunnerFilter(object):
             var_files: Optional[List[str]] = None,
             skip_cve_package: Optional[List[str]] = None,
             filtered_policy_ids: Optional[List[str]] = None,
-            show_progress_bar: Optional[bool] = True
+            show_progress_bar: Optional[bool] = True,
+            secrets_scan_file_type: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -88,6 +89,7 @@ class RunnerFilter(object):
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = filtered_policy_ids or []
+        self.secrets_scan_file_type = secrets_scan_file_type
 
     def should_run_check(
         self,

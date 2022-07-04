@@ -23,6 +23,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 
@@ -51,6 +52,9 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
+                                    '.go', '.cs', '.txt'] + SUPPORTED_FILE_EXTENSIONS
+
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
@@ -124,11 +128,24 @@ class Runner(BaseRunner):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
+                secrets_scan_file_type = runner_filter.secrets_scan_file_type
+                if secrets_scan_file_type:
+                    secrets_scan_file_type_lower = [file_type.lower() for file_type in secrets_scan_file_type]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
-                        if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                        if secrets_scan_file_type:
+                            if 'all' in secrets_scan_file_type:
+                                if is_docker_file(file) or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES:
+                                    files_to_scan.append(os.path.join(root, file))
+                            else:
+                                if 'dockerfile' in secrets_scan_file_type_lower:
+                                    if is_docker_file(file):
+                                        files_to_scan.append(os.path.join(root, file))
+                                if f".{file.split('.')[-1]}" in secrets_scan_file_type:
+                                    files_to_scan.append(os.path.join(root, file))
+                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
