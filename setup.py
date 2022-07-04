@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import logging
 import os
-import sys
 from importlib import util
 from os import path
 
