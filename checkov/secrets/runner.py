@@ -135,14 +135,14 @@ class Runner(BaseRunner):
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if secrets_scan_file_type:
-                            if 'all' in runner_filter.secrets_scan_file_type:
+                            if 'all' in secrets_scan_file_type:
                                 if is_docker_file(file) or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES:
                                     files_to_scan.append(os.path.join(root, file))
                             else:
                                 if 'dockerfile' in secrets_scan_file_type_lower:
                                     if is_docker_file(file):
                                         files_to_scan.append(os.path.join(root, file))
-                                if f".{file.split('.')[-1]}" in runner_filter.secrets_scan_file_type:
+                                if f".{file.split('.')[-1]}" in secrets_scan_file_type:
                                     files_to_scan.append(os.path.join(root, file))
                         elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))
