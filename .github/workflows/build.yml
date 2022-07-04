@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
-      - uses: azure/setup-helm@v1  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
+      - uses: azure/setup-helm@v3  # don't update till fixed https://github.com/Azure/setup-helm/issues/59
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
