@@ -171,7 +171,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(5, len(report.failed_checks))
+        self.assertEqual(9, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(len(report.skipped_checks), 1)
