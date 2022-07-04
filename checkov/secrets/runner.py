@@ -128,17 +128,18 @@ class Runner(BaseRunner):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
+                secrets_scan_file_type = runner_filter.secrets_scan_file_type
+                secrets_scan_file_type_lower = [file_type.lower() for file_type in secrets_scan_file_type]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
-                        secrets_scan_file_type = runner_filter.secrets_scan_file_type
                         if secrets_scan_file_type:
                             if 'all' in runner_filter.secrets_scan_file_type:
                                 if is_docker_file(file) or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES:
                                     files_to_scan.append(os.path.join(root, file))
                             else:
-                                if 'dockerfile' in (file_type.lower() for file_type in secrets_scan_file_type):
+                                if 'dockerfile' in secrets_scan_file_type_lower:
                                     if is_docker_file(file):
                                         files_to_scan.append(os.path.join(root, file))
                                 if f".{file.split('.')[-1]}" in runner_filter.secrets_scan_file_type:
