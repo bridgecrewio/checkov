@@ -13,13 +13,13 @@ class AKSLoggingEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        two_point_o_path = "addon_profile/[0]/oms_agent/[0]/enabled"
-        three_point_o_path = "oms_agent/[0]"
-        if dpath.search(conf, two_point_o_path) and dpath.get(conf, two_point_o_path)[0]:
-            self.evaluated_keys = [two_point_o_path]
+        provider_version_2_path = "addon_profile/[0]/oms_agent/[0]/enabled"
+        provider_version_3_path = "oms_agent/[0]"
+        if dpath.search(conf, provider_version_2_path) and dpath.get(conf, provider_version_2_path)[0]:
+            self.evaluated_keys = [provider_version_2_path]
             return CheckResult.PASSED
-        elif dpath.search(conf, three_point_o_path):
-            self.evaluated_keys = [three_point_o_path]
+        elif dpath.search(conf, provider_version_3_path):
+            self.evaluated_keys = [provider_version_3_path]
             return CheckResult.PASSED
 
         return CheckResult.FAILED
