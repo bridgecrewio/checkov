@@ -143,7 +143,7 @@ class Runner(BaseRunner):
                                         files_to_scan.append(os.path.join(root, file))
                                 if f".{file.split('.')[-1]}" in runner_filter.secrets_scan_file_type:
                                     files_to_scan.append(os.path.join(root, file))
-                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
