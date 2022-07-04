@@ -6,6 +6,7 @@ from typing import Optional, List, Dict, Tuple
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -113,15 +114,25 @@ class Runner(BaseRunner):
 
                             results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
                                                                  runner_filter)
-                            for check, check_result in results.items():
-                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=arm_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                severity=check.severity)
-                                record.set_guideline(check.guideline)
-                                report.add_record(record=record)
+                            if results:
+                                for check, check_result in results.items():
+                                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                                                    code_block=entity_code_lines, file_path=arm_file,
+                                                    file_line_range=entity_lines_range,
+                                                    resource=resource_id, evaluations=variable_evaluations,
+                                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                                    severity=check.severity)
+                                    record.set_guideline(check.guideline)
+                                    report.add_record(record=record)
+                            else:
+                                # resources without checks, but not existing ones
+                                report.extra_resources.add(
+                                    ExtraResource(
+                                        file_abs_path=file_abs_path,
+                                        file_path=arm_file,
+                                        resource=resource_id,
+                                    )
+                                )
 
                 if 'parameters' in definitions[arm_file].keys():
                     parameters = definitions[arm_file]['parameters']

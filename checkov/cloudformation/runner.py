@@ -10,16 +10,17 @@ from checkov.cloudformation.cfn_utils import create_definitions, build_definitio
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
-from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
+from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
@@ -32,12 +33,12 @@ class Runner(BaseRunner):
     check_type = CheckType.CLOUDFORMATION
 
     def __init__(
-        self,
-        db_connector: NetworkxConnector = NetworkxConnector(),
-        source: str = "CloudFormation",
-        graph_class: Type[LocalGraph] = CloudformationLocalGraph,
-        graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None
+            self,
+            db_connector: NetworkxConnector = NetworkxConnector(),
+            source: str = "CloudFormation",
+            graph_class: Type[LocalGraph] = CloudformationLocalGraph,
+            graph_manager: Optional[GraphManager] = None,
+            external_registries: Optional[List[BaseRegistry]] = None
     ) -> None:
         super().__init__(file_extensions=['.json', '.yml', '.yaml', '.template'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -51,12 +52,12 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True,
     ) -> Report:
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -65,7 +66,8 @@ class Runner(BaseRunner):
         parsing_errors: dict[str, str] = {}
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter,
+                                                                        parsing_errors)
             report.add_parsing_errors(list(parsing_errors.keys()))
 
             if external_checks_dir:
@@ -86,7 +88,8 @@ class Runner(BaseRunner):
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices,
+                                                                                           root_folder)
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():
@@ -131,32 +134,42 @@ class Runner(BaseRunner):
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
-                            for check, check_result in results.items():
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    entity_code_lines,
-                                                                                    resource)
-                                record = Record(
-                                    check_id=check.id,
-                                    bc_check_id=check.bc_id,
-                                    check_name=check.name,
-                                    check_result=check_result,
-                                    code_block=censored_code_lines,
-                                    file_path=cf_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=resource_id,
-                                    evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__,
-                                    file_abs_path=file_abs_path,
-                                    entity_tags=tags,
-                                    severity=check.severity
-                                )
+                            if results:
+                                for check, check_result in results.items():
+                                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                        entity_code_lines,
+                                                                                        resource)
+                                    record = Record(
+                                        check_id=check.id,
+                                        bc_check_id=check.bc_id,
+                                        check_name=check.name,
+                                        check_result=check_result,
+                                        code_block=censored_code_lines,
+                                        file_path=cf_file,
+                                        file_line_range=entity_lines_range,
+                                        resource=resource_id,
+                                        evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__,
+                                        file_abs_path=file_abs_path,
+                                        entity_tags=tags,
+                                        severity=check.severity
+                                    )
 
-                                if CHECKOV_CREATE_GRAPH:
-                                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
-                                    if breadcrumb:
-                                        record = GraphRecord(record, breadcrumb)
-                                record.set_guideline(check.guideline)
-                                report.add_record(record=record)
+                                    if CHECKOV_CREATE_GRAPH:
+                                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                                        if breadcrumb:
+                                            record = GraphRecord(record, breadcrumb)
+                                    record.set_guideline(check.guideline)
+                                    report.add_record(record=record)
+                            else:
+                                # resources without checks, but not existing ones
+                                report.extra_resources.add(
+                                    ExtraResource(
+                                        file_abs_path=str(file_abs_path),
+                                        file_path=cf_file,
+                                        resource=resource_id,
+                                    )
+                                )
             self.pbar.update()
         self.pbar.close()
 
