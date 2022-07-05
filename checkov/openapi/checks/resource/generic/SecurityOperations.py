@@ -28,6 +28,8 @@ class SecurityOperations(BaseOpenapiCheck):
                         if self.is_start_end_line(op_name):
                             continue
                         self.evaluated_keys = ['security']
+                        if not isinstance(op_val, dict):
+                            continue
                         if 'security' not in op_val:
                             return CheckResult.FAILED, conf
 
