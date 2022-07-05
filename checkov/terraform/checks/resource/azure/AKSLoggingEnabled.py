@@ -11,7 +11,7 @@ class AKSLoggingEnabled(BaseResourceValueCheck):
         supported_resources = ['azurerm_kubernetes_cluster']
         categories = [CheckCategories.KUBERNETES]
         self.provider_version_2_path = "addon_profile/[0]/oms_agent/[0]/enabled"
-        self.provider_version_3_path = "oms_agent/[0]"
+        self.provider_version_3_path = "oms_agent/[0]/log_analytics_workspace_id"
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
