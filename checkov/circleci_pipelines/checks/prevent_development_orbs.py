@@ -11,7 +11,7 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['orbs']
+            supported_entities=['orbs[].{image: image, __startline__: __startline__, __endline__:__endline__}']
         )
 
     def scan_entity_conf(self, conf):
