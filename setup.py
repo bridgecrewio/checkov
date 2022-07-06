@@ -69,7 +69,8 @@ setup(
         "pycep-parser==0.3.7",
         "charset-normalizer",
         "pyston_lite_autoload==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')",
-        "pyston-lite==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')"
+        "pyston-lite==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')",
+        "wheel; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')",
     ],
     license="Apache License 2.0",
     name="checkov",
