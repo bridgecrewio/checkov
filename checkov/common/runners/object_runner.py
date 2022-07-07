@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import platform
+import typing
 
 from abc import abstractmethod
 from collections.abc import Iterable
@@ -26,8 +27,8 @@ GITHUB_ACTIONS = "github_actions"
 
 class Runner(BaseRunner):
     workflow_name = ""
-    jobs = {}
-    triggers = ""
+    jobs: typing.Dict = {}
+    triggers: typing.Set = set()
 
     def _load_files(
             self,
@@ -42,7 +43,7 @@ class Runner(BaseRunner):
             if result:
                 (definitions[file], definitions_raw[file]) = result
                 if self.check_type == GITHUB_ACTIONS:
-                    self.workflow_name = result[0].get('name')
+                    self.workflow_name = result[0].get('name')  #type:ignore
                     self.jobs = self._get_jobs(result)
                     self.triggers = self._get_triggers(result)
 
@@ -173,7 +174,7 @@ class Runner(BaseRunner):
     def _get_jobs(self, result: tuple[dict[str, Any], dict[str, Any]]) -> dict[str, dict[str, str]]:
         jobs_dict: dict[str, dict[str, str]] = {}
         tmp_key: str = ""
-        jobs = result[0].get('jobs')
+        jobs = result[0].get('jobs')  #type:ignore
         for key, value in jobs.items():
             if key != START_LINE and key != END_LINE:
                 jobs_dict[key] = {}
