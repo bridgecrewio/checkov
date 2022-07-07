@@ -168,22 +168,19 @@ class Runner(BaseRunner):
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
 
         except Exception as e:
-            logging.info(f"error : {str(e)}")
+            logging.info(f"Error:{str(e)}")
         return triggers_set
 
     def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> dict[str, dict[str, str]]:
         jobs_dict: dict[str, dict[str, str]] = {}
-        tmp_key: str = ""
         jobs = result[0].get('jobs')
         if jobs:
             for key, value in jobs.items():
                 if key != START_LINE and key != END_LINE:
                     jobs_dict[key] = {}
-                    tmp_key = key
-                else:
-                    if key == START_LINE:
-                        jobs_dict[tmp_key][START_LINE] = value
-                    if key == END_LINE:
-                        jobs_dict[tmp_key][END_LINE] = value
+                if value.get(START_LINE):
+                    jobs_dict[key][START_LINE] = value[START_LINE]
+                if value.get(END_LINE):
+                    jobs_dict[key][END_LINE] = value[END_LINE]
 
         return jobs_dict
