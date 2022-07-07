@@ -184,6 +184,9 @@ class Runner(BaseRunner):
             # --dependency-update needed to pull in deps before templating.
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
+            if e:
+                logging.info(
+                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
 
