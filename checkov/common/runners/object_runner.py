@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 import platform
-import typing
 
 from abc import abstractmethod
 from collections.abc import Iterable
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    def __init__(self, workflow_name: str, jobs: Dict[str, dict[str, str]], triggers: Set[str]):
+    def __init__(self, workflow_name=None, jobs=None, triggers=None):
         super().__init__()
         self.jobs = jobs
         self.workflow_name = workflow_name
@@ -166,9 +165,11 @@ class Runner(BaseRunner):
         triggers = result[0].get(True)
         try:
             if triggers:
-                for key in triggers.keys():
-                    if key != START_LINE and key != END_LINE:
-                        triggers_set.add(key)
+                # for key in triggers.keys():
+                #     if key != START_LINE and key != END_LINE:
+                #         triggers_set.add(key)
+                triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
+
         except Exception as e:
             logging.info(f"error : {str(e)}")
         return triggers_set
