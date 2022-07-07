@@ -8,6 +8,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from typing import Any, TYPE_CHECKING, Callable
 
+from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -18,34 +19,46 @@ from checkov.common.util.suppression import collect_suppressions_for_context
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
+START_LINE = '__startline__'
+END_LINE = '__endline__'
+GITHUB_ACTIONS = "github_actions"
+
 
 class Runner(BaseRunner):
+    workflow_name = ""
+    jobs = {}
+    triggers = ""
+
     def _load_files(
-        self,
-        files_to_load: list[str],
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
-        definitions_raw: dict[str, list[tuple[int, str]]],
-        filename_fn: Callable[[str], str] | None = None,
+            self,
+            files_to_load: list[str],
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
+            definitions_raw: dict[str, list[tuple[int, str]]],
+            filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
         for file, result in results:
             if result:
                 (definitions[file], definitions_raw[file]) = result
+                if self.check_type == GITHUB_ACTIONS:
+                    self.workflow_name = result[0].get('name')
+                    self.jobs = self._get_jobs(result)
+                    self.triggers = self._get_triggers(result)
 
     @abstractmethod
     def _parse_file(
-        self, f: str
+            self, f: str
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(
-        self,
-        root_folder: str | None = None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter | None = None,
-        collect_skip_comments: bool = True,
+            self,
+            root_folder: str | None = None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True,
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
@@ -82,7 +95,8 @@ class Runner(BaseRunner):
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks,
+                                    runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -96,6 +110,7 @@ class Runner(BaseRunner):
                     end, start = self.get_start_end_lines(end, result_config, start)
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
+
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
@@ -104,13 +119,21 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
+                    resource=self.get_resource(file_path, key, check.supported_entities),
+                    # type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
                     entity_tags=None,
                     severity=check.severity,
                 )
+                if self.check_type == GITHUB_ACTIONS:
+                    record = GithubActionsRecord(
+                        record=record,
+                        jobs=self.jobs,
+                        triggers=self.triggers,
+                        workflow_name=self.workflow_name
+                    )
                 report.add_record(record)
             self.pbar.update()
         self.pbar.close()
@@ -138,3 +161,26 @@ class Runner(BaseRunner):
         for record in report.get_all_records():
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
+
+    def _get_triggers(self, result: tuple[dict[str, Any], dict[str, Any]]) -> set[str]:
+        triggers_set = set()
+        triggers = result[0].get(True)
+        for key in triggers.keys():
+            if key != START_LINE and key != END_LINE:
+                triggers_set.add(key)
+        return triggers_set
+
+    def _get_jobs(self, result: tuple[dict[str, Any], dict[str, Any]]) -> dict[str, dict[str, str]]:
+        jobs_dict: dict[str, dict[str, str]] = {}
+        tmp_key: str = ""
+        jobs = result[0].get('jobs')
+        for key, value in jobs.items():
+            if key != START_LINE and key != END_LINE:
+                jobs_dict[key] = {}
+                tmp_key = key
+            elif key == START_LINE:
+                jobs_dict[tmp_key][START_LINE] = value
+            elif key == END_LINE:
+                jobs_dict[tmp_key][END_LINE] = value
+
+        return jobs_dict
