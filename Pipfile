@@ -79,7 +79,7 @@ pycep-parser = "==0.3.7"
 charset-normalizer = "*"
 pyston_lite_autoload = {version = "==2.3.4.1", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin')"}
 pyston-lite = {version = "==2.3.4.1", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin')"}
-mypy = "*"
+
 
 [requires]
 python_version = "3.7"

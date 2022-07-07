@@ -7,28 +7,27 @@ import typing
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict
+from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict, Set
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.runner_filter import RunnerFilter
 from checkov.common.util.suppression import collect_suppressions_for_context
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
-START_LINE = '__startline__'
-END_LINE = '__endline__'
-GITHUB_ACTIONS = "github_actions"
-
 
 class Runner(BaseRunner):
-    workflow_name: str = ""
-    jobs: typing.Dict[str, dict[str, str]] = {}
-    triggers: typing.Set[str] = set()
+    def __init__(self, workflow_name: str, jobs: Dict[str, dict[str, str]], triggers: Set[str]):
+        super().__init__()
+        self.jobs = jobs
+        self.workflow_name = workflow_name
+        self.triggers = triggers
 
     def _load_files(
             self,
@@ -42,8 +41,8 @@ class Runner(BaseRunner):
         for file, result in results:
             if result:
                 (definitions[file], definitions_raw[file]) = result
-                if self.check_type == GITHUB_ACTIONS:
-                    self.workflow_name = result[0].get('name')  #type:ignore
+                if self.check_type == CheckType.GITHUB_ACTIONS:
+                    self.workflow_name = result[0].get('name')  # type:ignore
                     self.jobs = self._get_jobs(result)
                     self.triggers = self._get_triggers(result)
 
@@ -96,8 +95,7 @@ class Runner(BaseRunner):
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks,
-                                    runner_filter)    # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -120,14 +118,15 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
+                    resource=self.get_resource(file_path, key, check.supported_entities),
+                    # type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
                     entity_tags=None,
                     severity=check.severity,
                 )
-                if self.check_type == GITHUB_ACTIONS:
+                if self.check_type == CheckType.GITHUB_ACTIONS:
                     record = GithubActionsRecord(
                         record=record,
                         jobs=self.jobs,
