@@ -1,6 +1,7 @@
 import csv
 import os
 from datetime import datetime
+from typing import List, Any
 
 from checkov.common.output.report import Report, CheckType
 
@@ -14,14 +15,16 @@ FILE_NAME_CONTAINER_IMAGES = f'{date_now}_container_images.csv'
 FILE_NAME_IAC = f'{date_now}_iac.csv'
 HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
 
-CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridgecrew. Signup at https://www.bridgecrew.cloud/login/signUp and add your API key to include those findings."
+CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridgecrew. Signup at " \
+                 "https://www.bridgecrew.cloud/login/signUp and add your API key to include those findings. "
 
 
 class CSVSBOM():
+
     def __init__(self) -> None:
-        self.iac_rows = []
-        self.container_rows = []
-        self.package_rows = []
+        self.iac_rows: list[dict] = []
+        self.container_rows: list[dict] = []
+        self.package_rows: list[dict] = []
 
     def add_report(self, report: Report, git_org, git_repository):
         if report.check_type != CheckType.SCA_IMAGE and report.check_type != CheckType.SCA_PACKAGE:
@@ -45,10 +48,9 @@ class CSVSBOM():
                               is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file, header, rows, is_api_key):
-
+    def write_section(file: str, header: list, rows: list, is_api_key: bool):
         with open(file, 'w', newline='') as f:
-            print(f"Persisting SBOM to {os.path.abspath(file)}")
+            print(f'Persisting SBOM to {os.path.abspath(file)}')
             if is_api_key:
                 writer = csv.DictWriter(f, fieldnames=header)
                 writer.writeheader()
