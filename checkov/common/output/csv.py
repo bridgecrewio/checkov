@@ -48,7 +48,7 @@ class CSVSBOM():
                               is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file: str, header: typing.List, rows: typing.List, is_api_key: bool) -> None:
+    def write_section(file: str, header: typing.List, rows: typing.List, is_api_key: bool) -> None: # type: ignore
         with open(file, 'w', newline='') as f:
             print(f'Persisting SBOM to {os.path.abspath(file)}')
             if is_api_key:
@@ -56,6 +56,6 @@ class CSVSBOM():
                 writer.writeheader()
                 writer.writerows(rows)  # type: ignore
             else:
-                writer = csv.writer(f)
+                writer = csv.writer(f)  # type: ignore
                 writer.writerow(header)  # type: ignore
                 writer.writerow([CTA_NO_API_KEY])  # type: ignore
