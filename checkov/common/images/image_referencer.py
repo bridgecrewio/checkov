@@ -57,7 +57,8 @@ class ImageReferencer:
         """
         return []
 
-    def inspect(self, image_name: str) -> str:
+    @staticmethod
+    def inspect(image_name: str) -> str:
         """
 
         :param image_name: name of the image to be inspected locally using a "docker inspect X". If image does not exist try to pull it locally.
