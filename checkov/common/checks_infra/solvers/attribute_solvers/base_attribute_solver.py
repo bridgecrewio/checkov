@@ -53,8 +53,10 @@ class BaseAttributeSolver(BaseSolver):
                     vertex[full_path] = match.value
 
                 attribute_matches.append(full_path)
+            if not attribute_matches:  # the jsonpath is not found, so the check passes
+                return True
 
-            return self.resource_type_pred(vertex, self.resource_types) and len(attribute_matches) > 0 and all(
+            return self.resource_type_pred(vertex, self.resource_types) and all(
                 self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
             )
 
