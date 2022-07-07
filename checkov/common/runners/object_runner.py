@@ -159,7 +159,8 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[set[str]]:
+    def _get_triggers(self, result: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None) ->\
+            Optional[set[str]]:
         triggers_set = set()
         triggers = result[0].get(True)
         try:
@@ -170,8 +171,9 @@ class Runner(BaseRunner):
             logging.info(f"Error:{str(e)}")
         return triggers_set
 
-    def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> dict[str, dict[str, int]]:
-        jobs_dict: dict[str, dict[str, str]] = {}
+    def _get_jobs(self, result: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None) ->\
+            Optional[dict[str, dict[str, int]]]:
+        jobs_dict: dict[str, dict[str, int]] = {}
         jobs = result[0].get('jobs')
         if jobs:
             for key, value in jobs.items():
