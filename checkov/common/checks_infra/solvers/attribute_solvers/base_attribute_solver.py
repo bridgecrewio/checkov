@@ -3,6 +3,7 @@ import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern
 
 from networkx import DiGraph
+from jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -18,11 +19,13 @@ WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 class BaseAttributeSolver(BaseSolver):
     operator = ""
 
-    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
+    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+                 ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
         self.attribute = attribute
         self.value = value
+        self.is_jsonpath_check = is_jsonpath_check
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -38,6 +41,20 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
+        if self.is_jsonpath_check and self.attribute:
+            attribute_matches: List[str] = []
+            parsed_attr = parse(self.attribute)
+            for match in parsed_attr.find(vertex):
+                full_path = str(match.full_path)
+                if full_path not in vertex:
+                    vertex[full_path] = match.value
+
+                attribute_matches.append(full_path)
+
+            return self.resource_type_pred(vertex, self.resource_types) and len(attribute_matches) > 0 and all(
+                self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
+            )
+
         if self.attribute and re.match(WILDCARD_PATTERN, self.attribute):
             attribute_patterns = self.get_attribute_patterns(self.attribute)
             attribute_matches = [

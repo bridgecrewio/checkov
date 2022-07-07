@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
+from jsonpath_ng.ext import parse
 
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
@@ -27,9 +28,7 @@ from checkov.common.checks_infra.solvers import (
     GreaterThanAttributeSolver,
     GreaterThanOrEqualAttributeSolver,
     LessThanAttributeSolver,
-    LessThanOrEqualAttributeSolver,
-    JsonpathEqualsAttributeSolver,
-    JsonpathExistsAttributeSolver
+    LessThanOrEqualAttributeSolver
 )
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
@@ -69,8 +68,6 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
-    "jsonpath_equals": JsonpathEqualsAttributeSolver,
-    "jsonpath_exists": JsonpathExistsAttributeSolver
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
@@ -99,6 +96,8 @@ condition_type_to_solver_type = {
     "connection": SolverType.CONNECTION,
     "filter": SolverType.FILTER,
 }
+
+JSONPATH_PREFIX = "jsonpath_"
 
 
 class NXGraphCheckParser(BaseGraphCheckParser):
@@ -159,6 +158,18 @@ class NXGraphCheckParser(BaseGraphCheckParser):
 
         return check
 
+    @staticmethod
+    def get_solver_type_method(check):
+        check.is_jsonpath_check = check.operator.startswith(JSONPATH_PREFIX)
+        if check.is_jsonpath_check:
+            solver = check.operator.replace(JSONPATH_PREFIX, '')
+        else:
+            solver = check.operator
+
+        return operators_to_attributes_solver_classes.get(solver, lambda *args: None)(
+                check.resource_types, check.attribute, check.attribute_value, check.is_jsonpath_check
+        )
+
     def get_check_solver(self, check: BaseGraphCheck) -> BaseSolver:
         sub_solvers: List[BaseSolver] = []
         if check.sub_checks:
@@ -173,9 +184,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             SolverType.COMPLEX: operators_to_complex_solver_classes.get(check.operator, lambda *args: None)(
                 sub_solvers, check.resource_types
             ),
-            SolverType.ATTRIBUTE: operators_to_attributes_solver_classes.get(check.operator, lambda *args: None)(
-                check.resource_types, check.attribute, check.attribute_value
-            ),
+            SolverType.ATTRIBUTE: self.get_solver_type_method(check),
             SolverType.CONNECTION: operator_to_connection_solver_classes.get(check.operator, lambda *args: None)(
                 check.resource_types, check.connected_resources_types
             ),
