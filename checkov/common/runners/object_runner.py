@@ -165,9 +165,6 @@ class Runner(BaseRunner):
         triggers = result[0].get(True)
         try:
             if triggers:
-                # for key in triggers.keys():
-                #     if key != START_LINE and key != END_LINE:
-                #         triggers_set.add(key)
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
 
         except Exception as e:
