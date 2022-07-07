@@ -54,6 +54,7 @@ SLEEP_SECONDS = 1
 
 EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
+# found at https://regexland.com/base64/
 BASE64_PATTERN = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
