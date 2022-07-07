@@ -22,11 +22,11 @@ CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridge
 class CSVSBOM():
 
     def __init__(self) -> None:
-        self.iac_rows: list[dict] = []
-        self.container_rows: list[dict] = []
-        self.package_rows: list[dict] = []
+        self.iac_rows: list[dict] = []  # type: ignore
+        self.container_rows: list[dict] = []  # type: ignore
+        self.package_rows: list[dict] = []  # type: ignore
 
-    def add_report(self, report: Report, git_org, git_repository):
+    def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type != CheckType.SCA_IMAGE and report.check_type != CheckType.SCA_PACKAGE:
             for failed_record in report.failed_checks:
                 self.iac_rows.append(
@@ -39,7 +39,7 @@ class CSVSBOM():
                      "git repository": git_repository, "Misconfigurations": "",
                      "Severity": ""})
 
-    def persist_report(self, is_api_key: bool):
+    def persist_report(self, is_api_key: bool) -> None:
         CSVSBOM.write_section(file=FILE_NAME_IAC, header=HEADER_IAC, rows=self.iac_rows,
                               is_api_key=True)
         CSVSBOM.write_section(file=FILE_NAME_CONTAINER_IMAGES, header=HEADER_CONTAINER_IMAGE, rows=self.container_rows,
@@ -48,7 +48,7 @@ class CSVSBOM():
                               is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file: str, header: list, rows: list, is_api_key: bool):
+    def write_section(file: str, header: list, rows: list, is_api_key: bool) -> None:
         with open(file, 'w', newline='') as f:
             print(f'Persisting SBOM to {os.path.abspath(file)}')
             if is_api_key:
