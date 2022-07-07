@@ -26,9 +26,9 @@ GITHUB_ACTIONS = "github_actions"
 
 
 class Runner(BaseRunner):
-    workflow_name = ""
-    jobs: typing.Dict = {}
-    triggers: typing.Set = set()
+    workflow_name: str = ""
+    jobs: typing.Dict[str, dict[str, str]] = {}
+    triggers: typing.Set[str] = set()
 
     def _load_files(
             self,
@@ -97,7 +97,7 @@ class Runner(BaseRunner):
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks,
-                                    runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
+                                    runner_filter)    # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -120,8 +120,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),
-                    # type:ignore[arg-type]  # key is str not BaseCheck
+                    resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -163,15 +162,18 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: tuple[dict[str, Any], dict[str, Any]]) -> set[str]:
+    def _get_triggers(self, result: typing.Tuple[typing.Dict[str, Any], typing.Dict[str, Any]]) -> set[str]:
         triggers_set = set()
         triggers = result[0].get(True)
-        for key in triggers.keys():
-            if key != START_LINE and key != END_LINE:
-                triggers_set.add(key)
+        try:
+            for key in triggers.keys():
+                if key != START_LINE and key != END_LINE:
+                    triggers_set.add(key)
+        except Exception as e:
+            logging.info(f"error : {str(e)}")
         return triggers_set
 
-    def _get_jobs(self, result: tuple[dict[str, Any], dict[str, Any]]) -> dict[str, dict[str, str]]:
+    def _get_jobs(self, result: typing.Tuple[typing.Dict[str, Any], typing.Dict[str, Any]]) -> dict[str, dict[str, str]]:
         jobs_dict: dict[str, dict[str, str]] = {}
         tmp_key: str = ""
         jobs = result[0].get('jobs')  #type:ignore
