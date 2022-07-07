@@ -178,9 +178,9 @@ class Runner(BaseRunner):
             for key, value in jobs.items():
                 if key != START_LINE and key != END_LINE:
                     jobs_dict[key] = {}
-                if value.get(START_LINE):
-                    jobs_dict[key][START_LINE] = value[START_LINE]
-                if value.get(END_LINE):
-                    jobs_dict[key][END_LINE] = value[END_LINE]
+                    if value.get(START_LINE):
+                        jobs_dict[key][START_LINE] = value[START_LINE]
+                    if value.get(END_LINE):
+                        jobs_dict[key][END_LINE] = value[END_LINE]
 
         return jobs_dict
