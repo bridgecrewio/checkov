@@ -43,6 +43,17 @@ Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enab
 		228 |                 "arn": "arn:aws:s3:::mybucket",
 ```
 
+### Ignored checks
+
+Since the Terraform checks are used for both normal templates and plan files, some of those are not applicable for a plan file.
+They evaluate the `lifecycle` block, which is only relevant for the CLI and are not stored in the plan file itself.
+
+Following checks will be ignored;
+- CKV_AWS_217 
+- CKV_AWS_233
+- CKV_AWS_237 
+- CKV_GCP_82
+
 ## Scanning Third-Party Terraform Modules
 Third-party Terraform modules often reduce complexity for deploying services made up of many objects.
 
@@ -71,3 +82,23 @@ checkov -d .terraform # Module TF files.
 ![](terraform-module-scanning)
 
 It is worth noting however, that when scanning the `.terraform` directory, Checkov cannot differentiate between third-party and internally written modules. That said, you will benefit from scanning coverage across all of them.
+
+### Scanning Private Terraform Modules
+
+In case third-party modules are stored in a private repository or a private Terraform Cloud registry, you can provide access tokens as environment variables for checkov to attempt to clone those modules. 
+
+| Variable Name          | Description                                                                |
+|------------------------|----------------------------------------------------------------------------|
+| GITHUB_PAT             | Github personal access token with read access to the private repository    |
+| BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository |
+| TFC_TOKEN              | Terraform Cloud token which can access the private registry                |
+| BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD         |
+| BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)        |
+
+For self-hosted VCS repositories, use the following environment variables:
+
+| Variable Name | Description                                          |
+|---------------|------------------------------------------------------|
+| VCS_BASE_URL  | Base URL of the self-hosted VCS: https://example.com |
+| VCS_USERNAME  | Username for basic authentication                    |
+| VCS_TOKEN     | Password for basic authentication                    |

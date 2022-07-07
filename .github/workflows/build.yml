@@ -10,6 +10,11 @@ on:
       - 'INTHEWILD.md'
       - 'README.md'
       - '.github/**'
+      - 'admissioncontroller/checkov-requirements.txt'
+      - admissioncontroller/k8s/deployment.yaml
+      - checkov/version.py
+      - kubernetes/requirements.txt
+      - coverage.svg
 
 concurrency:
   group: 'build'
@@ -25,7 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
@@ -57,6 +62,8 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
+          TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+          GITHUB_PAT: ${{ secrets.GH_PAT }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
@@ -64,7 +71,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -93,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -117,14 +124,16 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v4.4.0
+        uses: crazy-max/ghaction-import-gpg@v5.0.0
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -256,6 +265,8 @@ jobs:
     needs: bump-version
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: get versions
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}

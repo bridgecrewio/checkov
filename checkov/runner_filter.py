@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List
+from typing import Set, Optional, Union, List, TYPE_CHECKING
 
 from checkov.common.bridgecrew.severities import Severity, Severities
-from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 
 class RunnerFilter(object):
@@ -29,7 +34,10 @@ class RunnerFilter(object):
             excluded_paths: Optional[List[str]] = None,
             all_external: bool = False,
             var_files: Optional[List[str]] = None,
-            skip_cve_package: Optional[List[str]] = None
+            skip_cve_package: Optional[List[str]] = None,
+            filtered_policy_ids: Optional[List[str]] = None,
+            show_progress_bar: Optional[bool] = True,
+            secrets_scan_file_type: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -41,17 +49,20 @@ class RunnerFilter(object):
         self.skip_check_threshold = None
         self.checks = []
         self.skip_checks = []
+        self.show_progress_bar = show_progress_bar
 
         # split out check/skip thresholds so we can access them easily later
         for val in (checks or []):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not self.check_threshold or self.check_threshold.level > Severities[val].level:
                     self.check_threshold = Severities[val]
             else:
                 self.checks.append(val)
 
         for val in (skip_checks or []):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
                     self.skip_check_threshold = Severities[val]
             else:
@@ -77,12 +88,16 @@ class RunnerFilter(object):
         self.all_external = all_external
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
+        self.filtered_policy_ids = filtered_policy_ids or []
+        self.secrets_scan_file_type = secrets_scan_file_type
 
-    def should_run_check(self,
-                         check: Optional[BaseCheck] = None,
-                         check_id: Optional[str] = None,
-                         bc_check_id: Optional[str] = None,
-                         severity: Optional[Severity] = None) -> bool:
+    def should_run_check(
+        self,
+        check: BaseCheck | BaseGraphCheck | None = None,
+        check_id: str | None = None,
+        bc_check_id: str | None = None,
+        severity: Severity | None = None,
+    ) -> bool:
         if check:
             check_id = check.id
             bc_check_id = check.bc_id
@@ -94,7 +109,7 @@ class RunnerFilter(object):
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
         implicit_run = not self.checks and not self.check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
-
+        is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
@@ -106,6 +121,11 @@ class RunnerFilter(object):
 
         if not should_run_check:
             return False
+
+        # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
+        # It can, however, be skipped.
+        if not is_policy_filtered:
+            should_run_check = False
 
         skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
@@ -146,3 +166,8 @@ class RunnerFilter(object):
     @staticmethod
     def is_external_check(check_id: str) -> bool:
         return check_id in RunnerFilter.__EXTERNAL_CHECK_IDS
+
+    def is_policy_filtered(self, check_id: str) -> bool:
+        if not self.filtered_policy_ids:
+            return True
+        return check_id in self.filtered_policy_ids

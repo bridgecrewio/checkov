@@ -1,7 +1,0 @@
-fail:
-  - "aws_cloudfront_distribution.no_response_headers_policy"
-  - "aws_cloudfront_distribution.no_security_headers_config"
-  - "aws_cloudfront_distribution.incorrect_security_headers_config"
-  - "aws_cloudfront_distribution.content_security_policy_missing_default_src_none"
-pass:
-  - "aws_cloudfront_distribution.pass"

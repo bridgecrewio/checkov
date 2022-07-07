@@ -47,6 +47,8 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                     if not policy_statement:
                         # When using unresolved Cfn functions, policy is an str
                         policy_doc = policy[policy_doc_key]
+                        if not isinstance(policy_doc, dict):
+                            return CheckResult.UNKNOWN
                         converted_policy_doc = convert_cloudformation_conf_to_iam_policy(policy_doc)
                         statement_key = 'Statement'
                         if statement_key in converted_policy_doc:
@@ -54,11 +56,11 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             self.policy_document_cache[self.entity_path][policy.get("PolicyName")] = policy_statement
                     violations = self.cloudsplaining_analysis(policy_statement)
                     if violations:
-                        logging.debug("detailed cloudsplaining finding: {}", json.dumps(violations))
+                        logging.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
                         return CheckResult.FAILED
                 except Exception:
                     # this might occur with templated iam policies where ARN is not in place or similar
-                    logging.debug("could not run cloudsplaining analysis on policy {}", conf)
+                    logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
                     return CheckResult.UNKNOWN
             return CheckResult.PASSED
 

@@ -10,7 +10,8 @@ from detect_secrets.core import scan
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -22,6 +23,8 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 
 SECRET_TYPE_TO_ID = {
@@ -49,6 +52,9 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
+ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
+                                    '.go', '.cs', '.txt'] + SUPPORTED_FILE_EXTENSIONS
+
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
@@ -56,12 +62,12 @@ class Runner(BaseRunner):
     check_type = CheckType.SECRETS
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True
     ) -> Report:
         current_dir = os.path.dirname(os.path.realpath(__file__))
         secrets = SecretsCollection()
@@ -115,21 +121,39 @@ class Runner(BaseRunner):
             ]
         }) as settings:
             report = Report(self.check_type)
+            if not runner_filter.show_progress_bar:
+                self.pbar.turn_off_progress_bar()
+
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
+                secrets_scan_file_type = runner_filter.secrets_scan_file_type
+                if secrets_scan_file_type:
+                    secrets_scan_file_type_lower = [file_type.lower() for file_type in secrets_scan_file_type]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
-                        if file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS:
+                        if secrets_scan_file_type:
+                            if 'all' in secrets_scan_file_type:
+                                if is_docker_file(file) or f".{file.split('.')[-1]}" in ADDED_TO_SECRET_SCAN_FILES_TYPES:
+                                    files_to_scan.append(os.path.join(root, file))
+                            else:
+                                if 'dockerfile' in secrets_scan_file_type_lower:
+                                    if is_docker_file(file):
+                                        files_to_scan.append(os.path.join(root, file))
+                                if f".{file.split('.')[-1]}" in secrets_scan_file_type:
+                                    files_to_scan.append(os.path.join(root, file))
+                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
-            Runner._scan_files(files_to_scan, secrets)
+            self.pbar.initiate(len(files_to_scan))
+            self._scan_files(files_to_scan, secrets, self.pbar)
+            self.pbar.close()
 
             for _, secret in iter(secrets):
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
@@ -137,7 +161,9 @@ class Runner(BaseRunner):
                     continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity):
+                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
+                                                                               bc_check_id=bc_check_id,
+                                                                               severity=severity):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -151,13 +177,14 @@ class Runner(BaseRunner):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+                line_text_censored = omit_secret_value_from_line(secret.secret_value, line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
                     check_name=secret.type,
                     check_result=result,
-                    code_block=[(secret.line_number, line_text)],
+                    code_block=[(secret.line_number, line_text_censored)],
                     file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
@@ -169,16 +196,16 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files(files_to_scan, secrets):
+    def _scan_files(files_to_scan, secrets, pbar):
         # implemented the scan function like secrets.scan_files
-        def _safe_scan(f):
+        def _safe_scan(f, secrets):
             full_file_path = os.path.join(secrets.root, f)
             file_size = os.path.getsize(full_file_path)
             if file_size > MAX_FILE_SIZE > 0:
                 logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
                              f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
                              f'to 0 or {file_size + 1}')
-                return list()
+                return os.path.relpath(f, secrets.root), list()
             try:
                 start_time = datetime.datetime.now()
                 file_results = list(scan.scan_file(full_file_path))
@@ -186,28 +213,32 @@ class Runner(BaseRunner):
                 run_time = end_time - start_time
                 if run_time > datetime.timedelta(seconds=10):
                     logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
-                return file_results
+                return os.path.relpath(f, secrets.root), file_results
             except Exception:
                 logging.warning(f"Secret scanning:could not process file {f}")
                 logging.debug("Complete trace:", exc_info=True)
-                return list()
+                return os.path.relpath(f, secrets.root), list()
 
         results = parallel_runner.run_function(
-            func=lambda f: list(_safe_scan(f)), items=files_to_scan,
+            func=lambda f: list((_safe_scan(f, secrets))), items=files_to_scan,
             run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true")
-        for secrets_results in results:
+
+        for filename, secrets_results in results:
+            pbar.set_additional_data({'Current File Scanned': str(filename)})
             for secret in secrets_results:
                 secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
+            pbar.update()
 
     @staticmethod
     def search_for_suppression(
-        check_id: str,
-        bc_check_id: str,
-        severity: Severity,
-        secret: PotentialSecret,
-        runner_filter: RunnerFilter
+            check_id: str,
+            bc_check_id: str,
+            severity: Severity,
+            secret: PotentialSecret,
+            runner_filter: RunnerFilter
     ) -> Optional[_CheckResult]:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id,
+                                              severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

@@ -13,6 +13,11 @@ class EqualsAttributeSolver(BaseAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr_val = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
+        # if this value contains an underendered variable, then we cannot evaluate the check,
+        # so return True (since we cannot return UNKNOWN)
+        # handle edge cases in some policies that explicitly look for blank values
+        if self.value != '' and self._is_variable_dependant(attr_val, vertex['source_']):
+            return True
         if type(attr_val) == bool or type(self.value) == bool:
             # handle cases like str(False) == "false"
             # generally self.value will be a string, but could be a bool if the policy was created straight from json

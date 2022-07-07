@@ -22,6 +22,8 @@ class BaseOpenapiCheckV2(BaseOpenapiCheck):
         raise NotImplementedError()
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
-        if "swagger" in conf and conf.get("swagger") == '2.0':
-            return self.scan_openapi_conf(conf, entity_type)
+        if "swagger" in conf:
+            swagger = conf.get("swagger")
+            if isinstance(swagger, str) and swagger == '2.0':
+                return self.scan_openapi_conf(conf, entity_type)
         return CheckResult.UNKNOWN, conf

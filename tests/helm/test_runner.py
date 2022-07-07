@@ -1,6 +1,8 @@
 import os
 import subprocess
 import unittest
+
+from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.helm.runner import Runner
 
@@ -35,8 +37,11 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.check_type, CheckType.HELM)
         for record in all_checks:
             self.assertIn(record.repo_file_path, record.file_path)
+        for resource in report.resources:
+            self.assertIn('/infrastructure/helm-tiller/pwnchart/templates', resource)
 
 
 if __name__ == "__main__":

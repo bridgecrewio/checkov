@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
+
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import Any, TYPE_CHECKING, Callable
 
 from checkov.common.output.record import Record
@@ -10,18 +13,18 @@ from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
+from checkov.common.util.suppression import collect_suppressions_for_context
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Runner(BaseRunner):
-
     def _load_files(
         self,
         files_to_load: list[str],
-        definitions: dict[str, dict[str, Any]],
-        definitions_raw: dict[str, tuple[int, str]],
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
+        definitions_raw: dict[str, list[tuple[int, str]]],
         filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
@@ -41,13 +44,17 @@ class Runner(BaseRunner):
         root_folder: str | None = None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         registry = self.import_registry()
 
-        definitions: dict[str, dict[str, Any]] = {}
-        definitions_raw: dict[str, tuple[int, str]] = {}
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        definitions_raw: dict[str, list[tuple[int, str]]] = {}
 
         report = Report(self.check_type)
 
@@ -71,15 +78,24 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
                 self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
 
+        self.pbar.initiate(len(definitions))
         for file_path in definitions.keys():
-            results = registry.scan(file_path, definitions[file_path], [], runner_filter)
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
+            skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type]  # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
                 end = 0
                 check = result.pop("check", None)  # use pop to remove Check class which is not serializable from
+                if check is None:
+                    continue
+
                 # result record
-                end, start = self.get_start_end_lines(end, result_config, start)
+                if result_config:
+                    end, start = self.get_start_end_lines(end, result_config, start)
+                if platform.system() == "Windows":
+                    root_folder = os.path.split(file_path)[0]
                 record = Record(
                     check_id=check.id,
                     bc_check_id=check.bc_id,
@@ -88,7 +104,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),
+                    resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -96,13 +112,14 @@ class Runner(BaseRunner):
                     severity=check.severity,
                 )
                 report.add_record(record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
-    def included_paths(self):
-        return None
+    def included_paths(self) -> Iterable[str]:
+        return []
 
-    def get_resource(self, file_path: str, key: str, supported_entities: list[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod

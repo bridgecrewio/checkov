@@ -13,7 +13,7 @@ class NetworkWatcherFlowLogPeriod(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         self.evaluated_keys = ['enabled']
-        if 'enabled' in conf and conf['enabled'][0]:
+        if 'enabled' in conf and conf['enabled'][0] and 'retention_policy' in conf:
             retention_block = conf['retention_policy'][0]
             if retention_block['enabled'][0]:
                 retention_in_days = force_int(retention_block['days'][0])

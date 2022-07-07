@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, List, Set, Union, Sequence, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
@@ -10,25 +11,11 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
 
-SUPPORTED_PACKAGE_FILES = {
-    "bower.json",
-    "build.gradle",
-    "build.gradle.kts",
-    "go.sum",
-    "gradle.properties",
-    "METADATA",
-    "npm-shrinkwrap.json",
-    "package.json",
-    "package-lock.json",
-    "pom.xml",
-    "requirements.txt"
-}
-
 
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
@@ -71,7 +58,7 @@ class Runner(BaseRunner):
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
-        scanner = Scanner()
+        scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan(input_paths)
 
@@ -86,6 +73,9 @@ class Runner(BaseRunner):
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True,
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)

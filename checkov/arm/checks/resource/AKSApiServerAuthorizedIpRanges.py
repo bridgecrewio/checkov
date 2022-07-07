@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.parsers.node import DictNode
 
 class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
     def __init__(self):
@@ -25,11 +26,16 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
                             return CheckResult.PASSED
             else:
                 # ApiServerAuthorizedIpRanges fully supported in all future API versions
-                if "properties" in conf:
-                    if "apiServerAccessProfile" in conf["properties"]:
-                        if "authorizedIPRanges" in conf["properties"]["apiServerAccessProfile"]:
-                            if conf["properties"]["apiServerAccessProfile"]["authorizedIPRanges"]:
-                                return CheckResult.PASSED
+                properties = conf.get('properties')
+                if not properties or not isinstance(properties, DictNode):
+                    return CheckResult.FAILED
+                api_server_access_profile = properties.get('apiServerAccessProfile')
+                if not api_server_access_profile:
+                    return CheckResult.FAILED
+                authorized_ip_ranges = api_server_access_profile.get('authorizedIPRanges')
+                if authorized_ip_ranges:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = AKSApiServerAuthorizedIpRanges()

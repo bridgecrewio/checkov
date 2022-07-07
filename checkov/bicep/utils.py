@@ -57,11 +57,13 @@ def get_folder_definitions(
 def create_definitions(
         root_folder: str,
         files: "Collection[Path] | None" = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
 ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]]]:
     definitions: dict[Path, BicepJson] = {}
     definitions_raw: dict[Path, list[tuple[int, str]]] = {}
     parsing_errors: list[str] = []
+    runner_filter = runner_filter or RunnerFilter()
+
     if files:
         parser = Parser()
         definitions, definitions_raw, parsing_errors = parser.get_files_definitions(file_paths=files)

@@ -26,8 +26,9 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 violated_envs = set()
                 for key, values in variables[0].items():
                     # variables can be a string, which in this case it points to a variable
-                    for value in [v for v in force_list(values) if isinstance(v, str)]:
+                    for idx, value in enumerate([v for v in force_list(values) if isinstance(v, str)]):
                         if string_has_secrets(value, AWS, GENERAL):
+                            conf[f'{self.id}_secret_{idx}'] = value
                             violated_envs.add(key)
 
                 if violated_envs:

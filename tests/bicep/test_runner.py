@@ -104,3 +104,24 @@ def test_runner_ignore_existing_resource():
     assert summary["resource_count"] == 2  # 1 should be unknown
 
     assert report.failed_checks[0].resource == "Microsoft.Storage/storageAccounts.storageAccount"
+
+
+def test_runner_extra_resources():
+    # given
+    test_file = EXAMPLES_DIR / "playground.bicep"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_3"]))
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+
+    assert len(report.extra_resources) == 7
+    extra_resource = next(
+        resource for resource in report.extra_resources if resource.resource == "Microsoft.Compute/virtualMachines.vm"
+    )
+    assert extra_resource.file_abs_path == str(test_file)
+    assert extra_resource.file_path.endswith("playground.bicep")
+

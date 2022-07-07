@@ -3,9 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
@@ -16,6 +17,7 @@ from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
@@ -23,12 +25,14 @@ from checkov.version import version
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
+    from checkov.common.output.extra_resource import ExtraResource
 
 init(autoreset=True)
 
 @dataclass
 class CheckType:
     BITBUCKET_PIPELINES = "bitbucket_pipelines"
+    ARGO_WORKFLOWS = "argo_workflows"
     ARM = "arm"
     BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"
@@ -62,12 +66,13 @@ SEVERITY_TO_SARIF_LEVEL = {
 
 class Report:
     def __init__(self, check_type: str):
-        self.check_type: str = check_type
-        self.passed_checks: List[Record] = []
-        self.failed_checks: List[Record] = []
-        self.skipped_checks: List[Record] = []
-        self.parsing_errors: List[str] = []
-        self.resources: Set[str] = set()
+        self.check_type = check_type
+        self.passed_checks: list[Record] = []
+        self.failed_checks: list[Record] = []
+        self.skipped_checks: list[Record] = []
+        self.parsing_errors: list[str] = []
+        self.resources: set[str] = set()
+        self.extra_resources: set[ExtraResource] = set()
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -104,7 +109,7 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str = "") -> dict[str, Any]:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None) -> dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -145,9 +150,13 @@ class Report:
         :return: Exit code 0 or 1.
         """
 
-        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}')
+        hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
+        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
-        if not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
+        if self.parsing_errors and hard_fail_on_parsing_errors:
+            logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
+            return 1
+        elif not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
             logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
         elif not soft_fail_on and not hard_fail_on and self.failed_checks:
@@ -158,7 +167,8 @@ class Report:
         soft_fail_threshold = None
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(soft_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
                     soft_fail_threshold = Severities[val]
             else:
@@ -171,7 +181,8 @@ class Report:
         hard_fail_threshold = None
         # hard fail on the lowest threshold in the list
         for val in convert_csv_string_arg_to_list(hard_fail_on):
-            if val in Severities:
+            if val.upper() in Severities:
+                val = val.upper()
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
             else:
@@ -390,14 +401,18 @@ class Report:
                     record.guideline,
                 ]
             )
-        output_data = tabulate(
-            result,
-            headers=["check_id", "file", "resource", "check_name", "guideline"],
-            tablefmt="github",
-            showindex=True,
-        ) + "\n\n---\n\n"
-        print(output_data)
-        return output_data
+        if result:
+            table = tabulate(
+                result,
+                headers=["check_id", "file", "resource", "check_name", "guideline"],
+                tablefmt="github",
+                showindex=True,
+            )
+            output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
+            print(output_data)
+            return output_data
+        else:
+            return "\n\n---\n\n"
 
     def get_test_suite(self, properties: Optional[Dict[str, Any]] = None, use_bc_ids: bool = False) -> TestSuite:
         """Creates a test suite for the JUnit XML report"""

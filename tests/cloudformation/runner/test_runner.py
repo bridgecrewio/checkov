@@ -270,7 +270,7 @@ class TestRunnerValid(unittest.TestCase):
         report = Report('cloudformation')
         runner.check_definitions(root_folder=dir_abs_path, runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False), report=report)
         self.assertEqual(len(report.passed_checks), 2)
-        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 4)
         pass
 
     def test_breadcrumbs_report(self):
@@ -309,7 +309,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
-        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 3)
         self.assertEqual(len(report.passed_checks), 2)
 
     def test_parsing_no_properties_json(self):
@@ -318,7 +318,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
-        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 3)
         self.assertEqual(len(report.passed_checks), 2)
 
     def test_parsing_error_yaml(self):
@@ -328,6 +328,14 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_skip_sub_dict_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "skip_sub_dict.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 0)
 
     def test_parsing_error_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

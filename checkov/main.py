@@ -17,11 +17,14 @@ from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
+from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
@@ -88,7 +91,8 @@ DEFAULT_RUNNERS = (
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
-    sca_image_runner()
+    sca_image_runner(),
+    argo_workflows_runner(),
 )
 
 
@@ -141,10 +145,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
+                                 secrets_scan_file_type=config.secrets_scan_file_type)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
+        runner_registry.filter_runner_framework()
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
@@ -197,7 +203,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         except Exception:
             if bc_integration.prisma_api_url:
-                message = 'An error occurred setting up the Bridgecrew platform integration. ' \
+                message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
                           'Please check your Prisma Cloud API token and URL and try again.'
             else:
                 message = 'An error occurred setting up the Bridgecrew platform integration. ' \
@@ -222,18 +228,23 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.skip_download = True
 
     bc_integration.get_platform_run_config()
+    bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
+
+    runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
+    logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
     if config.list:
-        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids, include_all_checkov_policies=config.include_all_checkov_policies)
+        print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
+                     include_all_checkov_policies=config.include_all_checkov_policies, filtered_policy_ids=runner_filter.filtered_policy_ids)
         return None
 
     baseline = None
     if config.baseline:
-        baseline = Baseline()
+        baseline = Baseline(config.output_baseline_as_skipped)
         baseline.from_json(config.baseline)
 
     external_checks_dir = get_external_checks_dir(config)
@@ -246,6 +257,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
+            if not os.path.exists(root_folder):
+                logger.error(f'Directory {root_folder} does not exist; skipping it')
+                continue
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file)
@@ -358,7 +372,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'include checks by ID even if they are not in the platform, without using this flag.')
     parser.add('--quiet', action='store_true',
                default=False,
-               help='in case of CLI output, display only failed checks')
+               help='in case of CLI output, display only failed checks. Also disables progress bars')
     parser.add('--compact', action='store_true',
                default=False,
                help='in case of CLI output, do not display code blocks')
@@ -366,6 +380,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Filter scan to run only on specific infrastructure code frameworks',
                choices=checkov_runners + ["all"],
                default=["all"],
+               env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure code frameworks. \n'
@@ -469,6 +484,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=DEFAULT_EXTERNAL_MODULES_DIR, env_var='EXTERNAL_MODULES_DIR')
     parser.add('--evaluate-variables',
                help="evaluate the values of variables and locals",
+               env_var="CKV_EVAL_VARS",
                default=True)
     parser.add('-ca', '--ca-certificate',
                help='Custom CA certificate (bundle) file', default=None, env_var='BC_CA_BUNDLE')
@@ -492,9 +508,25 @@ def add_parser_args(parser: ArgumentParser) -> None:
         ),
         default=None,
     )
+    parser.add('--output-baseline-as-skipped',
+        help="output checks that are skipped due to baseline file presence",
+        action='store_true', default=False)
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
+    parser.add('--policy-metadata-filter',
+               help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
+                    'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
+                    'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
+    parser.add('--secrets-scan-file-type',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_FILE_TYPE',
+               action='append',
+               help='add scan secret for requested files. You can specify this argument multiple times to add '
+                    'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
+                    '".template", ".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile", '
+                    '".java", ".rb", ".go", ".cs", ".txt") specify the argument with `--secrets-scan-file-type all`. '
+                    'default scan will be for ".tf", ".yml", ".yaml", ".json", ".template" and exclude "Pipfile.lock", "yarn.lock", "package-lock.json", "requirements.txt"')
 
 
 def get_external_checks_dir(config: Any) -> Any:
@@ -525,6 +557,9 @@ def normalize_config(config: Namespace) -> None:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
+
+    if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
+        logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
 if __name__ == '__main__':

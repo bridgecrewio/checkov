@@ -3,8 +3,13 @@ from checkov.common.output.report import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+
+
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.GITLAB_CI
+    check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
+
+    def __init__(self):
+        super().__init__()
 
     def require_external_checks(self):
         return False
@@ -55,7 +60,7 @@ class Runner(YamlRunner, ImageReferencer):
         imagesKeys = ["image","services"]
         workflow, workflow_line_numbers = self._parse_file(file_path)
 
-        for job_name, job_object in workflow.items():
+        for job_object in workflow.values():
             if isinstance(job_object, dict):
                 start_line = job_object.get('__startline__', 0)
                 end_line = job_object.get('__endline__', 0)

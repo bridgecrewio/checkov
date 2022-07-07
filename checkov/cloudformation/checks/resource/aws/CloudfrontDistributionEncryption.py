@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class CloudfrontDistributionEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS"
@@ -25,10 +26,13 @@ class CloudfrontDistributionEncryption(BaseResourceCheck):
                         if conf['Properties']['DistributionConfig']['DefaultCacheBehavior']['ViewerProtocolPolicy'] == 'allow-all':
                             return CheckResult.FAILED
                 if 'CacheBehaviors' in conf['Properties']['DistributionConfig'].keys():
+                    if not isinstance(conf['Properties']['DistributionConfig']['CacheBehaviors'], list):
+                        return CheckResult.UNKNOWN
                     for behavior in range(len(conf['Properties']['DistributionConfig']['CacheBehaviors'])):
                         if 'ViewerProtocolPolicy' in conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior].keys():
                             if conf['Properties']['DistributionConfig']['CacheBehaviors'][behavior]['ViewerProtocolPolicy'] == 'allow-all':
                                 return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = CloudfrontDistributionEncryption()

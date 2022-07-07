@@ -76,7 +76,7 @@ class multi_signature:
     """
 
     def __init__(self) -> None:
-        self.__wrappers__: dict[Any, Callable[..., _MultiT]] = {}
+        self.__wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., _MultiT]] = {}
 
     def __call__(self, fn: Callable[..., _MultiT]) -> _MultiSignataureMethod:
         fn.add_signature = self.add_signature  # type:ignore[attr-defined]
