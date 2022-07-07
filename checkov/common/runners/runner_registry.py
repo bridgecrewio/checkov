@@ -19,6 +19,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -36,7 +37,7 @@ if TYPE_CHECKING:
     from checkov.runner_filter import RunnerFilter
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
+OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif", "csv"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
@@ -125,6 +126,8 @@ class RunnerRegistry:
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
+        csv_sbom_report = CSVSBOM()
+
         data_outputs: dict[str, str] = defaultdict(str)
         for report in scan_reports:
             if not report.is_empty():
@@ -140,6 +143,12 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
+                if "csv" in config.output:
+                    git_org = ""
+                    git_repository = ""
+                    if 'repo_id' in config and config.repo_id is not None:
+                        git_org,git_repository = config.repo_id.split('/')
+                    csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
 
@@ -237,6 +246,11 @@ class RunnerRegistry:
             output_formats.remove("cyclonedx")
             if output_formats:
                 print(OUTPUT_DELIMITER)
+        if "csv" in config.output:
+            is_api_key = False
+            if 'bc_api_key' in config and  config.bc_api_key is not None:
+                is_api_key = True
+            csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
