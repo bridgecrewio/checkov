@@ -7,7 +7,7 @@ import typing
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable
+from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -162,29 +162,31 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: typing.Tuple[typing.Dict[str, Any], typing.Dict[str, Any]]) -> set[str]:
+    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> set[str]:
         triggers_set = set()
         triggers = result[0].get(True)
         try:
-            for key in triggers.keys():
-                if key != START_LINE and key != END_LINE:
-                    triggers_set.add(key)
+            if triggers:
+                for key in triggers.keys():
+                    if key != START_LINE and key != END_LINE:
+                        triggers_set.add(key)
         except Exception as e:
             logging.info(f"error : {str(e)}")
         return triggers_set
 
-    def _get_jobs(self, result: typing.Tuple[typing.Dict[str, Any], typing.Dict[str, Any]]) -> dict[str, dict[str, str]]:
+    def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> dict[str, dict[str, str]]:
         jobs_dict: dict[str, dict[str, str]] = {}
         tmp_key: str = ""
-        jobs = result[0].get('jobs')  #type:ignore
-        for key, value in jobs.items():
-            if key != START_LINE and key != END_LINE:
-                jobs_dict[key] = {}
-                tmp_key = key
-            else:
-                if key == START_LINE:
-                    jobs_dict[tmp_key][START_LINE] = value
-                if key == END_LINE:
-                    jobs_dict[tmp_key][END_LINE] = value
+        jobs = result[0].get('jobs')
+        if jobs:
+            for key, value in jobs.items():
+                if key != START_LINE and key != END_LINE:
+                    jobs_dict[key] = {}
+                    tmp_key = key
+                else:
+                    if key == START_LINE:
+                        jobs_dict[tmp_key][START_LINE] = value
+                    if key == END_LINE:
+                        jobs_dict[tmp_key][END_LINE] = value
 
         return jobs_dict
