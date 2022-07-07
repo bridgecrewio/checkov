@@ -170,7 +170,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         if not bc_integration.is_token_valid(config.bc_api_key):
             raise Exception(f'The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
                             f'access key and secret key. For Prisma, the value must be in the form '
-                            f'ACCESS_KEY::SECRET_KEY')
+                            f'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
+                            f'created it, not the token ID visible later on. If you are using environment variables, '
+                            f'make sure they are properly set and exported.')
 
         if config.repo_id is None and not config.list:
             # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
