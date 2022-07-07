@@ -159,7 +159,7 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[set[str]]:
+    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[Any]:
         triggers_set = set()
         triggers = result[0].get(True)
         try:
