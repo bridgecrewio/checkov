@@ -1,11 +1,12 @@
 import typing
-from typing import Any
+from typing import Optional, Dict, Set
 
 from checkov.common.output.record import Record
 
 
 class GithubActionsRecord(Record):
-    def __init__(self, record: Record, triggers: typing.Set[str], jobs: typing.Dict[str, Any], workflow_name: str):
+    def __init__(self, record: Record, triggers: Optional[Set[str]], jobs: Optional[Dict[str, Dict[str, int]]],
+                 workflow_name: Optional[str]):
         super().__init__(record.check_id, record.check_name, record.check_result, record.code_block, record.file_path,
                          record.file_line_range, record.resource, record.evaluations, record.check_class,
                          record.file_abs_path, record.entity_tags, record.caller_file_path,

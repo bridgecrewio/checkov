@@ -6,7 +6,7 @@ import platform
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict, Set
+from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict, Set, Optional
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -94,7 +94,7 @@ class Runner(BaseRunner):
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter) # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -117,8 +117,7 @@ class Runner(BaseRunner):
                     code_block=definitions_raw[file_path][start - 1:end + 1],
                     file_path=f"/{os.path.relpath(file_path, root_folder)}",
                     file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),
-                    # type:ignore[arg-type]  # key is str not BaseCheck
+                    resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
                     evaluations=None,
                     check_class=check.__class__.__module__,
                     file_abs_path=os.path.abspath(file_path),
@@ -160,7 +159,7 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> set[str]:
+    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[set[str]]:
         triggers_set = set()
         triggers = result[0].get(True)
         try:
@@ -171,7 +170,7 @@ class Runner(BaseRunner):
             logging.info(f"Error:{str(e)}")
         return triggers_set
 
-    def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> dict[str, dict[str, str]]:
+    def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> dict[str, dict[str, int]]:
         jobs_dict: dict[str, dict[str, str]] = {}
         jobs = result[0].get('jobs')
         if jobs:
