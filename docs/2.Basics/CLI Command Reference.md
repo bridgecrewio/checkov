@@ -13,7 +13,7 @@ nav_order: 2
 | `-v`, `--version` | Version |
 | `-d DIRECTORY`, `--directory DIRECTORY` | IaC root directory (can not be used together with --file). |
 | `--add-check` | Generate a new check via CLI prompt |
-| `-f FILE`, `--file FILE ` | FFile to scan (can not be used together with --directory). With this option, Checkov will attempt to filter the runners based on the file type. For example, if you specify a ".tf" file, only the terraform and secrets frameworks will be included. You can further limit this (e.g., skip secrets) by using the --skip-framework argument. |
+| `-f FILE`, `--file FILE ` | File to scan (can not be used together with --directory). With this option, Checkov will attempt to filter the runners based on the file type. For example, if you specify a ".tf" file, only the terraform and secrets frameworks will be included. You can further limit this (e.g., skip secrets) by using the --skip-framework argument. |
 | `--skip-path SKIP_PATH` | Path (file or directory) to skip, using regular expression logic, relative to the current working directory. Word boundaries are not implicit; i.e., specifying "dir1" will skip any directory or subdirectory named "dir1". Ignored with -f. Can be specified multiple times. |
 | `--external-checks-dir EXTERNAL_CHECKS_DIR` | Directory for custom checks to be loaded. Can be repeated |
 | `--external-checks-git EXTERNAL_CHECKS_GIT` | GitHub URL of external checks to be added. you can specify a subdirectory after a double-slash //. Cannot be used together with --external-checks-dir |
