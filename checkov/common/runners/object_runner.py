@@ -22,11 +22,11 @@ if TYPE_CHECKING:
 
 
 class Runner(BaseRunner):
-    def __init__(self, workflow_name=None, jobs=None, triggers=None):
+    def __init__(self) -> None:
         super().__init__()
-        self.jobs = jobs
-        self.workflow_name = workflow_name
-        self.triggers = triggers
+        self.jobs: Dict[str, dict[str, int]] | None = None
+        self.workflow_name: str | None = None
+        self.triggers: Set[str] | None = None
 
     def _load_files(
             self,
