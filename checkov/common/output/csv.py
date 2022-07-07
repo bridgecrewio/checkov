@@ -1,7 +1,7 @@
 import csv
 import os
+import typing
 from datetime import datetime
-from typing import List, Any
 
 from checkov.common.output.report import Report, CheckType
 
@@ -48,14 +48,14 @@ class CSVSBOM():
                               is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file: str, header: list, rows: list, is_api_key: bool) -> None:
+    def write_section(file: str, header: typing.List, rows: typing.List, is_api_key: bool) -> None:
         with open(file, 'w', newline='') as f:
             print(f'Persisting SBOM to {os.path.abspath(file)}')
             if is_api_key:
                 writer = csv.DictWriter(f, fieldnames=header)
                 writer.writeheader()
-                writer.writerows(rows)
+                writer.writerows(rows)  # type: ignore
             else:
                 writer = csv.writer(f)
-                writer.writerow(header)
-                writer.writerow([CTA_NO_API_KEY])
+                writer.writerow(header)  # type: ignore
+                writer.writerow([CTA_NO_API_KEY])  # type: ignore
