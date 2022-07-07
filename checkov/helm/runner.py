@@ -168,10 +168,10 @@ class Runner(BaseRunner):
             f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
         if e:
             if "Warning: Dependencies" in str(e, 'utf-8'):
-                logging.info(
+                logging.warning(
                     f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             else:
-                logging.info(
+                logging.warning(
                     f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
         helm_command_args = [self.helm_command, 'template', '--dependency-update', chart_dir]
@@ -184,6 +184,9 @@ class Runner(BaseRunner):
             # --dependency-update needed to pull in deps before templating.
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
+            if e:
+                logging.warning(
+                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
 
