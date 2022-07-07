@@ -179,9 +179,10 @@ class Runner(BaseRunner):
             if key != START_LINE and key != END_LINE:
                 jobs_dict[key] = {}
                 tmp_key = key
-            elif key == START_LINE:
-                jobs_dict[tmp_key][START_LINE] = value
-            elif key == END_LINE:
-                jobs_dict[tmp_key][END_LINE] = value
+            else:
+                if key == START_LINE:
+                    jobs_dict[tmp_key][START_LINE] = value
+                if key == END_LINE:
+                    jobs_dict[tmp_key][END_LINE] = value
 
         return jobs_dict
