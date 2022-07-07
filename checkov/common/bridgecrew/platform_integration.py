@@ -54,6 +54,7 @@ SLEEP_SECONDS = 1
 
 EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
+BASE64_PATTERN = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
 
@@ -122,6 +123,17 @@ class BcPlatformIntegration:
 
     def is_prisma_integration(self) -> bool:
         return self.bc_api_key and not self.is_bc_token(self.bc_api_key)
+
+    @staticmethod
+    def is_token_valid(token: str) -> bool:
+        parts = token.split('::')
+        if len(parts) == 1:
+            return BcPlatformIntegration.is_bc_token(token)
+        elif len(parts) == 2:
+            # A Prisma access key is a UUID, same as a BC API key
+            return BcPlatformIntegration.is_bc_token(parts[0]) and parts[1] and BASE64_PATTERN.match(parts[1]) is not None
+        else:
+            return False
 
     @staticmethod
     def is_bc_token(token: str) -> TypeGuard[str]:
