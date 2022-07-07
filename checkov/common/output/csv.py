@@ -1,20 +1,20 @@
 import csv
+import os
 from datetime import datetime
 
-from checkov.common.output.extra_resource import ExtraResource
-from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 
-my_date = datetime.now()
-scan_date = f', Scan Date: {my_date.isoformat()}'
-TITLE_OSS_PACKAGES = f'Open Source Packages {scan_date}'
+date_now = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
+FILE_NAME_OSS_PACKAGES = f'{date_now}_oss_packages.csv'
 HEADER_OSS_PACKAGES = ["Package", "Version", "Path", "git org", "git repository", "Vulnerability", "Severity",
                        "License"]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
-TITLE_CONTAINER_IMAGE = f'Container image {scan_date}'
+FILE_NAME_CONTAINER_IMAGES = f'{date_now}_container_images.csv'
 
-TITLE_IAC = f"Infrastructure as Code Components {scan_date} "
+FILE_NAME_IAC = f'{date_now}_iac.csv'
 HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
+
+CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridgecrew. Signup at https://www.bridgecrew.cloud/login/signUp and add your API key to include those findings."
 
 
 class CSVSBOM():
@@ -36,21 +36,24 @@ class CSVSBOM():
                      "git repository": git_repository, "Misconfigurations": "",
                      "Severity": ""})
 
-    def persist_report(self, path: str):
-        with open(path, 'w', newline='') as file:
-            CSVSBOM.write_section(file=file, title=TITLE_OSS_PACKAGES, header=HEADER_OSS_PACKAGES,
-                                  rows=self.package_rows)
-            CSVSBOM.write_section(file=file, title=TITLE_CONTAINER_IMAGE, header=HEADER_CONTAINER_IMAGE,
-                                  rows=self.container_rows)
-            CSVSBOM.write_section(file=file, title=TITLE_IAC, header=HEADER_IAC,
-                                  rows=self.iac_rows)
+    def persist_report(self, is_api_key: bool):
+        CSVSBOM.write_section(file=FILE_NAME_IAC, header=HEADER_IAC, rows=self.iac_rows,
+                              is_api_key=True)
+        CSVSBOM.write_section(file=FILE_NAME_CONTAINER_IMAGES, header=HEADER_CONTAINER_IMAGE, rows=self.container_rows,
+                              is_api_key=is_api_key)
+        CSVSBOM.write_section(file=FILE_NAME_OSS_PACKAGES, header=HEADER_OSS_PACKAGES, rows=self.package_rows,
+                              is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file, title, header, rows):
-        writer = csv.DictWriter(file, fieldnames=[title])
-        writer.writeheader()
-        writer = csv.DictWriter(file, fieldnames=header)
-        writer.writeheader()
-        writer.writerows(rows)
-        writer = csv.DictWriter(file, fieldnames='')
-        writer.writeheader()
+    def write_section(file, header, rows, is_api_key):
+
+        with open(file, 'w', newline='') as f:
+            print(f"Persisting SBOM to {os.path.abspath(file)}")
+            if is_api_key:
+                writer = csv.DictWriter(f, fieldnames=header)
+                writer.writeheader()
+                writer.writerows(rows)
+            else:
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerow([CTA_NO_API_KEY])

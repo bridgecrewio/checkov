@@ -146,7 +146,7 @@ class RunnerRegistry:
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
-                    if config.repo_id:
+                    if 'repo_id' in config and config.repo_id is not None:
                         git_org,git_repository = config.repo_id.split('/')
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
@@ -247,7 +247,10 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "csv" in config.output:
-            csv_sbom_report.persist_report('sbom.csv')
+            is_api_key = False
+            if 'bc_api_key' in config and  config.bc_api_key is not None:
+                is_api_key = True
+            csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
