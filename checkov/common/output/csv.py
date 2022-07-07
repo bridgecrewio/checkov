@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import csv
 import os
-import typing
 from datetime import datetime
+from typing import Any
 
 from checkov.common.output.report import Report, CheckType
 
@@ -22,9 +24,9 @@ CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridge
 class CSVSBOM():
 
     def __init__(self) -> None:
-        self.iac_rows: list[dict] = []  # type: ignore
-        self.container_rows: list[dict] = []  # type: ignore
-        self.package_rows: list[dict] = []  # type: ignore
+        self.iac_rows: list[dict[str, Any]] = []
+        self.container_rows: list[dict[str, Any]] = []
+        self.package_rows: list[dict[str, Any]] = []
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type != CheckType.SCA_IMAGE and report.check_type != CheckType.SCA_PACKAGE:
@@ -48,14 +50,14 @@ class CSVSBOM():
                               is_api_key=is_api_key)
 
     @staticmethod
-    def write_section(file: str, header: typing.List, rows: typing.List, is_api_key: bool) -> None: # type: ignore
+    def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:
         with open(file, 'w', newline='') as f:
             print(f'Persisting SBOM to {os.path.abspath(file)}')
             if is_api_key:
-                writer = csv.DictWriter(f, fieldnames=header)
-                writer.writeheader()
-                writer.writerows(rows)  # type: ignore
+                dict_writer = csv.DictWriter(f, fieldnames=header)
+                dict_writer.writeheader()
+                dict_writer.writerows(rows)
             else:
-                writer = csv.writer(f)  # type: ignore
-                writer.writerow(header)  # type: ignore
-                writer.writerow([CTA_NO_API_KEY])  # type: ignore
+                writer = csv.writer(f)
+                writer.writerow(header)
+                writer.writerow([CTA_NO_API_KEY])
