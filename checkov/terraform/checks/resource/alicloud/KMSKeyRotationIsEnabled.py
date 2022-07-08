@@ -5,7 +5,7 @@ from typing import Any
 
 class KMSKeyRotationIsEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Key Rotation is enabled"
+        name = "Ensure KMS Key Rotation is enabled"
         id = "CKV_ALI_27"
         supported_resources = ['alicloud_kms_key']
         categories = [CheckCategories.ENCRYPTION]
