@@ -128,9 +128,10 @@ class BcPlatformIntegration:
     @staticmethod
     def is_token_valid(token: str) -> bool:
         parts = token.split('::')
-        if len(parts) == 1:
+        parts_len = len(parts)
+        if parts_len == 1:
             return BcPlatformIntegration.is_bc_token(token)
-        elif len(parts) == 2:
+        elif parts_len == 2:
             # A Prisma access key is a UUID, same as a BC API key
             return BcPlatformIntegration.is_bc_token(parts[0]) and parts[1] and BASE64_PATTERN.match(parts[1]) is not None
         else:
