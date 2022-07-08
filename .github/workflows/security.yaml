@@ -11,7 +11,7 @@ jobs:
   bandit:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: security test
         uses: jpetrucciani/bandit-check@master
         with:
@@ -19,7 +19,7 @@ jobs:
   detect-secrets:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: detect secrets
         uses: edplato/trufflehog-actions-scan@master
         with:

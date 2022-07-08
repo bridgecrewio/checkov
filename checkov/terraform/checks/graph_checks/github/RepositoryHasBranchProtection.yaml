@@ -1,0 +1,21 @@
+metadata:
+  name: "Ensure each Repository has branch protection associated"
+  category: "GENERAL_SECURITY"
+  id: "CKV2_GIT_1"
+scope:
+  provider: "GITHUB"
+definition:
+  and:
+    - resource_types:
+        - github_repository
+      connected_resource_types:
+        - github_branch_protection
+        - github_branch_protection_v3
+      operator: exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - github_repository
+      operator: within
+

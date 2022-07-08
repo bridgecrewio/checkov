@@ -1,1 +1,1 @@
-from checkov.arm.checks import *
+from checkov.arm.checks import *  # noqa

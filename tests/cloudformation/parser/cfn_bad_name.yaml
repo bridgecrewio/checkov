@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  with.dot:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: x
+  no_dot:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: y

@@ -28,6 +28,12 @@ definition:
            value: "data."
            resource_types:
              - aws_route53_record
+         - cond_type: attribute
+           attribute: alias.name
+           operator: contains
+           value: "var."
+           resource_types:
+             - aws_route53_record
          - cond_type: connection
            resource_types:
               - aws_route53_record
@@ -36,6 +42,7 @@ definition:
               - aws_eip
               - aws_elb
               - aws_lb
+              - aws_alb
               - aws_route53_record
               - aws_s3_bucket
               - aws_api_gateway_domain_name
@@ -45,5 +52,6 @@ definition:
               - aws_cloudfront_distribution
               - aws_db_instance
               - aws_apigatewayv2_domain_name
+              - aws_lightsail_instance
            operator: exists
            attribute: networking

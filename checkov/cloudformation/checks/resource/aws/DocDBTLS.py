@@ -1,7 +1,7 @@
 from typing import List, Any
 
 from checkov.cloudformation.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 
 
 class DocDBTLS(BaseResourceNegativeValueCheck):

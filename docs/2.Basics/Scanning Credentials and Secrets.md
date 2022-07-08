@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Scanning Credentials and Secrets
-nav_order: 4
+nav_order: 5
 ---
 
 # Scanning Credentials and Secrets

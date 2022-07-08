@@ -2,4 +2,13 @@
 # https://github.com/PyCQA/flake8/issues/234
 [flake8]
 max-line-length = 120
-ignore = F401,F403,E123,E126,E127,E128,E129,E203,E222,E231,E302,E303,E305,E402,E501,E731,E741,W191,W291,W292,W293,W391,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116
+# E501 doesn't work with black together
+ignore = E127,E128,E129,E203,E231,E302,E303,E305,E501,E731,W291,W292,W293,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B950
+select = C,E,F,W,B,B9,A
+extend-exclude = .github, .pytest_cache, bin/*, docs/*, kubernetes/*, venv/*, tests/*, flake8_plugins/*, checkov/cloudformation/*, checkov/common/*, checkov/dockerfile/*, checkov/sca_image/*, checkov/sca_package/*, checkov/secrets/*, checkov/serverless/*, checkov/terraform/*, checkov/example_runner/*, checkov/kustomize/*, checkov/helm/*
+
+[flake8:local-plugins]
+extension =
+  CCE = flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes.checker:ClassAttributesChecker
+paths =
+  . flake8_plugins/flake8_class_attributes_plugin/flake8_class_attributes

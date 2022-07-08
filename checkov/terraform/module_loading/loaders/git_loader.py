@@ -18,7 +18,35 @@ class ModuleSource:
 
 
 class GenericGitLoader(ModuleLoader):
+    def __init__(self):
+        super().__init__()
+        self.module_source_prefix = "git::https://"
+        self.token = None
+        self.username = None
+        self.discover()
+
+    @property
+    def module_source_prefix(self):
+        return self._module_source_prefix
+
+    @module_source_prefix.setter
+    def module_source_prefix(self, prefix):
+        self._module_source_prefix = prefix
+
+    def discover(self):
+        self.vcs_base_url = os.getenv("VCS_BASE_URL", "")  # format - https://example.com
+        self.module_source_prefix = self.module_source_prefix if not self.vcs_base_url else f"git::{self.vcs_base_url}"
+        self.username = os.getenv("VCS_USERNAME", None)
+        self.token = os.getenv("VCS_TOKEN", None)
+
     def _is_matching_loader(self) -> bool:
+        if self.module_source.startswith(self.module_source_prefix):
+            source = self.module_source.split("git::https://")[-1]
+            if self.token and self.username:
+                self.module_source = f"git::https://{self.username}:{self.token}@{source}"
+            else:
+                self.module_source = f"git::https://{source}"
+            return True
         # https://www.terraform.io/docs/modules/sources.html#generic-git-repository
         return self.module_source.startswith("git::")
 

@@ -3,7 +3,6 @@ from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.LambdaXrayEnabled import check
-from checkov.common.models.enums import CheckResult
 from checkov.terraform.runner import Runner
 
 

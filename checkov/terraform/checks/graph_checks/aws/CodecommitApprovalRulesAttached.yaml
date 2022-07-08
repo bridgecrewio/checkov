@@ -1,0 +1,20 @@
+metadata:
+  name: "Ensure Codecommit associates an approval rule"
+  category: "GENERAL_SECURITY"
+  id: "CKV2_AWS_37"
+scope:
+  provider: "AWS"
+definition:
+  and:
+    - resource_types:
+        - aws_codecommit_repository
+      connected_resource_types:
+        - aws_codecommit_approval_rule_template_association
+      operator: exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_codecommit_repository
+      operator: within
+

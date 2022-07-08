@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from collections import defaultdict
 from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
@@ -71,7 +73,7 @@ class LocalGraph:
     def get_resources_types_in_graph(self) -> List[str]:
         pass
 
-    def get_vertex_attributes_by_index(self, index: int, add_hash=True) -> Dict[str, Any]:
+    def get_vertex_attributes_by_index(self, index: int, add_hash: bool = True) -> Dict[str, Any]:
         return self.vertices[index].get_attribute_dict(add_hash)
 
     def update_vertex_attribute(
@@ -80,7 +82,7 @@ class LocalGraph:
         attribute_key: str,
         attribute_value: Any,
         change_origin_id: int,
-        attribute_at_dest: Optional[Union[str, List[str]]],
+        attribute_at_dest: str | None,
         transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
@@ -97,5 +99,5 @@ class LocalGraph:
             encryption_result = self._graph_resource_encryption_manager.get_encryption_result(vertex)
             if not encryption_result:
                 continue
-            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.enctypted
+            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.encrypted
             vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason

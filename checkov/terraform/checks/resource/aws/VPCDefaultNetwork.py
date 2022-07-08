@@ -1,16 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class VPCDefaultNetwork(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure no default VPC is planned to be provisioned"
         id = "CKV_AWS_148"
-        supported_resources = ['aws_default_vpc']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ("aws_default_vpc",)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         """
             Checks if there is any attempt to create a default VPC configuration :
             https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/default_vpc
@@ -21,5 +25,3 @@ class VPCDefaultNetwork(BaseResourceCheck):
 
 
 check = VPCDefaultNetwork()
-
-

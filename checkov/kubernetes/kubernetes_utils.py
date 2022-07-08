@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from copy import deepcopy
@@ -6,7 +8,7 @@ from typing import Tuple, Dict, Optional, List, Any
 import dpath
 from checkov.runner_filter import RunnerFilter
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
@@ -14,7 +16,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
-K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
+K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 
 
 def get_folder_definitions(
@@ -37,11 +39,11 @@ def get_folder_definitions(
 
 def get_files_definitions(files: List[str]) \
         -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(filename):
+    def _parse_file(filename: str):
         try:
             return filename, parse(filename)
-        except (TypeError, ValueError) as e:
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template\n{e}")
+        except (TypeError, ValueError):
+            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
 
     definitions = {}
     definitions_raw = {}
@@ -57,8 +59,7 @@ def get_files_definitions(files: List[str]) \
 def get_skipped_checks(entity_conf):
     skipped = []
     metadata = {}
-    bc_id_mapping = bc_integration.get_id_mapping()
-    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+    bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
     if not isinstance(entity_conf, dict):
         return skipped
     if "metadata" in entity_conf.keys():
@@ -84,8 +85,8 @@ def get_skipped_checks(entity_conf):
                         if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
                             skipped_item["bc_id"] = skipped_item["id"]
                             skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
-                        elif ckv_to_bc_id_mapping:
-                            skipped_item["bc_id"] = ckv_to_bc_id_mapping.get(skipped_item["id"])
+                        elif metadata_integration.check_metadata:
+                            skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
                         logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
@@ -94,12 +95,13 @@ def get_skipped_checks(entity_conf):
 
 
 def create_definitions(
-    root_folder: str,
-    files: Optional[List[str]] = None,
-    runner_filter: RunnerFilter = RunnerFilter(),
-) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    definitions = {}
-    definitions_raw = {}
+    root_folder: str | None,
+    files: list[str] | None = None,
+    runner_filter: RunnerFilter | None = None,
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+    runner_filter = runner_filter or RunnerFilter()
+    definitions: dict[str, DictNode] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
         definitions, definitions_raw = get_files_definitions(files)
 

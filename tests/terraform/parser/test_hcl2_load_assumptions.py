@@ -21,7 +21,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                     "foo": {
                         "metadata_options": [{
                             "http_tokens": ['${var.metadata_http_tokens_required ? "required" : "optional"}']
-                        }]
+                        }],
+                        "__start_line__": 2,
+                        "__end_line__": 6,
                     }
                 }
             }]
@@ -50,7 +52,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "a_string": ["${merge(local.foo,,{'a': 'b'},)}"]
+                    "a_string": ["${merge(local.foo,{'a': 'b'})}"],
+                    "__start_line__": 2,
+                    "__end_line__": 7,
                 }
             ]
         }
@@ -64,10 +68,12 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "a_string": ["Quotes are \\\"fun\\\"!"]
+                    "a_string": ["Quotes are \\\"fun\\\"!"],
                     #                        __--
                     #                        |  |
                     #                backslash  quote
+                    "__start_line__": 2,
+                    "__end_line__": 4,
                 }
             ]
         }
@@ -81,8 +87,10 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "evil_strings1": ["${merge({'a': '}, evil'})}"]
-                }
+                    "evil_strings1": ["${merge({'a': '}, evil'})}"],
+                    "__start_line__": 2,
+                    "__end_line__": 4,
+                },
             ]
         }
         self.go(tf, expect)
@@ -97,7 +105,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                 {
                     "aws_s3_bucket": {
                         "foo": {
-                            "tags": ["${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}"]
+                            "tags": ["${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}"],
+                            "__start_line__": 2,
+                            "__end_line__": 4,
                         }
                     }
                 }
@@ -115,8 +125,10 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
             "variable": [
                 {
                     "my_var": {
-                        "type": ["${string}"],              # NOTE: wrapped in eval markers
-                        "default": ["my_default_value"]
+                        "type": ["${string}"],  # NOTE: wrapped in eval markers
+                        "default": ["my_default_value"],
+                        "__start_line__": 2,
+                        "__end_line__": 5,
                     }
                 }
             ]
@@ -136,7 +148,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                     "bucket": {
                         "source": ["./bucket"],
                         "name": ["module_bucket"],
-                        "BLAH": ["a value"]
+                        "BLAH": ["a value"],
+                        "__start_line__": 2,
+                        "__end_line__": 6,
                     }
                 }
             ]
@@ -186,7 +200,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
         expect = {
             "locals": [
                 {
-                    "INTS": ["${tomap({'a': 1, 'b': 2})}"]          # WHA?? Equals to colons? Okay...
+                    "INTS": ["${tomap({'a': 1, 'b': 2})}"],  # WHA?? Equals to colons? Okay...
+                    "__start_line__": 2,
+                    "__end_line__": 4,
                 }
             ]
         }
@@ -231,12 +247,16 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                 {
                     "gratuitous_var_default": {
                         "type": ["${string}"],              # NOTE: wrapped in eval markers
-                        "default": ["-yay"]
+                        "default": ["-yay"],
+                        "__start_line__": 2,
+                        "__end_line__": 5,
                     }
                 },
                 {
                     "input": {
-                        "default": ["module-input"]
+                        "default": ["module-input"],
+                        "__start_line__": 7,
+                        "__end_line__": 9,
                     }
                 }
             ],
@@ -245,14 +265,18 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                     "NAME": [{
                         "module-input-bucket": "mapped-bucket-name"
                     }],
-                    "TAIL": ["works"]
+                    "TAIL": ["works"],
+                    "__start_line__": 11,
+                    "__end_line__": 16,
                 }
             ],
             "module": [
                 {
                     "bucket": {
                         "source": ["./bucket"],
-                        "name": ["${var.input}"]            # NOTE: wrapped in eval markers
+                        "name": ["${var.input}"],  # NOTE: wrapped in eval markers
+                        "__start_line__": 18,
+                        "__end_line__": 21,
                     }
                 }
             ],
@@ -260,7 +284,9 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
                 {
                     "aws_s3_bucket": {
                         "example2": {
-                            "bucket": ["${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}"]
+                            "bucket": ["${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}"],
+                            "__start_line__": 23,
+                            "__end_line__": 32,
                         }
                     }
                 }
@@ -297,6 +323,6 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
     def test_splat_expression(self):
         tf = 'instances = flatten(aws_instance.ubuntu[*].id)'
         expect = {
-            'instances': ["${flatten(Tree('full_splat_expr_term', ['aws_instance.ubuntu', 'id']))}"]
+            'instances': ["${flatten(aws_instance.ubuntu[*].id)}"]
         }
         self.go(tf, expect)

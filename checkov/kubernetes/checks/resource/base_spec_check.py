@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult

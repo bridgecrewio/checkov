@@ -1,6 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+Mappings:
+  ServiceDiscovery:
+    self:
+      "name": 'amecard-cancel-api'
+
 Parameters:
   EnvironmentType:
     Type: String

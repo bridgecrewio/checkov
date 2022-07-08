@@ -34,6 +34,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             IntrinsicFunctions.SELECT: self._evaluate_select_function,
             IntrinsicFunctions.JOIN: self._evaluate_join_function
         }
+        self.vertices_block_name_map = self._extract_vertices_block_name_map()
 
     """
      This method will evaluate Ref, Fn::FindInMap, Fn::GetAtt, Fn::Sub
@@ -44,10 +45,9 @@ class CloudformationVariableRenderer(VariableRenderer):
         origin_vertex = self.local_graph.vertices[edge.origin]
         origin_vertex_attributes = origin_vertex.attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
-        vertices_block_name_map = self._extract_vertices_block_name_map()
 
         referenced_vertices = get_referenced_vertices_in_value(
-            value=val_to_eval, vertices_block_name_map=vertices_block_name_map
+            value=val_to_eval, vertices_block_name_map=self.vertices_block_name_map
         )
         if not referenced_vertices:
             # DependsOn or Condition connections
@@ -265,26 +265,28 @@ class CloudformationVariableRenderer(VariableRenderer):
     def _evaluate_getatt_connection(value: List[str], dest_vertex_attributes: Dict[str, Any]) -> (
             Optional[str], Optional[str]):
         # value = [ "logicalNameOfResource", "attributeName" ]
-        if isinstance(value, list) and len(value) == 2:
-            resource_name = value[0]
-            attribute_name = value[1]
-            dest_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME).split('.')[-1]
-            attribute_at_dest = attribute_name
-            evaluated_value = dest_vertex_attributes.get(
-                attribute_at_dest)  # we extract only build time atts, not runtime
+        try:
+            if isinstance(value, list) and len(value) == 2:
+                resource_name = value[0]
+                attribute_at_dest = value[1]
+                dest_name = dest_vertex_attributes.get(CustomAttributes.BLOCK_NAME).split('.')[-1]
+                evaluated_value = dest_vertex_attributes.get(
+                    attribute_at_dest)  # we extract only build time atts, not runtime
 
-            if evaluated_value and \
-                    all(isinstance(element, str) for element in value) and \
-                    resource_name == dest_name and \
-                    dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
-                return str(evaluated_value), attribute_at_dest
+                if evaluated_value and \
+                        all(isinstance(element, str) for element in value) and \
+                        resource_name == dest_name and \
+                        dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
+                    return str(evaluated_value), attribute_at_dest
+        except TypeError as e:
+            logging.debug(f"unable to _evaluate_getatt_connection: {e}")
 
         return None, None
 
     def _evaluate_sub_connection(self, value: str, dest_vertex_attributes: Dict[str, Any]) -> (
             Optional[str], Optional[str]):
-        if isinstance(value, list):
-            # TODO: Render values of list type
+        if isinstance(value, (list, dict)):
+            # TODO: Render values of list/dict types
             return None, None
         evaluated_value = None
         attribute_at_dest = None

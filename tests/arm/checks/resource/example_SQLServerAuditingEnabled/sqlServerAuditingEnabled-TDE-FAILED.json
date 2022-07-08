@@ -34,7 +34,7 @@
     }
   },
   "variables": {
-    "sqlServerName": "[concat('sqlserver', uniqueString(subscription().id, resourceGroup().id))]",
+    "sqlServerName": "serverDefault",
     "databaseName": "sample-db-with-tde",
     "databaseEdition": "Basic",
     "databaseCollation": "SQL_Latin1_General_CP1_CI_AS",

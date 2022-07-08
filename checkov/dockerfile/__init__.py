@@ -1,1 +1,1 @@
-from checkov.dockerfile.checks import *
+from checkov.dockerfile.checks import *  # noqa

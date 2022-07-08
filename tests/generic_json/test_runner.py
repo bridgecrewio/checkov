@@ -1,6 +1,5 @@
-import unittest
-
 import os
+import unittest
 
 from checkov.json_doc.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -51,9 +50,9 @@ class TestRunnerValid(unittest.TestCase):
             external_checks_dir=[checks_dir],
             runner_filter=RunnerFilter(framework='all', checks=["CKV_BARBAZ_1"])
         )
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 3)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
@@ -67,7 +66,7 @@ class TestRunnerValid(unittest.TestCase):
             external_checks_dir=[checks_dir],
             runner_filter=RunnerFilter(framework="all", checks=["CKV_BARBAZ_1"]),
         )
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])

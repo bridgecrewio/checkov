@@ -10,6 +10,7 @@ from checkov.common.parsers.node import StrNode
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
+from checkov.common.util.var_utils import is_cloudformation_variable_dependent
 
 VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
@@ -38,9 +39,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
-        if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
-            return True
-        return False
+        return is_cloudformation_variable_dependent(value)
 
     @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: str) -> bool:
@@ -79,6 +78,12 @@ class BaseResourceValueCheck(BaseResourceCheck):
                         return CheckResult.PASSED
                     if value in expected_values:
                         return CheckResult.PASSED
+
+                    # handle boolean case sensitivity (e.g., CFN accepts the string "true" as a boolean)
+                    if isinstance(value, str) and value.lower() in ('true', 'false'):
+                        value = value.lower() == 'true'
+                        if value in expected_values:
+                            return CheckResult.PASSED
                     return CheckResult.FAILED
 
         return self.missing_block_result

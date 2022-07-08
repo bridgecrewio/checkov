@@ -1,11 +1,19 @@
-from typing import Union, List, Any
-from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+from typing import Any, TypeVar, Generic, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from checkov.common.graph.graph_builder.graph_components.block_types import BlockType  # noqa
+
+_BlockT = TypeVar("_BlockT", bound="BlockType")
 
 
-class VertexReference(ABC):
-    def __init__(self, block_type: Union[str, BlockType], sub_parts: List[str], origin_value: str) -> None:
-        self.block_type: BlockType = self.block_type_str_to_enum(block_type) if isinstance(block_type, str) else block_type
+class VertexReference(ABC, Generic[_BlockT]):
+    __slots__ = ("block_type", "sub_parts", "origin_value")
+
+    def __init__(self, block_type: str | _BlockT, sub_parts: list[str], origin_value: str) -> None:
+        self.block_type: _BlockT = self.block_type_str_to_enum(block_type) if isinstance(block_type, str) else block_type
         self.sub_parts = sub_parts
         self.origin_value = origin_value
 
@@ -23,5 +31,5 @@ class VertexReference(ABC):
 
     @staticmethod
     @abstractmethod
-    def block_type_str_to_enum(block_type_str: str):
+    def block_type_str_to_enum(block_type_str: str) -> _BlockT:
         pass

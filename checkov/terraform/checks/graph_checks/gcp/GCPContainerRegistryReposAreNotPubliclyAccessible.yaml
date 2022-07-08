@@ -1,0 +1,63 @@
+metadata:
+  id: "CKV2_GCP_9"
+  name: "Ensure that Container Registry repositories are not anonymously or publicly accessible"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_container_registry
+      operator: within
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - google_container_registry
+          connected_resource_types:
+            - google_storage_bucket_iam_member
+        - and:
+            - cond_type: connection
+              operator: exists
+              resource_types:
+                - google_container_registry
+              connected_resource_types:
+                - google_storage_bucket_iam_member
+            - cond_type: attribute
+              attribute: member
+              operator: not_equals
+              value: "allAuthenticatedUsers"
+              resource_types:
+                - google_storage_bucket_iam_member
+            - cond_type: attribute
+              attribute: member
+              operator: not_equals
+              value: "allUsers"
+              resource_types:
+                - google_storage_bucket_iam_member
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - google_container_registry
+          connected_resource_types:
+            - google_storage_bucket_iam_binding
+        - and:
+            - cond_type: connection
+              operator: exists
+              resource_types:
+                - google_container_registry
+              connected_resource_types:
+                - google_storage_bucket_iam_binding
+            - cond_type: attribute
+              attribute: members
+              operator: not_contains
+              value: "allAuthenticatedUsers"
+              resource_types:
+                - google_storage_bucket_iam_binding
+            - cond_type: attribute
+              attribute: members
+              operator: not_contains
+              value: "allUsers"
+              resource_types:
+                - google_storage_bucket_iam_binding

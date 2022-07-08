@@ -70,3 +70,13 @@ data:
     output:
     - json
 ```
+## Ignoring critical namespaces
+There is a second configMap called whorfconfig.yaml.  Within this config you'll find a property called k8s.properties where the key value pair 'ignores-namespaces' is preconfigured with the kube-system namespace and the bridgecrew namespace.  Add any other system critical namespaces to this configuration, reapply the configMap and restart Whorf to apply the new configMap settings.
+
+_NOTE: The list does not currently accept wildcard entries such as kube-*._
+
+E.g.
+```
+  # kubernetes related config
+  k8s.properties: |
+    ignores-namespaces=kube-system,bridgecrew

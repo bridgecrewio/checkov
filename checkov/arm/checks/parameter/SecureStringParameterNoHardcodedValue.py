@@ -12,7 +12,9 @@ class SecureStringParameterNoHardcodedValue(BaseParameterCheck):
 
     def scan_resource_conf(self, conf):
         # https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/test-cases#secure-parameters-cant-have-hardcoded-default
-        if conf.get('defaultValue'):  # should be missing, or an empty string
+        default_value = conf.get('defaultValue')
+        if default_value:  # should be missing, or an empty string
+            conf[f'{self.id}_secret'] = default_value
             return CheckResult.FAILED
         else:
             return CheckResult.PASSED

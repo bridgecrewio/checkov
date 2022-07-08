@@ -97,6 +97,26 @@ resource "aws_route53_record" "pass4" {
   }
 }
 
+resource "aws_alb" "example" {
+  name               = "example"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+  subnets            = [for subnet in aws_subnet.public : subnet.id]
+}
+
+resource "aws_route53_record" "pass_alb" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = aws_alb.example.dns_name
+    zone_id                = aws_alb.example.zone_id
+    evaluate_target_health = true
+  }
+}
+
 resource "aws_route53_record" "pass5" {
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.fqdn
@@ -105,6 +125,21 @@ resource "aws_route53_record" "pass5" {
     evaluate_target_health = false
     name                   = aws_cloudfront_distribution.website.domain_name
     zone_id                = aws_cloudfront_distribution.website.hosted_zone_id
+  }
+}
+
+variable "aws_alb_dns_name" {}
+variable "aws_alb_zone_id" {}
+
+resource "aws_route53_record" "pass_var" {
+  zone_id = data.aws_route53_zone.example.zone_id
+  name    = "example"
+  type    = "A"
+
+  alias {
+    name                   = var.aws_alb_dns_name
+    zone_id                = var.aws_alb_zone_id
+    evaluate_target_health = true
   }
 }
 
@@ -235,4 +270,21 @@ resource "aws_route53_record" "pass_eb" {
 resource "aws_elastic_beanstalk_environment" "pass_eb" {
   application = aws_elastic_beanstalk_application.example.name
   name        = "example"
+}
+
+# Lightsail
+
+resource "aws_route53_record" "pass_lightsail" {
+  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  name     = var.sub_domain
+  type     = "A"
+  ttl      = "300"
+  records  = [aws_lightsail_instance.example.public_ip_address]
+}
+
+resource "aws_lightsail_instance" "example" {
+  name              = "example_lightsail_instance"
+  availability_zone = "us-east-1f"
+  blueprint_id      = "ubuntu_20_04"
+  bundle_id         = "medium_2_0"
 }

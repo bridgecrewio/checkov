@@ -1,6 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-from checkov.common.parsers.node import DictNode
+
 
 class AKSLoggingEnabled(BaseResourceCheck):
     def __init__(self):
@@ -26,5 +26,6 @@ class AKSLoggingEnabled(BaseResourceCheck):
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
+
 
 check = AKSLoggingEnabled()

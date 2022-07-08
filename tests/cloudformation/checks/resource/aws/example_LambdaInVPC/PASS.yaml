@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Enabled:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: arn:aws:iam::123456789012:role/lambda-role
+      Code:
+        S3Bucket: my-bucket
+        S3Key: function.zip
+      Runtime: python3.8
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-12345
+        SubnetIds:
+          - subnet-12345
+          - subnet-67890

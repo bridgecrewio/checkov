@@ -4,7 +4,9 @@
       {
         "bucket": {
           "source": ["./bucket"],
-          "__resolved__": ["bucket/bucket.tf[main.tf#0]"]
+          "__resolved__": ["bucket/bucket.tf[main.tf#0]"],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       }
     ]
@@ -14,7 +16,9 @@
       {
         "aws_s3_bucket": {
           "mybucket": {
-            "bucket": ["MyBucket"]
+            "bucket": ["MyBucket"],
+            "__start_line__": 1,
+            "__end_line__": 3
           }
         }
       }

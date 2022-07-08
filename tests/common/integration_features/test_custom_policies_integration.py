@@ -1,5 +1,5 @@
+import json
 import os
-import types
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
@@ -23,20 +23,20 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
 
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         self.assertTrue(custom_policies_integration.is_valid())
 
-        instance.skip_policy_download = True
+        instance.skip_download = True
         self.assertFalse(custom_policies_integration.is_valid())
 
         instance.platform_integration_configured = False
         self.assertFalse(custom_policies_integration.is_valid())
 
-        instance.skip_policy_download = False
+        instance.skip_download = False
         self.assertFalse(custom_policies_integration.is_valid())
 
         custom_policies_integration.integration_feature_failures = True
@@ -46,29 +46,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # response from API
         policies = [
             {
-                "provider": "AWS",
                 "id": "mikepolicies_AWS_1625063607541",
                 "title": "yaml1",
                 "severity": "MEDIUM",
                 "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:33:54.638Z"
-                    }
-                },
                 "guideline": "yaml1",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "or": [
                         {
                             "value": "xyz",
@@ -80,46 +63,16 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                             ]
                         }
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": "---\nmetadata:\n  name: \"yaml1\" #give your custom policy a unique name \n  guidelines: "
-                        "\"yaml1\" #add text that explains the configuration the policy looks for, its implications, "
-                        "and how to fix it\n  category: \"general\" #choose one: "
-                        "\"general\"/\"elaticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking"
-                        "\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: "
-                        "\"critical\"/\"high\"/\"medium\"/\"low\"/\"info\"\nscope:\n  provider: \"aws\" #choose one: "
-                        "\"aws\"/\"azure\"/\"gcp\"\ndefinition: #define the conditions the policy searches for.\n "
-                        "or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_s3_bucket\"\n    "
-                        "attribute: \"xyz\"\n    operator: \"equals\"\n    value: \"xyz\"\n#   - cond_type: "
-                        "\"attribute\"\n#     resource_types:\n#     - \"aws_instance\"\n#     attribute: "
-                        "\"instance_type\"\n#     operator: \"equals\"\n#     value: \"t3.nano\"\n ",
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "mikepolicies_aws_1625063842021",
                 "title": "ui1",
                 "severity": "HIGH",
                 "category": "General",
-                "resourceTypes": [
-                    "aws_s3_bucket"
-                ],
-                "accountsData": {
-                    "mikeurbanski1/terragoat3": {
-                        "amounts": {
-                            "CLOSED": 0,
-                            "DELETED": 0,
-                            "OPEN": 1,
-                            "REMEDIATED": 0,
-                            "SUPPRESSED": 0
-                        },
-                        "lastUpdateDate": "2021-06-30T14:42:29.534Z"
-                    }
-                },
                 "guideline": "ui1",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "value": "abc",
                     "operator": "equals",
                     "attribute": "region",
@@ -127,14 +80,10 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                     "resource_types": [
                         "aws_s3_bucket"
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "mike+policies@bridgecrew.io",
-                "code": None,
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "kpande_AWS_1635180094606",
                 "title": "Check that all EC2 instances are tagged with yor_trace",
                 "descriptiveTitle": "null",
@@ -142,34 +91,22 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "severity": "LOW",
                 "pcSeverity": "null",
                 "category": "General",
-                "resourceTypes": [
-                    "AWS::EC2::Instance"
-                ],
                 "guideline": "Check for YOR tagging",
-                "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "operator": "exists",
                     "attribute": "Tags.yor_trace",
                     "cond_type": "attribute",
                     "resource_types": [
                         "AWS::EC2::Instance"
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n name: \"Check that all resources are tagged with the key - yor_trace\"\n "
-                        "guidelines: \"Check for YOR tagging\"\n category: \"general\"\n severity: \"low\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n       cond_type: \"attribute\"\n       resource_types: \n   "
-                        "    - \"AWS::EC2::Instance\"\n       attribute: \"Tags.yor_trace\"\n       operator: "
-                        "\"exists\"",
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
                 ],
-                "sourceIncidentId": ""
             },
             {
-                "provider": "AWS",
                 "id": "kpande_AWS_1635187541652",
                 "title": "Custom - ensure MSK Cluster logging is enabled",
                 "descriptiveTitle": "null",
@@ -183,7 +120,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "accountsData": {},
                 "guideline": "Some sample guidelines",
                 "isCustom": True,
-                "conditionQuery": {
+                "code": json.dumps({
                     "or": [
                         {
                             "value": "true",
@@ -213,23 +150,12 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                             ]
                         }
                     ]
-                },
+                }),
                 "benchmarks": {},
-                "createdBy": "kpande@paloaltonetworks.com",
-                "code": "---\nmetadata:\n  name: \"Custom - ensure MSK Cluster logging is enabled\"\n  category: "
-                        "\"logging\"\n  severity: \"medium\"\n  guidelines: \"Some sample guidelines\"\nscope:\n  "
-                        "provider: \"aws\"\ndefinition:\n  or:\n    - cond_type: attribute\n      attribute: "
-                        "LoggingInfo.BrokerLogs.S3.Enabled\n      operator: equals\n      value: \"true\"\n      "
-                        "resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: attribute\n      "
-                        "attribute: LoggingInfo.BrokerLogs.Firehose.Enabled\n      operator: equals\n      value: "
-                        "\"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"\n    - cond_type: "
-                        "attribute\n      attribute: LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled\n      operator: "
-                        "equals\n      value: \"true\"\n      resource_types:\n        - \"AWS::MSK::Cluster\"",
                 "frameworks": [
                     "Terraform",
                     "CloudFormation"
                 ],
-                "sourceIncidentId": ""
             }
         ]
 
@@ -265,7 +191,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
 
         report = cfn_runner.run(root_folder=test_files_dir,
                                 runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
@@ -276,31 +202,34 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         report = cfn_runner.run(root_folder=test_files_dir,
                                 runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 6)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
 
     def test_pre_scan_with_cloned_checks(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
-        # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
-                                                                                   custom_policies_integration)
+        instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()
-        self.assertEqual(1, len(custom_policies_integration.policies))
+        cfn_registry = get_graph_checks_registry("cloudformation").checks
+        tf_registry = get_graph_checks_registry("terraform").checks
+        k8s_registry = get_graph_checks_registry("kubernetes").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
-        instance.skip_policy_download = False
+        instance.skip_download = False
         instance.platform_integration_configured = True
         custom_policies_integration = CustomPoliciesIntegration(instance)
 
         # mock _get_policies_from_platform method
-        custom_policies_integration._get_policies_from_platform = types.MethodType(_get_policies_from_platform,
-                                                                                   custom_policies_integration)
+        instance.customer_run_config_response = mock_custom_policies_response()
         custom_policies_integration.pre_scan()
 
         scan_reports = Report("terraform")
@@ -325,38 +254,67 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
 
 
-def _get_policies_from_platform(self):
-    return [
-        {
-            "provider": "AWS",
-            "id": "mikepolicies_cloned_AWS_1625063607541",
-            "title": "Cloned policy",
-            "severity": "CRITICAL",
-            "category": "General",
-            "resourceTypes": [
-                "aws_s3_bucket"
-            ],
-            "accountsData": {
-                "mikeurbanski1/terragoat3": {
-                    "amounts": {
-                        "CLOSED": 0,
-                        "DELETED": 0,
-                        "OPEN": 1,
-                        "REMEDIATED": 0,
-                        "SUPPRESSED": 0
-                    },
-                    "lastUpdateDate": "2021-06-30T14:33:54.638Z"
-                }
+def mock_custom_policies_response():
+    return {
+        "customPolicies": [
+            {
+                "id": "mikepolicies_cloned_AWS_1625063607541",
+                "title": "Cloned policy",
+                "severity": "CRITICAL",
+                "category": "General",
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
+                "resourceTypes": [
+                    "aws_s3_bucket"
+                ],
+                "guideline": "mikepolicies_cloned_AWS_1625063607541",
+                "benchmarks": {},
+                "createdBy": "mike+policies@bridgecrew.io",
+                "code": "null",
+                "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
             },
-            "guideline": "mikepolicies_cloned_AWS_1625063607541",
-            "isCustom": True,
-            "conditionQuery": {},
-            "benchmarks": {},
-            "createdBy": "mike+policies@bridgecrew.io",
-            "code": "",
-            "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
-        }
-    ]
+            {
+                "id": "kpande_AZR_1648821862291",
+                "code": "{\"and\":[{\"operator\":\"exists\",\"cond_type\":\"connection\",\"resource_types\":["
+                        "\"azurerm_subnet_network_security_group_association\"],\"connected_resource_types\":["
+                        "\"azurerm_subnet\",\"azurerm_network_security_group\"]},{\"value\":[\"azurerm_subnet\"],"
+                        "\"operator\":\"within\",\"attribute\":\"resource_type\",\"cond_type\":\"filter\"}]}",
+                "title": "Ensure subnet is associated with NSG",
+                "guideline": "Every subnet should be associated with NSG for controlling access to \nresources within "
+                             "the subnet.\n",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "Networking",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "CloudFormation",
+                    "Terraform"
+                ]
+            },
+            {
+                "id": "kpande_kubernetes_1650378013211",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "k8s policy",
+                "guideline": "meaningful guideline for k8s policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "Kubernetes",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "Kubernetes"
+                ]
+            }
+        ]
+    }
 
 
 if __name__ == '__main__':

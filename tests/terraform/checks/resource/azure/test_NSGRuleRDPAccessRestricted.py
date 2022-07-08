@@ -28,13 +28,15 @@ class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
             "azurerm_network_security_rule.ranges_prefixes",
             "azurerm_network_security_rule.rdp",
             "azurerm_network_security_group.ranges",
+            "azurerm_network_security_rule.ranges_prefixes_lower_case",
+            "azurerm_network_security_rule.range_prefix_lower_case",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 5)
+        self.assertEqual(summary["failed"], 7)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

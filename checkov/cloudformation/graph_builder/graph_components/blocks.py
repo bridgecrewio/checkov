@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import List, Dict, Any, Optional
 
@@ -6,6 +8,8 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 
 class CloudformationBlock(Block):
+    __slots__ = ("condition", "metadata")
+
     def __init__(
         self,
         name: str,
@@ -68,6 +72,12 @@ class CloudformationBlock(Block):
                 obj_to_update[key_to_update] = attribute_value
             else:
                 logging.info(f"Failed to update an attribute, values: {obj_to_update}, {key_to_update}, {attribute_value}")
+
+    def update_inner_attribute(
+        self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
+    ) -> None:
+        # this overrides the parent method, which doesn't work as expected with CloudFormation
+        pass
 
     @staticmethod
     def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],

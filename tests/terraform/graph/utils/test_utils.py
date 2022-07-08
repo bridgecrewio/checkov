@@ -1,4 +1,3 @@
-import os
 import pprint
 from typing import List, Tuple
 from unittest import TestCase
@@ -181,4 +180,3 @@ class TestUtils(TestCase):
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
         self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
-

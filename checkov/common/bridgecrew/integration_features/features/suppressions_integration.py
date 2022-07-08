@@ -1,21 +1,24 @@
-import json
+from __future__ import annotations
+
 import logging
 import re
 from itertools import groupby
-
-import requests
+from typing import TYPE_CHECKING
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
-from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import get_default_get_headers, get_auth_header, extract_error_message
+
+if TYPE_CHECKING:
+    from checkov.common.output.report import Report
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
 
     def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
+        super().__init__(bc_integration, order=1)  # must be after the policy metadata
         self.suppressions = {}
         self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
@@ -24,43 +27,64 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
         self.repo_name_regex = None
 
-    def is_valid(self):
-        return self.bc_integration.is_integration_configured() and not self.bc_integration.skip_suppressions \
-               and not self.integration_feature_failures
+    def is_valid(self) -> bool:
+        return (
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_download
+            and not self.integration_feature_failures
+        )
 
-    def pre_scan(self):
+    def pre_scan(self) -> None:
         try:
-            self._init_repo_regex()
-            suppressions = sorted(self._get_suppressions_from_platform(), key=lambda s: s['checkovPolicyId'])
-            # group and map by policy ID
-            self.suppressions = {policy_id: list(sup) for policy_id, sup in groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
-            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
-        except Exception as e:
-            self.integration_feature_failures = True
-            logging.debug(f'{e} \nScanning without applying suppressions configured in the platform.', exc_info=True)
+            if not self.bc_integration.customer_run_config_response:
+                logging.debug('In the pre-scan for suppressions, but nothing was fetched from the platform')
+                self.integration_feature_failures = True
+                return
 
-    def post_runner(self, scan_report):
+            suppressions = self.bc_integration.customer_run_config_response.get('suppressions')
+
+            for suppression in suppressions:
+                if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
+                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
+                else:
+                    suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
+
+            self._init_repo_regex()
+            suppressions = sorted(suppressions, key=lambda s: s['checkovPolicyId'])
+
+            # group and map by policy ID
+            self.suppressions = {policy_id: list(sup) for policy_id, sup in
+                                 groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
+            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+        except Exception:
+            self.integration_feature_failures = True
+            logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
+
+    def post_runner(self, scan_report: Report) -> None:
         self._apply_suppressions_to_report(scan_report)
 
-    def _apply_suppressions_to_report(self, scan_report):
+    def _apply_suppressions_to_report(self, scan_report: Report) -> None:
 
         # holds the checks that are still not suppressed
         still_failed_checks = []
-        for failed_check in scan_report.failed_checks:
-            relevant_suppressions = self.suppressions.get(failed_check.check_id)
+        still_passed_checks = []
+        for check in scan_report.failed_checks + scan_report.passed_checks:
+            relevant_suppressions = self.suppressions.get(check.check_id)
 
-            applied_suppression = self._check_suppressions(failed_check,
-                                                          relevant_suppressions) if relevant_suppressions else None
+            applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
-                failed_check.check_result = {
+                check.check_result = {
                     'result': CheckResult.SKIPPED,
                     'suppress_comment': applied_suppression['comment']
                 }
-                scan_report.skipped_checks.append(failed_check)
+                scan_report.skipped_checks.append(check)
+            elif check.check_result['result'] == CheckResult.FAILED:
+                still_failed_checks.append(check)
             else:
-                still_failed_checks.append(failed_check)
+                still_passed_checks.append(check)
 
         scan_report.failed_checks = still_failed_checks
+        scan_report.passed_checks = still_passed_checks
 
     def _check_suppressions(self, record, suppressions):
         """
@@ -93,10 +117,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Accounts':
             # This should be true, because we validated when we downloaded the policies.
             # But checking here adds some resiliency against bugs if that changes.
-            return any(self._repo_matches(account) for account in suppression['accountIds'])
+            return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
             for resource in suppression['resources']:
-                if self._repo_matches(resource['accountId']) and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
+                if self.bc_integration.repo_matches(resource['accountId']) \
+                        and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
             return False
         elif type == 'Tags':
@@ -113,26 +138,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         return False
 
-    def _get_suppressions_from_platform(self):
-        headers = merge_dicts(get_default_get_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-                              get_auth_header(self.bc_integration.get_auth_token()))
-        response = requests.request('GET', self.suppressions_url, headers=headers)
-
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get suppressions request failed with response code {response.status_code}: {error_message}')
-
-        # filter out suppressions that we know just don't apply
-        suppressions = [s for s in json.loads(response.content) if self._suppression_valid_for_run(s)]
-
-        for suppression in suppressions:
-            if suppression['policyId'] in self.bc_integration.bc_id_mapping:
-                suppression['checkovPolicyId'] = self.bc_integration.bc_id_mapping[suppression['policyId']]
-            else:
-                suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
-
-        return suppressions
-
     def _suppression_valid_for_run(self, suppression):
         """
         Returns whether this suppression is valid. A suppression is NOT valid if:
@@ -142,11 +147,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         :return:
         """
         policyId = suppression['policyId']
-        if policyId not in self.bc_integration.bc_id_mapping and not self.custom_policy_id_regex.match(policyId):
+        if policyId not in metadata_integration.bc_to_ckv_id_mapping and not self.custom_policy_id_regex.match(
+                policyId):
             return False
 
         if suppression['suppressionType'] == 'Accounts':
-            if not any(self._repo_matches(account) for account in suppression['accountIds']):
+            if not any(self.bc_integration.repo_matches(account) for account in suppression['accountIds']):
                 return False
 
         return True

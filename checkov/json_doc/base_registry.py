@@ -1,19 +1,27 @@
+from __future__ import annotations
+
+from typing import Any, Dict, List, Callable
+
+from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
+from checkov.common.typing import _SkippedCheck
 from checkov.json_doc.enums import BlockType
+from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self._scanner = {
+        self._scanner: Dict[str, Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None]] = {
             BlockType.ARRAY: self._scan_json_array,
             BlockType.OBJECT: self._scan_json_object,
         }
 
     def _scan_json_array(
-        self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: List[Dict[str, Any]],
+            entity_name: str, entity_type: str, results: Dict[str, Any]
+    ) -> None:
         for item in entity:
             if entity_name in item:
                 result = self.update_result(
@@ -30,8 +38,9 @@ class Registry(BaseCheckRegistry):
                     break
 
     def _scan_json_object(
-        self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any],
+            entity_name: str, entity_type: str, results: Dict[str, Any]
+    ) -> None:
         if entity_name in entity:
             self.update_result(
                 check,
@@ -44,28 +53,29 @@ class Registry(BaseCheckRegistry):
             )
 
     def _scan_json_document(
-        self, scanned_file, check, skip_info, entity, entity_name, entity_type, results
-    ):
+        self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any], entity_name: str,
+            entity_type: str, results: Dict[str, Any]
+    ) -> None:
         self.update_result(
             check, entity, entity_name, entity_type, results, scanned_file, skip_info
         )
 
     def _scan_json(
         self,
-        scanned_file,
-        checks,
-        skipped_checks,
-        runner_filter,
-        entity,
-        entity_name,
-        entity_type,
-        results,
-    ):
+        scanned_file: str,
+        checks: List[BaseCheck],
+        skipped_checks: List[_SkippedCheck],
+        runner_filter: RunnerFilter,
+        entity: Dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: Dict[str, Any],
+    ) -> None:
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check.id, check.bc_id):
-                scanner = self._scanner.get(check.block_type, self._scan_json_document)
+            if runner_filter.should_run_check(check=check):
+                scanner: Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None] = self._scanner.get(check.block_type, self._scan_json_document)
                 if check.path:
                     target = entity
                     for p in check.path.split("."):
@@ -88,8 +98,14 @@ class Registry(BaseCheckRegistry):
                     results,
                 )
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
-        results = {}
+    def scan(  # type:ignore[override]  # return type is different than the base class
+        self,
+        scanned_file: str,
+        entity: Dict[str, Any],
+        skipped_checks: List[_SkippedCheck],
+        runner_filter: RunnerFilter
+    ) -> Dict[str, Any]:
+        results: Dict[str, Any] = {}
 
         if not entity:
             return results
@@ -122,14 +138,14 @@ class Registry(BaseCheckRegistry):
 
     def update_result(
         self,
-        check,
-        entity_configuration,
-        entity_name,
-        entity_type,
-        results,
-        scanned_file,
-        skip_info,
-    ):
+        check: BaseCheck,
+        entity_configuration: Dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: Dict[str, Any],
+        scanned_file: str,
+        skip_info: _SkippedCheck,
+    ) -> CheckResult:
         check_result = self.run_check(
             check,
             entity_configuration,
@@ -140,9 +156,11 @@ class Registry(BaseCheckRegistry):
         )
 
         result = check_result["result"]
+        result_key = f'{entity_type}.{entity_name}.{check.id}'
 
-        if result == CheckResult.SKIPPED:
-            results[check] = {
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
+            results[result_key] = {
+                "check": check,
                 "result": result,
                 "suppress_comment": check_result["suppress_comment"],
                 "results_configuration": None,
@@ -150,14 +168,19 @@ class Registry(BaseCheckRegistry):
             return result
 
         if isinstance(result, tuple):
-            results[check] = {
+            results[result_key] = {
+                "check": check,
                 "result": result[0],
                 "results_configuration": result[1],
             }
             return result[0]
-
-        results[check] = {
+        results[result_key] = {
+            "check": check,
             "result": result,
             "results_configuration": entity_configuration,
         }
         return result
+
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
+        # not used, but is an abstractmethod
+        pass

@@ -5,6 +5,8 @@ from typing import Any
 from lark import Tree
 from packaging.version import LegacyVersion, Version
 
+from checkov.common.bridgecrew.severities import Severity
+
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -16,6 +18,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, (Version, LegacyVersion)):
             return str(o)
+        elif isinstance(o, Severity):
+            return o.name
         elif isinstance(o, complex):
             return str(o)
         else:

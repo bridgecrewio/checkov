@@ -5,7 +5,6 @@ from checkov.common.models.enums import CheckResult
 
 
 class TestEKSControlPlaneLogging(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {'name': ['testcluster'], 'enabled_cluster_log_types': [['api', 'audit']]}
 
@@ -28,5 +27,3 @@ class TestEKSControlPlaneLogging(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

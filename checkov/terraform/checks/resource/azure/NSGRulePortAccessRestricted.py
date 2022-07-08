@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.util.type_forcers import force_list
 import re
 
-INTERNET_ADDRESSES = ("*", "0.0.0.0", "<nw>/0", "/0", "Internet", "any")  # nosec
+INTERNET_ADDRESSES = ("*", "0.0.0.0", "<nw>/0", "/0", "internet", "any")  # nosec
 PORT_RANGE = re.compile(r"\d+-\d+")
 
 
@@ -53,11 +53,11 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
 
             if (
                 access
-                and access[0] == "Allow"
+                and access[0].lower() == "allow"
                 and direction
-                and direction[0] == "Inbound"
+                and direction[0].lower() == "inbound"
                 and protocol
-                and protocol[0] in ("Tcp", "*")
+                and protocol[0].lower() in ("tcp", "*")
                 and (
                     (
                         destination_port_range
@@ -72,12 +72,15 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
                 and (
                     (
                         source_address_prefix
-                        and source_address_prefix[0] in INTERNET_ADDRESSES  # fmt: skip
+                        and isinstance(source_address_prefix[0], str)
+                        and source_address_prefix[0].lower() in INTERNET_ADDRESSES  # fmt: skip
                     )
                     or (
                         source_address_prefixes
                         and source_address_prefixes[0]
-                        and any(prefix in INTERNET_ADDRESSES for prefix in source_address_prefixes[0])
+                        and isinstance(source_address_prefixes[0], list)
+                        and any((isinstance(prefix, str) and prefix.lower()) in INTERNET_ADDRESSES for prefix in
+                                source_address_prefixes[0])
                     )
                 )
             ):

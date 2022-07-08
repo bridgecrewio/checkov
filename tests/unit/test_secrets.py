@@ -1,6 +1,7 @@
 import unittest
 
-from checkov.common.util.secrets import string_has_secrets, ALL, AWS, GENERAL
+from checkov.common.util.secrets import string_has_secrets, ALL, AWS, GENERAL, omit_secret_value_from_line, \
+    get_secrets_from_string
 
 
 class TestSecrets(unittest.TestCase):
@@ -35,3 +36,18 @@ class TestSecrets(unittest.TestCase):
 
         # MD5
         self.assertFalse(string_has_secrets("d9de48cf0676e9edb99bd8ee1ed44a21"))
+
+    def test_omit_secret_value_from_line(self):
+        secret = 'AKIAIOSFODNN7EXAMPLE'
+        line = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
+
+        censored_line = omit_secret_value_from_line(secret, line)
+
+        self.assertEqual(censored_line, 'access_key: "AKIAI***************"')
+
+    def test_get_secrets_from_secrets(self):
+        s = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
+
+        secret = get_secrets_from_string(s)
+
+        assert secret == ["AKIAIOSFODNN7EXAMPLE"]

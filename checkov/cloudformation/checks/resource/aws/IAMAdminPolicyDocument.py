@@ -12,7 +12,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        my_properties = conf['Properties']
+        my_properties = conf.get("Properties")
         type = conf['Type']
 
         # catch for inline policies

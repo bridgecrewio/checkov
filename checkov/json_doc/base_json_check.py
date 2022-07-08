@@ -1,10 +1,13 @@
-from checkov.common.checks.base_check import BaseCheck
+from typing import Iterable, Optional
 
+from checkov.common.checks.base_check import BaseCheck
+from checkov.common.models.enums import CheckCategories
 from checkov.json_doc.registry import registry
 
 
 class BaseJsonCheck(BaseCheck):
-    def __init__(self, name, id, categories, supported_entities, block_type, path=None):
+    def __init__(self, name: str, id: str, categories: "Iterable[CheckCategories]", supported_entities: Iterable[str],
+                 block_type: str, path: Optional[str] = None) -> None:
         super().__init__(
             name=name,
             id=id,

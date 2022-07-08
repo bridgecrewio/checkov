@@ -11,7 +11,7 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
+from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -19,7 +19,6 @@ from checkov.terraform.graph_builder.graph_components.generic_resource_encryptio
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
-    filter_sub_keys,
     attribute_has_nested_attributes, remove_index_pattern_from_str,
 )
 from checkov.terraform.graph_builder.utils import is_local_path
@@ -207,7 +206,8 @@ class TerraformLocalGraph(LocalGraph):
                                 self._create_edge(origin_node_index, dest_node_index, attribute_key)
                             break
 
-            if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source'):
+            if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
+                    and isinstance(vertex.attributes.get('source')[0], str):
                 target_path = vertex.path
                 if vertex.module_dependency != "":
                     target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
@@ -301,6 +301,9 @@ class TerraformLocalGraph(LocalGraph):
                 dest_module_path = next(
                     (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path
                 )
+            except OSError:
+                logging.debug(f"Error to get dest_module_path {dest_module_source}", exc_info=True)
+                return ""
             except NotImplementedError as e:
                 if 'Non-relative patterns are unsupported' in str(e):
                     return ""
@@ -375,6 +378,10 @@ class TerraformLocalGraph(LocalGraph):
             self.update_vertex_config(vertex, changed_attributes)
 
     def update_vertex_config(self, vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+        if not changed_attributes:
+            # skip, if there is no change
+            return
+
         updated_config = deepcopy(vertex.config)
         if vertex.block_type != BlockType.LOCALS:
             parts = vertex.name.split(".")

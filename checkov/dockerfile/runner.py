@@ -1,6 +1,5 @@
 import logging
 import os
-import re
 from typing import List, Dict, Tuple
 
 from checkov.common.output.record import Record
@@ -8,22 +7,23 @@ from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
-
-DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
 
 
 class Runner(BaseRunner):
     check_type = CheckType.DOCKERFILE
 
-    @staticmethod
-    def _is_docker_file(file):
-        return re.fullmatch(DOCKER_FILE_MASK, file) is not None
+    def should_scan_file(self, filename: str) -> bool:
+        return is_docker_file(os.path.basename(filename))
 
     def run(self, root_folder=None, external_checks_dir=None, files=None, runner_filter=RunnerFilter(),
             collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None
@@ -32,7 +32,7 @@ class Runner(BaseRunner):
                 registry.load_external_checks(directory)
 
         if files:
-            files_list = [file for file in files if Runner._is_docker_file(os.path.basename(file))]
+            files_list = [file for file in files if is_docker_file(os.path.basename(file))]
 
         if root_folder:
             filepath_fn = lambda f: f'/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}'
@@ -40,14 +40,14 @@ class Runner(BaseRunner):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
                 for file in f_names:
-                    if Runner._is_docker_file(file):
+                    if is_docker_file(file):
                         file_path = os.path.join(root, file)
                         files_list.append(file_path)
 
         definitions, definitions_raw = get_files_definitions(files_list, filepath_fn)
-
+        self.pbar.initiate(len(definitions))
         for docker_file_path in definitions.keys():
-
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(docker_file_path, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -64,34 +64,79 @@ class Runner(BaseRunner):
 
             results = registry.scan(docker_file_path, instructions, skipped_checks,
                                     runner_filter)
+
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']
                 startline = 0
                 endline = len(definitions_raw[docker_file_path]) - 1
                 result_instruction = ""
                 if result_configuration:
-                    startline = result_configuration['startline']
-                    endline = result_configuration['endline']
-                    result_instruction = result_configuration["instruction"]
-
-                codeblock = []
-                self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
-                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                code_block=codeblock,
-                                file_path=docker_file_path,
-                                file_line_range=[startline + 1,
-                                                 endline + 1],
-                                resource=f"{docker_file_path}.{result_instruction}",
-                                evaluations=None, check_class=check.__class__.__module__,
-                                file_abs_path=file_abs_path, entity_tags=None)
-                record.set_guideline(check.guideline)
-                report.add_record(record=record)
-
+                    if isinstance(result_configuration, list):
+                        for res in result_configuration:
+                            startline = res['startline']
+                            endline = res['endline']
+                            result_instruction = res["instruction"]
+                            self.build_record(report,
+                                              definitions_raw,
+                                              docker_file_path,
+                                              file_abs_path,
+                                              check,
+                                              check_result,
+                                              startline,
+                                              endline,
+                                              result_instruction)
+                    else:
+                        startline = result_configuration['startline']
+                        endline = result_configuration['endline']
+                        result_instruction = result_configuration["instruction"]
+                        self.build_record(report,
+                                          definitions_raw,
+                                          docker_file_path,
+                                          file_abs_path,
+                                          check,
+                                          check_result,
+                                          startline,
+                                          endline,
+                                          result_instruction)
+                else:
+                    self.build_record(report,
+                                      definitions_raw,
+                                      docker_file_path,
+                                      file_abs_path,
+                                      check,
+                                      check_result,
+                                      startline,
+                                      endline,
+                                      result_instruction)
+            self.pbar.update()
+        self.pbar.close()
         return report
 
     def calc_record_codeblock(self, codeblock, definitions_raw, docker_file_path, endline, startline):
         for line in range(startline, endline + 1):
             codeblock.append((line + 1, definitions_raw[docker_file_path][line]))
+
+    def build_record(self, report, definitions_raw, docker_file_path, file_abs_path, check, check_result, startline,
+                     endline, result_instruction):
+        codeblock = []
+        self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
+        record = Record(
+            check_id=check.id,
+            bc_check_id=check.bc_id,
+            check_name=check.name,
+            check_result=check_result,
+            code_block=codeblock,
+            file_path=docker_file_path,
+            file_line_range=[startline + 1, endline + 1],
+            resource=f"{docker_file_path}.{result_instruction}",
+            evaluations=None,
+            check_class=check.__class__.__module__,
+            file_abs_path=file_abs_path,
+            entity_tags=None,
+            severity=check.severity,
+        )
+        record.set_guideline(check.guideline)
+        report.add_record(record=record)
 
 
 def get_files_definitions(files: List[str], filepath_fn=None) \
@@ -101,6 +146,9 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             return file, parse(file)
         except TypeError:
             logging.info(f'Dockerfile skipping {file} as it is not a valid dockerfile template')
+            return file, None
+        except UnicodeDecodeError:
+            logging.info(f'Dockerfile skipping {file} as it can\'t be read as text file')
             return file, None
 
     results = parallel_runner.run_function(_parse_file, files)

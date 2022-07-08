@@ -4,7 +4,9 @@
       {
         "bucket1": {
           "source": ["./bucket1"],
-          "__resolved__": ["bucket1/bucket.tf[buckets.tf#0]"]
+          "__resolved__": ["bucket1/bucket.tf[buckets.tf#0]"],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       }
     ],
@@ -12,7 +14,9 @@
       {
         "aws_s3_bucket": {
           "example0": {
-            "bucket": ["bucket0"]
+            "bucket": ["bucket0"],
+            "__start_line__": 5,
+            "__end_line__": 7
           }
         }
       }
@@ -24,7 +28,9 @@
         "aws_s3_bucket": {
           "example3": {
             "bucket": ["bucket3"],
-            "acl": ["public-read"]
+            "acl": ["public-read"],
+            "__start_line__": 1,
+            "__end_line__": 4
           }
         }
       }
@@ -35,7 +41,9 @@
       {
         "bucket3": {
           "source": ["./bucket3"],
-          "__resolved__": ["bucket1/bucket2/bucket3/bucket.tf[bucket1/bucket2/bucket.tf#0]"]
+          "__resolved__": ["bucket1/bucket2/bucket3/bucket.tf[bucket1/bucket2/bucket.tf#0]"],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       }
     ],
@@ -45,7 +53,9 @@
           "example2": {
             "bucket": [
               "bucket2"
-            ]
+            ],
+            "__start_line__": 5,
+            "__end_line__": 7
           }
         }
       }
@@ -56,7 +66,9 @@
       {
         "bucket2": {
           "source": ["./bucket2"],
-          "__resolved__": ["bucket1/bucket2/bucket.tf[bucket1/bucket.tf#0]"]
+          "__resolved__": ["bucket1/bucket2/bucket.tf[bucket1/bucket.tf#0]"],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       }
     ],
@@ -66,7 +78,9 @@
           "example1": {
             "bucket": [
               "bucket1"
-            ]
+            ],
+            "__start_line__": 5,
+            "__end_line__": 7
           }
         }
       }

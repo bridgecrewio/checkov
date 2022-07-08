@@ -1,3 +1,8 @@
+from __future__ import annotations
+
+from typing import Type
+
+
 class DuplicateError(Exception):
     """
     Error thrown when the template contains duplicates
@@ -18,12 +23,13 @@ class DecodeError(ValueError):
     lineno: The line corresponding to pos
     colno: The column corresponding to pos
     """
+
     # Note that this exception is used from _json
 
-    def __init__(self, msg, doc, pos, key=' '):
-        lineno = doc.count('\n', 0, pos) + 1
-        colno = pos - doc.rfind('\n', 0, pos)
-        errmsg = '%s: line %d column %d (char %d)' % (msg, lineno, colno, pos)
+    def __init__(self, msg: str, doc: str, pos: int, _key: str = " ") -> None:
+        lineno = doc.count("\n", 0, pos) + 1
+        colno = pos - doc.rfind("\n", 0, pos)
+        errmsg = "%s: line %d column %d (char %d)" % (msg, lineno, colno, pos)
         ValueError.__init__(self, errmsg)
         self.msg = msg
         self.doc = doc
@@ -31,5 +37,5 @@ class DecodeError(ValueError):
         self.lineno = lineno
         self.colno = colno
 
-    def __reduce__(self):
+    def __reduce__(self) -> tuple[Type[DecodeError], tuple[str, str, int]]:
         return self.__class__, (self.msg, self.doc, self.pos)

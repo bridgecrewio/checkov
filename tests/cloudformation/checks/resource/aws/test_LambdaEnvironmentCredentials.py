@@ -16,7 +16,9 @@ class TestLambdaEnvironmentCredentials(unittest.TestCase):
         passing_resources = {
             "AWS::Lambda::Function.NoEnv",
             "AWS::Lambda::Function.NoSecret",
+            "AWS::Lambda::Function.EnvNull",
             "AWS::Serverless::Function.NoEnv",
+            "AWS::Serverless::Function.NoProperties",
             "AWS::Serverless::Function.NoSecret",
         }
         failing_resources = {
@@ -27,7 +29,7 @@ class TestLambdaEnvironmentCredentials(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["passed"], 6)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

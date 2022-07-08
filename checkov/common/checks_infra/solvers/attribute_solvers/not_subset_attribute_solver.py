@@ -1,4 +1,3 @@
-import re
 from typing import List, Optional, Any, Dict
 
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver

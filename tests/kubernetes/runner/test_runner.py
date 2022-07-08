@@ -2,13 +2,20 @@ import dis
 import inspect
 import os
 import unittest
+from collections import defaultdict
 from pathlib import Path
 
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
+from checkov.kubernetes.checks.resource.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+    def setUp(self) -> None:
+        self.orig_checks = registry.checks
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -139,8 +146,157 @@ class TestRunnerValid(unittest.TestCase):
         except Exception:
             self.assertTrue(False, "Could not run K8 runner on configuration")
 
+    def test_record_includes_severity(self):
+        custom_check_id = "CKV_MY_CUSTOM_CHECK"
+
+        registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseK8Check):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.KUBERNETES],
+                    ["Service"]
+                )
+
+            def scan_spec_conf(self, conf):
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['kubernetes'], checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_record_check_severity(self):
+        custom_check_id = "CKV_MY_CUSTOM_CHECK"
+
+        registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseK8Check):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.KUBERNETES],
+                    ["Service"]
+                )
+
+            def scan_spec_conf(self, conf):
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.MEDIUM]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['kubernetes'], checks=['LOW'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_record_check_severity_omit(self):
+        custom_check_id = "CKV_MY_CUSTOM_CHECK"
+
+        registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseK8Check):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.KUBERNETES],
+                    ["Service"]
+                )
+
+            def scan_spec_conf(self, conf):
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.MEDIUM]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['kubernetes'], checks=['HIGH'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_record_check_skip_severity(self):
+        custom_check_id = "CKV_MY_CUSTOM_CHECK"
+
+        registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseK8Check):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.KUBERNETES],
+                    ["Service"]
+                )
+
+            def scan_spec_conf(self, conf):
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['kubernetes'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_record_check_skip_severity_omit(self):
+        custom_check_id = "CKV_MY_CUSTOM_CHECK"
+
+        registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseK8Check):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.KUBERNETES],
+                    ["Service"]
+                )
+
+            def scan_spec_conf(self, conf):
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['kubernetes'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
     def tearDown(self):
-        pass
+        registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

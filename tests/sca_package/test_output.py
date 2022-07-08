@@ -1,5 +1,6 @@
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
@@ -25,7 +26,7 @@ def test_create_report_record():
         "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
         "severity": "critical",
         "packageName": "django",
-        "packageVersion": "1.2",
+        "packageVersion": "1.12",
         "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
         "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
         "impactedVersions": ["<1.11.27"],
@@ -48,7 +49,7 @@ def test_create_report_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.2")]
+    assert record.code_block == [(0, "django: 1.12")]
     assert (
         record.description
         == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
@@ -58,14 +59,47 @@ def test_create_report_record():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
-    assert record.short_description == "CVE-2019-19844 - django: 1.2"
-    assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
+    assert record.severity == Severities[BcSeverities.CRITICAL]
+    assert record.short_description == "CVE-2019-19844 - django: 1.12"
+    assert record.vulnerability_details["lowest_fixed_version"] == "2.2.9"
     assert record.vulnerability_details["fixed_versions"] == [
         packaging_version.parse("3.0.1"),
         packaging_version.parse("2.2.9"),
-        packaging_version.parse("1.11.27"),
     ]
+
+
+def test_create_report_record_moderate_severity():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    vulnerability_details = {
+        "id": "CVE-2019-19844",
+        "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+        "cvss": 9.8,
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+        "severity": "moderate",
+        "packageName": "django",
+        "packageVersion": "1.2",
+        "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+        "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
+        "impactedVersions": ["<1.11.27"],
+        "publishedDate": "2019-12-18T20:15:00+01:00",
+        "discoveredDate": "2019-12-18T19:15:00Z",
+        "fixDate": "2019-12-18T20:15:00+01:00",
+    }
+
+    # when
+    record = create_report_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+    )
+
+    # then
+    assert record.severity == Severities[BcSeverities.MEDIUM]
 
 
 def test_create_report_record_severity_filter():
@@ -96,7 +130,7 @@ def test_create_report_record_severity_filter():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(min_cve_severity='high')
+        runner_filter=RunnerFilter(checks=['HIGH'])
     )
 
     # then
@@ -115,7 +149,7 @@ def test_create_report_record_severity_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "medium"
+    assert record.severity == Severities[BcSeverities.MEDIUM]
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -172,7 +206,7 @@ def test_create_report_record_package_filter():
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
-    assert record.severity == "critical"
+    assert record.severity == Severities[BcSeverities.CRITICAL]
     assert record.short_description == "CVE-2019-19844 - django: 1.2"
     assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
     assert record.vulnerability_details["fixed_versions"] == [
@@ -205,7 +239,7 @@ def test_calculate_lowest_compliant_version():
 def test_create_cli_table():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, fixable=5, to_fix=5)
+    cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
     package_details_map = {
         "django": {
             "cves": [
@@ -258,7 +292,7 @@ def test_create_cli_table():
 def test_create_cli_table_with_no_found_vulnerabilities():
     # given
     file_path = "/path/to/requirements.txt"
-    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, fixable=0, to_fix=0)
+    cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
     package_details_map = {}
 
     # when
@@ -344,7 +378,7 @@ def test_create_cli_output():
     ]
 
     # when
-    cli_output = create_cli_output(records)
+    cli_output = create_cli_output(True, records)
 
     # then
     assert cli_output == "".join(
@@ -374,7 +408,7 @@ def test_compare_cve_severity():
     ]
 
     # when
-    cve.sort(key=compare_cve_severity)
+    cve.sort(key=compare_cve_severity, reverse=True)
 
     # then
     assert cve == [

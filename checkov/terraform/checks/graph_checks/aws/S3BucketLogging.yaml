@@ -1,0 +1,23 @@
+metadata:
+  name: "Ensure the S3 bucket has access logging enabled"
+  category: "LOGGING"
+  id: "CKV_AWS_18"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket
+      attribute: logging
+      operator: exists
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        operator: within
+        value:
+          - aws_s3_bucket
+      - cond_type: connection
+        resource_types:
+          - aws_s3_bucket
+        connected_resource_types:
+          - aws_s3_bucket_logging
+        operator: exists

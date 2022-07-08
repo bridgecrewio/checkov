@@ -15,7 +15,7 @@ class ContainsAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        att = vertex.get(attribute, "{}")
+        att = vertex.get(attribute, "{}")  # type:ignore[arg-type]  # due to attribute can be None
         if isinstance(att, str):
             try:
                 att = json.loads(att.replace("'", '"'))

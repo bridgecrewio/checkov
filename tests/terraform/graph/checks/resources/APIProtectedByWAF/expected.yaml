@@ -1,6 +1,7 @@
 pass:
-  - "aws_api_gateway_stage.pass"
-  - "aws_api_gateway_stage.wafv2_pass"
+  - "aws_api_gateway_stage.regional"
+  - "aws_api_gateway_stage.wafv2_regional"
+  - "aws_api_gateway_stage.wafv2_edge"
   - "aws_api_gateway_stage.no_api"
   - "aws_api_gateway_stage.private"
 fail:

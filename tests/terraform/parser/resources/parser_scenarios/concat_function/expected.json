@@ -51,7 +51,9 @@
                 "propagate_at_launch": true
               }
             ]
-          ]
+          ],
+          "__start_line__": 10,
+          "__end_line__": 23
         }
       }
     ],
@@ -96,7 +98,9 @@
                   "propagate_at_launch": true
                 }
               ]
-            ]
+            ],
+            "__start_line__": 25,
+            "__end_line__": 46
           }
         }
       },
@@ -125,7 +129,9 @@
                   "propagate_at_launch": true
                 }
               ]
-            ]
+            ],
+            "__start_line__": 48,
+            "__end_line__": 66
           }
         }
       }

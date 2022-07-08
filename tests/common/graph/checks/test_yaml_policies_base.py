@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import yaml
@@ -28,9 +29,10 @@ class TestYamlPoliciesBase(TestCase):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(self.test_file_path)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
-        assert os.path.exists(self.checks_dir)
+        if self.checks_dir:
+            assert os.path.exists(self.checks_dir)
         found = False
-        for root, d_names, f_names in os.walk(self.checks_dir):
+        for root, d_names, f_names in itertools.chain(os.walk(self.real_graph_checks_path), os.walk(self.checks_dir)):
             for f_name in f_names:
                 check_name = dir_name if check_name is None else check_name
                 if f_name == f"{check_name}.yaml":
@@ -77,7 +79,8 @@ class TestYamlPoliciesBase(TestCase):
     def get_checks_registry(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=self.real_graph_checks_path)
         registry.load_checks()
-        registry.load_external_checks(self.checks_dir)
+        if self.checks_dir:
+            registry.load_external_checks(self.checks_dir)
         return registry
 
     @abstractmethod

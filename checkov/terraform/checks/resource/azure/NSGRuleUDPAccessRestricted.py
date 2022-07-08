@@ -24,7 +24,7 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
                         and 'direction' in rule_conf and rule_conf['direction'][0].lower() == 'inbound' \
                         and 'access' in rule_conf and rule_conf['access'][0].lower() == 'allow' \
                         and 'source_address_prefix' in rule_conf \
-                        and rule_conf['source_address_prefix'][0] in INTERNET_ADDRESSES:
+                        and rule_conf['source_address_prefix'][0].lower() in INTERNET_ADDRESSES:
                     evaluated_key_prefix = f'{evaluated_key_prefix}[{rule_confs.index(rule_conf)}]/' if \
                         evaluated_key_prefix else ''
                     self.evaluated_keys = [f'{evaluated_key_prefix}protocol',

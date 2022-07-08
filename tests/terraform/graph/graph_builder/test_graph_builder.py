@@ -12,7 +12,6 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestGraphBuilder(TestCase):
-
     def test_build_graph(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/general_example')
 
@@ -20,7 +19,7 @@ class TestGraphBuilder(TestCase):
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
         expected_num_of_var_nodes = 3
-        expected_num_of_locals_nodes = 1
+        expected_num_of_locals_nodes = 3
         expected_num_of_resources_nodes = 1
         expected_num_of_provider_nodes = 1
         vertices_by_block_type = graph.vertices_by_block_type
@@ -31,7 +30,7 @@ class TestGraphBuilder(TestCase):
 
         provider_node = graph.vertices[vertices_by_block_type[BlockType.PROVIDER][0]]
         resource_node = graph.vertices[vertices_by_block_type[BlockType.RESOURCE][0]]
-        local_node = graph.vertices[vertices_by_block_type[BlockType.LOCALS][0]]
+        local_node = graph.vertices[graph.vertices_block_name_map[BlockType.LOCALS]["bucket_name"][0]]
 
         var_bucket_name_node = None
         var_region_node = None
@@ -75,12 +74,27 @@ class TestGraphBuilder(TestCase):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_deep_nesting')
         graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
-        expected_config = {'aws_s3_bucket': {'default': {'server_side_encryption_configuration': [
-            {'rule': [{'apply_server_side_encryption_by_default': [
-                {'sse_algorithm': ['AES256'], 'kms_master_key_id': ['']}]}]}]}}}
+        expected_config = {
+            "aws_s3_bucket": {
+                "default": {
+                    "server_side_encryption_configuration": [
+                        {
+                            "rule": [
+                                {
+                                    "apply_server_side_encryption_by_default": [
+                                        {"kms_master_key_id": [""], "sse_algorithm": ["AES256"]}
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "__start_line__": 1,
+                    "__end_line__": 10,
+                }
+            }
+        }
         actual_config = local_graph.vertices[local_graph.vertices_by_block_type.get(BlockType.RESOURCE)[0]].config
         self.assertDictEqual(expected_config, actual_config)
-        print('')
 
     def test_build_graph_with_linked_modules(self):
         # see the image to view the expected graph in tests/resources/modules/linked_modules/expected_graph.png
@@ -199,4 +213,37 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, tf = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         lambda_attributes = local_graph.vertices[0].attributes
-        self.assertTrue("dead_letter_config" in lambda_attributes.keys())
+        self.assertIn("dead_letter_config", lambda_attributes.keys())
+
+    def test_get_attribute_dict_with_list_value(self):
+        # given
+        resources_dir = os.path.join(TEST_DIRNAME, "../resources/s3_bucket_grant")
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        # when
+        attributes = local_graph.vertices[
+            local_graph.vertices_by_block_type.get(BlockType.RESOURCE)[0]
+        ].get_attribute_dict()
+
+        # then
+        expected_grant_attribute = [
+            {"permissions": ["READ_ACP"], "type": "Group", "uri": "http://acs.amazonaws.com/groups/global/AllUsers"},
+            {"id": "1234567890", "permissions": ["FULL_CONTROL"], "type": "CanonicalUser"},
+        ]
+
+        self.assertCountEqual(expected_grant_attribute, attributes["grant"])
+
+    def test_build_graph_terraform_block(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/terraform_block')
+
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
+
+        terraform_blocks = graph.vertices_by_block_type[BlockType.TERRAFORM]
+        self.assertEqual(1, len(terraform_blocks))
+
+        terraform_block = graph.vertices[terraform_blocks[0]]
+        expected_attributes = ["backend", "required_version", "required_providers"]
+        for attr in expected_attributes:
+            self.assertIn(attr, list(terraform_block.attributes.keys()))

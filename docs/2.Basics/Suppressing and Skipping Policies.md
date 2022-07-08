@@ -10,7 +10,14 @@ nav_order: 3
 Like any static-analysis tool, suppression is limited by its analysis scope.
 For example, if a resource is managed manually, or using configuration management tools, a suppression can be inserted as a simple code annotation.
 
-## Suppression Comment Format
+There are two main ways to skip or suppress checks:
+
+1. Suppress individual checks on a per-resource basis
+2. Explicitly run or skip certain checks altogether
+
+# Suppressing individual checks
+
+You can use inline code comments or annotations to skip individual checks for a particular resource.
 
 To skip a check on a given Terraform definition block or CloudFormation resource, apply the following comment pattern inside its scope:
 `checkov:skip=<check_id>:<suppression_comment>`
@@ -174,4 +181,67 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
 
 
+```
+
+# Specifying or skipping checks for the entire run
+
+You can also fine-tune which checks run or do not run for the overall scan using the `--check` and `--skip-check` flags. You can use these flags to specify check IDs (or wildcards) and / or check severities (if using the platform integration). Any skipped check will simply not run at all and will not appear in the output. Other checks will run as normal (but may result in resource-level skips, as described above).
+
+If you specify a severity with the `--check` flag, then any check that is equal to or greater than that severity will be included. If you specify a severity with the `--skip-check` flag, then any check less than or equal to that severity will be skipped.
+
+You can also combine the `--check` and `--skip-check` flags when using severities to get a very granular policy set for the run. In this case, the `--check` filter will be applied first to explicitly include checks, and then the `--skip-check` list will be applied to remove any remaining checks. See below for examples.
+
+In order to filter by severity, you must run with the platform integration via API key.
+
+## Examples
+
+Allow only the two specified checks to run: 
+```sh
+checkov --directory . --check CKV_AWS_20,CKV_AWS_57
+```
+
+Run all checks except the one specified:
+```sh
+checkov -d . --skip-check CKV_AWS_20
+```
+
+Run all checks except checks with specified patterns:
+```sh
+checkov -d . --skip-check CKV_AWS*
+```
+
+Run all checks that are MEDIUM severity or higher (requires API key):
+```sh
+checkov -d . --check MEDIUM --bc-api-key ...
+```
+
+Run all checks that are MEDIUM severity or higher, as well as check CKV_123 (assume this is a LOW severity check):
+```sh
+checkov -d . --check MEDIUM,CKV_123 --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower:
+```sh
+checkov -d . --skip-check MEDIUM --bc-api-key ...
+```
+
+Skip all checks that are MEDIUM severity or lower, as well as check CKV_789 (assume this is a high severity check):
+```sh
+checkov -d . --skip-check MEDIUM,CKV_789 --bc-api-key ...
+```
+
+Run all checks that are MEDIUM severity or higher, but skip check CKV_123 (assume this is a medium or higher severity check):
+```sh
+checkov -d . --check MEDIUM --skip-check CKV_123 --bc-api-key ...
+```
+
+Run check CKV_789, but skip it if it is a medium severity (the --check logic is always applied before --skip-check)
+```sh
+checkov -d . --skip-check MEDIUM --check CKV_789 --bc-api-key ...
+```
+
+For Kubernetes workloads, you can also use allow/deny namespaces.  For example, do not report any results for the 
+kube-system namespace:
+```sh
+checkov -d . --skip-check kube-system
 ```

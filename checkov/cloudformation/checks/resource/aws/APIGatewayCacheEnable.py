@@ -1,10 +1,8 @@
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
-from checkov.common.models.consts import ANY_VALUE
 
 
 class APIGatewayCacheEnable(BaseResourceValueCheck):
-    
     def __init__(self):
         name = "Ensure API Gateway caching is enabled"
         id = "CKV_AWS_120"

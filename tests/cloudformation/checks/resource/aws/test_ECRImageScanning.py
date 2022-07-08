@@ -23,19 +23,21 @@ class TestECRImageScanning(unittest.TestCase):
             self.assertEqual(record.check_id, check.id)
 
         passing_resources = {
-            "AWS::ECR::Repository.ImageScanTrue"
+            "AWS::ECR::Repository.ImageScanTrue",
+            "AWS::ECR::Repository.ImageScanTrueString"
         }
 
         failing_resources = {
             "AWS::ECR::Repository.ImageScanFalse",
+            "AWS::ECR::Repository.ImageScanFalseString",
             "AWS::ECR::Repository.ImageScanNotSet"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
         self.assertEqual(passing_resources, passed_check_resources)

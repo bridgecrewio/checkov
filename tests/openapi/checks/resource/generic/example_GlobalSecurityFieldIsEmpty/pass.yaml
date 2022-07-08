@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: test
+  version: 1.0.0
+security:
+- test: []
+components:
+  securitySchemes:
+  - test:
+      type: http
+      scheme: basic

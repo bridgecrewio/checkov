@@ -31,13 +31,14 @@ class TestAppLoadBalancerTLS12(unittest.TestCase):
             "aws_lb_listener.https_2016",
             "aws_lb_listener.tls_fs_1_1",
             "aws_alb_listener.tls_fs_1_1",
+            "aws_lb_listener.cognito",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], 7)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["failed"], 5)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -30,3 +30,6 @@ Resources:
                 }
               ]}
         - !Ref AWS::NoValue
+
+  CFNUserGroup:
+    Type: AWS::IAM::Group

@@ -34,7 +34,7 @@ class Module:
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
     ) -> None:
         self.source = source
-        if self._block_type_to_func.get(block_type):
+        if block_type in self._block_type_to_func:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
@@ -63,9 +63,10 @@ class Module:
             for name in provider_dict:
                 attributes = provider_dict[name]
                 provider_name = name
-                alias = attributes.get("alias")
-                if alias:
-                    provider_name = f"{provider_name}.{alias[0]}"
+                if isinstance(attributes, dict):
+                    alias = attributes.get("alias")
+                    if alias:
+                        provider_name = f"{provider_name}.{alias[0]}"
                 provider_block = TerraformBlock(
                     block_type=BlockType.PROVIDER,
                     name=provider_name,
@@ -180,16 +181,15 @@ class Module:
 
     def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for terraform_dict in blocks:
-            for name in terraform_dict:
-                terraform_block = TerraformBlock(
-                    block_type=BlockType.TERRAFORM,
-                    name=name,
-                    config=terraform_dict,
-                    path=path,
-                    attributes={},
-                    source=self.source,
-                )
-                self._add_to_blocks(terraform_block)
+            terraform_block = TerraformBlock(
+                block_type=BlockType.TERRAFORM,
+                name="",
+                config=terraform_dict,
+                path=path,
+                attributes=terraform_dict,
+                source=self.source,
+            )
+            self._add_to_blocks(terraform_block)
 
     def _add_tf_var(self, blocks: Dict[str, Dict[str, Any]], path: str) -> None:
         for tf_var_name, attributes in blocks.items():

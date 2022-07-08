@@ -57,3 +57,6 @@ functions:
     fileSystemConfig:
       localMountPath: ${self:custom.localMountPath}
       arn: 'arn:aws:elasticfilesystem:${self:provider.region}:#{AWS::AccountId}:access-point/${self:custom.resources.efsAccessPoint}'
+
+resources:
+  Resources: ${file(./serverless.${opt:stage}.yml)}  # just shouldn't raise an exception

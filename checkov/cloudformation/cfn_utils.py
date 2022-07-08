@@ -91,7 +91,7 @@ def get_entity_value_as_string(value: Any) -> str:
 
 
 def get_folder_definitions(
-    root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
+        root_folder: str, excluded_paths: Optional[List[str]], out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
@@ -107,7 +107,7 @@ def get_folder_definitions(
 
 
 def build_definitions_context(
-    definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]
+        definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     # iterate on the files
@@ -115,9 +115,9 @@ def build_definitions_context(
         # iterate on the definitions (Parameters, Resources, Outputs...)
         for file_path_definition, definition in file_path_definitions.items():
             if (
-                isinstance(file_path_definition, StrNode)
-                and file_path_definition.upper() in TemplateSections.__members__
-                and isinstance(definition, DictNode)
+                    isinstance(file_path_definition, StrNode)
+                    and file_path_definition.upper() in TemplateSections.__members__
+                    and isinstance(definition, DictNode)
             ):
                 # iterate on the actual objects of each definition
                 for attribute, attr_value in definition.items():
@@ -145,7 +145,7 @@ def build_definitions_context(
                                 end_line -= 1
                                 current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
 
-                        code_lines = definitions_raw[file_path][start_line - 1 : end_line]
+                        code_lines = definitions_raw[file_path][start_line - 1: end_line]
                         dpath.new(
                             definitions_context,
                             [file_path, str(file_path_definition), str(attribute)],
@@ -165,10 +165,10 @@ def build_definitions_context(
 
 
 def create_definitions(
-    root_folder: str,
-    files: Optional[List[str]] = None,
-    runner_filter: RunnerFilter = RunnerFilter(),
-    out_parsing_errors: Dict[str, str] = {}
+        root_folder: str,
+        files: Optional[List[str]] = None,
+        runner_filter: RunnerFilter = RunnerFilter(),
+        out_parsing_errors: Dict[str, str] = {}
 ) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
@@ -177,7 +177,8 @@ def create_definitions(
         definitions, definitions_raw = get_files_definitions(files_list, out_parsing_errors)
 
     if root_folder:
-        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths, out_parsing_errors)
+        definitions, definitions_raw = get_folder_definitions(root_folder, runner_filter.excluded_paths,
+                                                              out_parsing_errors)
 
     return definitions, definitions_raw
 
@@ -200,12 +201,23 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
         try:
             template, template_lines = parse_result
             if isinstance(template, DictNode) and isinstance(template.get("Resources"), DictNode):
-                definitions[path] = template
-                definitions_raw[path] = template_lines
+                if validate_properties_in_resources_are_dict(template):
+                    definitions[path] = template
+                    definitions_raw[path] = template_lines
+                else:
+                    out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
             else:
                 logging.debug(f"Parsed file {file} incorrectly {template}")
-        except (TypeError, ValueError) as e:
-            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template\n{e}")
+        except (TypeError, ValueError):
+            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template")
             continue
 
     return definitions, definitions_raw
+
+
+def validate_properties_in_resources_are_dict(template: DictNode) -> bool:
+    template_resources = template.get("Resources")
+    for resource_name, resource in template_resources.items():
+        if 'Properties' in resource and not isinstance(resource['Properties'], DictNode) or "." in resource_name:
+            return False
+    return True

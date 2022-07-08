@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "test",
+    "version": "1.0.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "encryptedScheme": {
+        "type": "oauth2"
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "security": [
+          {
+            "encryptedScheme": [
+              "write",
+              "read"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

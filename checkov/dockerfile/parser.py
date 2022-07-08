@@ -1,22 +1,23 @@
-from collections import OrderedDict
+from __future__ import annotations
 
-import re
+from collections import OrderedDict
+from pathlib import Path
+
 from dockerfile_parse import DockerfileParser
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
 
-# class CheckovDockerFileParser(DockerfileParser)
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.typing import _SkippedCheck
+from checkov.common.util.suppression import collect_suppressions_for_context
 
 
-def parse(filename):
+def parse(filename: str | Path) -> tuple[dict[str, list[dict[str, int | str]]], list[str]]:
     with open(filename) as dockerfile:
         dfp = DockerfileParser(fileobj=dockerfile)
         return dfp_group_by_instructions(dfp)
 
 
-def dfp_group_by_instructions(dfp):
-    result = OrderedDict()
+def dfp_group_by_instructions(dfp: DockerfileParser) -> tuple[dict[str, list[dict[str, int | str]]], list[str]]:
+    result: dict[str, list[dict[str, int | str]]] = OrderedDict()
     for instruction in dfp.structure:
         instruction_literal = instruction["instruction"]
         if instruction_literal not in result:
@@ -25,25 +26,12 @@ def dfp_group_by_instructions(dfp):
     return result, dfp.lines
 
 
-def collect_skipped_checks(parse_result):
+def collect_skipped_checks(parse_result: dict[str, list[dict[str, int | str]]]) -> list[_SkippedCheck]:
     skipped_checks = []
-    bc_id_mapping = bc_integration.get_id_mapping()
-    ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
-    if COMMENT_INSTRUCTION in parse_result:
-        for comment in parse_result[COMMENT_INSTRUCTION]:
-            skip_search = re.search(COMMENT_REGEX, comment["value"])
-            if skip_search:
-                skipped_check = {
-                    'id': skip_search.group(2),
-                    'suppress_comment': skip_search.group(3)[1:] if skip_search.group(
-                        3) else "No comment provided"
-                }
-                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
-                    skipped_check["bc_id"] = skipped_check["id"]
-                    skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                elif ckv_to_bc_id_mapping:
-                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
-                skipped_checks.append(skipped_check)
-    return skipped_checks
 
+    if COMMENT_INSTRUCTION in parse_result:
+        # line number doesn't matter
+        comment_lines = [(0, comment["value"]) for comment in parse_result[COMMENT_INSTRUCTION]]
+        skipped_checks = collect_suppressions_for_context(code_lines=comment_lines)
+
+    return skipped_checks

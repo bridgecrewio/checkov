@@ -1,16 +1,24 @@
 import inspect
-import json
 import os
 import shutil
 import unittest
 import dis
+from collections import defaultdict
 from pathlib import Path
+
+# do not remove; prevents circular import error
+from typing import Dict, Any
+from unittest import mock
+
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.consts import SCAN_HCL_FLAG
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner, resource_registry
@@ -21,17 +29,20 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 class TestRunnerValid(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.orig_checks = resource_registry.checks
+
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/example"
         runner = Runner()
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["all"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
 
@@ -41,11 +52,11 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_denylist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all', skip_checks=checks_denylist))
+                            runner_filter=RunnerFilter(framework=["all"], skip_checks=checks_denylist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
         for record in report.failed_checks:
@@ -59,7 +70,7 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
         summary = report.get_summary()
@@ -70,7 +81,6 @@ class TestRunnerValid(unittest.TestCase):
         report.print_console()
         report.print_console(is_quiet=True)
         report.print_console(is_quiet=True, is_compact=True)
-        report.print_junit_xml()
         report.print_failed_github_md()
 
     def test_runner_passing_valid_tf(self):
@@ -84,11 +94,11 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(False), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -119,7 +129,7 @@ class TestRunnerValid(unittest.TestCase):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
 
         passing_custom = 0
         failed_custom = 0
@@ -149,7 +159,7 @@ class TestRunnerValid(unittest.TestCase):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
 
         passing_custom = 0
         failed_custom = 0
@@ -175,7 +185,7 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
@@ -230,7 +240,7 @@ class TestRunnerValid(unittest.TestCase):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
-                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76 
+                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
@@ -819,11 +829,11 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         self.assertEqual(report.get_exit_code(soft_fail=False), 1)
         self.assertEqual(report.get_exit_code(soft_fail=True), 0)
 
@@ -848,7 +858,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -872,7 +882,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -896,7 +906,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -920,7 +930,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -991,7 +1001,7 @@ class TestRunnerValid(unittest.TestCase):
 
         report = Runner().run(root_folder=f"{current_dir}/resources/module_failure_reporting_772",
                               external_checks_dir=None,
-                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+                              runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
 
         self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 0)
@@ -1005,7 +1015,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_outside = True
                 self.assertEqual(record.resource, "aws_s3_bucket.outside")
                 assert record.file_path == "/main.tf"
-                self.assertEqual(record.file_line_range, [11, 13])
+                self.assertEqual(record.file_line_range, [11, 17])
                 self.assertIsNone(record.caller_file_path)
                 self.assertIsNone(record.caller_file_line_range)
 
@@ -1013,7 +1023,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_inside = True
                 self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
                 assert record.file_path == "/module/module.tf"
-                self.assertEqual(record.file_line_range, [7, 9])
+                self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
                 # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
                 #             A bug might have been fixed.
@@ -1093,7 +1103,7 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_wrong_check_imports(self):
-        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
+        wrong_imports = ("checkov.arm", "checkov.cloudformation", "checkov.dockerfile", "checkov.helm", "checkov.kubernetes", "checkov.serverless")
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
@@ -1103,9 +1113,8 @@ class TestRunnerValid(unittest.TestCase):
                 import_names = [instr.argval for instr in instructions if "IMPORT_NAME" == instr.opname]
 
                 for import_name in import_names:
-                    wrong_import = next((import_name for x in wrong_imports if x in import_name), None)
-                    if wrong_import:
-                        check_imports.append({file.name: wrong_import})
+                    if import_name.startswith(wrong_imports):
+                        check_imports.append({file.name: import_name})
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
@@ -1134,7 +1143,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
         self.assertEqual(len(report.passed_checks), 7)
@@ -1150,7 +1159,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
         self.assertEqual(len(report.passed_checks), 5)
@@ -1169,7 +1178,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
@@ -1182,10 +1191,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_no_duplicate_results(self):
@@ -1193,7 +1202,7 @@ class TestRunnerValid(unittest.TestCase):
             os.path.dirname(os.path.realpath(__file__)), "resources", "duplicate_violations")
         runner = Runner()
         report = runner.run(root_folder=resources_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform'))
+                            runner_filter=RunnerFilter(framework=["terraform"]))
 
         unique_checks = []
         for record in report.passed_checks:
@@ -1253,14 +1262,14 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir', 'dir1')
         runner = Runner()
-        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['example.tf']))
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['example.tf']))
         self.assertEqual(0, len(report.resources))
 
     def test_runner_exclude_dir(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir')
         runner = Runner()
-        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework='terraform', excluded_paths=['dir1']))
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['dir1']))
         self.assertEqual(1, len(report.resources))
 
     def test_runner_merge_operator(self):
@@ -1274,9 +1283,198 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(1, len(report.passed_checks))
 
+    def test_record_includes_severity(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_severity_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    def test_runner_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=True (default)"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 1)
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs_and_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=False"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 3)
+
+    def test_runner_scan_default_env_vars(self):
+        """CKV_IGNORED_DIRECTORIES and CKV_IGNORE_HIDDEN_DIRECTORIES are equal to default"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 2)
+
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs(self):
+        """CKV_IGNORE_HIDDEN_DIRECTORIES=False and CKV_IGNORED_DIRECTORIES equals to default value"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 5)
+
+    def scan_hidden_dir(self):
+        """ scan resources/hidden_dir directory."""
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'hidden_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"]))
+        return report
+
+    def test_severity_check_filter(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.MEDIUM]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_include(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def tearDown(self):
         parser_registry.context = {}
+        resource_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

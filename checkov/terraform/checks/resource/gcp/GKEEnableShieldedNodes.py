@@ -1,7 +1,7 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckCategories
 
-class GKEEnableShieldedNodes(BaseResourceValueCheck):
+class GKEEnableShieldedNodes(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure Shielded GKE Nodes are Enabled"
         id = "CKV_GCP_71"
@@ -12,7 +12,7 @@ class GKEEnableShieldedNodes(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'enable_shielded_nodes'
 
-    def get_expected_value(self):
-        return True
+    def get_forbidden_values(self):
+        return [False]
 
 check = GKEEnableShieldedNodes()

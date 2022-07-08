@@ -12,6 +12,54 @@ Full list of Cloudformation policies the checks can be found [here](https://www.
 
 
 ### Example misconfigured AWS CDK code 
+python CDK exmple
+```python
+
+from aws_cdk import (
+    aws_s3,
+    Stack,
+)
+from constructs import Construct
+
+# End generated code block.
+
+class BucketApp(Stack):
+
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
+
+        #
+        # RESOURCES
+        #
+
+        pipeline_artifact_bucket = aws_s3.CfnBucket(
+            self,
+            "PipelineArtifactBucket",
+            access_control="Private",
+            bucket_encryption=aws_s3.CfnBucket.BucketEncryptionProperty(
+                server_side_encryption_configuration=[
+                    aws_s3.CfnBucket.ServerSideEncryptionRuleProperty(
+                        server_side_encryption_by_default=aws_s3.CfnBucket.ServerSideEncryptionByDefaultProperty(
+                            sse_algorithm="AES256"
+                        )
+                    )
+                ]
+            ),
+            public_access_block_configuration=aws_s3.BlockPublicAccess.BLOCK_ALL
+        )
+        pipeline_artifact_bucket.cfn_options.metadata = {
+          'checkov': {
+            'skip': [
+              {
+                'id': 'CKV_AWS_18',
+                'comment': 'No need to ensure the S3 bucket has access logging enabled'
+              }
+            ]
+          }
+        }
+
+```
+typescript CDK exmple
 ```typescript
 const bucket = new aws_s3.Bucket(this, 'MyBucket', {
   versioned: true

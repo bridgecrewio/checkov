@@ -1,14 +1,16 @@
+from typing import Dict, List, Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class AppLoadBalancerTLS12(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that load balancer is using TLS 1.2"
         id = "CKV_AWS_103"
-        supported_resources = ["aws_lb_listener", "aws_alb_listener"]
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ("aws_lb_listener", "aws_alb_listener")
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(
             name=name,
             id=id,
@@ -16,7 +18,7 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
             supported_resources=supported_resources,
         )
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         key = "protocol"
         self.evaluated_keys = [key]
         if key in conf.keys():
@@ -34,7 +36,7 @@ class AppLoadBalancerTLS12(BaseResourceCheck):
             for idx_action, action in enumerate(conf.get("default_action", [])):
                 redirects = action.get("redirect", [])
                 for idx_redirect, redirect in enumerate(force_list(redirects)):
-                    if redirect.get("protocol", []) == ["HTTPS"]:
+                    if isinstance(redirect, dict) and redirect.get("protocol", []) == ["HTTPS"]:
                         redirect_index = f"[{idx_redirect}]/" if isinstance(redirects, list) else ""
                         self.evaluated_keys.append(f'default_action/[{idx_action}]/redirect/{redirect_index}protocol')
                         return CheckResult.PASSED

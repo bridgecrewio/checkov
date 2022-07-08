@@ -3,6 +3,8 @@ import unittest
 from pathlib import Path
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.platform_integration import bc_integration, BcPlatformIntegration
 from checkov.common.parsers.node import DictNode
 from checkov.cloudformation.parser import TemplateSections
 
@@ -14,9 +16,15 @@ class TestCfnUtils(unittest.TestCase):
     def setUp(self):
         # self.test_root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, RELATIVE_PATH))
         self.test_root_dir = Path(TEST_DIRNAME) / RELATIVE_PATH
-
+        integration = BcPlatformIntegration()
+        metadata_integration.bc_integration = integration
+        integration.get_public_run_config()
+        metadata_integration.pre_scan()
         definitions, definitions_raw = get_folder_definitions(str(self.test_root_dir), None)
         self.definitions_context = build_definitions_context(definitions, definitions_raw)
+
+    def tearDown(self) -> None:
+        metadata_integration.bc_integration = bc_integration
 
     def validate_definition_lines(self, definition: DictNode, start_line, end_line, code_lines):
         self.assertEqual(definition["start_line"], start_line)
@@ -107,8 +115,9 @@ class TestCfnUtils(unittest.TestCase):
             [
                 {
                     "id": "CKV_AWS_16",
-                    "suppress_comment": "Ensure all data stored in the RDS is securely encrypted at rest\\n')",
+                    "suppress_comment": "Ensure all data stored in the RDS is securely encrypted at rest",
                     "bc_id": "BC_AWS_GENERAL_4",
+                    "line_number": 30
                 },
                 {
                     "id": "CKV_AWS_17",

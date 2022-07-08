@@ -18,7 +18,6 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestLocalGraph(TestCase):
-
     def setUp(self) -> None:
         self.source = "TERRAFORM"
 
@@ -89,7 +88,7 @@ class TestLocalGraph(TestCase):
             "enable_dns_hostnames": True,
             "public_subnet_tags": {"kubernetes.io/cluster/${local.cluster_name}": "shared",
                                     "kubernetes.io/role/elb": "1"},
-            "private_subnet_tags": {"kubernetes.io/cluster/${local.cluster_name}" : "shared",
+            "private_subnet_tags": {"kubernetes.io/cluster/${local.cluster_name}": "shared",
                                     "kubernetes.io/role/internal-elb": "1"}
         }
 

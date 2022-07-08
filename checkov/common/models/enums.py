@@ -23,6 +23,7 @@ class CheckCategories(Enum):
     KUBERNETES = 9
     APPLICATION_SECURITY = 10
     SUPPLY_CHAIN = 11
+    API_SECURITY = 12
 
 
 class OutputFormat(Enum):

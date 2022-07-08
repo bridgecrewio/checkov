@@ -17,18 +17,27 @@ from checkov.runner_filter import RunnerFilter
             ["all"],
             ["terraform", "secrets"],
             {
+                "argo_workflows",
                 "arm",
+                "bicep",
                 "cloudformation",
                 "dockerfile",
                 "helm",
                 "json",
+                "yaml",
                 "kubernetes",
                 "serverless",
                 "terraform_plan",
                 "github_configuration",
+                "github_actions",
                 "gitlab_configuration",
+                "gitlab_ci",
+                "bitbucket_configuration",
+                "bitbucket_pipelines",
                 "kustomize",
-                "sca_package"
+                "sca_package",
+                "openapi",
+                "sca_image"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),
@@ -36,7 +45,7 @@ from checkov.runner_filter import RunnerFilter
     ids=["all", "none", "terraform", "multiple", "all_with_skip", "multiple_with_skip"],
 )
 def test_runner_filter_constructor_framework(
-    input_frameworks: Optional[List[str]], input_skip_frameworks: Optional[List[str]], expected_frameworks: Set[str]
+        input_frameworks: Optional[List[str]], input_skip_frameworks: Optional[List[str]], expected_frameworks: Set[str]
 ):
     # when
     runner_filter = RunnerFilter(

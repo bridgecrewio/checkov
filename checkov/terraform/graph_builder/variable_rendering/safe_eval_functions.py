@@ -6,7 +6,7 @@ from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
 import datetime
 
-from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tomap, tostring
+from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
 """
 This file contains a custom implementation of the builtin `eval` function.

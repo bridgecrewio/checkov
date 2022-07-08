@@ -44,6 +44,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     failed.extend([origin_attributes, destination_attributes])
                 else:
                     passed.extend([origin_attributes, destination_attributes])
+                destination_attributes['connected_node'] = origin_attributes
                 continue
 
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)

@@ -13,9 +13,16 @@ class TestCloudformationGraphManager(TestCase):
     def test_build_graph_from_source_directory_no_rendering(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False,
+                                                                                   excluded_paths=["skip.*"])
 
         expected_resources_by_file = {
+            os.path.join(root_dir, "no_properties.yaml"): [
+                "AWS::Serverless::Function.NoPropertiesYaml"
+            ],
+            os.path.join(root_dir, "no_properties.json"): [
+                "AWS::Serverless::Function.NoPropertiesJson"
+            ],
             os.path.join(root_dir, "tags.yaml"): [
                 "AWS::S3::Bucket.DataBucket",
                 "AWS::S3::Bucket.NoTags",
@@ -46,8 +53,8 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::SQS::Queue.UnencryptedQueue",
             ]
         }
-        self.assertEqual(41, len(local_graph.vertices))
-        self.assertEqual(21, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(43, len(local_graph.vertices))
+        self.assertEqual(23, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
         self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
         self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
         self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))

@@ -1,13 +1,12 @@
+from __future__ import annotations
+
+from typing import Any, cast
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.util.banner import banner as checkov_banner
-from pathlib import Path
-from jinja2 import Environment, PackageLoader, select_autoescape
-from jinja2 import Template
 import click
 import jinja2
 import os
-import yaml
-import importlib
 
 CHECKOV_ROOT_DIRECTORY = os.path.join(".", "checkov")
 TEMPLATE_DIRECTORY = os.path.join(os.path.dirname(__file__), "templates")
@@ -136,18 +135,22 @@ class Prompt():
         }
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         print(checkov_banner)
-        self.responses = {}
+        self.responses: dict[str, Any] = {}
         self.prompt()
 
     # Recurse over our prompt, populating new class attributes from the keys and
     # user-supplied answers
-    def prompt(self, prompt_map=PROMPTS, prompt_if=None):
+    def prompt(self, prompt_map: dict[str, Any] | None = None, prompt_if: str | None = None) -> None:
+        if not prompt_map:
+            prompt_map = Prompt.PROMPTS
+
         for k, v in prompt_map.items():
             if "prompt_if" not in v or v["prompt_if"] == prompt_if:
                 # Prompt the user
-                p = click.prompt(v["text"], type=v["type"], default=v["default"])
+                text = cast(str, v["text"])
+                p = click.prompt(text, type=v["type"], default=v["default"])
 
                 # Create the action on our object
                 if k == 'chosen_action':
@@ -158,17 +161,20 @@ class Prompt():
                 print()  # Newline for readability
 
                 # Call prompt() again on any sub_prompts
-                if "sub_prompts" in v:
+                if "sub_prompts" in v and isinstance(v["sub_prompts"], list):
                     for sub_prompt in v["sub_prompts"]:
                         self.prompt(sub_prompt, prompt_if=p)
 
-    def template_env(self):
+    def template_env(self) -> jinja2.Environment:
         template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIRECTORY)
         return jinja2.Environment(loader=template_loader, autoescape=True)
 
 
 class Check(Prompt):
-    def __init__(self, user_responses={}):
+    def __init__(self, user_responses: dict[str, Any] | None = None) -> None:
+        if not user_responses:
+            user_responses = {}
+
         self.chosen_action = user_responses.get("chosen_action", None)
         self.title = user_responses.get("title", None)
         self.category = user_responses.get("category", None)
@@ -178,11 +184,11 @@ class Check(Prompt):
         self.context = user_responses.get("context", None)
         self.supported_resource = user_responses.get("supported_resource", None)
 
-    def action(self):
+    def action(self) -> None:
         # Call the user-selected action (add, remove, modify - leaves room for more actions)
         getattr(self, self.chosen_action)()
 
-    def add(self):
+    def add(self) -> None:
         print("Please ensure you are at the root of the Checkov repository before completing this prompt")
 
         self.populate_templates()
@@ -190,7 +196,7 @@ class Check(Prompt):
         self.create_unit_test_stubs()
         self.print_instructions()
 
-    def populate_templates(self):
+    def populate_templates(self) -> None:
         # Fetch the tf template for unit tests
         tf_unit_test_template = self.template_env().get_template("unittest-terraform.jinja2")
         self.tf_unit_test_template = tf_unit_test_template.render(
@@ -213,7 +219,7 @@ class Check(Prompt):
                                               supported_resource=self.supported_resource, category=self.category.upper(),
                                               desc=self.desc, index=new_index)
 
-    def get_latest_id_for_provider(self):
+    def get_latest_id_for_provider(self) -> int:
         max_id = 0
         try:
             for ck in BaseCheckRegistry.get_all_registered_checks():
@@ -227,7 +233,7 @@ class Check(Prompt):
 
         return max_id
 
-    def create_check(self):
+    def create_check(self) -> None:
         # Create check in the checks directory
         ck_loc = os.path.abspath(os.path.join(CHECKOV_ROOT_DIRECTORY,
                                               self.check_class, "checks", self.context, self.provider.lower()))
@@ -243,7 +249,7 @@ class Check(Prompt):
 
         print(f"\tSuccessfully created {full_path}")
 
-    def create_unit_test_stubs(self):
+    def create_unit_test_stubs(self) -> None:
         base = os.path.abspath(os.path.join(CHECKOV_ROOT_DIRECTORY, os.path.pardir,
                                             "tests", self.check_class, "checks", self.context, self.provider.lower()))
         print(f"Creating Unit Test Stubs for {self.title} in {base}")
@@ -265,7 +271,7 @@ class Check(Prompt):
 
         print(f"\tSuccessfully created {py_loc}")
 
-    def print_instructions(self):
+    def print_instructions(self) -> None:
         print("\nNext steps:")
         print("\t1) Edit your new check located in the checks/ directory listed above")
         print("\t2) Add both a PASS and FAIL unit test to the newly created unit test under the tests/ directory to show others how to fix failures")

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata: 
+  labels: 
+    name: nginx-pod
+  name: nginx-pod
+spec: 
+  containers:
+      image: "gcr.io/google_containers/nginx-slim:0.8"
+      name: nginx-pod
+      ports:
+          containerPort: 80
+          name: web
+      securityContext: 
+        privileged: true
+      volumeMounts:
+          mountPath: /usr/share/nginx/html
+          name: achia-vol
+  volumes:
+      name: achia-vol
+      persistentVolumeClaim: 
+        claimName: claim1

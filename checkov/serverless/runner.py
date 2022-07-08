@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -43,7 +44,13 @@ SINGLE_ITEM_SECTIONS = [
 class Runner(BaseRunner):
     check_type = CheckType.SERVERLESS
 
+    def __init__(self):
+        super().__init__(file_names=SLS_FILE_MASK)
+
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None
@@ -77,8 +84,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for sls_file, sls_file_data in definitions.items():
+        self.pbar.initiate(len(definitions))
 
+        for sls_file, sls_file_data in definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(sls_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -95,11 +104,12 @@ class Runner(BaseRunner):
 
             if CFN_RESOURCES_TOKEN in sls_file_data and isinstance(sls_file_data[CFN_RESOURCES_TOKEN], DictNode):
                 cf_sub_template = sls_file_data[CFN_RESOURCES_TOKEN]
-                if cf_sub_template.get("Resources"):
+                cf_sub_resources = cf_sub_template.get("Resources")
+                if cf_sub_resources and isinstance(cf_sub_resources, dict):
                     cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
                     logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                     cf_context_parser.evaluate_default_refs()
-                    for resource_name, resource in cf_sub_template['Resources'].items():
+                    for resource_name, resource in cf_sub_resources.items():
                         if not isinstance(resource, DictNode):
                             continue
                         cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
@@ -118,12 +128,15 @@ class Runner(BaseRunner):
                             results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    resource)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=sls_file,
+                                                code_block=censored_code_lines, file_path=sls_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                entity_tags=tags)
+                                                entity_tags=tags, severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
 
@@ -150,12 +163,15 @@ class Runner(BaseRunner):
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
+                            censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                entity_code_lines,
+                                                                                item_content)
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=sls_file,
+                                            code_block=censored_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags)
+                                            entity_tags=tags, severity=check.severity)
                             record.set_guideline(check.guideline)
                             report.add_record(record=record)
             # Sub-sections that are a single item
@@ -173,12 +189,15 @@ class Runner(BaseRunner):
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
+                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                        entity_code_lines,
+                                                                        item_content)
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=sls_file,
+                                    code_block=censored_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
@@ -199,10 +218,11 @@ class Runner(BaseRunner):
                                     resource="complete",        # Weird, not sure what to put where
                                     evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags)
+                                    entity_tags=tags, severity=check.severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 

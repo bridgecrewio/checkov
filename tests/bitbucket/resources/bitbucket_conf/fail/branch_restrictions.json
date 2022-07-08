@@ -1,0 +1,67 @@
+{
+  "pagelen": 10,
+  "values": [
+    {
+      "kind": "require_default_reviewer_approvals_to_merge",
+      "users": [],
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/shaharsamira/terragoat2/branch-restrictions/26522110"
+        }
+      },
+      "pattern": "master",
+      "value": 1,
+      "branch_match_kind": "glob",
+      "groups": [],
+      "type": "branchrestriction",
+      "id": 26522110
+    },
+    {
+      "kind": "require_approvals_to_merge",
+      "users": [],
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/shaharsamira/terragoat2/branch-restrictions/26520791"
+        }
+      },
+      "pattern": "master",
+      "value": 1,
+      "branch_match_kind": "glob",
+      "groups": [],
+      "type": "branchrestriction",
+      "id": 26520791
+    },
+    {
+      "kind": "force",
+      "users": [],
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/shaharsamira/terragoat2/branch-restrictions/26520790"
+        }
+      },
+      "pattern": "master",
+      "value": null,
+      "branch_match_kind": "glob",
+      "groups": [],
+      "type": "branchrestriction",
+      "id": 26520790
+    },
+    {
+      "kind": "delete",
+      "users": [],
+      "links": {
+        "self": {
+          "href": "https://api.bitbucket.org/2.0/repositories/shaharsamira/terragoat2/branch-restrictions/26520789"
+        }
+      },
+      "pattern": "master",
+      "value": null,
+      "branch_match_kind": "glob",
+      "groups": [],
+      "type": "branchrestriction",
+      "id": 26520789
+    }
+  ],
+  "page": 1,
+  "size": 4
+}

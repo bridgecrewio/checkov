@@ -2,8 +2,7 @@ from typing import List, Any
 
 from checkov.cloudformation.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
 
 
 class IAMPolicyAttachedToGroupOrRoles(BaseResourceNegativeValueCheck):

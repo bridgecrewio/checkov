@@ -5,11 +5,10 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.runner_filter import RunnerFilter
 from pathlib import Path
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
 
 
 class TestGraphChecks(unittest.TestCase):
-
     def test_internal_graph_checks_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
@@ -17,6 +16,8 @@ class TestGraphChecks(unittest.TestCase):
         runner_filter = RunnerFilter()
         for check in registry.checks:
             self.assertFalse(runner_filter.is_external_check(check))
+            # The BC ID should not be populated with a CKV2 ID
+            self.assertIsNone(check.bc_id)
 
     def test_external_graph_check_load(self):
         runner = Runner()

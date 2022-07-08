@@ -37,5 +37,3 @@ def enrich_attributes(attributes, resource):
     attributes["__startline__"] = resource["__startline__"]
     attributes["__endline__"] = resource["__endline__"]
     attributes.update(extract_inner_attributes(attributes))
-
-

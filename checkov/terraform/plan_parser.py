@@ -15,19 +15,19 @@ def _is_simple_type(obj: Any) -> bool:
     return False
 
 
-def _is_list_of_simple_types(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_simple_types(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if not _is_simple_type(i):
             return False
     return True
 
 
-def _is_list_of_dicts(l: Any) -> bool:
-    if not isinstance(l, list):
+def _is_list_of_dicts(obj: Any) -> bool:
+    if not isinstance(obj, list):
         return False
-    for i in l:
+    for i in obj:
         if isinstance(i, dict):
             return True
     return False
@@ -125,15 +125,13 @@ def _find_child_modules(child_modules: ListNode) -> List[Dict[str, Dict[str, Any
     return resource_blocks
 
 
-def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]], Optional[List[Tuple[int, str]]]]:
+def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tuple[Optional[Dict[str, Any]], Optional[List[Tuple[int, str]]]]:
     """
     :type tf_plan_file: str - path to plan file
-    :rtype: tf_definition dictionary
+    :rtype: tf_definition dictionary and template_lines of the plan file
     """
-    tf_defintions: Dict[str, Dict[str, Any]] = {}
-    tf_defintions[tf_plan_file] = {}
-    tf_defintions[tf_plan_file]["resource"] = []
-    template, template_lines = parse(tf_plan_file)
+    tf_definition: Dict[str, Any] = {"resource": []}
+    template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
     for resource in template.get("planned_values", {}).get("root_module", {}).get("resources", []):
@@ -147,14 +145,14 @@ def parse_tf_plan(tf_plan_file: str) -> Tuple[Optional[Dict[str, Dict[str, Any]]
         )
         resource_block, prepared = _prepare_resource_block(resource, conf)
         if prepared is True:
-            tf_defintions[tf_plan_file]["resource"].append(resource_block)
+            tf_definition["resource"].append(resource_block)
     child_modules = template.get("planned_values", {}).get("root_module", {}).get("child_modules", [])
     # Terraform supports modules within modules so we need to search
     # in nested modules to find all resource blocks
     resource_blocks = _find_child_modules(child_modules)
     for resource in resource_blocks:
-        tf_defintions[tf_plan_file]["resource"].append(resource)
-    return tf_defintions, template_lines
+        tf_definition["resource"].append(resource)
+    return tf_definition, template_lines
 
 
 def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:

@@ -3,8 +3,7 @@ import operator
 import re
 from functools import reduce
 
-# COMMENT_REGEX = re.compile(r'(checkov:skip=) *([A-Z_\d]+)(:[^\n]+)?')
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.util.type_forcers import force_list
 
 COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
@@ -20,7 +19,7 @@ class ContextParser(object):
         self.arm_template = arm_template
         self.arm_template_lines = arm_template_lines
 
-    def evaluate_default_parameters(self):
+    def evaluate_default_parameters(self) -> None:
         # Get parameter defaults and variable values
         parameter_defaults = {}
         if 'parameters' in self.arm_template.keys():
@@ -52,9 +51,8 @@ class ContextParser(object):
                 if param in parameter_defaults:
                     logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
                     self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
-            except TypeError as e:
-                logging.debug(f'Failed to evaluate param in {self.arm_file}, error:')
-                logging.debug(e, stack_info=True)
+            except TypeError:
+                logging.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
 
         for key_entry in keys_w_vars:
             try:
@@ -67,9 +65,8 @@ class ContextParser(object):
                                                                                          variable_values[param]))
                 else:
                     logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
-            except TypeError as e:
-                logging.debug(f'Failed to evaluate param in {self.arm_file}, error:')
-                logging.debug(e, stack_info=True)
+            except TypeError:
+                logging.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
 
     @staticmethod
     def extract_arm_resource_id(arm_resource):
@@ -120,11 +117,10 @@ class ContextParser(object):
     @staticmethod
     def collect_skip_comments(resource):
         skipped_checks = []
-        bc_id_mapping = bc_integration.get_id_mapping()
-        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
+        bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         if "metadata" in resource:
             if "checkov" in resource["metadata"]:
-                for index, item in enumerate(force_list(resource["metadata"]["checkov"])):
+                for item in force_list(resource["metadata"]["checkov"]):
                     skip_search = re.search(COMMENT_REGEX, str(item))
                     if skip_search:
                         skipped_check = {
@@ -135,8 +131,8 @@ class ContextParser(object):
                         if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                        elif ckv_to_bc_id_mapping:
-                            skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+                        elif metadata_integration.check_metadata:
+                            skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
 
                         skipped_checks.append(skipped_check)
 

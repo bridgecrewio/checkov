@@ -30,24 +30,27 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         :return: <CheckResult>
         """
 
-        if 'type' in conf:  # This means it's an alicloud_security_group_rule resource.
-            type = force_list(conf['type'])[0]
-            if type == 'ingress':
-                self.evaluated_keys = ['port_range', 'cidr_ip']
-                if not conf.get('port_range'):
-                    return CheckResult.PASSED
-                if self.contains_violation(conf):
-                    return CheckResult.FAILED
-                return CheckResult.PASSED
-            return CheckResult.UNKNOWN
+        if 'type' not in conf:  # This means it's not an alicloud_security_group_rule resource.
+            return CheckResult.PASSED
 
+        rule_type = force_list(conf['type'])[0]
+        if rule_type != 'ingress':
+            return CheckResult.UNKNOWN
+        self.evaluated_keys = ['port_range', 'cidr_ip']
+        if not conf.get('port_range'):
+            return CheckResult.PASSED
+        if self.contains_violation(conf):
+            return CheckResult.FAILED
         return CheckResult.PASSED
 
     def contains_violation(self, conf):
-        from_port = force_int(force_list(conf.get('port_range',[{-1}]))[0].split('/')[0])
-        to_port = force_int(force_list(conf.get('port_range',[{-1}]))[0].split('/')[1])
+        try:
+            from_port = force_int(force_list(conf.get('port_range', [{-1}]))[0].split('/')[0])
+            to_port = force_int(force_list(conf.get('port_range', [{-1}]))[0].split('/')[1])
+        except Exception:
+            return False
 
-        if from_port <= self.port <= to_port:
+        if from_port and to_port and from_port <= self.port <= to_port:
             conf_cidr_blocks = conf.get('cidr_ip', [[]])
             cidr_blocks = force_list(conf_cidr_blocks)
             if "0.0.0.0/0" in cidr_blocks or not cidr_blocks[0]:

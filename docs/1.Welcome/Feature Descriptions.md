@@ -31,7 +31,7 @@ In addition to integrating with your code repository, Checkov can also integrate
 * [Integrate with Jenkins](https://www.checkov.io/4.Integrations/Jenkins.html)
 * [Integrate with Bitbucket Cloud Pipelines](https://www.checkov.io/4.Integrations/Bitbucket%20Cloud%20Pipelines.html)
 * [Integrate with Github Actions](https://www.checkov.io/4.Integrations/GitHub%20Actions.html)
-* [Integrate with Gitlab CLI](https://www.checkov.io/4.Integrations/GitLab%20CLI.html)
+* [Integrate with Gitlab CI](https://www.checkov.io/4.Integrations/GitLab%20CI.html)
 
 ## Custom Policies
 

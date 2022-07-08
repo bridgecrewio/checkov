@@ -33,10 +33,10 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         if "properties" in conf:
             securityRules = []
-            if "type" in conf and conf["type"] == "Microsoft.Network/networkSecurityGroups":
+            if self.entity_type == "Microsoft.Network/networkSecurityGroups":
                 if "securityRules" in conf["properties"]:
                     securityRules.extend(conf["properties"]["securityRules"])
-            if "type" in conf and conf["type"] == "Microsoft.Network/networkSecurityGroups/securityRules":
+            if self.entity_type == "Microsoft.Network/networkSecurityGroups/securityRules":
                 securityRules.append(conf)
 
             for rule in securityRules:

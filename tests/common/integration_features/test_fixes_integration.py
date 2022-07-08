@@ -1,4 +1,3 @@
-import os
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.fixes_integration import FixesIntegration
@@ -6,7 +5,6 @@ from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 
 
 class TestFixesIntegration(unittest.TestCase):
-
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
         instance.skip_fixes = False

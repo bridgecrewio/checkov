@@ -2,14 +2,17 @@ import dis
 import inspect
 import os
 import unittest
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
 
 import pytest
 
+from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.parser import parse
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
@@ -18,6 +21,9 @@ from checkov.cloudformation.cfn_utils import create_definitions
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = cfn_registry.checks
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -111,6 +117,8 @@ class TestRunnerValid(unittest.TestCase):
     def test_record_includes_custom_guideline(self):
         custom_guideline_url = "https://my.custom.url"
         custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
             def __init__(self, *_, **__) -> None:
@@ -262,7 +270,7 @@ class TestRunnerValid(unittest.TestCase):
         report = Report('cloudformation')
         runner.check_definitions(root_folder=dir_abs_path, runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False), report=report)
         self.assertEqual(len(report.passed_checks), 2)
-        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 4)
         pass
 
     def test_breadcrumbs_report(self):
@@ -279,6 +287,40 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs)
         self.assertIsNotNone(report.failed_checks[0].breadcrumbs.get("VersioningConfiguration.Status"))
 
+    def test_parsing_invalid_properties_yaml(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.yaml")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_parsing_invalid_properties_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_parsing_no_properties_yaml(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "no_properties.yaml")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 2)
+
+    def test_parsing_no_properties_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "no_properties.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 2)
+
     def test_parsing_error_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid.yaml")
@@ -286,6 +328,14 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
+
+    def test_skip_sub_dict_json(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "skip_sub_dict.json")
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework='cloudformation'))
+        self.assertEqual(len(report.failed_checks), 0)
 
     def test_parsing_error_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -298,10 +348,158 @@ class TestRunnerValid(unittest.TestCase):
     def test_parse_relevant_files_only(self):
         definitions, _ = create_definitions(None, ['main.tf'])
         # just check that we skip the file and return normally
-        self.assertFalse('main.tf' in definitions)
+        self.assertNotIn('main.tf', definitions)
+
+    def test_record_includes_severity(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['cloudformation'], checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_severity_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+
+        runner = Runner()
+        checks_allowlist = ['MEDIUM']
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+        report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_check_filter_include(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+
+        runner = Runner()
+        checks_allowlist = ['MEDIUM']
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+        report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_omit(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+
+        runner = Runner()
+        checks_denylist = ['MEDIUM']
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+        report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', skip_checks=checks_denylist))
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_include(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        cfn_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["AWS::SQS::Queue"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+
+        runner = Runner()
+        checks_denylist = ['MEDIUM']
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
+        report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='cloudformation', skip_checks=checks_denylist))
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def tearDown(self):
-        pass
+        cfn_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

@@ -1,14 +1,21 @@
+from __future__ import annotations
+
 import logging
 from itertools import groupby
 
 import json
-import os
+from typing import TYPE_CHECKING
+
 import requests
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import extract_error_message, get_default_post_headers
+
+if TYPE_CHECKING:
+    from checkov.common.output.report import Report
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 
@@ -26,14 +33,14 @@ class FixesIntegration(BaseIntegrationFeature):
             and not self.integration_feature_failures
         )
 
-    def post_runner(self, scan_report):
+    def post_runner(self, scan_report: Report) -> None:
         try:
             if scan_report.check_type not in SUPPORTED_FIX_FRAMEWORKS:
                 return
             self._get_platform_fixes(scan_report)
-        except Exception as e:
+        except Exception:
             self.integration_feature_failures = True
-            logging.debug(f'{e} \nFixes will not be applied.', exc_info=True)
+            logging.debug("Fixes will not be applied.", exc_info=True)
 
     def _get_platform_fixes(self, scan_report):
 
@@ -43,7 +50,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         sorted_by_file = sorted(scan_report.failed_checks, key=lambda c: c.file_abs_path)
         for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.file_abs_path):
-            failed_checks = [fc for fc in failed_checks if fc.check_id in self.bc_integration.ckv_to_bc_id_mapping]
+            failed_checks = [fc for fc in failed_checks if fc.check_id in metadata_integration.check_metadata]
             if not failed_checks:
                 continue
             with open(file, 'r') as reader:
@@ -59,7 +66,7 @@ class FixesIntegration(BaseIntegrationFeature):
             failed_check_by_check_resource = {k: list(v)[0] for k, v in groupby(failed_checks, key=lambda c: (c.check_id, c.resource))}
 
             for fix in all_fixes:
-                ckv_id = self.bc_integration.bc_id_mapping[fix['policyId']]
+                ckv_id = metadata_integration.get_ckv_id_from_bc_id(fix['policyId'])
                 failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
                 failed_check.fixed_definition = fix['fixedDefinition']
 
@@ -67,7 +74,7 @@ class FixesIntegration(BaseIntegrationFeature):
 
         errors = list(map(lambda c: {
             'resourceId': c.resource,
-            'policyId': self.bc_integration.ckv_to_bc_id_mapping[c.check_id],
+            'policyId': metadata_integration.get_bc_id(c.check_id) or c.check_id,
             'startLine': c.file_line_range[0],
             'endLine': c.file_line_range[1]
         }, failed_checks))

@@ -12,11 +12,15 @@ from checkov.common.output.report import Report
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 
+file_dir = os.path.dirname(__file__)
+
+
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, "checkov/cloudformation/checks/graph_checks",
-                         os.path.dirname(__file__) + "/test_checks", "cloudformation", __file__, args)
+        super().__init__(graph_manager,
+                         os.path.abspath(os.path.join(file_dir, "../../../../checkov/cloudformation/checks/graph_checks")),
+                         os.path.join(file_dir, "test_checks"), "cloudformation", __file__, args)
 
     def setUp(self) -> None:
         os.environ['UNIQUE_TAG'] = ''
@@ -34,6 +38,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_ALBRedirectHTTPtoHTTPS(self):
         self.go("ALBRedirectHTTPtoHTTPS")
+
+    def test_AppSyncProtectedByWAF(self):
+        self.go("AppSyncProtectedByWAF")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

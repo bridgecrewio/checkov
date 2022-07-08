@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import os
 import unittest
 import warnings
 from pathlib import Path
-from typing import List
+from typing import Any
 
 import yaml
 
@@ -20,6 +22,15 @@ class TestYamlPolicies(unittest.TestCase):
         os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    def test_ADORepositoryHasMinTwoReviewers(self):
+        self.go("ADORepositoryHasMinTwoReviewers")
+
+    def test_CodecommitApprovalRulesAttached(self):
+        self.go("CodecommitApprovalRulesAttached")
+
+    def test_RepositoryHasBranchProtection(self):
+        self.go("RepositoryHasBranchProtection")
 
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
@@ -54,8 +65,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VAsetPeriodicScansOnSQL(self):
         self.go("VAsetPeriodicScansOnSQL")
 
-    def test_CloudFrontHasSecurityHeadersPolicy(self):
-        self.go("CloudFrontHasSecurityHeadersPolicy")
+    def test_CloudFrontHasResponseHeadersPolicy(self):
+        self.go("CloudFrontHasResponseHeadersPolicy")
 
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
@@ -213,13 +224,43 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPKMSKeyRingsAreNotPubliclyAccessible(self):
         self.go("GCPKMSKeyRingsAreNotPubliclyAccessible")
 
+    def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
+        self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
+
+    def test_S3BucketVersioning(self):
+        self.go("S3BucketVersioning")
+
+    def test_S3PublicACLRead(self):
+        self.go("S3PublicACLRead")
+
+    def test_S3PublicACLWrite(self):
+        self.go("S3PublicACLWrite")
+
+    def test_S3BucketEncryption(self):
+        self.go("S3BucketEncryption")
+
+    def test_S3BucketLogging(self):
+        self.go("S3BucketLogging")
+
+    def test_AdministratorUserNotAssociatedWithAPIKey(self):
+        self.go("AdministratorUserNotAssociatedWithAPIKey")
+
+    def test_ApplicationGatewayEnablesWAF(self):
+        self.go("ApplicationGatewayEnablesWAF")
+
+    def test_S3KMSEncryptedByDefault(self):
+        self.go("S3KMSEncryptedByDefault")
+
+    def test_S3BucketReplicationConfiguration(self):
+        self.go("S3BucketReplicationConfiguration")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 
-    def go(self, dir_name, check_name=None):
+    def go(self, dir_name: str , check_name: str | None = None) -> None:
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
@@ -248,7 +289,7 @@ class TestYamlPolicies(unittest.TestCase):
 
         assert found
 
-    def assert_entities(self, expected_entities: List[str], results: List[CheckResult], assertion: bool):
+    def assert_entities(self, expected_entities: list[str], results: list[CheckResult], assertion: bool) -> None:
         self.assertEqual(len(expected_entities), len(results),
                          f"mismatch in number of results in {'passed' if assertion else 'failed'}, "
                          f"expected: {len(expected_entities)}, got: {len(results)}")
@@ -274,7 +315,7 @@ def wrap_policy(policy):
     del policy['definition']
 
 
-def load_yaml_data(source_file_name, dir_path):
+def load_yaml_data(source_file_name: str, dir_path: str) -> dict[str, Any] | None:
     expected_path = os.path.join(dir_path, source_file_name)
     if not os.path.exists(expected_path):
         return None

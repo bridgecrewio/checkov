@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 import logging
-from typing import Generator, Any, Union, Dict
+from typing import Any, TypeVar
+
+_T = TypeVar("_T")
 
 
-def get_inner_dict(source_dict, path_as_list):
+def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict[str, Any]:
     result = source_dict
     for index in path_as_list:
         result = result[index]
     return result
 
 
-def merge_dicts(*dicts: Dict[Any, Any]) -> Dict[Any, Any]:
+def merge_dicts(*dicts: dict[_T, Any]) -> dict[_T, Any]:
     """
     Merges two or more dicts. If there are duplicate keys, later dict arguments take precedence.
 
@@ -17,7 +21,7 @@ def merge_dicts(*dicts: Dict[Any, Any]) -> Dict[Any, Any]:
     :param dicts:
     :return:
     """
-    res: Dict[Any, Any] = {}
+    res: dict[Any, Any] = {}
     for d in dicts:
         if not d or not isinstance(d, dict):
             continue
@@ -25,16 +29,9 @@ def merge_dicts(*dicts: Dict[Any, Any]) -> Dict[Any, Any]:
     return res
 
 
-def generator_reader_wrapper(g: Generator) -> Union[None, Any]:
-    try:
-        return next(g)
-    except StopIteration:
-        return
-
-
-def search_deep_keys(search_text, obj, path):
+def search_deep_keys(search_text: str, obj: dict[str, Any] | list[dict[str, Any]], path: list[int | str]) -> list[list[int | str]]:
     """Search deep for keys and get their values"""
-    keys = []
+    keys: list[list[int | str]] = []
     if isinstance(obj, dict):
         for key in obj:
             pathprop = path[:]
@@ -63,10 +60,10 @@ def search_deep_keys(search_text, obj, path):
     return keys
 
 
-def find_in_dict(input_dict: Dict[str, Any], key_path: str) -> Any:
+def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
     """Tries to retrieve the value under the given 'key_path', otherwise returns None."""
 
-    value = input_dict
+    value: Any = input_dict
     key_list = key_path.split("/")
 
     try:
@@ -87,12 +84,3 @@ def find_in_dict(input_dict: Dict[str, Any], key_path: str) -> Any:
         return None
 
     return value
-
-
-SEVERITY_RANKING = {
-    "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 3,
-    "none": 4,
-}

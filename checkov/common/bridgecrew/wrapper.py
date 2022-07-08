@@ -1,10 +1,18 @@
+from __future__ import annotations
+
 import logging
 import os
 import json
 import itertools
+from typing import Any, TYPE_CHECKING
+
 import dpath.util
+
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.util.json_utils import CustomJSONEncoder
+
+if TYPE_CHECKING:
+    from botocore.client import BaseClient
 
 checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
@@ -13,17 +21,17 @@ check_reduced_keys = (
 check_metadata_keys = ('evaluations', 'code_block')
 
 
-def _is_scanned_file(file):
+def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
     return file_ending in SUPPORTED_FILE_EXTENSIONS
 
 
-def _put_json_object(s3_client, json_obj, bucket, object_path):
+def _put_json_object(s3_client: BaseClient, json_obj: dict[str, Any], bucket: str, object_path: str) -> None:
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
-    except Exception as e:
-        logging.error(f"failed to persist object {json_obj} into S3 bucket {bucket}\n{e}")
-        raise e
+    except Exception:
+        logging.error(f"failed to persist object {json_obj} into S3 bucket {bucket}", exc_info=True)
+        raise
 
 
 def _extract_checks_metadata(report, full_repo_object_key):

@@ -18,7 +18,7 @@ class MQBrokerVersion(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("engine_type"):
             mq_type = conf.get("engine_type")[0]
-            semantic = conf.get("engine_version")[0]
+            semantic = conf.get("engine_version", [''])[0]
             if not re.search(r'(\d+\.\d+.\d+)', semantic):
                 return CheckResult.UNKNOWN
             version = float(re.search(r'(\d+\.\d+)', semantic).group())

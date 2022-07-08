@@ -1,5 +1,4 @@
 from checkov.common.checks.base_check import BaseCheck
-
 from checkov.dockerfile.registry import registry
 
 
@@ -9,4 +8,3 @@ class BaseDockerfileCheck(BaseCheck):
                          block_type="dockerfile", **kwargs)
         self.supported_instructions = supported_instructions
         registry.register(self)
-

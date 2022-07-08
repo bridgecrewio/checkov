@@ -166,10 +166,11 @@ class TestLocalGraph(TestCase):
         local_graph = CloudformationLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
 
-        self.assertEqual(len(local_graph.vertices), 7)
+        self.assertEqual(len(local_graph.vertices), 8)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.GLOBALS]), 1)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.RESOURCE]), 3)
         self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.OUTPUTS]), 1)
+        self.assertEqual(len([v for v in local_graph.vertices if v.block_type == BlockType.MAPPINGS]), 1)
 
         function_1_index = local_graph.vertices_block_name_map["resource"]["AWS::Serverless::Function.Function1"][0]
         function_2_index = local_graph.vertices_block_name_map["resource"]["AWS::Serverless::Function.Function2"][0]
@@ -225,6 +226,14 @@ class TestLocalGraph(TestCase):
         self.assertEqual("global-table", function_2_vertex.attributes["Environment"]["Variables"]["TABLE_NAME"])
         self.assertEqual(['sg-123', 'sg-456'], function_2_vertex.attributes["VpcConfig"]["SecurityGroupIds"])
         self.assertEqual(['subnet-123', 'subnet-456'], function_2_vertex.attributes["VpcConfig"]["SubnetIds"])
+
+        # check 'self' attribute is stored as 'self_'
+        mapping_index = local_graph.vertices_block_name_map["mappings"]["ServiceDiscovery"][0]
+        mapping_vertex = local_graph.vertices[mapping_index]
+
+        attribute_dict = mapping_vertex.get_attribute_dict()
+        self.assertNotIn("self", attribute_dict.keys())
+        self.assertIn("self_", attribute_dict.keys())
 
 
     def test_encryption_aws(self):

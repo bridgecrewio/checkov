@@ -1,5 +1,5 @@
 provider "aws" {
-  region="eu-west-2"
+  region = "eu-west-2"
 }
 
 resource "aws_api_gateway_domain_name" "fail" {

@@ -13,10 +13,10 @@ from aiomultiprocess import Pool
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.typing import _CheckResult
-from checkov.common.util.data_structures_utils import SEVERITY_RANKING
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -32,8 +32,9 @@ class CveCount:
     medium: int = 0
     low: int = 0
     skipped: int = 0
-    fixable: int = 0
+    has_fix: int = 0
     to_fix: int = 0
+    fixable: bool = True
 
     def output_row(self) -> List[str]:
         return [
@@ -69,7 +70,7 @@ def create_report_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": f"Filtered by package '{package_name}'"
         }
-    elif SEVERITY_RANKING[severity] > SEVERITY_RANKING[runner_filter.min_cve_severity]:
+    elif not runner_filter.within_threshold(Severities[severity.upper()]):
         check_result = {
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity"
@@ -81,11 +82,14 @@ def create_report_record(
     fixed_versions: List[Union[packaging_version.Version, packaging_version.LegacyVersion]] = []
     status = vulnerability_details.get("status") or "open"
     if status != "open":
-        fixed_versions = [
-            packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
-        ]
-        lowest_fixed_version = str(min(fixed_versions))
+        parsed_current_version = packaging_version.parse(package_version)
+        for version in status.replace("fixed in", "").split(","):
+            parsed_version = packaging_version.parse(version.strip())
+            if parsed_version > parsed_current_version:
+                fixed_versions.append(parsed_version)
 
+        if fixed_versions:
+            lowest_fixed_version = str(min(fixed_versions))
 
     details = {
         "id": cve_id,
@@ -116,7 +120,7 @@ def create_report_record(
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
-        severity=severity,
+        severity=Severities[severity.upper()],
         description=description,
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,
@@ -133,31 +137,34 @@ def calculate_lowest_compliant_version(
     package_versions = set()
 
     for fix_versions in fix_versions_lists:
-        package_min_versions.add(min(fix_versions))
-        package_versions.update(fix_versions)
-    package_min_version = min(package_min_versions)
-    package_max_version = max(package_min_versions)
+        if fix_versions:
+            package_min_versions.add(min(fix_versions))
+            package_versions.update(fix_versions)
+    if package_min_versions:
+        package_min_version = min(package_min_versions)
+        package_max_version = max(package_min_versions)
 
-    if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
-        package_max_version, packaging_version.LegacyVersion
-    ):
-        return str(package_max_version)
-    elif package_min_version.major == package_max_version.major:
-        return str(package_max_version)
-    else:
-        lowest_version = max(
-            version
-            for version in package_versions
-            if isinstance(version, packaging_version.Version) and version.major == package_max_version.major
-        )
-        return str(lowest_version)
+        if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
+            package_max_version, packaging_version.LegacyVersion
+        ):
+            return str(package_max_version)
+        elif package_min_version.major == package_max_version.major:
+            return str(package_max_version)
+        else:
+            lowest_version = max(
+                version
+                for version in package_versions
+                if isinstance(version, packaging_version.Version) and version.major == package_max_version.major
+            )
+            return str(lowest_version)
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
-    return SEVERITY_RANKING[cve.get("severity") or DEFAULT_SEVERITY]
+    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
+    return Severities[severity].level
 
 
-def create_cli_output(*cve_records: List[Record]) -> str:
+def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
     cli_outputs = []
     group_by_file_path_package_map = defaultdict(dict)
 
@@ -167,7 +174,7 @@ def create_cli_output(*cve_records: List[Record]) -> str:
         ).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
-        cve_count = CveCount()
+        cve_count = CveCount(fixable=fixable)
         package_details_map = defaultdict(dict)
 
         for package_name, records in packages.items():
@@ -184,10 +191,11 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                     cve_count.to_fix += 1
 
                 # best way to dynamically access an class instance attribute
-                setattr(cve_count, record.severity, getattr(cve_count, record.severity) + 1)
+                severity_str = record.severity.name.lower()
+                setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
                 if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
-                    cve_count.fixable += 1
+                    cve_count.has_fix += 1
 
                 fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
                 if package_version is None:
@@ -196,13 +204,13 @@ def create_cli_output(*cve_records: List[Record]) -> str:
                 package_details_map[package_name].setdefault("cves", []).append(
                     {
                         "id": record.vulnerability_details["id"],
-                        "severity": record.severity,
+                        "severity": severity_str,
                         "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                     }
                 )
 
             if package_name in package_details_map.keys():
-                package_details_map[package_name]["cves"].sort(key=compare_cve_severity)
+                package_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
                 package_details_map[package_name]["current_version"] = package_version
                 package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
@@ -277,8 +285,9 @@ def create_fixable_cve_summary_table_part(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
-    fixable_table.add_row([f"To fix {cve_count.fixable}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
-    fixable_table.align = "l"
+    if cve_count.fixable:
+        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.align = "l"
 
     # hack to make multiple tables look like one
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]

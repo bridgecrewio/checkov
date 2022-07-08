@@ -27,3 +27,14 @@ class ExistsSolver(TestBaseSolver):
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_all_resources(self):
+        root_folder = '../../../resources/encryption_test'
+        check_id = "TagEnvironmentExistsAll"
+        should_pass = []
+        should_fail = ["aws_rds_cluster.rds_cluster_encrypted", "aws_rds_cluster.rds_cluster_unencrypted",
+                       "aws_s3_bucket.encrypted_bucket", "aws_s3_bucket.unencrypted_bucket",
+                       "aws_neptune_cluster.encrypted_neptune", "aws_neptune_cluster.unencrypted_neptune"]
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

@@ -1,10 +1,8 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 
 
 class ServiceAccountTokens(BaseK8Check):
-
     def __init__(self):
         # CIS-1.5 5.1.6
         name = "Ensure that Service Account Tokens are only mounted where necessary"
@@ -42,6 +40,3 @@ class ServiceAccountTokens(BaseK8Check):
         return CheckResult.FAILED
 
 check = ServiceAccountTokens()
-
-
-

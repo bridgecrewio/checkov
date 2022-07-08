@@ -27,6 +27,9 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                 rules = []
                 rules.append(conf['Properties'])
 
+        if not isinstance(rules, list):
+            return CheckResult.UNKNOWN
+
         for rule in rules:
             if rule.__contains__('FromPort') and rule.__contains__('ToPort'):
                 if isinstance(rule['FromPort'], int) and isinstance(rule['ToPort'], int):

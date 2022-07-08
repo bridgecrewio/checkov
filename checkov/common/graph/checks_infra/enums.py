@@ -24,6 +24,7 @@ class SolverType(str, Enum):
 class Operators:
     ANY = 'any'
     EXISTS = 'exists'
+    ONE_EXISTS = 'one_exists'
     NOT_EXISTS = 'not_exists'
     CONTAINS = 'contains'
     NOT_CONTAINS = 'not_contains'
@@ -44,4 +45,10 @@ class Operators:
     WITHIN = 'within'
     AND = 'and'
     OR = 'or'
+    NOT = 'not'
     JSONPATH_EQUALS = 'jsonpath_equals'
+    JSONPATH_NOT_EQUALS = 'jsonpath_not_equals'
+    JSONPATH_EXISTS = 'jsonpath_exists'
+    JSONPATH_NOT_EXISTS = 'jsonpath_not_exists'
+    IS_EMPTY = 'is_empty'
+    IS_NOT_EMPTY = 'is_not_empty'

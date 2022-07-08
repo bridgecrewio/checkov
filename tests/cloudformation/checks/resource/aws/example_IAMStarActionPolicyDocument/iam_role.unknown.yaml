@@ -35,3 +35,6 @@ Resources:
       Path: /
       Roles:
         - !Ref RootRole
+
+  CFNUserGroup:
+    Type: AWS::IAM::Group

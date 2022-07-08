@@ -19,7 +19,10 @@ class StorageAccountLoggingQueueServiceEnabled(BaseResourceCheck):
             logging = conf['queue_properties'][0]['logging'][0]
             logging_evaluated_key = 'queue_properties/[0]/logging/[0]'
             self.evaluated_keys = [logging_evaluated_key]
-            if logging['delete'][0] and logging['write'][0] and logging['read'][0]:
+            delete_value = logging.get('delete', [False])[0]
+            write_value = logging.get('write', [False])[0]
+            read_value = logging.get('read', [False])[0]
+            if delete_value and write_value and read_value:
                 self.evaluated_keys = [f'{logging_evaluated_key}/delete',
                                        f'{logging_evaluated_key}/write',
                                        f'{logging_evaluated_key}/read']

@@ -1,6 +1,7 @@
-from typing import Dict, Any, List, Optional
+from __future__ import annotations
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
+from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
+
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -18,6 +19,7 @@ from checkov.common.checks_infra.solvers import (
     NotEndingWithAttributeSolver,
     AndSolver,
     OrSolver,
+    NotSolver,
     ConnectionExistsSolver,
     ConnectionNotExistsSolver,
     AndConnectionSolver,
@@ -28,16 +30,30 @@ from checkov.common.checks_infra.solvers import (
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
     JsonpathEqualsAttributeSolver,
+    JsonpathNotEqualsAttributeSolver,
+    JsonpathExistsAttributeSolver,
+    JsonpathNotExistsAttributeSolver,
+    SubsetAttributeSolver,
+    NotSubsetAttributeSolver,
+    IsEmptyAttributeSolver,
+    IsNotEmptyAttributeSolver
 )
-from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver
-from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver
+from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
+    ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
+if TYPE_CHECKING:
+    from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+    from checkov.common.checks_infra.solvers.complex_solvers.base_complex_solver import BaseComplexSolver
+    from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
+    from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
+    from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver import BaseFilterSolver
 
-operators_to_attributes_solver_classes = {
+
+operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "equals": EqualsAttributeSolver,
     "not_equals": NotEqualsAttributeSolver,
     "regex_match": RegexMatchAttributeSolver,
@@ -58,19 +74,32 @@ operators_to_attributes_solver_classes = {
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
-    "jsonpath_equals": JsonpathEqualsAttributeSolver
+    "jsonpath_equals": JsonpathEqualsAttributeSolver,
+    "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
+    "jsonpath_exists": JsonpathExistsAttributeSolver,
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver,
+    "is_empty": IsEmptyAttributeSolver,
+    "is_not_empty": IsNotEmptyAttributeSolver,
 }
 
-operators_to_complex_solver_classes = {
+operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
     "and": AndSolver,
     "or": OrSolver,
+    "not": NotSolver,
 }
 
-operator_to_connection_solver_classes = {"exists": ConnectionExistsSolver, "not_exists": ConnectionNotExistsSolver}
+operator_to_connection_solver_classes: dict[str, Type[BaseConnectionSolver]] = {
+    "exists": ConnectionExistsSolver,
+    "one_exists": ConnectionOneExistsSolver,
+    "not_exists": ConnectionNotExistsSolver
+}
 
-operator_to_complex_connection_solver_classes = {"and": AndConnectionSolver, "or": OrConnectionSolver}
+operator_to_complex_connection_solver_classes: dict[str, Type[ComplexConnectionSolver]] = {
+    "and": AndConnectionSolver,
+    "or": OrConnectionSolver,
+}
 
-operator_to_filter_solver_classes = {
+operator_to_filter_solver_classes: dict[str, Type[BaseFilterSolver]] = {
     "within": WithinFilterSolver,
 }
 
@@ -89,8 +118,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
-        if bc_integration.ckv_to_bc_id_mapping:
-            check.bc_id = bc_integration.ckv_to_bc_id_mapping.get(check.id)
+        check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
@@ -103,6 +131,12 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             check.type = SolverType.COMPLEX
             check.operator = complex_operator
             sub_solvers = raw_check.get(complex_operator, [])
+
+            # this allows flexibility for specifying the child conditions, and makes "not" more intuitive by
+            # not requiring an actual list
+            if isinstance(sub_solvers, dict):
+                sub_solvers = [sub_solvers]
+
             for sub_solver in sub_solvers:
                 check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
             resources_types_of_sub_solvers = [
@@ -119,13 +153,13 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types
+                check.resource_types = resources_types or []
             else:
                 check.resource_types = resource_type
 
             connected_resources_type = raw_check.get("connected_resource_types", [])
             if connected_resources_type == ["All"] or connected_resources_type == "all":
-                check.connected_resources_types = resources_types
+                check.connected_resources_types = resources_types or []
             else:
                 check.connected_resources_types = connected_resources_type
 
@@ -134,7 +168,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             if condition_type == "":
                 check.operator = "any"
             else:
-                check.operator = raw_check.get("operator")
+                check.operator = raw_check.get("operator", "")
             check.attribute = raw_check.get("attribute")
             check.attribute_value = raw_check.get("value")
 

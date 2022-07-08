@@ -25,6 +25,13 @@ class ModuleLoader(ABC):
         self.inner_module: Optional[str] = None
         self.root_dir = ""  # root dir for storing external modules
 
+    @abstractmethod
+    def discover(self):
+        """
+            discover parameters from execution context of checkov. usually from env variable
+        """
+        pass
+
     def load(
         self,
         root_dir: str,
@@ -69,7 +76,9 @@ There are three resulting states that can occur when calling this function:
         if os.path.exists(module_path):
             return ModuleContent(dir=module_path)
 
-        self.logger.debug(f"getting module {self.module_source} version: {self.version}")
+        self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
+                          f"{self.module_source if '@' not in self.module_source else self.module_source.split('@')[1]} "
+                          f"version: {self.version}")
         return self._load_module()
 
     @abstractmethod

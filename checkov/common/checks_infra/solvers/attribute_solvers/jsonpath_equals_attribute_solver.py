@@ -13,18 +13,23 @@ class JsonpathEqualsAttributeSolver(BaseAttributeSolver):
                          attribute=attribute, value=value)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        return str(vertex.get(attribute)) == str(self.value)
+        return str(vertex.get(attribute)) == str(self.value)  # type:ignore[arg-type]  # due to attribute can be None
+
+    def _get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
+        attribute_matches = []
+        parsed_attr = parse(self.attribute)
+        for match in parsed_attr.find(vertex):
+            full_path = str(match.full_path)
+            if full_path not in vertex:
+                vertex[full_path] = match.value
+
+            attribute_matches.append(full_path)
+
+        return attribute_matches
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
         if self.attribute:
-            attribute_matches = []
-            parsed_attr = parse(self.attribute)
-            for match in parsed_attr.find(vertex):
-                full_path = str(match.full_path)
-                if full_path not in vertex:
-                    vertex[full_path] = match.value
-
-                attribute_matches.append(full_path)
+            attribute_matches = self._get_attribute_matches(vertex)
 
             return self.resource_type_pred(vertex, self.resource_types) and len(attribute_matches) > 0 and all(
                 self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches

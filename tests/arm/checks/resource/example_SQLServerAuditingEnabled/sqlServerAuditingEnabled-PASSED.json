@@ -4,7 +4,7 @@
   "parameters": {
     "sqlServerName": {
       "type": "string",
-      "defaultValue": "[concat('sql-', uniqueString(resourceGroup().id))]",
+      "defaultValue": "serverEnabled",
       "metadata": {
         "description": "Name of the SQL server"
       }
