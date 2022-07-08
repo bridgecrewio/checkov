@@ -5,7 +5,7 @@ from typing import Any
 
 class KMSKeyIsEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Keys are enabled"
+        name = "Ensure KMS Keys are enabled"
         id = "CKV_ALI_26"
         supported_resources = ['alicloud_kms_key']
         categories = [CheckCategories.ENCRYPTION]
