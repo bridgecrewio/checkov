@@ -6,7 +6,7 @@ import platform
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable, Tuple, Dict, Set, Optional
+from typing import Any, TYPE_CHECKING, Callable
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
 class Runner(BaseRunner):
     def __init__(self) -> None:
         super().__init__()
-        self.jobs: Dict[str, dict[str, int]] | None = None
+        self.jobs: dict[str, dict[str, int]] | None = None
         self.workflow_name: str | None = None
-        self.triggers: Set[str] | None = None
+        self.triggers: set[str] | None = None
 
     def _load_files(
             self,
@@ -40,10 +40,11 @@ class Runner(BaseRunner):
         for file, result in results:
             if result:
                 (definitions[file], definitions_raw[file]) = result
-                if self.check_type == CheckType.GITHUB_ACTIONS:
-                    self.workflow_name = result[0].get('name')  # type:ignore
-                    self.jobs = self._get_jobs(result)
-                    self.triggers = self._get_triggers(result)
+                definition = result[0]
+                if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
+                    self.workflow_name = definition.get('name')
+                    self.jobs = self._get_jobs(definition)
+                    self.triggers = self._get_triggers(definition)
 
     @abstractmethod
     def _parse_file(
@@ -159,9 +160,11 @@ class Runner(BaseRunner):
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
 
-    def _get_triggers(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[set[str]]:
+    def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        triggers = result[0].get(True)
+        # it is correct that 'True' can be a key. It is easier to ingore the typing here,
+        # then to support it all the way up.
+        triggers = definition.get(True)  # type:ignore[call-overload]
         try:
             if triggers:
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
@@ -170,9 +173,9 @@ class Runner(BaseRunner):
             logging.info(f"Error:{str(e)}")
         return triggers_set
 
-    def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[dict[str, dict[str, int]]]:
+    def _get_jobs(self, definition: dict[str, Any]) -> dict[str, dict[str, int]]:
         jobs_dict: dict[str, dict[str, int]] = {}
-        jobs = result[0].get('jobs')
+        jobs = definition.get('jobs')
         if jobs:
             for key, value in jobs.items():
                 if key != START_LINE and key != END_LINE:

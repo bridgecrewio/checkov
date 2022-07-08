@@ -59,11 +59,11 @@ class TestObjectRunner(unittest.TestCase):
         expected_jobs = {'bridgecrew': {'__startline__': 8, '__endline__': 20},
                          'bridgecrew2': {'__startline__': 21, '__endline__': 33}}
 
-        jobs = Runner._get_jobs(self, self.result)
+        jobs = Runner._get_jobs(self, self.result[0])
         assert expected_jobs == jobs
 
     def test_get_triggers(self):
         expected_triggers = {'workflow_dispatch', 'schedule'}
 
-        triggers = Runner._get_triggers(self, self.result)
+        triggers = Runner._get_triggers(self, self.result[0])
         assert expected_triggers == triggers
