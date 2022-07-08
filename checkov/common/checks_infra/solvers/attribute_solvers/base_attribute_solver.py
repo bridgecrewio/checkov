@@ -79,6 +79,12 @@ class BaseAttributeSolver(BaseSolver):
                 pattern_parts.append(attr_part_pattern)
                 pattern_parts_without_index.append(attr_part_pattern)
 
+        # pattern = f'^{"[.]".join(pattern_parts)}$'
+        # pattern_with_index = re.compile(pattern)
+        #
+        # pattern = f'^{"[.]".join(pattern_parts_without_index)}$'
+        # pattern_without_index = re.compile(pattern)
+
         pattern = "[.]".join(pattern_parts)
         pattern_with_index = re.compile(pattern)
 
