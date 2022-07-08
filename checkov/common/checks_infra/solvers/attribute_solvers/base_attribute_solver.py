@@ -53,12 +53,11 @@ class BaseAttributeSolver(BaseSolver):
                     vertex[full_path] = match.value
 
                 attribute_matches.append(full_path)
-            if not attribute_matches:  # the jsonpath is not found, so the check passes
-                return True
 
-            return self.resource_type_pred(vertex, self.resource_types) and all(
-                self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
-            )
+            if attribute_matches:
+                return self.resource_type_pred(vertex, self.resource_types) and all(
+                    self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
+                )
 
         if self.attribute and re.match(WILDCARD_PATTERN, self.attribute):
             attribute_patterns = self.get_attribute_patterns(self.attribute)

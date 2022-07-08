@@ -179,7 +179,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         return check
 
     @staticmethod
-    def get_solver_type_method(check) -> BaseSolver:
+    def get_solver_type_method(check: BaseGraphCheck) -> BaseSolver:
         check.is_jsonpath_check = check.operator.startswith(JSONPATH_PREFIX)
         if check.is_jsonpath_check:
             solver = check.operator.replace(JSONPATH_PREFIX, '')
