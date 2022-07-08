@@ -44,15 +44,6 @@ def force_float(var: Any) -> float | None:
         return None
 
 
-def force_integer(var: Any) -> int | None:
-    try:
-        if not isinstance(var, int):
-            return int(var)
-        return var
-    except Exception:
-        return None
-
-
 def convert_str_to_bool(bool_str: bool | str) -> bool | str:
     if bool_str in ["true", '"true"', "True", '"True"']:
         return True

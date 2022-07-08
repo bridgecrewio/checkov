@@ -2,7 +2,7 @@ from typing import List, Optional, Any, Dict
 from collections.abc import Sized
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 from checkov.common.graph.checks_infra.enums import Operators
-from checkov.common.util.type_forcers import force_integer
+from checkov.common.util.type_forcers import force_int
 
 
 class LengthEqualsAttributeSolver(BaseAttributeSolver):
@@ -22,6 +22,6 @@ class LengthEqualsAttributeSolver(BaseAttributeSolver):
             return True
 
         if isinstance(attr, Sized):
-            return len(attr) == force_integer(self.value)
+            return len(attr) == force_int(self.value)
 
         return False
