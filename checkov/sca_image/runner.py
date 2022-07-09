@@ -24,7 +24,7 @@ from checkov.sca_package.runner import Runner as PackageRunner
 
 
 class Runner(PackageRunner):
-    check_type = CheckType.SCA_IMAGE
+    check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
@@ -42,8 +42,9 @@ class Runner(PackageRunner):
             self,
             image_id: str,
             dockerfile_path: str,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
     ) -> Dict[str, Any]:
+        runner_filter = runner_filter or RunnerFilter()
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -121,10 +122,11 @@ class Runner(PackageRunner):
             root_folder: Union[str, Path],
             external_checks_dir: Optional[List[str]] = None,
             files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 

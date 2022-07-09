@@ -1,14 +1,17 @@
+from __future__ import annotations
+
 import datetime
 import linecache
 import logging
 import os
 import re
-from typing import Optional, List
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-from detect_secrets import SecretsCollection
-from detect_secrets.core import scan
-from detect_secrets.core.potential_secret import PotentialSecret
-from detect_secrets.settings import transient_settings
+from detect_secrets import SecretsCollection  # type:ignore[import]
+from detect_secrets.core import scan  # type:ignore[import]
+from detect_secrets.core.potential_secret import PotentialSecret  # type:ignore[import]
+from detect_secrets.settings import transient_settings  # type:ignore[import]
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -26,6 +29,9 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from checkov.common.util.tqdm_utils import ProgressBar
 
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
@@ -59,17 +65,18 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.SECRETS
+    check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def run(
             self,
-            root_folder: str,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
     ) -> Report:
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        runner_filter = runner_filter or RunnerFilter()
+        current_dir = Path(__file__).parent
         secrets = SecretsCollection()
         with transient_settings({
             # Only run scans with only these plugins.
@@ -155,7 +162,7 @@ class Runner(BaseRunner):
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
 
-            for _, secret in iter(secrets):
+            for _, secret in secrets:
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
@@ -167,7 +174,7 @@ class Runner(BaseRunner):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
-                if line_text != "" and len(line_text.split()) > 0 and line_text.split()[0] == 'git_commit':
+                if line_text and line_text.startswith('git_commit'):
                     continue
                 result = self.search_for_suppression(
                     check_id=check_id,
@@ -188,7 +195,7 @@ class Runner(BaseRunner):
                     file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
-                    check_class=None,
+                    check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
                 ))
@@ -196,38 +203,44 @@ class Runner(BaseRunner):
             return report
 
     @staticmethod
-    def _scan_files(files_to_scan, secrets, pbar):
+    def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
         # implemented the scan function like secrets.scan_files
-        def _safe_scan(f, secrets):
-            full_file_path = os.path.join(secrets.root, f)
-            file_size = os.path.getsize(full_file_path)
-            if file_size > MAX_FILE_SIZE > 0:
-                logging.info(f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
-                             f'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
-                             f'to 0 or {file_size + 1}')
-                return os.path.relpath(f, secrets.root), list()
-            try:
-                start_time = datetime.datetime.now()
-                file_results = list(scan.scan_file(full_file_path))
-                end_time = datetime.datetime.now()
-                run_time = end_time - start_time
-                if run_time > datetime.timedelta(seconds=10):
-                    logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
-                return os.path.relpath(f, secrets.root), file_results
-            except Exception:
-                logging.warning(f"Secret scanning:could not process file {f}")
-                logging.debug("Complete trace:", exc_info=True)
-                return os.path.relpath(f, secrets.root), list()
-
+        base_path = secrets.root
         results = parallel_runner.run_function(
-            func=lambda f: list((_safe_scan(f, secrets))), items=files_to_scan,
-            run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true")
+            func=lambda f: list((Runner._safe_scan(f, base_path))),
+            items=files_to_scan,
+            run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
+        )
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
             for secret in secrets_results:
-                secrets[os.path.relpath(secret.filename, secrets.root)].add(secret)
+                secrets[os.path.relpath(secret.filename, base_path)].add(secret)
             pbar.update()
+
+    @staticmethod
+    def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
+        full_file_path = os.path.join(base_path, file_path)
+        file_size = os.path.getsize(full_file_path)
+        if file_size > MAX_FILE_SIZE > 0:
+            logging.info(
+                f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
+                'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
+                f'to 0 or {file_size + 1}'
+            )
+            return file_path, []
+        try:
+            start_time = datetime.datetime.now()
+            file_results = [*scan.scan_file(full_file_path)]
+            end_time = datetime.datetime.now()
+            run_time = end_time - start_time
+            if run_time > datetime.timedelta(seconds=10):
+                logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
+            return file_path, file_results
+        except Exception:
+            logging.warning(f"Secret scanning:could not process file {full_file_path}")
+            logging.debug("Complete trace:", exc_info=True)
+            return file_path, []
 
     @staticmethod
     def search_for_suppression(
@@ -236,7 +249,7 @@ class Runner(BaseRunner):
             severity: Severity,
             secret: PotentialSecret,
             runner_filter: RunnerFilter
-    ) -> Optional[_CheckResult]:
+    ) -> _CheckResult | None:
         if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id,
                                               severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
