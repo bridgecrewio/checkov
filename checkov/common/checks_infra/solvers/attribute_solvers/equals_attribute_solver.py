@@ -22,5 +22,7 @@ class EqualsAttributeSolver(BaseAttributeSolver):
             # handle cases like str(False) == "false"
             # generally self.value will be a string, but could be a bool if the policy was created straight from json
             return str(attr_val).lower() == str(self.value).lower()
+        elif (isinstance(attr_val, list) and isinstance(self.value, list)) or (isinstance(attr_val, dict) and isinstance(self.value, dict)):
+            return attr_val == self.value
         else:
             return str(attr_val) == str(self.value)

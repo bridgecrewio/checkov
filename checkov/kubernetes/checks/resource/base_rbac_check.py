@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.common.models.enums import CheckCategories, CheckResult
 from typing import Dict, Any, List
@@ -13,8 +15,9 @@ class RbacOperation():
         resources=["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]) 
     Rules matching an apiGroup, verb and resource should be able to perform the operation.
     """
-    def __init__(self, apigroups: List[str], verbs: List[str],
-                 resources: List[str]):
+    __slots__ = ("apigroups", "resources", "verbs")
+
+    def __init__(self, apigroups: List[str], verbs: List[str], resources: List[str]):
         self.apigroups = apigroups
         self.verbs = verbs
         self.resources = resources
@@ -30,7 +33,7 @@ class BaseRbacK8sCheck(BaseK8Check):
         categories = [CheckCategories.KUBERNETES]
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
         # A role that grants *ALL* the RbacOperation in failing_operations fails this check
-        self.failing_operations: RbacOperation = []
+        self.failing_operations: list[RbacOperation] = []
 
     def scan_spec_conf(self, conf):
         rules = conf.get("rules")

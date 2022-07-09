@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.42",
+        "bc-python-hcl2==0.3.44",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -68,6 +68,8 @@ setup(
         "prettytable>=3.0.0",
         "pycep-parser==0.3.7",
         "charset-normalizer",
+        "pyston_lite_autoload==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')",
+        "pyston-lite==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin')"
     ],
     license="Apache License 2.0",
     name="checkov",
@@ -81,6 +83,7 @@ setup(
     include_package_data=True,
     package_dir={
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
+        "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={

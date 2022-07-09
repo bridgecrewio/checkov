@@ -34,7 +34,9 @@ from checkov.common.checks_infra.solvers import (
     JsonpathExistsAttributeSolver,
     JsonpathNotExistsAttributeSolver,
     SubsetAttributeSolver,
-    NotSubsetAttributeSolver
+    NotSubsetAttributeSolver,
+    IsEmptyAttributeSolver,
+    IsNotEmptyAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -75,7 +77,9 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "jsonpath_equals": JsonpathEqualsAttributeSolver,
     "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
     "jsonpath_exists": JsonpathExistsAttributeSolver,
-    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver
+    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver,
+    "is_empty": IsEmptyAttributeSolver,
+    "is_not_empty": IsNotEmptyAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
@@ -112,7 +116,6 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         policy_definition = raw_check.get("definition", {})
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id", "")
-        check.bc_id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])

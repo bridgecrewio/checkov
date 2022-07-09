@@ -22,3 +22,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_exists_attri
 from checkov.common.checks_infra.solvers.attribute_solvers.jsonpath_not_exists_attribute_solver import JsonpathNotExistsAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solver import SubsetAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.is_empty_attribute_solver import IsEmptyAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.is_not_empty_attribute_solver import IsNotEmptyAttributeSolver  # noqa

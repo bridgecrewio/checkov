@@ -41,7 +41,7 @@ flake8-bugbear = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.42"
+bc-python-hcl2 = "==0.3.44"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
@@ -77,6 +77,8 @@ jsonschema = "~=3.0"
 prettytable = ">=3.0.0"
 pycep-parser = "==0.3.7"
 charset-normalizer = "*"
+pyston_lite_autoload = {version = "==2.3.4.1", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin')"}
+pyston-lite = {version = "==2.3.4.1", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin')"}
 
 [requires]
 python_version = "3.7"
