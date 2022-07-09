@@ -27,7 +27,7 @@ class Runner(BaseRunner):
 
     def run(
         self,
-        root_folder: str | None,
+        root_folder: str | None = None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
