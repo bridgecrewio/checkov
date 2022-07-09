@@ -1,30 +1,30 @@
+
+
 import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.alicloud.K8sEnableNetworkPolicies import check
+from checkov.terraform.checks.resource.alicloud.K8sNodePoolAutoRepair import check
 
 
-class TestK8sEnableNetworkPolicies(unittest.TestCase):
+class TestK8sNodePoolAutoRepair(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_K8sEnableNetworkPolicies")
+        test_files_dir = os.path.join(current_dir, "example_K8sNodePoolAutoRepair")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'alicloud_cs_kubernetes.pass',
-            'alicloud_cs_kubernetes.pass2',
+            'alicloud_cs_kubernetes_node_pool.pass',
         }
         failing_resources = {
-            'alicloud_cs_kubernetes.fail',
-            'alicloud_cs_kubernetes.fail2',
-            'alicloud_cs_kubernetes.fail3',
+            'alicloud_cs_kubernetes_node_pool.fail',
+            'alicloud_cs_kubernetes_node_pool.fail2',
         }
         skipped_resources = {}
 
