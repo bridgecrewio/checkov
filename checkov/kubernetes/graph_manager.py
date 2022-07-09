@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Type, Any
+from typing import Type, Any
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_manager import GraphManager
