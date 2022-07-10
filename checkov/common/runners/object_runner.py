@@ -180,9 +180,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
             for job_name, job_instance in jobs.items():
                 if key != START_LINE and key != END_LINE:
                     jobs_dict[key] = {}
-                    if value.get(START_LINE):
-                        jobs_dict[key][START_LINE] = value[START_LINE]
-                    if value.get(END_LINE):
-                        jobs_dict[key][END_LINE] = value[END_LINE]
+                    jobs_dict[key][START_LINE] = value.get(START_LINE)
+                    jobs_dict[key][END_LINE] = value.get(END_LINE)
 
         return jobs_dict
