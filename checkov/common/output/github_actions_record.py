@@ -18,8 +18,9 @@ class GithubActionsRecord(Record):
                  entity_tags,
                  bc_check_id,
                  severity,
-                 triggers: Optional[Set[str]], jobs: Optional[Dict[str, Dict[str, int]]],
-                 workflow_name: Optional[str]):
+                 triggers: Optional[Set[str]],
+                 jobs: Optional[Dict[str, Dict[str, int]]],
+                 workflow_name: Optional[str]) -> None:
         super().__init__(check_id,
                          check_name,
                          check_result,
