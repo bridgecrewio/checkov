@@ -45,14 +45,7 @@ class BaseAttributeSolver(BaseSolver):
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
         if self.is_jsonpath_check and self.attribute:
-            attribute_matches: List[str] = []
-            parsed_attr = parse(self.attribute)
-            for match in parsed_attr.find(vertex):
-                full_path = str(match.full_path)
-                if full_path not in vertex:
-                    vertex[full_path] = match.value
-
-                attribute_matches.append(full_path)
+            attribute_matches = self.get_attribute_matches(vertex)
 
             if attribute_matches:
                 return self.resource_type_pred(vertex, self.resource_types) and all(
@@ -60,12 +53,7 @@ class BaseAttributeSolver(BaseSolver):
                 )
 
         if self.attribute and re.match(WILDCARD_PATTERN, self.attribute):
-            attribute_patterns = self.get_attribute_patterns(self.attribute)
-            attribute_matches = [
-                attr
-                for attr in vertex
-                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns)
-            ]
+            attribute_matches = self.get_attribute_matches(vertex)
             if attribute_matches:
                 return self.resource_type_pred(vertex, self.resource_types) and any(
                     self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
@@ -86,6 +74,25 @@ class BaseAttributeSolver(BaseSolver):
             passed_vartices.append(data)
         else:
             failed_vertices.append(data)
+
+    def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
+        attribute_matches: List[str] = []
+        if self.is_jsonpath_check:
+            parsed_attr = parse(self.attribute)
+            for match in parsed_attr.find(vertex):
+                full_path = str(match.full_path)
+                if full_path not in vertex:
+                    vertex[full_path] = match.value
+
+                attribute_matches.append(full_path)
+
+        else:
+            attribute_patterns = self.get_attribute_patterns(self.attribute)
+            for attr in vertex:
+                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                    attribute_matches.append(attr)
+
+        return attribute_matches
 
     @staticmethod
     def get_attribute_patterns(attribute: str) -> Tuple[Pattern[str], Pattern[str]]:
