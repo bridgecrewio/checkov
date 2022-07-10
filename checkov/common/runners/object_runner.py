@@ -167,7 +167,7 @@ class Runner(BaseRunner):
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
 
         except Exception as e:
-            logging.info(f"Error:{str(e)}")
+            logging.info(f"failed to parse workflow triggers due to:{str(e)}")
         return triggers_set
 
     def _get_jobs(self, result: Tuple[Dict[str, Any], Dict[str, Any]]) -> Optional[dict[str, dict[str, int]]]:
