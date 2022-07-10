@@ -31,6 +31,7 @@ class BaseGraphCheck:
         self.severity: Optional[Severity] = None
         self.bc_category: Optional[str] = None
         self.frameworks: list[str] = []
+        self.is_jsonpath_check: bool = False
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver

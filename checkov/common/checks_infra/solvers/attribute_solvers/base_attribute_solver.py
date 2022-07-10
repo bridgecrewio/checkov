@@ -3,6 +3,7 @@ import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern
 
 from networkx import DiGraph
+from jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -17,15 +18,22 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
+OPERATION_TO_FUNC = {
+    'all': all,
+    'any': any
+}
+
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
 
-    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any) -> None:
+    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+                 ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
         self.attribute = attribute
         self.value = value
+        self.is_jsonpath_check = is_jsonpath_check
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -41,17 +49,15 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
-        if self.attribute and re.match(WILDCARD_PATTERN, self.attribute):
-            attribute_patterns = self.get_attribute_patterns(self.attribute)
-            attribute_matches = [
-                attr
-                for attr in vertex
-                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns)
-            ]
+        if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
+            attribute_matches = self.get_attribute_matches(vertex)
+
+            operator = OPERATION_TO_FUNC['all'] if self.is_jsonpath_check else OPERATION_TO_FUNC['any']
             if attribute_matches:
-                return self.resource_type_pred(vertex, self.resource_types) and any(
+                return self.resource_type_pred(vertex, self.resource_types) and operator(
                     self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
                 )
+
         return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
         )
@@ -68,6 +74,25 @@ class BaseAttributeSolver(BaseSolver):
             passed_vartices.append(data)
         else:
             failed_vertices.append(data)
+
+    def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
+        attribute_matches: List[str] = []
+        if self.is_jsonpath_check:
+            parsed_attr = parse(self.attribute)
+            for match in parsed_attr.find(vertex):
+                full_path = str(match.full_path)
+                if full_path not in vertex:
+                    vertex[full_path] = match.value
+
+                attribute_matches.append(full_path)
+
+        elif isinstance(self.attribute, str):
+            attribute_patterns = self.get_attribute_patterns(self.attribute)
+            for attr in vertex:
+                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                    attribute_matches.append(attr)
+
+        return attribute_matches
 
     @staticmethod
     def get_attribute_patterns(attribute: str) -> Tuple[Pattern[str], Pattern[str]]:
