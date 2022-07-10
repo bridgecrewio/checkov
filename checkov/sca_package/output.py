@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import itertools
 from collections import defaultdict
@@ -48,9 +50,13 @@ class CveCount:
 
 
 def create_report_record(
-    rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any],
-    runner_filter: RunnerFilter = RunnerFilter()
+    rootless_file_path: str,
+    file_abs_path: str,
+    check_class: str,
+    vulnerability_details: dict[str, Any],
+    runner_filter: RunnerFilter | None = None,
 ) -> Record:
+    runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
     cve_id = vulnerability_details["id"].upper()

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import List, Dict, Tuple
@@ -42,12 +44,20 @@ SINGLE_ITEM_SECTIONS = [
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.SERVERLESS
+    check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_names=SLS_FILE_MASK)
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str | None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True,
+    ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
