@@ -11,7 +11,7 @@ from typing import List, Dict, Any, TYPE_CHECKING, TypeVar, Generic
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
 
-_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any]")
+_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any]|None")
 
 
 def strtobool(val: str) -> int:
@@ -112,7 +112,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
+            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         return checks_results
 

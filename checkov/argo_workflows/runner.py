@@ -18,9 +18,9 @@ API_VERSION_PATTERN = re.compile(r"^apiVersion:\s*argoproj.io/", re.MULTILINE)
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.ARGO_WORKFLOWS  # noqa: CCE003
+    check_type = CheckType.ARGO_WORKFLOWS  # noqa: CCE003  # a static attribute
 
-    block_type_registries = {  # noqa: CCE003
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         "template": template_registry,
     }
 
