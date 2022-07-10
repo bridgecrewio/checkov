@@ -1,5 +1,8 @@
+import base64
 import os
+import random
 import unittest
+import uuid
 from unittest import mock
 from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -15,6 +18,45 @@ class TestBCApiUrl(unittest.TestCase):
     def test_overriding_bc_api_url(self):
         instance = BcPlatformIntegration()
         self.assertEqual(instance.api_url, "foo")
+
+    @staticmethod
+    def get_random_string():
+        len = random.randrange(5, 50)
+        chars = []
+        for i in range(0, len):
+            chars.append(chr(random.randrange(32, 127)))
+        return ''.join(chars)
+
+    def test_is_token_valid(self):
+        uuids = []
+        for i in range(0, 1000):
+            uuids.append(str(uuid.uuid4()))
+
+        # validate BC API keys
+        for u in uuids:
+            self.assertTrue(BcPlatformIntegration.is_token_valid(u))
+
+        # generate Prisma access keys, which are UUIDs (just reuse the ones from above),
+        # and secret keys, which are b64 encoded strings
+        for i in range(0, len(uuids)):
+            string_to_encode = self.get_random_string()
+            encoded = base64.b64encode(bytes(string_to_encode, 'utf-8'))
+            uuids[i] = uuids[i] + '::' + encoded.decode('utf-8')
+
+        for u in uuids:
+            self.assertTrue(BcPlatformIntegration.is_token_valid(u))
+
+        uuid_str = str(uuid.uuid4())
+        b64_str = base64.b64encode(bytes(self.get_random_string(), 'utf-8')).decode('utf-8')
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'{uuid_str}{b64_str}'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'{uuid_str}:{b64_str}'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'{uuid_str}:::{b64_str}'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'{uuid_str}::'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'::{b64_str}'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(''))
+        self.assertFalse(BcPlatformIntegration.is_token_valid('1234::56789'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'{uuid_str}::56789'))
+        self.assertFalse(BcPlatformIntegration.is_token_valid(f'1234::{b64_str}'))
 
     def test_overriding_pc_api_url(self):
         instance = BcPlatformIntegration()

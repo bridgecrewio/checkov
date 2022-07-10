@@ -49,6 +49,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
+                    check.bc_id = check.id
                     if check.frameworks:
                         for f in check.frameworks:
                             if f.lower() == "cloudformation":

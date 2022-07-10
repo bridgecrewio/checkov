@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
     def __init__(self) -> None:
         super().__init__()
         self.jobs: dict[str, dict[str, int]] | None = None
