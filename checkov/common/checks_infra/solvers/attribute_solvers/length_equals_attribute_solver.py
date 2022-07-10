@@ -12,7 +12,7 @@ class LengthEqualsAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types=resource_types, attribute=attribute, value=value,
                          is_jsonpath_check=is_jsonpath_check)
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
 
