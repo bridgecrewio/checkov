@@ -54,3 +54,5 @@ class Operators:
     IS_NOT_EMPTY = 'is_not_empty'
     LENGTH_EQUALS = 'length_equals'
     LENGTH_NOT_EQUALS = 'length_not_equals'
+    LENGTH_GREATER_THAN = 'length_greater_than'
+    LENGTH_LESS_THAN = 'length_less_than'
