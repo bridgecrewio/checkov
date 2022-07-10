@@ -1,6 +1,4 @@
-FROM python:3.8-slim
-
-ENV RUN_IN_DOCKER=True
+FROM pyston/slim:2.3.4
 
 RUN set -eux; \
     apt-get update; \
@@ -26,7 +24,15 @@ RUN set -eux; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -U checkov
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends build-essential gcc; \
+    \
+    pip install --no-cache-dir -U checkov; \
+    \
+    apt-get remove -y build-essential gcc; \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    rm -rf /var/lib/apt/lists/*
 
 COPY ./github_action_resources/entrypoint.sh /entrypoint.sh
 COPY ./github_action_resources/checkov-problem-matcher.json /usr/local/lib/checkov-problem-matcher.json

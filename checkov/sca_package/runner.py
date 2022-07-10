@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Optional, List, Set, Union, Sequence, Dict, Any
+from typing import Sequence, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
@@ -13,21 +15,23 @@ from checkov.sca_package.scanner import Scanner
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.SCA_PACKAGE
+    check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
-        self._check_class: Optional[str] = None
-        self._code_repo_path: Optional[Path] = None
+        self._check_class: str | None = None
+        self._code_repo_path: Path | None = None
 
     def prepare_and_scan(
             self,
-            root_folder: Optional[Union[str, Path]],
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | Path | None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             exclude_package_json: bool = True,
-            excluded_file_names: Set[str] = set()
-    ) -> "Optional[Sequence[Dict[str, Any]]]":
+            excluded_file_names: set[str] | None = None,
+    ) -> Sequence[dict[str, Any]] | None:
+        runner_filter = runner_filter or RunnerFilter()
+        excluded_file_names = excluded_file_names or set()
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -67,12 +71,13 @@ class Runner(BaseRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | Path,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -124,11 +129,15 @@ class Runner(BaseRunner):
             report.add_record(record)
 
     def find_scannable_files(
-            self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
-            exclude_package_json: bool = True,
-            excluded_file_names: Set[str] = set()
-    ) -> Set[Path]:
-        input_paths: Set[Path] = set()
+        self,
+        root_path: Path | None,
+        files: list[str] | None,
+        excluded_paths: set[str],
+        exclude_package_json: bool = True,
+        excluded_file_names: set[str] | None = None
+    ) -> set[Path]:
+        excluded_file_names = excluded_file_names or set()
+        input_paths: set[Path] = set()
         if root_path:
             input_paths = {
                 file_path
