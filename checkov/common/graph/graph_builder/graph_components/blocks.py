@@ -106,7 +106,8 @@ class Block:
         for attribute_key in list(self.attributes.keys()):
             attribute_value = self.attributes[attribute_key]
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
-                attribute_value = attribute_value[0]
+                if '.' not in attribute_key:
+                    attribute_value = attribute_value[0]
             # needs to be checked before adding anything to 'base_attributes'
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
