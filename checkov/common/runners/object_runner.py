@@ -177,7 +177,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         jobs_dict: dict[str, dict[str, int]] = {}
         jobs = definition.get('jobs')
         if jobs:
-            for key, value in jobs.items():
+            for job_name, job_instance in jobs.items():
                 if key != START_LINE and key != END_LINE:
                     jobs_dict[key] = {}
                     if value.get(START_LINE):
