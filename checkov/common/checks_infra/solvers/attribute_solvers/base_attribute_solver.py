@@ -52,7 +52,7 @@ class BaseAttributeSolver(BaseSolver):
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
 
-            operator = OPERATION_TO_FUNC.get('all') if self.is_jsonpath_check else OPERATION_TO_FUNC.get('any') or any
+            operator = OPERATION_TO_FUNC['all'] if self.is_jsonpath_check else OPERATION_TO_FUNC['any']
             if attribute_matches:
                 return self.resource_type_pred(vertex, self.resource_types) and operator(
                     self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
