@@ -18,6 +18,11 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
+OPERATION_TO_FUNC = {
+    'all': all,
+    'any': any
+}
+
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
@@ -44,20 +49,15 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
-        if self.is_jsonpath_check and self.attribute:
+        if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
 
+            operator = OPERATION_TO_FUNC.get('all') if self.is_jsonpath_check else OPERATION_TO_FUNC.get('any')
             if attribute_matches:
-                return self.resource_type_pred(vertex, self.resource_types) and all(
+                return self.resource_type_pred(vertex, self.resource_types) and operator(
                     self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
                 )
 
-        if self.attribute and re.match(WILDCARD_PATTERN, self.attribute):
-            attribute_matches = self.get_attribute_matches(vertex)
-            if attribute_matches:
-                return self.resource_type_pred(vertex, self.resource_types) and any(
-                    self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
-                )
         return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
         )
