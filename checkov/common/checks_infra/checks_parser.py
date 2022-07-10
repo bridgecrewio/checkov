@@ -116,7 +116,6 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         policy_definition = raw_check.get("definition", {})
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
         check.id = raw_check.get("metadata", {}).get("id", "")
-        check.bc_id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
@@ -200,7 +199,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             ),
         }
 
-        solver = type_to_solver.get(check.type)
+        solver = type_to_solver.get(check.type)  # type:ignore[arg-type]  # if not str will return None
         if not solver:
             raise NotImplementedError(f"solver type {check.type} with operator {check.operator} is not supported")
         return solver

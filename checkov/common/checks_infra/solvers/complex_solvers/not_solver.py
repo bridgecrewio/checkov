@@ -7,7 +7,7 @@ from functools import reduce
 
 
 class NotSolver(BaseComplexSolver):
-    operator = Operators.NOT
+    operator = Operators.NOT  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         if len(solvers) != 1:
@@ -19,5 +19,5 @@ class NotSolver(BaseComplexSolver):
             raise Exception('The "not" operator must have exactly one child')
         return not args[0]
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
         return not self.solvers[0].get_operation(vertex)

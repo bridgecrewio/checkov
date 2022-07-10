@@ -218,7 +218,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         k8s_registry = get_graph_checks_registry("kubernetes").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()

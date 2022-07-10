@@ -7,7 +7,7 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 
 class BaseComplexSolver(BaseSolver):
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         if solvers is None:
