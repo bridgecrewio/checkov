@@ -13,7 +13,7 @@ class TestLengthLessThan(TestBaseSolver):
     def test_array_length_less_than(self):
         # this is just a basic check to make sure the operator works
         # we'll check all the other combinations more directly (because coming up with all the policy combos is painful)
-        root_folder = './'
+        root_folder = '../../../resources/lengths'
         check_id = "ArrayLengthLessThan"
         should_pass = ['aws_security_group.sg2']
         should_fail = ['aws_security_group.sg1']
@@ -24,7 +24,7 @@ class TestLengthLessThan(TestBaseSolver):
     def test_string_length_less_than(self):
         # this is just a basic check to make sure the operator works
         # we'll check all the other combinations more directly (because coming up with all the policy combos is painful)
-        root_folder = './'
+        root_folder = '../../../resources/lengths'
         check_id = "StringLengthLessThan"
         should_pass = ['aws_security_group.sg1']
         should_fail = ['aws_security_group.sg2']

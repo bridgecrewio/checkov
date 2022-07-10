@@ -36,7 +36,9 @@ from checkov.common.checks_infra.solvers import (
     LengthEqualsAttributeSolver,
     LengthNotEqualsAttributeSolver,
     LengthGreaterThanAttributeSolver,
-    LengthLessThanAttributeSolver
+    LengthLessThanAttributeSolver,
+    LengthLessThanOrEqualAttributeSolver,
+    LengthGreaterThanOrEqualAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -79,7 +81,9 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "length_equals": LengthEqualsAttributeSolver,
     "length_not_equals": LengthNotEqualsAttributeSolver,
     "length_greater_than": LengthGreaterThanAttributeSolver,
+    "length_greater_than_or_equal": LengthGreaterThanOrEqualAttributeSolver,
     "length_less_than": LengthLessThanAttributeSolver,
+    "length_less_than_or_equal": LengthLessThanOrEqualAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {

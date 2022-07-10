@@ -55,4 +55,6 @@ class Operators:
     LENGTH_EQUALS = 'length_equals'
     LENGTH_NOT_EQUALS = 'length_not_equals'
     LENGTH_GREATER_THAN = 'length_greater_than'
+    LENGTH_GREATER_THAN_OR_EQUAL = 'length_greater_than_or_equal'
     LENGTH_LESS_THAN = 'length_less_than'
+    LENGTH_LESS_THAN_OR_EQUAL = 'length_less_than_or_equal'
