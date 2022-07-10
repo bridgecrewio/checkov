@@ -110,27 +110,40 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
 
-                record = Record(
-                    check_id=check.id,
-                    bc_check_id=check.bc_id,
-                    check_name=check.name,
-                    check_result=result,
-                    code_block=definitions_raw[file_path][start - 1:end + 1],
-                    file_path=f"/{os.path.relpath(file_path, root_folder)}",
-                    file_line_range=[start, end + 1],
-                    resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
-                    evaluations=None,
-                    check_class=check.__class__.__module__,
-                    file_abs_path=os.path.abspath(file_path),
-                    entity_tags=None,
-                    severity=check.severity,
-                )
                 if self.check_type == CheckType.GITHUB_ACTIONS:
                     record = GithubActionsRecord(
-                        record=record,
+                        check_id=check.id,
+                        bc_check_id=check.bc_id,
+                        check_name=check.name,
+                        check_result=result,
+                        code_block=definitions_raw[file_path][start - 1:end + 1],
+                        file_path=f"/{os.path.relpath(file_path, root_folder)}",
+                        file_line_range=[start, end + 1],
+                        resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
+                        evaluations=None,
+                        check_class=check.__class__.__module__,
+                        file_abs_path=os.path.abspath(file_path),
+                        entity_tags=None,
+                        severity=check.severity,
                         jobs=self.jobs,
                         triggers=self.triggers,
                         workflow_name=self.workflow_name
+                    )
+                else:
+                    record = Record(  # type: ignore
+                        check_id=check.id,
+                        bc_check_id=check.bc_id,
+                        check_name=check.name,
+                        check_result=result,
+                        code_block=definitions_raw[file_path][start - 1:end + 1],
+                        file_path=f"/{os.path.relpath(file_path, root_folder)}",
+                        file_line_range=[start, end + 1],
+                        resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
+                        evaluations=None,
+                        check_class=check.__class__.__module__,
+                        file_abs_path=os.path.abspath(file_path),
+                        entity_tags=None,
+                        severity=check.severity,
                     )
                 report.add_record(record)
             self.pbar.update()
@@ -162,11 +175,13 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        # it is correct that 'True' can be a key. It is easier to ingore the typing here,
+        # it is correct that 'True' can be a key. It is easier to ignore the typing here,
         # then to support it all the way up.
         triggers = definition.get(True)  # type:ignore[call-overload]
         try:
-            if triggers:
+            if type(triggers) == str:
+                triggers_set.add(triggers)
+            elif isinstance(triggers, dict):
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
 
         except Exception as e:
@@ -177,10 +192,15 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         jobs_dict: dict[str, dict[str, int]] = {}
         jobs = definition.get('jobs')
         if jobs:
-            for job_name, job_instance in jobs.items():
-                if key != START_LINE and key != END_LINE:
-                    jobs_dict[key] = {}
-                    jobs_dict[key][START_LINE] = value.get(START_LINE)
-                    jobs_dict[key][END_LINE] = value.get(END_LINE)
+            for job_key, job_instance in jobs.items():
+                if job_key != START_LINE and job_key != END_LINE:
+                    if job_instance.get("name"):
+                        jobs_dict[job_instance["name"]] = {}
+                        job_name = job_instance["name"]
+                    else:
+                        jobs_dict[job_key] = {}
+                        job_name = job_key
+                    jobs_dict[job_name][START_LINE] = job_instance.get(START_LINE)
+                    jobs_dict[job_name][END_LINE] = job_instance.get(END_LINE)
 
         return jobs_dict
