@@ -44,17 +44,19 @@ class BaseVCSDAL:
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='CERT_NONE'
-                                                 )  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
+                                                 ca_certs=ca_certificate,
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs='CERT_NONE')
+                self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
-                self.http = urllib3.ProxyManager(cert_reqs='CERT_NONE')  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs='CERT_NONE')
+                self.http = urllib3.PoolManager()
 
     def _request(self, endpoint: str, allowed_status_codes: list[int]) -> dict[str, Any] | None:
         if not self.token:
@@ -68,8 +70,7 @@ class BaseVCSDAL:
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
-        except Exception as e:
-            print(e)
+        except Exception:
             logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
 
     @abstractmethod
