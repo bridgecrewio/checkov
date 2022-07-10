@@ -8,6 +8,8 @@ from checkov.github.schemas.branch_protection import schema as branch_security_s
 from checkov.github.schemas.no_branch_protection import schema as no_branch_security_schema
 from checkov.json_doc.enums import BlockType
 
+MESSAGE_BRANCH_NOT_PROTECTED = 'Branch not protected'
+
 
 class BranchSecurity(BaseGithubCheck):
     def __init__(self, id, name):
@@ -29,7 +31,7 @@ class BranchSecurity(BaseGithubCheck):
                 return CheckResult.FAILED
         if no_branch_security_schema.validate(conf):
             message = conf.get('message', '')
-            if message == 'Branch not protected':
+            if message == MESSAGE_BRANCH_NOT_PROTECTED:
                 return CheckResult.FAILED
 
     def get_expected_value(self):
