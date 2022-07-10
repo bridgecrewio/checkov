@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 import hcl2
 
@@ -187,7 +189,7 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
     return to_return
 
 
-def split_merge_args(value: str) -> Optional[List[str]]:
+def split_merge_args(value: str) -> list[str] | None:
     """
     Split arguments of a merge function. For example, "merge(local.one, local.two)" would
     call this function with a value of "local.one, local.two" which would return
@@ -276,7 +278,7 @@ def _str_parser_loop_collection_helper(c: str, inside_collection_stack: List[str
     return processing_str_escape
 
 
-def eval_string(value: str) -> Optional[Any]:
+def eval_string(value: str) -> Any:
     try:
         value_string = value.replace("'", '"')
         parsed = hcl2.loads(f"eval = {value_string}\n")  # NOTE: newline is needed
@@ -285,7 +287,7 @@ def eval_string(value: str) -> Optional[Any]:
         return None
 
 
-def string_to_native(value: str) -> Optional[Dict[str, Any]]:
+def string_to_native(value: str) -> Any:
     try:
         value_string = value.replace("'", '"')
         return json.loads(value_string)

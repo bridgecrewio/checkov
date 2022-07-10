@@ -74,14 +74,14 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                     printable_checks_list.append(
                         (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
-            for check in registry.checks:
-                if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
-                    if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+            for graph_check in registry.checks:
+                if runner_filter.should_run_check(graph_check, graph_check.id, graph_check.bc_id, graph_check.severity):
+                    if not graph_check.resource_types:
                         # only for platform custom polices with resource_types == all
-                        check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                    for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        graph_check.resource_types = ['all']
+                    for rt in graph_check.resource_types:
                         printable_checks_list.append(
-                            (check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
+                            (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac))
 
     if any(x in framework_list for x in ("all", "terraform")):
         add_from_repository(resource_registry, "resource", "Terraform")

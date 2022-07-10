@@ -52,3 +52,5 @@ class Operators:
     JSONPATH_NOT_EXISTS = 'jsonpath_not_exists'
     IS_EMPTY = 'is_empty'
     IS_NOT_EMPTY = 'is_not_empty'
+    LENGTH_EQUALS = 'length_equals'
+    LENGTH_NOT_EQUALS = 'length_not_equals'

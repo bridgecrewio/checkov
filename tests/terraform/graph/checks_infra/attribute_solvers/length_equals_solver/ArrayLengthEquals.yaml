@@ -1,0 +1,9 @@
+metadata:
+  id: "ArrayLengthEquals"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: egress.cidr_blocks
+  operator: length_equals
+  value: 2

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[Any]):  # if a grapg is added, Any needs to replaced
     def _load_files(
         self,
         files_to_load: list[str],
