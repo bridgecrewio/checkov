@@ -24,3 +24,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.subset_attribute_solv
 from checkov.common.checks_infra.solvers.attribute_solvers.not_subset_attribute_solver import NotSubsetAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.is_empty_attribute_solver import IsEmptyAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.is_not_empty_attribute_solver import IsNotEmptyAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.length_equals_attribute_solver import LengthEqualsAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.length_not_equals_attribute_solver import LengthNotEqualsAttributeSolver  # noqa

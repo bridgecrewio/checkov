@@ -48,13 +48,13 @@ class Runner(BaseRunner):
     check_type = CheckType.TERRAFORM
 
     def __init__(
-            self,
-            parser: Parser = Parser(),
-            db_connector: NetworkxConnector = NetworkxConnector(),
-            external_registries: Optional[List[BaseRegistry]] = None,
-            source: str = "Terraform",
-            graph_class: Type[LocalGraph] = TerraformLocalGraph,
-            graph_manager: Optional[TerraformGraphManager] = None
+        self,
+        parser: Parser = Parser(),
+        db_connector: NetworkxConnector = NetworkxConnector(),
+        external_registries: Optional[List[BaseRegistry]] = None,
+        source: str = "Terraform",
+        graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+        graph_manager: Optional[TerraformGraphManager] = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -128,8 +128,10 @@ class Runner(BaseRunner):
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices,
-                                                                                              root_folder)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                    local_graph.vertices,
+                    root_folder,
+                )
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
@@ -157,7 +159,8 @@ class Runner(BaseRunner):
         if not connected_entity:
             return None
         connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(
-            connected_entity)
+            connected_entity
+        )
         if not connected_entity_context:
             return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
@@ -324,8 +327,10 @@ class Runner(BaseRunner):
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
             try:
-                entity_context = data_structures_utils.get_inner_dict(definition_context[full_file_path],
-                                                                      entity_context_path)
+                entity_context = data_structures_utils.get_inner_dict(
+                    definition_context[full_file_path],
+                    entity_context_path,
+                )
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')

@@ -20,7 +20,7 @@ WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
 class BaseAttributeSolver(BaseSolver):
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
                  ) -> None:
@@ -43,7 +43,7 @@ class BaseAttributeSolver(BaseSolver):
         concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
         if self.is_jsonpath_check and self.attribute:
             attribute_matches: List[str] = []
             parsed_attr = parse(self.attribute)
@@ -74,7 +74,7 @@ class BaseAttributeSolver(BaseSolver):
             vertex=vertex, attribute=self.attribute
         )
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         raise NotImplementedError
 
     def _process_node(
@@ -102,10 +102,10 @@ class BaseAttributeSolver(BaseSolver):
                 pattern_parts.append(attr_part_pattern)
                 pattern_parts_without_index.append(attr_part_pattern)
 
-        pattern = "[.]".join(pattern_parts)
+        pattern = f'^{"[.]".join(pattern_parts)}$'
         pattern_with_index = re.compile(pattern)
 
-        pattern = "[.]".join(pattern_parts_without_index)
+        pattern = f'^{"[.]".join(pattern_parts_without_index)}$'
         pattern_without_index = re.compile(pattern)
 
         return pattern_with_index, pattern_without_index
