@@ -6,9 +6,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.branch_protection import schema as branch_security_schema
 from checkov.github.schemas.no_branch_protection import schema as no_branch_security_schema
-
 from checkov.json_doc.enums import BlockType
-import json
 
 
 class BranchSecurity(BaseGithubCheck):
