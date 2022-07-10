@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
-from jsonpath_ng.ext import parse
 
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
@@ -30,10 +29,6 @@ from checkov.common.checks_infra.solvers import (
     GreaterThanOrEqualAttributeSolver,
     LessThanAttributeSolver,
     LessThanOrEqualAttributeSolver,
-    JsonpathEqualsAttributeSolver,
-    JsonpathNotEqualsAttributeSolver,
-    JsonpathExistsAttributeSolver,
-    JsonpathNotExistsAttributeSolver,
     SubsetAttributeSolver,
     NotSubsetAttributeSolver,
     IsEmptyAttributeSolver,
@@ -77,10 +72,6 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "less_than_or_equal": LessThanOrEqualAttributeSolver,
     "subset": SubsetAttributeSolver,
     "not_subset": NotSubsetAttributeSolver,
-    "jsonpath_equals": JsonpathEqualsAttributeSolver,
-    "jsonpath_not_equals": JsonpathNotEqualsAttributeSolver,
-    "jsonpath_exists": JsonpathExistsAttributeSolver,
-    "jsonpath_not_exists": JsonpathNotExistsAttributeSolver,
     "is_empty": IsEmptyAttributeSolver,
     "is_not_empty": IsNotEmptyAttributeSolver,
     "length_equals": LengthEqualsAttributeSolver,
@@ -182,7 +173,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         return check
 
     @staticmethod
-    def get_solver_type_method(check: BaseGraphCheck) -> BaseAttributeSolver:
+    def get_solver_type_method(check: BaseGraphCheck) -> Optional[BaseAttributeSolver]:
         check.is_jsonpath_check = check.operator.startswith(JSONPATH_PREFIX)
         if check.is_jsonpath_check:
             solver = check.operator.replace(JSONPATH_PREFIX, '')
