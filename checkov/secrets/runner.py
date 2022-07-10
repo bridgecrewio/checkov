@@ -64,7 +64,7 @@ ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php',
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def run(
