@@ -1,7 +1,6 @@
 from __future__ import annotations
 import jmespath
 import os
-from typing import TYPE_CHECKING
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.circleci_pipelines.registry import registry
