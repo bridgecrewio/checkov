@@ -111,20 +111,3 @@ class Runner(YamlRunner, ImageReferencer):
                                       start_line=result["__startline__"],
                                       end_line=result["__endline__"])
                     images.add(image_obj)
-
-    # def add_root_image(self, file_path: str, images: set,
-    #                    workflow_line_numbers: dict, workflow: dict) -> None:
-    #     root_image = workflow.get("image", "")
-
-    #     if root_image:
-    #         for line_number, line_txt in workflow_line_numbers:
-    #             if "image" in line_txt and not line_txt.startswith(' '):
-    #                 image_id = self.inspect(root_image)
-    #                 image_obj = Image(
-    #                     file_path=file_path,
-    #                     name=root_image,
-    #                     image_id=image_id,
-    #                     start_line=line_number,
-    #                     end_line=line_number,
-    #                 )
-    #                 images.add(image_obj)
