@@ -36,7 +36,10 @@ class RunnerFilter(object):
             all_external: bool = False,
             var_files: Optional[List[str]] = None,
             skip_cve_package: Optional[List[str]] = None,
-            use_enforcement_rules: bool = False
+            use_enforcement_rules: bool = False,
+            filtered_policy_ids: Optional[List[str]] = None,
+            show_progress_bar: Optional[bool] = True,
+            secrets_scan_file_type: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -51,18 +54,21 @@ class RunnerFilter(object):
         self.skip_check_threshold = None
         self.checks = []
         self.skip_checks = []
+        self.show_progress_bar = show_progress_bar
 
         if not self.use_enforcement_rules:
             # split out check/skip thresholds so we can access them easily later
             for val in (checks or []):
-                if val in Severities:
+                if val.upper() in Severities:
+                    val = val.upper()
                     if not self.check_threshold or self.check_threshold.level > Severities[val].level:
                         self.check_threshold = Severities[val]
                 else:
                     self.checks.append(val)
 
             for val in (skip_checks or []):
-                if val in Severities:
+                if val.upper() in Severities:
+                    val = val.upper()
                     if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
                         self.skip_check_threshold = Severities[val]
                 else:
@@ -88,6 +94,8 @@ class RunnerFilter(object):
         self.all_external = all_external
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
+        self.filtered_policy_ids = filtered_policy_ids or []
+        self.secrets_scan_file_type = secrets_scan_file_type
 
     def apply_enforcement_rules(self, enforcement_rule_configs):
         self.enforcement_rule_configs = {}
@@ -127,7 +135,7 @@ class RunnerFilter(object):
         explicit_run = checks and self.check_matches(check_id, bc_check_id, checks)
         implicit_run = not checks and not check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
-
+        is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
@@ -140,8 +148,13 @@ class RunnerFilter(object):
         if not should_run_check:
             return False
 
-        skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
-        explicit_skip = skip_checks and self.check_matches(check_id, bc_check_id, skip_checks)
+        # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
+        # It can, however, be skipped.
+        if not is_policy_filtered:
+            should_run_check = False
+
+        skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
+        explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
         should_skip_check = (
             skip_severity or
@@ -179,3 +192,8 @@ class RunnerFilter(object):
     @staticmethod
     def is_external_check(check_id: str) -> bool:
         return check_id in RunnerFilter.__EXTERNAL_CHECK_IDS
+
+    def is_policy_filtered(self, check_id: str) -> bool:
+        if not self.filtered_policy_ids:
+            return True
+        return check_id in self.filtered_policy_ids

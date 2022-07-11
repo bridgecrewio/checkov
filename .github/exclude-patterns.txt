@@ -8,9 +8,7 @@ tests/terraform/checks/resource/aws/example_LambdaEnvironmentCredentials/main.tf
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/FAIL.yaml
 tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
-tests/secrets/resources/cfn/secret.yml
-tests/secrets/resources/terraform_failed/main.tf
-tests/secrets/resources/terraform_skip/main.tf
+tests/secrets/resources/.*
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
 tests/terraform/checks/provider/aws/test_credentials.py

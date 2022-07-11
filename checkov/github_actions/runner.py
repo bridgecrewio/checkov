@@ -1,37 +1,51 @@
+from __future__ import annotations
+
 import os
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.GITHUB_ACTIONS
+    check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
     def __init__(self):
         super().__init__()
 
-    def require_external_checks(self):
+    def require_external_checks(self) -> bool:
         return False
 
-    def import_registry(self):
+    def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(self, f):
+    def _parse_file(
+        self, f: str, file_content: str | None = None
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             return super()._parse_file(f)
 
-    def is_workflow_file(self, file_path):
+        return None
+
+    def is_workflow_file(self, file_path: str) -> bool:
         """
         :return: True if the file mentioned is in a github action workflow directory and is a YAML file. Otherwise: False
         """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("yml", "yaml"))
 
-    def get_images(self, file_path):
+    def included_paths(self) -> Iterable[str]:
+        return [".github"]
+
+    def get_images(self, file_path: str) -> set[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -55,11 +69,20 @@ class Runner(YamlRunner, ImageReferencer):
         :return: List of container image classes ids mentioned in the file.
         """
 
-        images = set()
+        images: set[Image] = set()
+        parsed_file = self._parse_file(file_path)
 
-        workflow, workflow_line_numbers = self._parse_file(file_path)
+        if not parsed_file:
+            return images
+
+        workflow, workflow_line_numbers = parsed_file
+
+        if not isinstance(workflow, dict):
+            # make type checking happy
+            return images
+
         jobs = workflow.get("jobs", {})
-        for job_name, job_object in jobs.items():
+        for job_object in jobs.values():
             if isinstance(job_object, dict):
                 container = job_object.get("container", {})
                 image = None

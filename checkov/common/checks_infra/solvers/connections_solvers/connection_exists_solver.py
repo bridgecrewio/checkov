@@ -9,7 +9,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 
 
 class ConnectionExistsSolver(BaseConnectionSolver):
-    operator = Operators.EXISTS
+    operator = Operators.EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed = []
         failed = []
         for u, v in edge_dfs(graph_connector):

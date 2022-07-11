@@ -7,7 +7,7 @@ from checkov.common.checks_infra.solvers.connections_solvers.connection_exists_s
 
 
 class ConnectionNotExistsSolver(ConnectionExistsSolver):
-    operator = Operators.NOT_EXISTS
+    operator = Operators.NOT_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
@@ -23,6 +23,6 @@ class ConnectionNotExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed, failed = super().get_operation(graph_connector)
         return failed, passed

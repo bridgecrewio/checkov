@@ -15,7 +15,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(framework='openapi', checks=checks)
         )
-        self.assertEqual(len(report.failed_checks), 10)
+        self.assertEqual(len(report.failed_checks), 12)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(report.skipped_checks, [])

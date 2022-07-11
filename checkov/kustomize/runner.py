@@ -32,9 +32,11 @@ class K8sKustomizeRunner(K8sRunner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
+
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.report_mutator_data = {}
         self.check_type = CheckType.KUSTOMIZE
+        self.pbar.turn_off_progress_bar()
 
     def set_external_data(self,
                           definitions: Optional[Dict[str, Dict[str, Any]]],
@@ -156,25 +158,6 @@ class Runner(BaseRunner):
     def get_kustomize_metadata(self):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
-
-    @staticmethod
-    def _findKustomizeDirectories(root_folder, files, excluded_paths):
-        kustomizeDirectories = []
-        if not excluded_paths:
-            excluded_paths = []
-        if files:
-            logging.info('Running with --file argument; file must be a kustomization.yaml file')
-            for file in files:
-                if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
-                    kustomizeDirectories.append(os.path.dirname(file))
-
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, excluded_paths)
-                filter_ignored_paths(root, f_names, excluded_paths)
-                [kustomizeDirectories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
-
-        return kustomizeDirectories
 
     def _parseKustomization(self, parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
@@ -395,7 +378,7 @@ class Runner(BaseRunner):
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
-        kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
+        kustomizeDirectories = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         self.target_folder_path = tempfile.mkdtemp()
@@ -429,6 +412,9 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
         try:
@@ -484,3 +470,22 @@ class Runner(BaseRunner):
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
         except IsADirectoryError:
             pass
+
+
+def find_kustomize_directories(root_folder, files, excluded_paths):
+    kustomize_directories = []
+    if not excluded_paths:
+        excluded_paths = []
+    if files:
+        logging.info('Running with --file argument; file must be a kustomization.yaml file')
+        for file in files:
+            if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
+                kustomize_directories.append(os.path.dirname(file))
+
+    if root_folder:
+        for root, d_names, f_names in os.walk(root_folder):
+            filter_ignored_paths(root, d_names, excluded_paths)
+            filter_ignored_paths(root, f_names, excluded_paths)
+            [kustomize_directories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
+
+        return kustomize_directories

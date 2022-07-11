@@ -11,6 +11,10 @@ from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.enums import BlockType
 import jmespath
 
+STARTLINE_MARK = "__startline__"
+
+ENDLINE_MARK = "__endline__"
+
 
 class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
@@ -29,7 +33,7 @@ class Registry(BaseCheckRegistry):
             analyzed_entities = jmespath.search(entity_type, entity)
             if isinstance(analyzed_entities, dict):
                 for item, item_conf in analyzed_entities.items():
-                    if '__startline__' != item and '__endline__' != item:
+                    if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
                             check,
                             item_conf,
@@ -41,7 +45,7 @@ class Registry(BaseCheckRegistry):
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
-                    if '__startline__' != item and '__endline__' != item:
+                    if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
                             check,
                             item,
@@ -103,7 +107,7 @@ class Registry(BaseCheckRegistry):
             results: Dict[str, Any],
     ) -> None:
         for check in checks:
-            skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
+            skip_info = ([x for x in skipped_checks if (x["id"] == check.id and entity[STARTLINE_MARK] <= x['line_number'] <= entity[ENDLINE_MARK])] or [{}])[0]
 
             if runner_filter.should_run_check(check=check, report_type=CheckType.YAML):
                 scanner = self._scanner.get(check.block_type, self._scan_yaml_document)
@@ -130,11 +134,11 @@ class Registry(BaseCheckRegistry):
                 )
 
     def scan(  # type:ignore[override]  # return type is different than the base class
-        self,
-        scanned_file: str,
-        entity: Dict[str, Any],
-        skipped_checks: List[_SkippedCheck],
-        runner_filter: RunnerFilter
+            self,
+            scanned_file: str,
+            entity: Dict[str, Any],
+            skipped_checks: List[_SkippedCheck],
+            runner_filter: RunnerFilter
     ) -> Dict[str, Any]:
         results: Dict[str, Any] = {}
 
@@ -195,7 +199,7 @@ class Registry(BaseCheckRegistry):
 
         result = check_result["result"]
 
-        if result == CheckResult.SKIPPED:
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
             results[result_key] = {
                 "check": check,
                 "result": result,
@@ -224,8 +228,25 @@ class Registry(BaseCheckRegistry):
                        entity_type: str,
                        scanned_file: str,
                        skip_info: _SkippedCheck) -> str:
-        if "__startline__" and "__endline__" in entity_configuration:
-            return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration["__startline__"]}:{entity_configuration["__endline__"]}]'
+        if STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
+            return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
+        if isinstance(entity_configuration, list):
+            start_line = None
+            end_line = None
+            for sub_conf in entity_configuration:
+                if STARTLINE_MARK in sub_conf and ENDLINE_MARK in sub_conf:
+                    subconf_startline = sub_conf[STARTLINE_MARK]
+                    sub_conf_endline = sub_conf[ENDLINE_MARK]
+                    if not start_line:
+                        start_line = subconf_startline
+                    if not end_line:
+                        end_line = sub_conf_endline
+                    if sub_conf_endline > end_line:
+                        end_line = sub_conf_endline
+                    if subconf_startline < start_line:
+                        start_line = subconf_startline
+            if start_line and end_line:
+                return f'{entity_type}.{entity_name}.{check.id}[{start_line}:{end_line}]'
         return f'{entity_type}.{entity_name}.{check.id}'
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:

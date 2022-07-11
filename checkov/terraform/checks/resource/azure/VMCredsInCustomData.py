@@ -23,6 +23,7 @@ class VMCredsInCustomData(BaseResourceCheck):
                     custom_data = custom_data[0]
                     if isinstance(custom_data, str):
                         if string_has_secrets(custom_data):
+                            conf[f'{self.id}_secret'] = custom_data
                             return CheckResult.FAILED
         return CheckResult.PASSED
 

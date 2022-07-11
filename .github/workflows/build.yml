@@ -14,6 +14,7 @@ on:
       - admissioncontroller/k8s/deployment.yaml
       - checkov/version.py
       - kubernetes/requirements.txt
+      - coverage.svg
 
 concurrency:
   group: 'build'
@@ -29,7 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
@@ -70,7 +71,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -99,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -132,7 +133,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -296,6 +297,28 @@ jobs:
           git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
+  publish-checkov-pyston-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get release version
+        id: versions
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "::set-output name=version::$checkov_version"
+          echo "::set-output name=major_version::$checkov_major_version"
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: bridgecrew/checkov
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
+          dockerfile: Dockerfile.pyston
+          buildoptions: "--no-cache"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]

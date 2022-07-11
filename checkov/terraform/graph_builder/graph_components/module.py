@@ -34,7 +34,7 @@ class Module:
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
     ) -> None:
         self.source = source
-        if self._block_type_to_func.get(block_type):
+        if block_type in self._block_type_to_func:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
@@ -63,9 +63,10 @@ class Module:
             for name in provider_dict:
                 attributes = provider_dict[name]
                 provider_name = name
-                alias = attributes.get("alias")
-                if alias:
-                    provider_name = f"{provider_name}.{alias[0]}"
+                if isinstance(attributes, dict):
+                    alias = attributes.get("alias")
+                    if alias:
+                        provider_name = f"{provider_name}.{alias[0]}"
                 provider_block = TerraformBlock(
                     block_type=BlockType.PROVIDER,
                     name=provider_name,

@@ -7,7 +7,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.BITBUCKET_PIPELINES
+    check_type = CheckType.BITBUCKET_PIPELINES  # noqa: CCE003  # a static attribute
 
     def __init__(self):
         super().__init__()

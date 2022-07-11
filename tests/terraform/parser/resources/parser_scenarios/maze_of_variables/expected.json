@@ -50,7 +50,7 @@
         "aws_s3_bucket": {
           "example2": {
             "bucket": [
-              "mapped-bucket-name-works-yay"
+              "${mapped-bucket-name}-works-yay"
             ],
             "__start_line__": 25,
             "__end_line__": 34

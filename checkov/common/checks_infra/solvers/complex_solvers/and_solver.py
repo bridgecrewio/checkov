@@ -8,7 +8,7 @@ from operator import and_
 
 
 class AndSolver(BaseComplexSolver):
-    operator = Operators.AND
+    operator = Operators.AND  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)
@@ -16,7 +16,7 @@ class AndSolver(BaseComplexSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(and_, args)
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
         for solver in self.solvers:
             if not solver.get_operation(vertex):
                 return False

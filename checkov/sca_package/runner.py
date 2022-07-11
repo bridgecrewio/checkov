@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Optional, List, Set, Union, Sequence, Dict, Any
+from typing import Sequence, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -11,37 +14,25 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
 
-SUPPORTED_PACKAGE_FILES = {
-    "bower.json",
-    "build.gradle",
-    "build.gradle.kts",
-    "go.sum",
-    "gradle.properties",
-    "METADATA",
-    "npm-shrinkwrap.json",
-    "package.json",
-    "package-lock.json",
-    "pom.xml",
-    "requirements.txt"
-}
-
 
 class Runner(BaseRunner):
-    check_type = CheckType.SCA_PACKAGE
+    check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
-        self._check_class: Optional[str] = None
-        self._code_repo_path: Optional[Path] = None
+        self._check_class: str | None = None
+        self._code_repo_path: Path | None = None
 
     def prepare_and_scan(
             self,
-            root_folder: Optional[Union[str, Path]],
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | Path | None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             exclude_package_json: bool = True,
-            excluded_file_names: Set[str] = set()
-    ) -> "Optional[Sequence[Dict[str, Any]]]":
+            excluded_file_names: set[str] | None = None,
+    ) -> Sequence[dict[str, Any]] | None:
+        runner_filter = runner_filter or RunnerFilter()
+        excluded_file_names = excluded_file_names or set()
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -72,7 +63,7 @@ class Runner(BaseRunner):
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
-        scanner = Scanner()
+        scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan(input_paths)
 
@@ -81,12 +72,16 @@ class Runner(BaseRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | Path,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
@@ -135,11 +130,15 @@ class Runner(BaseRunner):
             report.add_record(record)
 
     def find_scannable_files(
-            self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],
-            exclude_package_json: bool = True,
-            excluded_file_names: Set[str] = set()
-    ) -> Set[Path]:
-        input_paths: Set[Path] = set()
+        self,
+        root_path: Path | None,
+        files: list[str] | None,
+        excluded_paths: set[str],
+        exclude_package_json: bool = True,
+        excluded_file_names: set[str] | None = None
+    ) -> set[Path]:
+        excluded_file_names = excluded_file_names or set()
+        input_paths: set[Path] = set()
         if root_path:
             input_paths = {
                 file_path

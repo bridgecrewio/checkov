@@ -20,12 +20,14 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.util.suppression import collect_suppressions_for_report
 from checkov.runner_filter import RunnerFilter
 
@@ -33,25 +35,26 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager
 
 
-class Runner(BaseRunner):
-    check_type = CheckType.BICEP
+class Runner(BaseRunner[BicepGraphManager]):
+    check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
-    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {
+    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
         "parameters": param_registry,
         "resources": resource_registry,
     }
 
     def __init__(
         self,
-        db_connector: NetworkxConnector = NetworkxConnector(),
+        db_connector: NetworkxConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
-        graph_manager: GraphManager | None = None,
+        graph_manager: BicepGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        db_connector = db_connector or NetworkxConnector()
+
         super().__init__(file_extensions=['.bicep'])
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
@@ -61,7 +64,7 @@ class Runner(BaseRunner):
         self.graph_registry: Registry = get_graph_checks_registry(self.check_type)
 
         self.context: dict[str, dict[str, Any]] = {}
-        self.definitions: dict[Path, BicepJson] = {}
+        self.definitions: dict[Path, BicepJson] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
         self.root_folder: str | Path | None = None
 
@@ -70,9 +73,13 @@ class Runner(BaseRunner):
         root_folder: str | Path | None,
         external_checks_dir: list[str] | None = None,
         files: list[str] | None = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(Runner.check_type)
         self.root_folder = root_folder
 
@@ -105,8 +112,10 @@ class Runner(BaseRunner):
                     vertices=local_graph.vertices, root_folder=root_folder
                 )
 
+        self.pbar.initiate(len(self.definitions))
+
         # run Python checks
-        self.add_python_check_results(report=report, runner_filter=runner_filter)
+        self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH:
@@ -117,10 +126,11 @@ class Runner(BaseRunner):
     def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
-    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None) -> None:
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             for block_type, registry in Runner.block_type_registries.items():
                 block_type_confs = definition.get(block_type)
                 if block_type_confs:
@@ -152,12 +162,15 @@ class Runner(BaseRunner):
                                 elif check.bc_id and check.bc_id in suppressions.keys():
                                     check_result = suppressions[check.bc_id]
 
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    file_code_lines[start_line - 1 : end_line],
+                                                                                    conf)
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
                                     check_name=check.name,
                                     check_result=check_result,
-                                    code_block=file_code_lines[start_line - 1 : end_line],
+                                    code_block=censored_code_lines,
                                     file_path=self.extract_file_path_from_abs_path(cleaned_path),
                                     file_line_range=[start_line, end_line],
                                     resource=resource_id,
@@ -168,6 +181,20 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+                        elif conf.get("existing") is False:
+                            # resources without checks, but not existing ones
+
+                            cleaned_path = clean_file_path(file_path)
+                            resource_id = f"{conf['type']}.{name}"
+                            report.extra_resources.add(
+                                ExtraResource(
+                                    file_abs_path=str(file_path.absolute()),
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                    resource=resource_id,
+                                )
+                            )
+            self.pbar.update()
+        self.pbar.close()
 
     def extract_file_path_from_abs_path(self, path: Path) -> str:
         return f"/{os.path.relpath(path, self.root_folder)}"

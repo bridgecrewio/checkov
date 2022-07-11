@@ -27,7 +27,7 @@ class Github(BaseVCSDAL):
         self.current_repository = os.getenv('GITHUB_REPOSITORY', '')
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
         if not self.current_branch:
-            self.current_branch = os.getenv('GITHUB_REF', '')
+            self.current_branch = os.getenv('GITHUB_REF', 'refs/heads/master')
             if self.current_branch:
                 extracted_branch_array = self.current_branch.split("/")
                 if len(extracted_branch_array) == 3:
@@ -43,7 +43,8 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch))
+                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch),
+                allowed_status_codes=[200, 404])
             return branch_protection_rules
         return None
 

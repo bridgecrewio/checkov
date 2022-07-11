@@ -9,7 +9,7 @@ from typing import List
 class IAMRoleAllowAssumeFromAccount(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure IAM role allows only specific principals in account to assume it"
+        name = "Ensure AWS IAM policy does not allow assume role permission across all services"
         id = "CKV_AWS_61"
         supported_resources = ['aws_iam_role']
         categories = [CheckCategories.IAM]

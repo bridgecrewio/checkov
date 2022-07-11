@@ -191,7 +191,7 @@ class Registry(BaseCheckRegistry):
 
         result = check_result["result"]
 
-        if result == CheckResult.SKIPPED:
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
             results[result_key] = {
                 "check": check,
                 "result": result,

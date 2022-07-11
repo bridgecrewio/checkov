@@ -1,4 +1,5 @@
 import argparse
+import csv
 import unittest
 
 import os
@@ -12,6 +13,7 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+import re
 
 
 class TestRunnerRegistry(unittest.TestCase):
@@ -104,6 +106,46 @@ class TestRunnerRegistry(unittest.TestCase):
         assert 'code_block' not in output
         assert 'connected_node' not in output
 
+    def test_compact_csv_output(self):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=True,
+            output=['csv'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=reports, config=config)
+
+        output = captured_output.getvalue()
+
+        self.assertIn('Persisting SBOM to ', output)
+        iac_file_path = re.search("Persisting SBOM to (.*iac.csv)", output).group(1)
+        with open(iac_file_path) as file:
+            content = file.readlines()
+            header = content[:1][0]
+            self.assertEqual('Resource,Path,git org,git repository,Misconfigurations,Severity\n', header)
+            rows = content[1:]
+            self.assertIn('aws_s3_bucket', rows[0])
+        oss_file_path = re.search("Persisting SBOM to (.*oss_packages.csv)", output).group(1)
+        with open(oss_file_path) as file:
+            content = file.readlines()
+            header = content[:1][0]
+            self.assertEqual('Package,Version,Path,git org,git repository,Vulnerability,Severity,License\n', header)
+            row = content[1:][0]
+            self.assertIn('bridgecrew.cloud', row)
+
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
@@ -147,6 +189,13 @@ class TestRunnerRegistry(unittest.TestCase):
         )
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'secrets'})
+
+        runner_filter = RunnerFilter(framework=['all'], runners=checkov_runners)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['manifest.json'])
+        self.assertIn("kubernetes", set(r.check_type for r in runner_registry.runners))
 
 
 def test_non_compact_json_output(capsys):

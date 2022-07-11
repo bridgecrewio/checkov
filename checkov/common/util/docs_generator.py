@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
 
+from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
@@ -46,20 +47,23 @@ def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int,
 
 
 def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-                 include_all_checkov_policies: bool = True) -> None:
+                 include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> None:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids,
-                                       include_all_checkov_policies=include_all_checkov_policies)
+                                       include_all_checkov_policies=include_all_checkov_policies,
+                                       filtered_policy_ids=filtered_policy_ids or [])
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
 
-def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False, include_all_checkov_policies: bool = True) -> List[Tuple[str, str, int, int, str]]:
+def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
+               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list: list[tuple[str, str, str, str, str]] = []
-    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies)
+    filtered_policy_ids = filtered_policy_ids or []
+    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies, filtered_policy_ids=filtered_policy_ids)
 
     def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str,
                             runner_filter: RunnerFilter = runner_filter) -> None:
@@ -70,14 +74,14 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                     printable_checks_list.append(
                         (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
-            for check in registry.checks:
-                if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
-                    if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+            for graph_check in registry.checks:
+                if runner_filter.should_run_check(graph_check, graph_check.id, graph_check.bc_id, graph_check.severity):
+                    if not graph_check.resource_types:
                         # only for platform custom polices with resource_types == all
-                        check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                    for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        graph_check.resource_types = ['all']
+                    for rt in graph_check.resource_types:
                         printable_checks_list.append(
-                            (check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
+                            (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac))
 
     if any(x in framework_list for x in ("all", "terraform")):
         add_from_repository(resource_registry, "resource", "Terraform")
@@ -114,6 +118,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_pipelines")):
         add_from_repository(bitbucket_pipelines_registry, "bitbucket_pipelines", "bitbucket_pipelines")
+    if any(x in framework_list for x in ("all", "argo_workflows")):
+        add_from_repository(argo_workflows_registry, "argo_workflows", "Argo Workflows")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
@@ -127,9 +133,10 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
-            if use_bc_ids:
-                check_id = metadata_integration.get_bc_id(check_id)
-            printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
+            if not filtered_policy_ids or check_id in filtered_policy_ids:
+                if use_bc_ids:
+                    check_id = metadata_integration.get_bc_id(check_id)
+                printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
     return sorted(printable_checks_list, key=get_compare_key)  # type:ignore[arg-type]
 
 

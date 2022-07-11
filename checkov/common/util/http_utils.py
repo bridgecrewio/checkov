@@ -8,7 +8,8 @@ import os
 from typing import Any, TYPE_CHECKING, cast
 
 from checkov.common.bridgecrew.bc_source import SourceType
-from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS
+from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
+    PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
@@ -26,6 +27,18 @@ def normalize_prisma_url(url: str) -> str | None:
     return url.lower().replace('//app', '//api').replace('http:', 'https:').rstrip('/')
 
 
+def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:
+    platform_type = PRISMA_PLATFORM if is_prisma else BRIDGECREW_PLATFORM
+    error_message = f'Received unexpected response from platform (status code {status}). Please verify ' \
+                    f'that your API token is valid and has permissions to call the {platform_type} APIs.'
+    if platform_type == PRISMA_PLATFORM:
+        error_message += 'The key must be associated with a Developer or Sys Admin role / permission group.'
+    elif is_s3_upload:
+        # This part only applies to S3 upload, but not downloading the run config
+        error_message += 'The key must be associated with any role besides Auditor.'
+    return error_message
+
+
 def extract_error_message(response: requests.Response) -> str:
     if response.content:
         try:
@@ -41,6 +54,12 @@ def extract_error_message(response: requests.Response) -> str:
 def get_auth_header(token: str) -> dict[str, str]:
     return {
         'Authorization': token
+    }
+
+
+def get_prisma_auth_header(token: str) -> dict[str, str]:
+    return {
+        'x-redlock-auth': token
     }
 
 
@@ -62,6 +81,10 @@ def get_default_get_headers(client: SourceType, client_version: str) -> dict[str
 
 def get_default_post_headers(client: SourceType, client_version: str) -> dict[str, Any]:
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
+
+
+def get_prisma_get_headers() -> dict[str, str]:
+    return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
 
 
 def request_wrapper(

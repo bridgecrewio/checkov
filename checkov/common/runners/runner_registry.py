@@ -6,12 +6,12 @@ import json
 import logging
 import os
 import re
-from abc import abstractmethod
+
 from collections import defaultdict
 from collections.abc import Iterable
 from json import dumps
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional, cast, TYPE_CHECKING
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
 
 from typing_extensions import Literal
 
@@ -22,6 +22,7 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -35,35 +36,29 @@ from checkov.terraform.runner import Runner as tf_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
-    from checkov.common.runners.base_runner import BaseRunner
+    from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
 
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
+
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif"]
+OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif", "csv"]
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
 class RunnerRegistry:
-    runners: List[BaseRunner] = []
-    scan_reports: List[Report] = []
-    banner = ""
-
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: BaseRunner) -> None:
+    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
-        self.scan_reports = []
+        self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
         self.tool = tool_name
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
-
-    @abstractmethod
-    def extract_entity_details(self, entity: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
-        raise NotImplementedError()
 
     def run(
             self,
@@ -75,15 +70,21 @@ class RunnerRegistry:
     ) -> List[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
-            reports: Iterable[Report] = [self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                           runner_filter=self.runner_filter,
-                                           collect_skip_comments=collect_skip_comments)]
+            reports: Iterable[Report] = [
+                self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                    runner_filter=self.runner_filter,
+                                    collect_skip_comments=collect_skip_comments)]
         else:
-            reports = parallel_runner.run_function(
-                lambda runner: runner.run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                          runner_filter=self.runner_filter,
-                                          collect_skip_comments=collect_skip_comments),
-                self.runners, 1)
+            def _parallel_run(runner: _BaseRunner) -> Report:
+                return runner.run(
+                    root_folder=root_folder,
+                    external_checks_dir=external_checks_dir,
+                    files=files,
+                    runner_filter=self.runner_filter,
+                    collect_skip_comments=collect_skip_comments,
+                )
+
+            reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         for scan_report in reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
@@ -144,6 +145,8 @@ class RunnerRegistry:
         sarif_reports = []
         junit_reports = []
         cyclonedx_reports = []
+        csv_sbom_report = CSVSBOM()
+
         data_outputs: dict[str, str] = defaultdict(str)
         for report in scan_reports:
             if not report.is_empty():
@@ -159,6 +162,12 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if "cyclonedx" in config.output:
                     cyclonedx_reports.append(report)
+                if "csv" in config.output:
+                    git_org = ""
+                    git_repository = ""
+                    if 'repo_id' in config and config.repo_id is not None:
+                        git_org,git_repository = config.repo_id.split('/')
+                    csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
             soft_fail, soft_fail_on, hard_fail_on = self.get_fail_thresholds(config, report.check_type)
             exit_codes.append(report.get_exit_code(soft_fail, soft_fail_on, hard_fail_on))
@@ -235,9 +244,9 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            if cyclonedx_reports:
+            if len(cyclonedx_reports) > 1:
                 # More than one Report - combine Reports first
-                report = Report(None)
+                report = Report("")
                 for r in cyclonedx_reports:
                     report.passed_checks += r.passed_checks
                     report.skipped_checks += r.skipped_checks
@@ -257,6 +266,11 @@ class RunnerRegistry:
             output_formats.remove("cyclonedx")
             if output_formats:
                 print(OUTPUT_DELIMITER)
+        if "csv" in config.output:
+            is_api_key = False
+            if 'bc_api_key' in config and  config.bc_api_key is not None:
+                is_api_key = True
+            csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
@@ -287,7 +301,7 @@ class RunnerRegistry:
         self.runners = [runner for runner in self.runners if any(runner.should_scan_file(file) for file in files)]
         logging.debug(f'Filtered runners based on file type(s). Result: {[r.check_type for r in self.runners]}')
 
-    def remove_runner(self, runner: BaseRunner) -> None:
+    def remove_runner(self, runner: _BaseRunner) -> None:
         if runner in self.runners:
             self.runners.remove(runner)
 
@@ -342,7 +356,7 @@ class RunnerRegistry:
         return enriched_resources
 
     def _get_image_referencing_runners(self) -> set[ImageReferencer]:
-        image_referencing_runners = set()
+        image_referencing_runners: set[ImageReferencer] = set()
         for runner in self.runners:
             if issubclass(runner.__class__, ImageReferencer):
                 image_referencing_runners.add(cast(ImageReferencer, runner))

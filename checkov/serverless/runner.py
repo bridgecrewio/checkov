@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import List, Dict, Tuple
@@ -6,6 +8,7 @@ from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.serverless.base_registry import EntityDetails
 from checkov.serverless.parsers.context_parser import ContextParser as SlsContextParser
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -42,12 +45,23 @@ SINGLE_ITEM_SECTIONS = [
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.SERVERLESS
+    check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_names=SLS_FILE_MASK)
 
-    def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+    def run(
+        self,
+        root_folder: str | None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True,
+    ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None
@@ -81,8 +95,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for sls_file, sls_file_data in definitions.items():
+        self.pbar.initiate(len(definitions))
 
+        for sls_file, sls_file_data in definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(sls_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -123,8 +139,11 @@ class Runner(BaseRunner):
                             results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter, report_type=CheckType.SERVERLESS)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    resource)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=sls_file,
+                                                code_block=censored_code_lines, file_path=sls_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=cf_resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
@@ -155,8 +174,11 @@ class Runner(BaseRunner):
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         for check, check_result in results.items():
+                            censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                entity_code_lines,
+                                                                                item_content)
                             record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=entity_code_lines, file_path=sls_file,
+                                            code_block=censored_code_lines, file_path=sls_file,
                                             file_line_range=entity_lines_range,
                                             resource=item_name, evaluations=variable_evaluations,
                                             check_class=check.__class__.__module__, file_abs_path=file_abs_path,
@@ -178,8 +200,11 @@ class Runner(BaseRunner):
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 for check, check_result in results.items():
+                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                        entity_code_lines,
+                                                                        item_content)
                     record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=sls_file,
+                                    code_block=censored_code_lines, file_path=sls_file,
                                     file_line_range=entity_lines_range,
                                     resource=token, evaluations=variable_evaluations,
                                     check_class=check.__class__.__module__, file_abs_path=file_abs_path,
@@ -207,7 +232,8 @@ class Runner(BaseRunner):
                                     entity_tags=tags, severity=check.severity)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 

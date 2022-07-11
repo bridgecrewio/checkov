@@ -159,7 +159,7 @@ class Registry(BaseCheckRegistry):
         result = check_result["result"]
         result_key = f'{entity_type}.{entity_name}.{check.id}'
 
-        if result == CheckResult.SKIPPED:
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
             results[result_key] = {
                 "check": check,
                 "result": result,
