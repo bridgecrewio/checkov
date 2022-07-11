@@ -4,6 +4,11 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class LBTargetGroupDefinesHealthCheck(BaseResourceCheck):
     def __init__(self) -> None:
+
+        """
+        PCI v3.2.1
+        """
+
         name = "Ensure HTTP HTTPS Target group defines Healthcheck"
         id = "CKV_AWS_261"
         supported_resources = ["aws_lb_target_group", "aws_alb_target_group"]
