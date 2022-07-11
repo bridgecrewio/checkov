@@ -14,8 +14,8 @@ class RDSInstanceAutoUpgrade(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'auto_upgrade_minor_version'
 
-    def get_expected_values(self) -> List[Any]:
-        return ["Auto"]
+    def get_expected_value(self) -> Any:
+        return "Auto"
 
 
 check = RDSInstanceAutoUpgrade()
