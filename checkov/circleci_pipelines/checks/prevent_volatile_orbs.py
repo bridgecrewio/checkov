@@ -1,4 +1,3 @@
-from asyncio.log import logger
 from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
@@ -18,7 +17,7 @@ class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
         badOrbInBlock = False
         for orb in conf:
             if type(conf[orb]) == str:
-                #Special __ vars show up in this dict too.
+                # Special __ vars show up in this dict too.
                 if "@volatile" in conf[orb]:
                     badOrbInBlock = True
                     # We only get one return per orb: section, regardless of how many orbs, so set a flag and error later.

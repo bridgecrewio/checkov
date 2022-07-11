@@ -1,20 +1,16 @@
 from __future__ import annotations
-from asyncio.log import logger
 import jmespath
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.circleci_pipelines.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
-if TYPE_CHECKING:
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
-
 WORKFLOW_DIRECTORY = "circleci"
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.CIRCLECI_PIPELINES # noqa: CCE003  # a static attribute
+    check_type = CheckType.CIRCLECI_PIPELINES  # noqa: CCE003  # a static attribute
 
     def __init__(self):
         super().__init__()

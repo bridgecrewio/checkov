@@ -1,4 +1,3 @@
-from operator import contains
 from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
@@ -22,7 +21,7 @@ class ImageReferenceHashVersion(BaseCircleCIPipelinesCheck):
         if not image:
             return
         if isinstance(image, str):
-              if "@" in image:
+            if "@" in image:
                 return CheckResult.PASSED, conf
 
         return CheckResult.FAILED, conf

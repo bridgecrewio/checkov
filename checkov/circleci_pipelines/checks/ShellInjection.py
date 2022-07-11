@@ -1,5 +1,3 @@
-from asyncio.log import logger
-from operator import contains
 from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
 from checkov.circleci_pipelines.common.shell_injection_list import terms as bad_inputs
 from checkov.common.models.enums import CheckResult
@@ -15,7 +13,6 @@ class DontAllowShellInjection(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            #supported_entities=['jobs','jobs.*.steps[]']
             supported_entities=['jobs.*.steps[]']
         )
 
@@ -26,8 +23,8 @@ class DontAllowShellInjection(BaseCircleCIPipelinesCheck):
         if type(run) == dict:
             run = run.get("command", "")
             for term in bad_inputs:
-                        if re.search(term, run):
-                            return CheckResult.FAILED, conf
+                if re.search(term, run):
+                    return CheckResult.FAILED, conf
 
         for term in bad_inputs:
             if re.search(term, run):

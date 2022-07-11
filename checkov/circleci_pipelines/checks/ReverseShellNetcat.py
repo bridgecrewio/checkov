@@ -1,5 +1,3 @@
-from asyncio.log import logger
-from operator import contains
 from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
