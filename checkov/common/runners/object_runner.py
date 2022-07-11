@@ -202,6 +202,6 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
 
                     steps = job_instance.get('steps')
                     if steps:
-                        for step_index in steps:
-                            end_line_to_job_name_dict[step_index.get(END_LINE)] = job_key
+                        for step in steps:
+                            end_line_to_job_name_dict[step.get(END_LINE)] = job_key
         return end_line_to_job_name_dict
