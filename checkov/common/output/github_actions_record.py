@@ -8,7 +8,7 @@ from checkov.common.typing import _CheckResult
 class GithubActionsRecord(Record):
     def __init__(self,
                  triggers: Optional[Set[str]],
-                 jobs: Optional[Dict[str, Dict[str, int]]],
+                 job: str,
                  workflow_name: Optional[str],
                  check_id: str,
                  check_name: str,
@@ -39,5 +39,5 @@ class GithubActionsRecord(Record):
                          severity=severity,
                          )
         self.triggers = triggers,
-        self.jobs = jobs,
+        self.job = job,
         self.workflow_name = workflow_name

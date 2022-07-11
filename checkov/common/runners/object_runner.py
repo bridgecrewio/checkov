@@ -24,9 +24,10 @@ if TYPE_CHECKING:
 class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
     def __init__(self) -> None:
         super().__init__()
-        self.jobs: dict[str, dict[str, int]] | None = None
         self.workflow_name: str | None = None
         self.triggers: set[str] | None = None
+        self.jobs: dict[int, str] = {}
+        self.map_file_path_to_workflow_triggers_dict: dict[str, dict[str, str | set[str] | dict[int, str] | None]] = {}
 
     def _load_files(
             self,
@@ -43,8 +44,11 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
                     self.workflow_name = definition.get('name')
-                    self.jobs = self._get_jobs(definition)
                     self.triggers = self._get_triggers(definition)
+                    self.jobs = self._get_jobs(definition)
+                    self.map_file_path_to_workflow_triggers_dict[file] = {"triggers": self.triggers,
+                                                                          "workflow_name": self.workflow_name,
+                                                                          "jobs": self.jobs}
 
     @abstractmethod
     def _parse_file(
@@ -95,7 +99,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter) # type:ignore[arg-type] # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -119,15 +123,15 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        jobs=self.jobs,
-                        triggers=self.triggers,
-                        workflow_name=self.workflow_name
+                        job=self.map_file_path_to_workflow_triggers_dict[file_path]['jobs'].get(end),  # type: ignore
+                        triggers=self.map_file_path_to_workflow_triggers_dict[file_path]["triggers"],  # type: ignore
+                        workflow_name=self.map_file_path_to_workflow_triggers_dict[file_path]["workflow_name"]  # type: ignore
                     )
                 else:
                     record = Record(  # type: ignore
@@ -138,7 +142,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities),# type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -188,19 +192,16 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
             logging.info(f"failed to parse workflow triggers due to:{str(e)}")
         return triggers_set
 
-    def _get_jobs(self, definition: dict[str, Any]) -> dict[str, dict[str, int]]:
-        jobs_dict: dict[str, dict[str, int]] = {}
+    def _get_jobs(self, definition: dict[str, Any]) -> dict[int, str]:
+        end_line_to_job_name_dict: dict[int, str] = {}
         jobs = definition.get('jobs')
         if jobs:
             for job_key, job_instance in jobs.items():
                 if job_key != START_LINE and job_key != END_LINE:
-                    if job_instance.get("name"):
-                        jobs_dict[job_instance["name"]] = {}
-                        job_name = job_instance["name"]
-                    else:
-                        jobs_dict[job_key] = {}
-                        job_name = job_key
-                    jobs_dict[job_name][START_LINE] = job_instance.get(START_LINE)
-                    jobs_dict[job_name][END_LINE] = job_instance.get(END_LINE)
+                    end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_key
 
-        return jobs_dict
+                    steps = job_instance.get('steps')
+                    if steps:
+                        for step_index in steps:
+                            end_line_to_job_name_dict[step_index.get(END_LINE)] = job_key
+        return end_line_to_job_name_dict
