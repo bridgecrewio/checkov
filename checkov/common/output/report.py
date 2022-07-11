@@ -5,11 +5,6 @@ import json
 import logging
 import os
 from collections.abc import Iterable
-<<<<<<< HEAD
-=======
-from dataclasses import dataclass
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
->>>>>>> master
 
 from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
 from colorama import init
