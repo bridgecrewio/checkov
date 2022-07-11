@@ -27,7 +27,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         self.workflow_name: str | None = None
         self.triggers: set[str] | None = None
         self.jobs: dict[int, str] = {}
-        self.map_file_path_to_workflow_triggers_dict: dict[str, dict[str, str | set[str] | dict[int, str] | None]] = {}
+        self.map_file_path_to_GHA_metadata_dict: dict[str, dict[str, str | set[str] | dict[int, str] | None]] = {}
 
     def _load_files(
             self,
@@ -46,7 +46,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                     self.workflow_name = definition.get('name')
                     self.triggers = self._get_triggers(definition)
                     self.jobs = self._get_jobs(definition)
-                    self.map_file_path_to_workflow_triggers_dict[file] = {"triggers": self.triggers,
+                    self.map_file_path_to_GHA_metadata_dict[file] = {"triggers": self.triggers,
                                                                           "workflow_name": self.workflow_name,
                                                                           "jobs": self.jobs}
 
@@ -129,9 +129,9 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_workflow_triggers_dict[file_path]['jobs'].get(end),  # type: ignore
-                        triggers=self.map_file_path_to_workflow_triggers_dict[file_path]["triggers"],  # type: ignore
-                        workflow_name=self.map_file_path_to_workflow_triggers_dict[file_path]["workflow_name"]  # type: ignore
+                        job=self.map_file_path_to_GHA_metadata_dict[file_path]['jobs'].get(end),  # type: ignore
+                        triggers=self.map_file_path_to_GHA_metadata_dict[file_path]["triggers"],  # type: ignore
+                        workflow_name=self.map_file_path_to_GHA_metadata_dict[file_path]["workflow_name"]  # type: ignore
                     )
                 else:
                     record = Record(  # type: ignore
