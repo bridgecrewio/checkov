@@ -1,0 +1,31 @@
+from asyncio.log import logger
+from operator import contains
+from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
+from checkov.common.models.enums import CheckResult
+from checkov.yaml_doc.enums import BlockType
+import re
+
+
+class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
+    def __init__(self):
+        name = "Suspicious use of netcat with IP address"
+        id = "CKV_CIRCLECIPIPELINES_5"
+        super().__init__(
+            name=name,
+            id=id,
+            block_type=BlockType.ARRAY,
+            supported_entities=['jobs.*.steps[]']
+        )
+
+    def scan_entity_conf(self, conf):
+        if "run" not in conf:
+            return CheckResult.PASSED, conf
+        run = conf.get("run", "")
+        if type(run) == dict:
+            run = run.get("command", "")
+        if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
+            return CheckResult.FAILED, conf
+        return CheckResult.PASSED, conf
+
+
+check = ReverseShellNetcat()

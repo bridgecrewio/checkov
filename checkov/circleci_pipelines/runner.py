@@ -25,13 +25,16 @@ class Runner(YamlRunner, ImageReferencer):
     def import_registry(self):
         return registry
 
+    def included_paths(self):
+        return [".circleci"]
+
     def _parse_file(self, f):
         if self.is_workflow_file(f):
             return super()._parse_file(f)
 
     def is_workflow_file(self, file_path):
         """
-        :return: True if the file mentioned is named config.yml/yaml in .circleci dir. Otherwise: False
+        :return: True if the file mentioned is named config.yml/yaml in .circleci dir from included_paths(). Otherwise: False
         """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("config.yml", "config.yaml"))

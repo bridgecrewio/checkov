@@ -1,13 +1,12 @@
 from asyncio.log import logger
-from operator import contains
 from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleCIPipelinesCheck
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 
-class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
+class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
     def __init__(self):
-        name = "Ensure mutable development orbs are not used."
-        id = "CKV_CIRCLECIPIPELINES_3"
+        name = "Ensure unversioned volatile orbs are not used."
+        id = "CKV_CIRCLECIPIPELINES_4"
         super().__init__(
             name=name,
             id=id,
@@ -20,7 +19,7 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
         for orb in conf:
             if type(conf[orb]) == str:
                 #Special __ vars show up in this dict too.
-                if "@dev" in conf[orb]:
+                if "@volatile" in conf[orb]:
                     badOrbInBlock = True
                     # We only get one return per orb: section, regardless of how many orbs, so set a flag and error later.
                     # Potentially more JMEpath reflection-foo can resolve this so we end up with a call to scan_entity_conf per orb.
@@ -30,4 +29,4 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
         else:
             return CheckResult.PASSED, conf
 
-check = PreventDevelopmentOrbs()
+check = PreventVolatileOrbs()
