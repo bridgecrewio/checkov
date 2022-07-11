@@ -13,6 +13,7 @@ from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
 from checkov.bitbucket_pipelines.registry import registry as bitbucket_pipelines_registry
+from checkov.circleci_pipelines.registry import registry as circleci_pipelines_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
@@ -118,6 +119,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_pipelines")):
         add_from_repository(bitbucket_pipelines_registry, "bitbucket_pipelines", "bitbucket_pipelines")
+    if any(x in framework_list for x in ("all", "circleci_pipelines")):
+        add_from_repository(circleci_pipelines_registry, "circleci_pipelines", "circleci_pipelines")
     if any(x in framework_list for x in ("all", "argo_workflows")):
         add_from_repository(argo_workflows_registry, "argo_workflows", "Argo Workflows")
     if any(x in framework_list for x in ("all", "arm")):
