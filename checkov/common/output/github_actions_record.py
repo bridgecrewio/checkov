@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Set, List, Tuple, Any
+from typing import Optional, Dict, Set, List, Tuple, Any, Union
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.record import Record
@@ -8,7 +8,7 @@ from checkov.common.typing import _CheckResult
 class GithubActionsRecord(Record):
     def __init__(self,
                  triggers: Optional[Set[str]],
-                 job: Optional[str] | None,
+                 job: Union[Optional[str], None],
                  workflow_name: Optional[str],
                  check_id: str,
                  check_name: str,
