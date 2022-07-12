@@ -4,6 +4,9 @@ from checkov.common.models.enums import CheckResult
 
 
 class Registry(BaseCheckRegistry):
+    def __init__(self):
+        super().__init__(CheckType.DOCKERFILE)
+
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
 
         results = {}
@@ -30,7 +33,7 @@ class Registry(BaseCheckRegistry):
                 if check.id in [x['id'] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
 
-            if runner_filter.should_run_check(check):
+            if runner_filter.should_run_check(check, report_type=CheckType.DOCKERFILE):
                 entity_name = scanned_file
                 entity_type = "*"
                 entity_configuration = entity

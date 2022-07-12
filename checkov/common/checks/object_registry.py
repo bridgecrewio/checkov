@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:
+        super().__init__(report_type=report_type)
         self._scanner: dict[str, _ScannerCallableAlias] = {
             BlockType.ARRAY: self._scan_array,
             BlockType.OBJECT: self._scan_object,

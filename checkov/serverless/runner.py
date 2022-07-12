@@ -136,7 +136,7 @@ class Runner(BaseRunner):
                             variable_evaluations = {}
 
                             entity = {resource_name: resource}
-                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter, report_type=CheckType.SERVERLESS)
+                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             for check, check_result in results.items():
                                 censored_code_lines = omit_secret_value_from_checks(check, check_result,

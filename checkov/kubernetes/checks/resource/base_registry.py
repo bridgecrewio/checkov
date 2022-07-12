@@ -2,6 +2,9 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
+    def __init__(self):
+        super().__init__(CheckType.KUBERNETES)
+
     def extract_entity_details(self, entity):
         kind = entity["kind"]
         conf = entity

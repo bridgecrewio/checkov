@@ -12,8 +12,8 @@ from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:  # TODO set default to JSON
+        super().__init__(report_type=report_type)
         self._scanner: Dict[str, Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None]] = {
             BlockType.ARRAY: self._scan_json_array,
             BlockType.OBJECT: self._scan_json_object,

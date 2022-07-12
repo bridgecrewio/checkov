@@ -12,6 +12,8 @@ class EntityDetails:
 
 
 class ServerlessRegistry(BaseCheckRegistry):
+    def __init__(self):
+        super().__init__(CheckType.SERVERLESS)
 
     def extract_entity_details(self, entity: EntityDetails):
         return f"serverless_{entity.provider_type}", entity.data

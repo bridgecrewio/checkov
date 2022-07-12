@@ -139,8 +139,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                             scanned_file=str(file_path),
                             entity={name: conf},
                             skipped_checks=[],
-                            runner_filter=runner_filter,
-                            report_type=CheckType.BICEP
+                            runner_filter=runner_filter
                         )
 
                         if results:

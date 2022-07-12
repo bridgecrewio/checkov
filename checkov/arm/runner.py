@@ -148,7 +148,7 @@ class Runner(BaseRunner):
 
                         if entity_lines_range and entity_code_lines:
                             skipped_checks = ContextParser.collect_skip_comments(parameter_details)
-                            results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter, report_type=CheckType.ARM)
+                            results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
                             for check, check_result in results.items():
                                 censored_code_lines = omit_secret_value_from_checks(check, check_result,
                                                                                     entity_code_lines,

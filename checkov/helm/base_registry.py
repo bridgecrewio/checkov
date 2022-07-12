@@ -4,6 +4,9 @@ from checkov.runner_filter import RunnerFilter
 
 class Registry(BaseCheckRegistry):
 
+    def __init__(self):
+        super().__init__(CheckType.HELM)
+
     def extract_entity_details(self, entity):
         kind = entity["kind"]
         conf = entity
