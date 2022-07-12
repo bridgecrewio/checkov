@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Iterable, TYPE_CHECKING, Any
 from checkov.common.checks.base_check import BaseCheck
 
