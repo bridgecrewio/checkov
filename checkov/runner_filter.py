@@ -153,8 +153,8 @@ class RunnerFilter(object):
         if not is_policy_filtered:
             should_run_check = False
 
-        skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
-        explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
+        skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
+        explicit_skip = skip_checks and self.check_matches(check_id, bc_check_id, skip_checks)
 
         should_skip_check = (
             skip_severity or
