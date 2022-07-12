@@ -16,7 +16,7 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
             supported_entities=["orbs.{orbs: @}"]
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any] ) -> tuple[CheckResult, dict[str, Any]]:
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         badOrbInBlock = False
         for orb in conf:
             if type(conf[orb]) == str:

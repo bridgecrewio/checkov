@@ -17,7 +17,7 @@ class ImageReferenceHashVersion(BaseCircleCIPipelinesCheck):
             supported_entities=['jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}']
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any] ) -> tuple[CheckResult, dict[str, Any]]: 
+    def scan_conf(self, conf: dict[str, Any] ) -> tuple[CheckResult, dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.PASSED, conf
         image = conf.get("image", None)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import jmespath
 import os
 from typing import TYPE_CHECKING, Any
@@ -25,9 +26,13 @@ class Runner(YamlRunner, ImageReferencer):
     def included_paths(self) -> list[str]:
         return [".circleci"]
 
-    def _parse_file(self, f: str)  -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(
+        self, f: str, file_content: str | None = None
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             return super()._parse_file(f)
+
+        return None
 
     def is_workflow_file(self, file_path: str) -> bool:
         """
@@ -86,13 +91,22 @@ class Runner(YamlRunner, ImageReferencer):
         """
 
         images: set[Image] = set()
+        parsed_file = self._parse_file(file_path)
 
-        workflow, workflow_line_numbers = self._parse_file(file_path)
+        if not parsed_file:
+            return images
+
+        workflow, workflow_line_numbers = parsed_file
+
+        if not isinstance(workflow, dict):
+            # make type checking happy
+            return images
+
         images.union(self.add_docker_job_images(workflow, images, file_path))
 
         return images
 
-    def add_docker_job_images(self, workflow: dict, images: set, file_path: str) -> set[Image]:
+    def add_docker_job_images(self, workflow: dict[str, Any], images: set[Image], file_path: str) -> set[Image]:
         """
 
         :param workflow: parsed workflow file

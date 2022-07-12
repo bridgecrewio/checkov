@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, TYPE_CHECKING, Any
 from checkov.common.checks.base_check import BaseCheck
 
 from checkov.common.models.enums import CheckCategories
 from checkov.circleci_pipelines.registry import registry
+
+if TYPE_CHECKING:
+    from checkov.common.models.enums import CheckResult
 
 
 class BaseCircleCIPipelinesCheck(BaseCheck):
@@ -27,3 +30,12 @@ class BaseCircleCIPipelinesCheck(BaseCheck):
         )
         self.path = path
         registry.register(self)
+
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # multi_signature decorator is problematic
+        self.entity_type = entity_type
+
+        return self.scan_conf(conf)
+
+    @abstractmethod
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        pass

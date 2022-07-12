@@ -16,7 +16,7 @@ class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
             supported_entities=['jobs.*.steps[]']
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any] ) -> tuple[CheckResult, dict[str, Any]]:
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
