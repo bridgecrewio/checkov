@@ -49,9 +49,8 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                     workflow_name = definition.get('name')
                     triggers = self._get_triggers(definition)
                     jobs = self._get_jobs(definition)
-                    self.map_file_path_to_gha_metadata_dict[file] = {"triggers": triggers,
-                                                                     "workflow_name": workflow_name,
-                                                                      "jobs": jobs}
+                    self.map_file_path_to_gha_metadata_dict[file] = \
+                        {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}  #type:ignore
 
     @abstractmethod
     def _parse_file(
@@ -102,7 +101,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks,runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -126,13 +125,13 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),  # type: ignore
                         triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
