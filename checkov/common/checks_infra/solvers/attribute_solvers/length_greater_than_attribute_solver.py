@@ -9,10 +9,10 @@ class LengthGreaterThanAttributeSolver(BaseAttributeSolver):
     operator = Operators.LENGTH_GREATER_THAN  # noqa: CCE003  # a static attribute
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
-        if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
-            return False
-
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
+        if attr is None:
+            return False
+        
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # so return True (since we cannot return UNKNOWN)
         if self._is_variable_dependant(attr, vertex['source_']):
