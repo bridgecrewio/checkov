@@ -6,7 +6,8 @@ import platform
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable, TypedDict
+from typing import Any, TYPE_CHECKING, Callable
+from typing_extensions import TypedDict
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -131,7 +132,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),  # type: ignore
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),
                         triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
