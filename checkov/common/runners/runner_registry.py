@@ -223,7 +223,7 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
             cyclonedx = CycloneDX(reports=cyclonedx_reports)
-            cyclonedx_output = cyclonedx.get_xml_output(pretty=True)
+            cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)
             data_outputs["cyclonedx"] = cyclonedx_output

@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 import os
 import sys
-import xml.dom.minidom
 from typing import TYPE_CHECKING
 
 from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
@@ -11,7 +10,7 @@ from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory, BomTarget
 from cyclonedx.output import SchemaVersion, get_instance
-from packageurl import PackageURL
+from packageurl import PackageURL  # type:ignore[import]
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -167,14 +166,10 @@ class CycloneDX:
 
         return component
 
-    def get_xml_output(self, pretty: bool = False) -> str:
+    def get_xml_output(self) -> str:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
         output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
-
-        if pretty:
-            xml_output = xml.dom.minidom.parseString(output)
-            output = xml_output.toprettyxml(indent="  ")
 
         return output
