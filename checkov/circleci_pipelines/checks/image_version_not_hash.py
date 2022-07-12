@@ -28,7 +28,7 @@ class ImageReferenceHashVersion(BaseCircleCIPipelinesCheck):
                 return CheckResult.PASSED, conf
             if "latest" in image:
                 return CheckResult.UNKNOWN, conf
-                # We pass on "latest" as we have a specific check with a more informative violation description.
+                # We UNKNOWN on "latest" as we have a specific check with a more informative violation description.
                 # See CKV_CIRCLECIPIPELINES_1
 
         return CheckResult.FAILED, conf
