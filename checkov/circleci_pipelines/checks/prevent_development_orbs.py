@@ -17,18 +17,14 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
-        badOrbInBlock = False
-        for orb in conf:
-            if type(conf[orb]) == str:
+        for orb in conf.values():
+            if isinstance(orb, str):
                 # Special __ vars show up in this dict too.
-                if "@dev" in conf[orb]:
-                    badOrbInBlock = True
+                if "@dev" in orb:
                     # We only get one return per orb: section, regardless of how many orbs, so set a flag and error later.
                     # Potentially more JMEpath reflection-foo can resolve this so we end up with a call to scan_entity_conf per orb.
+                    return CheckResult.FAILED, conf
         
-        if badOrbInBlock:
-            return CheckResult.FAILED, conf
-        else:
-            return CheckResult.PASSED, conf
+        return CheckResult.PASSED, conf
 
 check = PreventDevelopmentOrbs()
