@@ -16,9 +16,9 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(framework=['circleci_pipelines'], checks=checks)
         )
-        self.assertEqual(len(report.failed_checks), 19)
+        self.assertEqual(len(report.failed_checks), 13)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 19)
+        self.assertEqual(len(report.passed_checks), 29)
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
