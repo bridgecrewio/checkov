@@ -22,9 +22,9 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
-        if type(run) == dict:
-            run = run.get("command", "")
-        if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
+        if isinstance(run, dict):
+            command = run.get("command", "")
+        if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', command):
             return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
