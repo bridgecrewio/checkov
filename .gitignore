@@ -166,3 +166,6 @@ fabric.properties
 
 # pytest-benchmarks output directory
 .benchmarks/
+
+# test assets that get created locally (20* refers to the start of a date, so this covers us for 78 years)
+tests/20*

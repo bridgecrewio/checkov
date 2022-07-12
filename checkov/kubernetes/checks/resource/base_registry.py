@@ -1,3 +1,4 @@
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
