@@ -8,7 +8,7 @@ from checkov.common.typing import _CheckResult
 class GithubActionsRecord(Record):
     def __init__(self,
                  triggers: Optional[Set[str]],
-                 job: Optional[str],
+                 job: Optional[str] | None,
                  workflow_name: Optional[str],
                  check_id: str,
                  check_name: str,
