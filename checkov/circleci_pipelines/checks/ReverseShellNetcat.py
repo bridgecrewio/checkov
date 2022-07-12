@@ -24,8 +24,12 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         run = conf.get("run", "")
         if isinstance(run, dict):
             command = run.get("command", "")
-        if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', command):
-            return CheckResult.FAILED, conf
+            if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', command):
+                return CheckResult.FAILED, conf
+        else:
+            if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
+                return CheckResult.FAILED, conf
+                
         return CheckResult.PASSED, conf
 
 

@@ -29,9 +29,10 @@ class DontAllowShellInjection(BaseCircleCIPipelinesCheck):
                 if re.search(term, command):
                     return CheckResult.FAILED, conf
 
-        for term in bad_inputs:
-            if re.search(term, run):
-                return CheckResult.FAILED, conf
+        else:
+            for term in bad_inputs:
+                if re.search(term, run):
+                    return CheckResult.FAILED, conf
 
         return CheckResult.PASSED, conf
 
