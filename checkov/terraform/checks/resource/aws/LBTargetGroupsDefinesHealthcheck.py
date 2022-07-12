@@ -17,8 +17,9 @@ class LBTargetGroupDefinesHealthCheck(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get('protocol') == ['HTTP'] or conf.get('protocol') == ['HTTPS']:
-            if conf.get('health_check') and isinstance(conf.get('health_check'), list):
-                healthcheck = conf.get('health_check')[0]
+            health_checks = conf.get('health_check')
+            if health_checks and isinstance(health_checks, list):
+                healthcheck = health_checks[0]
                 if healthcheck.get('path'):
                     return CheckResult.PASSED
             self.evaluated_keys = ['health_check']
