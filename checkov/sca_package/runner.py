@@ -18,10 +18,11 @@ from checkov.sca_package.scanner import Scanner
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
+    def __init__(self, report_type=check_type) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: str | None = None
         self._code_repo_path: Path | None = None
+        self.report_type = report_type
 
     def prepare_and_scan(
             self,
@@ -117,7 +118,7 @@ class Runner(BaseRunner):
                 runner_filter=runner_filter
             )
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
-                                                  severity=record.severity):
+                                                  severity=record.severity, report_type=self.report_type):
                 if runner_filter.checks:
                     continue
                 else:

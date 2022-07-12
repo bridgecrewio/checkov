@@ -120,12 +120,14 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
-        if self.use_enforcement_rules:
+        if self.use_enforcement_rules and report_type:
             checks = []
             skip_checks = []
             check_threshold = []
             skip_check_threshold = self.enforcement_rule_configs[report_type]
         else:
+            if self.use_enforcement_rules:
+                logging.warning(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
             checks = self.checks
             skip_checks = self.skip_checks
             check_threshold = self.check_threshold

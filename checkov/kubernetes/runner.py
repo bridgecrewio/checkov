@@ -42,6 +42,7 @@ class Runner(BaseRunner):
         source: str = "Kubernetes",
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
+        report_type: str = check_type
     ) -> None:
         db_connector = db_connector or NetworkxConnector()
 
@@ -54,6 +55,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
         self.report_mutator_data = None
+        self.report_type = report_type
 
     def run(
         self,
@@ -135,7 +137,7 @@ class Runner(BaseRunner):
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.report_type)
         report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results)
         return report
 

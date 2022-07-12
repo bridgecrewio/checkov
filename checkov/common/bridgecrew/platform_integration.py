@@ -499,7 +499,6 @@ class BcPlatformIntegration:
                 raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
-
             # TODO remove
             url = f"{self.api_url}/api/v1/enforcement-rules"
             request = self.http.request("GET", url, headers=headers)

@@ -28,7 +28,7 @@ class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(report_type=self.check_type)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"

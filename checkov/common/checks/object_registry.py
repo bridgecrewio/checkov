@@ -107,7 +107,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_document)
                 if check.path:
                     target = entity
