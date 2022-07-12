@@ -19,7 +19,7 @@ class BaseCircleCIPipelinesCheck(BaseCheck):
         supported_entities: Iterable[str],
         block_type: str,
         path: str | None = None,
-        ) -> None:
+    ) -> None:
         categories = [CheckCategories.SUPPLY_CHAIN]
 
         super().__init__(
