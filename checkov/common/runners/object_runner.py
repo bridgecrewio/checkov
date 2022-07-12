@@ -6,7 +6,7 @@ import platform
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, TYPE_CHECKING, Callable
+from typing import Any, TYPE_CHECKING, Callable, TypedDict
 
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -21,13 +21,16 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
-class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
+class GhaMetadata(TypedDict):
+    triggers: set[str]
+    workflow_name: str | None
+    jobs: dict[int, str]
+
+
+class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
     def __init__(self) -> None:
         super().__init__()
-        self.workflow_name: str | None = None
-        self.triggers: set[str] | None = None
-        self.jobs: dict[int, str] = {}
-        self.map_file_path_to_GHA_metadata_dict: dict[str, dict[str, str | set[str] | dict[int, str] | None]] = {}
+        self.map_file_path_to_gha_metadata_dict: dict[str, GhaMetadata] = {}
 
     def _load_files(
             self,
@@ -43,12 +46,12 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                 (definitions[file], definitions_raw[file]) = result
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
-                    self.workflow_name = definition.get('name')
-                    self.triggers = self._get_triggers(definition)
-                    self.jobs = self._get_jobs(definition)
-                    self.map_file_path_to_GHA_metadata_dict[file] = {"triggers": self.triggers,
-                                                                          "workflow_name": self.workflow_name,
-                                                                          "jobs": self.jobs}
+                    workflow_name = definition.get('name')
+                    triggers = self._get_triggers(definition)
+                    jobs = self._get_jobs(definition)
+                    self.map_file_path_to_gha_metadata_dict[file] = {"triggers": triggers,
+                                                                     "workflow_name": workflow_name,
+                                                                      "jobs": jobs}
 
     @abstractmethod
     def _parse_file(
@@ -129,9 +132,9 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_GHA_metadata_dict[file_path]['jobs'].get(end),  # type: ignore
-                        triggers=self.map_file_path_to_GHA_metadata_dict[file_path]["triggers"],  # type: ignore
-                        workflow_name=self.map_file_path_to_GHA_metadata_dict[file_path]["workflow_name"]  # type: ignore
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),  # type: ignore
+                        triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],  # type: ignore
+                        workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]  # type: ignore
                     )
                 else:
                     record = Record(  # type: ignore
@@ -183,7 +186,7 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         # then to support it all the way up.
         triggers = definition.get(True)  # type:ignore[call-overload]
         try:
-            if type(triggers) == str:
+            if isinstance(triggers, str):
                 triggers_set.add(triggers)
             elif isinstance(triggers, dict):
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
@@ -196,12 +199,12 @@ class Runner(BaseRunner[Any]):  # if a graph is added, Any needs to replaced
         end_line_to_job_name_dict: dict[int, str] = {}
         jobs = definition.get('jobs')
         if jobs:
-            for job_key, job_instance in jobs.items():
-                if job_key != START_LINE and job_key != END_LINE:
-                    end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_key
+            for job_name, job_instance in jobs.items():
+                if job_name != START_LINE and job_name != END_LINE:
+                    end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_name
 
                     steps = job_instance.get('steps')
                     if steps:
                         for step in steps:
-                            end_line_to_job_name_dict[step.get(END_LINE)] = job_key
+                            end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
