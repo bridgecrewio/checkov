@@ -1,5 +1,7 @@
 import unittest
 
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 
@@ -438,6 +440,26 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=['CKV_AWS_789'], include_all_checkov_policies=False,
                                 filtered_policy_ids=[])
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789'))
+
+    def test_should_run_check_enforcement_rules(self):
+        instance = RunnerFilter(include_all_checkov_policies=True,
+                                filtered_policy_ids=[], use_enforcement_rules=True)
+
+        enforcement_rule_configs = {
+            CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+        }
+
+        instance.apply_enforcement_rules(enforcement_rule_configs)
+
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
 
 
 if __name__ == '__main__':
