@@ -23,10 +23,10 @@ class DontAllowShellInjection(BaseCircleCIPipelinesCheck):
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
-        if type(run) == dict:
-            run = run.get("command", "")
+        if isinstance(run, dict):
+            command = run.get("command", "")
             for term in bad_inputs:
-                if re.search(term, run):
+                if re.search(term, command):
                     return CheckResult.FAILED, conf
 
         for term in bad_inputs:
