@@ -1,40 +1,42 @@
 from __future__ import annotations
 import jmespath
 import os
+from typing import TYPE_CHECKING, Any
+
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.circleci_pipelines.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 WORKFLOW_DIRECTORY = "circleci"
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.CIRCLECI_PIPELINES  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
-        super().__init__()
-
-    def require_external_checks(self):
+    def require_external_checks(self) -> bool:
         return False
 
-    def import_registry(self):
+    def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def included_paths(self):
+    def included_paths(self) -> list[str]:
         return [".circleci"]
 
-    def _parse_file(self, f):
+    def _parse_file(self, f: str)  -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             return super()._parse_file(f)
 
-    def is_workflow_file(self, file_path):
+    def is_workflow_file(self, file_path: str) -> bool:
         """
         :return: True if the file mentioned is named config.yml/yaml in .circleci dir from included_paths(). Otherwise: False
         """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("config.yml", "config.yaml"))
 
-    def get_images(self, file_path):
+    def get_images(self, file_path: str) -> set[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -83,14 +85,14 @@ class Runner(YamlRunner, ImageReferencer):
 
         """
 
-        images = set()
+        images: set[Image] = set()
 
         workflow, workflow_line_numbers = self._parse_file(file_path)
-        self.add_docker_job_images(workflow, images, file_path)
+        images.union(self.add_docker_job_images(workflow, images, file_path))
 
         return images
 
-    def add_docker_job_images(self, workflow: dict, images: set, file_path: str) -> None:
+    def add_docker_job_images(self, workflow: dict, images: set, file_path: str) -> set[Image]:
         """
 
         :param workflow: parsed workflow file
@@ -111,3 +113,4 @@ class Runner(YamlRunner, ImageReferencer):
                                       start_line=result["__startline__"],
                                       end_line=result["__endline__"])
                     images.add(image_obj)
+        return images
