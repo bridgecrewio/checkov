@@ -161,7 +161,7 @@ class CycloneDX:
                     hash_value=sha1_hash,
                 )
             ],
-            component_type=ComponentType.FILE,
+            component_type=ComponentType.APPLICATION,
             purl=purl,
         )
 

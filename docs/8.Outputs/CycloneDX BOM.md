@@ -12,9 +12,9 @@ CycloneDX is a lightweight BOM specification that is easily created, human-reada
 A typical output looks like this
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<bom serialNumber="urn:uuid:db2eefbf-f52f-485e-bc57-5c81292dfcc7" version="1" xmlns="http://cyclonedx.org/schema/bom/1.4">
+<bom serialNumber="urn:uuid:25c12686-6e25-4e5a-9ec7-d53d609a426e" version="1" xmlns="http://cyclonedx.org/schema/bom/1.4">
   <metadata>
-    <timestamp>2022-07-12T17:04:06.889370+00:00</timestamp>
+    <timestamp>2022-07-12T17:13:22.461688+00:00</timestamp>
     <tools>
       <tool>
         <vendor>CycloneDX</vendor>
@@ -81,7 +81,7 @@ A typical output looks like this
     </tools>
   </metadata>
   <components>
-    <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a" type="file">
+    <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a" type="application">
       <name>aws_s3_bucket.example</name>
       <version>sha1:92911b13224706178dded562c18d281b22bf391a</version>
       <hashes>
@@ -94,7 +94,7 @@ A typical output looks like this
     <dependency ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a"/>
   </dependencies>
   <vulnerabilities>
-    <vulnerability bom-ref="50f3c53e-f5eb-4686-bb02-d51143a45f75">
+    <vulnerability bom-ref="94a37872-6ffb-46ef-9ea7-b5a05199d413">
       <id>CKV2_AWS_6</id>
       <source>
         <name>checkov</name>
@@ -111,7 +111,7 @@ A typical output looks like this
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="cd2e6974-e51b-41b7-892d-c6e9a1c11021">
+    <vulnerability bom-ref="17850edf-25f3-439f-a3ce-243b69d33b7e">
       <id>CKV_AWS_144</id>
       <source>
         <name>checkov</name>
@@ -128,7 +128,7 @@ A typical output looks like this
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="cf5c6380-138e-483b-908e-797b50a144d4">
+    <vulnerability bom-ref="13417f16-0808-4d39-a139-32a32368b317">
       <id>CKV_AWS_145</id>
       <source>
         <name>checkov</name>
@@ -145,7 +145,7 @@ A typical output looks like this
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="82b08ed7-2866-4ea5-ba5a-7da57a5927a0">
+    <vulnerability bom-ref="4095ff5b-8eb9-48bf-8c36-01a4f826c91d">
       <id>CKV_AWS_18</id>
       <source>
         <name>checkov</name>
@@ -162,7 +162,7 @@ A typical output looks like this
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="9b0b2838-2e6b-4618-984e-f3e7c7dfda50">
+    <vulnerability bom-ref="444525e3-c770-4ee3-b13c-3ebcac5c3394">
       <id>CKV_AWS_19</id>
       <source>
         <name>checkov</name>
@@ -179,7 +179,7 @@ A typical output looks like this
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="7a956055-422a-4da0-9513-762eef79df4c">
+    <vulnerability bom-ref="9e02a653-d6da-4454-ac0a-08fcdc172995">
       <id>CKV_AWS_21</id>
       <source>
         <name>checkov</name>
