@@ -7,7 +7,7 @@ class LogAuditRDSEnabled(BaseResourceCheck):
         name = "Ensure log audit is enabled for RDS"
         id = "CKV_ALI_38"
         supported_resources = ['alicloud_log_audit']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
