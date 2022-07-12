@@ -23,7 +23,7 @@ CodeCategoryMapping = {
     CheckType.GITHUB_ACTIONS: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.GITLAB_CONFIGURATION: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.GITLAB_CI: CodeCategoryType.SUPPLY_CHAIN,
-    CheckType.BITBUCKET_CONFIGURATION: '',
+    CheckType.BITBUCKET_CONFIGURATION: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.HELM: CodeCategoryType.IAC,
     CheckType.JSON: CodeCategoryType.IAC,
     CheckType.YAML: CodeCategoryType.IAC,
@@ -35,7 +35,8 @@ CodeCategoryMapping = {
     CheckType.SECRETS: CodeCategoryType.SECRETS,
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
-    CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC
+    CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
+    CheckType.ARGO_WORKFLOWS: CodeCategoryType.SUPPLY_CHAIN
 }
 
 
