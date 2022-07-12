@@ -1,8 +1,9 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from typing import List, Any
 
 
-class LogAuditRDSEnabled(BaseResourceCheck):
+class LogAuditRDSEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure log audit is enabled for RDS"
         id = "CKV_ALI_38"
@@ -10,13 +11,11 @@ class LogAuditRDSEnabled(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if conf.get('variable_map') and isinstance(conf.get('variable_map'), list):
-            settings = conf.get('variable_map')[0]
-            if settings.get('rds_enabled'):
-                return CheckResult.PASSED
-        self.evaluated_keys = ['variable_map/rds_enabled']
-        return CheckResult.FAILED
+    def get_inspected_key(self) -> str:
+        return "variable_map/[0]/rds_enabled"
+
+    def get_expected_value(self) -> Any:
+        return True
 
 
 check = LogAuditRDSEnabled()
