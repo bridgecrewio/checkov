@@ -14,8 +14,5 @@ class LogAuditRDSEnabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "variable_map/[0]/rds_enabled"
 
-    def get_expected_value(self) -> Any:
-        return True
-
 
 check = LogAuditRDSEnabled()
