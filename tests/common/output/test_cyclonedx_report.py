@@ -13,11 +13,7 @@ def test_valid_cyclonedx_bom():
     report = Runner().run(root_folder="", files=[str(test_file)])
 
     # when
-    cyclonedx = CycloneDX(
-        passed_checks=report.passed_checks,
-        failed_checks=report.failed_checks,
-        skipped_checks=report.skipped_checks,
-    )
+    cyclonedx = CycloneDX(reports=[report])
     output = cyclonedx.get_xml_output()
 
     # then
@@ -35,11 +31,7 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
     mocker.patch.dict(os.environ, {"CHECKOV_CYCLONEDX_SCHEMA_VERSION": "1.3"})
 
     # when
-    cyclonedx = CycloneDX(
-        passed_checks=report.passed_checks,
-        failed_checks=report.failed_checks,
-        skipped_checks=report.skipped_checks,
-    )
+    cyclonedx = CycloneDX(reports=[report])
     output = cyclonedx.get_xml_output()
 
     # then

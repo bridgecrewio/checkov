@@ -5,11 +5,12 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType
+from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
-from cyclonedx.model.component import Component
-from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory
+from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory, BomTarget
 from cyclonedx.output import SchemaVersion, get_instance
+from packageurl import PackageURL  # type:ignore[import]
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -17,7 +18,9 @@ else:
     from importlib_metadata import version as meta_version
 
 if TYPE_CHECKING:
+    from checkov.common.output.extra_resource import ExtraResource
     from checkov.common.output.record import Record
+    from checkov.common.output.report import Report
 
 DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
 CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
@@ -30,10 +33,8 @@ CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
 
 
 class CycloneDX:
-    def __init__(self, passed_checks: list[Record], failed_checks: list[Record], skipped_checks: list[Record]) -> None:
-        self.passed_checks = passed_checks
-        self.failed_checks = failed_checks
-        self.skipped_checks = skipped_checks
+    def __init__(self, reports: list[Report]) -> None:
+        self.reports = reports
 
         self.bom = self.create_bom()
 
@@ -86,49 +87,89 @@ class CycloneDX:
 
         bom.metadata.tools.add(this_tool)
 
-        for check in itertools.chain(self.passed_checks, self.skipped_checks):
-            component = Component.for_file(absolute_file_path=check.file_abs_path, path_for_bom=check.file_path)
+        for report in self.reports:
+            for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                component = self.create_component(check_type=report.check_type, resource=check)
 
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                    purl=component.purl
-                )
+                if not bom.has_component(component=component):
+                    bom.components.add(component)
 
-            bom.components.add(component)
+            for check in report.failed_checks:
+                component = self.create_component(check_type=report.check_type, resource=check)
 
-        for failed_check in self.failed_checks:
-            component = Component.for_file(
-                absolute_file_path=failed_check.file_abs_path, path_for_bom=failed_check.file_path
-            )
+                if bom.has_component(component=component):
+                    component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
+                        purl=component.purl
+                    )
 
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                    purl=component.purl
-                )
+                if check.guideline:
+                    vulnerability = Vulnerability(
+                        id=check.check_id,
+                        source_name="checkov",
+                        description=f"Resource: {check.resource}. {check.check_name}",
+                        affects_targets=[BomTarget(ref=component.bom_ref.value)],
+                        advisories=[VulnerabilityAdvisory(url=XsUri(check.guideline))],
+                    )
+                else:
+                    vulnerability = Vulnerability(
+                        id=check.check_id,
+                        source_name="checkov",
+                        description=f"Resource: {check.resource}. {check.check_name}",
+                        affects_targets=[BomTarget(ref=component.bom_ref.value)],
+                    )
 
-            if failed_check.guideline:
-                vulnerability = Vulnerability(
-                    id=failed_check.check_id,
-                    source_name="checkov",
-                    description=f"Resource: {failed_check.resource}. {failed_check.check_name}",
-                    advisories=[VulnerabilityAdvisory(url=XsUri(failed_check.guideline))],
-                )
-            else:
-                vulnerability = Vulnerability(
-                    id=failed_check.check_id,
-                    source_name="checkov",
-                    description=f"Resource: {failed_check.resource}. {failed_check.check_name}",
-                )
+                component.add_vulnerability(vulnerability)
+                bom.components.add(component)
 
-            component.add_vulnerability(vulnerability)
-            bom.components.add(component)
+            for resource in report.extra_resources:
+                component = self.create_component(check_type=report.check_type, resource=resource)
+
+                if not bom.has_component(component=component):
+                    bom.components.add(component)
 
         return bom
+
+    def create_component(self, check_type: str, resource: Record | ExtraResource) -> Component:
+        """ Creates a component
+
+        Ex.
+        <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a" type="file">
+          <name>aws_s3_bucket.example</name>
+          <version>sha1:92911b13224706178dded562c18d281b22bf391a</version>
+          <hashes>
+            <hash alg="SHA-1">92911b13224706178dded562c18d281b22bf391a</hash>
+          </hashes>
+          <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</purl>
+        </component>
+        """
+
+        sha1_hash = sha1sum(filename=resource.file_abs_path)
+        purl = PackageURL(
+            type=check_type,
+            namespace=resource.file_path,
+            name=resource.resource,
+            version=f"sha1:{sha1_hash}",
+        )
+        component = Component(
+            bom_ref=str(purl),
+            name=resource.resource,
+            version=f"sha1:{sha1_hash}",
+            hashes=[
+                HashType(
+                    algorithm=HashAlgorithm.SHA_1,
+                    hash_value=sha1_hash,
+                )
+            ],
+            component_type=ComponentType.APPLICATION,
+            purl=purl,
+        )
+
+        return component
 
     def get_xml_output(self) -> str:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        outputter = get_instance(bom=self.bom, schema_version=schema_version)
+        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
 
-        return outputter.output_as_string()
+        return output

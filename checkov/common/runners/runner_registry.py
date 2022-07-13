@@ -222,21 +222,7 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            if len(cyclonedx_reports) > 1:
-                # More than one Report - combine Reports first
-                report = Report("")
-                for r in cyclonedx_reports:
-                    report.passed_checks += r.passed_checks
-                    report.skipped_checks += r.skipped_checks
-                    report.failed_checks += r.failed_checks
-            else:
-                report = cyclonedx_reports[0]
-
-            cyclonedx = CycloneDX(
-                passed_checks=report.passed_checks,
-                failed_checks=report.failed_checks,
-                skipped_checks=report.skipped_checks,
-            )
+            cyclonedx = CycloneDX(reports=cyclonedx_reports)
             cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)
