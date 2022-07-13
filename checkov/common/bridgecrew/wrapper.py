@@ -18,7 +18,7 @@ checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
     'file_line_range')
-check_metadata_keys = ('evaluations', 'code_block')
+check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
 
 def _is_scanned_file(file: str) -> bool:
