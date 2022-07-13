@@ -200,6 +200,8 @@ def get_beg_end_mark(s: str, start: int, end: int, indexes: list[int]) -> tuple[
 
     offset = 1 if len(indexes) > 1 else 0
     end_lineno = count_occurrences(indexes, end) - offset
+    if s[end] not in WHITESPACE_STR:
+        end_lineno += 1
     end_colno = end - largest_less_than(indexes, end_lineno, end)
     end_mark = Mark(end_lineno, end_colno)
 
