@@ -219,8 +219,3 @@ def _get_from_dict(data_dict, map_list):
 
 def _set_in_dict(data_dict, map_list, value):
     _get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
-
-
-request = {
-
-}
