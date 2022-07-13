@@ -18,7 +18,7 @@ checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
     'file_line_range')
-check_metadata_keys = ('evaluations', 'code_block')
+check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
 
 def _is_scanned_file(file: str) -> bool:
@@ -35,7 +35,7 @@ def _put_json_object(s3_client: BaseClient, json_obj: dict[str, Any], bucket: st
 
 
 def _extract_checks_metadata(report, full_repo_object_key):
-    return {check.check_id: dict({k: getattr(check, k) for k in check_metadata_keys},
+    return {check.check_id: dict({k: getattr(check, k, "") for k in check_metadata_keys},
                                  **{'file_object_path': full_repo_object_key + check.file_path}) for check in
             list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks))}
 
