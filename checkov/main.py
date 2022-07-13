@@ -61,7 +61,7 @@ from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
-
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
@@ -93,6 +93,7 @@ DEFAULT_RUNNERS = (
     openapi_runner(),
     sca_image_runner(),
     argo_workflows_runner(),
+    circleci_pipelines_runner(),
 )
 
 
