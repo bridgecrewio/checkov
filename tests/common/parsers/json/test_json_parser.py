@@ -2,6 +2,7 @@ import os
 import unittest
 from checkov.common.parsers.json import parse
 
+
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
