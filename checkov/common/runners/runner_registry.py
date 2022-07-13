@@ -237,10 +237,13 @@ class RunnerRegistry:
             csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
+        file_names = {'cli': 'results_cli.txt',
+                      'github_failed_only': 'results_github_failed_only.txt',
                       'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml'}
+                      'json': 'results_json.json',
+                      'junitxml': 'results_junitxml.xml',
+                      'cyclonedx': 'results_cyclonedx.xml',
+                      'csv': 'results_csv.csv'}
         if config.output_file_path:
             for output in config.output:
                 self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
