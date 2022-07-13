@@ -14,7 +14,7 @@ class TestJsonParser(unittest.TestCase):
         bucket = resources.get('S3Bucket')
         properties = bucket.get('Properties')
 
-        assert resources.start_mark.line == 5
+        assert resources.start_mark.line == 2
         assert resources.end_mark.line == 31
 
         assert bucket.start_mark.line == 3
