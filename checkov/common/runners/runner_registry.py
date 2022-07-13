@@ -222,21 +222,7 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            if len(cyclonedx_reports) > 1:
-                # More than one Report - combine Reports first
-                report = Report("")
-                for r in cyclonedx_reports:
-                    report.passed_checks += r.passed_checks
-                    report.skipped_checks += r.skipped_checks
-                    report.failed_checks += r.failed_checks
-            else:
-                report = cyclonedx_reports[0]
-
-            cyclonedx = CycloneDX(
-                passed_checks=report.passed_checks,
-                failed_checks=report.failed_checks,
-                skipped_checks=report.skipped_checks,
-            )
+            cyclonedx = CycloneDX(reports=cyclonedx_reports)
             cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)
@@ -251,10 +237,13 @@ class RunnerRegistry:
             csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
+        file_names = {'cli': 'results_cli.txt',
+                      'github_failed_only': 'results_github_failed_only.txt',
                       'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml'}
+                      'json': 'results_json.json',
+                      'junitxml': 'results_junitxml.xml',
+                      'cyclonedx': 'results_cyclonedx.xml',
+                      'csv': 'results_csv.csv'}
         if config.output_file_path:
             for output in config.output:
                 self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',

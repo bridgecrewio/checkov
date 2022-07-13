@@ -1,0 +1,9 @@
+metadata:
+  id: "StringLengthLessThan"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: description
+  operator: length_less_than
+  value: "16"
