@@ -8,7 +8,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 class TestJsonParser(unittest.TestCase):
     def test_json_parser_lines(self):
         test_file = current_dir + "/resources/file1.json"
-        cfn_dict, cfn_str = parse(test_file)
+        cfn_dict, _ = parse(test_file)
 
         resources = cfn_dict.get('Resources')
         bucket = resources.get('S3Bucket')
