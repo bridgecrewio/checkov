@@ -62,7 +62,7 @@ class Module:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
-                if START_LINE not in provider_dict or END_LINE not in attributes:
+                if START_LINE not in attributes or END_LINE not in attributes:
                     return
                 provider_name = name
                 if isinstance(attributes, dict):
