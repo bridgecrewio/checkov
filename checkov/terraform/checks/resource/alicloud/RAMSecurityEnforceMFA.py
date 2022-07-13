@@ -15,8 +15,5 @@ class RAMSecurityEnforceMFA(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "enforce_mfa_for_login"
 
-    def get_expected_value(self) -> Any:
-        return True
-
 
 check = RAMSecurityEnforceMFA()
