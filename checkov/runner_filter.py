@@ -120,22 +120,17 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
-        if self.use_enforcement_rules and report_type:
-            checks = []
-            skip_checks = []
-            check_threshold = []
+        # apply enforcement rules if specified, but let --skip-check SEVERITY take priority
+        if self.use_enforcement_rules and report_type and not self.skip_check_threshold:
             skip_check_threshold = self.enforcement_rule_configs[report_type]
         else:
-            if self.use_enforcement_rules:
+            if self.use_enforcement_rules and not self.skip_check_threshold:
                 logging.warning(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
-            checks = self.checks
-            skip_checks = self.skip_checks
-            check_threshold = self.check_threshold
             skip_check_threshold = self.skip_check_threshold
 
-        run_severity = severity and check_threshold and severity.level >= check_threshold.level
-        explicit_run = checks and self.check_matches(check_id, bc_check_id, checks)
-        implicit_run = not checks and not check_threshold
+        run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
+        explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
+        implicit_run = not self.checks and not self.check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
         is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list
@@ -156,7 +151,7 @@ class RunnerFilter(object):
             should_run_check = False
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
-        explicit_skip = skip_checks and self.check_matches(check_id, bc_check_id, skip_checks)
+        explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
         should_skip_check = (
             skip_severity or
