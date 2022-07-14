@@ -245,7 +245,7 @@ The logic in the policy definition shown below is:
 
 ```yaml
 #....
-defintion:
+definition:
   and:
   - #filter block 1
   - #block 2
@@ -266,7 +266,7 @@ The definition below inverts the example in the previous section.
 
 ```yaml
 #....
-defintion:
+definition:
   not:
     and:
     - #filter block 1
@@ -280,7 +280,7 @@ The following code is also valid (the child of `not` is a list of length 1):
 
 ```yaml
 #....
-defintion:
+definition:
   not:
   - and:
     - #filter block 1
