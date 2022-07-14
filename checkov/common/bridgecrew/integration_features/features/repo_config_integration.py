@@ -1,10 +1,11 @@
+import json
 import logging
 from typing import Optional, Dict
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
@@ -12,7 +13,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration, order=0)
         self.skip_paths = set()
         self.enforcement_rule = None
-        self.code_category_configs: Dict[str, CodeCategoryConfiguration] = {}
+        self.code_category_configs: Dict[CodeCategoryType, CodeCategoryConfiguration] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -99,28 +100,16 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             self.enforcement_rule = matched_rules[0]
 
         logging.debug(f'Selected the following enforcement rule (it will not be applied unless --use-platform-enforcement-rules is specified):')
-        logging.debug(self.enforcement_rule)
+        logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
         for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:
             config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'], code_category_type)
             if config:
                 self.code_category_configs[code_category_type] = config
 
-    @staticmethod
-    def _convert_raw_check(policy):
-        metadata = {
-            'id': policy['id'],
-            'name': policy['title'],
-            'category': policy['category'],
-            'scope': {
-                'provider': policy['provider']
-            }
-        }
-        check = {
-            'metadata': metadata,
-            'definition': policy['conditionQuery']
-        }
-        return check
+    def is_code_review_disabled(self, code_category_type: CodeCategoryType) -> bool:
+        config = self.code_category_configs[code_category_type]
+        return config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]
 
 
 integration = RepoConfigIntegration(bc_integration)
