@@ -17,8 +17,8 @@ class AbsRDSParameter(BaseResourceCheck):
         :param conf: alicloud_db_instance configuration
         :return: <CheckResult>
         """
-        if conf.get("parameters") and isinstance(conf.get("parameters"), list):
-            params = conf.get("parameters")
+        params = conf.get("parameters")
+        if params and isinstance(params, list):
             for param in params:
                 if param['name'][0] == self.parameter and param['value'][0] == 'ON':
                     return CheckResult.PASSED
