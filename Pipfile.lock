@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6cbb3cb7f077272f39695262cdc61f8d8edb6000d2260ff79103f1f2358eb007"
+            "sha256": "c259c4646ba6564605635750fab6f2ceb733321cc20a599b82873ab0ecbd3939"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -151,8 +151,12 @@
             "version": "==21.4.0"
         },
         "bc-python-hcl2": {
-            "editable": true,
-            "path": "/Users/agruebel/repos/github/bridgecrewio/python-hcl2"
+            "hashes": [
+                "sha256:0bb7649c37e8378af05c8e7f621b0a5e87abb69414a6838aadb6d6e32557ae04",
+                "sha256:f9beb5d6b835413fb306a0f458098ca0bf74a79db5bc5af6fe97a405c6a3f8fa"
+            ],
+            "index": "pypi",
+            "version": "==0.3.44"
         },
         "beautifulsoup4": {
             "hashes": [
@@ -483,7 +487,7 @@
                 "sha256:568c9f16cb204f9decc8d6d24a572eeea27dacbb4cee9e6b03a8025736769751",
                 "sha256:7952325ffd516c05a8ad0858c74dff2c3343f136fe66a6002b2623dd1d43f223"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version < '3.9'",
             "version": "==5.8.0"
         },
         "jinja2": {
@@ -535,11 +539,11 @@
         },
         "markdown": {
             "hashes": [
-                "sha256:cbb516f16218e643d8e0a95b309f77eb118cb138d39a4f27851e6a63581db874",
-                "sha256:f5da449a6e1c989a4cea2631aa8ee67caa5a2ef855d551c88f9e309f4634c621"
+                "sha256:03078d25ed76dd9d2a803e5708ddb1c4ec3a5ed7654bc882e032364f09c184d5",
+                "sha256:e90f851d4b0f788ee2e9c352205d8a592fd0c713ca6b934f87b81bc14d24dab7"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==3.3.7"
+            "markers": "python_version >= '3.7'",
+            "version": "==3.4"
         },
         "markupsafe": {
             "hashes": [
@@ -1533,7 +1537,7 @@
                 "sha256:568c9f16cb204f9decc8d6d24a572eeea27dacbb4cee9e6b03a8025736769751",
                 "sha256:7952325ffd516c05a8ad0858c74dff2c3343f136fe66a6002b2623dd1d43f223"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version < '3.9'",
             "version": "==5.8.0"
         },
         "iniconfig": {
@@ -1784,12 +1788,11 @@
         },
         "pytest-asyncio": {
             "hashes": [
-                "sha256:16cf40bdf2b4fb7fc8e4b82bd05ce3fbcd454cbf7b92afc445fe299dabb88213",
-                "sha256:7659bdb0a9eb9c6e3ef992eef11a2b3e69697800ad02fb06374a210d85b29f91",
-                "sha256:8fafa6c52161addfd41ee7ab35f11836c5a16ec208f93ee388f752bea3493a84"
+                "sha256:7a97e37cfe1ed296e2e84941384bdd37c376453912d397ed39293e0916f521fa",
+                "sha256:ac4ebf3b6207259750bc32f4c1d8fcd7e79739edbc67ad0c58dd150b1d072fed"
             ],
             "index": "pypi",
-            "version": "==0.18.3"
+            "version": "==0.19.0"
         },
         "pytest-cov": {
             "hashes": [
@@ -1923,7 +1926,7 @@
                 "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc",
                 "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_version < '3.11'",
             "version": "==2.0.1"
         },
         "typed-ast": {
@@ -2022,11 +2025,11 @@
         },
         "types-tqdm": {
             "hashes": [
-                "sha256:05dbe5d3c4d8a63d0cc9ea27a05ce5ec5cf77ca3edcbb727ecf8a81a48c43fd8",
-                "sha256:e5de71d5eadb189fa2a95a98df4c7740c33fcec0835eb5eb0995eed4ef412039"
+                "sha256:5f8548e59460736839b20449dad3572b36d4436fc54e688df5f283a8f8af310a",
+                "sha256:f4e00cf90cf724a18a1f6c9d843764d01a53253424d6c5949f758f0228b47497"
             ],
             "index": "pypi",
-            "version": "==4.64.2"
+            "version": "==4.64.4"
         },
         "types-urllib3": {
             "hashes": [
