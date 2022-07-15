@@ -165,7 +165,7 @@ class BcPlatformIntegration:
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
         username, password = self.bc_api_key.split('::')
-        request = self.http.request("POST", f"{self.prisma_api_url}/login",  #type:ignore[no-untyped-call]
+        request = self.http.request("POST", f"{self.prisma_api_url}/login",  # type:ignore[no-untyped-call]
                                     body=json.dumps({"username": username, "password": password}),
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
@@ -174,27 +174,29 @@ class BcPlatformIntegration:
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
-    def setup_http_manager(self, ca_certificate: str | None = os.getenv('BC_CA_BUNDLE', None)) -> None:
+    def setup_http_manager(self, ca_certificate: str | None = None) -> None:
         """
         bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         """
+        ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
+
         if self.http:
             return
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
                                                  ca_certs=ca_certificate,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
                 self.http = urllib3.PoolManager()
 
@@ -275,7 +277,7 @@ class BcPlatformIntegration:
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  #type:ignore[no-untyped-call]
+        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
@@ -290,7 +292,7 @@ class BcPlatformIntegration:
                     "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
             if 'message' in response and "cannot be found" in response['message']:
                 self.loading_output("creating role")
-                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  #type:ignore[no-untyped-call]
+                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
                                             headers=merge_dicts(
                                                 {"Authorization": token, "Content-Type": "application/json"},
                                                 get_user_agent_header()))
@@ -388,7 +390,7 @@ class BcPlatformIntegration:
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.bucket:
-            logging.error(f"Bucket was not set")
+            logging.error("Bucket was not set")
             return
 
         target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
@@ -415,7 +417,7 @@ class BcPlatformIntegration:
                     logging.error("Source was not set")
                     return None
 
-                request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",  #type:ignore[no-untyped-call]
+                request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",  # type:ignore[no-untyped-call]
                                             body=json.dumps(
                                                 {"path": self.repo_path, "branch": branch,
                                                  "to_branch": CI_METADATA_EXTRACTOR.to_branch,
@@ -536,7 +538,7 @@ class BcPlatformIntegration:
 
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
-            request = self.http.request("GET", url, headers=headers)  #type:ignore[no-untyped-call]
+            request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             if request.status != 200:
                 error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
@@ -580,7 +582,7 @@ class BcPlatformIntegration:
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
-                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)  #type:ignore[no-untyped-call]
+                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)  # type:ignore[no-untyped-call]
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
             else:
@@ -599,7 +601,7 @@ class BcPlatformIntegration:
                 return {}
 
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
-            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  #type:ignore[no-untyped-call]
+            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
             return policy_filters
         except Exception:
@@ -607,7 +609,9 @@ class BcPlatformIntegration:
             return {}
 
     @staticmethod
-    def is_valid_policy_filter(policy_filter: Dict[str, str], valid_filters: Dict[str, Dict[str, Any]] = {}) -> bool:
+    def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+        valid_filters = valid_filters or {}
+
         if not policy_filter:
             return False
         if not valid_filters:
@@ -622,11 +626,11 @@ class BcPlatformIntegration:
                 return False
             elif filter_name == 'policy.subtype' and filter_value != 'build':
                 logging.warning(f"Filter value not allowed: {filter_value}")
-                logging.warning(f"Available options: build")
+                logging.warning("Available options: build")
                 return False
             elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
                 logging.warning(f"Filter value not allowed: {filter_value}")
-                logging.warning(f"Available options: True")
+                logging.warning("Available options: True")
                 return False
         logging.debug("--policy-metadata-filter is valid")
         return True
@@ -643,7 +647,7 @@ class BcPlatformIntegration:
                 logging.error("HTTP manager was not correctly created")
                 return
 
-            request = self.http.request("GET", self.guidelines_api_url, headers=headers)  #type:ignore[no-untyped-call]
+            request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
@@ -672,9 +676,9 @@ class BcPlatformIntegration:
                                                                                                                                                                                                                      "\n"
                                                                                                                                                                                                                      "\n" + "and much more...",
                 'yellow') +
-                  colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
-                          "To Level-up, press 'y'... \n",
-                          'cyan') + Style.RESET_ALL)
+                colored("\n\nIt's easy and only takes 2 minutes. We can do it right now!\n\n"
+                        "To Level-up, press 'y'... \n",
+                        'cyan') + Style.RESET_ALL)
             reply = self._input_levelup_results()
             if reply[:1] == 'y':
                 print(Style.BRIGHT + colored("\nOk, let’s get you started on creating your free account! \n"
@@ -772,7 +776,7 @@ class BcPlatformIntegration:
 
         if not self.repo_id:
             # this should not happen
-            self.repo_id = f"cli_repo/unknown"
+            self.repo_id = "cli_repo/unknown"
 
         return self.repo_id
 

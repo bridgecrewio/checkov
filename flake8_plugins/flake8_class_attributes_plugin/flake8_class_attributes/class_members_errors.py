@@ -7,7 +7,12 @@ FORBIDDEN_TYPES = {
     "field",
 }
 SKIP_SPECIAL_ATTRIBUTES = {
+    "__code__",
     "__slots__",
+}
+SKIP_TYPING_CLASSES = {
+    "Protocol",
+    "TypedDict",
 }
 
 
@@ -17,6 +22,8 @@ def get_class_members_errors(
     errors: list[tuple[int, int, str]] = []
 
     if skip_dataclasses(class_def):
+        return errors
+    if skip_typed_dicts(class_def):
         return errors
     for model_part in model_parts_info:
         if model_part['type'] in FORBIDDEN_TYPES:
@@ -35,6 +42,16 @@ def skip_dataclasses(class_def: ast.ClassDef) -> bool:
             if not isinstance(decorator, ast.Name):
                 return True
             if decorator.id == 'dataclass':
+                return True
+    return False
+
+
+def skip_typed_dicts(class_def: ast.ClassDef) -> bool:
+    if class_def.bases:
+        for base in class_def.bases:
+            if not isinstance(base, ast.Name):
+                return True
+            if base.id in SKIP_TYPING_CLASSES:
                 return True
     return False
 

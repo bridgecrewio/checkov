@@ -14,8 +14,6 @@ from checkov.common.parsers.json.errors import NullError, DuplicateError, Decode
 
 class Mark:
     """Mark of line and column"""
-    line = 1
-    column = 1
 
     def __init__(self, line: int, column: int) -> None:
         self.line = line

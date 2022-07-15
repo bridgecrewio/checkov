@@ -6,7 +6,6 @@ class DefaultRunMetadataExtractor(RunMetaDataExtractor):
         return False
 
     def __init__(self) -> None:
-        server_url = ""
         from_branch = ""
         to_branch = ""
         pr_id = ""
