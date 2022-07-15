@@ -500,9 +500,9 @@ class BcPlatformIntegration:
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             # TODO remove
-            url = f"{self.api_url}/api/v1/enforcement-rules"
-            request = self.http.request("GET", url, headers=headers)
-            self.customer_run_config_response['enforcementRules'] = json.loads(request.data.decode("utf8"))
+            # url = f"{self.api_url}/api/v1/enforcement-rules"
+            # request = self.http.request("GET", url, headers=headers)
+            # self.customer_run_config_response['enforcementRules'] = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:

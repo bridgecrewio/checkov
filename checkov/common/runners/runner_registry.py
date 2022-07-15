@@ -11,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from json import dumps
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar, Tuple
 
 from typing_extensions import Literal
 
@@ -115,17 +115,13 @@ class RunnerRegistry:
             return config.soft_fail, config.soft_fail_on, config.hard_fail_on
         else:
             code_category_type = CodeCategoryMapping[report_type]
-            config = repo_config_integration.code_category_configs.get(code_category_type)
-            if not config:
-                # this can happen if Checkov supports a type that is not yet platformized (e.g., Supply Chain at the time of this comment)
-                logging.debug(f'Could not find an enforcement rule config for category {code_category_type} (runner: {report_type}). Falling back to the CLI args')
-                return config.soft_fail, config.soft_fail_on, config.hard_fail_on
+            enf_rule = repo_config_integration.code_category_configs.get(code_category_type)
 
-            # the soft fail threshold will just be implicit
-            # for simplicity, just use an empty hard fail list of full soft-fail is on
-            # (otherwise we have to change the get_exit_code logic)
-            soft_fail = config.is_global_soft_fail()
-            return soft_fail, [], [] if soft_fail else [config.hard_fail_threshold.name]
+            # we will merge the command line args (which take precedence) with the enforcement rule defaults
+            enf_rule_soft_fail = enf_rule.is_global_soft_fail()
+            enf_rule_hard_fail = [enf_rule.hard_fail_threshold.name]
+            # the enforcement rule soft fail is implicit, so we can just leave it blank (unless it got set in the CLI options)
+            return (config.soft_fail or enf_rule_soft_fail), config.soft_fail_on, config.hard_fail_on or enf_rule_hard_fail
 
     def print_reports(
             self,

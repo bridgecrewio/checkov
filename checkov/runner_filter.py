@@ -56,23 +56,22 @@ class RunnerFilter(object):
         self.skip_checks = []
         self.show_progress_bar = show_progress_bar
 
-        if not self.use_enforcement_rules:
-            # split out check/skip thresholds so we can access them easily later
-            for val in (checks or []):
-                if val.upper() in Severities:
-                    val = val.upper()
-                    if not self.check_threshold or self.check_threshold.level > Severities[val].level:
-                        self.check_threshold = Severities[val]
-                else:
-                    self.checks.append(val)
+        # split out check/skip thresholds so we can access them easily later
+        for val in (checks or []):
+            if val.upper() in Severities:
+                val = val.upper()
+                if not self.check_threshold or self.check_threshold.level > Severities[val].level:
+                    self.check_threshold = Severities[val]
+            else:
+                self.checks.append(val)
 
-            for val in (skip_checks or []):
-                if val.upper() in Severities:
-                    val = val.upper()
-                    if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
-                        self.skip_check_threshold = Severities[val]
-                else:
-                    self.skip_checks.append(val)
+        for val in (skip_checks or []):
+            if val.upper() in Severities:
+                val = val.upper()
+                if not self.skip_check_threshold or self.skip_check_threshold.level < Severities[val].level:
+                    self.skip_check_threshold = Severities[val]
+            else:
+                self.skip_checks.append(val)
 
         self.include_all_checkov_policies = include_all_checkov_policies
 

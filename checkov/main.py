@@ -405,10 +405,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
                     'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
                     'above the lowest severity in the list will be included. This option can be combined with '
-                    '--skip-check. If it is, priority is given to checks explicitly listed by ID or wildcard over '
-                    'checks listed by severity. For example, if you use --check CKV_123 and --skip-check LOW, then '
-                    'CKV_123 will run even if it is a LOW severity. In the case of a tie (e.g., --check MEDIUM and '
-                    '--skip-check HIGH for a medium severity check), then the check will be skipped. If you use a '
+                    '--skip-check. If it is, then the logic is to first take all checks that match this list, and then '
+                    'remove all checks that match the skip list. For example, if you use --check CKV_123 and '
+                    '--skip-check LOW, then CKV_123 will not run if it is a LOW severity. Similarly, if you use '
+                    '--check CKV_789 --skip-check MEDIUM, then CKV_789 will run if it is a HIGH severity. If you use a '
                     'check ID here along with an API key, and the check is not part of the BC / PC platform, then the '
                     'check will still be run (see --include-all-checkov-policies for more info).',
                action='append', default=None,
@@ -471,13 +471,16 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'being available in Checkov.',
                action='store_true')
     parser.add('--use-platform-enforcement-rules', action='store_true',
-               help='Use the Enforcement Rules configured in the platform for hard / soft fail logic. Mutually exclusive '
-                    'with --soft-fail, --hard-fail-on, --soft-fail-on, --check, and --skip-check. With this option, '
+               help='Use the Enforcement Rules configured in the platform for hard / soft fail logic. With this option, '
                     'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
-                    'these values: any check with a severity below the selected rule\'s soft-fail threshold will be '
+                    'this behavior: any check with a severity below the selected rule\'s soft-fail threshold will be '
                     'skipped; any check with a severity equal to or greater than the rule\'s hard-fail threshold will '
-                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list.'
-                    'Requires a BC or PC platform API key.')
+                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list. For '
+                    'example, if the given enforcement rule has a hard-fail value of HIGH and a soft-fail value of MEDIUM,'
+                    'this is the equivalent of using the flags `--skip-check LOW --hard-fail-on HIGH`. You can use --check, '
+                    '--skip-check, --soft-fail, --soft-fail-on, or --hard-fail-on to override portions of an enforcement rule. '
+                    'Note, however, that the logic of applying the --check list and then the --skip-check list (as described '
+                    'above under --check) still applies here. Requires a BC or PC platform API key.')
     parser.add('--no-guide', action='store_true',
                default=False,
                help='Deprecated - use --skip-download')
@@ -576,9 +579,6 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
-
-    if config.use_platform_enforcement_rules and (config.soft_fail or config.hard_fail_on or config.soft_fail_on or config.check or config.skip_check):
-        parser.error('Cannot use --use-platform-enforcement rules with any of --soft-fail, --hard-fail-on, --soft-fail-on, --check, or --skip-check')
 
     if config.use_platform_enforcement_rules and not config.bc_api_key:
         parser.error('Must specify an API key with --use-platform-enforcement-rules')
