@@ -5,7 +5,7 @@ import requests
 import logging
 import time
 import os
-from typing import Any, TYPE_CHECKING, cast
+from typing import Any, TYPE_CHECKING, cast, Optional
 
 from urllib3.response import HTTPResponse
 
@@ -41,16 +41,17 @@ def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> 
     return error_message
 
 
-def extract_error_message(response: requests.Response | HTTPResponse) -> str:
+def extract_error_message(response: requests.Response | HTTPResponse) -> Optional[str]:
     if (isinstance(response, requests.Response) and response.content) or (isinstance(response, HTTPResponse) and response.data):
+        raw = response.content if isinstance(response, requests.Response) else response.data
         try:
-            content = json.loads(response.content if isinstance(response, requests.Response) else response.data)
+            content = json.loads(raw)
             if 'message' in content:
                 return cast(str, content['message'])
             elif 'Message' in content:
                 return cast(str, content['Message'])
         except Exception:
-            logging.debug(f'Failed to parse the response content: {response.content.decode()}')
+            logging.debug(f'Failed to parse the response content: {raw.decode()}')
 
     return response.reason
 
