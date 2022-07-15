@@ -1,13 +1,11 @@
-import os
-
 from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import RunMetaDataExtractor
 
 
 class DefaultRunMetadataExtractor(RunMetaDataExtractor):
-    def is_current_ci(self):
+    def is_current_ci(self) -> bool:
         return False
 
-    def __init__(self):
+    def __init__(self) -> None:
         server_url = ""
         from_branch = ""
         to_branch = ""

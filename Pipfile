@@ -30,6 +30,8 @@ types-pyyaml = ">=5.4.1"
 types-requests = "*"
 types-tabulate = "*"
 types-termcolor = "*"
+types-tqdm = "*"
+types-urllib3 = "*"
 pre-commit = "*"
 flake8 = "*"
 dlint = "*"
@@ -40,7 +42,7 @@ flake8-bugbear = "*"
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.44"
+bc-python-hcl2 = {editable = true, path = "/Users/agruebel/repos/github/bridgecrewio/python-hcl2"}
 deep_merge = "*"
 tabulate = "*"
 colorama="*"

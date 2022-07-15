@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def normalize_prisma_url(url: str) -> str | None:
+def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
@@ -63,10 +63,10 @@ def get_prisma_auth_header(token: str) -> dict[str, str]:
     }
 
 
-def get_version_headers(client: str, client_version: str) -> dict[str, str]:
+def get_version_headers(client: str, client_version: str | None) -> dict[str, str]:
     return {
         'x-api-client': client,
-        'x-api-version': client_version,
+        'x-api-version': client_version or "unknown",
         'x-api-checkov-version': checkov_version
     }
 
@@ -75,11 +75,11 @@ def get_user_agent_header() -> dict[str, str]:
     return {'User-Agent': f'checkov/{checkov_version}'}
 
 
-def get_default_get_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_get_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
-def get_default_post_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_post_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
