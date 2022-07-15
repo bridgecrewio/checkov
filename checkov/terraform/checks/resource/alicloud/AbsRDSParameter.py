@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class AbsRDSParameter(BaseResourceCheck):
     def __init__(self, check_id, parameter):
-        name = "Ensure RDS instance has %s enabled" % parameter
+        name = f"Ensure RDS instance has {parameter} enabled"
         supported_resources = ['alicloud_db_instance']
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
