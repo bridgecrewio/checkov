@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from typing import Any
 
 
-class MongoDBTransparentDataEncryptionEnabled(BaseResourceValueCheck):
+class MongoDBInsideVPC(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure MongoDB is deployed inside a VPC"
         id = "CKV_ALI_41"
@@ -18,4 +18,4 @@ class MongoDBTransparentDataEncryptionEnabled(BaseResourceValueCheck):
         return "VPC"
 
 
-check = MongoDBTransparentDataEncryptionEnabled()
+check = MongoDBInsideVPC()
