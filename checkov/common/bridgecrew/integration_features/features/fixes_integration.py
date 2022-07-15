@@ -91,15 +91,15 @@ class FixesIntegration(BaseIntegrationFeature):
             {"Authorization": self.bc_integration.get_auth_token()}
         )
 
-        response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
+        request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))
 
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
+        if request.status != 200:
+            error_message = extract_error_message(request)
+            raise Exception(f'Get fixes request failed with response code {request.status}: {error_message}')
 
-        logging.debug(f'Response from fixes API: {response.content}')
+        logging.debug(f'Response from fixes API: {request.data}')
 
-        fixes = json.loads(response.content) if response.content else None
+        fixes = json.loads(request.data) if request.data else None
         if not fixes or type(fixes) != list:
             logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
             return None
