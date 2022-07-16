@@ -12,9 +12,9 @@ CycloneDX is a lightweight BOM specification that is easily created, human-reada
 A typical output looks like this
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<bom serialNumber="urn:uuid:25c12686-6e25-4e5a-9ec7-d53d609a426e" version="1" xmlns="http://cyclonedx.org/schema/bom/1.4">
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:4d32cfec-d0dc-4e92-bf71-4c92cf37c3ed" version="1">
   <metadata>
-    <timestamp>2022-07-12T17:13:22.461688+00:00</timestamp>
+    <timestamp>2022-07-16T17:57:47.032316+00:00</timestamp>
     <tools>
       <tool>
         <vendor>CycloneDX</vendor>
@@ -81,20 +81,26 @@ A typical output looks like this
     </tools>
   </metadata>
   <components>
-    <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a" type="application">
+    <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
       <name>aws_s3_bucket.example</name>
-      <version>sha1:92911b13224706178dded562c18d281b22bf391a</version>
+      <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
       <hashes>
-        <hash alg="SHA-1">92911b13224706178dded562c18d281b22bf391a</hash>
+        <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
       </hashes>
-      <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</purl>
+      <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
+    </component>
+    <component bom-ref="pkg:pypi/flask@0.6" type="library">
+      <name>flask</name>
+      <version>0.6</version>
+      <purl>pkg:pypi/flask@0.6</purl>
     </component>
   </components>
   <dependencies>
-    <dependency ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a"/>
+    <dependency ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" />
+    <dependency ref="pkg:pypi/flask@0.6" />
   </dependencies>
   <vulnerabilities>
-    <vulnerability bom-ref="94a37872-6ffb-46ef-9ea7-b5a05199d413">
+    <vulnerability bom-ref="66fa9728-fb5e-42ed-9077-ef5891c78b5a">
       <id>CKV2_AWS_6</id>
       <source>
         <name>checkov</name>
@@ -107,11 +113,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="17850edf-25f3-439f-a3ce-243b69d33b7e">
+    <vulnerability bom-ref="48f2e69c-7536-47ae-b7d5-05bb2373b99e">
       <id>CKV_AWS_144</id>
       <source>
         <name>checkov</name>
@@ -124,11 +130,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="13417f16-0808-4d39-a139-32a32368b317">
+    <vulnerability bom-ref="977dd771-0613-4c75-9c3d-8e675ed699eb">
       <id>CKV_AWS_145</id>
       <source>
         <name>checkov</name>
@@ -141,11 +147,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="4095ff5b-8eb9-48bf-8c36-01a4f826c91d">
+    <vulnerability bom-ref="63996fcf-3596-4cae-8a68-8a42ad1b853f">
       <id>CKV_AWS_18</id>
       <source>
         <name>checkov</name>
@@ -158,11 +164,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="444525e3-c770-4ee3-b13c-3ebcac5c3394">
+    <vulnerability bom-ref="ba95bf88-b448-4a2b-aec5-0520df32f05e">
       <id>CKV_AWS_19</id>
       <source>
         <name>checkov</name>
@@ -175,11 +181,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="9e02a653-d6da-4454-ac0a-08fcdc172995">
+    <vulnerability bom-ref="41f657e7-a83b-4535-9b83-541211d02397">
       <id>CKV_AWS_21</id>
       <source>
         <name>checkov</name>
@@ -192,7 +198,57 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</ref>
+          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+        </target>
+      </affects>
+    </vulnerability>
+    <vulnerability bom-ref="5b200cf7-f0c2-42b8-87a8-8c73b90de39f">
+      <id>CVE-2018-1000656</id>
+      <source>
+        <url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</url>
+      </source>
+      <ratings>
+        <rating>
+          <source>
+            <url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</url>
+          </source>
+          <score>7.5</score>
+          <severity>unknown</severity>
+          <method>CVSSv3</method>
+          <vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</vector>
+        </rating>
+      </ratings>
+      <description>The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.</description>
+      <recommendation>fixed in 0.12.3</recommendation>
+      <published>2018-08-20T19:31:00</published>
+      <affects>
+        <target>
+          <ref>pkg:pypi/flask@0.6</ref>
+        </target>
+      </affects>
+    </vulnerability>
+    <vulnerability bom-ref="f18f3674-092f-4e9a-8452-641fd11fc70f">
+      <id>CVE-2019-1010083</id>
+      <source>
+        <url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
+      </source>
+      <ratings>
+        <rating>
+          <source>
+            <url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
+          </source>
+          <score>7.5</score>
+          <severity>unknown</severity>
+          <method>CVSSv3</method>
+          <vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</vector>
+        </rating>
+      </ratings>
+      <description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.</description>
+      <recommendation>fixed in 1.0</recommendation>
+      <published>2019-07-17T14:15:00</published>
+      <affects>
+        <target>
+          <ref>pkg:pypi/flask@0.6</ref>
         </target>
       </affects>
     </vulnerability>
@@ -206,3 +262,42 @@ ex.
 ```shell
 CHECKOV_CYCLONEDX_SCHEMA_VERSION=1.3 checkov -d . -o cyclonedx
 ```
+
+## Structure
+
+Further information on the different elements and attributes can be found [here](https://cyclonedx.org/docs/1.4/xml/).
+
+### component
+
+Each component stores the information of a single IaC resource or SCA package.
+
+IaC
+```xml
+<component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
+  <name>aws_s3_bucket.example</name>
+  <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
+  <hashes>
+    <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
+  </hashes>
+  <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
+</component>
+```
+
+- `name`: Resource ID
+- `version`: sha1 hash of the file
+- `hash`: sha1 hash of the file
+- `purl`: Format `pkg:<runner name>/<file path>/<resource ID>@<sha1 hash of the file>`
+
+SCA
+```xml
+<component bom-ref="pkg:pypi/flask@0.6" type="library">
+  <name>flask</name>
+  <version>0.6</version>
+  <purl>pkg:pypi/flask@0.6</purl>
+</component>
+```
+
+- `group`: Group name of the package
+- `name`: Name of the package
+- `version`: Version of the package
+- `purl`: Format `pkg:<package type>/<package group name>/<packge name>@<package version>`
