@@ -222,7 +222,7 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            cyclonedx = CycloneDX(reports=cyclonedx_reports)
+            cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
             cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)

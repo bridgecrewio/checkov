@@ -12,9 +12,9 @@ CycloneDX is a lightweight BOM specification that is easily created, human-reada
 A typical output looks like this
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:4d32cfec-d0dc-4e92-bf71-4c92cf37c3ed" version="1">
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:59fccc63-7218-4396-befc-5de315c08434" version="1">
   <metadata>
-    <timestamp>2022-07-16T17:57:47.032316+00:00</timestamp>
+    <timestamp>2022-07-17T14:13:26.536352+00:00</timestamp>
     <tools>
       <tool>
         <vendor>CycloneDX</vendor>
@@ -81,26 +81,26 @@ A typical output looks like this
     </tools>
   </metadata>
   <components>
-    <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
+    <component bom-ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
       <name>aws_s3_bucket.example</name>
       <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
       <hashes>
         <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
       </hashes>
-      <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
+      <purl>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
     </component>
-    <component bom-ref="pkg:pypi/flask@0.6" type="library">
+    <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
       <name>flask</name>
       <version>0.6</version>
-      <purl>pkg:pypi/flask@0.6</purl>
+      <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
     </component>
   </components>
   <dependencies>
-    <dependency ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" />
-    <dependency ref="pkg:pypi/flask@0.6" />
+    <dependency ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" />
+    <dependency ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" />
   </dependencies>
   <vulnerabilities>
-    <vulnerability bom-ref="66fa9728-fb5e-42ed-9077-ef5891c78b5a">
+    <vulnerability bom-ref="6541a13d-8e97-419d-aaca-7fd185f052fd">
       <id>CKV2_AWS_6</id>
       <source>
         <name>checkov</name>
@@ -113,11 +113,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="48f2e69c-7536-47ae-b7d5-05bb2373b99e">
+    <vulnerability bom-ref="0b326d31-d730-43d2-9dbf-e898c24d92b5">
       <id>CKV_AWS_144</id>
       <source>
         <name>checkov</name>
@@ -130,11 +130,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="977dd771-0613-4c75-9c3d-8e675ed699eb">
+    <vulnerability bom-ref="fd5b3e13-407b-4af3-a25c-bee3613a7bd8">
       <id>CKV_AWS_145</id>
       <source>
         <name>checkov</name>
@@ -147,11 +147,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="63996fcf-3596-4cae-8a68-8a42ad1b853f">
+    <vulnerability bom-ref="df6af40a-3042-4852-8029-87366fbb49ff">
       <id>CKV_AWS_18</id>
       <source>
         <name>checkov</name>
@@ -164,11 +164,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="ba95bf88-b448-4a2b-aec5-0520df32f05e">
+    <vulnerability bom-ref="36a44192-ccbb-4534-a8ad-5be689279e3e">
       <id>CKV_AWS_19</id>
       <source>
         <name>checkov</name>
@@ -181,11 +181,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="41f657e7-a83b-4535-9b83-541211d02397">
+    <vulnerability bom-ref="43ddb9d1-06d2-4ea5-b112-a2f97a3c03d4">
       <id>CKV_AWS_21</id>
       <source>
         <name>checkov</name>
@@ -198,11 +198,11 @@ A typical output looks like this
       </advisories>
       <affects>
         <target>
-          <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+          <ref>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="5b200cf7-f0c2-42b8-87a8-8c73b90de39f">
+    <vulnerability bom-ref="8ce0817a-fe7f-48b4-bb43-8c28396a386f">
       <id>CVE-2018-1000656</id>
       <source>
         <url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</url>
@@ -223,11 +223,11 @@ A typical output looks like this
       <published>2018-08-20T19:31:00</published>
       <affects>
         <target>
-          <ref>pkg:pypi/flask@0.6</ref>
+          <ref>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</ref>
         </target>
       </affects>
     </vulnerability>
-    <vulnerability bom-ref="f18f3674-092f-4e9a-8452-641fd11fc70f">
+    <vulnerability bom-ref="30c1c64b-d902-4f20-b830-c8a2e6bdc13b">
       <id>CVE-2019-1010083</id>
       <source>
         <url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
@@ -248,7 +248,7 @@ A typical output looks like this
       <published>2019-07-17T14:15:00</published>
       <affects>
         <target>
-          <ref>pkg:pypi/flask@0.6</ref>
+          <ref>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</ref>
         </target>
       </affects>
     </vulnerability>
@@ -273,31 +273,38 @@ Each component stores the information of a single IaC resource or SCA package.
 
 IaC
 ```xml
-<component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
+<component bom-ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
   <name>aws_s3_bucket.example</name>
   <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
   <hashes>
     <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
   </hashes>
-  <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
+  <purl>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
 </component>
 ```
 
 - `name`: Resource ID
 - `version`: sha1 hash of the file
 - `hash`: sha1 hash of the file
-- `purl`: Format `pkg:<runner name>/<file path>/<resource ID>@<sha1 hash of the file>`
+- `purl`: Format `pkg:<runner name>/<repo ID>/<file path>/<resource ID>@<sha1 hash of the file>`
 
 SCA
 ```xml
-<component bom-ref="pkg:pypi/flask@0.6" type="library">
+<component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
   <name>flask</name>
   <version>0.6</version>
-  <purl>pkg:pypi/flask@0.6</purl>
+  <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
 </component>
 ```
 
-- `group`: Group name of the package
+- `group`: Group name of the package (only relevant for Maven packages)
 - `name`: Name of the package
 - `version`: Version of the package
-- `purl`: Format `pkg:<package type>/<package group name>/<packge name>@<package version>`
+- `purl`: Format `pkg:<package type>/<repo ID>/<file path>/<package group name>/<packge name>@<package version>`
+
+The repo ID will be automatically set depending on the environment `checkov` is invoked in, but can be adjusted by setting the flag `--repo-id`.
+
+ex.
+```shell
+checkov -d . --repo-id acme/example -o cyclonedx
+```

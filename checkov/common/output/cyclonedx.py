@@ -44,9 +44,10 @@ CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
     "1.1": SchemaVersion.V1_1,
     "1.0": SchemaVersion.V1_0,
 }
+PURL_TYPE_MAVEN = "maven"
 FILE_NAME_TO_PURL_TYPE = {
     "build.gradle": "maven",
-    "build.gradle.kts": "maven",
+    "build.gradle.kts": PURL_TYPE_MAVEN,
     "composer.json": "composer",
     "Gemfile": "gem",
     "go.mod": "golang",
@@ -69,7 +70,8 @@ BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
 
 
 class CycloneDX:
-    def __init__(self, reports: list[Report]) -> None:
+    def __init__(self, reports: list[Report], repo_id: str | None) -> None:
+        self.repo_id = f"{repo_id}/" if repo_id is not None else ""
         self.reports = reports
 
         self.bom = self.create_bom()
@@ -169,20 +171,20 @@ class CycloneDX:
         """Creates an application component
 
         Ex.
-        <component bom-ref="pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a" type="file">
+        <component bom-ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
           <name>aws_s3_bucket.example</name>
-          <version>sha1:92911b13224706178dded562c18d281b22bf391a</version>
+          <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
           <hashes>
-            <hash alg="SHA-1">92911b13224706178dded562c18d281b22bf391a</hash>
+            <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
           </hashes>
-          <purl>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:92911b13224706178dded562c18d281b22bf391a</purl>
+          <purl>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
         </component>
         """
 
         sha1_hash = sha1sum(filename=resource.file_abs_path)
         purl = PackageURL(
             type=check_type,
-            namespace=resource.file_path,
+            namespace=f"{self.repo_id}/{resource.file_path}",
             name=resource.resource,
             version=f"sha1:{sha1_hash}",
         )
@@ -205,11 +207,10 @@ class CycloneDX:
         """Creates a library component
 
         Ex.
-        <component bom-ref="pkg:maven/org.keycloak/keycloak-parent@10.0.2" type="library">
-          <group>org.keycloak</group>
-          <name>keycloak-parent</name>
-          <version>10.0.2</version>
-          <purl>pkg:maven/org.keycloak/keycloak-parent@10.0.2</purl>
+        <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
+          <name>flask</name>
+          <version>0.6</version>
+          <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
         </component>
         """
 
@@ -220,16 +221,18 @@ class CycloneDX:
 
         file_name = Path(resource.file_path).name
         purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
+        namespace = f"{self.repo_id}/{resource.file_path}"
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
 
-        if purl_type == "maven":
+        if purl_type == PURL_TYPE_MAVEN:
             package_group, package_name = package_name.split("_", maxsplit=1)
+            namespace += f"/{package_group}"
 
         purl = PackageURL(
             type=purl_type,
-            namespace=package_group,
+            namespace=namespace,
             name=package_name,
             version=package_version,
         )
