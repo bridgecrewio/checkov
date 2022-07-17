@@ -242,13 +242,13 @@ class RunnerRegistry:
                       'sarif': 'results_sarif.sarif',
                       'json': 'results_json.json',
                       'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml',
-                      'csv': 'results_csv.csv'}
+                      'cyclonedx': 'results_cyclonedx.xml'}
         if config.output_file_path:
             for output in config.output:
-                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
-                                         data=data_outputs[output],
-                                         data_format=output)
+                if output in file_names:
+                    self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
+                                             data=data_outputs[output],
+                                             data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
 
