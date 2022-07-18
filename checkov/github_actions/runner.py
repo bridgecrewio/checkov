@@ -93,10 +93,13 @@ class Runner(YamlRunner, ImageReferencer):
                 elif isinstance(container, str):
                     image = container
                 if image:
-                    image_id = self.inspect(image)
-                    if image_id:
-                        image_obj = Image(file_path=file_path, name=image, image_id=image_id, start_line=start_line,
-                                          end_line=end_line)
-                        images.add(image_obj)
+                    image_obj = Image(
+                        file_path=file_path,
+                        name=image,
+                        image_id="",
+                        start_line=start_line,
+                        end_line=end_line,
+                    )
+                    images.add(image_obj)
 
         return images
