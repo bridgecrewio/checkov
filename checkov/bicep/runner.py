@@ -34,10 +34,9 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[BicepGraphManager]):
     check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
     block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
@@ -50,7 +49,7 @@ class Runner(BaseRunner):
         db_connector: NetworkxConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
-        graph_manager: GraphManager | None = None,
+        graph_manager: BicepGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
         db_connector = db_connector or NetworkxConnector()

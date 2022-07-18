@@ -61,7 +61,7 @@ from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
-
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
@@ -93,6 +93,7 @@ DEFAULT_RUNNERS = (
     openapi_runner(),
     sca_image_runner(),
     argo_workflows_runner(),
+    circleci_pipelines_runner(),
 )
 
 
@@ -166,6 +167,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                      'secret, you may need to double check the mapping.')
     elif config.bc_api_key:
         logger.debug(f'Using API key ending with {config.bc_api_key[-8:]}')
+
+        if not bc_integration.is_token_valid(config.bc_api_key):
+            raise Exception('The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
+                            'access key and secret key. For Prisma, the value must be in the form '
+                            'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
+                            'created it, not the token ID visible later on. If you are using environment variables, '
+                            'make sure they are properly set and exported.')
 
         if config.repo_id is None and not config.list:
             # if you are only listing policies, then the API key will be used to fetch policies, but that's it,

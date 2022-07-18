@@ -151,7 +151,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines circleci_pipelines all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
@@ -297,6 +297,28 @@ jobs:
           git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
+  publish-checkov-pyston-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get release version
+        id: versions
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "::set-output name=version::$checkov_version"
+          echo "::set-output name=major_version::$checkov_major_version"
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: bridgecrew/checkov
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
+          dockerfile: Dockerfile.pyston
+          buildoptions: "--no-cache"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]

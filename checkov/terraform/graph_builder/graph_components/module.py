@@ -7,7 +7,7 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
-
+from hcl2 import START_LINE, END_LINE
 
 class Module:
     def __init__(
@@ -62,6 +62,8 @@ class Module:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
+                if START_LINE not in attributes or END_LINE not in attributes:
+                    return
                 provider_name = name
                 if isinstance(attributes, dict):
                     alias = attributes.get("alias")

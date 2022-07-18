@@ -5,7 +5,10 @@ from jsonpath_ng import parse
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.branch_protection import schema as branch_security_schema
+from checkov.github.schemas.no_branch_protection import schema as no_branch_security_schema
 from checkov.json_doc.enums import BlockType
+
+MESSAGE_BRANCH_NOT_PROTECTED = 'Branch not protected'
 
 
 class BranchSecurity(BaseGithubCheck):
@@ -25,6 +28,10 @@ class BranchSecurity(BaseGithubCheck):
             if all(match.value == self.get_expected_value() for match in jsonpath_expression.find(conf)):
                 return CheckResult.PASSED
             else:
+                return CheckResult.FAILED
+        if no_branch_security_schema.validate(conf):
+            message = conf.get('message', '')
+            if message == MESSAGE_BRANCH_NOT_PROTECTED:
                 return CheckResult.FAILED
 
     def get_expected_value(self):

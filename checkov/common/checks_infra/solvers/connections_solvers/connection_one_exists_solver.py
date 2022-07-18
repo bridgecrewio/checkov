@@ -5,7 +5,7 @@ from networkx import DiGraph
 
 
 class ConnectionOneExistsSolver(ConnectionExistsSolver):
-    operator = Operators.ONE_EXISTS
+    operator = Operators.ONE_EXISTS  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
@@ -21,7 +21,7 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed, failed = super().get_operation(graph_connector)
         failed = [f for f in failed if f not in passed]
         return passed, failed
