@@ -24,7 +24,7 @@ class TestBomOutput(unittest.TestCase):
         reports = runner_registry.run(root_folder=test_files_dir)
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_bom_reports(output_path="/tmp", scan_reports=reports)
+            runner_registry.print_bom_reports(output_path="/tmp", scan_reports=reports, output_types=['csv'])
 
         output = captured_output.getvalue()
 
@@ -43,14 +43,3 @@ class TestBomOutput(unittest.TestCase):
             self.assertEqual('Package,Version,Path,git org,git repository,Vulnerability,Severity,License\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
-
-    def test_cyclonedx_output(self):
-        test_file = Path(__file__).parent / "fixtures/main.tf"
-        report = tf_runner().run(root_folder="", files=[str(test_file)])
-
-        cyclonedx = CycloneDX(reports=[report])
-        output = cyclonedx.get_xml_output()
-
-        assert len(cyclonedx.bom.components) == 1
-        assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
-        assert "http://cyclonedx.org/schema/bom/1.4" in output

@@ -252,21 +252,23 @@ class RunnerRegistry:
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
 
-    def print_bom_reports(self, output_path: str, scan_reports: List[Report]):
+    def print_bom_reports(self, output_path: str, scan_reports: list[Report], output_types: list[str]) -> None:
         # create cyclonedx report
-        cyclonedx_output_path = 'results_cyclonedx.xml'
-        cyclonedx = CycloneDX(reports=scan_reports)
-        cyclonedx_output = cyclonedx.get_xml_output()
-        self.save_output_to_file(file_name=os.path.join(output_path, cyclonedx_output_path),
-                                 data=cyclonedx_output,
-                                 data_format="cyclonedx")
+        if 'cyclonedx' in output_types:
+            cyclonedx_output_path = 'results_cyclonedx.xml'
+            cyclonedx = CycloneDX(reports=scan_reports)
+            cyclonedx_output = cyclonedx.get_xml_output()
+            self.save_output_to_file(file_name=os.path.join(output_path, cyclonedx_output_path),
+                                     data=cyclonedx_output,
+                                     data_format="cyclonedx")
 
         # create csv report
-        csv_sbom_report = CSVSBOM()
-        for report in scan_reports:
-            if not report.is_empty():
-                csv_sbom_report.add_report(report=report, git_org="", git_repository="")
-        csv_sbom_report.persist_report(is_api_key=False, output_path=output_path)
+        if 'csv' in output_types:
+            csv_sbom_report = CSVSBOM()
+            for report in scan_reports:
+                if not report.is_empty():
+                    csv_sbom_report.add_report(report=report, git_org="", git_repository="")
+            csv_sbom_report.persist_report(is_api_key=False, output_path=output_path)
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
