@@ -1,4 +1,4 @@
-import unittest
+import pytest
 
 import os
 import io
@@ -11,8 +11,9 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
 
 
-class TestBomOutput(unittest.TestCase):
+class TestBomOutput:
     def test_csv_output(self):
+        tmp_path
         test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/../runner_registry/example_s3_tf"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
         runner_registry = RunnerRegistry(
@@ -25,11 +26,11 @@ class TestBomOutput(unittest.TestCase):
 
         output = captured_output.getvalue()
 
-        self.assertIn('Persisting SBOM to ', output)
-        iac_file_path = '/tmp/iac.csv'
+        assert 'Persisting SBOM to' in output
+        iac_file_path = '/tmp/results_iac.csv'
         with open(iac_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Resource,Path,git org,git repository,Misconfigurations,Severity\n', header)
+            assert 'Resource,Path,git org,git repository,Misconfigurations,Severity\n' == header
             rows = content[1:]
-            self.assertIn('aws_s3_bucket', rows[0])
+            assert 'aws_s3_bucket' in rows[0]
