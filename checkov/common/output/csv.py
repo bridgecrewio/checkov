@@ -7,13 +7,14 @@ from typing import Any
 
 from checkov.common.output.report import Report, CheckType
 
-FILE_NAME_OSS_PACKAGES = 'oss_packages.csv'
+date_now = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
+FILE_NAME_OSS_PACKAGES = f'{date_now}_oss_packages.csv'
 HEADER_OSS_PACKAGES = ["Package", "Version", "Path", "git org", "git repository", "Vulnerability", "Severity",
                        "License"]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
-FILE_NAME_CONTAINER_IMAGES = 'container_images.csv'
+FILE_NAME_CONTAINER_IMAGES = f'{date_now}_container_images.csv'
 
-FILE_NAME_IAC = 'iac.csv'
+FILE_NAME_IAC = f'{date_now}_iac.csv'
 HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
 
 CTA_NO_API_KEY = "SCA, image and runtime findings are only available with Bridgecrew. Signup at " \
@@ -41,13 +42,9 @@ class CSVSBOM():
                      "Severity": ""})
 
     def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
-        date_now = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
-        file_name_iac = f'{date_now}_{FILE_NAME_IAC}'
-        file_name_container_images = f'{date_now}_{FILE_NAME_CONTAINER_IMAGES}'
-        file_name_oss_packages = f'{date_now}_{FILE_NAME_OSS_PACKAGES}'
-        self.persist_report_iac(file_name=file_name_iac, output_path=output_path)
-        self.persist_report_container_images(file_name=file_name_container_images, is_api_key=is_api_key, output_path=output_path)
-        self.persist_report_oss_packages(file_name=file_name_oss_packages, is_api_key=is_api_key, output_path=output_path)
+        self.persist_report_iac(file_name=FILE_NAME_IAC, output_path=output_path)
+        self.persist_report_container_images(file_name=FILE_NAME_CONTAINER_IMAGES, is_api_key=is_api_key, output_path=output_path)
+        self.persist_report_oss_packages(file_name=FILE_NAME_CONTAINER_IMAGES, is_api_key=is_api_key, output_path=output_path)
 
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(file=os.path.join(output_path, file_name), header=HEADER_IAC, rows=self.iac_rows,
