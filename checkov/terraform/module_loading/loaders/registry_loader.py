@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import os
 from http import HTTPStatus
 from typing import List, Dict
