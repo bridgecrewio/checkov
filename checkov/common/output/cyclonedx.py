@@ -70,9 +70,10 @@ BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
 
 
 class CycloneDX:
-    def __init__(self, reports: list[Report], repo_id: str | None) -> None:
+    def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
         self.repo_id = f"{repo_id}/" if repo_id is not None else ""
         self.reports = reports
+        self.export_iac_only = export_iac_only
 
         self.bom = self.create_bom()
 
@@ -86,46 +87,13 @@ class CycloneDX:
             version = "UNKNOWN"
 
         this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
-        this_tool.external_references.update(
-            [
-                ExternalReference(
-                    reference_type=ExternalReferenceType.BUILD_SYSTEM,
-                    url=XsUri("https://github.com/bridgecrewio/checkov/actions"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.DISTRIBUTION,
-                    url=XsUri("https://pypi.org/project/checkov/"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.DOCUMENTATION,
-                    url=XsUri("https://www.checkov.io/1.Welcome/What%20is%20Checkov.html"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.ISSUE_TRACKER,
-                    url=XsUri("https://github.com/bridgecrewio/checkov/issues"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.LICENSE,
-                    url=XsUri("https://github.com/bridgecrewio/checkov/blob/master/LICENSE"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.SOCIAL,
-                    url=XsUri("https://twitter.com/bridgecrewio"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.VCS,
-                    url=XsUri("https://github.com/bridgecrewio/checkov"),
-                ),
-                ExternalReference(
-                    reference_type=ExternalReferenceType.WEBSITE,
-                    url=XsUri("https://www.checkov.io/"),
-                ),
-            ]
-        )
-
+        self.update_tool_external_references(this_tool)
         bom.metadata.tools.add(this_tool)
 
         for report in self.reports:
+            if report.check_type == CheckType.SCA_PACKAGE and self.export_iac_only:
+                continue
+
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
                 component = self.create_component(check_type=report.check_type, resource=check)
 
@@ -169,7 +137,6 @@ class CycloneDX:
 
     def create_application_component(self, check_type: str, resource: Record | ExtraResource) -> Component:
         """Creates an application component
-
         Ex.
         <component bom-ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
           <name>aws_s3_bucket.example</name>
@@ -205,7 +172,6 @@ class CycloneDX:
 
     def create_library_component(self, resource: Record | ExtraResource) -> Component:
         """Creates a library component
-
         Ex.
         <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
           <name>flask</name>
@@ -258,7 +224,6 @@ class CycloneDX:
 
     def create_iac_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
         """Creates a IaC based vulnerability
-
         Ex.
         <vulnerability bom-ref="41f657e7-a83b-4535-9b83-541211d02397">
           <id>CKV_AWS_21</id>
@@ -294,7 +259,6 @@ class CycloneDX:
 
     def create_cve_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
         """Creates a CVE based vulnerability
-
         Ex.
         <vulnerability bom-ref="f18f3674-092f-4e9a-8452-641fd11fc70f">
           <id>CVE-2019-1010083</id>
@@ -362,3 +326,41 @@ class CycloneDX:
         output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
 
         return output
+
+    def update_tool_external_references(self, tool: Tool):
+        tool.external_references.update(
+            [
+                ExternalReference(
+                    reference_type=ExternalReferenceType.BUILD_SYSTEM,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/actions"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.DISTRIBUTION,
+                    url=XsUri("https://pypi.org/project/checkov/"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.DOCUMENTATION,
+                    url=XsUri("https://www.checkov.io/1.Welcome/What%20is%20Checkov.html"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.ISSUE_TRACKER,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/issues"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.LICENSE,
+                    url=XsUri("https://github.com/bridgecrewio/checkov/blob/master/LICENSE"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.SOCIAL,
+                    url=XsUri("https://twitter.com/bridgecrewio"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.VCS,
+                    url=XsUri("https://github.com/bridgecrewio/checkov"),
+                ),
+                ExternalReference(
+                    reference_type=ExternalReferenceType.WEBSITE,
+                    url=XsUri("https://www.checkov.io/"),
+                ),
+            ]
+        )
