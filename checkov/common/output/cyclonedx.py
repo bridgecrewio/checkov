@@ -327,7 +327,7 @@ class CycloneDX:
 
         return output
 
-    def update_tool_external_references(self, tool: Tool):
+    def update_tool_external_references(self, tool: Tool) -> None:
         tool.external_references.update(
             [
                 ExternalReference(
