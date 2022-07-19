@@ -44,7 +44,7 @@ class CSVSBOM():
     def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
         self.persist_report_iac(file_name=FILE_NAME_IAC, output_path=output_path)
         self.persist_report_container_images(file_name=FILE_NAME_CONTAINER_IMAGES, is_api_key=is_api_key, output_path=output_path)
-        self.persist_report_oss_packages(file_name=FILE_NAME_CONTAINER_IMAGES, is_api_key=is_api_key, output_path=output_path)
+        self.persist_report_oss_packages(file_name=FILE_NAME_OSS_PACKAGES, is_api_key=is_api_key, output_path=output_path)
 
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(file=os.path.join(output_path, file_name), header=HEADER_IAC, rows=self.iac_rows,
