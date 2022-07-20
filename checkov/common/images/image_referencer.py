@@ -9,7 +9,7 @@ import docker
 
 
 class Image:
-    def __init__(self, file_path: str, name: str, image_id: str, start_line: int, end_line: int) -> None:
+    def __init__(self, file_path: str, name: str, start_line: int, end_line: int) -> None:
         """
 
         :param file_path: example: 'checkov/integration_tests/example_workflow_file/.github/workflows/vulnerable_container.yaml'
@@ -20,7 +20,6 @@ class Image:
         """
         self.end_line = end_line
         self.start_line = start_line
-        self.image_id = image_id
         self.name = name
         self.file_path = file_path
 
@@ -34,7 +33,7 @@ class Image:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
-        return hash((self.file_path, self.name, self.image_id, self.start_line, self.end_line))
+        return hash((self.file_path, self.name, self.start_line, self.end_line))
 
 
 class ImageReferencer:

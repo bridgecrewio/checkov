@@ -102,7 +102,6 @@ class Runner(YamlRunner, ImageReferencer):
                     image_obj = Image(
                         file_path=file_path,
                         name=image_name,
-                        image_id="",
                         start_line=result["__startline__"],
                         end_line=result["__endline__"],
                     )
@@ -119,7 +118,6 @@ class Runner(YamlRunner, ImageReferencer):
                     image_obj = Image(
                         file_path=file_path,
                         name=root_image,
-                        image_id="",
                         start_line=line_number,
                         end_line=line_number,
                     )

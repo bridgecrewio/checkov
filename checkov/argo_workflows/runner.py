@@ -131,7 +131,6 @@ class Runner(YamlRunner, ImageReferencer):
             return Image(
                 file_path=file_path,
                 name=image_name,
-                image_id="",
                 start_line=start_line,
                 end_line=end_line,
             )

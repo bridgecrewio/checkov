@@ -195,10 +195,7 @@ class Runner(PackageRunner):
             self.raw_report = cached_results
             result = cached_results.get('results', [{}])[0]
             vulnerabilities = result.get("vulnerabilities") or []
-
-            image_id = image.image_id
-            if not image_id:
-                image_id = self.extract_image_short_id(result)
+            image_id = self.extract_image_short_id(result)
 
             self.parse_vulns_to_records(
                 report=report,
@@ -224,7 +221,7 @@ class Runner(PackageRunner):
             self.parse_vulns_to_records(
                 report=report,
                 result=result,
-                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image.image_id}))",
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],

@@ -125,7 +125,6 @@ class Runner(YamlRunner, ImageReferencer):
                     image_obj = Image(
                         file_path=file_path,
                         name=image_name,
-                        image_id="",
                         start_line=result["__startline__"],
                         end_line=result["__endline__"],
                     )
