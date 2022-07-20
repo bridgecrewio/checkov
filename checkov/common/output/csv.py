@@ -41,13 +41,22 @@ class CSVSBOM():
                      "git repository": git_repository, "Misconfigurations": "",
                      "Severity": ""})
 
-    def persist_report(self, is_api_key: bool) -> None:
-        CSVSBOM.write_section(file=FILE_NAME_IAC, header=HEADER_IAC, rows=self.iac_rows,
+    def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
+        self.persist_report_iac(file_name=FILE_NAME_IAC, output_path=output_path)
+        self.persist_report_container_images(file_name=FILE_NAME_CONTAINER_IMAGES, is_api_key=is_api_key, output_path=output_path)
+        self.persist_report_oss_packages(file_name=FILE_NAME_OSS_PACKAGES, is_api_key=is_api_key, output_path=output_path)
+
+    def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
+        CSVSBOM.write_section(file=os.path.join(output_path, file_name), header=HEADER_IAC, rows=self.iac_rows,
                               is_api_key=True)
-        CSVSBOM.write_section(file=FILE_NAME_CONTAINER_IMAGES, header=HEADER_CONTAINER_IMAGE, rows=self.container_rows,
-                              is_api_key=is_api_key)
-        CSVSBOM.write_section(file=FILE_NAME_OSS_PACKAGES, header=HEADER_OSS_PACKAGES, rows=self.package_rows,
-                              is_api_key=is_api_key)
+
+    def persist_report_container_images(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
+        CSVSBOM.write_section(file=os.path.join(output_path, file_name), header=HEADER_CONTAINER_IMAGE,
+                              rows=self.container_rows, is_api_key=is_api_key)
+
+    def persist_report_oss_packages(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
+        CSVSBOM.write_section(file=os.path.join(output_path, file_name), header=HEADER_OSS_PACKAGES,
+                              rows=self.package_rows, is_api_key=is_api_key)
 
     @staticmethod
     def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:

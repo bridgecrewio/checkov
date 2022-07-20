@@ -232,7 +232,7 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "csv" in config.output:
             is_api_key = False
-            if 'bc_api_key' in config and  config.bc_api_key is not None:
+            if 'bc_api_key' in config and config.bc_api_key is not None:
                 is_api_key = True
             csv_sbom_report.persist_report(is_api_key)
 
@@ -251,6 +251,26 @@ class RunnerRegistry:
                                              data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
+
+    def print_iac_bom_reports(self, output_path: str, scan_reports: list[Report], output_types: list[str]) -> None:
+        # create cyclonedx report
+        if 'cyclonedx' in output_types:
+            cyclonedx_output_path = 'results_cyclonedx.xml'
+            cyclonedx = CycloneDX(reports=scan_reports,
+                                  repo_id=metadata_integration.bc_integration.repo_id,
+                                  export_iac_only=True)
+            cyclonedx_output = cyclonedx.get_xml_output()
+            self.save_output_to_file(file_name=os.path.join(output_path, cyclonedx_output_path),
+                                     data=cyclonedx_output,
+                                     data_format="cyclonedx")
+
+        # create csv report
+        if 'csv' in output_types:
+            csv_sbom_report = CSVSBOM()
+            for report in scan_reports:
+                if not report.is_empty():
+                    csv_sbom_report.add_report(report=report, git_org="", git_repository="")
+            csv_sbom_report.persist_report_iac(file_name='results_iac.csv', output_path=output_path)
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
