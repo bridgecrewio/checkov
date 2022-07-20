@@ -292,6 +292,10 @@ class CycloneDX:
             logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
             return Vulnerability()
 
+        severity = VulnerabilitySeverity.UNKNOWN
+        if resource.severity:
+            severity = BC_SEVERITY_TO_CYCLONEDX_LEVEL.get(resource.severity.name, VulnerabilitySeverity.UNKNOWN)
+
         source = VulnerabilitySource(url=resource.vulnerability_details["link"])
         method = None
         vector = resource.vulnerability_details["vector"]
@@ -307,7 +311,7 @@ class CycloneDX:
                 VulnerabilityRating(
                     source=source,
                     score=resource.vulnerability_details.get("cvss"),
-                    severity=BC_SEVERITY_TO_CYCLONEDX_LEVEL.get(resource.severity, VulnerabilitySeverity.UNKNOWN),
+                    severity=severity,
                     method=method,
                     vector=vector,
                 )
