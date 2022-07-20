@@ -206,6 +206,7 @@ class Runner(PackageRunner):
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
+                packages=[],
                 file_abs_path=os.path.abspath(dockerfile_path),
             )
 
@@ -226,6 +227,7 @@ class Runner(PackageRunner):
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image.image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
+                packages=[],
                 file_abs_path=os.path.abspath(dockerfile_path),
             )
         else:
@@ -245,8 +247,15 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
-        self.parse_vulns_to_records(report, result, f"{dockerfile_path} ({image_id})", runner_filter, vulnerabilities,
-                                    file_abs_path=os.path.abspath(dockerfile_path))
+        self.parse_vulns_to_records(
+            report=report,
+            result=result,
+            rootless_file_path=f"{dockerfile_path} ({image_id})",
+            runner_filter=runner_filter,
+            vulnerabilities=vulnerabilities,
+            packages=[],
+            file_abs_path=os.path.abspath(dockerfile_path)
+        )
         return report
 
     def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
