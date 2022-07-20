@@ -137,9 +137,6 @@ class Runner(PackageRunner):
             image_id = kwargs['image_id']
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
 
-        if not strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers
-            return report
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report
@@ -187,21 +184,52 @@ class Runner(PackageRunner):
         """
         report = Report(self.check_type)
 
-        scan_result = self.scan(image.image_id, dockerfile_path, runner_filter)
-        if scan_result is None:
+        # skip complete run, if flag '--check' was used without a CVE check ID
+        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
             return report
-        self.raw_report = scan_result
-        result = scan_result.get('results', [{}])[0]
-        vulnerabilities = result.get("vulnerabilities") or []
-        self.parse_vulns_to_records(
-            report=report,
-            result=result,
-            rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image.image_id}))",
-            runner_filter=runner_filter,
-            vulnerabilities=vulnerabilities,
-            packages=[],
-            file_abs_path=os.path.abspath(dockerfile_path)
-        )
+
+        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+        if cached_results:
+            logging.info(f"Found cached scan results of image {image.name}")
+
+            self.raw_report = cached_results
+            result = cached_results.get('results', [{}])[0]
+            vulnerabilities = result.get("vulnerabilities") or []
+            image_id = self.extract_image_short_id(result)
+
+            self.parse_vulns_to_records(
+                report=report,
+                result=result,
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                file_abs_path=os.path.abspath(dockerfile_path),
+            )
+
+            return report
+        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
+            # experimental flag on running image referencers via local twistcli
+            image_id = ImageReferencer.inspect(image.name)
+            scan_result = self.scan(image_id, dockerfile_path, runner_filter)
+            if scan_result is None:
+                return report
+
+            self.raw_report = scan_result
+            result = scan_result.get('results', [{}])[0]
+            vulnerabilities = result.get("vulnerabilities") or []
+            self.parse_vulns_to_records(
+                report=report,
+                result=result,
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                file_abs_path=os.path.abspath(dockerfile_path),
+            )
+        else:
+            logging.info(f"No cache hit for image {image.name}")
+
         return report
 
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
@@ -226,3 +254,15 @@ class Runner(PackageRunner):
             file_abs_path=os.path.abspath(dockerfile_path)
         )
         return report
+
+    def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
+        """Extracts a shortened version of the image ID from the scan result"""
+
+        if "id" not in scan_result:
+            return "sha256:unknown"
+
+        image_id: str = scan_result["id"]
+
+        if image_id.startswith("sha256:"):
+            return image_id[:17]
+        return image_id[:10]
