@@ -4,12 +4,12 @@ from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor impo
 
 
 class JenkinsRunMetadataExtractor(RunMetaDataExtractor):
-    def is_current_ci(self):
+    def is_current_ci(self) -> bool:
         if os.getenv("JENKINS_URL", ""):
             return True
         return False
 
-    def __init__(self):
+    def __init__(self) -> None:
         server_url = os.getenv('JENKINS_URL', '')
         from_branch = os.getenv('ghprbSourceBranch', "master")
         to_branch = os.getenv('ghprbTargetBranch', "")

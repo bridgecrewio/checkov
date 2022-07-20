@@ -4,12 +4,12 @@ from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor impo
 
 
 class GitLabRunMetadataExtractor(RunMetaDataExtractor):
-    def is_current_ci(self):
+    def is_current_ci(self) -> bool:
         if os.getenv("GITLAB_CI", ""):
             return True
         return False
 
-    def __init__(self):
+    def __init__(self) -> None:
         server_url = os.getenv('CI_SERVER_URL', '')
         from_branch = os.getenv('GIT_BRANCH', "master")
         to_branch = os.getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME', "")

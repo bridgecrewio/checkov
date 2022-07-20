@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import os
 import sys
+from typing import NoReturn
 
 from colorama import Fore
-from tqdm import tqdm  # type: ignore
+from tqdm import tqdm
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 
@@ -15,7 +16,7 @@ RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", "False"))
 
 class ProgressBar:
     def __init__(self, framework: str) -> None:
-        self.pbar = None
+        self.pbar: tqdm[NoReturn] | None = None
         self.framework = framework
         self.is_off = not self.should_show_progress_bar()
 
