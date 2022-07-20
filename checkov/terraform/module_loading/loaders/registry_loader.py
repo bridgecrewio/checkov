@@ -1,4 +1,6 @@
 import os
+import re
+import logging
 from http import HTTPStatus
 from typing import List, Dict
 
@@ -12,6 +14,7 @@ from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints,
+    VERSION_REGEX
 )
 
 
@@ -33,7 +36,7 @@ class RegistryLoader(ModuleLoader):
         # it shouldn't process any github modules
         if self.module_source.startswith(("github.com", "bitbucket.org", "git::")):
             return False
-        # Determine the best version to use before proceeding.
+        self._process_inner_registry_module()
         if self.module_source.startswith(TFC_HOST_NAME):
             # indicates a private registry module
             self.REGISTRY_URL_PREFIX = f"https://{TFC_HOST_NAME}/api/registry/v1/modules"
@@ -46,16 +49,24 @@ class RegistryLoader(ModuleLoader):
             # TODO: implement registry url validation using remote service discovery
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
             pass
-
         self.module_version_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, "versions"))
         if not self.module_version_url.startswith(self.REGISTRY_URL_PREFIX):
             # Local paths don't get the prefix appended
             return False
-        self._cache_available_versions()
+
+        if self.module_version_url in RegistryLoader.modules_versions_cache.keys():
+            return True
+        if not self._cache_available_versions():
+            return False
+        # Determine the best version to use as per version constraints for finding accurate dest_dir.
         self.best_version = self._find_best_version()
-        self._process_inner_registry_module()
+        logging.debug(f"Best version for {self.module_source} is {self.best_version}")
+        if not self.inner_module: 
+            self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name, TFC_HOST_NAME,
+                                         *self.module_source.split("/"), self.best_version)
         if os.path.exists(self.dest_dir):
             return True
+        # verify cache again after refresh
         if self.module_version_url in RegistryLoader.modules_versions_cache.keys():
             return True
         return False
@@ -64,7 +75,7 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(self.dest_dir):
             return ModuleContent(dir=self.dest_dir)
 
-        best_version = self._find_best_version()
+        best_version = self.best_version
         request_download_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, best_version, "download"))
         try:
             response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {self.token}"})
@@ -118,21 +129,19 @@ class RegistryLoader(ModuleLoader):
 
     def _cache_available_versions(self) -> bool:
         # Get all available versions for a module in the registry and cache them.
-        # Returns false if caching fails.
+        # Returns False on failure.
         try:
             response = requests.get(url=self.module_version_url, headers={"Authorization": f"Bearer {self.token}"})
             response.raise_for_status()
-        except HTTPError as e:
-            self.logger.debug(e)
-        if response.status_code != HTTPStatus.OK:
-            return False
-        else:
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
             ]
             RegistryLoader.modules_versions_cache[self.module_version_url] = order_versions_in_descending_order(
                 available_versions)
             return True
+        except HTTPError as e:
+            self.logger.debug(e)
+            return False
 
     def _process_inner_registry_module(self) -> None:
         # Check if the source has '//' in it. If it does, it indicates a reference for an inner module.
@@ -144,14 +153,6 @@ class RegistryLoader(ModuleLoader):
             self.module_source = module_source_components[0]
             self.dest_dir = self.dest_dir.split("//")[0]
             self.inner_module = module_source_components[1]
-        else:
-            if self.best_version:
-                self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name, TFC_HOST_NAME,
-                                             *self.module_source.split("/"), self.best_version)
-            else:
-                self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name, TFC_HOST_NAME,
-                                             *self.module_source.split("/"), self.version)
-
 
 
 loader = RegistryLoader()
