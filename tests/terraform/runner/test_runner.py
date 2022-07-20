@@ -197,6 +197,7 @@ class TestRunnerValid(unittest.TestCase):
         unique_checks = {}
         bad_checks = []
         for registry in list(runner.block_type_registries.values()):
+            unique_checks = {}
             checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
             for check in checks:
                 if check.id not in unique_checks:
@@ -244,6 +245,9 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
+                continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_62':
+                # CKV_AWS_62 has now the same ID as the data block version CKV_AWS_1.
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 

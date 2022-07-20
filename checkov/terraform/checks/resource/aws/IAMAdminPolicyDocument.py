@@ -8,7 +8,7 @@ class IAMAdminPolicyDocument(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
-        id = "CKV_AWS_62"
+        id = "CKV_AWS_1"
         supported_resources = ['aws_iam_role_policy', 'aws_iam_user_policy', 'aws_iam_group_policy', 'aws_iam_policy','aws_ssoadmin_permission_set_inline_policy']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
