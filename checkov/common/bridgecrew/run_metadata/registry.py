@@ -21,5 +21,9 @@ class RunMetadataExtractorsRegistry:
             if extractor.__class__.__name__ == "DefaultRunMetadataExtractor":
                 return extractor
 
+        # should never be reached
+        from checkov.common.bridgecrew.run_metadata.extractors.default_extractor import DefaultRunMetadataExtractor
+        return DefaultRunMetadataExtractor()
+
 
 registry = RunMetadataExtractorsRegistry()

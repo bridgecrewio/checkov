@@ -38,3 +38,19 @@ class _BaselineFinding(TypedDict):
 class _BaselineFailedChecks(TypedDict):
     file: str
     findings: list[_BaselineFinding]
+
+
+class _ReducedScanReport(TypedDict):
+    checks: _ReducedScanReportCheck
+
+
+class _ReducedScanReportCheck(TypedDict):
+    failed_checks: list[dict[str, Any]]
+    passed_checks: list[dict[str, Any]]
+    skipped_checks: list[dict[str, Any]]
+
+
+class _CicdDetails(TypedDict, total=False):
+    commit: str | None
+    pr: str | None
+    runId: str | None

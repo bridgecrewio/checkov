@@ -7,8 +7,10 @@ from typing import Sequence, Any
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
+
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
@@ -101,14 +103,32 @@ class Runner(BaseRunner):
                     pass
 
             vulnerabilities = result.get("vulnerabilities") or []
+            packages = result.get("packages") or []
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            self.parse_vulns_to_records(report, result, rootless_file_path, runner_filter, vulnerabilities)
+            self.parse_vulns_to_records(
+                report=report,
+                result=result,
+                rootless_file_path=rootless_file_path,
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=packages,
+            )
 
         return report
 
-    def parse_vulns_to_records(self, report, result, rootless_file_path, runner_filter, vulnerabilities,
-                               file_abs_path=''):
+    def parse_vulns_to_records(
+        self,
+        report: Report,
+        result: dict[str, Any],
+        rootless_file_path: str,
+        runner_filter: RunnerFilter,
+        vulnerabilities: list[dict[str, Any]],
+        packages: list[dict[str, Any]],
+        file_abs_path: str = ''
+    ) -> None:
+        vulnerable_packages = []
+
         for vulnerability in vulnerabilities:
             record = create_report_record(
                 rootless_file_path=rootless_file_path,
@@ -129,6 +149,21 @@ class Runner(BaseRunner):
 
             report.add_resource(record.resource)
             report.add_record(record)
+            vulnerable_packages.append(f'{vulnerability["packageName"]}@{vulnerability["packageVersion"]}')
+
+        for package in packages:
+            if f'{package["name"]}@{package["version"]}' not in vulnerable_packages:
+                report.extra_resources.add(
+                    ExtraResource(
+                        file_abs_path=file_abs_path or result.get("repository"),
+                        file_path=f"/{rootless_file_path}",
+                        resource=f'{rootless_file_path}.{package["name"]}',
+                        vulnerability_details={
+                            "package_name": package["name"],
+                            "package_version": package["version"],
+                        }
+                    )
+                )
 
     def find_scannable_files(
         self,

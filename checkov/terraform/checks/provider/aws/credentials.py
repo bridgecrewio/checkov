@@ -28,7 +28,7 @@ class AWSCredentials(BaseProviderCheck):
     def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
             value = conf[field][0]
-            if re.match(pattern, value) is not None:
+            if isinstance(value, str) and re.match(pattern, value) is not None:
                 conf[f'{self.id}_secret_{field}'] = value
                 return True
         return False

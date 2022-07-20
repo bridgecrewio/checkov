@@ -11,6 +11,7 @@ from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
@@ -145,18 +146,29 @@ class Runner(BaseRunner):
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        for check, check_result in results.items():
-            resource_id = get_resource_id(entity_conf)
-            entity_context = self.context[k8_file][resource_id]
+        if results:
+            for check, check_result in results.items():
+                resource_id = get_resource_id(entity_conf)
+                entity_context = self.context[k8_file][resource_id]
 
-            record = Record(
-                check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
-                file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                resource=resource_id, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
-            record.set_guideline(check.guideline)
-            report.add_record(record=record)
+                record = Record(
+                    check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                    check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
+                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    resource=resource_id, evaluations=variable_evaluations,
+                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
+                record.set_guideline(check.guideline)
+                report.add_record(record=record)
+        else:
+            resource_id = get_resource_id(entity_conf)
+            # resources without checks, but not existing ones
+            report.extra_resources.add(
+                ExtraResource(
+                    file_abs_path=file_abs_path,
+                    file_path=k8_file_path,
+                    resource=resource_id,
+                )
+            )
 
         return report
 

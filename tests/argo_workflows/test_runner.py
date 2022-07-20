@@ -41,11 +41,9 @@ def test_runner_failing_check():
     assert summary["parsing_errors"] == 0
 
 
-def test_get_image(mocker: MockerFixture):
+def test_get_image():
     # given
     test_file = EXAMPLES_DIR / "scripts_python.yaml"
-
-    mocker.patch("checkov.argo_workflows.runner.Runner.inspect", return_value="sha256:1234567890")
 
     # when
     images = Runner().get_images(str(test_file))
@@ -55,14 +53,12 @@ def test_get_image(mocker: MockerFixture):
         Image(
             file_path=str(test_file),
             name="alpine:latest",
-            image_id="sha256:1234567890",
             start_line=33,
             end_line=36,
         ),
         Image(
             file_path=str(test_file),
             name="python:alpine3.6",
-            image_id="sha256:1234567890",
             start_line=22,
             end_line=28,
         ),

@@ -5,7 +5,9 @@ import requests
 import logging
 import time
 import os
-from typing import Any, TYPE_CHECKING, cast
+from typing import Any, TYPE_CHECKING, cast, Optional
+
+from urllib3.response import HTTPResponse
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def normalize_prisma_url(url: str) -> str | None:
+def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
@@ -39,14 +41,17 @@ def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> 
     return error_message
 
 
-def extract_error_message(response: requests.Response) -> str:
-    if response.content:
+def extract_error_message(response: requests.Response | HTTPResponse) -> Optional[str]:
+    if (isinstance(response, requests.Response) and response.content) or (isinstance(response, HTTPResponse) and response.data):
+        raw = response.content if isinstance(response, requests.Response) else response.data
         try:
-            content = json.loads(response.content)
+            content = json.loads(raw)
             if 'message' in content:
                 return cast(str, content['message'])
+            elif 'Message' in content:
+                return cast(str, content['Message'])
         except Exception:
-            logging.debug(f'Failed to parse the response content: {response.content.decode()}')
+            logging.debug(f'Failed to parse the response content: {raw.decode()}')
 
     return response.reason
 
@@ -63,10 +68,10 @@ def get_prisma_auth_header(token: str) -> dict[str, str]:
     }
 
 
-def get_version_headers(client: str, client_version: str) -> dict[str, str]:
+def get_version_headers(client: str, client_version: str | None) -> dict[str, str]:
     return {
         'x-api-client': client,
-        'x-api-version': client_version,
+        'x-api-version': client_version or "unknown",
         'x-api-checkov-version': checkov_version
     }
 
@@ -75,11 +80,11 @@ def get_user_agent_header() -> dict[str, str]:
     return {'User-Agent': f'checkov/{checkov_version}'}
 
 
-def get_default_get_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_get_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
-def get_default_post_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_post_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 

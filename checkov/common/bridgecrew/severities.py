@@ -3,6 +3,8 @@ from typing import Optional
 
 
 class Severity:
+    __slots__ = ("level", "name")
+
     def __init__(self, name: str, level: int) -> None:
         self.name = name
         self.level = level

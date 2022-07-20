@@ -240,21 +240,7 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            if len(cyclonedx_reports) > 1:
-                # More than one Report - combine Reports first
-                report = Report("")
-                for r in cyclonedx_reports:
-                    report.passed_checks += r.passed_checks
-                    report.skipped_checks += r.skipped_checks
-                    report.failed_checks += r.failed_checks
-            else:
-                report = cyclonedx_reports[0]
-
-            cyclonedx = CycloneDX(
-                passed_checks=report.passed_checks,
-                failed_checks=report.failed_checks,
-                skipped_checks=report.skipped_checks,
-            )
+            cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
             cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)
@@ -264,22 +250,45 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "csv" in config.output:
             is_api_key = False
-            if 'bc_api_key' in config and  config.bc_api_key is not None:
+            if 'bc_api_key' in config and config.bc_api_key is not None:
                 is_api_key = True
             csv_sbom_report.persist_report(is_api_key)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt', 'github_failed_only': 'results_github_failed_only.txt',
+        file_names = {'cli': 'results_cli.txt',
+                      'github_failed_only': 'results_github_failed_only.txt',
                       'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json', 'junitxml': 'results_junitxml.xml',
+                      'json': 'results_json.json',
+                      'junitxml': 'results_junitxml.xml',
                       'cyclonedx': 'results_cyclonedx.xml'}
         if config.output_file_path:
             for output in config.output:
-                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
-                                         data=data_outputs[output],
-                                         data_format=output)
+                if output in file_names:
+                    self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
+                                             data=data_outputs[output],
+                                             data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
+
+    def print_iac_bom_reports(self, output_path: str, scan_reports: list[Report], output_types: list[str]) -> None:
+        # create cyclonedx report
+        if 'cyclonedx' in output_types:
+            cyclonedx_output_path = 'results_cyclonedx.xml'
+            cyclonedx = CycloneDX(reports=scan_reports,
+                                  repo_id=metadata_integration.bc_integration.repo_id,
+                                  export_iac_only=True)
+            cyclonedx_output = cyclonedx.get_xml_output()
+            self.save_output_to_file(file_name=os.path.join(output_path, cyclonedx_output_path),
+                                     data=cyclonedx_output,
+                                     data_format="cyclonedx")
+
+        # create csv report
+        if 'csv' in output_types:
+            csv_sbom_report = CSVSBOM()
+            for report in scan_reports:
+                if not report.is_empty():
+                    csv_sbom_report.add_report(report=report, git_org="", git_repository="")
+            csv_sbom_report.persist_report_iac(file_name='results_iac.csv', output_path=output_path)
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:

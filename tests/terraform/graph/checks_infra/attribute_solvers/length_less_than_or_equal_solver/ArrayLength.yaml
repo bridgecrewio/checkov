@@ -1,0 +1,9 @@
+metadata:
+  id: "ArrayLengthLessThanOrEqual"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: egress.cidr_blocks
+  operator: length_less_than_or_equal
+  value: 1
