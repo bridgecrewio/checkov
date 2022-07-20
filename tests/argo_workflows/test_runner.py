@@ -53,14 +53,12 @@ def test_get_image():
         Image(
             file_path=str(test_file),
             name="alpine:latest",
-            image_id="",
             start_line=33,
             end_line=36,
         ),
         Image(
             file_path=str(test_file),
             name="python:alpine3.6",
-            image_id="",
             start_line=22,
             end_line=28,
         ),
