@@ -7,7 +7,7 @@ import os
 import time
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import requests
 
@@ -55,7 +55,7 @@ class Scanner:
             for input_path in input_paths:
                 scan_results.append(await self.run_scan(input_path))
         else:
-            scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
+            scan_results: List[Dict[str, Any]] = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         if any(scan_result["vulnerabilities"] is None for scan_result in scan_results):
             image_scanner.setup_twistcli()
@@ -69,9 +69,18 @@ class Scanner:
                     scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
-                scan_results = await asyncio.gather(*[
-                    self.execute_twistcli_scan(input_path) if scan_results[idx]["vulnerabilities"] is None else scan_results[idx] for idx, input_path in enumerate(input_paths)
+                indices_to_fix: List[int] = []
+                input_paths_as_list: List[Path] = list(input_paths)  # create a list from a set ("Iterable")
+                for idx, input_path in enumerate(input_paths_as_list):
+                    if scan_results[idx]["vulnerabilities"] is None:
+                        indices_to_fix.append(idx)
+                new_scan_results = await asyncio.gather(*[
+                    self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix
                 ])
+                for idx in indices_to_fix:
+                    res = new_scan_results.pop(0)
+                    res['repository'] = str(input_paths_as_list[idx])
+                    scan_results[idx] = res
 
         return scan_results
 
