@@ -69,11 +69,12 @@ class Scanner:
                     scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
-                indices_to_fix: List[int] = []
                 input_paths_as_list: List[Path] = list(input_paths)  # create a list from a set ("Iterable")
-                for idx in range(len(input_paths_as_list)):
-                    if scan_results[idx]["packages"] is None:
-                        indices_to_fix.append(idx)
+                indices_to_fix: List[int] = [
+                    idx
+                    for idx in range(len(input_paths_as_list))
+                    if scan_results[idx]["packages"] is None
+                ]
                 new_scan_results = await asyncio.gather(*[
                     self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix
                 ])
