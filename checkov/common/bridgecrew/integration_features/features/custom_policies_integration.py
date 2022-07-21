@@ -77,10 +77,18 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'category': policy['category'],
             'frameworks': policy.get('frameworks', [])
         }
+
+        provider = policy.get('provider')
+        if provider:
+            metadata['scope'] = {
+                'provider': provider.lower()
+            }
+
         check = {
             'metadata': metadata,
             'definition': json.loads(policy['code'])
         }
+
         return check
 
     def post_runner(self, scan_reports):
