@@ -44,6 +44,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
+                        policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
@@ -98,7 +99,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 new_record.check_id = cloned_policy['id']
                 new_record.bc_check_id = cloned_policy['id']
                 new_record.guideline = cloned_policy['guideline']
-                new_record.severity = Severities[cloned_policy['severity']]
+                new_record.severity = cloned_policy['severity']
                 new_record.check_name = cloned_policy['title']
                 records.append(new_record)
         return records
