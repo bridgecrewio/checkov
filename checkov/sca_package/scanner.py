@@ -71,7 +71,7 @@ class Scanner:
             else:
                 indices_to_fix: List[int] = []
                 input_paths_as_list: List[Path] = list(input_paths)  # create a list from a set ("Iterable")
-                for idx, input_path in enumerate(input_paths_as_list):
+                for idx in range(len(input_paths_as_list)):
                     if scan_results[idx]["packages"] is None:
                         indices_to_fix.append(idx)
                 new_scan_results = await asyncio.gather(*[
