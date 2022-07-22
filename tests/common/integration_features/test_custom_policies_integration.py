@@ -156,6 +156,25 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                     "Terraform",
                     "CloudFormation"
                 ],
+            },
+            {
+                "id": "mike_AWS_123456789",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"tags.owner\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"All\"]}",
+                "title": "Ensure every resource has an owner tag",
+                "guideline": "Every resource must have an owner tag.\n",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "General",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "CloudFormation",
+                    "Terraform"
+                ],
+                'provider': 'aws'
             }
         ]
 
@@ -178,6 +197,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter())
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+        # check that the tagging policy only runs on the taggable resource (s3 bucket)
+        self.assertEqual(len([r for r in (report.failed_checks + report.passed_checks + report.skipped_checks) if r.check_id == 'mike_AWS_123456789']), 1)
 
         report = tf_runner.run(root_folder=test_files_dir,
                                runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
@@ -218,9 +239,11 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         k8s_registry = get_graph_checks_registry("kubernetes").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
-        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('azure', tf_registry[0].provider)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
+        self.assertEqual('kubernetes', k8s_registry[0].provider)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -273,7 +296,8 @@ def mock_custom_policies_response():
                 "benchmarks": {},
                 "createdBy": "mike+policies@bridgecrew.io",
                 "code": "null",
-                "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3"
+                "sourceIncidentId": "BC_AWS_ELASTICSEARCH_3",
+                'provider': 'aws'
             },
             {
                 "id": "kpande_AZR_1648821862291",
@@ -294,7 +318,8 @@ def mock_custom_policies_response():
                 "frameworks": [
                     "CloudFormation",
                     "Terraform"
-                ]
+                ],
+                'provider': 'azure'
             },
             {
                 "id": "kpande_kubernetes_1650378013211",
@@ -311,7 +336,8 @@ def mock_custom_policies_response():
                 "benchmarks": {},
                 "frameworks": [
                     "Kubernetes"
-                ]
+                ],
+                'provider': 'kubernetes'
             }
         ]
     }
