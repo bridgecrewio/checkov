@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
+from checkov.common.checks_infra.special_attributes import get_attribute_resource_types
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -120,17 +121,21 @@ JSONPATH_PREFIX = "jsonpath_"
 class NXGraphCheckParser(BaseGraphCheckParser):
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
         policy_definition = raw_check.get("definition", {})
-        check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
-        check.id = raw_check.get("metadata", {}).get("id", "")
-        check.name = raw_check.get("metadata", {}).get("name", "")
-        check.category = raw_check.get("metadata", {}).get("category", "")
-        check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        metadata = raw_check.get("metadata", {})
+        provider = metadata.get("scope", {}).get("provider")
+        check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"), provider)
+
+        check.id = metadata.get("id", "")
+        check.name = metadata.get("name", "")
+        check.category = metadata.get("category", "")
+        check.frameworks = metadata.get("frameworks", [])
+        check.provider = provider
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
         return check
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]]) -> BaseGraphCheck:
+    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], provider: Optional[str]) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
@@ -144,7 +149,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                 sub_solvers = [sub_solvers]
 
             for sub_solver in sub_solvers:
-                check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
+                check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types, provider))
             resources_types_of_sub_solvers = [
                 q.resource_types for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
@@ -159,7 +164,8 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types or []
+                resource_types_for_attribute = get_attribute_resource_types(raw_check, provider)
+                check.resource_types = resource_types_for_attribute or resources_types or []
             else:
                 check.resource_types = resource_type
 

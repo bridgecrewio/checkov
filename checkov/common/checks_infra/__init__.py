@@ -1,0 +1,1 @@
+import checkov.common.checks_infra.special_attributes
