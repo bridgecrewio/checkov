@@ -6,6 +6,17 @@ from typing import Dict, List
 modules = glob.glob(join(dirname(__file__), "*.py"))
 __all__ = [basename(f)[:-3] for f in modules if isfile(f) and not f.endswith("__init__.py")]
 
+# load the `resource_types` value from each other file in this package. It should be a Dict[str, Dict[str, List[str]]]:
+# {
+#   attribute_name_1: {
+#       provider_1: [ ... resources ...],
+#       provider_2: [ ... resources ...]
+#   },
+#   attribute_name_2: { ... }
+
+# Generally one attribute per file is best, but for CloudFormation, where the attributes may have the same name in different case,
+# it will be necessary to put the CFN and TF attributes in the same file.
+
 attribute_resources: Dict[str, Dict[str, List[str]]] = {}
 
 for file in __all__:
