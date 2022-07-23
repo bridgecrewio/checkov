@@ -354,7 +354,7 @@ class RunnerRegistry:
     def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
         for report in report_jsons:
             results = report.get('results', {})
-            for key, result in results.items():
+            for result in results.values():
                 for result_dict in result:
                     result_dict.pop('code_block', None)
                     result_dict.pop('connected_node', None)

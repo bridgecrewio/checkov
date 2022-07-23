@@ -1,16 +1,23 @@
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 
+if TYPE_CHECKING:
+    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.bridgecrew.severities import Severity
+
 
 class RepoConfigIntegration(BaseIntegrationFeature):
-    def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
-        self.skip_paths = []
-        self.code_review_threshold = None
-        self.code_review_skip_policies = set()
+    def __init__(self, bc_integration: BcPlatformIntegration) -> None:
+        super().__init__(bc_integration=bc_integration, order=0)
+        self.skip_paths: set[str] = set()
+        self.code_review_threshold: Severity | None = None
+        self.code_review_skip_policies: set[Any] = set()  # not sure what's actually inside the set
 
     def is_valid(self) -> bool:
         return (
@@ -32,9 +39,8 @@ class RepoConfigIntegration(BaseIntegrationFeature):
                 repos = section['repos']
                 if any(repo for repo in repos if self.bc_integration.repo_matches(repo)):
                     logging.debug(f'Found path exclusion config section for repo: {section}')
-                    self.skip_paths += section['rule']['excludePaths']
+                    self.skip_paths.update(section['rule']['excludePaths'])
 
-            self.skip_paths = set(self.skip_paths)
             logging.debug(f'Skipping the following paths based on platform settings: {self.skip_paths}')
 
             code_reviews = vcs_config['codeReviews']
@@ -56,7 +62,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
 
     @staticmethod
-    def _convert_raw_check(policy):
+    def _convert_raw_check(policy: dict[str, Any]) -> dict[str, Any]:
         metadata = {
             'id': policy['id'],
             'name': policy['title'],

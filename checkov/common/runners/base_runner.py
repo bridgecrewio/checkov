@@ -65,7 +65,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             root_folder: str | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
     ) -> Report:
         pass

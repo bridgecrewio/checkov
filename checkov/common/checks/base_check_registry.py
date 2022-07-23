@@ -21,8 +21,8 @@ if TYPE_CHECKING:
 class BaseCheckRegistry:
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
-    __loading_external_checks = False
-    __all_registered_checks: List[BaseCheck] = []
+    __loading_external_checks = False  # noqa: CCE003
+    __all_registered_checks: list[BaseCheck] = []  # noqa: CCE003
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)

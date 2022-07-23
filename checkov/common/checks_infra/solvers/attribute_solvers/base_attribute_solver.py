@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.util.var_utils import is_terraform_variable_dependent, is_cloudformation_variable_dependent
+from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
