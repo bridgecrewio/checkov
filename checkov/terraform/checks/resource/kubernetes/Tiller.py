@@ -34,6 +34,8 @@ class Tiller(BaseResourceCheck):
         spec = conf['spec'][0]
 
         containers = spec.get("container")
+        if not containers:
+            return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
             if not isinstance(container, dict):
                 return CheckResult.UNKNOWN
