@@ -105,7 +105,7 @@ def request_wrapper(
     # 'ConnectionError' instances that appeared:
     # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
     # * 'Connection aborted.', OSError(107, 'Socket not connected').
-    # 'ConnectionError' instances that appeared:
+    # 'HTTPError' instances that appeared:
     # * 403 Client Error: Forbidden for url.
     # * 504 Server Error: Gateway Time-out for url.
 
