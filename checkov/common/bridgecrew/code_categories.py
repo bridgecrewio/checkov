@@ -15,6 +15,7 @@ class CodeCategoryType:
 
 CodeCategoryMapping = {
     CheckType.BITBUCKET_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.CIRCLECI_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.ARM: CodeCategoryType.IAC,
     CheckType.BICEP: CodeCategoryType.IAC,
     CheckType.CLOUDFORMATION: CodeCategoryType.IAC,
