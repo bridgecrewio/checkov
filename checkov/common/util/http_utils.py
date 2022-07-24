@@ -99,13 +99,13 @@ def request_wrapper(
     data: Any | None = None,
     json: dict[str, Any] | None = None,
     should_call_raise_for_status: bool = False
-) -> Response | None:
+) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
     # 'ConnectionError' instances that appeared:
     # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
     # * 'Connection aborted.', OSError(107, 'Socket not connected').
-    # 'ConnectionError' instances that appeared:
+    # 'HTTPError' instances that appeared:
     # * 403 Client Error: Forbidden for url.
     # * 504 Server Error: Gateway Time-out for url.
 
@@ -131,5 +131,6 @@ def request_wrapper(
                 time.sleep(sleep_between_request_tries * (i + 1))
                 continue
             raise http_error
-
-    return None
+    else:
+        raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"
+                        "loop")
