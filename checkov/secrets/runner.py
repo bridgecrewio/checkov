@@ -33,6 +33,8 @@ from checkov.runner_filter import RunnerFilter
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
 
+SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
+                         'go', 'cs', '.txt']
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
     'AWS Access Key': 'CKV_SECRET_2',
@@ -43,7 +45,7 @@ SECRET_TYPE_TO_ID = {
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
-    # 'Secret Keyword': 'CKV_SECRET_10',
+    'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
     'NPM tokens': 'CKV_SECRET_12',
     'Private Key': 'CKV_SECRET_13',
@@ -78,9 +80,57 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': [
+        plugins_used_source_code = [
+                {
+                    'name': 'AWSKeyDetector'
+                },
+                {
+                    'name': 'ArtifactoryDetector'
+                },
+                {
+                    'name': 'AzureStorageKeyDetector'
+                },
+                {
+                    'name': 'BasicAuthDetector'
+                },
+                {
+                    'name': 'CloudantDetector'
+                },
+                {
+                    'name': 'IbmCloudIamDetector'
+                },
+                {
+                    'name': 'MailchimpDetector'
+                },
+                {
+                    'name': 'PrivateKeyDetector'
+                },
+                {
+                    'name': 'SlackDetector'
+                },
+                {
+                    'name': 'SoftlayerDetector'
+                },
+                {
+                    'name': 'SquareOAuthDetector'
+                },
+                {
+                    'name': 'StripeDetector'
+                },
+                {
+                    'name': 'TwilioKeyDetector'
+                },
+                {
+                    'name': 'Base64HighEntropyString'
+                },
+                {
+                    'name': 'HexHighEntropyString'
+                },
+                {
+                    'name': 'KeywordDetector'
+                }
+            ]
+        plugins_used = [
                 {
                     'name': 'AWSKeyDetector'
                 },
@@ -126,6 +176,9 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': plugins_used
         }) as settings:
             report = Report(self.check_type)
             if not runner_filter.show_progress_bar:
@@ -199,7 +252,6 @@ class Runner(BaseRunner[None]):
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
                 ))
-
             return report
 
     @staticmethod
