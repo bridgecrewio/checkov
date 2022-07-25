@@ -296,7 +296,10 @@ class CycloneDX:
         if resource.severity:
             severity = BC_SEVERITY_TO_CYCLONEDX_LEVEL.get(resource.severity.name, VulnerabilitySeverity.UNKNOWN)
 
-        source = VulnerabilitySource(url=resource.vulnerability_details["link"])
+        source = None
+        source_url = resource.vulnerability_details.get("link")
+        if source_url:
+            source = VulnerabilitySource(url=source_url)
         method = None
         vector = resource.vulnerability_details["vector"]
 
