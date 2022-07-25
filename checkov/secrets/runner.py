@@ -80,7 +80,9 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        plugins_used = [
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': [
                 {
                     'name': 'AWSKeyDetector'
                 },
@@ -126,9 +128,6 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': plugins_used
         }) as settings:
             report = Report(self.check_type)
             if not runner_filter.show_progress_bar:
