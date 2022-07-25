@@ -80,56 +80,6 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        plugins_used_source_code = [
-                {
-                    'name': 'AWSKeyDetector'
-                },
-                {
-                    'name': 'ArtifactoryDetector'
-                },
-                {
-                    'name': 'AzureStorageKeyDetector'
-                },
-                {
-                    'name': 'BasicAuthDetector'
-                },
-                {
-                    'name': 'CloudantDetector'
-                },
-                {
-                    'name': 'IbmCloudIamDetector'
-                },
-                {
-                    'name': 'MailchimpDetector'
-                },
-                {
-                    'name': 'PrivateKeyDetector'
-                },
-                {
-                    'name': 'SlackDetector'
-                },
-                {
-                    'name': 'SoftlayerDetector'
-                },
-                {
-                    'name': 'SquareOAuthDetector'
-                },
-                {
-                    'name': 'StripeDetector'
-                },
-                {
-                    'name': 'TwilioKeyDetector'
-                },
-                {
-                    'name': 'Base64HighEntropyString'
-                },
-                {
-                    'name': 'HexHighEntropyString'
-                },
-                {
-                    'name': 'KeywordDetector'
-                }
-            ]
         plugins_used = [
                 {
                     'name': 'AWSKeyDetector'
