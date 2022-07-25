@@ -76,37 +76,37 @@ definition:
 
 ### Attribute Condition: Operators
 
-| Operator              | Value in YAML           |
-|-----------------------|-------------------------|
-| Equals                | `equals`                |
-| Not Equals            | `not_equals`            |
-| Regex Match           | `regex_match`           |
-| Not Regex Match       | `not_regex_match`       |
-| Exists                | `exists`                |
-| Not Exists            | `not_exists`            |
-| One Exists            | `one_exists`            |
-| Any                   | `any`                   |
-| Contains              | `contains`              |
-| Not Contains          | `not_contains`          |
-| Within                | `within`                |
-| Starts With           | `starting_with`         |
-| Not Starts With       | `not_starting_with`     |
-| Ends With             | `ending_with`           |
-| Not Ends With         | `not_ending_with`       |
-| Greater Than          | `greater_than`          |
-| Greater Than Or Equal | `greater_than_or_equal` |
-| Less Than             | `less_than`             |
-| Less Than Or Equal    | `less_than_or_equal`    |
-| Subset                | `subset`                |
-| Not Subset            | `not_subset`            |
-| Is Empty              | `is_empty`              |
-| Is Not Empty          | `is_not_empty`          |
-| Length Equals         | `length_equals`         |
-| Length Not Equals     | `length_equals`         |
-| Length Less Than      | `length_less_than`      |
-| Length Less Than Or Equal   | `length_less_than_or_equal`      |
-| Length Greater Than   | `length_greater_than`   |
-| Length Greater Than Or Equal   | `length_greater_than_or_equal`   |
+| Operator              | Value in YAML                  |
+|-----------------------|--------------------------------|
+| Equals                | `equals`                       |
+| Not Equals            | `not_equals`                   |
+| Regex Match           | `regex_match`                  |
+| Not Regex Match       | `not_regex_match`              |
+| Exists                | `exists`                       |
+| Not Exists            | `not_exists`                   |
+| One Exists            | `one_exists`                   |
+| Any                   | `any`                          |
+| Contains              | `contains`                     |
+| Not Contains          | `not_contains`                 |
+| Within                | `within`                       |
+| Starts With           | `starting_with`                |
+| Not Starts With       | `not_starting_with`            |
+| Ends With             | `ending_with`                  |
+| Not Ends With         | `not_ending_with`              |
+| Greater Than          | `greater_than`                 |
+| Greater Than Or Equal | `greater_than_or_equal`        |
+| Less Than             | `less_than`                    |
+| Less Than Or Equal    | `less_than_or_equal`           |
+| Subset                | `subset`                       |
+| Not Subset            | `not_subset`                   |
+| Is Empty              | `is_empty`                     |
+| Is Not Empty          | `is_not_empty`                 |
+| Length Equals         | `length_equals`                |
+| Length Not Equals     | `length_not_equals`            |
+| Length Less Than      | `length_less_than`             |
+| Length Less Than Or Equal   | `length_less_than_or_equal`    |
+| Length Greater Than   | `length_greater_than`          |
+| Length Greater Than Or Equal   | `length_greater_than_or_equal` |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 

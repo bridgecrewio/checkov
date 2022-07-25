@@ -54,6 +54,29 @@ Following checks will be ignored;
 - CKV_AWS_237 
 - CKV_GCP_82
 
+### Deleted resources
+
+To check if a resource will be deleted or changed (further change values can be found [here](https://www.terraform.io/internals/json-format#change-representation)) the change actions values can be accessed via the attribute name `__change_actions__`.
+
+Ex. Python
+```python
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        actions = conf.get("__change_actions__")
+        if isinstance(actions, list) and "delete" in actions:
+            return CheckResult.FAILED
+        return CheckResult.PASSED
+```
+
+Ex. YAML
+```yaml
+  cond_type: attribute
+  resource_types:
+    - aws_secretsmanager_secret
+  attribute: __change_actions__
+  operator: not_contains
+  value: delete
+```
+
 ## Scanning Third-Party Terraform Modules
 Third-party Terraform modules often reduce complexity for deploying services made up of many objects.
 
