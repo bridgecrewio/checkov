@@ -1,5 +1,5 @@
 metadata:
-  id: "BooleanString"
+  id: "TrueValue"
 scope:
   provider: "Azure"
 definition:
