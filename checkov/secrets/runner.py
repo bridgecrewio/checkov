@@ -60,8 +60,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
-ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
-                                    '.go', '.cs', '.txt'] + SUPPORTED_FILE_EXTENSIONS
+ADDED_TO_SECRET_SCAN_FILES_TYPES = SOURCE_CODE_EXTENSION + SUPPORTED_FILE_EXTENSIONS
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
