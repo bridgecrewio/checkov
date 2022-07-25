@@ -20,7 +20,9 @@ class AKSUsesAzurePoliciesAddon(BaseResourceCheck):
             return CheckResult.PASSED
         # up to and including Azure provider v2.96.0
         self.evaluated_keys = ["addon_profile/[0]/azure_policy/[0]/enabled"]
-        addon_profile = conf.get("addon_profile", [None])[0]
+        addon_profile = conf.get('addon_profile')
+        if addon_profile:
+            addon_profile = addon_profile[0]
         if addon_profile and isinstance(addon_profile, dict):
             azure_policy = addon_profile.get("azure_policy", [None])[0]
             if azure_policy and isinstance(azure_policy, dict) and azure_policy.get("enabled", [None])[0]:
