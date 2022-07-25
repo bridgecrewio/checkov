@@ -24,7 +24,7 @@ class MemoryRequests(BaseResourceCheck):
                 resources = container.get("resources")[0]
                 if resources.get('requests'):
                     requests = resources.get('requests')[0]
-                    if requests.get('memory'):
+                    if isinstance(requests, dict) and requests.get('memory'):
                         return CheckResult.PASSED
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/resources/[0]/requests']
                     return CheckResult.FAILED
