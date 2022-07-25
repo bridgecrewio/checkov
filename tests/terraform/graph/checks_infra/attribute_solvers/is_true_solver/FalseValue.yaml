@@ -1,0 +1,11 @@
+metadata:
+  id: "FalseValue"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_lb"
+  attribute: "internal"
+  operator: "is_true"
+

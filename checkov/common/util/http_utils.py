@@ -5,6 +5,8 @@ import requests
 import logging
 import time
 import os
+import aiohttp
+import asyncio
 from typing import Any, TYPE_CHECKING, cast, Optional
 
 from urllib3.response import HTTPResponse
@@ -99,13 +101,13 @@ def request_wrapper(
     data: Any | None = None,
     json: dict[str, Any] | None = None,
     should_call_raise_for_status: bool = False
-) -> Response | None:
+) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
     # 'ConnectionError' instances that appeared:
     # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
     # * 'Connection aborted.', OSError(107, 'Socket not connected').
-    # 'ConnectionError' instances that appeared:
+    # 'HTTPError' instances that appeared:
     # * 403 Client Error: Forbidden for url.
     # * 504 Server Error: Gateway Time-out for url.
 
@@ -131,5 +133,54 @@ def request_wrapper(
                 time.sleep(sleep_between_request_tries * (i + 1))
                 continue
             raise http_error
+    else:
+        raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"
+                        "loop")
 
-    return None
+
+async def aiohttp_client_session_wrapper(
+    url: str,
+    headers: dict[str, Any],
+    payload: dict[str, Any]
+) -> int:
+    request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
+    sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
+
+    # adding retry mechanism for avoiding the next repeated unexpected issues:
+    # 1. Gateway Timeout from the server
+    # 2. ClientOSError
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
+        for i in range(request_max_tries):
+            logging.info(f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
+            try:
+                async with session.post(
+                        url=url, headers=headers, json=payload
+                ) as response:
+                    content = await response.text()
+                if response.ok:
+                    logging.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
+                    return 0
+                elif i != request_max_tries - 1:
+                    await asyncio.sleep(sleep_between_request_tries * (i + 1))
+                    continue
+                else:
+                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
+                                  f"url \'{url}\'")
+                    logging.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
+                    return 1
+            except aiohttp.ClientOSError:
+                if i != request_max_tries - 1:
+                    await asyncio.sleep(sleep_between_request_tries * (i + 1))
+                    continue
+                else:
+                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - ClientOSError when sending report "
+                                  f"to url: \'{url}\'")
+                    raise
+            except Exception as e:
+                logging.error(f"[http_utils](aiohttp_client_session_wrapper) - exception when sending report "
+                              f"to url: \'{url}\':\n\'{e}\'")
+                raise
+
+        else:
+            raise Exception("Unexpected behavior: the method \'aiohttp_client_session_wrapper\' should be terminated "
+                            "inside the above for-loop")

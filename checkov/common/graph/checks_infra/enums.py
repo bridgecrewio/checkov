@@ -58,3 +58,5 @@ class Operators:
     LENGTH_GREATER_THAN_OR_EQUAL = 'length_greater_than_or_equal'
     LENGTH_LESS_THAN = 'length_less_than'
     LENGTH_LESS_THAN_OR_EQUAL = 'length_less_than_or_equal'
+    IS_TRUE = 'is_true'
+    IS_FALSE = 'is_false'
