@@ -176,6 +176,11 @@ async def aiohttp_client_session_wrapper(
                     logging.error(f"[http_utils](aiohttp_client_session_wrapper) - ClientOSError when sending report "
                                   f"to url: \'{url}\'")
                     raise
+            except Exception as e:
+                logging.error(f"[http_utils](aiohttp_client_session_wrapper) - exception when sending report "
+                              f"to url: \'{url}\':\n\'{e}\'")
+                raise
+
         else:
             raise Exception("Unexpected behavior: the method \'aiohttp_client_session_wrapper\' should be terminated "
                             "inside the above for-loop")
