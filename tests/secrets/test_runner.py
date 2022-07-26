@@ -205,7 +205,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.ts']))
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 4)
 
     def test_runner_requested_file_type_only_py(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -213,7 +213,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.py']))
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 4)
 
     def test_runner_requested_file_type_only_yml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -237,8 +237,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.yml', '.py', '.ts']))
-        self.assertEqual(len(report.failed_checks), 6)
+                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.yml', '.tf']))
+        self.assertEqual(len(report.failed_checks), 5)
 
     def test_runner_requested_file_type_all(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -246,7 +246,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['all']))
-        self.assertEqual(len(report.failed_checks), 13)
+        self.assertEqual(len(report.failed_checks), 17)
 
     def test_runner_requested_file_only_dockerfile(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
