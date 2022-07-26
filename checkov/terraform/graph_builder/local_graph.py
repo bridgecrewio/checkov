@@ -301,7 +301,7 @@ class TerraformLocalGraph(LocalGraph):
                 dest_module_path = next(
                     (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path
                 )
-            except OSError:
+            except (OSError, ValueError):
                 logging.debug(f"Error to get dest_module_path {dest_module_source}", exc_info=True)
                 return ""
             except NotImplementedError as e:

@@ -545,7 +545,7 @@ class Parser:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
                 except Exception as e:
                     logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.warning(e, exc_info=True)
+                    logging.warning(e, exc_info=False)
         return module, tf_definitions
 
     @staticmethod
@@ -735,7 +735,7 @@ Load JSON or HCL, depending on filename.
     try:
         logging.debug(f"Parsing {file_path}")
 
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8-sig") as f:
             if file_name.endswith(".json"):
                 return json.load(f)
             else:

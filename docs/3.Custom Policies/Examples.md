@@ -24,6 +24,23 @@ definition:
        operator: "exists"
 ```
 
+## Basic Query - Terraform plan resource not deleted
+
+```yaml
+---
+metadata:
+  name: "Ensure Secret is not deleted"
+  id: "CKV2_AWS_1"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_secretsmanager_secret
+  attribute: __change_actions__
+  operator: not_contains
+  value: delete
+```
+
 ## OR at Top Level - Two Attribute Blocks
 
 ```yaml

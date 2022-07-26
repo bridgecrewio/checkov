@@ -1,15 +1,30 @@
 from __future__ import annotations
 
 import itertools
+import logging
 import os
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType
+from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
-from cyclonedx.model.component import Component
-from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAdvisory
+from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.vulnerability import (
+    Vulnerability,
+    VulnerabilityAdvisory,
+    BomTarget,
+    VulnerabilitySource,
+    VulnerabilityRating,
+    VulnerabilityScoreSource,
+    VulnerabilitySeverity,
+)
 from cyclonedx.output import SchemaVersion, get_instance
+from packageurl import PackageURL  # type:ignore[import]
+
+from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.output.report import CheckType
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -17,7 +32,9 @@ else:
     from importlib_metadata import version as meta_version
 
 if TYPE_CHECKING:
+    from checkov.common.output.extra_resource import ExtraResource
     from checkov.common.output.record import Record
+    from checkov.common.output.report import Report
 
 DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
 CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
@@ -27,13 +44,36 @@ CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
     "1.1": SchemaVersion.V1_1,
     "1.0": SchemaVersion.V1_0,
 }
+PURL_TYPE_MAVEN = "maven"
+FILE_NAME_TO_PURL_TYPE = {
+    "build.gradle": "maven",
+    "build.gradle.kts": PURL_TYPE_MAVEN,
+    "composer.json": "composer",
+    "Gemfile": "gem",
+    "go.mod": "golang",
+    "go.sum": "golang",
+    "package.json": "npm",
+    "package-lock.json": "npm",
+    "Pipfile": "pypi",
+    "Pipfile.lock": "pypi",
+    "pom.xml": "maven",
+    "requirements.txt": "pypi",
+    "yarn.lock": "npm",
+}
+BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
+    BcSeverities.CRITICAL: VulnerabilitySeverity.CRITICAL,
+    BcSeverities.HIGH: VulnerabilitySeverity.HIGH,
+    BcSeverities.MEDIUM: VulnerabilitySeverity.MEDIUM,
+    BcSeverities.LOW: VulnerabilitySeverity.LOW,
+    BcSeverities.NONE: VulnerabilitySeverity.NONE,
+}
 
 
 class CycloneDX:
-    def __init__(self, passed_checks: list[Record], failed_checks: list[Record], skipped_checks: list[Record]) -> None:
-        self.passed_checks = passed_checks
-        self.failed_checks = failed_checks
-        self.skipped_checks = skipped_checks
+    def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
+        self.repo_id = f"{repo_id}/" if repo_id is not None else ""
+        self.reports = reports
+        self.export_iac_only = export_iac_only
 
         self.bom = self.create_bom()
 
@@ -47,7 +87,255 @@ class CycloneDX:
             version = "UNKNOWN"
 
         this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
-        this_tool.external_references.update(
+        self.update_tool_external_references(this_tool)
+        bom.metadata.tools.add(this_tool)
+
+        for report in self.reports:
+            if report.check_type == CheckType.SCA_PACKAGE and self.export_iac_only:
+                continue
+
+            for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                component = self.create_component(check_type=report.check_type, resource=check)
+
+                if not bom.has_component(component=component):
+                    bom.components.add(component)
+
+            for check in report.failed_checks:
+                component = self.create_component(check_type=report.check_type, resource=check)
+
+                if bom.has_component(component=component):
+                    component = (
+                        bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
+                            purl=component.purl
+                        )
+                    )
+
+                vulnerability = self.create_vulnerability(
+                    check_type=report.check_type, resource=check, component=component
+                )
+
+                component.add_vulnerability(vulnerability)
+                bom.components.add(component)
+
+            for resource in report.extra_resources:
+                component = self.create_component(check_type=report.check_type, resource=resource)
+
+                if not bom.has_component(component=component):
+                    bom.components.add(component)
+
+        return bom
+
+    def create_component(self, check_type: str, resource: Record | ExtraResource) -> Component:
+        """Creates a component"""
+
+        if check_type == CheckType.SCA_PACKAGE:
+            component = self.create_library_component(resource=resource)
+        else:
+            component = self.create_application_component(check_type=check_type, resource=resource)
+
+        return component
+
+    def create_application_component(self, check_type: str, resource: Record | ExtraResource) -> Component:
+        """Creates an application component
+        Ex.
+        <component bom-ref="pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85" type="application">
+          <name>aws_s3_bucket.example</name>
+          <version>sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</version>
+          <hashes>
+            <hash alg="SHA-1">c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</hash>
+          </hashes>
+          <purl>pkg:terraform/cli_repo/pd/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</purl>
+        </component>
+        """
+
+        sha1_hash = sha1sum(filename=resource.file_abs_path)
+        purl = PackageURL(
+            type=check_type,
+            namespace=f"{self.repo_id}/{resource.file_path}",
+            name=resource.resource,
+            version=f"sha1:{sha1_hash}",
+        )
+        component = Component(
+            bom_ref=str(purl),
+            name=resource.resource,
+            version=f"sha1:{sha1_hash}",
+            hashes=[
+                HashType(
+                    algorithm=HashAlgorithm.SHA_1,
+                    hash_value=sha1_hash,
+                )
+            ],
+            component_type=ComponentType.APPLICATION,
+            purl=purl,
+        )
+        return component
+
+    def create_library_component(self, resource: Record | ExtraResource) -> Component:
+        """Creates a library component
+        Ex.
+        <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
+          <name>flask</name>
+          <version>0.6</version>
+          <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
+        </component>
+        """
+
+        if not resource.vulnerability_details:
+            # this shouldn't happen
+            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            return Component(name="unknown")
+
+        file_name = Path(resource.file_path).name
+        purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
+        namespace = f"{self.repo_id}/{resource.file_path}"
+        package_group = None
+        package_name = resource.vulnerability_details["package_name"]
+        package_version = resource.vulnerability_details["package_version"]
+
+        if purl_type == PURL_TYPE_MAVEN:
+            package_group, package_name = package_name.split("_", maxsplit=1)
+            namespace += f"/{package_group}"
+
+        purl = PackageURL(
+            type=purl_type,
+            namespace=namespace,
+            name=package_name,
+            version=package_version,
+        )
+        component = Component(
+            bom_ref=str(purl),
+            group=package_group,
+            name=package_name,
+            version=package_version,
+            component_type=ComponentType.LIBRARY,
+            purl=purl,
+        )
+        return component
+
+    def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
+        """Creates a vulnerability"""
+
+        if check_type == CheckType.SCA_PACKAGE:
+            vulnerability = self.create_cve_vulnerability(resource=resource, component=component)
+        else:
+            vulnerability = self.create_iac_vulnerability(resource=resource, component=component)
+
+        return vulnerability
+
+    def create_iac_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
+        """Creates a IaC based vulnerability
+        Ex.
+        <vulnerability bom-ref="41f657e7-a83b-4535-9b83-541211d02397">
+          <id>CKV_AWS_21</id>
+          <source>
+            <name>checkov</name>
+          </source>
+          <description>Resource: aws_s3_bucket.example. Ensure all data stored in the S3 bucket have versioning enabled</description>
+          <advisories>
+            <advisory>
+              <url>https://docs.bridgecrew.io/docs/s3_16-enable-versioning</url>
+            </advisory>
+          </advisories>
+          <affects>
+            <target>
+              <ref>pkg:terraform/main.tf/aws_s3_bucket.example@sha1:c9b9b2eba0a7d4ccb66096df77e1a6715ea1ae85</ref>
+            </target>
+          </affects>
+        </vulnerability>
+        """
+
+        advisories = None
+        if resource.guideline:
+            advisories = [VulnerabilityAdvisory(url=XsUri(resource.guideline))]
+
+        vulnerability = Vulnerability(
+            id=resource.check_id,
+            source=VulnerabilitySource(name="checkov"),
+            description=f"Resource: {resource.resource}. {resource.check_name}",
+            affects_targets=[BomTarget(ref=component.bom_ref.value)],
+            advisories=advisories,
+        )
+        return vulnerability
+
+    def create_cve_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
+        """Creates a CVE based vulnerability
+        Ex.
+        <vulnerability bom-ref="f18f3674-092f-4e9a-8452-641fd11fc70f">
+          <id>CVE-2019-1010083</id>
+          <source>
+            <url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
+          </source>
+          <ratings>
+            <rating>
+              <source>
+                <url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
+              </source>
+              <score>7.5</score>
+              <severity>unknown</severity>
+              <method>CVSSv3</method>
+              <vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</vector>
+            </rating>
+          </ratings>
+          <description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. ...</description>
+          <recommendation>fixed in 1.0</recommendation>
+          <published>2019-07-17T14:15:00</published>
+          <affects>
+            <target>
+              <ref>pkg:pypi/flask@0.6</ref>
+            </target>
+          </affects>
+        </vulnerability>
+        """
+
+        if not resource.vulnerability_details:
+            # this shouldn't happen
+            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            return Vulnerability()
+
+        severity = VulnerabilitySeverity.UNKNOWN
+        if resource.severity:
+            severity = BC_SEVERITY_TO_CYCLONEDX_LEVEL.get(resource.severity.name, VulnerabilitySeverity.UNKNOWN)
+
+        source = None
+        source_url = resource.vulnerability_details.get("link")
+        if source_url:
+            source = VulnerabilitySource(url=source_url)
+        method = None
+        vector = resource.vulnerability_details["vector"]
+
+        if vector:
+            method = VulnerabilityScoreSource.get_from_vector(vector)
+            vector = method.get_localised_vector(vector)
+
+        vulnerability = Vulnerability(
+            id=resource.vulnerability_details["id"],
+            source=source,
+            ratings=[
+                VulnerabilityRating(
+                    source=source,
+                    score=resource.vulnerability_details.get("cvss"),
+                    severity=severity,
+                    method=method,
+                    vector=vector,
+                )
+            ],
+            description=resource.vulnerability_details.get("description"),
+            recommendation=resource.vulnerability_details.get("status"),
+            published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
+            affects_targets=[BomTarget(ref=component.bom_ref.value)],
+        )
+        return vulnerability
+
+    def get_xml_output(self) -> str:
+        schema_version = CYCLONE_SCHEMA_VERSION.get(
+            os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
+        )
+        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
+
+        return output
+
+    def update_tool_external_references(self, tool: Tool) -> None:
+        tool.external_references.update(
             [
                 ExternalReference(
                     reference_type=ExternalReferenceType.BUILD_SYSTEM,
@@ -83,52 +371,3 @@ class CycloneDX:
                 ),
             ]
         )
-
-        bom.metadata.tools.add(this_tool)
-
-        for check in itertools.chain(self.passed_checks, self.skipped_checks):
-            component = Component.for_file(absolute_file_path=check.file_abs_path, path_for_bom=check.file_path)
-
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                    purl=component.purl
-                )
-
-            bom.components.add(component)
-
-        for failed_check in self.failed_checks:
-            component = Component.for_file(
-                absolute_file_path=failed_check.file_abs_path, path_for_bom=failed_check.file_path
-            )
-
-            if bom.has_component(component=component):
-                component = bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                    purl=component.purl
-                )
-
-            if failed_check.guideline:
-                vulnerability = Vulnerability(
-                    id=failed_check.check_id,
-                    source_name="checkov",
-                    description=f"Resource: {failed_check.resource}. {failed_check.check_name}",
-                    advisories=[VulnerabilityAdvisory(url=XsUri(failed_check.guideline))],
-                )
-            else:
-                vulnerability = Vulnerability(
-                    id=failed_check.check_id,
-                    source_name="checkov",
-                    description=f"Resource: {failed_check.resource}. {failed_check.check_name}",
-                )
-
-            component.add_vulnerability(vulnerability)
-            bom.components.add(component)
-
-        return bom
-
-    def get_xml_output(self) -> str:
-        schema_version = CYCLONE_SCHEMA_VERSION.get(
-            os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
-        )
-        outputter = get_instance(bom=self.bom, schema_version=schema_version)
-
-        return outputter.output_as_string()

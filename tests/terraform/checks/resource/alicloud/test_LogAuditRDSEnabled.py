@@ -3,27 +3,25 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.alicloud.RAMPasswordPolicyMaxAge import check
+from checkov.terraform.checks.resource.alicloud.LogAuditRDSEnabled import check
 
 
-class TestPasswordPolicyMaxAge(unittest.TestCase):
+class TestLogAuditRDSEnabled(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_PasswordPolicyMaxAge")
-        report = runner.run(root_folder=test_files_dir,
-                            runner_filter=RunnerFilter(checks=[check.id]))
+        test_files_dir = os.path.join(current_dir, "example_LogAuditRDSEnabled")
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'alicloud_ram_account_password_policy.pass',
+            'alicloud_log_audit.pass',
         }
         failing_resources = {
-            'alicloud_ram_account_password_policy.fail',
-            'alicloud_ram_account_password_policy.fail2',
-            'alicloud_ram_account_password_policy.fail3',
+            'alicloud_log_audit.fail',
+            'alicloud_log_audit.fail2',
         }
         skipped_resources = {}
 

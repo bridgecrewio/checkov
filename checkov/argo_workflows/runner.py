@@ -128,14 +128,11 @@ class Runner(YamlRunner, ImageReferencer):
         if image_name and isinstance(image_name, str):
             start_line = container.get("__startline__", 0)
             end_line = container.get("__endline__", 0)
-            image_id = self.inspect(image_name)
-            if image_id:
-                return Image(
-                    file_path=file_path,
-                    name=image_name,
-                    image_id=image_id,
-                    start_line=start_line,
-                    end_line=end_line,
-                )
+            return Image(
+                file_path=file_path,
+                name=image_name,
+                start_line=start_line,
+                end_line=end_line,
+            )
 
         return None
