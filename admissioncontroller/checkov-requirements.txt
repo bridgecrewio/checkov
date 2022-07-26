@@ -1,1 +1,1 @@
-checkov==2.1.75
+checkov==2.1.76
