@@ -203,7 +203,29 @@ def scan_result2() -> Dict[str, Any]:
             "medium": 2,
             "low": 0,
             "total": 6
-        }
+        },
+        'license_data': [{
+            'packageName': 'github.com/armon/go-metrics',
+            'packageVers ion': 'v0.0.0-20180917152333-f0300d1749da',
+            'packageLang': 'go',
+            'license': 'PRIVATE',
+            'status': 'OPEN',
+            'policy': 'BC_LIC_1'
+        }, {
+            'packageName': 'github.com/chzyer/readline',
+            'packageVersion': 'v0.0.0-20180603132655-2972be24d48e',
+            'packageLang': 'go',
+            'license': 'PRIVATE',
+            'status': 'OPEN',
+            'policy': 'BC_LIC_1'
+        }, {
+            'packageName': 'github.com/davecgh/go-spew',
+            'packageVersion': 'v1.1.1',
+            'packageLang': 'go',
+            'license': None,
+            'status': 'COMPLIANT',
+            'policy': 'BC_LIC_1'
+        }]
     }
 
 
@@ -1627,3 +1649,34 @@ def scan_result_success_response() -> Dict[str, Any]:
                    "anz3q7neGie2cS8HcBin/BL8U8U/AL0XOSX+jt75P82r6+RIV6DoZDXW14oKMNz5rR2TA6fr6j3WG52dFumrjvsG"
                    "sp7dAH12j5wbWz+sG1vfOD6+m3b/8HQd/FwVgXAAA=",
      'compressionMethod': 'gzip'}
+
+
+@pytest.fixture()
+def license_violation_result_success_response() -> Dict[str, Any]:
+    return {
+        "packages": [
+            {
+                "packageName": "github.com/armon/go-metrics",
+                "packageVersion": "v0.0.0-20180917152333-f0300d1749da",
+                "packageLang": "go",
+                "license": "PRIVATE",
+                "status": "OPEN",
+                "policy": "BC_LIC_1"
+            },
+            {
+                "packageName": "github.com/chzyer/readline",
+                "packageVersion": "v0.0.0-20180603132655-2972be24d48e",
+                "packageLang": "go",
+                "license": "PRIVATE",
+                "status": "OPEN",
+                "policy": "BC_LIC_1"
+            },
+            {
+                "packageName": "github.com/davecgh/go-spew",
+                "packageVersion": "v1.1.1",
+                "packageLang": "go",
+                "license": None,
+                "status": "COMPLIANT",
+                "policy": "BC_LIC_1"
+            }]
+    }

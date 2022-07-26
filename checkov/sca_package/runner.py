@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional, List, Set, Union, Sequence, Dict, Any
+from typing import Optional, List, Set, Union, Sequence, Dict, Any, Tuple
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
@@ -99,13 +99,22 @@ class Runner(BaseRunner):
 
     def parse_vulns_to_records(self, report, result, rootless_file_path, runner_filter, vulnerabilities,
                                file_abs_path=''):
+        # map license data to records in dict for fast access
+        license_data = result.get("license_data")
+        license_dict: Dict[Tuple, dict] = dict()
+        if license_data:
+            for license_record in license_data:
+                license_dict[(license_record["packageName"], license_record["packageVersion"])] = license_record
+
         for vulnerability in vulnerabilities:
+            license_status = self.get_license_status(license_dict, vulnerability)
             record = create_report_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=file_abs_path or result.get("repository"),
                 check_class=self._check_class,
                 vulnerability_details=vulnerability,
-                runner_filter=runner_filter
+                runner_filter=runner_filter,
+                license_status=license_status
             )
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
                                                   severity=record.severity):
@@ -119,6 +128,17 @@ class Runner(BaseRunner):
 
             report.add_resource(record.resource)
             report.add_record(record)
+
+    def get_license_status(self, license_dict, vulnerability):
+        license_status = license_dict.get((vulnerability["packageName"], vulnerability["packageVersion"]))
+        if license_status:
+            if license_status["status"] == "COMPLIANT":
+                license_status = "COMPLIANT"
+            else:
+                license_status = f"FAILED ({license_status['license']})"
+        else:
+            license_status = ""
+        return license_status
 
     def find_scannable_files(
             self, root_path: Optional[Path], files: Optional[List[str]], excluded_paths: Set[str],

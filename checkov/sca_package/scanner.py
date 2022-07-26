@@ -86,16 +86,28 @@ class Scanner:
                 logging.error(response_json["outputData"])
                 return {}
 
+            time.sleep(SLEEP_DURATION)
+            total_sleeping_time += SLEEP_DURATION
+
             if total_sleeping_time > MAX_SLEEP_DURATION:
                 logging.info(f"Timeout, slept for {total_sleeping_time}")
                 return {}
 
-            time.sleep(SLEEP_DURATION)
-            total_sleeping_time += SLEEP_DURATION
+        # handle license violations
+        request_body = {
+            "s3ObjectKey": scan_id
+        }
+        license_data = request_wrapper(
+            "POST", f"{self._base_url}/api/v1/vulnerabilities/packages/license-violations",
+            headers=bc_integration.get_default_headers("POST"),
+            json=request_body
+        )
+        license_data_json = license_data.json()
 
-        return self.parse_api_result(input_path, response.json()["outputData"])
+        return self.parse_api_result(input_path, response.json()["outputData"], license_data_json["packages"])
 
-    def parse_api_result(self, origin_file_path: Path, response: str) -> dict:
+    def parse_api_result(self, origin_file_path: Path, response: str, license_data: str) -> dict:
         raw_result = json.loads(decompress_file_gzip_base64(response))
         raw_result['repository'] = str(origin_file_path)
+        raw_result['license_data'] = license_data
         return raw_result

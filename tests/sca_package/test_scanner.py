@@ -8,7 +8,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 
 @responses.activate
-def test_run_scan(mock_bc_integration, scan_result2, scan_result_success_response):
+def test_run_scan(mock_bc_integration, scan_result2, scan_result_success_response, license_violation_result_success_response):
     # given
     responses.add(
         method=responses.POST,
@@ -22,6 +22,13 @@ def test_run_scan(mock_bc_integration, scan_result2, scan_result_success_respons
         url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/"
                                              "2e97f5afea42664309f492a1e2083b43479c2935",
         json=scan_result_success_response,
+        status=200
+    )
+
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/license-violations",
+        json=license_violation_result_success_response,
         status=200
     )
 

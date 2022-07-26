@@ -44,12 +44,13 @@ class CveCount:
             f"medium: {self.medium}",
             f"low: {self.low}",
             f"skipped: {self.skipped}",
+            ""
         ]
 
 
 def create_report_record(
     rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any],
-    runner_filter: RunnerFilter = RunnerFilter()
+    runner_filter: RunnerFilter = RunnerFilter(), license_status: str = ""
 ) -> Record:
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
@@ -93,6 +94,7 @@ def create_report_record(
         "status": status,
         "severity": severity,
         "package_name": package_name,
+        "license_status": license_status,
         "package_version": package_version,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
@@ -120,7 +122,7 @@ def create_report_record(
         severity=Severities[severity.upper()],
         description=description,
         short_description=f"{cve_id} - {package_name}: {package_version}",
-        vulnerability_details=details,
+        vulnerability_details=details
     )
     return record
 
@@ -212,6 +214,7 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
                 package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
                 )
+                package_details_map[package_name]["license_status"] = record.vulnerability_details["license_status"]
 
         cli_outputs.append(
             create_cli_table(
@@ -225,9 +228,9 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
 
 
 def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
-    columns = 6
-    table_width = 120
-    column_width = int(120 / columns)
+    columns = 7
+    table_width = 140
+    column_width = int(140 / columns)
 
     cve_table_lines = create_cve_summary_table_part(
         table_width=table_width, column_width=column_width, cve_count=cve_count
@@ -283,7 +286,7 @@ def create_fixable_cve_summary_table_part(
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
-        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.add_row([f"To fix  {cve_count.has_fix}/{cve_count.to_fix}  CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -309,6 +312,7 @@ def create_package_overview_table_part(
         "Current version",
         "Fixed version",
         "Compliant version",
+        "License Status"
     ]
     for package_idx, (package_name, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
@@ -320,11 +324,12 @@ def create_package_overview_table_part(
             col_package = ""
             col_current_version = ""
             col_compliant_version = ""
+            col_license_status = ""
             if cve_idx == 0:
                 col_package = package_name
                 col_current_version = details["current_version"]
                 col_compliant_version = details["compliant_version"]
-
+                col_license_status = details.get("license_status", "")
             package_table.add_row(
                 [
                     col_package,
@@ -333,6 +338,7 @@ def create_package_overview_table_part(
                     col_current_version,
                     cve["fixed_version"],
                     col_compliant_version,
+                    col_license_status
                 ]
             )
 
