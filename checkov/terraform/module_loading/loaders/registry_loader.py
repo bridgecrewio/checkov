@@ -1,5 +1,4 @@
 import os
-import re
 import logging
 from http import HTTPStatus
 from typing import List, Dict
@@ -13,8 +12,7 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
-    get_version_constraints,
-    VERSION_REGEX
+    get_version_constraints
 )
 
 
@@ -54,12 +52,16 @@ class RegistryLoader(ModuleLoader):
             # Local paths don't get the prefix appended
             return False
 
+        # If versions for a module are cached, determine the best version and return True.
+        # If versions are not cached, get versions, then determine the best version and return True.
+        # Best version needs to be determined here for setting most accurate dest_dir.
         if self.module_version_url in RegistryLoader.modules_versions_cache.keys():
+            self.best_version = self._find_best_version()
             return True
         if not self._cache_available_versions():
             return False
-        # Determine the best version to use as per version constraints for finding accurate dest_dir.
         self.best_version = self._find_best_version()
+
         logging.debug(f"Best version for {self.module_source} is {self.best_version}")
         if not self.inner_module: 
             self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name, TFC_HOST_NAME,
