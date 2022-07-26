@@ -171,7 +171,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(9, len(report.failed_checks))
+        self.assertEqual(7, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(len(report.skipped_checks), 1)
@@ -205,7 +205,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.ts']))
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_requested_file_type_only_py(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -213,7 +213,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.py']))
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_requested_file_type_only_yml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -246,7 +246,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['all']))
-        self.assertEqual(len(report.failed_checks), 17)
+        self.assertEqual(len(report.failed_checks), 11)
 
     def test_runner_requested_file_only_dockerfile(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -254,7 +254,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['Dockerfile']))
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_no_requested_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -262,7 +262,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=[]))
-        self.assertEqual(len(report.failed_checks), 9)
+        self.assertEqual(len(report.failed_checks), 7)
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from detect_secrets import SecretsCollection  # type:ignore[import]
 from detect_secrets.core import scan  # type:ignore[import]
@@ -162,11 +162,16 @@ class Runner(BaseRunner[None]):
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
-
+            secrets_duplication: Dict[str, bool] = {}
             for _, secret in secrets:
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
+                secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
+                if secret_key in secrets_duplication:
+                    continue
+                else:
+                    secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
                 if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
