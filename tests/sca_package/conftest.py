@@ -206,7 +206,7 @@ def scan_result2() -> Dict[str, Any]:
         },
         'license_data': [{
             'packageName': 'github.com/armon/go-metrics',
-            'packageVers ion': 'v0.0.0-20180917152333-f0300d1749da',
+            'packageVersion': 'v0.0.0-20180917152333-f0300d1749da',
             'packageLang': 'go',
             'license': 'PRIVATE',
             'status': 'OPEN',

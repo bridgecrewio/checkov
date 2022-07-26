@@ -381,8 +381,6 @@ def test_create_cli_output():
 
     # when
     cli_output = create_cli_output(True, records)
-
-    print(cli_output)
     # then
     assert cli_output == "".join(
         [

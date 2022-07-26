@@ -169,7 +169,7 @@ class Runner(BaseRunner):
                     )
                 )
 
-    def get_license_status(self, license_dict, vulnerability):
+    def get_license_status(self, license_dict: dict[tuple[str, str], dict[str, Any]], vulnerability: dict[str, Any]) -> str:
         license_status = license_dict.get((vulnerability["packageName"], vulnerability["packageVersion"]))
         if license_status:
             if license_status["status"] == "COMPLIANT":
