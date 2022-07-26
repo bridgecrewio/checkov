@@ -252,7 +252,7 @@ class RunnerRegistry:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
                 is_api_key = True
-            csv_sbom_report.persist_report(is_api_key)
+            csv_sbom_report.persist_report(is_api_key=is_api_key, output_path=config.output_file_path)
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt',

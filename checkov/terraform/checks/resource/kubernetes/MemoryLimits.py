@@ -24,7 +24,7 @@ class MemoryLimits(BaseResourceCheck):
                 resources = container.get("resources")[0]
                 if resources.get('limits'):
                     limits = resources.get('limits')[0]
-                    if limits.get('memory'):
+                    if isinstance(limits, dict) and limits.get('memory'):
                         return CheckResult.PASSED
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/resources/[0]/limits']
                     return CheckResult.FAILED

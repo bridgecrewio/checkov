@@ -1,16 +1,20 @@
+from __future__ import annotations
+
 import itertools
 from typing import Optional, Tuple, Dict, List, Any
 
 from checkov.common.parsers.node import DictNode, ListNode
 from checkov.terraform.context_parsers.tf_plan import parse
 
-simple_types = (str, int, float, bool)
+SIMPLE_TYPES = (str, int, float, bool)
+TF_PLAN_RESOURCE_ADDRESS = "__address__"
+TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 
 
 def _is_simple_type(obj: Any) -> bool:
     if obj is None:
         return True
-    if isinstance(obj, simple_types):
+    if isinstance(obj, SIMPLE_TYPES):
         return True
     return False
 
@@ -78,11 +82,14 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
     return ret_dict
 
 
-def _prepare_resource_block(resource: DictNode, conf: Optional[DictNode]) -> Tuple[Dict[str, Dict[str, Any]], bool]:
+def _prepare_resource_block(
+    resource: DictNode, conf: Optional[DictNode], resource_changes: dict[str, dict[str, Any]]
+) -> tuple[dict[str, dict[str, Any]], bool]:
     """hclify resource if pre-conditions met.
 
     :param resource: tf planned_values resource block
     :param conf: tf configuration resource block
+    :param resource_changes: tf resource_changes block
 
     :returns:
         - resource_block: a list of strings representing the header columns
@@ -99,13 +106,23 @@ def _prepare_resource_block(resource: DictNode, conf: Optional[DictNode]) -> Tup
     # and where *_module resources don't have values field
     if mode == "managed" and "values" in resource:
         expressions = conf.get("expressions") if conf else None
-        resource_block[resource["type"]][resource.get("name", "default")] = _hclify(resource["values"], expressions)
-        resource_block[resource["type"]][resource.get("name", "default")]["__address__"] = resource.get("address")
+
+        resource_conf = _hclify(resource["values"], expressions)
+        resource_address = resource.get("address")
+        resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
+
+        changes = resource_changes.get(resource_address)
+        if changes:
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
+
+        resource_block[resource["type"]][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, prepared
 
 
-def _find_child_modules(child_modules: ListNode) -> List[Dict[str, Dict[str, Any]]]:
+def _find_child_modules(
+    child_modules: ListNode, resource_changes: dict[str, dict[str, Any]]
+) -> List[Dict[str, Dict[str, Any]]]:
     """
     Find all child modules if any. Including any amount of nested child modules.
     :type: child_modules: list of tf child_module objects
@@ -115,14 +132,33 @@ def _find_child_modules(child_modules: ListNode) -> List[Dict[str, Dict[str, Any
     for child_module in child_modules:
         if child_module.get("child_modules", []):
             nested_child_modules = child_module.get("child_modules", [])
-            nested_blocks = _find_child_modules(nested_child_modules)
+            nested_blocks = _find_child_modules(nested_child_modules, resource_changes)
             for resource in nested_blocks:
                 resource_blocks.append(resource)
         for resource in child_module.get("resources", []):
-            resource_block, prepared = _prepare_resource_block(resource, None)
+            resource_block, prepared = _prepare_resource_block(
+                resource=resource,
+                conf=None,
+                resource_changes=resource_changes,
+            )
             if prepared is True:
                 resource_blocks.append(resource_block)
     return resource_blocks
+
+
+def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Returns a resource address to resource changes dict"""
+
+    resource_changes_map = {}
+
+    resource_changes = template.get("resource_changes")
+    if resource_changes and isinstance(resource_changes, list):
+        resource_changes_map = {
+            change.get("address", ""): change
+            for change in resource_changes
+        }
+
+    return resource_changes_map
 
 
 def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tuple[Optional[Dict[str, Any]], Optional[List[Tuple[int, str]]]]:
@@ -134,6 +170,9 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
+
+    resource_changes = _get_resource_changes(template=template)
+
     for resource in template.get("planned_values", {}).get("root_module", {}).get("resources", []):
         conf = next(
             (
@@ -143,13 +182,17 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
             ),
             None,
         )
-        resource_block, prepared = _prepare_resource_block(resource, conf)
+        resource_block, prepared = _prepare_resource_block(
+            resource=resource,
+            conf=conf,
+            resource_changes=resource_changes,
+        )
         if prepared is True:
             tf_definition["resource"].append(resource_block)
     child_modules = template.get("planned_values", {}).get("root_module", {}).get("child_modules", [])
     # Terraform supports modules within modules so we need to search
     # in nested modules to find all resource blocks
-    resource_blocks = _find_child_modules(child_modules)
+    resource_blocks = _find_child_modules(child_modules, resource_changes)
     for resource in resource_blocks:
         tf_definition["resource"].append(resource)
     return tf_definition, template_lines

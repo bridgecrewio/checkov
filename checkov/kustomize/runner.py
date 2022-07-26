@@ -383,7 +383,7 @@ class Runner(BaseRunner):
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         self.target_folder_path = tempfile.mkdtemp()
         for filePath in self.kustomizeProcessedFolderAndMeta:    
-            if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
+            if self.kustomizeProcessedFolderAndMeta[filePath].get('type') == 'overlay':
                 self._handle_overlay_case(filePath)
         
         if platform.system() == 'Windows':
