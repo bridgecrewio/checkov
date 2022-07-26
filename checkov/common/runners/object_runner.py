@@ -182,9 +182,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        # it is correct that 'True' can be a key. It is easier to ignore the typing here,
-        # then to support it all the way up.
-        triggers = definition.get(True)  # type:ignore[call-overload]
+        triggers = definition.get("on")  # type:ignore[call-overload]
         try:
             if isinstance(triggers, str):
                 triggers_set.add(triggers)
