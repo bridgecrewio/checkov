@@ -30,13 +30,13 @@ class EntropyKeywordCombinator(BasePlugin):
         one of the entropy scanners find a match (on a line which was already matched by keyword plugin) - it is returned.
         for source code files run and marge the tow plugin.
         """
-        entropy_matches = set()
+        entropy_matches = set()  # type: ignore
         if len(line) <= MAX_LINE_LENGTH:
             keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
             if f".{filename.split('.')[-1]}" in SOURCE_CODE_EXTENSION:
                 for entropy_scanner in self.high_entropy_scanners:
                     matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-                    if matches:
+                    if matches and not entropy_matches:
                         entropy_matches = matches
                 keyword_entropy = keyword_matches.union(entropy_matches)
                 return keyword_entropy  # type: ignore
