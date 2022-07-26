@@ -7,7 +7,7 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
-
+from hcl2 import START_LINE, END_LINE
 
 class Module:
     def __init__(
@@ -34,7 +34,7 @@ class Module:
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
     ) -> None:
         self.source = source
-        if self._block_type_to_func.get(block_type):
+        if block_type in self._block_type_to_func:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
@@ -62,10 +62,13 @@ class Module:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
+                if START_LINE not in attributes or END_LINE not in attributes:
+                    return
                 provider_name = name
-                alias = attributes.get("alias")
-                if alias:
-                    provider_name = f"{provider_name}.{alias[0]}"
+                if isinstance(attributes, dict):
+                    alias = attributes.get("alias")
+                    if alias:
+                        provider_name = f"{provider_name}.{alias[0]}"
                 provider_block = TerraformBlock(
                     block_type=BlockType.PROVIDER,
                     name=provider_name,

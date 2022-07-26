@@ -11,6 +11,18 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 
 
 class Block:
+    __slots__ = (
+        "attributes",
+        "block_type",
+        "breadcrumbs",
+        "changed_attributes",
+        "config",
+        "id",
+        "name",
+        "path",
+        "source",
+    )
+
     def __init__(
             self,
             name: str,
@@ -94,7 +106,8 @@ class Block:
         for attribute_key in list(self.attributes.keys()):
             attribute_value = self.attributes[attribute_key]
             if isinstance(attribute_value, list) and len(attribute_value) == 1:
-                attribute_value = attribute_value[0]
+                if '.' not in attribute_key:
+                    attribute_value = attribute_value[0]
             # needs to be checked before adding anything to 'base_attributes'
             if attribute_key == "self":
                 base_attributes["self_"] = attribute_value
@@ -113,9 +126,9 @@ class Block:
         self,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int | None,
+        change_origin_id: int,
         previous_breadcrumbs: list[BreadcrumbMetadata],
-        attribute_at_dest: str | None,
+        attribute_at_dest: str,
         transform_step: bool = False,
     ) -> None:
         self.update_inner_attribute(

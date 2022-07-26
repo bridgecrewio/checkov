@@ -58,14 +58,16 @@ class BaseVCSDAL:
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def _request(self, endpoint: str) -> dict[str, Any] | None:
+    def _request(self, endpoint: str, allowed_status_codes: list[int]) -> dict[str, Any] | None:
+        if allowed_status_codes is None:
+            allowed_status_codes = [200]
         if not self.token:
             return None
         url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             headers = self._headers()
             request = self.http.request("GET", url_endpoint, headers=headers)
-            if request.status == 200:
+            if request.status in allowed_status_codes:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None

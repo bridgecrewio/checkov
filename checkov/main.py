@@ -17,6 +17,7 @@ from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
+from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
@@ -60,7 +61,7 @@ from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
-
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
@@ -90,7 +91,9 @@ DEFAULT_RUNNERS = (
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
-    sca_image_runner()
+    sca_image_runner(),
+    argo_workflows_runner(),
+    circleci_pipelines_runner(),
 )
 
 
@@ -143,10 +146,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
+                                 secrets_scan_file_type=config.secrets_scan_file_type)
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
+        runner_registry.filter_runner_framework()
     else:
         runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
@@ -162,6 +167,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                      'secret, you may need to double check the mapping.')
     elif config.bc_api_key:
         logger.debug(f'Using API key ending with {config.bc_api_key[-8:]}')
+
+        if not bc_integration.is_token_valid(config.bc_api_key):
+            raise Exception('The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
+                            'access key and secret key. For Prisma, the value must be in the form '
+                            'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
+                            'created it, not the token ID visible later on. If you are using environment variables, '
+                            'make sure they are properly set and exported.')
 
         if config.repo_id is None and not config.list:
             # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
@@ -368,7 +380,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'include checks by ID even if they are not in the platform, without using this flag.')
     parser.add('--quiet', action='store_true',
                default=False,
-               help='in case of CLI output, display only failed checks')
+               help='in case of CLI output, display only failed checks. Also disables progress bars')
     parser.add('--compact', action='store_true',
                default=False,
                help='in case of CLI output, do not display code blocks')
@@ -514,6 +526,15 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
                     'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
                     'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
+    parser.add('--secrets-scan-file-type',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_FILE_TYPE',
+               action='append',
+               help='add scan secret for requested files. You can specify this argument multiple times to add '
+                    'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
+                    '".template", ".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile", '
+                    '".java", ".rb", ".go", ".cs", ".txt") specify the argument with `--secrets-scan-file-type all`. '
+                    'default scan will be for ".tf", ".yml", ".yaml", ".json", ".template" and exclude "Pipfile.lock", "yarn.lock", "package-lock.json", "requirements.txt"')
 
 
 def get_external_checks_dir(config: Any) -> Any:

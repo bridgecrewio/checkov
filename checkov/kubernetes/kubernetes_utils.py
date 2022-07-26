@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from copy import deepcopy
@@ -14,7 +16,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
-K8_POSSIBLE_ENDINGS = [".yaml", ".yml", ".json"]
+K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 
 
 def get_folder_definitions(
@@ -93,12 +95,13 @@ def get_skipped_checks(entity_conf):
 
 
 def create_definitions(
-    root_folder: str,
-    files: Optional[List[str]] = None,
-    runner_filter: RunnerFilter = RunnerFilter(),
-) -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    definitions = {}
-    definitions_raw = {}
+    root_folder: str | None,
+    files: list[str] | None = None,
+    runner_filter: RunnerFilter | None = None,
+) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+    runner_filter = runner_filter or RunnerFilter()
+    definitions: dict[str, DictNode] = {}
+    definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
         definitions, definitions_raw = get_files_definitions(files)
 

@@ -27,6 +27,9 @@ class SecurityRequirement(BaseOpenapiCheckV2):
         if 'paths' not in conf:
             return CheckResult.FAILED, conf
         paths = conf['paths']
+        if not isinstance(paths, dict):
+            return CheckResult.FAILED, conf
+
         for path, http_method in paths.items():
             if self.is_start_end_line(path):
                 continue
@@ -45,6 +48,8 @@ class SecurityRequirement(BaseOpenapiCheckV2):
 
     def is_requirements_defined(self, security: list[dict[str, Any]], security_definitions: dict[str, Any]) -> bool:
         for scheme in security:
+            if not isinstance(scheme, dict):
+                return False
             for scheme_type, _ in scheme.items():
                 if scheme_type not in security_definitions:
                     return False

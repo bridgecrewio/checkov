@@ -152,7 +152,7 @@ class TestRendererScenarios(TestCase):
         different_expected = {
             "my_bucket": {
                 "bucket": [
-                    "hello-nimrodIsCöol-nine-dev-abc-xyz-qwerty"
+                    "hello-nimrodIsCöol-${nine}-${dev}-abc-xyz-qwerty"
                 ],
                 "__start_line__": 17,
                 "__end_line__": 19

@@ -5,7 +5,11 @@ import requests
 import logging
 import time
 import os
-from typing import Any, TYPE_CHECKING, cast
+import aiohttp
+import asyncio
+from typing import Any, TYPE_CHECKING, cast, Optional
+
+from urllib3.response import HTTPResponse
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
@@ -20,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def normalize_prisma_url(url: str) -> str | None:
+def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
@@ -39,14 +43,17 @@ def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> 
     return error_message
 
 
-def extract_error_message(response: requests.Response) -> str:
-    if response.content:
+def extract_error_message(response: requests.Response | HTTPResponse) -> Optional[str]:
+    if (isinstance(response, requests.Response) and response.content) or (isinstance(response, HTTPResponse) and response.data):
+        raw = response.content if isinstance(response, requests.Response) else response.data
         try:
-            content = json.loads(response.content)
+            content = json.loads(raw)
             if 'message' in content:
                 return cast(str, content['message'])
+            elif 'Message' in content:
+                return cast(str, content['Message'])
         except Exception:
-            logging.debug(f'Failed to parse the response content: {response.content.decode()}')
+            logging.debug(f'Failed to parse the response content: {raw.decode()}')
 
     return response.reason
 
@@ -63,10 +70,10 @@ def get_prisma_auth_header(token: str) -> dict[str, str]:
     }
 
 
-def get_version_headers(client: str, client_version: str) -> dict[str, str]:
+def get_version_headers(client: str, client_version: str | None) -> dict[str, str]:
     return {
         'x-api-client': client,
-        'x-api-version': client_version,
+        'x-api-version': client_version or "unknown",
         'x-api-checkov-version': checkov_version
     }
 
@@ -75,11 +82,11 @@ def get_user_agent_header() -> dict[str, str]:
     return {'User-Agent': f'checkov/{checkov_version}'}
 
 
-def get_default_get_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_get_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_GET_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
-def get_default_post_headers(client: SourceType, client_version: str) -> dict[str, Any]:
+def get_default_post_headers(client: SourceType, client_version: str | None) -> dict[str, Any]:
     return merge_dicts(DEV_API_POST_HEADERS, get_version_headers(client.name, client_version), get_user_agent_header())
 
 
@@ -94,13 +101,13 @@ def request_wrapper(
     data: Any | None = None,
     json: dict[str, Any] | None = None,
     should_call_raise_for_status: bool = False
-) -> Response | None:
+) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
     # 'ConnectionError' instances that appeared:
     # * 'Connection aborted.', ConnectionResetError(104, 'Connection reset by peer').
     # * 'Connection aborted.', OSError(107, 'Socket not connected').
-    # 'ConnectionError' instances that appeared:
+    # 'HTTPError' instances that appeared:
     # * 403 Client Error: Forbidden for url.
     # * 504 Server Error: Gateway Time-out for url.
 
@@ -126,5 +133,54 @@ def request_wrapper(
                 time.sleep(sleep_between_request_tries * (i + 1))
                 continue
             raise http_error
+    else:
+        raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"
+                        "loop")
 
-    return None
+
+async def aiohttp_client_session_wrapper(
+    url: str,
+    headers: dict[str, Any],
+    payload: dict[str, Any]
+) -> int:
+    request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
+    sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
+
+    # adding retry mechanism for avoiding the next repeated unexpected issues:
+    # 1. Gateway Timeout from the server
+    # 2. ClientOSError
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
+        for i in range(request_max_tries):
+            logging.info(f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
+            try:
+                async with session.post(
+                        url=url, headers=headers, json=payload
+                ) as response:
+                    content = await response.text()
+                if response.ok:
+                    logging.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
+                    return 0
+                elif i != request_max_tries - 1:
+                    await asyncio.sleep(sleep_between_request_tries * (i + 1))
+                    continue
+                else:
+                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
+                                  f"url \'{url}\'")
+                    logging.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
+                    return 1
+            except aiohttp.ClientOSError:
+                if i != request_max_tries - 1:
+                    await asyncio.sleep(sleep_between_request_tries * (i + 1))
+                    continue
+                else:
+                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - ClientOSError when sending report "
+                                  f"to url: \'{url}\'")
+                    raise
+            except Exception as e:
+                logging.error(f"[http_utils](aiohttp_client_session_wrapper) - exception when sending report "
+                              f"to url: \'{url}\':\n\'{e}\'")
+                raise
+
+        else:
+            raise Exception("Unexpected behavior: the method \'aiohttp_client_session_wrapper\' should be terminated "
+                            "inside the above for-loop")

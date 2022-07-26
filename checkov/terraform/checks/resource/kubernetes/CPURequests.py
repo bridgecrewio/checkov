@@ -24,7 +24,7 @@ class CPURequests(BaseResourceCheck):
                 resources = container.get("resources")[0]
                 if resources.get('requests'):
                     limits = resources.get('requests')[0]
-                    if limits.get('cpu'):
+                    if isinstance(limits, dict) and limits.get('cpu'):
                         return CheckResult.PASSED
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/resources/[0]/requests']
                     return CheckResult.FAILED

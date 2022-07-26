@@ -120,7 +120,7 @@ class ContextParser(object):
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         if "metadata" in resource:
             if "checkov" in resource["metadata"]:
-                for index, item in enumerate(force_list(resource["metadata"]["checkov"])):
+                for item in force_list(resource["metadata"]["checkov"]):
                     skip_search = re.search(COMMENT_REGEX, str(item))
                     if skip_search:
                         skipped_check = {

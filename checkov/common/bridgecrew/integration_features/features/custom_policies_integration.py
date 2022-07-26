@@ -44,11 +44,13 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
+                        policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
+                    check.bc_id = check.id
                     if check.frameworks:
                         for f in check.frameworks:
                             if f.lower() == "cloudformation":

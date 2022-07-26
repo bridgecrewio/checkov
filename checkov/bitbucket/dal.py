@@ -35,7 +35,7 @@ class Bitbucket(BaseVCSDAL):
         self.default_branch_cache = {}
         self.username = os.getenv('BITBUCKET_USERNAME', '')
 
-    def _request(self, endpoint: str):
+    def _request(self, endpoint: str, allowed_status_codes):
         if not self.token:
             return
         url_endpoint = f"{self.api_url}/{endpoint}"
@@ -55,8 +55,8 @@ class Bitbucket(BaseVCSDAL):
 
     def get_branch_restrictions(self):
         if self.current_repository:
-            branch_restrictions = self._request(
-                endpoint=f"repositories/{self.current_repository}/branch-restrictions")
+            branch_restrictions = self._request(endpoint=f"repositories/{self.current_repository}/branch-restrictions",
+                                                allowed_status_codes=[200])
             return branch_restrictions
         logging.debug("Environment variable BITBUCKET_REPO_FULL_NAME was not set. Cannot fetch branch restrictions.")
         return None

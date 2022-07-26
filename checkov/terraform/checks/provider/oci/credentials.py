@@ -15,8 +15,10 @@ class OciCredentials(BaseProviderCheck):
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         key = "private_key_password"
         if key in conf.keys():
-            if not conf[key]:
+            secret = conf[key]
+            if not secret:
                 return CheckResult.PASSED
+            conf[f'{self.id}_secret'] = secret
             return CheckResult.FAILED
         else:
             return CheckResult.PASSED

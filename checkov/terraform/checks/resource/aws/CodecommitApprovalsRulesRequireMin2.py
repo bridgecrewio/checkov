@@ -17,6 +17,8 @@ class CodecommitApprovalsRulesRequireMin2(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("content") and isinstance(conf.get("content"), list):
             content = conf.get("content")[0]
+            if not isinstance(content, dict):
+                return CheckResult.UNKNOWN
             if content.get("Statements") and isinstance(content.get("Statements"), list):
                 statement = content.get("Statements")[0]
                 if isinstance(statement.get('NumberOfApprovalsNeeded'), int) and statement.get('NumberOfApprovalsNeeded') >= 2:

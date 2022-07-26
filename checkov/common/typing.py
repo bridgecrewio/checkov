@@ -16,7 +16,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
 
 
 class _CheckResult(TypedDict, total=False):
-    result: "CheckResult"
+    result: "CheckResult" | tuple["CheckResult", dict[str, Any]]
     suppress_comment: str
     evaluated_keys: list[str]
     results_configuration: dict[str, Any] | None
@@ -38,3 +38,19 @@ class _BaselineFinding(TypedDict):
 class _BaselineFailedChecks(TypedDict):
     file: str
     findings: list[_BaselineFinding]
+
+
+class _ReducedScanReport(TypedDict):
+    checks: _ReducedScanReportCheck
+
+
+class _ReducedScanReportCheck(TypedDict):
+    failed_checks: list[dict[str, Any]]
+    passed_checks: list[dict[str, Any]]
+    skipped_checks: list[dict[str, Any]]
+
+
+class _CicdDetails(TypedDict, total=False):
+    commit: str | None
+    pr: str | None
+    runId: str | None

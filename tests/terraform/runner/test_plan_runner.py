@@ -571,6 +571,42 @@ class TestRunnerValid(unittest.TestCase):
         failed_check = report.failed_checks[0]
         self.assertEqual(failed_check.file_line_range, [13, 19])
 
+    def test_runner_ignore_lifecycle_checks(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_lifecycle_check/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+
+    def test_runner_extra_check(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_dir_path = str(current_dir / "resources/plan_with_deleted_resources")
+        extra_checks_dir_path = [str(current_dir / "extra_tf_plan_checks")]
+
+        # when
+        report = Runner().run(
+            root_folder=tf_dir_path,
+            external_checks_dir=extra_checks_dir_path,
+            runner_filter=RunnerFilter(checks=["CUSTOM_DELETE_1", "CUSTOM_DELETE_2"])
+        )
+
+        # then
+        summary = report.get_summary()
+        self.assertEqual(summary["failed"], 2)
+
+        resource_ids = [check.resource for check in report.failed_checks]
+        self.assertCountEqual(resource_ids,["aws_secretsmanager_secret.default", "aws_secretsmanager_secret.default"])
+
+
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
 

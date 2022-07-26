@@ -6,7 +6,9 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Dict, Any, TYPE_CHECKING
+from typing import List, Dict, Any, TYPE_CHECKING, TypeVar, Generic
+
+from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
@@ -15,7 +17,9 @@ from checkov.runner_filter import RunnerFilter
 if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager
+    from checkov.common.graph.graph_manager import GraphManager  # noqa
+
+_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any]|None")
 
 
 def strtobool(val: str) -> int:
@@ -41,18 +45,19 @@ IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 
-class BaseRunner(ABC):
+class BaseRunner(ABC, Generic[_GraphManager]):
     check_type = ""
     definitions = None
     context: dict[str, dict[str, Any]] | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
-    graph_manager: GraphManager | None = None
+    graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
+        self.pbar = ProgressBar(self.check_type)
 
     @abstractmethod
     def run(
@@ -107,7 +112,7 @@ class BaseRunner(ABC):
 
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
+            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         return checks_results
 

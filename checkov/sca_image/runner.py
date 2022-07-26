@@ -18,13 +18,13 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
-from checkov.dockerfile.utils import is_docker_file
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
 
 class Runner(PackageRunner):
-    check_type = CheckType.SCA_IMAGE
+    check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
@@ -36,14 +36,15 @@ class Runner(PackageRunner):
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
-        return is_docker_file(os.path.basename(filename))  # type:ignore[no-any-return]
+        return is_docker_file(os.path.basename(filename))
 
     def scan(
             self,
             image_id: str,
             dockerfile_path: str,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
     ) -> Dict[str, Any]:
+        runner_filter = runner_filter or RunnerFilter()
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -121,10 +122,14 @@ class Runner(PackageRunner):
             root_folder: Union[str, Path],
             external_checks_dir: Optional[List[str]] = None,
             files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
 
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
@@ -132,15 +137,16 @@ class Runner(PackageRunner):
             image_id = kwargs['image_id']
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
 
-        if not strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers
-            return report
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report
         if files:
+            self.pbar.initiate(len(files))
             for file in files:
+                self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
+                self.pbar.update()
+            self.pbar.close()
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
@@ -149,7 +155,6 @@ class Runner(PackageRunner):
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
-
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
@@ -179,14 +184,52 @@ class Runner(PackageRunner):
         """
         report = Report(self.check_type)
 
-        scan_result = self.scan(image.image_id, dockerfile_path, runner_filter)
-        if scan_result is None:
+        # skip complete run, if flag '--check' was used without a CVE check ID
+        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
             return report
-        self.raw_report = scan_result
-        result = scan_result.get('results', [{}])[0]
-        vulnerabilities = result.get("vulnerabilities") or []
-        self.parse_vulns_to_records(report, result, f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image.image_id}))", runner_filter, vulnerabilities,
-                                    file_abs_path=os.path.abspath(dockerfile_path))
+
+        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+        if cached_results:
+            logging.info(f"Found cached scan results of image {image.name}")
+
+            self.raw_report = cached_results
+            result = cached_results.get('results', [{}])[0]
+            vulnerabilities = result.get("vulnerabilities") or []
+            image_id = self.extract_image_short_id(result)
+
+            self.parse_vulns_to_records(
+                report=report,
+                result=result,
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                file_abs_path=os.path.abspath(dockerfile_path),
+            )
+
+            return report
+        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
+            # experimental flag on running image referencers via local twistcli
+            image_id = ImageReferencer.inspect(image.name)
+            scan_result = self.scan(image_id, dockerfile_path, runner_filter)
+            if scan_result is None:
+                return report
+
+            self.raw_report = scan_result
+            result = scan_result.get('results', [{}])[0]
+            vulnerabilities = result.get("vulnerabilities") or []
+            self.parse_vulns_to_records(
+                report=report,
+                result=result,
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                file_abs_path=os.path.abspath(dockerfile_path),
+            )
+        else:
+            logging.info(f"No cache hit for image {image.name}")
+
         return report
 
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
@@ -201,6 +244,25 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
-        self.parse_vulns_to_records(report, result, f"{dockerfile_path} ({image_id})", runner_filter, vulnerabilities,
-                                    file_abs_path=os.path.abspath(dockerfile_path))
+        self.parse_vulns_to_records(
+            report=report,
+            result=result,
+            rootless_file_path=f"{dockerfile_path} ({image_id})",
+            runner_filter=runner_filter,
+            vulnerabilities=vulnerabilities,
+            packages=[],
+            file_abs_path=os.path.abspath(dockerfile_path)
+        )
         return report
+
+    def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
+        """Extracts a shortened version of the image ID from the scan result"""
+
+        if "id" not in scan_result:
+            return "sha256:unknown"
+
+        image_id: str = scan_result["id"]
+
+        if image_id.startswith("sha256:"):
+            return image_id[:17]
+        return image_id[:10]

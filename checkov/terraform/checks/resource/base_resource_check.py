@@ -4,24 +4,9 @@ from typing import Dict, List, Any, Optional
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.parser_functions import handle_dynamic_values
-from checkov.terraform.parser_utils import find_var_blocks
-
-
-PROVIDER_PREFIXES = (
-    "aws_",
-    "azurerm_",
-    "azuread_",
-    "digitalocean_",
-    "google_",
-    "github_",
-    "kubernetes_",
-    "linode_",
-    "oci_",
-    "openstack_",
-    "yandex_",
-)
 
 
 class BaseResourceCheck(BaseCheck):
@@ -46,21 +31,7 @@ class BaseResourceCheck(BaseCheck):
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
-        if not isinstance(value, str):
-            return False
-
-        if value.startswith(("var.", "local.", "module.")):
-            return True
-
-        if value.startswith(PROVIDER_PREFIXES):
-            return True
-
-        if "${" not in value:
-            return False
-
-        if find_var_blocks(value):
-            return True
-        return False
+        return is_terraform_variable_dependent(value)
 
     def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
         self.entity_type = entity_type

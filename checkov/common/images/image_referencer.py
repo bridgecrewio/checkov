@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import logging
 from abc import abstractmethod
-from typing import cast
+from collections.abc import Iterable
+from typing import cast, Any
 
 import docker
 
 
 class Image:
-    def __init__(self, file_path: str, name: str, image_id: str, start_line: int, end_line: int) -> None:
+    def __init__(self, file_path: str, name: str, start_line: int, end_line: int) -> None:
         """
 
         :param file_path: example: 'checkov/integration_tests/example_workflow_file/.github/workflows/vulnerable_container.yaml'
@@ -19,9 +20,20 @@ class Image:
         """
         self.end_line = end_line
         self.start_line = start_line
-        self.image_id = image_id
         self.name = name
         self.file_path = file_path
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+
+        return False
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.file_path, self.name, self.start_line, self.end_line))
 
 
 class ImageReferencer:
@@ -36,7 +48,7 @@ class ImageReferencer:
         return False
 
     @abstractmethod
-    def get_images(self, file_path: str) -> list[Image]:
+    def get_images(self, file_path: str) -> Iterable[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -44,7 +56,8 @@ class ImageReferencer:
         """
         return []
 
-    def inspect(self, image_name: str) -> str:
+    @staticmethod
+    def inspect(image_name: str) -> str:
         """
 
         :param image_name: name of the image to be inspected locally using a "docker inspect X". If image does not exist try to pull it locally.

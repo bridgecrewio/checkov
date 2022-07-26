@@ -26,7 +26,7 @@ def test_create_report_record():
         "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
         "severity": "critical",
         "packageName": "django",
-        "packageVersion": "1.2",
+        "packageVersion": "1.12",
         "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
         "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
         "impactedVersions": ["<1.11.27"],
@@ -49,7 +49,7 @@ def test_create_report_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.2")]
+    assert record.code_block == [(0, "django: 1.12")]
     assert (
         record.description
         == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
@@ -60,12 +60,11 @@ def test_create_report_record():
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
     assert record.severity == Severities[BcSeverities.CRITICAL]
-    assert record.short_description == "CVE-2019-19844 - django: 1.2"
-    assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
+    assert record.short_description == "CVE-2019-19844 - django: 1.12"
+    assert record.vulnerability_details["lowest_fixed_version"] == "2.2.9"
     assert record.vulnerability_details["fixed_versions"] == [
         packaging_version.parse("3.0.1"),
         packaging_version.parse("2.2.9"),
-        packaging_version.parse("1.11.27"),
     ]
 
 

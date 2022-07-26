@@ -7,11 +7,13 @@ from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
 
+from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
 from checkov.bitbucket_pipelines.registry import registry as bitbucket_pipelines_registry
+from checkov.circleci_pipelines.registry import registry as circleci_pipelines_registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
@@ -73,14 +75,14 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                     printable_checks_list.append(
                         (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
         elif isinstance(registry, BaseGraphRegistry):
-            for check in registry.checks:
-                if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
-                    if not check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+            for graph_check in registry.checks:
+                if runner_filter.should_run_check(graph_check, graph_check.id, graph_check.bc_id, graph_check.severity):
+                    if not graph_check.resource_types:
                         # only for platform custom polices with resource_types == all
-                        check.resource_types = ['all']  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
-                    for rt in check.resource_types:  # type:ignore[attr-defined]  # can be removed, when common.graph is also type checked
+                        graph_check.resource_types = ['all']
+                    for rt in graph_check.resource_types:
                         printable_checks_list.append(
-                            (check.get_output_id(use_bc_ids), checked_type, rt, check.name, iac))
+                            (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac))
 
     if any(x in framework_list for x in ("all", "terraform")):
         add_from_repository(resource_registry, "resource", "Terraform")
@@ -117,6 +119,10 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bitbucket_configuration_registry, "bitbucket_configuration", "bitbucket_configuration")
     if any(x in framework_list for x in ("all", "bitbucket_pipelines")):
         add_from_repository(bitbucket_pipelines_registry, "bitbucket_pipelines", "bitbucket_pipelines")
+    if any(x in framework_list for x in ("all", "circleci_pipelines")):
+        add_from_repository(circleci_pipelines_registry, "circleci_pipelines", "circleci_pipelines")
+    if any(x in framework_list for x in ("all", "argo_workflows")):
+        add_from_repository(argo_workflows_registry, "argo_workflows", "Argo Workflows")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
