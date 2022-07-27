@@ -162,7 +162,7 @@ class Record:
             trace_buffer += colored(f"\tTRACES: {self.traces[0]}\n", "blue")
 
             for t in self.traces[1:]:
-                trace_buffer += colored(f"\t\t\t{t}\n", "blue")
+                trace_buffer += colored(f"\t\t{t}\n", "blue")
 
             trace = trace_buffer
 
