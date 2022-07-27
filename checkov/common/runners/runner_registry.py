@@ -255,12 +255,13 @@ class RunnerRegistry:
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
                               output_types: list[str]) -> dict[str, str]:
-        # create cyclonedx report
+
         output_files = {
             'cyclonedx': 'results_cyclonedx.xml',
             'csv': 'results_iac.csv'
         }
 
+        # create cyclonedx report
         if 'cyclonedx' in output_types:
             cyclonedx_output_path = output_files['cyclonedx']
             cyclonedx = CycloneDX(reports=scan_reports,
@@ -279,7 +280,7 @@ class RunnerRegistry:
                     csv_sbom_report.add_report(report=report, git_org="", git_repository="")
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
-        return output_files
+        return {key: os.path.join(output_path, value) for key, value in output_files.items()}
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
