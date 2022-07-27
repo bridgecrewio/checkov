@@ -62,7 +62,6 @@ class RegistryLoader(ModuleLoader):
             return False
         self.best_version = self._find_best_version()
 
-        logging.debug(f"Best version for {self.module_source} is {self.best_version}")
         if not self.inner_module: 
             self.dest_dir = os.path.join(self.root_dir, self.external_modules_folder_name, TFC_HOST_NAME,
                                          *self.module_source.split("/"), self.best_version)
@@ -78,6 +77,7 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=self.dest_dir)
 
         best_version = self.best_version
+        logging.debug(f"Best version for {self.module_source} is {self.best_version} based on the version constraint {self.version}")
         request_download_url = "/".join((self.REGISTRY_URL_PREFIX, self.module_source, best_version, "download"))
         try:
             response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {self.token}"})
