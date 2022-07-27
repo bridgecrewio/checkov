@@ -3,26 +3,26 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.alicloud.RAMPasswordPolicyMaxLogin import check
+from checkov.terraform.checks.resource.alicloud.RAMSecurityEnforceMFA import check
 
 
-class TestPasswordPolicyMaxLogin(unittest.TestCase):
+class TestRAMSecurityEnforceMFA(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_PasswordPolicyMaxLogin")
+        test_files_dir = os.path.join(current_dir, "example_RAMSecurityEnforceMFA")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'alicloud_ram_account_password_policy.pass',
-            'alicloud_ram_account_password_policy.pass2',
+            'alicloud_ram_security_preference.pass',
         }
         failing_resources = {
-            'alicloud_ram_account_password_policy.fail',
+            'alicloud_ram_security_preference.fail',
+            'alicloud_ram_security_preference.fail2',
         }
         skipped_resources = {}
 
