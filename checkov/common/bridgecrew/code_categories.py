@@ -49,7 +49,3 @@ class CodeCategoryConfiguration:
 
     def is_global_soft_fail(self) -> bool:
         return self.hard_fail_threshold == Severities[BcSeverities.OFF]
-
-    def get_skip_check_threshold(self) -> Severity:
-        severity = get_highest_severity_below_level(self.soft_fail_threshold.level)
-        return severity or Severities[BcSeverities.NONE]

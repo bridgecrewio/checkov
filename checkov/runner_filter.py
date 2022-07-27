@@ -102,7 +102,7 @@ class RunnerFilter(object):
             config = enforcement_rule_configs.get(code_category)
             if not config:
                 raise Exception(f'Could not find an enforcement rule config for category {CodeCategoryMapping[report_type]} (runner: {report_type})')
-            self.enforcement_rule_configs[report_type] = config.get_skip_check_threshold()
+            self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
         self,
@@ -119,17 +119,24 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
-        # apply enforcement rules if specified, but let --skip-check SEVERITY take priority
-        if self.use_enforcement_rules and report_type and not self.skip_check_threshold:
-            skip_check_threshold = self.enforcement_rule_configs[report_type]
+        # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
+        if self.use_enforcement_rules and report_type:
+            if not self.check_threshold and not self.skip_check_threshold:
+                check_threshold = self.enforcement_rule_configs[report_type]
+                skip_check_threshold = None
+            else:
+                check_threshold = self.check_threshold
+                skip_check_threshold = self.skip_check_threshold
         else:
-            if self.use_enforcement_rules and not self.skip_check_threshold:
-                logging.warning(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
+            if self.use_enforcement_rules:
+                # this is a warning for us (but there is nothing the user can do about it)
+                logging.debug(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
+            check_threshold = self.check_threshold
             skip_check_threshold = self.skip_check_threshold
 
-        run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
+        run_severity = severity and check_threshold and severity.level >= check_threshold.level
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
-        implicit_run = not self.checks and not self.check_threshold
+        implicit_run = not self.checks and not check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
         is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list

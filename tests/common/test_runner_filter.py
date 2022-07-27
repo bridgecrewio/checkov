@@ -474,13 +474,13 @@ class TestRunnerFilter(unittest.TestCase):
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
 
+        # hardcoded check IDs always run (if not removed by --skip-check)
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
-        # these are still False, because the logic is to first take the check allow list, and remove the check denylist (including by severity)
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
-        # these are just False for normal reasons (implicit skip)
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+        # these run based on severity
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
@@ -499,6 +499,8 @@ class TestRunnerFilter(unittest.TestCase):
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
 
+        # the logic is to merge the skip check with the enforcement rule setting, if all the skip-checks are IDs (not severities)
+        # so we always skip 789, and run 123 based on the severity
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
@@ -546,15 +548,93 @@ class TestRunnerFilter(unittest.TestCase):
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
 
-        # the --check option here does nothing, because we will remove all checks below the enforcement rule threshold from the check allowlist
+        # use of --check with a severity overrides the enforcement rule (so just run all MEDIUM+)
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
-        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.SCA_IMAGE))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
         self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.SCA_IMAGE))
+
+    def test_should_run_check_enforcement_rules_run_and_skip_id(self):
+        instance = RunnerFilter(include_all_checkov_policies=True, checks=['CKV_AWS_123'], skip_checks=['CKV_AWS_789'],
+                                filtered_policy_ids=[], use_enforcement_rules=True)
+
+        enforcement_rule_configs = {
+            CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+        }
+
+        instance.apply_enforcement_rules(enforcement_rule_configs)
+
+        # run / skip based on ID lists
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
+        # anything else is based on enforcement rule severity
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_456', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_456', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_456', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_456', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
+    def test_should_run_check_enforcement_rules_run_id_skip_severity(self):
+        instance = RunnerFilter(include_all_checkov_policies=True, checks=['CKV_AWS_123'], skip_checks=['MEDIUM'],
+                                filtered_policy_ids=[], use_enforcement_rules=True)
+
+        enforcement_rule_configs = {
+            CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+        }
+
+        instance.apply_enforcement_rules(enforcement_rule_configs)
+
+        # the presence of a severity in check/skip overrides enforcement rules, and 789 just gets implicitly skipped because it's not in the allow list
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
+    def test_should_run_check_enforcement_rules_run_severity_skip_id(self):
+        instance = RunnerFilter(include_all_checkov_policies=True, checks=['MEDIUM'], skip_checks=['CKV_AWS_123'],
+                                filtered_policy_ids=[], use_enforcement_rules=True)
+
+        enforcement_rule_configs = {
+            CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+        }
+
+        instance.apply_enforcement_rules(enforcement_rule_configs)
+
+        # the presence of a severity in check/skip overrides enforcement rules, so run 789 based on severity and always skip 123
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
+        self.assertTrue(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_789', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.HIGH], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
+        self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
 
 
 if __name__ == '__main__':
