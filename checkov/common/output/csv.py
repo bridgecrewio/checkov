@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 date_now = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
 FILE_NAME_OSS_PACKAGES = f"{date_now}_oss_packages.csv"
-HEADER_OSS_PACKAGES = [
+HEADER_OSS_PACKAGES : list[str] = [
     "Package",
     "Version",
     "Path",
@@ -163,3 +163,18 @@ class CSVSBOM:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerow([CTA_NO_API_KEY])
+
+    def get_csv_output_oss_packages(self) -> str:
+        # header
+        csv_output = ','.join(HEADER_OSS_PACKAGES) + '\n'
+
+        for row in self.package_rows:
+            for header in HEADER_OSS_PACKAGES:
+                field = row[header] if row[header] else ''
+                if header == 'Package':
+                    csv_output += f'{field}'
+                else:
+                    csv_output += f',{field}'
+            csv_output += '\n'
+
+        return csv_output

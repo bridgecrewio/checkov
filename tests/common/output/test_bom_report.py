@@ -88,9 +88,12 @@ class TestBomOutput:
         # then
         output_file_path = tmp_path / file_name
         csv_output = output_file_path.read_text()
-
-        assert csv_output == (
+        csv_output_str = csv_sbom_report.get_csv_output_oss_packages()
+        expected_csv = (
             "Package,Version,Path,git org,git repository,Vulnerability,Severity,License\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\n"
             "requests,,/requirements.txt,acme,bridgecrewio/example,,,\n"
         )
+
+        assert csv_output == expected_csv
+        assert csv_output_str == expected_csv
