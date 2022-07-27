@@ -1,5 +1,3 @@
-import re
-
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
 from checkov.yaml_doc.enums import BlockType

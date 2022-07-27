@@ -42,8 +42,7 @@ def load(filename: str | Path, content: str | None = None) -> tuple[list[dict[st
 
 class SafeLineLoader(SafeLoader):
     def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
-        mapping: dict[str, Any] = super().construct_mapping(node,
-                                                            deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
+        mapping: dict[str, Any] = super().construct_mapping(node, deep=deep) # type:ignore[no-untyped-call]  # sadly it is untyped
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
@@ -55,7 +54,8 @@ class SafeLineLoader(SafeLoader):
         'no': False,
         'true': True,
         'false': False,
-        #  GHA workflow files have a saved word for "on". Since we have policies inspecting the "on" section we need to keep the string value.
+        # GHA workflow files have a saved word for "on". Since we have policies inspecting the "on" section we need
+        # to keep the string value.
         'on': 'on',
         'off': False,
     }

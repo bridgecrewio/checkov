@@ -182,7 +182,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        triggers = definition.get("on")  # type:ignore[call-overload]
+        triggers = definition.get("on")
         try:
             if isinstance(triggers, str):
                 triggers_set.add(triggers)
