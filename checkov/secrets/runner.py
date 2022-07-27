@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
 from detect_secrets import SecretsCollection  # type:ignore[import]
 from detect_secrets.core import scan  # type:ignore[import]
@@ -33,6 +33,8 @@ from checkov.runner_filter import RunnerFilter
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
 
+SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
+                         'go', 'cs', '.txt']
 SECRET_TYPE_TO_ID = {
     'Artifactory Credentials': 'CKV_SECRET_1',
     'AWS Access Key': 'CKV_SECRET_2',
@@ -43,7 +45,7 @@ SECRET_TYPE_TO_ID = {
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
-    # 'Secret Keyword': 'CKV_SECRET_10',
+    'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
     'NPM tokens': 'CKV_SECRET_12',
     'Private Key': 'CKV_SECRET_13',
@@ -58,8 +60,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
-ADDED_TO_SECRET_SCAN_FILES_TYPES = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
-                                    '.go', '.cs', '.txt'] + SUPPORTED_FILE_EXTENSIONS
+ADDED_TO_SECRET_SCAN_FILES_TYPES = SOURCE_CODE_EXTENSION + SUPPORTED_FILE_EXTENSIONS
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
@@ -161,11 +162,16 @@ class Runner(BaseRunner[None]):
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
-
+            secrets_duplication: Dict[str, bool] = {}
             for _, secret in secrets:
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
+                secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
+                if secret_key in secrets_duplication:
+                    continue
+                else:
+                    secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
                 if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
@@ -199,7 +205,6 @@ class Runner(BaseRunner[None]):
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
                 ))
-
             return report
 
     @staticmethod
