@@ -30,7 +30,7 @@ HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
-HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
+HEADER_IAC = ["Resource", "Path", "git org", "git repository", "traces", "Misconfigurations", "Severity"]
 
 CTA_NO_API_KEY = (
     "SCA, image and runtime findings are only available with Bridgecrew. Signup at "
@@ -107,6 +107,7 @@ class CSVSBOM:
                 "git org": git_org,
                 "git repository": git_repository,
                 "Misconfigurations": misconfig,
+                "traces": "|".join(resource.traces),
                 "Severity": severity,
             }
         )

@@ -325,6 +325,7 @@ class Report:
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
                 "level": level,
+                "traces": record.traces,
                 "message": {
                     "text": record.description if record.description else record.check_name,
                 },
