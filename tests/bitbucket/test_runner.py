@@ -3,10 +3,15 @@ import unittest
 from unittest import mock
 
 from checkov.bitbucket.runner import Runner
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.runner_filter import RunnerFilter
+from checkov.bitbucket.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.BITBUCKET_CONFIGURATION)
 
     @mock.patch.dict(os.environ, {"CKV_BITBUCKET_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1",
                                   "BITBUCKET_REPO_FULL_NAME": "shaharsamira/terragoat2"}, clear=True)

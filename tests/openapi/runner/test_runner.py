@@ -1,8 +1,10 @@
 import os
 import unittest
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.openapi.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.openapi.checks.registry import openapi_registry
 
 class TestRunnerValid(unittest.TestCase):
 
@@ -21,6 +23,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_registry_has_type(self):
+        self.assertEqual(openapi_registry.report_type, CheckType.OPENAPI)
 
     def test_runner_all_checks(self) -> None:
         current_dir = os.path.dirname(os.path.realpath(__file__))

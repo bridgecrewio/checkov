@@ -12,6 +12,7 @@ from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.parser import parse
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
@@ -24,6 +25,9 @@ class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_checks = cfn_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(cfn_registry.report_type, CheckType.CLOUDFORMATION)
 
     def test_record_relative_path_with_relative_dir(self):
 

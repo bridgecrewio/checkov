@@ -1,11 +1,17 @@
 import unittest
 from pathlib import Path
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.github_actions.checks.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.GITHUB_ACTIONS)
+
     def test_runner(self):
         # given
         test_dir = Path(__file__).parent / "resources"

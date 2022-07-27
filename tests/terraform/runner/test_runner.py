@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -21,7 +22,11 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.module.registry import module_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.data.registry import data_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
@@ -31,6 +36,12 @@ class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(provider_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(module_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(data_registry.report_type, CheckType.TERRAFORM)
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

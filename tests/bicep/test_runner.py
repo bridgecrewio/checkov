@@ -4,7 +4,10 @@ import pytest
 
 from checkov.bicep.runner import Runner
 from checkov.arm.runner import Runner as ArmRunner
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.runner_filter import RunnerFilter
+from checkov.bicep.checks.resource.registry import registry as resource_registry
+from checkov.bicep.checks.param.registry import registry as param_registry
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -13,6 +16,11 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def load_arm_checks():
     # just initialize to add the ARM checks to the Bicep registry
     ArmRunner()
+
+
+def test_registry_has_type():
+    assert resource_registry.report_type == CheckType.BICEP
+    assert param_registry.report_type == CheckType.BICEP
 
 
 def test_arm_checks_laoded():

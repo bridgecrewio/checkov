@@ -2,10 +2,15 @@ import os
 import unittest
 
 from checkov.bitbucket_pipelines.runner import Runner
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.runner_filter import RunnerFilter
+from checkov.bitbucket_pipelines.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.BITBUCKET_PIPELINES)
 
     def test_runner(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

@@ -7,17 +7,22 @@ from pathlib import Path
 from typing import Dict, Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
-from checkov.arm.registry import arm_resource_registry
+from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 
 
 class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_checks = arm_resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(arm_resource_registry.report_type, CheckType.ARM)
+        self.assertEqual(arm_parameter_registry.report_type, CheckType.ARM)
 
     def test_record_relative_path_with_relative_dir(self):
 

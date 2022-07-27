@@ -3,10 +3,16 @@ from pathlib import Path
 from pytest_mock import MockerFixture
 
 from checkov.argo_workflows.runner import Runner
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.images.image_referencer import Image
 from checkov.runner_filter import RunnerFilter
+from checkov.argo_workflows.checks.registry import registry
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+
+
+def test_registry_has_type():
+    assert registry.report_type == CheckType.ARGO_WORKFLOWS
 
 
 def test_runner_passing_check():

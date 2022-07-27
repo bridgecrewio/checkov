@@ -2,8 +2,10 @@ import os
 import unittest
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.gitlab.registry import registry
 
 
 class TestGitlabRunnerValid(unittest.TestCase):
@@ -40,6 +42,9 @@ class TestGitlabRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.skipped_checks, [])
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.GITLAB_CONFIGURATION)
 
 
 if __name__ == "__main__":

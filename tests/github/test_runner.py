@@ -2,11 +2,16 @@ import os
 import unittest
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.github.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.github.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.GITHUB_CONFIGURATION)
 
     @mock.patch.dict(os.environ, {"CKV_GITHUB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1",
                                   "GITHUB_REF": "refs/heads/feature-branch-1"}, clear=True)

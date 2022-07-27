@@ -7,6 +7,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
@@ -18,6 +19,9 @@ from checkov.runner_filter import RunnerFilter
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.DOCKERFILE)
 
     def test_runner_empty_dockerfile(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
