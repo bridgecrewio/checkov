@@ -375,7 +375,8 @@ class Runner(BaseRunner):
                         caller_file_line_range=caller_file_line_range,
                         severity=check.severity,
                         bc_category=check.bc_category,
-                        benchmarks=check.benchmarks
+                        benchmarks=check.benchmarks,
+                        traces=check.traces
                     )
 
                     if CHECKOV_CREATE_GRAPH:

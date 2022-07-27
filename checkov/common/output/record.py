@@ -46,7 +46,8 @@ class Record:
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
-        connected_node: Optional[Dict[str, Any]] = None
+        connected_node: Optional[Dict[str, Any]] = None,
+        traces: Optional[List[str]] = []
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -79,6 +80,7 @@ class Record:
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
+        self.traces: List[str] = traces
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -152,6 +154,18 @@ class Record:
         code_lines = ""
         if self.code_block:
             code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
+
+        trace = ""
+        if len(self.traces):
+            trace_buffer = ""
+
+            trace_buffer += colored(f"\tTRACES: {self.traces[0]}\n", "blue")
+
+            for t in self.traces[1:]:
+                trace_buffer += colored(f"\t\t\t{t}\n", "blue")
+
+            trace = trace_buffer
+
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:
             caller_file_details = colored(
@@ -175,12 +189,12 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{trace}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{suppress_comment}{file_details}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{suppress_comment}{trace}{file_details}{caller_file_details}{guideline_message}"
         else:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{trace}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
 
     def __str__(self) -> str:
         return self.to_string()
