@@ -21,14 +21,17 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
@@ -110,18 +113,67 @@ class RunnerRegistry:
                           exc_info=True)
 
     @staticmethod
-    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> Tuple[bool, List[str], List[str]]:
+    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
+
+        soft_fail = config.soft_fail
+
+        soft_fail_on_checks = []
+        soft_fail_threshold = None
+        # soft fail on the highest severity threshold in the list
+        for val in convert_csv_string_arg_to_list(config.soft_fail_on):
+            if val.upper() in Severities:
+                val = val.upper()
+                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
+                    soft_fail_threshold = Severities[val]
+            else:
+                soft_fail_on_checks.append(val)
+
+        logging.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
+        logging.debug(f'Soft fail checks: {soft_fail_on_checks}')
+
+        hard_fail_on_checks = []
+        hard_fail_threshold = None
+        # hard fail on the lowest threshold in the list
+        for val in convert_csv_string_arg_to_list(config.hard_fail_on):
+            if val.upper() in Severities:
+                val = val.upper()
+                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
+                    hard_fail_threshold = Severities[val]
+            else:
+                hard_fail_on_checks.append(val)
+
+        logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
+        logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
+
         if not config.use_platform_enforcement_rules:
-            return config.soft_fail, config.soft_fail_on, config.hard_fail_on
-        else:
+            logging.debug('Use enforcement rules is FALSE')
+        elif not soft_fail:
             code_category_type = CodeCategoryMapping[report_type]
             enf_rule = repo_config_integration.code_category_configs.get(code_category_type)
 
-            # we will merge the command line args (which take precedence) with the enforcement rule defaults
-            enf_rule_soft_fail = enf_rule.is_global_soft_fail()
-            enf_rule_hard_fail = [enf_rule.hard_fail_threshold.name]
-            # the enforcement rule soft fail is implicit, so we can just leave it blank (unless it got set in the CLI options)
-            return (config.soft_fail or enf_rule_soft_fail), config.soft_fail_on, config.hard_fail_on or enf_rule_hard_fail
+            if enf_rule:
+                logging.debug('Use enforcement rules is TRUE')
+
+                # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules
+                # if the lists only contain check IDs, then we will merge them with the enforcement rule value
+                if soft_fail_threshold or hard_fail_threshold:
+                    logging.debug('Soft or hard fail threshold is set; ignoring enforcement rules')
+                else:
+                    hard_fail_threshold = enf_rule.hard_fail_threshold
+                    soft_fail = enf_rule.is_global_soft_fail()
+                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
+            else:
+                logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
+        else:
+            logging.debug('Soft fail was true; ignoring enforcement rules')
+
+        return {
+            'soft_fail': soft_fail,
+            'soft_fail_checks': soft_fail_on_checks,
+            'soft_fail_threshold': soft_fail_threshold,
+            'hard_fail_checks': hard_fail_on_checks,
+            'hard_fail_threshold': hard_fail_threshold
+        }
 
     def print_reports(
             self,
@@ -165,8 +217,8 @@ class RunnerRegistry:
                         git_org,git_repository = config.repo_id.split('/')
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
-            soft_fail, soft_fail_on, hard_fail_on = self.get_fail_thresholds(config, report.check_type)
-            exit_codes.append(report.get_exit_code(soft_fail, soft_fail_on, hard_fail_on))
+            exit_code_thresholds = self.get_fail_thresholds(config, report.check_type)
+            exit_codes.append(report.get_exit_code(exit_code_thresholds))
 
         if "cli" in config.output:
             cli_output = ''

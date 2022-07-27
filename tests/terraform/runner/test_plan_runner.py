@@ -33,8 +33,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
@@ -224,8 +224,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 4)
@@ -245,8 +245,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 15)
         self.assertEqual(report.get_summary()["passed"], 0)
@@ -277,8 +277,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         # 4 checks fail on test data for single eks resource as of present
         # If more eks checks are added then this number will need to increase correspondingly to reflect
@@ -321,8 +321,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
@@ -348,8 +348,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertGreaterEqual(report.get_summary()["failed"], 71)
         self.assertGreaterEqual(report.get_summary()["passed"], 65)
@@ -467,8 +467,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 0)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)
@@ -489,8 +489,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 0)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)

@@ -17,6 +17,7 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
+from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -107,63 +108,34 @@ class Report:
                 "url": url,
             }
 
-    def get_exit_code(
-        self,
-        soft_fail: bool,
-        soft_fail_on: list[str] | None = None,
-        hard_fail_on: list[str] | None = None,
-    ) -> int:
+    def get_exit_code(self, exit_code_thresholds: _ExitCodeThresholds) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
-        :param soft_fail: If true, exit code is always 0. (default is false)
-        :param soft_fail_on: A list of checks that will return exit code 0 if they fail. Other failing checks will
-        result exit code 1.
-        :param hard_fail_on: A list of checks that will return exit code 1 if they fail. Other failing checks will
-        result exit code 0.
         :return: Exit code 0 or 1.
         """
 
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
-        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+        logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+
+        soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
+        soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
+        hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']
+        hard_fail_threshold = exit_code_thresholds['hard_fail_threshold']
+        soft_fail = exit_code_thresholds['soft_fail']
+
+        has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+        has_hard_fail_values = hard_fail_on_checks or hard_fail_threshold
 
         if self.parsing_errors and hard_fail_on_parsing_errors:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
-        elif not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
+        elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
             logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
-        elif not soft_fail_on and not hard_fail_on and self.failed_checks:
+        elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
             logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
             return 1
-
-        soft_fail_on_checks = []
-        soft_fail_threshold = None
-        # soft fail on the highest severity threshold in the list
-        for val in convert_csv_string_arg_to_list(soft_fail_on):
-            if val.upper() in Severities:
-                val = val.upper()
-                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
-                    soft_fail_threshold = Severities[val]
-            else:
-                soft_fail_on_checks.append(val)
-
-        logging.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
-        logging.debug(f'Soft fail checks: {soft_fail_on_checks}')
-
-        hard_fail_on_checks = []
-        hard_fail_threshold = None
-        # hard fail on the lowest threshold in the list
-        for val in convert_csv_string_arg_to_list(hard_fail_on):
-            if val.upper() in Severities:
-                val = val.upper()
-                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
-                    hard_fail_threshold = Severities[val]
-            else:
-                hard_fail_on_checks.append(val)
-
-        logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
-        logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
 
         for failed_check in self.failed_checks:
             check_id = failed_check.check_id
