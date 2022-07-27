@@ -20,6 +20,13 @@ definition:
         - google_project_iam_audit_config
       attribute: "audit_log_config.*.exempted_members"
       operator: not_exists
+    - or:
+       - cond_type: attribute
+         resource_types:
+           - google_project_iam_audit_config
+         attribute: "audit_log_config.*.exempted_members"
+         operator: is_empty
+      
     - cond_type: attribute
       resource_types:
         - google_project_iam_audit_config
