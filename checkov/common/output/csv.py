@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 date_now = f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
 FILE_NAME_OSS_PACKAGES = f"{date_now}_oss_packages.csv"
-HEADER_OSS_PACKAGES : list[str] = [
+HEADER_OSS_PACKAGES = [
     "Package",
     "Version",
     "Path",
