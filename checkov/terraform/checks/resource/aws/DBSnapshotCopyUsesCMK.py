@@ -6,7 +6,7 @@ from checkov.common.models.consts import ANY_VALUE
 class BDSnapshotCopyUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure App Flow connector profile uses CMK"
-        id = "CKV_AWS_264"
+        id = "CKV_AWS_266"
         supported_resources = ['aws_db_snapshot_copy']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
