@@ -161,7 +161,7 @@ class RunnerRegistry:
                 else:
                     hard_fail_threshold = enf_rule.hard_fail_threshold
                     soft_fail = enf_rule.is_global_soft_fail()
-                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
+                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')  # type:ignore[union-attr] # it is not null
             else:
                 logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
         else:

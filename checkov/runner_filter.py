@@ -47,7 +47,7 @@ class RunnerFilter(object):
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
-        self.enforcement_rule_configs: Optional[Dict[CheckType, Severity]] = None
+        self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -97,7 +97,7 @@ class RunnerFilter(object):
         self.filtered_policy_ids = filtered_policy_ids or []
         self.secrets_scan_file_type = secrets_scan_file_type
 
-    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[CodeCategoryType, CodeCategoryConfiguration]) -> None:
+    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
             config = enforcement_rule_configs.get(code_category)
@@ -123,7 +123,7 @@ class RunnerFilter(object):
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
             if not self.check_threshold and not self.skip_check_threshold:
-                check_threshold = self.enforcement_rule_configs[report_type]
+                check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
                 skip_check_threshold = None
             else:
                 check_threshold = self.check_threshold

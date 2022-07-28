@@ -106,7 +106,7 @@ class BaseCheckRegistry:
         entity: Dict[str, Any],
         skipped_checks: List[_SkippedCheck],
         runner_filter: RunnerFilter,
-        report_type: str = None  # allow runners like TF plan to override the type while using the same registry
+        report_type: Optional[str] = None  # allow runners like TF plan to override the type while using the same registry
     ) -> Dict[BaseCheck, _CheckResult]:
 
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
