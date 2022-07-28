@@ -59,7 +59,7 @@ class TestRunnerValid(unittest.TestCase):
         )
         self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.skipped_checks, [])
 
     @mock.patch.dict(os.environ, {"CKV_GITHUB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1"}, clear=True)
