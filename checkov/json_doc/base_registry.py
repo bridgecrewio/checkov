@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Callable
 
-from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
