@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List, TYPE_CHECKING
+from typing import Set, Optional, Union, List, TYPE_CHECKING, Dict
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -46,7 +47,7 @@ class RunnerFilter(object):
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
-        self.enforcement_rule_configs = None
+        self.enforcement_rule_configs: Optional[Dict[CheckType, Severity]] = None
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -96,12 +97,12 @@ class RunnerFilter(object):
         self.filtered_policy_ids = filtered_policy_ids or []
         self.secrets_scan_file_type = secrets_scan_file_type
 
-    def apply_enforcement_rules(self, enforcement_rule_configs):
+    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[CodeCategoryType, CodeCategoryConfiguration]):
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
             config = enforcement_rule_configs.get(code_category)
             if not config:
-                raise Exception(f'Could not find an enforcement rule config for category {CodeCategoryMapping[report_type]} (runner: {report_type})')
+                raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
             self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
