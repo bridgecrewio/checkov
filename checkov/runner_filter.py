@@ -5,8 +5,7 @@ import fnmatch
 from collections.abc import Iterable
 from typing import Set, Optional, Union, List, TYPE_CHECKING, Dict
 
-from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
