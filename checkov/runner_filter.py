@@ -97,7 +97,7 @@ class RunnerFilter(object):
         self.filtered_policy_ids = filtered_policy_ids or []
         self.secrets_scan_file_type = secrets_scan_file_type
 
-    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[CodeCategoryType, CodeCategoryConfiguration]):
+    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[CodeCategoryType, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
             config = enforcement_rule_configs.get(code_category)
