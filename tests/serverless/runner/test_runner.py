@@ -38,6 +38,23 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(plugin_registry.report_type, CheckType.SERVERLESS)
         self.assertEqual(service_registry.report_type, CheckType.SERVERLESS)
 
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['serverless'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.SERVERLESS: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+
     def test_record_relative_path_with_relative_dir(self):
 
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).

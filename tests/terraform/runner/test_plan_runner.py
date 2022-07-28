@@ -6,6 +6,7 @@ from pathlib import Path
 
 from typing import Dict, Any
 # do not remove - prevents circular import
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
@@ -356,6 +357,21 @@ class TestRunnerValid(unittest.TestCase):
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(len(files_scanned), 6)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        root_dir = current_dir + "/resources"
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform_plan'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM_PLAN: Severities[BcSeverities.OFF]}
+        report = runner.run(
+            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=filter
+        )
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 

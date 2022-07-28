@@ -24,6 +24,26 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(arm_resource_registry.report_type, CheckType.ARM)
         self.assertEqual(arm_parameter_registry.report_type, CheckType.ARM)
 
+    def test_runner_honors_enforcement_rules(self):
+        # this is just constructing the scan dir as normal
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['arm'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.ARM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None, runner_filter=filter)
+
+        # then
+        summary = report.get_summary()
+
+        assert summary["passed"] == 0
+        assert summary["failed"] == 0
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
+
     def test_record_relative_path_with_relative_dir(self):
 
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
@@ -225,8 +245,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_skip_check_filter_omit(self):
 
         custom_check_id = "MY_CUSTOM_CHECK"
-
-
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -258,8 +276,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_skip_check_filter_include(self):
 
         custom_check_id = "MY_CUSTOM_CHECK"
-
-
         arm_resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):

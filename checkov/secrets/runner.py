@@ -169,7 +169,7 @@ class Runner(BaseRunner[None]):
                     continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
+                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)

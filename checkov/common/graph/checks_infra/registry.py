@@ -24,7 +24,7 @@ class BaseRegistry:
         raise NotImplementedError
 
     def run_checks(
-        self, graph_connector: DiGraph, runner_filter: RunnerFilter, report_type: Optional[str] = None
+        self, graph_connector: DiGraph, runner_filter: RunnerFilter, report_type: str
     ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
 
         check_results: Dict[BaseGraphCheck, List[Dict[str, Any]]] = {}

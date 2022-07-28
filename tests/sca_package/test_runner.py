@@ -4,6 +4,7 @@ from mock.mock import MagicMock
 from packaging import version as packaging_version
 from pytest_mock import MockerFixture
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
@@ -59,6 +60,30 @@ def test_run(mocker: MockerFixture, scan_result):
     assert record.vulnerability_details["fixed_versions"] == [
         packaging_version.parse("v0.0.0-20201216223049-8b5274cf687f"),
     ]
+
+
+def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):
+    # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result
+    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+
+    # when
+    runner = Runner()
+    filter = RunnerFilter(framework=['sca_package'], use_enforcement_rules=True)
+    # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+    # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+    filter.enforcement_rule_configs = {CheckType.SCA_PACKAGE: Severities[BcSeverities.OFF]}
+    report = runner.run(root_folder=EXAMPLES_DIR, runner_filter=filter)
+
+    # then
+    summary = report.get_summary()
+    # then
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 8
+    assert summary["parsing_errors"] == 0
 
 
 def test_run_with_empty_scan_result(mocker: MockerFixture):

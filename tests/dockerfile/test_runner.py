@@ -58,6 +58,22 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/expose_port/fail"
+        runner = Runner()
+        filter = RunnerFilter(framework=['dockerfile'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.DOCKERFILE: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        report.print_console()
+
     def test_runner_failing_check_with_file_path(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_file_path = current_dir + "/resources/expose_port/fail/Dockerfile"

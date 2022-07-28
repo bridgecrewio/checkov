@@ -50,7 +50,7 @@ class Registry(BaseCheckRegistry):
                     if "default" in allowed_namespaces:
                         run_check = True
             else:
-                if runner_filter.should_run_check(check=check):
+                if runner_filter.should_run_check(check=check, report_type=report_type):
                     if allowed_namespaces:
                         # Check if namespace in allowed namespaces
                         if "metadata" in entity_configuration and "namespace" in entity_configuration["metadata"]:

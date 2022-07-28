@@ -855,6 +855,23 @@ class TestRunnerValid(unittest.TestCase):
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
 
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+
     def test_record_relative_path_with_relative_dir(self):
 
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).

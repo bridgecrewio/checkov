@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.github_actions.checks.registry import registry
@@ -27,6 +28,25 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.parsing_errors), 0)
         self.assertEqual(len(report.passed_checks), 41)
         self.assertEqual(len(report.skipped_checks), 0)
+
+    def test_runner_honors_enforcement_rules(self):
+        # given
+        test_dir = Path(__file__).parent / "resources"
+        filter = RunnerFilter(framework=['github_actions'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF]}
+
+        # when
+        report = Runner().run(
+            root_folder=str(test_dir), runner_filter=filter
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_runner_on_suspectcurl(self):
         # given
