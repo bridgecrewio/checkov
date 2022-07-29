@@ -97,3 +97,20 @@ class TestBomOutput:
 
         assert csv_output == expected_csv
         assert csv_output_str == expected_csv
+
+    def test_print_iac_bom_reports(self, tmp_path: Path):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/../runner_registry/example_s3_tf"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+        output_types = ["cyclonedx", "csv"]
+        output_path = tmp_path
+
+        result_files_list = runner_registry.print_iac_bom_reports(output_path=str(output_path),
+                                                                  scan_reports=reports,
+                                                                  output_types=output_types)
+        assert len(result_files_list) == len(output_types)
+        for result_file in result_files_list.values():
+            assert os.path.exists(result_file)
