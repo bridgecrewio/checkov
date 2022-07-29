@@ -30,7 +30,7 @@ HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
-HEADER_IAC = ["Resource", "Path", "git org", "git repository", "traces", "Misconfigurations", "Severity"]
+HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
 
 CTA_NO_API_KEY = (
     "SCA, image and runtime findings are only available with Bridgecrew. Signup at "
@@ -43,6 +43,8 @@ class CSVSBOM:
         self.iac_rows: list[dict[str, Any]] = []
         self.container_rows: list[dict[str, Any]] = []
         self.package_rows: list[dict[str, Any]] = []
+
+        self.iac_rows_have_traces: bool = False
 
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
@@ -60,7 +62,6 @@ class CSVSBOM:
                 self.add_iac_resources(resource=record, git_org=git_org, git_repository=git_repository)
             for resource in report.extra_resources:
                 self.add_iac_resources(resource=resource, git_org=git_org, git_repository=git_repository)
-
 
     def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
         if not resource.vulnerability_details:
@@ -100,17 +101,23 @@ class CSVSBOM:
             # IaC resources shouldn't be added multiple times, if they don't have any misconfiguration
             return
 
-        self.iac_rows.append(
-            {
-                "Resource": resource.resource,
-                "Path": resource.file_path,
-                "git org": git_org,
-                "git repository": git_repository,
-                "Misconfigurations": misconfig,
-                "traces": "|".join(resource.traces),
-                "Severity": severity,
+        row = {
+            "Resource": resource.resource,
+            "Path": resource.file_path,
+            "git org": git_org,
+            "git repository": git_repository,
+            "Misconfigurations": misconfig,
+            "Severity": severity,
+        }
+
+        if len(resource.traces):
+            self.iac_rows_have_traces = True
+            row = {
+                **row,
+                "Traces": "|".join(resource.traces)
             }
-        )
+
+        self.iac_rows.append(row)
         self.iac_resource_cache.add(resource_id)
 
     def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
@@ -131,7 +138,7 @@ class CSVSBOM:
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_IAC,
+            header=[*HEADER_IAC, "Traces"] if self.iac_rows_have_traces else HEADER_IAC,
             rows=self.iac_rows,
             is_api_key=True,
         )
