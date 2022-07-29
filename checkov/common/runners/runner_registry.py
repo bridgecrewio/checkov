@@ -145,7 +145,7 @@ class RunnerRegistry:
         logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
         logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
 
-        if not config.use_platform_enforcement_rules:
+        if not config.use_enforcement_rules:
             logging.debug('Use enforcement rules is FALSE')
         elif not soft_fail:
             code_category_type = CodeCategoryMapping[report_type]

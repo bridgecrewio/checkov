@@ -147,7 +147,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
-                                 secrets_scan_file_type=config.secrets_scan_file_type, use_enforcement_rules=config.use_platform_enforcement_rules)
+                                 secrets_scan_file_type=config.secrets_scan_file_type, use_enforcement_rules=config.use_enforcement_rules)
 
     if outer_registry:
         runner_registry = outer_registry
@@ -246,7 +246,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
-    if config.use_platform_enforcement_rules:
+    if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
@@ -471,7 +471,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'custom policies and suppressions if using an API token. Note: it will prevent BC platform IDs from '
                     'being available in Checkov.',
                action='store_true')
-    parser.add('--use-platform-enforcement-rules', action='store_true',
+    parser.add('--use-enforcement-rules', action='store_true',
                help='Use the Enforcement Rules configured in the platform for hard / soft fail logic. With this option, '
                     'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
                     'this behavior: any check with a severity below the selected rule\'s soft-fail threshold will be '
@@ -581,8 +581,8 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
 
-    if config.use_platform_enforcement_rules and not config.bc_api_key:
-        parser.error('Must specify an API key with --use-platform-enforcement-rules')
+    if config.use_enforcement_rules and not config.bc_api_key:
+        parser.error('Must specify an API key with --use-enforcement-rules')
 
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
         logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')

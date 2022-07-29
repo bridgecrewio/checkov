@@ -97,7 +97,7 @@ class TestRunnerRegistry(unittest.TestCase):
             soft_fail_on=None,
             hard_fail_on=None,
             output_file_path=None,
-            use_platform_enforcement_rules=None
+            use_enforcement_rules=None
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
@@ -125,7 +125,7 @@ class TestRunnerRegistry(unittest.TestCase):
             soft_fail_on=None,
             hard_fail_on=None,
             output_file_path=None,
-            use_platform_enforcement_rules=None
+            use_enforcement_rules=None
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
@@ -224,7 +224,7 @@ def test_non_compact_json_output(capsys):
         soft_fail_on=None,
         hard_fail_on=None,
         output_file_path=None,
-        use_platform_enforcement_rules=None
+        use_enforcement_rules=None
     )
 
     # when

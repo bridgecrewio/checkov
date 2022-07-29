@@ -67,7 +67,7 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 
 Checkov can download [enforcement rules](https://docs.bridgecrew.io/changelog/enforcement-rules-settings) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
 
-To use enforcement rules, use the `--use-platform-enforcement-rules` flag along with a platform API key.
+To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
 
 Enforcement rules allow you to specify a hard-fail severity threshold equivalent to using the `--hard-fail-on <SEVERITY>` argument in Checkov. However, whereas this argument is global, the enforcement rules settings are more granular, for each major category of scanner that Checkov has (IaC, secrets, etc). So, for example, you can hard-fail any IaC scan on `MEDIUM` severity or higher, and hard-fail the SCA scan on `HIGH` severity or higher.
 

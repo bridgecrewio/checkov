@@ -99,7 +99,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.info('Found exactly one matching enforcement rule for the specified repo')
             self.enforcement_rule = matched_rules[0]
 
-        logging.debug(f'Selected the following enforcement rule (it will not be applied unless --use-platform-enforcement-rules is specified):')
+        logging.debug(f'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
         for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:

@@ -151,7 +151,7 @@ class TestGetExitCode(unittest.TestCase):
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.CRITICAL])
         }
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=False,
             soft_fail_on=None,
             hard_fail_on=None
@@ -167,7 +167,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=True,
             soft_fail_on=None,
             hard_fail_on=None
@@ -182,7 +182,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=False,
             soft_fail_on=['MEDIUM'],
             hard_fail_on=None
@@ -197,7 +197,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=False,
             soft_fail_on=['MEDIUM'],
             hard_fail_on=['HIGH']
@@ -212,7 +212,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=False,
             soft_fail_on=['CKV_AWS_123'],
             hard_fail_on=['CKV_AWS_789']
@@ -230,7 +230,7 @@ class TestGetExitCode(unittest.TestCase):
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.LOW], Severities[BcSeverities.OFF])
         }
         config = argparse.Namespace(
-            use_platform_enforcement_rules=True,
+            use_enforcement_rules=True,
             soft_fail=False,
             soft_fail_on=None,
             hard_fail_on=None
@@ -249,7 +249,7 @@ class TestGetExitCode(unittest.TestCase):
     def test_get_fail_thresholds_plain(self):
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=False,
+            use_enforcement_rules=False,
             soft_fail=True,
             soft_fail_on=['MEDIUM', 'CKV_AWS_123'],
             hard_fail_on=['HIGH', 'CKV_AWS_789']
@@ -265,7 +265,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=False,
+            use_enforcement_rules=False,
             soft_fail=False,
             soft_fail_on=['LOW,HIGH'],
             hard_fail_on=[]
@@ -280,7 +280,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=False,
+            use_enforcement_rules=False,
             soft_fail=False,
             soft_fail_on=[],
             hard_fail_on=['LOW,HIGH']
@@ -295,7 +295,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=False,
+            use_enforcement_rules=False,
             soft_fail=False,
             soft_fail_on=['low'],  # case insensitive
             hard_fail_on=[]
@@ -310,7 +310,7 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(RunnerRegistry.get_fail_thresholds(config, report_type=CheckType.TERRAFORM), expected)
 
         config = argparse.Namespace(
-            use_platform_enforcement_rules=False,
+            use_enforcement_rules=False,
             soft_fail=False,
             soft_fail_on=[],
             hard_fail_on=['low']  # case insensitive
