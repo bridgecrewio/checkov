@@ -19,6 +19,9 @@ class GithubAccessTokenLoader(GenericGitLoader):
                 source = self.module_source.replace(":", "/")
                 self.module_source = f"git::https://{self.username}:{self.token}@{source}"
                 return True
+            if self.module_source.startswith(f"git::https://{self.module_source_prefix}"):
+                self.module_source = f"git::https://{self.username}:{self.token}@{self.module_source.split('git::https://')[1]}"
+                return True
 
         return False
 
