@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from checkov.common.bridgecrew.severities import Severity, BcSeverities, get_highest_severity_below_level, Severities
+from checkov.common.bridgecrew.severities import Severity, BcSeverities, Severities
 from checkov.common.bridgecrew.check_type import CheckType
 
 

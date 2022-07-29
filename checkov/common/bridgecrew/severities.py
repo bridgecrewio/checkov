@@ -38,11 +38,3 @@ def get_severity(severity: Optional[str]) -> Optional[Severity]:
     if not severity:
         return None
     return Severities.get(severity.upper())
-
-
-def get_highest_severity_below_level(level: int) -> Optional[Severity]:
-    last = None
-    for severity in sorted(Severities.values(), key=lambda s: s.level):
-        if severity.level < level and (not last or severity.level > last.level):
-            last = severity
-    return last
