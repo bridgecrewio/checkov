@@ -59,9 +59,17 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
+      - name: install reprofiler
+        run: |
+           echo "REPROFILER_API_KEY=demo_api_key" >> $GITHUB_ENV
+           curl -s https://redefine-installation-public.s3.eu-west-1.amazonaws.com/reprofiler/install_reprofiler.sh | bash
+           mkdir /tmp/reprofiler/demo_api_key
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
+      - name: test reprofiler
+        run: |
+          cat /tmp/reprofiler_server.log
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
