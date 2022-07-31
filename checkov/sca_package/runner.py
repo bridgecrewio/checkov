@@ -101,15 +101,17 @@ class Runner(BaseRunner):
 
             vulnerabilities = result.get("vulnerabilities") or []
             packages = result.get("packages") or []
+            license_statuses = result.get("license_statuses") or []
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
             self.parse_vulns_to_records(
                 report=report,
-                result=result,
+                scanned_file_path=str(package_file_path),
                 rootless_file_path=rootless_file_path,
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=packages,
+                license_statuses=license_statuses
             )
 
         return report
@@ -117,19 +119,19 @@ class Runner(BaseRunner):
     def parse_vulns_to_records(
         self,
         report: Report,
-        result: dict[str, Any],
+        scanned_file_path: str,
         rootless_file_path: str,
         runner_filter: RunnerFilter,
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
-        file_abs_path: str = ''
+        license_statuses: list[dict[str, Any]]
     ) -> None:
         vulnerable_packages = []
 
         for vulnerability in vulnerabilities:
             record = create_report_record(
                 rootless_file_path=rootless_file_path,
-                file_abs_path=file_abs_path or result.get("repository"),
+                file_abs_path=scanned_file_path,
                 check_class=self._check_class,
                 vulnerability_details=vulnerability,
                 runner_filter=runner_filter
@@ -152,7 +154,7 @@ class Runner(BaseRunner):
             if f'{package["name"]}@{package["version"]}' not in vulnerable_packages:
                 report.extra_resources.add(
                     ExtraResource(
-                        file_abs_path=file_abs_path or result.get("repository"),
+                        file_abs_path=scanned_file_path,
                         file_path=f"/{rootless_file_path}",
                         resource=f'{rootless_file_path}.{package["name"]}',
                         vulnerability_details={
