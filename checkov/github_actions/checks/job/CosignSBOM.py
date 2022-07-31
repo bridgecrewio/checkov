@@ -24,7 +24,7 @@ class CosignSignSBOM(BaseGithubActionsCheck):
             if steps:
                 for step in steps:
                     run = step.get("run","none")
-                    if re.search('(?=.*cosign)(?=.*sbom)', run):
+                    if all(word in run for word in ("cosign", "sbom")):
                         return CheckResult.PASSED, step
         return CheckResult.FAILED, conf
 
