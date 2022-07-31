@@ -24,7 +24,7 @@ class WebhookHttps(BaseGithubCheck):
 
         if repository_webhooks_schema.validate(conf):
             for item in conf:
-                if isinstance(item, DictNode):
+                if isinstance(item, dict):
                     item_config = item.get("config", {})
                     url = item_config.get('url', '')
                     insecure_ssl = item_config.get('insecure_ssl', '0')
