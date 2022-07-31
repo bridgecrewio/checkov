@@ -155,10 +155,16 @@ class Runner(BaseRunner):
         target_dir.replace("//", "/")
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
-        if target_dir.endswith('/'):
-            target_dir = target_dir[:-1]
-        if target_dir.endswith(chart_name):
-            target_dir = target_dir[:-len(chart_name)]
+        try:
+            if target_dir.endswith('/'):
+                target_dir = target_dir[:-1]
+            if target_dir.endswith(chart_name):
+                target_dir = target_dir[:-len(chart_name)]
+        except Exception:
+            logging.info(
+                f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
+                exc_info=True,
+            )
         logging.info(
             f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
         # dependency list is nicer to parse than dependency update.
