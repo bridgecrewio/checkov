@@ -25,7 +25,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
             if steps is not None:
                 for step in steps:
                     run = step.get("run","none")
-                    if re.search('cosign sign', run):
+                    if "cosign sign" in run:
                         return CheckResult.PASSED, step
         return CheckResult.FAILED, conf
 
