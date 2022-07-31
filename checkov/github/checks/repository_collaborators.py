@@ -1,5 +1,4 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.parsers.node import DictNode
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.repository_collaborators import schema as repository_collaborators_schema
 from checkov.json_doc.enums import BlockType

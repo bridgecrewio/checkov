@@ -1,6 +1,5 @@
-import re
-
 from checkov.common.models.enums import CheckResult
+from checkov.common.util.consts import START_LINE
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
 from checkov.yaml_doc.enums import BlockType
 
@@ -18,7 +17,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
 
     def scan_entity_conf(self, conf):
         for jobname, jobdetail in conf.items():
-            if jobname == '__startline__':
+            if jobname == START_LINE:
                 return CheckResult.FAILED, conf
             steps = jobdetail.get("steps")
             if steps:

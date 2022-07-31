@@ -1,9 +1,9 @@
+import re
+
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.parsers.node import DictNode
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.org_webhooks import schema as org_webhooks_schema
 from checkov.github.schemas.repository_webhooks import schema as repository_webhooks_schema
-import re
 from checkov.json_doc.enums import BlockType
 
 
