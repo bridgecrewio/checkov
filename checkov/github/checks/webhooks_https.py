@@ -26,6 +26,8 @@ class WebhookHttps(BaseGithubCheck):
             for item in conf:
                 if isinstance(item, dict):
                     item_config = item.get("config", {})
+                    if not item_config:
+                        continue
                     url = item_config.get('url', '')
                     insecure_ssl = item_config.get('insecure_ssl', '0')
                     if re.match("^http://", url) or insecure_ssl != '0':
