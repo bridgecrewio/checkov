@@ -164,6 +164,8 @@ class Runner(BaseRunner):
                     )
                 )
 
+        report.set_license_statuses(license_statuses)
+
     def find_scannable_files(
         self,
         root_path: Path | None,

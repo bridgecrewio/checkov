@@ -305,6 +305,28 @@ def create_fixable_cve_summary_table_part(
     return fixable_table_lines
 
 
+def create_license_violations_table(license_statuses: List[Dict[str, Any]]) -> str:
+    columns = 4
+    table_width = 120
+    column_width = int(120 / columns)
+    table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
+    table.set_style(SINGLE_BORDER)
+    table.field_names = [
+        "Package name",
+        "Package version",
+        "Policy ID",
+        "License",
+    ]
+    for idx, curr_license_status in enumerate(license_statuses):
+        table.add_row([curr_license_status["packageName"], curr_license_status["packageVersion"],
+                       curr_license_status["policy"], curr_license_status["license"]])
+    table.align = "l"
+    table.min_width = column_width
+    table.max_width = column_width
+    table_lines = [f"\t{line}" for line in table.get_string().splitlines(keepends=True)]
+    return ''.join(table_lines)
+
+
 def create_package_overview_table_part(
     table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
