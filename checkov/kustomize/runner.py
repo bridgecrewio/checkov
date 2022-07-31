@@ -229,7 +229,7 @@ class Runner(BaseRunner):
                         self.templateRendererCommand = self.kubectl_command
                         return None
             
-            except Exception:
+            except Exception as e:
                 logging.debug(f"An error occured testing the {self.kubectl_command} command: {e}")
                 pass
 
@@ -248,7 +248,7 @@ class Runner(BaseRunner):
                 else:
                     return self.check_type
 
-            except Exception:
+            except Exception as e:
                 logging.debug(f"An error occured testing the {self.kustomize_command} command: {e}")
                 pass
         
