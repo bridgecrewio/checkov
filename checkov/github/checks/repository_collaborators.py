@@ -22,7 +22,7 @@ class RepositoryCollaborators(BaseGithubCheck):
         admin_collaborators = 0
         if repository_collaborators_schema.validate(conf):
             for item in conf:
-                if isinstance(item, DictNode):
+                if isinstance(item, dict):
                     permissions = item.get("permissions", {})
                     admin = permissions.get('admin', False)
                     if admin:
