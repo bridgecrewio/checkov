@@ -22,7 +22,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
             if jobname == '__startline__':
                 return CheckResult.FAILED, conf
             steps = jobdetail.get("steps")
-            if steps is not None:
+            if steps:
                 for step in steps:
                     run = step.get("run","none")
                     if "cosign sign" in run:
