@@ -17,8 +17,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
         )
 
     def scan_entity_conf(self, conf):
-        jobs = conf.items()
-        for jobname,jobdetail in jobs:
+        for jobname, jobdetail in conf.items():
             if jobname == '__startline__':
                 return CheckResult.FAILED, conf
             steps = jobdetail.get("steps")
