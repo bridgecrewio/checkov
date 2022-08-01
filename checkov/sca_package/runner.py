@@ -118,7 +118,8 @@ class Runner(BaseRunner):
                 packages=packages,
                 license_statuses=license_statuses,
             )
-            report.set_license_statuses_for_file(get_file_path_for_record(rootless_file_path), license_statuses)
+            if license_statuses:
+                report.set_license_statuses_for_file(get_file_path_for_record(rootless_file_path), license_statuses)
 
         return report
 
