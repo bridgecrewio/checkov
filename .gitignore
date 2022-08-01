@@ -166,3 +166,7 @@ fabric.properties
 
 # pytest-benchmarks output directory
 .benchmarks/
+
+# vim 
+.vim/
+.vimspector.json
