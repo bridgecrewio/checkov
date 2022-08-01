@@ -44,17 +44,17 @@ class BaseVCSDAL:
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
                                                  ca_certs=ca_certificate,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call,attr-defined]
             except KeyError:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy']) # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call]
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth)) # type:ignore[no-untyped-call,attr-defined]
             except KeyError:
                 self.http = urllib3.PoolManager()
 
