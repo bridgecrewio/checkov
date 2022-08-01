@@ -15,6 +15,12 @@ class TestBaseRunner(unittest.TestCase):
         filter_ignored_paths('.', d_names, ["tests"])
         self.assertEqual(expected, d_names)
 
+    def test_filter_ignored_directories_unescaped_regex(self):
+        d_names = ['bin', 'integration_tests', 'tests', 'docs', 'checkov', 'venv', 'kubernetes', '.idea', 'c++']
+        expected = ['bin', 'docs', 'checkov', 'venv', 'kubernetes']
+        filter_ignored_paths('.', d_names, ["tests", "c++"])
+        self.assertEqual(expected, d_names)
+
     def test_filter_ignored_directories_regex_relative_cwd(self):
         # this simulates scanning a subdirectory and applying filter logic relative to the CWD
         # for this we need to CD temporarily
