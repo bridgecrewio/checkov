@@ -173,6 +173,8 @@ class CSVSBOM:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
                     csv_output += f'{field}'
+                elif header == 'Licenses':
+                    csv_output += f',\"{field}\"'
                 else:
                     csv_output += f',{field}'
             csv_output += '\n'
