@@ -55,7 +55,7 @@ def create_report_record(
     file_abs_path: str,
     check_class: str,
     vulnerability_details: dict[str, Any],
-    license: str | None = None,
+    licenses: str,
     runner_filter: RunnerFilter | None = None,
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
@@ -113,7 +113,7 @@ def create_report_record(
         or (datetime.now() - timedelta(days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "lowest_fixed_version": lowest_fixed_version,
         "fixed_versions": fixed_versions,
-        "license": license,
+        "licenses": licenses,
     }
 
     record = Record(

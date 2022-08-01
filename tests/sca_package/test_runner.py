@@ -61,12 +61,19 @@ def test_run(mocker: MockerFixture, scan_result):
     ]
 
     assert set(report.license_statuses_map.keys()) == {"/path/to/requirements.txt", "/path/to/sub/requirements.txt"}
-    assert len(report.license_statuses_map["/path/to/requirements.txt"]) == 2
+    assert len(report.license_statuses_map["/path/to/requirements.txt"]) == 3
     assert len(report.license_statuses_map["/path/to/sub/requirements.txt"]) == 1
 
     record_with_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.django"), None)
     assert record_with_license is not None
-    assert record_with_license.vulnerability_details["license"] == "OSI_BDS"
+    assert "licenses" in record_with_license.vulnerability_details
+    assert record_with_license.vulnerability_details["licenses"] == "OSI_BDS"
+
+    record_with_2_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.flask"),
+                               None)
+    assert record_with_2_license is not None
+    assert "licenses" in record_with_2_license.vulnerability_details
+    assert record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
 
 
 def test_run_with_empty_scan_result(mocker: MockerFixture):

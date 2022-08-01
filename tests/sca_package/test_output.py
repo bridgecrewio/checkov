@@ -41,6 +41,7 @@ def test_create_report_record():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
+        licenses='OSI_BDS',
     )
 
     # then
@@ -66,6 +67,7 @@ def test_create_report_record():
         packaging_version.parse("3.0.1"),
         packaging_version.parse("2.2.9"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
 def test_create_report_record_moderate_severity():
@@ -96,6 +98,7 @@ def test_create_report_record_moderate_severity():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
+        licenses='OSI_BDS',
     )
 
     # then
@@ -130,7 +133,8 @@ def test_create_report_record_severity_filter():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(checks=['HIGH'])
+        runner_filter=RunnerFilter(checks=['HIGH']),
+        licenses='OSI_BDS',
     )
 
     # then
@@ -157,6 +161,7 @@ def test_create_report_record_severity_filter():
         packaging_version.parse("2.2.9"),
         packaging_version.parse("1.11.27"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
 def test_create_report_record_package_filter():
@@ -187,7 +192,8 @@ def test_create_report_record_package_filter():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(skip_cve_package=['django', 'requests'])
+        runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
+        licenses='OSI_BDS',
     )
 
     # then
@@ -214,6 +220,7 @@ def test_create_report_record_package_filter():
         packaging_version.parse("2.2.9"),
         packaging_version.parse("1.11.27"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
 def test_calculate_lowest_compliant_version():
@@ -373,6 +380,7 @@ def test_create_cli_output():
             file_abs_path=file_abs_path,
             check_class=check_class,
             vulnerability_details=details,
+            licenses='Unknown',
         )
         for details in vulnerabilities_details
     ]

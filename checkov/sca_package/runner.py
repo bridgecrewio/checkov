@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Sequence, Any
+from collections import defaultdict
 
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -133,9 +134,9 @@ class Runner(BaseRunner):
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
     ) -> None:
-        license_per_package_map: dict[str, str] = {}
+        licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
         for item in license_statuses:
-            license_per_package_map[get_package_alias(item["package_name"], item["package_version"])] = item["license"]
+            licenses_per_package_map[get_package_alias(item["package_name"], item["package_version"])].append(item["license"])
 
         vulnerable_packages = []
         for vulnerability in vulnerabilities:
@@ -145,7 +146,7 @@ class Runner(BaseRunner):
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
                 vulnerability_details=vulnerability,
-                license=license_per_package_map.get(get_package_alias(package_name, package_version)),
+                licenses=', '.join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or 'Unknown',
                 runner_filter=runner_filter
             )
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,

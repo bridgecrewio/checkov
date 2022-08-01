@@ -368,10 +368,18 @@ def scan_result() -> List[Dict[str, Any]]:
                     "policy": "BC_LIC_1"
                 },
                 {
-                    "packageName": "requests",
-                    "packageVersion": "2.26.0",
+                    "packageName": "flask",
+                    "packageVersion": "0.6",
                     "packageLang": "python",
                     "license": "OSI_APACHE",
+                    "status": "COMPLIANT",
+                    "policy": "BC_LIC_1"
+                },
+                {
+                    "packageName": "flask",
+                    "packageVersion": "0.6",
+                    "packageLang": "python",
+                    "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
                     "status": "COMPLIANT",
                     "policy": "BC_LIC_1"
                 }
