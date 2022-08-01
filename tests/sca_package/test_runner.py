@@ -82,6 +82,7 @@ def test_run_with_empty_scan_result(mocker: MockerFixture):
     # then
     assert report.check_type == "sca_package"
     assert report.resources == set()
+    assert len(report.license_statuses_map) == 0
 
 
 def test_run_with_skip(mocker: MockerFixture, scan_result):
@@ -107,7 +108,8 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
     assert len(report.failed_checks) == 7
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
-    assert len(report.license_statuses_map) == 0
+    assert len(report.license_statuses_map) == 2
+
     record = report.skipped_checks[0]
     assert record.check_id == "CKV_CVE_2020_29652"
 
