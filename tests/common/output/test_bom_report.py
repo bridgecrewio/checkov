@@ -90,7 +90,7 @@ class TestBomOutput:
         csv_output = output_file_path.read_text()
         csv_output_str = csv_sbom_report.get_csv_output_oss_packages()
         expected_csv = (
-            "Package,Version,Path,git org,git repository,Vulnerability,Severity,License\n"
+            "Package,Version,Path,git org,git repository,Vulnerability,Severity,Licenses\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\n"
             "requests,,/requirements.txt,acme,bridgecrewio/example,,,\n"
         )
