@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import logging
 import os
 import platform
@@ -103,6 +104,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks,runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            self.modify_gha_keys_in_results(results, definitions[file_path])
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -208,3 +210,34 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
+
+    @staticmethod
+    def modify_gha_keys_in_results(results: dict[str, Any], definition: dict[str, Any]) -> None:
+        keys_to_modify = [key for key in results if 'GITHUB_ACTION' in results[key]['check'].bc_id]
+        for key in keys_to_modify:
+            potential_job_name = key.split('.')[1]
+            if potential_job_name != '*':
+                new_key = f'jobs.{potential_job_name}'
+            else:
+                start_line, end_line = Runner.get_start_and_end_lines(key)
+                job_name = Runner.resolve_job_name(definition, int(start_line), int(end_line))
+                new_key = f'jobs.{job_name}.steps'
+
+            results[new_key] = copy.deepcopy(results[key])
+            results.pop(key)
+        pass
+
+    @staticmethod
+    def get_start_and_end_lines(key: str) -> list[str]:
+        check_name = key.split('.')[-1]
+        start_end_line_bracket_index = check_name.index('[')
+        return check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')
+
+    @staticmethod
+    def resolve_job_name(definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        for key, job in definition.get('jobs', {}).items():
+            if key in [START_LINE, END_LINE]:
+                continue
+            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
+                return str(key)
+        return ""
