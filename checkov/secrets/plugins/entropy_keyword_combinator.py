@@ -15,7 +15,7 @@ MAX_LINE_LENGTH = 10000
 
 
 class EntropyKeywordCombinator(BasePlugin):
-    secret_type = ""  # noqa: CCE003  # a static attribute
+    secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
     def __init__(self, limit: float) -> None:
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
