@@ -24,7 +24,7 @@ HEADER_OSS_PACKAGES = [
     "git repository",
     "Vulnerability",
     "Severity",
-    "License",
+    "Licenses",
 ]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
@@ -82,7 +82,7 @@ class CSVSBOM:
                 "git repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
-                "License": None,  # will be added later
+                "Licenses": resource.vulnerability_details.get("licenses"),
             }
         )
 
@@ -163,18 +163,3 @@ class CSVSBOM:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 writer.writerow([CTA_NO_API_KEY])
-
-    def get_csv_output_oss_packages(self) -> str:
-        # header
-        csv_output = ','.join(HEADER_OSS_PACKAGES) + '\n'
-
-        for row in self.package_rows:
-            for header in HEADER_OSS_PACKAGES:
-                field = row[header] if row[header] else ''
-                if header == 'Package':
-                    csv_output += f'{field}'
-                else:
-                    csv_output += f',{field}'
-            csv_output += '\n'
-
-        return csv_output
