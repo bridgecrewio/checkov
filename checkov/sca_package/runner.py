@@ -121,6 +121,7 @@ class Runner(BaseRunner):
             )
             if license_statuses:
                 report.set_license_statuses_for_file(get_file_path_for_record(rootless_file_path), license_statuses)
+            # to-do: checking what we have to do if license_statuses is empty
 
         return report
 

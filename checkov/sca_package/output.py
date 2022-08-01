@@ -173,9 +173,9 @@ def compare_cve_severity(cve: Dict[str, str]) -> int:
 
 
 def create_license_violations_table(license_statuses: List[_LicenseStatus]) -> List[str]:
-    columns = 4
-    table_width = 120
-    column_width = int(120 / columns)
+    columns = 5
+    table_width = 120.0
+    column_width = int(table_width / columns)
     table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     table.set_style(SINGLE_BORDER)
     table.field_names = [
