@@ -107,7 +107,7 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
     assert len(report.failed_checks) == 7
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
-
+    assert len(report.license_statuses_map) == 0
     record = report.skipped_checks[0]
     assert record.check_id == "CKV_CVE_2020_29652"
 
