@@ -172,29 +172,7 @@ def compare_cve_severity(cve: Dict[str, str]) -> int:
     return Severities[severity].level
 
 
-def create_license_violations_table(license_statuses: List[_LicenseStatus]) -> List[str]:
-    columns = 4
-    table_width = 120
-    column_width = int(120 / columns)
-    table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
-    table.set_style(SINGLE_BORDER)
-    table.field_names = [
-        "Package name",
-        "Package version",
-        "Policy ID",
-        "License",
-    ]
-    for idx, curr_license_status in enumerate(license_statuses):
-        table.add_row([curr_license_status["package_name"], curr_license_status["package_version"],
-                       curr_license_status["policy"], curr_license_status["license"]])
-    table.align = "l"
-    table.min_width = column_width
-    table.max_width = column_width
-    table_lines = [f"\t{line}" for line in table.get_string().splitlines(keepends=True)]
-    return table_lines
-
-
-def create_cli_output(fixable=True, *cve_records: List[Record], license_statuses_map: Dict[str, List[Dict[str, Any]]]) -> str:
+def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
     cli_outputs = []
     group_by_file_path_package_map = defaultdict(dict)
 
@@ -203,12 +181,10 @@ def create_cli_output(fixable=True, *cve_records: List[Record], license_statuses
             record.vulnerability_details["package_name"], []
         ).append(record)
 
-    file_paths_for_output = set(group_by_file_path_package_map.keys()).union(license_statuses_map.keys())
-
-    for file_path in file_paths_for_output:
+    for file_path, packages in group_by_file_path_package_map.items():
         cve_count = CveCount(fixable=fixable)
         package_details_map = defaultdict(dict)
-        packages = group_by_file_path_package_map.get(file_path) or dict()
+
         for package_name, records in packages.items():
             package_version = None
             fix_versions_lists = []
@@ -253,15 +229,13 @@ def create_cli_output(fixable=True, *cve_records: List[Record], license_statuses
                 file_path=file_path,
                 cve_count=cve_count,
                 package_details_map=package_details_map,
-                license_statuses=license_statuses_map.get(file_path) or [],
             )
         )
 
     return "".join(cli_outputs)
 
 
-def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]],
-                     license_statuses: List[Dict[str, Any]]) -> str:
+def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
     column_width = int(120 / columns)
@@ -279,15 +253,11 @@ def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: D
         table_width=table_width, column_width=column_width, package_details_map=package_details_map
     )
 
-    license_violations_table_lines = create_license_violations_table(license_statuses=license_statuses)
-
     return (
         f"\t{file_path}\n"
         f"{''.join(cve_table_lines)}\n"
         f"{''.join(fixable_table_lines)}"
         f"{''.join(package_table_lines)}\n"
-        f"{''.join(license_violations_table_lines)}\n"
-
     )
 
 
