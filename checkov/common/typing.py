@@ -61,3 +61,4 @@ class _LicenseStatus(TypedDict):
     package_version: str
     policy: str
     license: str
+    status: str

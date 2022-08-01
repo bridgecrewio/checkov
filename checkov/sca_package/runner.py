@@ -105,7 +105,7 @@ class Runner(BaseRunner):
             packages = result.get("packages") or []
 
             license_statuses = [_LicenseStatus(package_name=elm["packageName"], package_version=elm["packageVersion"],
-                                               policy=elm["policy"], license=elm["license"])
+                                               policy=elm["policy"], license=elm["license"], status=elm["status"])
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
