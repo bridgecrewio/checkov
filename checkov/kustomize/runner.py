@@ -229,8 +229,8 @@ class Runner(BaseRunner):
                         self.templateRendererCommand = self.kubectl_command
                         return None
             
-            except Exception as e:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e}")
+            except Exception:
+                logging.debug(f"An error occured testing the {self.kubectl_command} command", exc_info=True)
                 pass
 
         elif shutil.which(self.kustomize_command) is not None:
@@ -248,8 +248,8 @@ class Runner(BaseRunner):
                 else:
                     return self.check_type
 
-            except Exception as e:
-                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e}")
+            except Exception:
+                logging.debug(f"An error occured testing the {self.kustomize_command} command", exc_info=True)
                 pass
         
         else:
