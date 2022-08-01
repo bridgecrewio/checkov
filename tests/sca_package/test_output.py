@@ -10,6 +10,7 @@ from checkov.sca_package.output import (
     create_cli_output,
     compare_cve_severity,
     CveCount,
+    create_license_violations_table,
 )
 
 
@@ -236,6 +237,32 @@ def test_calculate_lowest_compliant_version():
     assert compliant_version == "2.2.24"
 
 
+def test_create_license_violations_table():
+    # given
+    licenses_statuses = [
+        {
+            "packageName": "commander",
+            "packageVersion": "0.6.1",
+            "packageLang": "nodejs",
+            "license": "NOT_FOUND",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "packageName": "dash-table",
+            "packageVersion": "4.6.2",
+            "packageLang": "python",
+            "license": "MIT",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+    ]
+    # when
+    table = create_license_violations_table(licenses_statuses)
+
+    print("")
+    print(table)
+
 def test_create_cli_table():
     # given
     file_path = "/path/to/requirements.txt"
@@ -259,14 +286,35 @@ def test_create_cli_table():
             "compliant_version": "1.0",
         },
     }
+    licenses_statuses = [
+        {
+            "packageName": "commander",
+            "packageVersion": "0.6.1",
+            "packageLang": "nodejs",
+            "license": "NOT_FOUND",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "packageName": "dash-table",
+            "packageVersion": "4.6.2",
+            "packageLang": "python",
+            "license": "MIT",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+    ]
 
     # when
     table = create_cli_table(
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
+        license_statuses=licenses_statuses,
     )
-
+    print("")
+    print(table)
+    return
     # then
     assert table == "".join(
         [

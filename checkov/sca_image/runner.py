@@ -204,7 +204,7 @@ class Runner(PackageRunner):
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
-                license_statuses=[]
+                license_statuses=[],
             )
 
             return report
@@ -225,7 +225,7 @@ class Runner(PackageRunner):
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
-                license_statuses=[]
+                license_statuses=[],
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -251,7 +251,7 @@ class Runner(PackageRunner):
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
             packages=[],
-            license_statuses=[]
+            license_statuses=[],
         )
         return report
 

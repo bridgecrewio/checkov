@@ -17,6 +17,7 @@ from copy import deepcopy
 from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
+from checkov.common.typing import _LicenseStatus
 from checkov.common.output.record import Record
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -75,10 +76,10 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
-        self.license_statuses: list[dict[str, Any]] = []
+        self.license_statuses_map: dict[str, list[_LicenseStatus]] = dict()
 
-    def set_license_statuses(self, license_statuses: list[dict[str, Any]]) -> None:
-        self.license_statuses = deepcopy(license_statuses)
+    def set_license_statuses_for_file(self, file_key: str, license_statuses: list[_LicenseStatus]) -> None:
+        self.license_statuses_map[file_key] = deepcopy(license_statuses)
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -250,10 +251,9 @@ class Report:
         output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
-            if self.failed_checks or self.skipped_checks:
-                output_data += sca_package.output.create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
-            if self.license_statuses:
-                output_data += sca_package.output.create_license_violations_table(self.license_statuses)
+            if self.failed_checks or self.skipped_checks or self.license_statuses_map:
+                output_data += sca_package.output.create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks,
+                                                                    license_statuses_map=self.license_statuses_map)
         else:
             if not is_quiet:
                 for record in self.passed_checks:

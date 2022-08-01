@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Sequence, Any
 
+from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
@@ -13,6 +14,7 @@ from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
+from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
 
 
 class Runner(BaseRunner):
@@ -101,7 +103,10 @@ class Runner(BaseRunner):
 
             vulnerabilities = result.get("vulnerabilities") or []
             packages = result.get("packages") or []
-            license_statuses = result.get("license_statuses") or []
+
+            license_statuses = [_LicenseStatus(package_name=elm["packageName"], package_version=elm["packageVersion"],
+                                               policy=elm["policy"], license=elm["license"])
+                                for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
             self.parse_vulns_to_records(
@@ -111,8 +116,9 @@ class Runner(BaseRunner):
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=packages,
-                license_statuses=license_statuses
+                license_statuses=license_statuses,
             )
+            report.set_license_statuses_for_file(get_file_path_for_record(rootless_file_path), license_statuses)
 
         return report
 
@@ -124,16 +130,21 @@ class Runner(BaseRunner):
         runner_filter: RunnerFilter,
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
-        license_statuses: list[dict[str, Any]]
+        license_statuses: list[_LicenseStatus],
     ) -> None:
-        vulnerable_packages = []
+        license_per_package_map: dict[str, str] = {}
+        for item in license_statuses:
+            license_per_package_map[get_package_alias(item["package_name"], item["package_version"])] = item["license"]
 
+        vulnerable_packages = []
         for vulnerability in vulnerabilities:
+            package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
             record = create_report_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
                 vulnerability_details=vulnerability,
+                license=license_per_package_map.get(get_package_alias(package_name, package_version)),
                 runner_filter=runner_filter
             )
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
@@ -148,23 +159,21 @@ class Runner(BaseRunner):
 
             report.add_resource(record.resource)
             report.add_record(record)
-            vulnerable_packages.append(f'{vulnerability["packageName"]}@{vulnerability["packageVersion"]}')
+            vulnerable_packages.append(get_package_alias(package_name, package_version))
 
         for package in packages:
-            if f'{package["name"]}@{package["version"]}' not in vulnerable_packages:
+            if get_package_alias(package["name"], package["version"]) not in vulnerable_packages:
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=scanned_file_path,
-                        file_path=f"/{rootless_file_path}",
-                        resource=f'{rootless_file_path}.{package["name"]}',
+                        file_path=get_file_path_for_record(rootless_file_path),
+                        resource=get_resource_for_record(rootless_file_path, package["name"]),
                         vulnerability_details={
                             "package_name": package["name"],
                             "package_version": package["version"],
                         }
                     )
                 )
-
-        report.set_license_statuses(license_statuses)
 
     def find_scannable_files(
         self,
