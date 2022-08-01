@@ -7,7 +7,7 @@ from checkov.github_actions.checks.job.SuspectCurlInScript import SuspectCurlInS
 def definition():
     return {
         "name": "CI",
-        "true": {
+        "on": {
             "push": {
                 "branches": [
                     "main"

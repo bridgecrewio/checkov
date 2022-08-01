@@ -103,7 +103,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks,runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             self.modify_gha_keys_in_results(results, definitions[file_path])
             for key, result in results.items():
                 result_config = result["results_configuration"]
@@ -213,7 +213,11 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
     @staticmethod
     def modify_gha_keys_in_results(results: dict[str, Any], definition: dict[str, Any]) -> None:
-        keys_to_modify = [key for key in results if 'GITHUB_ACTION' in results[key]['check'].bc_id]
+        try:
+            keys_to_modify = [key for key in results if 'GITHUB_ACTION' in results[key]['check'].bc_id]
+        except TypeError:
+            return None
+
         for key in keys_to_modify:
             potential_job_name = key.split('.')[1]
             if potential_job_name != '*':
@@ -225,7 +229,6 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
             results[new_key] = copy.deepcopy(results[key])
             results.pop(key)
-        pass
 
     @staticmethod
     def get_start_and_end_lines(key: str) -> list[str]:
