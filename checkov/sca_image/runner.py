@@ -196,6 +196,15 @@ class Runner(PackageRunner):
             result = cached_results.get('results', [{}])[0]
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
+            image_packages = result.get('packages', [])
+            image_package_types = {}
+            for package in image_packages:
+                image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
+            image_details = {
+                'distro': result.get('distro', None),
+                'distro_release': result.get('distroRelease', None),
+                'package_types': image_package_types
+            }
 
             self.parse_vulns_to_records(
                 report=report,
@@ -205,6 +214,7 @@ class Runner(PackageRunner):
                 vulnerabilities=vulnerabilities,
                 packages=[],
                 license_statuses=[],
+                image_details=image_details
             )
 
             return report
