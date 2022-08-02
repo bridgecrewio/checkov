@@ -204,7 +204,8 @@ class Runner(PackageRunner):
             image_details = ImageDetails(
                 distro=result.get('distro', ''),
                 distro_release=result.get('distroRelease', ''),
-                package_types=image_package_types
+                package_types=image_package_types,
+                image_id=image_id
             )
 
             self.parse_vulns_to_records(
@@ -262,7 +263,8 @@ class Runner(PackageRunner):
         image_details = ImageDetails(
             distro=result.get('distro', ''),
             distro_release=result.get('distroRelease', ''),
-            package_types=image_package_types
+            package_types=image_package_types,
+            image_id=image_id
         )
         self.parse_vulns_to_records(
             report=report,

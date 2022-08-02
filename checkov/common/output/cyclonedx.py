@@ -26,7 +26,7 @@ from packageurl import PackageURL  # type:ignore[import]
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES, PURL_TYPE_MAVEN, DEFAULT_CYCLONE_SCHEMA_VERSION, \
     CYCLONE_SCHEMA_VERSION, FILE_NAME_TO_PURL_TYPE, IMAGE_DISTRO_TO_PURL_TYPE, TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE, \
-    BC_SEVERITY_TO_CYCLONEDX_LEVEL
+    BC_SEVERITY_TO_CYCLONEDX_LEVEL, ImageDetails
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -65,19 +65,18 @@ class CycloneDX:
 
             if report.check_type == CheckType.SCA_IMAGE:
                 image_record = next(itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks))
-                image_distro_name = image_record.vulnerability_details.get('image_distro', '').split(' ')[0]
-                [file_path, image_sha] = image_record.file_path.split(' ')
-                image_sha = image_sha.strip('()')
+                image_id = image_record.vulnerability_details.get('image_details', ImageDetails).image_id
+                file_path = image_record.file_path.split(' ')[0]
                 image_purl = PackageURL(
-                    type=IMAGE_DISTRO_TO_PURL_TYPE.get(image_distro_name, 'generic'),
+                    type='oci',
                     namespace=self.repo_id,
                     name=file_path,
-                    version=image_sha
+                    version=image_id
                 )
                 bom.metadata.component = Component(
                     bom_ref=str(image_purl),
                     component_type=ComponentType.CONTAINER,
-                    name=f'{self.repo_id}/{image_sha}',
+                    name=f'{self.repo_id}/{image_id}',
                     version='',
                     purl=image_purl
                 )
@@ -176,11 +175,11 @@ class CycloneDX:
         file_name = Path(resource.file_path).name
         if check_type is CheckType.SCA_IMAGE:
             package_type = resource.vulnerability_details['package_type']
-            image_distro_name = resource.vulnerability_details['image_distro'].split(' ')[0]
+            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails).image_id.split(' ')[0]
             if package_type == 'os':
                 purl_type = IMAGE_DISTRO_TO_PURL_TYPE.get(image_distro_name, 'generic')
                 namespace = image_distro_name.lower()
-                qualifiers = f'distro={resource.vulnerability_details["image_distro_release"]}'
+                qualifiers = f'distro={resource.vulnerability_details.get("image_details", ImageDetails).distro_release}'
             else:
                 purl_type = TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE.get(package_type, 'generic')
                 namespace = f"{self.repo_id}/{resource.file_path}"
