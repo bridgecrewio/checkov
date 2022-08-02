@@ -33,7 +33,7 @@ else:
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
-    from checkov.common.output.record import Record
+    from checkov.common.output.record import Record, CheckName
     from checkov.common.output.report import Report
 
 DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
@@ -95,14 +95,14 @@ class CycloneDX:
                 continue
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != "SCA package scan": continue
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != CheckName.SCA_PACKAGE_SCAN: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
 
             for check in report.failed_checks:
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != "SCA package scan": continue
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != CheckName.SCA_PACKAGE_SCAN: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):

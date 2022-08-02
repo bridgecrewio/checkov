@@ -4,6 +4,7 @@ import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
+from enum import Enum
 
 from colorama import init, Fore, Style
 from termcolor import colored
@@ -22,11 +23,16 @@ DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratin
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
 
+class CheckName(str, Enum):
+    SCA_PACKAGE_SCAN = "SCA package scan"
+    SCA_LICENSE = "SCA license"
+
+
 class Record:
     def __init__(
         self,
         check_id: str,
-        check_name: str,
+        check_name: str | CheckName,
         check_result: _CheckResult,
         code_block: List[Tuple[int, str]],
         file_path: str,
@@ -134,7 +140,8 @@ class Record:
             status_color = "blue"
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
 
-        check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
+        check_name_str = self.check_name.value if isinstance(self.check_name, CheckName) else self.check_name
+        check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), check_name_str), "white")
         guideline_message = ""
         if self.guideline:
             guideline_message = (

@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
+from checkov.common.output.record import Record, CheckName
 from checkov.common.output.report import Report, CheckType
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class CSVSBOM:
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type == CheckType.SCA_PACKAGE:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
-                if record.check_name == "SCA package scan":
+                if record.check_name == CheckName.SCA_PACKAGE_SCAN:
                     self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository)
             for resource in report.extra_resources:
                 self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository)
