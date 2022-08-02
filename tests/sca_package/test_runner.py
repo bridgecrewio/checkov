@@ -31,8 +31,8 @@ def test_run(mocker: MockerFixture, scan_result):
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
     }
-    assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 12
+    assert len(report.passed_checks) == 3
+    assert len(report.failed_checks) == 9
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
 
@@ -105,8 +105,8 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
     }
-    assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 11
+    assert len(report.passed_checks) == 3
+    assert len(report.failed_checks) == 8
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
 
