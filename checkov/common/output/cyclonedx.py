@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
@@ -65,7 +65,7 @@ class CycloneDX:
 
             if report.check_type == CheckType.SCA_IMAGE:
                 image_record = next(itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks))
-                image_id = image_record.vulnerability_details.get('image_details', ImageDetails).image_id
+                image_id = cast(dict, image_record.vulnerability_details).get('image_details', ImageDetails).image_id
                 file_path = image_record.file_path.split(' ')[0]
                 image_purl = PackageURL(
                     type='oci',

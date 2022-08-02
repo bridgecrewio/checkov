@@ -47,7 +47,8 @@ def test_valid_cyclonedx_image_bom():
     image_details: ImageDetails = ImageDetails(
         distro='Debian GNU/Linux 11 (bullseye)',
         distro_release='bullseye',
-        package_types={'curl@7.74.0-1.3+deb11u1': 'os'}
+        package_types={'curl@7.74.0-1.3+deb11u1': 'os'},
+        image_id='ubuntu:latest'
     )
     vulnerability = {
         'id': 'CVE-2022-32207',
@@ -86,13 +87,16 @@ def test_valid_cyclonedx_image_bom():
     # then
     assert cyclonedx.bom.metadata.component is not None
     assert cyclonedx.bom.metadata.component.type == ComponentType.CONTAINER
+    assert cyclonedx.bom.metadata.component.purl.type == 'oci'
+    assert cyclonedx.bom.metadata.component.purl.version == 'ubuntu:latest'
+    assert cyclonedx.bom.metadata.component.purl.name == 'Dockerfile'
     assert len(cyclonedx.bom.components) == 1
 
     component = next(iter(cyclonedx.bom.components))
 
     assert component.name == 'curl'
     assert component.purl.name == 'curl'
-    assert component.purl.namespace == 'debian'
+    assert component.purl.namespace == 'acme/repo/Dockerfile/debian'
     assert component.purl.type == 'deb'
     assert component.purl.version == '7.74.0-1.3+deb11u1'
     assert component.type == ComponentType.LIBRARY
