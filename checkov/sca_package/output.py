@@ -94,7 +94,7 @@ def create_report_license_record(
     }
 
     record = Record(
-        check_id="",
+        check_id=policy,
         bc_check_id=policy,
         check_name=CheckName.SCA_LICENSE,
         check_result=check_result,
