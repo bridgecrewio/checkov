@@ -12,12 +12,10 @@ from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate
 from termcolor import colored
-from copy import deepcopy
 
 from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.typing import _LicenseStatus
 from checkov.common.output.record import Record
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -76,10 +74,6 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
-        self.license_statuses_map: dict[str, list[_LicenseStatus]] = dict()
-
-    def set_license_statuses_for_file(self, file_key: str, license_statuses: list[_LicenseStatus]) -> None:
-        self.license_statuses_map[file_key] = deepcopy(license_statuses)
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:

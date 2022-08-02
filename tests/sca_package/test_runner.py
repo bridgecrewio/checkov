@@ -60,17 +60,12 @@ def test_run(mocker: MockerFixture, scan_result):
         packaging_version.parse("v0.0.0-20201216223049-8b5274cf687f"),
     ]
 
-    assert set(report.license_statuses_map.keys()) == {"/path/to/requirements.txt", "/path/to/sub/requirements.txt"}
-    assert len(report.license_statuses_map["/path/to/requirements.txt"]) == 3
-    assert len(report.license_statuses_map["/path/to/sub/requirements.txt"]) == 1
-
     record_with_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.django"), None)
     assert record_with_license is not None
     assert "licenses" in record_with_license.vulnerability_details
     assert record_with_license.vulnerability_details["licenses"] == "OSI_BDS"
 
-    record_with_2_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.flask"),
-                               None)
+    record_with_2_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.flask"), None)
     assert record_with_2_license is not None
     assert "licenses" in record_with_2_license.vulnerability_details
     assert record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
@@ -89,7 +84,6 @@ def test_run_with_empty_scan_result(mocker: MockerFixture):
     # then
     assert report.check_type == "sca_package"
     assert report.resources == set()
-    assert len(report.license_statuses_map) == 0
 
 
 def test_run_with_skip(mocker: MockerFixture, scan_result):
@@ -115,7 +109,6 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
     assert len(report.failed_checks) == 7
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
-    assert len(report.license_statuses_map) == 2
 
     record = report.skipped_checks[0]
     assert record.check_id == "CKV_CVE_2020_29652"
