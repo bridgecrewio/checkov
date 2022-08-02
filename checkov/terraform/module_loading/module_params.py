@@ -19,3 +19,5 @@ class ModuleParams:
         self.vcs_base_url: Optional[str] = None
         self.module_source_prefix: Optional[str] = None
         self.REGISTRY_URL_PREFIX: Optional[str] = None
+        self.best_version: Optional[str] = None
+        self.module_version_url: Optional[str] = None

@@ -61,15 +61,16 @@ class RegistryLoader(ModuleLoader):
         # If versions are not cached, get versions, then determine the best version and return True.
         # Best version needs to be determined here for setting most accurate dest_dir.
         if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
-            module_params.version = self._find_best_version(module_params)
+            module_params.best_version = self._find_best_version(module_params)
             return True
-        if not self._cache_available_versions():
+        if not self._cache_available_versions(module_params):
             return False
-        self.best_version = self._find_best_version(module_params)
+        module_params.best_version = self._find_best_version(module_params)
 
         if not module_params.inner_module:
-            module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name, TFC_HOST_NAME,
-                                         *module_params.module_source.split("/"), module_params.version)
+            module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name,
+                                                  TFC_HOST_NAME, *module_params.module_source.split("/"),
+                                                  module_params.best_version)
         if os.path.exists(module_params.dest_dir):
             return True
         # verify cache again after refresh
@@ -81,9 +82,9 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(module_params.dest_dir):
             return ModuleContent(dir=module_params.dest_dir)
 
-        best_version = module_params.version
+        best_version = module_params.best_version
         logging.debug(
-            f"Best version for {module_params.module_source} is {module_params.version} based on the version constraint {module_params.version}")
+            f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}")
         request_download_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, best_version, "download"))
         try:
             response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {module_params.token}"})

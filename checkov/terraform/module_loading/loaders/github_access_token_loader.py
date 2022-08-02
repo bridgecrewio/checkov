@@ -20,15 +20,15 @@ class GithubAccessTokenLoader(GenericGitLoader):
                 module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source}"
                 return True
             # if module_source = git::https://github.com/org/repo.git
-            if module_params.module_source.startswith(f"git::https://{module_params.module_source_prefix}"):
+            if module_params.module_source.startswith(f"git::https://{self.module_source_prefix}"):
                 module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source.split('git::https://')[1]}"
                 return True
             # if module_source = git@github.com:org/repo.git
-            if module_params.module_source.startswith(f"git@{module_params.module_source_prefix}:"):
+            if module_params.module_source.startswith(f"git@{self.module_source_prefix}:"):
                 module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source.split('git@')[1].replace(':', '/')}"
                 return True
             # if module_source = git::ssh://git@github.com/org/repo.git
-            if module_params.module_source.startswith(f"git::ssh://git@{module_params.module_source_prefix}"):
+            if module_params.module_source.startswith(f"git::ssh://git@{self.module_source_prefix}"):
                 module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source.split('git::ssh://git@')[1]}"
                 return True
 
