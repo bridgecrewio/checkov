@@ -13,7 +13,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_report_record
+from checkov.sca_package.output import create_report_cve_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
 
@@ -138,10 +138,22 @@ class Runner(BaseRunner):
         for item in license_statuses:
             licenses_per_package_map[get_package_alias(item["package_name"], item["package_version"])].append(item["license"])
 
+        # for license_status in license_statuses:
+        #     package_name, package_version = license_status["package_name"], license_status["package_version"]
+        #     record = create_report_license_record(
+        #         rootless_file_path=rootless_file_path,
+        #         file_abs_path=scanned_file_path,
+        #         check_class=self._check_class,
+        #         vulnerability_details=vulnerability,
+        #         licenses=', '.join(
+        #             licenses_per_package_map[get_package_alias(package_name, package_version)]) or 'Unknown',
+        #         runner_filter=runner_filter
+        #     )
+
         vulnerable_packages = []
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
-            record = create_report_record(
+            record = create_report_cve_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
