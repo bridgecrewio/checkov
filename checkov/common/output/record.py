@@ -140,8 +140,7 @@ class Record:
             status_color = "blue"
             suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
 
-        check_name_str = self.check_name.value if isinstance(self.check_name, CheckName) else self.check_name
-        check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), check_name_str), "white")
+        check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ""
         if self.guideline:
             guideline_message = (
