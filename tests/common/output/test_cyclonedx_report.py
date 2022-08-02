@@ -72,7 +72,7 @@ def test_valid_cyclonedx_image_bom():
     record: Record = create_report_record(rootless_file_path=rootless_file_path,
                                   file_abs_path=file_abs_path,
                                   check_class=check_class, vulnerability_details=vulnerability,
-                                  image_distro=image_distro,
+                                  image_distro=image_distro, licenses='',
                                   image_distro_release=image_distro_release, package_types=image_package_types)
     report = Report(check_type='sca_image')
     report.add_record(record)
