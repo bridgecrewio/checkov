@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, SCA_LICENSE_CHECK_NAME, SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
 
 if TYPE_CHECKING:
