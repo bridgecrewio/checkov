@@ -7,6 +7,7 @@ from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_table,
     create_report_cve_record,
+    create_report_license_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,
@@ -372,7 +373,13 @@ def test_create_cli_output():
             "fixDate": "2016-08-05T17:59:00+02:00",
         },
     ]
-
+    license_status = {
+        "package_name": "django",
+        "package_version": "1.2",
+        "license": "OSI_BDS",
+        "status": "COMPLIANT",
+        "policy": "BC_LIC_1"
+    }
     # when
     records = [
         create_report_cve_record(
@@ -384,7 +391,16 @@ def test_create_cli_output():
         )
         for details in vulnerabilities_details
     ]
-
+    records.extend(
+        [
+            create_report_license_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=file_abs_path,
+                check_class=check_class,
+                licenses_status=license_status
+            )
+        ]
+    )
     # when
     cli_output = create_cli_output(True, records)
 
