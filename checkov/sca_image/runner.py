@@ -255,6 +255,15 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
+        image_packages = result.get('packages', [])
+        image_package_types = {}
+        for package in image_packages:
+            image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
+        image_details = ImageDetails(
+            distro=result.get('distro', ''),
+            distro_release=result.get('distroRelease', ''),
+            package_types=image_package_types
+        )
         self.parse_vulns_to_records(
             report=report,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -263,6 +272,7 @@ class Runner(PackageRunner):
             vulnerabilities=vulnerabilities,
             packages=[],
             license_statuses=[],
+            image_details=image_details
         )
         return report
 
