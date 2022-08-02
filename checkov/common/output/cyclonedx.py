@@ -95,12 +95,14 @@ class CycloneDX:
                 continue
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                if check.check_name != "SCA package scan": continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
 
             for check in report.failed_checks:
+                if check.check_name != "SCA package scan": continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):

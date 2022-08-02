@@ -147,6 +147,13 @@ class Runner(BaseRunner):
                 licenses_status=license_status,
                 runner_filter=runner_filter
             )
+            # here we don't have to add the next lines (that are appears in the loop of for vulnerability in vulnerabilities):
+            # report.add_resource(cve_record.resource)
+            # vulnerable_packages.append(get_package_alias(package_name, package_version))
+            #
+            # the reason is that
+            # 1. reources is used for counting
+            # 2. vulnerable_packages is for add to extra resource packages without cves (for put them in the bom file)
             report.add_record(license_record)
 
         vulnerable_packages = []
