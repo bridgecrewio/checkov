@@ -29,10 +29,9 @@ class ECRPolicy(BaseResourceCheck):
             statement = policy["Statement"][0]
             if statement and isinstance(statement, dict):
                 principal = statement["Principal"]
-                if principal and isinstance(principal, str):
-                    if principal == "*" and not self.check_for_constrained_condition(statement):
-                        self.evaluated_keys = ["policy/Statement/Principal"]
-                        return CheckResult.FAILED
+                if principal and isinstance(principal, str) and principal == "*" and not self.check_for_constrained_condition(statement):
+                    self.evaluated_keys = ["policy/Statement/Principal"]
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> list[str]:
