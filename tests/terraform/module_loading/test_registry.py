@@ -365,9 +365,33 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
             "",
+        ),
+       ( 
+            "git::https://github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
+        ),
+       ( 
+           "git@github.com:kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
+        ),
+       ( 
+           "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
         )
     ],
-    ids=["module"],
+    ids=["github_http_module", "generic_git_module", "ssh_github_module", "generic_ssh_module"],
 )
 @mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
