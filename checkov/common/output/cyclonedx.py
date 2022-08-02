@@ -175,14 +175,15 @@ class CycloneDX:
         file_name = Path(resource.file_path).name
         if check_type is CheckType.SCA_IMAGE:
             package_type = resource.vulnerability_details['package_type']
-            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails).image_id.split(' ')[0]
+            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails).distro.split(' ')[0]
+            file_path = resource.file_path.split(' ')[0]
             if package_type == 'os':
                 purl_type = IMAGE_DISTRO_TO_PURL_TYPE.get(image_distro_name, 'generic')
-                namespace = image_distro_name.lower()
+                namespace = f'{self.repo_id}/{file_path}/{image_distro_name.lower()}'
                 qualifiers = f'distro={resource.vulnerability_details.get("image_details", ImageDetails).distro_release}'
             else:
                 purl_type = TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE.get(package_type, 'generic')
-                namespace = f"{self.repo_id}/{resource.file_path}"
+                namespace = f"{self.repo_id}/{file_path}"
         else:
             purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
             namespace = f"{self.repo_id}/{resource.file_path}"
