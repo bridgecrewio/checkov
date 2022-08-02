@@ -104,7 +104,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
             results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
-            self.modify_gha_keys_in_results(results, definitions[file_path])
+            self.modify_gha_keys_in_results(results, definitions[file_path])  # type: ignore
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
