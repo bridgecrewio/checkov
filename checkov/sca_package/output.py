@@ -54,7 +54,7 @@ def create_report_record(
         file_abs_path: str,
         check_class: str,
         vulnerability_details: dict[str, Any],
-        package_types: dict[str, Any],
+        package_types: dict[str, Any] | None = {},
         image_distro: str | None = None,
         image_distro_release: str | None = None,
         runner_filter: RunnerFilter | None = None
