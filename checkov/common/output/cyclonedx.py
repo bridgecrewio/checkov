@@ -66,8 +66,6 @@ class CycloneDX:
             if report.check_type == CheckType.SCA_IMAGE:
                 image_record = next(itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks))
                 image_distro_name = image_record.vulnerability_details['image_distro'].split(' ')[0]
-                # file_path structure should be parsed for purl: file_path (image_id) -> file_path@image_id
-
                 [file_path, image_sha] = image_record.file_path.split(' ')
                 image_sha = image_sha.strip('()')
                 image_purl = PackageURL(
