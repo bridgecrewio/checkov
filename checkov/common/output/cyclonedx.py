@@ -158,7 +158,7 @@ class CycloneDX:
         )
         return component
 
-    def create_library_component(self, resource: Record | ExtraResource, check_type: CheckType) -> Component:
+    def create_library_component(self, resource: Record | ExtraResource, check_type: str) -> Component:
         """Creates a library component
         Ex.
         <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
@@ -174,7 +174,7 @@ class CycloneDX:
             return Component(name="unknown")
         qualifiers = None
         file_name = Path(resource.file_path).name
-        if check_type == CheckType.SCA_IMAGE:
+        if check_type is CheckType.SCA_IMAGE:
             package_type = resource.vulnerability_details['package_type']
             image_distro_name = resource.vulnerability_details['image_distro'].split(' ')[0]
             if package_type == 'os':
