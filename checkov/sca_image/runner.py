@@ -199,12 +199,12 @@ class Runner(PackageRunner):
 
             self.parse_vulns_to_records(
                 report=report,
-                result=result,
+                scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
-                file_abs_path=os.path.abspath(dockerfile_path),
+                license_statuses=[],
             )
 
             return report
@@ -220,12 +220,12 @@ class Runner(PackageRunner):
             vulnerabilities = result.get("vulnerabilities") or []
             self.parse_vulns_to_records(
                 report=report,
-                result=result,
+                scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
-                file_abs_path=os.path.abspath(dockerfile_path),
+                license_statuses=[],
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -246,12 +246,12 @@ class Runner(PackageRunner):
         vulnerabilities = result.get("vulnerabilities") or []
         self.parse_vulns_to_records(
             report=report,
-            result=result,
+            scanned_file_path=os.path.abspath(dockerfile_path),
             rootless_file_path=f"{dockerfile_path} ({image_id})",
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
             packages=[],
-            file_abs_path=os.path.abspath(dockerfile_path)
+            license_statuses=[],
         )
         return report
 

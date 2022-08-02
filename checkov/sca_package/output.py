@@ -22,6 +22,7 @@ from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -54,6 +55,7 @@ def create_report_record(
     file_abs_path: str,
     check_class: str,
     vulnerability_details: dict[str, Any],
+    licenses: str,
     runner_filter: RunnerFilter | None = None,
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
@@ -65,7 +67,6 @@ def create_report_record(
     if severity == "moderate":
         severity = "medium"
     description = vulnerability_details.get("description")
-    resource = f"{rootless_file_path}.{package_name}"
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
@@ -112,6 +113,7 @@ def create_report_record(
         or (datetime.now() - timedelta(days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "lowest_fixed_version": lowest_fixed_version,
         "fixed_versions": fixed_versions,
+        "licenses": licenses,
     }
 
     record = Record(
@@ -120,9 +122,9 @@ def create_report_record(
         check_name="SCA package scan",
         check_result=check_result,
         code_block=code_block,
-        file_path=f"/{rootless_file_path}",
+        file_path=get_file_path_for_record(rootless_file_path),
         file_line_range=[0, 0],
-        resource=resource,
+        resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
