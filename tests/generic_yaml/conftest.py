@@ -68,18 +68,3 @@ def definition():
         "__startline__": 1,
         "__endline__": 30
     }
-
-
-@pytest.fixture()
-def results():
-    check_1 = SuspectCurlInScript()
-    check_1.bc_id = 'GITHUB_ACTION_3'
-
-    return {
-        'jobs.container-test-job.CKV_GHA_3[7:23]': {
-            'check': check_1
-        },
-        'jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]': {
-            'check': check_1
-        }
-    }
