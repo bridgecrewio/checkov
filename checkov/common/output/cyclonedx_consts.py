@@ -186,4 +186,4 @@ BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
 class ImageDetails:
     distro: str = ''
     distro_release: str = ''
-    package_types: dict = field(default_factory=dict)
+    package_types: Dict[str, str] = field(default_factory=dict)
