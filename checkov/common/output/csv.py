@@ -44,7 +44,7 @@ class CSVSBOM:
         self.container_rows: list[dict[str, Any]] = []
         self.package_rows: list[dict[str, Any]] = []
 
-        self.iac_rows_have_traces: bool = False
+        self.iac_rows_have_details: bool = False
 
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
@@ -110,11 +110,11 @@ class CSVSBOM:
             "Severity": severity,
         }
 
-        if len(resource.traces):
-            self.iac_rows_have_traces = True
+        if len(resource.details):
+            self.iac_rows_have_details = True
             row = {
                 **row,
-                "Traces": "|".join(resource.traces)
+                "Details": "|".join(resource.details)
             }
 
         self.iac_rows.append(row)
@@ -138,7 +138,7 @@ class CSVSBOM:
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=[*HEADER_IAC, "Traces"] if self.iac_rows_have_traces else HEADER_IAC,
+            header=[*HEADER_IAC, "Details"] if self.iac_rows_have_details else HEADER_IAC,
             rows=self.iac_rows,
             is_api_key=True,
         )

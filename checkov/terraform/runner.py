@@ -376,7 +376,7 @@ class Runner(BaseRunner):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        traces=check.traces
+                        details=check.details
                     )
 
                     if CHECKOV_CREATE_GRAPH:
