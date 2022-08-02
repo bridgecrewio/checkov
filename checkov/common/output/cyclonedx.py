@@ -65,7 +65,7 @@ class CycloneDX:
 
             if report.check_type == CheckType.SCA_IMAGE:
                 image_record = next(itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks))
-                image_distro_name = image_record.vulnerability_details['image_distro'].split(' ')[0]
+                image_distro_name = image_record.vulnerability_details.get('image_distro', '').split(' ')[0]
                 [file_path, image_sha] = image_record.file_path.split(' ')
                 image_sha = image_sha.strip('()')
                 image_purl = PackageURL(
@@ -330,7 +330,7 @@ class CycloneDX:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
+        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()  # type:ignore[arg-type]
 
         return output
 
