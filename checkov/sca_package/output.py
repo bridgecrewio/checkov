@@ -23,6 +23,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -57,13 +58,15 @@ def create_report_record(
     vulnerability_details: dict[str, Any],
     licenses: str,
     runner_filter: RunnerFilter | None = None,
-    package_types: dict[str, Any] | None = {},
-    image_distro: str | None = None,
-    image_distro_release: str | None = None
+    image_details: ImageDetails | None = ImageDetails
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
+    if hasattr(image_details, 'package_types'):
+        package_type = image_details.package_types.get(f'{package_name}@{package_version}', '')
+    else:
+        package_type = ''
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
@@ -107,9 +110,9 @@ def create_report_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
-        "package_type": package_types.get(f'{package_name}@{package_version}', ''),
-        "image_distro": image_distro,
-        "image_distro_release": image_distro_release,
+        "package_type": package_type,
+        "image_distro": image_details.distro,
+        "image_distro_release": image_details.distro_release,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),

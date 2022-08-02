@@ -1,4 +1,5 @@
 from typing import Dict
+from dataclasses import dataclass, field
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
@@ -179,3 +180,10 @@ BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
     BcSeverities.LOW: VulnerabilitySeverity.LOW,
     BcSeverities.NONE: VulnerabilitySeverity.NONE,
 }
+
+
+@dataclass
+class ImageDetails:
+    distro: str = ''
+    distro_release: str = ''
+    package_types: dict = field(default_factory=dict)

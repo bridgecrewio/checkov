@@ -21,6 +21,7 @@ from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 
 class Runner(PackageRunner):
@@ -200,11 +201,11 @@ class Runner(PackageRunner):
             image_package_types = {}
             for package in image_packages:
                 image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
-            image_details = {
-                'distro': result.get('distro', None),
-                'distro_release': result.get('distroRelease', None),
-                'package_types': image_package_types
-            }
+            image_details = ImageDetails(
+                distro=result.get('distro', ''),
+                distro_release=result.get('distroRelease', ''),
+                package_types=image_package_types
+            )
 
             self.parse_vulns_to_records(
                 report=report,

@@ -16,6 +16,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 
 class Runner(BaseRunner):
@@ -131,22 +132,13 @@ class Runner(BaseRunner):
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
+        image_details: ImageDetails | None = ImageDetails
     ) -> None:
         licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
         for item in license_statuses:
             licenses_per_package_map[get_package_alias(item["package_name"], item["package_version"])].append(item["license"])
 
         vulnerable_packages = []
-        image_distro = None
-        image_distro_release = None
-        image_package_types = {}
-
-        if self.check_type == CheckType.SCA_IMAGE:
-            image_distro = result.get('distro', None)
-            image_distro_release = result.get('distroRelease', None)
-            image_packages = result.get('packages', [])
-            for package in image_packages:
-                image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
 
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
@@ -157,9 +149,7 @@ class Runner(BaseRunner):
                 vulnerability_details=vulnerability,
                 licenses=', '.join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or 'Unknown',
                 runner_filter=runner_filter,
-                image_distro=image_distro,
-                image_distro_release=image_distro_release,
-                package_types=image_package_types
+                image_details=image_details
             )
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
                                                   severity=record.severity):
