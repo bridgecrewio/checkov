@@ -8,14 +8,14 @@ from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_cves_table,
     create_cli_license_violations_table,
-    create_report_record,
+    create_report_cve_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,
 )
 
 
-def test_create_report_record():
+def test_create_report_cve_record():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -38,7 +38,7 @@ def test_create_report_record():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -72,7 +72,7 @@ def test_create_report_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_moderate_severity():
+def test_create_report_cve_record_moderate_severity():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -95,7 +95,7 @@ def test_create_report_record_moderate_severity():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -107,7 +107,7 @@ def test_create_report_record_moderate_severity():
     assert record.severity == Severities[BcSeverities.MEDIUM]
 
 
-def test_create_report_record_severity_filter():
+def test_create_report_cve_record_severity_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -130,7 +130,7 @@ def test_create_report_record_severity_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -166,7 +166,7 @@ def test_create_report_record_severity_filter():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_package_filter():
+def test_create_report_cve_record_package_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -189,7 +189,7 @@ def test_create_report_record_package_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -410,7 +410,7 @@ def test_create_cli_output():
 
     # when
     records = [
-        create_report_record(
+        create_report_cve_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=file_abs_path,
             check_class=check_class,
@@ -450,7 +450,7 @@ def test_create_cli_output():
             "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │\n",
             "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘\n",
             "\n",
-            "\t/requirements.txt - Licenses Violations:\n",
+            "\t/requirements.txt - Licenses Statuses:\n",
             "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
