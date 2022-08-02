@@ -65,21 +65,31 @@ def create_report_license_record(
         "result": CheckResult.FAILED,
     }
 
-    if runner_filter.skip_cve_package and package_name in runner_filter.skip_cve_package:
+    policy = licenses_status["policy"]
+    status = licenses_status["status"]
+
+    # to-do: check whether we want to save records for passed "COMPLIANT" licenses
+    if status == "COMPLIANT":
         check_result = {
-            "result": CheckResult.SKIPPED,
-            "suppress_comment": f"Filtered by package '{package_name}'"
+            "result": CheckResult.PASSED,
         }
+
+    # to-do: ask if it is right to put it here
+    # if runner_filter.skip_cve_package and package_name in runner_filter.skip_cve_package:
+    #     check_result = {
+    #         "result": CheckResult.SKIPPED,
+    #         "suppress_comment": f"Filtered by package '{package_name}'"
+    #     }
 
     code_block = [(0, f"{package_name}: {package_version}")]
 
-    policy = licenses_status["policy"]
+
 
     details = {
         "package_name": package_name,
         "package_version": package_version,
         "license": licenses_status["license"],
-        "status": licenses_status["status"],
+        "status": status,
         "policy": policy,
     }
 

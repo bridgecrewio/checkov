@@ -373,13 +373,22 @@ def test_create_cli_output():
             "fixDate": "2016-08-05T17:59:00+02:00",
         },
     ]
-    license_status = {
-        "package_name": "django",
-        "package_version": "1.2",
-        "license": "OSI_BDS",
-        "status": "COMPLIANT",
-        "policy": "BC_LIC_1"
-    }
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "OSI_BDS",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "package_name": "flask",
+            "package_version": "0.6",
+            "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+            "status": "OPEN",
+            "policy": "BC_LIC_1"
+        }
+    ]
     # when
     records = [
         create_report_cve_record(
@@ -399,6 +408,7 @@ def test_create_cli_output():
                 check_class=check_class,
                 licenses_status=license_status
             )
+            for license_status in license_statuses
         ]
     )
     # when
