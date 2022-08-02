@@ -288,6 +288,7 @@ class Report:
         information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
 
         for record in self.failed_checks + self.skipped_checks:
+            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != "SCA package scan": continue
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -427,6 +428,8 @@ class Report:
                 severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
+                if record.check_name != "SCA package scan":
+                    continue
                 if not record.vulnerability_details:
                     # this shouldn't normally happen
                     logging.warning(f"Vulnerability check without details {record.file_path}")
