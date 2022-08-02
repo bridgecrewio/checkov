@@ -142,7 +142,7 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(oss_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Package,Version,Path,git org,git repository,Vulnerability,Severity,License\n', header)
+            self.assertEqual('Package,Version,Path,git org,git repository,Vulnerability,Severity,Licenses\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
 
