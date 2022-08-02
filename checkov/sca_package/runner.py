@@ -125,15 +125,23 @@ class Runner(BaseRunner):
         file_abs_path: str = ''
     ) -> None:
         vulnerable_packages = []
+        image_distro = None
+        image_distro_release = None
+        image_package_types = {}
+
+        if self.check_type == CheckType.SCA_IMAGE:
+            image_distro = result.get('distro', None)
+            image_distro_release = result.get('distroRelease', None)
+            image_packages = result.get('packages', [])
+            for package in image_packages:
+                image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
 
         for vulnerability in vulnerabilities:
-            record = create_report_record(
-                rootless_file_path=rootless_file_path,
-                file_abs_path=file_abs_path or result.get("repository"),
-                check_class=self._check_class,
-                vulnerability_details=vulnerability,
-                runner_filter=runner_filter
-            )
+            record = create_report_record(rootless_file_path=rootless_file_path,
+                                          file_abs_path=file_abs_path or result.get("repository"),
+                                          check_class=self._check_class, vulnerability_details=vulnerability,
+                                          runner_filter=runner_filter, image_distro=image_distro,
+                                          image_distro_release=image_distro_release, package_types=image_package_types)
             if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
                                                   severity=record.severity):
                 if runner_filter.checks:

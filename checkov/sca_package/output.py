@@ -50,11 +50,14 @@ class CveCount:
 
 
 def create_report_record(
-    rootless_file_path: str,
-    file_abs_path: str,
-    check_class: str,
-    vulnerability_details: dict[str, Any],
-    runner_filter: RunnerFilter | None = None,
+        rootless_file_path: str,
+        file_abs_path: str,
+        check_class: str,
+        vulnerability_details: dict[str, Any],
+        package_types: dict[str, Any],
+        image_distro: str | None = None,
+        image_distro_release: str | None = None,
+        runner_filter: RunnerFilter | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -103,6 +106,9 @@ def create_report_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
+        "package_type": package_types.get(f'{package_name}@{package_version}', ''),
+        "image_distro": image_distro,
+        "image_distro_release": image_distro_release,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
@@ -276,8 +282,8 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
     # hack to make multiple tables look like one
     cve_table_bottom_line = (
         cve_table_lines[-1]
-        .replace(cve_table.bottom_left_junction_char, cve_table.left_junction_char)
-        .replace(cve_table.bottom_right_junction_char, cve_table.right_junction_char)
+            .replace(cve_table.bottom_left_junction_char, cve_table.left_junction_char)
+            .replace(cve_table.bottom_right_junction_char, cve_table.right_junction_char)
     )
     cve_table_lines[-1] = cve_table_bottom_line
 
@@ -285,14 +291,15 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
 
 
 def create_fixable_cve_summary_table_part(
-    table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
+        table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
-        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.add_row(
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -306,7 +313,7 @@ def create_fixable_cve_summary_table_part(
 
 
 def create_package_overview_table_part(
-    table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
+        table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
@@ -365,9 +372,9 @@ def create_package_overview_table_part(
 
 
 async def _report_results_to_bridgecrew_async(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     package_scanning_int = PackageScanningIntegration()
     args = [
@@ -390,8 +397,8 @@ async def _report_results_to_bridgecrew_async(
 
 
 def report_results_to_bridgecrew(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     return asyncio.run(_report_results_to_bridgecrew_async(scan_results, bc_integration, bc_api_key))
