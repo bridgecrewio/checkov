@@ -240,6 +240,8 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
             fix_versions_lists = []
 
             for record in records:
+                if record.check_name != "SCA package scan":
+                    continue
                 cve_count.total += 1
 
                 if record.check_result["result"] == CheckResult.SKIPPED:
