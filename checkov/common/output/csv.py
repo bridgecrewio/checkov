@@ -24,7 +24,7 @@ HEADER_OSS_PACKAGES = [
     "git repository",
     "Vulnerability",
     "Severity",
-    "License",
+    "Licenses",
 ]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
@@ -82,7 +82,7 @@ class CSVSBOM:
                 "git repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
-                "License": None,  # will be added later
+                "Licenses": resource.vulnerability_details.get("licenses"),
             }
         )
 
@@ -173,6 +173,8 @@ class CSVSBOM:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
                     csv_output += f'{field}'
+                elif header == 'Licenses':
+                    csv_output += f',\"{field}\"'
                 else:
                     csv_output += f',{field}'
             csv_output += '\n'

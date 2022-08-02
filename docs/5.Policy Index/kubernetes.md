@@ -618,16 +618,16 @@ nav_order: 1
 | 607 | CKV_K8S_100 | resource | ReplicaSet             | Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate            | Kubernetes |
 | 608 | CKV_K8S_100 | resource | ReplicationController  | Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate            | Kubernetes |
 | 609 | CKV_K8S_100 | resource | StatefulSet            | Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate            | Kubernetes |
-| 610 | CKV_K8S_102 | resource | CronJob                | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 611 | CKV_K8S_102 | resource | DaemonSet              | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 612 | CKV_K8S_102 | resource | Deployment             | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 613 | CKV_K8S_102 | resource | DeploymentConfig       | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 614 | CKV_K8S_102 | resource | Job                    | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 615 | CKV_K8S_102 | resource | Pod                    | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 616 | CKV_K8S_102 | resource | PodTemplate            | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 617 | CKV_K8S_102 | resource | ReplicaSet             | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 618 | CKV_K8S_102 | resource | ReplicationController  | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
-| 619 | CKV_K8S_102 | resource | StatefulSet            | Ensure that the --etcd-ca-file argument is set as appropriate                                          | Kubernetes |
+| 610 | CKV_K8S_102 | resource | CronJob                | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 611 | CKV_K8S_102 | resource | DaemonSet              | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 612 | CKV_K8S_102 | resource | Deployment             | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 613 | CKV_K8S_102 | resource | DeploymentConfig       | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 614 | CKV_K8S_102 | resource | Job                    | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 615 | CKV_K8S_102 | resource | Pod                    | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 616 | CKV_K8S_102 | resource | PodTemplate            | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 617 | CKV_K8S_102 | resource | ReplicaSet             | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 618 | CKV_K8S_102 | resource | ReplicationController  | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
+| 619 | CKV_K8S_102 | resource | StatefulSet            | Ensure that the --etcd-cafile argument is set as appropriate                                           | Kubernetes |
 | 620 | CKV_K8S_104 | resource | CronJob                | Ensure that encryption providers are appropriately configured                                          | Kubernetes |
 | 621 | CKV_K8S_104 | resource | DaemonSet              | Ensure that encryption providers are appropriately configured                                          | Kubernetes |
 | 622 | CKV_K8S_104 | resource | Deployment             | Ensure that encryption providers are appropriately configured                                          | Kubernetes |

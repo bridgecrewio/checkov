@@ -60,6 +60,16 @@ def test_run(mocker: MockerFixture, scan_result):
         packaging_version.parse("v0.0.0-20201216223049-8b5274cf687f"),
     ]
 
+    record_with_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.django"), None)
+    assert record_with_license is not None
+    assert "licenses" in record_with_license.vulnerability_details
+    assert record_with_license.vulnerability_details["licenses"] == "OSI_BDS"
+
+    record_with_2_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.flask"), None)
+    assert record_with_2_license is not None
+    assert "licenses" in record_with_2_license.vulnerability_details
+    assert record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
+
 
 def test_run_with_empty_scan_result(mocker: MockerFixture):
     # given

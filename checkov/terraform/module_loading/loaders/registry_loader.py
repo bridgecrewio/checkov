@@ -1,4 +1,5 @@
 import os
+import logging
 from http import HTTPStatus
 from typing import List, Dict
 
@@ -11,7 +12,7 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
-    get_version_constraints,
+    get_version_constraints
 )
 from checkov.terraform.module_loading.module_params import ModuleParams
 
@@ -22,6 +23,7 @@ class RegistryLoader(ModuleLoader):
     def __init__(self) -> None:
         super().__init__()
         self.module_version_url = ""
+        self.best_version = ""
 
     def discover(self, module_params):
         module_params.REGISTRY_URL_PREFIX = os.getenv("REGISTRY_URL_PREFIX", "https://registry.terraform.io/v1/modules")
@@ -39,41 +41,49 @@ class RegistryLoader(ModuleLoader):
             return True
 
         if module_params.module_source.startswith(TFC_HOST_NAME):
+            # indicates a private registry module
             module_params.REGISTRY_URL_PREFIX = f"https://{TFC_HOST_NAME}/api/registry/v1/modules"
             module_params.module_source = module_params.module_source.replace(f"{TFC_HOST_NAME}/", "")
         else:
+            # url for the public registry
             module_params.REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
-
-        module_params.module_version_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, "versions"))
-        if not module_params.module_version_url.startswith(module_params.REGISTRY_URL_PREFIX):
-            # Local paths don't get the prefix appended
-            return False
-        if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
-            return True
 
         if module_params.module_source.startswith(module_params.REGISTRY_URL_PREFIX):
             # TODO: implement registry url validation using remote service discovery
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
             pass
-        try:
-            response = requests.get(url=module_params.module_version_url, headers={"Authorization": f"Bearer {module_params.token}"})
-            response.raise_for_status()
-        except HTTPError as e:
-            self.logger.debug(e)
-        if response.status_code != HTTPStatus.OK:
+        module_params.module_version_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, "versions"))
+        if not module_params.module_version_url.startswith(module_params.REGISTRY_URL_PREFIX):
+            # Local paths don't get the prefix appended
             return False
-        else:
-            available_versions = [
-                v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
-            ]
-            RegistryLoader.modules_versions_cache[module_params.module_version_url] = order_versions_in_descending_order(available_versions)
+
+        # If versions for a module are cached, determine the best version and return True.
+        # If versions are not cached, get versions, then determine the best version and return True.
+        # Best version needs to be determined here for setting most accurate dest_dir.
+        if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
+            module_params.version = self._find_best_version(module_params)
             return True
+        if not self._cache_available_versions():
+            return False
+        self.best_version = self._find_best_version(module_params)
+
+        if not module_params.inner_module:
+            module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name, TFC_HOST_NAME,
+                                         *module_params.module_source.split("/"), module_params.version)
+        if os.path.exists(module_params.dest_dir):
+            return True
+        # verify cache again after refresh
+        if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
+            return True
+        return False
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
         if os.path.exists(module_params.dest_dir):
             return ModuleContent(dir=module_params.dest_dir)
 
-        best_version = self._find_best_version(module_params)
+        best_version = module_params.version
+        logging.debug(
+            f"Best version for {module_params.module_source} is {module_params.version} based on the version constraint {module_params.version}")
         request_download_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, best_version, "download"))
         try:
             response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {module_params.token}"})
@@ -125,6 +135,22 @@ class RegistryLoader(ModuleLoader):
                 num_of_matches = 0
         return "latest"
 
+    def _cache_available_versions(self, module_params: ModuleParams) -> bool:
+        # Get all available versions for a module in the registry and cache them.
+        # Returns False on failure.
+        try:
+            response = requests.get(url=module_params.module_version_url, headers={"Authorization": f"Bearer {module_params.token}"})
+            response.raise_for_status()
+            available_versions = [
+                v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
+            ]
+            RegistryLoader.modules_versions_cache[module_params.module_version_url] = order_versions_in_descending_order(
+                available_versions)
+            return True
+        except HTTPError as e:
+            self.logger.debug(e)
+            return False
+
     def _process_inner_registry_module(self, module_params: ModuleParams) -> None:
         # Check if the source has '//' in it. If it does, it indicates a reference for an inner module.
         # Example: "terraform-aws-modules/security-group/aws//modules/http-80" =>
@@ -135,9 +161,6 @@ class RegistryLoader(ModuleLoader):
             module_params.module_source = module_source_components[0]
             module_params.dest_dir = module_params.dest_dir.split("//")[0]
             module_params.inner_module = module_source_components[1]
-        else:
-            module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name,
-                                         *module_params.module_source.split("/"), module_params.version)
 
 
 loader = RegistryLoader()
