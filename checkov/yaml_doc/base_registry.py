@@ -86,6 +86,7 @@ class Registry(BaseCheckRegistry):
                 results,
                 scanned_file,
                 skip_info,
+                entity
             )
 
     def _scan_yaml_document(
@@ -265,7 +266,7 @@ class Registry(BaseCheckRegistry):
 
     @staticmethod
     def modify_gha_key(key: str, check: BaseCheck, definition: dict[str, Any]) -> str:
-        if 'GITHUB_ACTION' in check.bc_id:
+        if check.bc_id and 'GITHUB_ACTION' in check.bc_id:
             potential_job_name = key.split('.')[1]
             if potential_job_name != '*':
                 new_key = f'jobs.{potential_job_name}'
