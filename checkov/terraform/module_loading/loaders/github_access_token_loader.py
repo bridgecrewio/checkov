@@ -1,23 +1,24 @@
 import os
 
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
+from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 class GithubAccessTokenLoader(GenericGitLoader):
-    def discover(self):
+    def discover(self, module_params: ModuleParams):
         self.module_source_prefix = "github.com"
-        self.username = "x-access-token"
-        self.token = os.getenv('GITHUB_PAT', '')
+        module_params.username = "x-access-token"
+        module_params.token = os.getenv('GITHUB_PAT', '')
 
-    def _is_matching_loader(self) -> bool:
-        if self.token:
+    def _is_matching_loader(self, module_params: ModuleParams) -> bool:
+        if module_params.token:
             self.logger.debug("GITHUB_PAT found. Attempting to clone module using HTTP basic authentication.")
-            if self.module_source.startswith(self.module_source_prefix):
-                self.module_source = f"git::https://{self.username}:{self.token}@{self.module_source}"
+            if module_params.module_source.startswith(self.module_source_prefix):
+                module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{module_params.module_source}"
                 return True
-            if self.module_source.startswith(self.module_source_prefix):
-                source = self.module_source.replace(":", "/")
-                self.module_source = f"git::https://{self.username}:{self.token}@{source}"
+            if module_params.module_source.startswith(self.module_source_prefix):
+                source = module_params.module_source.replace(":", "/")
+                module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{source}"
                 return True
 
         return False
