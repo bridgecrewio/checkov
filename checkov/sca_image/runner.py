@@ -197,16 +197,7 @@ class Runner(PackageRunner):
             result = cached_results.get('results', [{}])[0]
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
-            image_packages = result.get('packages', [])
-            image_package_types = {}
-            for package in image_packages:
-                image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
-            image_details = ImageDetails(
-                distro=result.get('distro', ''),
-                distro_release=result.get('distroRelease', ''),
-                package_types=image_package_types,
-                image_id=image_id
-            )
+            image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
 
             self.parse_vulns_to_records(
                 report=report,
@@ -256,16 +247,7 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
-        image_packages = result.get('packages', [])
-        image_package_types = {}
-        for package in image_packages:
-            image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
-        image_details = ImageDetails(
-            distro=result.get('distro', ''),
-            distro_release=result.get('distroRelease', ''),
-            package_types=image_package_types,
-            image_id=image_id
-        )
+        image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         self.parse_vulns_to_records(
             report=report,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -289,3 +271,17 @@ class Runner(PackageRunner):
         if image_id.startswith("sha256:"):
             return image_id[:17]
         return image_id[:10]
+
+
+    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
+        image_packages = scan_result.get('packages', [])
+        image_package_types = {
+            f'{package["name"]}@{package["version"]}': package['type']
+            for package in image_packages
+        }
+        return ImageDetails(
+            distro=scan_result.get('distro', ''),
+            distro_release=scan_result.get('distroRelease', ''),
+            package_types=image_package_types,
+            image_id=image_id
+        )

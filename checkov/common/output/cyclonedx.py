@@ -63,29 +63,19 @@ class CycloneDX:
             if report.check_type in SCA_CHECKTYPES and self.export_iac_only:
                 continue
 
-            if report.check_type == CheckType.SCA_IMAGE:
-                image_record = next(itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks))
-                image_id = cast(Dict[str, Any], image_record.vulnerability_details).get('image_details', ImageDetails).image_id
-                file_path = image_record.file_path.split(' ')[0]
-                image_purl = PackageURL(
-                    type='oci',
-                    namespace=self.repo_id,
-                    name=file_path,
-                    version=image_id
-                )
-                bom.metadata.component = Component(
-                    bom_ref=str(image_purl),
-                    component_type=ComponentType.CONTAINER,
-                    name=f'{self.repo_id}/{image_id}',
-                    version='',
-                    purl=image_purl
-                )
+            # if the report is of SCA_IMAGE type, we should add to the report one image component per image
+            is_image_report = report.check_type == CheckType.SCA_IMAGE
+            image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
+
+                if is_image_report and check.file_path not in image_resources_for_image_components:
+                    image_resources_for_image_components[check.file_path] = check
+
 
             for check in report.failed_checks:
                 component = self.create_component(check_type=report.check_type, resource=check)
@@ -104,11 +94,19 @@ class CycloneDX:
                 component.add_vulnerability(vulnerability)
                 bom.components.add(component)
 
+                if is_image_report:
+                    if check.file_path not in image_resources_for_image_components:
+                        image_resources_for_image_components[check.file_path] = check
+
             for resource in report.extra_resources:
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
+
+            if is_image_report:
+                for image_resource in image_resources_for_image_components:
+                    self.create_image_component(resource=image_resources_for_image_components[image_resource], bom=bom)
 
         return bom
 
@@ -212,6 +210,26 @@ class CycloneDX:
             purl=purl,
         )
         return component
+
+    def create_image_component(self, resource: Record, bom: Bom) -> None:
+        image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
+                                                                         ImageDetails).image_id
+        file_path = resource.file_path.split(' ')[0]
+        image_purl = PackageURL(
+            type='oci',
+            namespace=self.repo_id,
+            name=file_path,
+            version=image_id
+        )
+        bom.components.add(
+            Component(
+                bom_ref=str(image_purl),
+                component_type=ComponentType.CONTAINER,
+                name=f'{self.repo_id}/{image_id}',
+                version='',
+                purl=image_purl
+            )
+        )
 
     def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
         """Creates a vulnerability"""
