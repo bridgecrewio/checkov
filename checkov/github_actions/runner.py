@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
@@ -145,6 +145,6 @@ class Runner(YamlRunner, ImageReferencer):
                 except KeyError:
                     name = step[next(iter(step.keys()))]
 
-                return name  # type: ignore
+                return cast(str, name)
 
         return ""
