@@ -25,6 +25,7 @@ from packageurl import PackageURL  # type:ignore[import]
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.output.report import CheckType
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -33,7 +34,7 @@ else:
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
-    from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
+    from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
 DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
