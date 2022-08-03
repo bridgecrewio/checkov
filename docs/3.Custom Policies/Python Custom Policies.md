@@ -89,7 +89,28 @@ def scan_resource_conf(self, conf):
     return CheckResult.FAILED
 ```
 
-6. Conclude the policy name and operationalize it with the statement:
+6. You can also add `details` to be printed on the execution report:
+```python
+def scan_resource_conf(self, conf):
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            # The following line sets the evaluated keys
+            self.evaluated_keys = ['storage_encrypted/[0]']
+            return CheckResult.PASSED
+        
+    self.details.append("'storage_encrypted' was not found on the resource configuration")
+    
+    return CheckResult.FAILED
+```
+
+7. Conclude the policy name and operationalize it with the statement:
 
 ```python
 check = RDSEncryption()
