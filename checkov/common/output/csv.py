@@ -10,7 +10,6 @@ from typing import Any, TYPE_CHECKING
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
-from checkov.common.output.cyclonedx_consts import ImageDetails
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -138,7 +137,7 @@ class CSVSBOM:
     def persist_report_container_images(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_CONTAINER_IMAGE,
+            header=HEADER_OSS_PACKAGES,
             rows=self.container_rows,
             is_api_key=is_api_key,
         )
