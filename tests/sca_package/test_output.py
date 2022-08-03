@@ -3,7 +3,6 @@ from packaging import version as packaging_version
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.commons import get_file_path_for_record
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_cves_table,
@@ -322,7 +321,7 @@ def test_create_cli_license_violations_table():
     # then
     assert table == "".join(
         [
-            "\t/requirements.txt - Licenses Violations:\n",
+            "\t/requirements.txt - Licenses Statuses:\n",
             "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",

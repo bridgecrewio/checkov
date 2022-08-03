@@ -275,7 +275,7 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
                 )
 
         cli_outputs.append(
-            create_cli_table(
+            create_cli_cves_table(
                 file_path=file_path,
                 cve_count=cve_count,
                 package_details_map=package_details_map,
