@@ -23,6 +23,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -105,10 +106,15 @@ def create_report_cve_record(
     vulnerability_details: dict[str, Any],
     licenses: str,
     runner_filter: RunnerFilter | None = None,
+    image_details: ImageDetails | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
+    if image_details:
+        package_type = image_details.package_types.get(f'{package_name}@{package_version}', '')
+    else:
+        package_type = ''
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
@@ -152,6 +158,8 @@ def create_report_cve_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
+        "package_type": package_type,
+        "image_details": image_details,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
@@ -337,14 +345,15 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
 
 
 def create_fixable_cve_summary_table_part(
-    table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
+        table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
-        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.add_row(
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -358,7 +367,7 @@ def create_fixable_cve_summary_table_part(
 
 
 def create_package_overview_table_part(
-    table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
+        table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
@@ -417,9 +426,9 @@ def create_package_overview_table_part(
 
 
 async def _report_results_to_bridgecrew_async(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     package_scanning_int = PackageScanningIntegration()
     args = [
@@ -442,8 +451,8 @@ async def _report_results_to_bridgecrew_async(
 
 
 def report_results_to_bridgecrew(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     return asyncio.run(_report_results_to_bridgecrew_async(scan_results, bc_integration, bc_api_key))

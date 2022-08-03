@@ -16,6 +16,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 
 class Runner(BaseRunner):
@@ -131,6 +132,7 @@ class Runner(BaseRunner):
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
+        image_details: ImageDetails | None = None
     ) -> None:
         licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
@@ -149,6 +151,7 @@ class Runner(BaseRunner):
             report.add_record(license_record)
 
         vulnerable_packages = []
+
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
             cve_record = create_report_cve_record(
@@ -157,7 +160,8 @@ class Runner(BaseRunner):
                 check_class=self._check_class,
                 vulnerability_details=vulnerability,
                 licenses=', '.join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or 'Unknown',
-                runner_filter=runner_filter
+                runner_filter=runner_filter,
+                image_details=image_details
             )
             if not runner_filter.should_run_check(check_id=cve_record.check_id, bc_check_id=cve_record.bc_check_id,
                                                   severity=cve_record.severity):
