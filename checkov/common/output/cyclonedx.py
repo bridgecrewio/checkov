@@ -211,7 +211,7 @@ class CycloneDX:
         )
         return component
 
-    def create_image_component(self, resource: Record, bom: Bom) -> Component:
+    def create_image_component(self, resource: Record, bom: Bom):
         image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
                                                                          ImageDetails).image_id
         file_path = resource.file_path.split(' ')[0]
