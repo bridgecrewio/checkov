@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+from random import random
 from typing import Any, Dict, List
 
 from checkov.common.checks.base_check import BaseCheck
@@ -40,8 +42,7 @@ class Registry(BaseCheckRegistry):
                             entity_type,
                             results,
                             scanned_file,
-                            skip_info,
-                            entity
+                            skip_info
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
@@ -53,8 +54,7 @@ class Registry(BaseCheckRegistry):
                             entity_type,
                             results,
                             scanned_file,
-                            skip_info,
-                            entity
+                            skip_info
                         )
         if isinstance(entity, list):
             for item in entity:
@@ -66,8 +66,7 @@ class Registry(BaseCheckRegistry):
                         entity_type,
                         results,
                         scanned_file,
-                        skip_info,
-                        entity
+                        skip_info
                     )
                     if result == CheckResult.FAILED:
                         break
@@ -85,8 +84,7 @@ class Registry(BaseCheckRegistry):
                 entity_type,
                 results,
                 scanned_file,
-                skip_info,
-                entity
+                skip_info
             )
 
     def _scan_yaml_document(
@@ -95,7 +93,7 @@ class Registry(BaseCheckRegistry):
             entity_type: str, results: Dict[str, Any]
     ) -> None:
         self.update_result(
-            check, entity, entity_name, entity_type, results, scanned_file, skip_info, entity
+            check, entity, entity_name, entity_type, results, scanned_file, skip_info
         )
 
     def _scan_yaml(
@@ -183,8 +181,7 @@ class Registry(BaseCheckRegistry):
             entity_type: str,
             results: Dict[str, Any],
             scanned_file: str,
-            skip_info: _SkippedCheck,
-            definition: dict[str, Any]
+            skip_info: _SkippedCheck
     ) -> CheckResult:
         check_result = self.run_check(
             check,
@@ -199,8 +196,7 @@ class Registry(BaseCheckRegistry):
                                          entity_name,
                                          entity_type,
                                          scanned_file,
-                                         skip_info,
-                                         definition)
+                                         skip_info)
 
         result = check_result["result"]
 
@@ -232,11 +228,9 @@ class Registry(BaseCheckRegistry):
                        entity_name: str,
                        entity_type: str,
                        scanned_file: str,
-                       skip_info: _SkippedCheck,
-                       definition: dict[str, Any]) -> str:
+                       skip_info: _SkippedCheck) -> str:
         if STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
-            key = f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
-            return Registry.modify_gha_key(key, check, definition)
+            return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
 
         if isinstance(entity_configuration, list):
             start_line = None
@@ -254,43 +248,10 @@ class Registry(BaseCheckRegistry):
                     if subconf_startline < start_line:
                         start_line = subconf_startline
             if start_line and end_line:
-                key = f'{entity_type}.{entity_name}.{check.id}[{start_line}:{end_line}]'
-                return Registry.modify_gha_key(key, check, definition)
+                return f'{entity_type}.{entity_name}.{check.id}[{start_line}:{end_line}]'
 
-        key = f'{entity_type}.{entity_name}.{check.id}'
-        return Registry.modify_gha_key(key, check, definition)
+        return f'{entity_type}.{entity_name}.{check.id}'
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
         pass
-
-    @staticmethod
-    def modify_gha_key(key: str, check: BaseCheck, definition: dict[str, Any]) -> str:
-        if check.bc_id and 'GITHUB_ACTION' in check.bc_id:
-            potential_job_name = key.split('.')[1]
-            if potential_job_name != '*':
-                new_key = f'jobs.{potential_job_name}'
-            else:
-                start_line, end_line = Registry.get_start_and_end_lines(key)
-                job_name = Registry.resolve_job_name(definition, int(start_line), int(end_line))
-                new_key = f'jobs.{job_name}.steps'
-            return new_key
-        return key
-
-    @staticmethod
-    def get_start_and_end_lines(key: str) -> list[str]:
-        check_name = key.split('.')[-1]
-        try:
-            start_end_line_bracket_index = check_name.index('[')
-        except ValueError:
-            return ['-1', '-1']
-        return check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')
-
-    @staticmethod
-    def resolve_job_name(definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for key, job in definition.get('jobs', {}).items():
-            if key in [STARTLINE_MARK, ENDLINE_MARK]:
-                continue
-            if job[STARTLINE_MARK] <= start_line <= end_line <= job[ENDLINE_MARK]:
-                return str(key)
-        return ""

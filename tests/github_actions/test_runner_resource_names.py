@@ -1,7 +1,5 @@
 import pytest
-
-from checkov.github_actions.checks.job.SuspectCurlInScript import SuspectCurlInScript
-from checkov.yaml_doc.base_registry import Registry
+from checkov.github_actions.runner import Runner
 
 
 def test_get_start_and_end_lines():
@@ -10,9 +8,9 @@ def test_get_start_and_end_lines():
             'jobs.job_name.CKV_GHA_3[18:22]']
 
     for key in keys:
-        start_line, end_line = Registry.get_start_and_end_lines(key)
-        assert start_line == '18'
-        assert end_line == '22'
+        start_line, end_line = Runner.get_start_and_end_lines(key)
+        assert start_line == 18
+        assert end_line == 22
 
 
 @pytest.mark.parametrize(
@@ -26,7 +24,7 @@ def test_get_start_and_end_lines():
     ],
 )
 def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
-    job_name = Registry.resolve_job_name(definition, start_line, end_line)
+    job_name = Runner.resolve_job_name(definition, start_line, end_line)
 
     assert job_name == expected_job_name
 
@@ -35,13 +33,12 @@ def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
     "key,expected_key",
     [
         ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job"),
-        ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps"),
+        ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps.Check for dockerenv file"),
     ],
 )
-def test_modify_gha_key(key, expected_key, definition):
-    check = SuspectCurlInScript()
-    check.bc_id = 'GITHUB_ACTION_3'
+def test_get_resource(key, expected_key, definition):
+    runner = Runner()
 
-    new_key = Registry.modify_gha_key(key, check, definition)
+    new_key = runner.get_resource("", key, [], definition)
 
     assert new_key == expected_key

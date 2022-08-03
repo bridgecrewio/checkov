@@ -1,7 +1,5 @@
 import pytest
 
-from checkov.github_actions.checks.job.SuspectCurlInScript import SuspectCurlInScript
-
 
 @pytest.fixture
 def definition():
