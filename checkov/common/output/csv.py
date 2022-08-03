@@ -56,22 +56,16 @@ class CSVSBOM:
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type in [CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE]:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
-                self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository)
+                self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
             for resource in report.extra_resources:
-                self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository)
-            if report.check_type == CheckType.SCA_IMAGE:
-                for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
-                    self.add_container_image_resources(resource=record, git_org=git_org, git_repository=git_repository)
-                for resource in report.extra_resources:
-                    self.add_container_image_resources(resource=resource, git_org=git_org, git_repository=git_repository)
+                self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
         else:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
                 self.add_iac_resources(resource=record, git_org=git_org, git_repository=git_repository)
             for resource in report.extra_resources:
                 self.add_iac_resources(resource=resource, git_org=git_org, git_repository=git_repository)
 
-
-    def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
+    def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str, check_type: str) -> None:
         if not resource.vulnerability_details:
             # this shouldn't happen
             logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
@@ -81,8 +75,11 @@ class CSVSBOM:
         if isinstance(resource, Record) and resource.severity is not None:
             # ExtraResource don't have a CVE/Severity
             severity = resource.severity.name
-
-        self.package_rows.append(
+        csv_table = {
+            CheckType.SCA_PACKAGE: self.package_rows,
+            CheckType.SCA_IMAGE: self.container_rows
+        }
+        csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
                 "Version": resource.vulnerability_details["package_version"],
