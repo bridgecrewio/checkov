@@ -3,9 +3,11 @@ from packaging import version as packaging_version
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_package.commons import get_file_path_for_record
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
-    create_cli_table,
+    create_cli_cves_table,
+    create_cli_license_violations_table,
     create_report_cve_record,
     create_report_license_record,
     create_cli_output,
@@ -269,7 +271,7 @@ def test_create_cli_cves_table():
     }
 
     # when
-    table = create_cli_table(
+    table = create_cli_cves_table(
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
@@ -278,7 +280,7 @@ def test_create_cli_cves_table():
     # then
     assert table == "".join(
         [
-            "\t/path/to/requirements.txt\n",
+            "\t/path/to/requirements.txt - CVEs Summary:\n",
             "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐\n",
             "\t│ Total CVEs: 6      │ critical: 0        │ high: 3            │ medium: 2          │ low: 0             │ skipped: 1         │\n",
             "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
@@ -297,14 +299,47 @@ def test_create_cli_cves_table():
     )
 
 
-def test_create_cli_table_with_no_found_vulnerabilities():
+def test_create_cli_license_violations_table():
+    # given
+    file_path = "/requirements.txt"
+
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "OSI_BDS",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        }
+    ]
+
+    # when
+    table = create_cli_license_violations_table(
+        file_path=file_path,
+        license_statuses=license_statuses
+    )
+
+    # then
+    assert table == "".join(
+        [
+            "\t/requirements.txt - Licenses Violations:\n",
+            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
+            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
+            "\t│ django                 │ 1.2                    │ BC_LIC_1               │ OSI_BDS                │ COMPLIANT               │\n",
+            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
+        ]
+    )
+
+
+def test_create_cli_cves_table_with_no_found_vulnerabilities():
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
     package_details_map = {}
 
     # when
-    table = create_cli_table(
+    table = create_cli_cves_table(
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
@@ -313,7 +348,7 @@ def test_create_cli_table_with_no_found_vulnerabilities():
     # then
     assert table == "".join(
         [
-            "\t/path/to/requirements.txt\n",
+            "\t/path/to/requirements.txt - CVEs Summary:\n",
             "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐\n",
             "\t│ Total CVEs: 2      │ critical: 0        │ high: 0            │ medium: 0          │ low: 0             │ skipped: 2         │\n",
             "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
@@ -416,7 +451,7 @@ def test_create_cli_output():
     assert cli_output_without_lisence_records == cli_output
     assert cli_output == "".join(
         [
-            "\t/requirements.txt\n",
+            "\t/requirements.txt - CVEs Summary:\n",
             "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐\n",
             "\t│ Total CVEs: 2      │ critical: 1        │ high: 0            │ medium: 1          │ low: 0             │ skipped: 0         │\n",
             "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
@@ -427,6 +462,13 @@ def test_create_cli_output():
             "\t│ django             │ CVE-2019-19844     │ critical           │ 1.2                │ 1.11.27            │ 1.11.27            │\n",
             "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │\n",
             "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘\n",
+            "\n",
+            "\t/requirements.txt - Licenses Statuses:\n",
+            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
+            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
+            "\t│ django                 │ 1.2                    │ BC_LIC_1               │ OSI_BDS                │ COMPLIANT               │\n",
+            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
     )
 
