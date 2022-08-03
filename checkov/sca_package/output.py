@@ -17,8 +17,8 @@ from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY
-from checkov.common.typing import _CheckResult
+from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.typing import _CheckResult, _LicenseStatus
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -51,7 +51,55 @@ class CveCount:
         ]
 
 
-def create_report_record(
+def create_report_license_record(
+    rootless_file_path: str,
+    file_abs_path: str,
+    check_class: str,
+    licenses_status: _LicenseStatus,
+) -> Record:
+    package_name = licenses_status["package_name"]
+    package_version = licenses_status["package_version"]
+
+    check_result: _CheckResult = {
+        "result": CheckResult.FAILED,
+    }
+
+    policy = licenses_status["policy"]
+    status = licenses_status["status"]
+
+    if status == "COMPLIANT":
+        check_result = {
+            "result": CheckResult.PASSED,
+        }
+
+    code_block = [(0, f"{package_name}: {package_version}")]
+
+    details = {
+        "package_name": package_name,
+        "package_version": package_version,
+        "license": licenses_status["license"],
+        "status": status,
+        "policy": policy,
+    }
+
+    record = Record(
+        check_id=policy,
+        bc_check_id=policy,
+        check_name=SCA_LICENSE_CHECK_NAME,
+        check_result=check_result,
+        code_block=code_block,
+        file_path=get_file_path_for_record(rootless_file_path),
+        file_line_range=[0, 0],
+        resource=get_resource_for_record(rootless_file_path, package_name),
+        check_class=check_class,
+        evaluations=None,
+        file_abs_path=file_abs_path,
+        vulnerability_details=details,
+    )
+    return record
+
+
+def create_report_cve_record(
     rootless_file_path: str,
     file_abs_path: str,
     check_class: str,
@@ -127,7 +175,7 @@ def create_report_record(
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
         bc_check_id=f"BC_{cve_id.replace('-', '_')}",
-        check_name="SCA package scan",
+        check_name=SCA_PACKAGE_SCAN_CHECK_NAME,
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
@@ -198,6 +246,8 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
             fix_versions_lists = []
 
             for record in records:
+                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 cve_count.total += 1
 
                 if record.check_result["result"] == CheckResult.SKIPPED:

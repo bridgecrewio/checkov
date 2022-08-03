@@ -6,14 +6,15 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_table,
-    create_report_record,
+    create_report_cve_record,
+    create_report_license_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,
 )
 
 
-def test_create_report_record():
+def test_create_report_cve_record():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -36,7 +37,7 @@ def test_create_report_record():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -70,7 +71,7 @@ def test_create_report_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_moderate_severity():
+def test_create_report_cve_record_moderate_severity():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -93,7 +94,7 @@ def test_create_report_record_moderate_severity():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -105,7 +106,7 @@ def test_create_report_record_moderate_severity():
     assert record.severity == Severities[BcSeverities.MEDIUM]
 
 
-def test_create_report_record_severity_filter():
+def test_create_report_cve_record_severity_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -128,7 +129,7 @@ def test_create_report_record_severity_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -164,7 +165,7 @@ def test_create_report_record_severity_filter():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_package_filter():
+def test_create_report_cve_record_package_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -187,7 +188,7 @@ def test_create_report_record_package_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
@@ -243,7 +244,7 @@ def test_calculate_lowest_compliant_version():
     assert compliant_version == "2.2.24"
 
 
-def test_create_cli_table():
+def test_create_cli_cves_table():
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
@@ -372,10 +373,25 @@ def test_create_cli_output():
             "fixDate": "2016-08-05T17:59:00+02:00",
         },
     ]
-
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "OSI_BDS",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "package_name": "flask",
+            "package_version": "0.6",
+            "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+            "status": "OPEN",
+            "policy": "BC_LIC_1"
+        }
+    ]
     # when
-    records = [
-        create_report_record(
+    cves_records = [
+        create_report_cve_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=file_abs_path,
             check_class=check_class,
@@ -384,11 +400,20 @@ def test_create_cli_output():
         )
         for details in vulnerabilities_details
     ]
-
-    # when
-    cli_output = create_cli_output(True, records)
+    license_records = [
+            create_report_license_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=file_abs_path,
+                check_class=check_class,
+                licenses_status=license_status
+            )
+            for license_status in license_statuses
+        ]
+    cli_output_without_lisence_records = create_cli_output(True, cves_records)
+    cli_output = create_cli_output(True, cves_records + license_records)
 
     # then
+    assert cli_output_without_lisence_records == cli_output
     assert cli_output == "".join(
         [
             "\t/requirements.txt\n",

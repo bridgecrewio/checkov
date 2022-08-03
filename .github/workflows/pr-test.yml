@@ -6,8 +6,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: 3.9
       - name: pre-commit
@@ -16,8 +16,8 @@ jobs:
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -30,8 +30,8 @@ jobs:
   mypy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+    - uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
       with:
         python-version: 3.7
     - name: Install pipenv
@@ -54,9 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
@@ -81,12 +81,12 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
-      - uses: azure/setup-helm@e4f3964f67aac34233ac06d6614802b7040f2a7c  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -128,12 +128,12 @@ jobs:
       working-directory: ./performance_tests
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
-      - uses: azure/setup-helm@e4f3964f67aac34233ac06d6614802b7040f2a7c  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
