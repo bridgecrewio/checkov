@@ -304,7 +304,7 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
 
 
 def create_cli_license_violations_table(file_path: str, license_statuses: List[_LicenseStatus]) -> str:
-    columns = 5
+    columns = 4
     table_width = 120.0
     column_width = int(table_width / columns)
     table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
@@ -313,20 +313,21 @@ def create_cli_license_violations_table(file_path: str, license_statuses: List[_
         "Package name",
         "Package version",
         "Policy ID",
-        "License",
-        "Status"
+        "License"
     ]
     for curr_license_status in license_statuses:
         table.add_row([curr_license_status["package_name"], curr_license_status["package_version"],
-                       curr_license_status["policy"], curr_license_status["license"], curr_license_status["status"]])
+                       curr_license_status["policy"], curr_license_status["license"]])
     table.align = "l"
     table.min_width = column_width
     table.max_width = column_width
-    table_lines = [f"\t{line[:-2]}{line[-3]}{line[-2:]}" for line in table.get_string().splitlines(keepends=True)]
+    # some hack for making the table's width as same as the cves-table's
+    table_lines = [f"\t{line[:-2]}{line[-3] * 2}{line[-2:]}" for line in table.get_string().splitlines(keepends=True)]
     return (
         f"\t{file_path} - Licenses Statuses:\n"
         f"{''.join(table_lines)}\n"
     )
+
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
