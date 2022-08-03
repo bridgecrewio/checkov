@@ -6,12 +6,12 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, cast
 
-from detect_secrets import SecretsCollection  # type:ignore[import]
-from detect_secrets.core import scan  # type:ignore[import]
-from detect_secrets.core.potential_secret import PotentialSecret  # type:ignore[import]
-from detect_secrets.settings import transient_settings  # type:ignore[import]
+from detect_secrets import SecretsCollection
+from detect_secrets.core import scan
+from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -162,7 +162,7 @@ class Runner(BaseRunner[None]):
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
-            secrets_duplication: Dict[str, bool] = {}
+            secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
                 check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
@@ -190,7 +190,9 @@ class Runner(BaseRunner[None]):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
-                line_text_censored = omit_secret_value_from_line(secret.secret_value, line_text)
+                # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
+                # via 'load_secret_from_dict'
+                line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
@@ -212,7 +214,7 @@ class Runner(BaseRunner[None]):
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
         results = parallel_runner.run_function(
-            func=lambda f: list((Runner._safe_scan(f, base_path))),
+            func=lambda f: Runner._safe_scan(f, base_path),
             items=files_to_scan,
             run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
         )

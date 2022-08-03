@@ -25,6 +25,7 @@ from packageurl import PackageURL  # type:ignore[import]
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.output.report import CheckType
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -95,12 +96,14 @@ class CycloneDX:
                 continue
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
 
             for check in report.failed_checks:
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):

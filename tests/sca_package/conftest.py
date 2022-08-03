@@ -380,7 +380,7 @@ def scan_result() -> List[Dict[str, Any]]:
                     "packageVersion": "0.6",
                     "packageLang": "python",
                     "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
-                    "status": "COMPLIANT",
+                    "status": "OPEN",
                     "policy": "BC_LIC_1"
                 }
             ],
