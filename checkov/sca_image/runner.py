@@ -198,9 +198,10 @@ class Runner(PackageRunner):
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_packages = result.get('packages', [])
-            image_package_types = {}
-            for package in image_packages:
-                image_package_types[f'{package["name"]}@{package["version"]}'] = package['type']
+            image_package_types = {
+                f'{package["name"]}@{package["version"]}': package['type']
+                for package in image_packages
+            }
             image_details = ImageDetails(
                 distro=result.get('distro', ''),
                 distro_release=result.get('distroRelease', ''),
