@@ -47,7 +47,7 @@ class Record:
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = []
+        details: Optional[List[str]] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -80,7 +80,7 @@ class Record:
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
-        self.details: List[str] = details
+        self.details: List[str] = details or []
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -156,15 +156,13 @@ class Record:
             code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
 
         detail = ""
-        if len(self.details):
-            detail_buffer = ""
-
-            detail_buffer += colored(f"\tDetails: {self.details[0]}\n", "blue")
+        if self.details:
+            detail_buffer = [colored(f"\tDetails: {self.details[0]}\n", "blue")]
 
             for t in self.details[1:]:
-                detail_buffer += colored(f"\t\t{t}\n", "blue")
+                detail_buffer.append(colored(f"\t\t{t}\n", "blue"))
 
-            detail = detail_buffer
+            detail = "".join(detail_buffer)
 
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:

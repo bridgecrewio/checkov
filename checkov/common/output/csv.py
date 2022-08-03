@@ -110,12 +110,9 @@ class CSVSBOM:
             "Severity": severity,
         }
 
-        if len(resource.details):
+        if resource.details:
             self.iac_rows_have_details = True
-            row = {
-                **row,
-                "Details": "|".join(resource.details)
-            }
+            row["Details"] = "|".join(resource.details)
 
         self.iac_rows.append(row)
         self.iac_resource_cache.add(resource_id)

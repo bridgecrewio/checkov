@@ -23,7 +23,7 @@ class GithubActionsRecord(Record):
                  entity_tags: Optional[Dict[str, str]] = None,
                  bc_check_id: Optional[str] = None,
                  severity: Optional[Severity] = None,
-                 details: List[str] = []
+                 details: Optional[List[str]] = None
                  ) -> None:
         super().__init__(check_id=check_id,
                          check_name=check_name,
