@@ -143,7 +143,7 @@ class Runner(YamlRunner, ImageReferencer):
                 try:
                     name = step["name"]
                 except KeyError:
-                    name = step[list(step.keys())[0]]
+                    name = step[next(iter(step.keys()))]
 
                 return name  # type: ignore
 
