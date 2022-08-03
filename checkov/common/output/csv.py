@@ -26,6 +26,7 @@ HEADER_OSS_PACKAGES = [
     "Severity",
     "Licenses",
 ]
+HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
