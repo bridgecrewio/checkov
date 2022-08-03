@@ -15,6 +15,11 @@ def extract_tar_archive(source_path: str, dest_path: str) -> None:
 
 
 def compress_file_gzip_base64(input_path: str) -> str:
+    """
+    getting compressed-result, where the compression is deterministic
+    (adding mtime=0 makes it by adding to the result some fixed timestamp.
+    when omitting it (or setting None), the result are affected by the current timestamp)
+    """
     try:
         with open(input_path, 'rb') as json_results_file:
             data = json_results_file.read()
