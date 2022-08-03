@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.cyclonedx_consts import ImageDetails
-from checkov.sca_package.output import create_report_record
+from checkov.sca_package.output import create_report_cve_record
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
@@ -76,7 +76,7 @@ def test_valid_cyclonedx_image_bom():
         'fixDate': '2022-07-07T16:15:00+03:00'
     }
 
-    record: Record = create_report_record(rootless_file_path=rootless_file_path,
+    record: Record = create_report_cve_record(rootless_file_path=rootless_file_path,
                                           file_abs_path=file_abs_path, check_class=check_class,
                                           vulnerability_details=vulnerability, licenses='', image_details=image_details)
     report = Report(check_type='sca_image')
