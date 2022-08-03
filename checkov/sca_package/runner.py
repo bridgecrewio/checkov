@@ -144,16 +144,8 @@ class Runner(BaseRunner):
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
-                licenses_status=license_status,
-                runner_filter=runner_filter
+                licenses_status=license_status
             )
-            # here we don't have to add the next lines (that are appears in the loop of for vulnerability in vulnerabilities):
-            # report.add_resource(cve_record.resource)
-            # vulnerable_packages.append(get_package_alias(package_name, package_version))
-            #
-            # the reason is that
-            # 1. reources is used for counting
-            # 2. vulnerable_packages is for add to extra resource packages without cves (for put them in the bom file)
             report.add_record(license_record)
 
         vulnerable_packages = []
@@ -183,6 +175,7 @@ class Runner(BaseRunner):
 
         for package in packages:
             if get_package_alias(package["name"], package["version"]) not in vulnerable_packages:
+                # adding resources without cves for adding them also in the output-bom-repors
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=scanned_file_path,

@@ -55,9 +55,7 @@ def create_report_license_record(
     file_abs_path: str,
     check_class: str,
     licenses_status: _LicenseStatus,
-    runner_filter: RunnerFilter | None = None,
 ) -> Record:
-    runner_filter = runner_filter or RunnerFilter()
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
 
@@ -68,22 +66,12 @@ def create_report_license_record(
     policy = licenses_status["policy"]
     status = licenses_status["status"]
 
-    # to-do: check whether we want to save records for passed "COMPLIANT" licenses
     if status == "COMPLIANT":
         check_result = {
             "result": CheckResult.PASSED,
         }
 
-    # to-do: ask if it is right to put it here
-    # if runner_filter.skip_cve_package and package_name in runner_filter.skip_cve_package:
-    #     check_result = {
-    #         "result": CheckResult.SKIPPED,
-    #         "suppress_comment": f"Filtered by package '{package_name}'"
-    #     }
-
     code_block = [(0, f"{package_name}: {package_version}")]
-
-
 
     details = {
         "package_name": package_name,
