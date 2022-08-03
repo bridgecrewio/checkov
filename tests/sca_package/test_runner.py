@@ -25,11 +25,13 @@ def test_run(mocker: MockerFixture, scan_result):
 
     # then
     assert report.check_type == "sca_package"
+    print(report.resources)
     assert report.resources == {
         "path/to/go.sum.github.com/dgrijalva/jwt-go",
         "path/to/go.sum.golang.org/x/crypto",
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
+        "path/to/sub/requirements.txt.requests",
     }
     assert len(report.passed_checks) == 3
     assert len(report.failed_checks) == 9
@@ -104,6 +106,7 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
         "path/to/go.sum.golang.org/x/crypto",
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
+        "path/to/sub/requirements.txt.requests",
     }
     assert len(report.passed_checks) == 3
     assert len(report.failed_checks) == 8
