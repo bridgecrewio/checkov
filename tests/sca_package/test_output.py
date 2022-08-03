@@ -14,6 +14,53 @@ from checkov.sca_package.output import (
     CveCount,
 )
 
+def get_vulnerabilities_details() -> list:
+    return [
+        {
+            "id": "CVE-2019-19844",
+            "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
+            "cvss": 9.8,
+            "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
+            "severity": "critical",
+            "packageName": "django",
+            "packageVersion": "1.2",
+            "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+            "riskFactors": [
+                "Attack complexity: low",
+                "Attack vector: network",
+                "Critical severity",
+                "Has fix",
+            ],
+            "impactedVersions": ["<1.11.27"],
+            "publishedDate": "2019-12-18T20:15:00+01:00",
+            "discoveredDate": "2019-12-18T19:15:00Z",
+            "fixDate": "2019-12-18T20:15:00+01:00",
+        },
+        {
+            "id": "CVE-2016-6186",
+            "status": "fixed in 1.9.8, 1.8.14",
+            "cvss": 6.1,
+            "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
+            "description": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function ...",
+            "severity": "medium",
+            "packageName": "django",
+            "packageVersion": "1.2",
+            "link": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
+            "riskFactors": [
+                "Attack complexity: low",
+                "Attack vector: network",
+                "Exploit exists",
+                "Has fix",
+                "Medium severity",
+            ],
+            "impactedVersions": ["<=1.8.13"],
+            "publishedDate": "2016-08-05T17:59:00+02:00",
+            "discoveredDate": "2016-08-05T15:59:00Z",
+            "fixDate": "2016-08-05T17:59:00+02:00",
+        },
+    ]
+
 
 def test_create_report_cve_record():
     # given
@@ -362,51 +409,6 @@ def test_create_cli_output():
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
     check_class = "checkov.sca_package.scanner.Scanner"
-    vulnerabilities_details = [
-        {
-            "id": "CVE-2019-19844",
-            "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
-            "cvss": 9.8,
-            "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-            "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
-            "severity": "critical",
-            "packageName": "django",
-            "packageVersion": "1.2",
-            "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
-            "riskFactors": [
-                "Attack complexity: low",
-                "Attack vector: network",
-                "Critical severity",
-                "Has fix",
-            ],
-            "impactedVersions": ["<1.11.27"],
-            "publishedDate": "2019-12-18T20:15:00+01:00",
-            "discoveredDate": "2019-12-18T19:15:00Z",
-            "fixDate": "2019-12-18T20:15:00+01:00",
-        },
-        {
-            "id": "CVE-2016-6186",
-            "status": "fixed in 1.9.8, 1.8.14",
-            "cvss": 6.1,
-            "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
-            "description": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function ...",
-            "severity": "medium",
-            "packageName": "django",
-            "packageVersion": "1.2",
-            "link": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
-            "riskFactors": [
-                "Attack complexity: low",
-                "Attack vector: network",
-                "Exploit exists",
-                "Has fix",
-                "Medium severity",
-            ],
-            "impactedVersions": ["<=1.8.13"],
-            "publishedDate": "2016-08-05T17:59:00+02:00",
-            "discoveredDate": "2016-08-05T15:59:00Z",
-            "fixDate": "2016-08-05T17:59:00+02:00",
-        },
-    ]
     license_statuses = [
         {
             "package_name": "django",
@@ -432,7 +434,7 @@ def test_create_cli_output():
             vulnerability_details=details,
             licenses='Unknown',
         )
-        for details in vulnerabilities_details
+        for details in get_vulnerabilities_details()
     ]
     license_records = [
             create_report_license_record(
@@ -443,11 +445,9 @@ def test_create_cli_output():
             )
             for license_status in license_statuses
         ]
-    cli_output_without_lisence_records = create_cli_output(True, cves_records)
     cli_output = create_cli_output(True, cves_records + license_records)
 
     # then
-    assert cli_output_without_lisence_records == cli_output
     assert cli_output == "".join(
         [
             "\t/requirements.txt - CVEs Summary:\n",
@@ -467,6 +467,90 @@ def test_create_cli_output():
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ django                 │ 1.2                    │ BC_LIC_1               │ OSI_BDS                │ COMPLIANT               │\n",
+            "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ OPEN                    │\n",
+            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
+        ]
+    )
+
+
+def test_create_cli_output_without_license_records():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    # when
+    cves_records = [
+        create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            vulnerability_details=details,
+            licenses='Unknown',
+        )
+        for details in get_vulnerabilities_details()
+    ]
+    cli_output = create_cli_output(True, cves_records)
+
+    # then
+    assert cli_output == "".join(
+        [
+            "\t/requirements.txt - CVEs Summary:\n",
+            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐\n",
+            "\t│ Total CVEs: 2      │ critical: 1        │ high: 0            │ medium: 1          │ low: 0             │ skipped: 0         │\n",
+            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤\n",
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                        │\n",
+            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤\n",
+            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │\n",
+            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤\n",
+            "\t│ django             │ CVE-2019-19844     │ critical           │ 1.2                │ 1.11.27            │ 1.11.27            │\n",
+            "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │\n",
+            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘\n",
+        ]
+    )
+
+
+def test_create_cli_output_without_cve_records():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "OSI_BDS",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "package_name": "flask",
+            "package_version": "0.6",
+            "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+            "status": "OPEN",
+            "policy": "BC_LIC_1"
+        }
+    ]
+    # when
+    license_records = [
+            create_report_license_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=file_abs_path,
+                check_class=check_class,
+                licenses_status=license_status
+            )
+            for license_status in license_statuses
+        ]
+    cli_output = create_cli_output(True, license_records)
+
+    # then
+    assert cli_output == "".join(
+        [
+            "\t/requirements.txt - Licenses Statuses:\n",
+            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
+            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
+            "\t│ django                 │ 1.2                    │ BC_LIC_1               │ OSI_BDS                │ COMPLIANT               │\n",
+            "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ OPEN                    │\n",
             "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
     )

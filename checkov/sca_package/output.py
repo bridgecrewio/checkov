@@ -231,56 +231,74 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
 
     for file_path, packages in group_by_file_path_package_map.items():
         cve_count = CveCount(fixable=fixable)
-        package_details_map = defaultdict(dict)
-
+        package_cves_details_map = defaultdict(dict)
+        package_licenses_details_map = defaultdict(dict)
+        should_print_licenses_table = False
         for package_name, records in packages.items():
             package_version = None
             fix_versions_lists = []
 
             for record in records:
-                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
-                    continue
-                cve_count.total += 1
+                if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                    cve_count.total += 1
 
-                if record.check_result["result"] == CheckResult.SKIPPED:
-                    cve_count.skipped += 1
-                    continue
-                else:
-                    cve_count.to_fix += 1
+                    if record.check_result["result"] == CheckResult.SKIPPED:
+                        cve_count.skipped += 1
+                        continue
+                    else:
+                        cve_count.to_fix += 1
 
-                # best way to dynamically access an class instance attribute
-                severity_str = record.severity.name.lower()
-                setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
+                    # best way to dynamically access an class instance attribute
+                    severity_str = record.severity.name.lower()
+                    setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
-                if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
-                    cve_count.has_fix += 1
+                    if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
+                        cve_count.has_fix += 1
 
-                fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
-                if package_version is None:
-                    package_version = record.vulnerability_details["package_version"]
+                    fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
+                    if package_version is None:
+                        package_version = record.vulnerability_details["package_version"]
 
-                package_details_map[package_name].setdefault("cves", []).append(
-                    {
-                        "id": record.vulnerability_details["id"],
-                        "severity": severity_str,
-                        "fixed_version": record.vulnerability_details["lowest_fixed_version"],
-                    }
-                )
+                    package_cves_details_map[package_name].setdefault("cves", []).append(
+                        {
+                            "id": record.vulnerability_details["id"],
+                            "severity": severity_str,
+                            "fixed_version": record.vulnerability_details["lowest_fixed_version"],
+                        }
+                    )
+                elif record.check_name == SCA_LICENSE_CHECK_NAME:
+                    should_print_licenses_table = True
+                    package_licenses_details_map[package_name].setdefault("license_statuses", []).append(
+                        _LicenseStatus(package_name=package_name,
+                                       package_version=record.vulnerability_details["package_version"],
+                                       policy=record.vulnerability_details["policy"],
+                                       license=record.vulnerability_details["license"],
+                                       status=record.vulnerability_details["status"])
+                    )
 
-            if package_name in package_details_map.keys():
-                package_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
-                package_details_map[package_name]["current_version"] = package_version
-                package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
+            if package_name in package_cves_details_map:
+                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[package_name]["current_version"] = package_version
+                package_cves_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
                 )
 
-        cli_outputs.append(
-            create_cli_cves_table(
-                file_path=file_path,
-                cve_count=cve_count,
-                package_details_map=package_details_map,
+        if cve_count.total > 0:
+            cli_outputs.append(
+                create_cli_cves_table(
+                    file_path=file_path,
+                    cve_count=cve_count,
+                    package_details_map=package_cves_details_map,
+                )
             )
-        )
+        if should_print_licenses_table:
+            cli_outputs.append(
+                create_cli_license_violations_table(
+                    file_path=file_path,
+                    license_statuses=[status for package_name in package_licenses_details_map
+                                      for status in package_licenses_details_map[package_name].get("license_statuses", [])]
+                )
+            )
 
     return "\n".join(cli_outputs)
 
