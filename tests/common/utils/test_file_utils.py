@@ -15,5 +15,5 @@ def test_compress_file_gzip_base64_is_deterministic():
     # when
     compression_output = compress_file_gzip_base64(input_file)
 
-    #then
+    # then
     assert compression_output == expected_compression_output
