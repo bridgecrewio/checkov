@@ -18,7 +18,7 @@ def compress_file_gzip_base64(input_path: str) -> str:
     try:
         with open(input_path, 'rb') as json_results_file:
             data = json_results_file.read()
-        zip_file = gzip.compress(data)  # to gzip - return in bytes
+        zip_file = gzip.compress(data, mtime=0)  # to gzip - return in bytes
         base64_bytes = base64.b64encode(zip_file)  # to base64
         base64_string = base64_bytes.decode("utf-8")
         return base64_string
