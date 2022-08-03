@@ -9,6 +9,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.module_params import ModuleParams
 
+DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
+
 
 @dataclass(frozen=True)
 class ModuleSource:
@@ -21,7 +23,7 @@ class ModuleSource:
 class GenericGitLoader(ModuleLoader):
     def __init__(self):
         super().__init__()
-        self.module_source_prefix = "git::https://"
+        self.module_source_prefix = DEFAULT_MODULE_SOURCE_PREFIX
 
     @property
     def module_source_prefix(self):
@@ -40,11 +42,11 @@ class GenericGitLoader(ModuleLoader):
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         module_source_prefix = module_params.module_source_prefix if module_params.module_source_prefix else self.module_source_prefix
         if module_params.module_source.startswith(module_source_prefix):
-            source = module_params.module_source.split("git::https://")[-1]
+            source = module_params.module_source.split(DEFAULT_MODULE_SOURCE_PREFIX)[-1]
             if module_params.token and module_params.username:
-                module_params.module_source = f"git::https://{module_params.username}:{module_params.token}@{source}"
+                module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{module_params.username}:{module_params.token}@{source}"
             else:
-                module_params.module_source = f"git::https://{source}"
+                module_params.module_source = f"{DEFAULT_MODULE_SOURCE_PREFIX}{source}"
             return True
         # https://www.terraform.io/docs/modules/sources.html#generic-git-repository
         return module_params.module_source.startswith("git::")
