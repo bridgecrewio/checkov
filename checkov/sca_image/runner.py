@@ -272,7 +272,8 @@ class Runner(PackageRunner):
             return image_id[:17]
         return image_id[:10]
 
-    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str):
+
+    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
         image_packages = scan_result.get('packages', [])
         image_package_types = {
             f'{package["name"]}@{package["version"]}': package['type']
