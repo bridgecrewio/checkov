@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
 
-from cyclonedx.model.component import ComponentType
+from cyclonedx.model.component import Component, ComponentType
+from packageurl import PackageURL
 from pytest_mock import MockerFixture
 
 from checkov.common.output.cyclonedx import CycloneDX
@@ -74,9 +75,8 @@ def test_valid_cyclonedx_image_bom():
     }
 
     record: Record = create_report_record(rootless_file_path=rootless_file_path,
-                                  file_abs_path=file_abs_path,
-                                  check_class=check_class, vulnerability_details=vulnerability,
-                                  licenses='', image_details=image_details)
+                                          file_abs_path=file_abs_path, check_class=check_class,
+                                          vulnerability_details=vulnerability, licenses='', image_details=image_details)
     report = Report(check_type='sca_image')
     report.add_record(record)
 
@@ -85,23 +85,37 @@ def test_valid_cyclonedx_image_bom():
     output = cyclonedx.get_xml_output()
 
     # then
-    assert cyclonedx.bom.metadata.component is not None
-    assert cyclonedx.bom.metadata.component.type == ComponentType.CONTAINER
-    assert cyclonedx.bom.metadata.component.purl.type == 'oci'
-    assert cyclonedx.bom.metadata.component.purl.version == 'ubuntu:latest'
-    assert cyclonedx.bom.metadata.component.purl.name == 'Dockerfile'
-    assert len(cyclonedx.bom.components) == 1
+    assert len(cyclonedx.bom.components) == 2
+    package_purl = PackageURL(
+        name='curl',
+        namespace='acme/repo/Dockerfile/debian',
+        type='deb',
+        version='7.74.0-1.3+deb11u1',
+        qualifiers={'distro': 'bullseye'}
+    )
+    package_component = Component(
+        name='curl',
+        purl=package_purl,
+        group=None,
+        component_type=ComponentType.LIBRARY,
+        version='7.74.0-1.3+deb11u1'
+    )
+    assert cyclonedx.bom.has_component(package_component)
 
-    component = next(iter(cyclonedx.bom.components))
-
-    assert component.name == 'curl'
-    assert component.purl.name == 'curl'
-    assert component.purl.namespace == 'acme/repo/Dockerfile/debian'
-    assert component.purl.type == 'deb'
-    assert component.purl.version == '7.74.0-1.3+deb11u1'
-    assert component.type == ComponentType.LIBRARY
-
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 1
+    image_purl = PackageURL(
+        name='Dockerfile',
+        namespace='acme/repo',
+        type='oci',
+        version='ubuntu:latest',
+    )
+    image_component = Component(
+        name='acme/repo//ubuntu:latest',
+        purl=image_purl,
+        group=None,
+        component_type=ComponentType.CONTAINER,
+        version=''
+    )
+    assert cyclonedx.bom.has_component(image_component)
 
     assert "http://cyclonedx.org/schema/bom/1.4" in output
 
