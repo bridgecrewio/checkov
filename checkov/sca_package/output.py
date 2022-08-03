@@ -58,18 +58,14 @@ def create_report_license_record(
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
+    policy = licenses_status["policy"]
+    status = licenses_status["status"]
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
     }
-
-    policy = licenses_status["policy"]
-    status = licenses_status["status"]
-
     if status == "COMPLIANT":
-        check_result = {
-            "result": CheckResult.PASSED,
-        }
+        check_result["result"] = CheckResult.PASSED
 
     code_block = [(0, f"{package_name}: {package_version}")]
 

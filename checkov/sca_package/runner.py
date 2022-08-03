@@ -146,6 +146,7 @@ class Runner(BaseRunner):
                 check_class=self._check_class,
                 licenses_status=license_status
             )
+            report.add_resource(license_record.resource)
             report.add_record(license_record)
 
         vulnerable_packages = []

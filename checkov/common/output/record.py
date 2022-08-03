@@ -4,7 +4,6 @@ import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
-from enum import Enum
 
 from colorama import init, Fore, Style
 from termcolor import colored
