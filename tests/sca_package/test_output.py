@@ -390,7 +390,7 @@ def test_create_cli_output():
         }
     ]
     # when
-    records = [
+    cves_records = [
         create_report_cve_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=file_abs_path,
@@ -400,8 +400,7 @@ def test_create_cli_output():
         )
         for details in vulnerabilities_details
     ]
-    records.extend(
-        [
+    license_records = [
             create_report_license_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=file_abs_path,
@@ -410,11 +409,11 @@ def test_create_cli_output():
             )
             for license_status in license_statuses
         ]
-    )
-    # when
-    cli_output = create_cli_output(True, records)
+    cli_output_without_lisence_records = create_cli_output(True, cves_records)
+    cli_output = create_cli_output(True, cves_records + license_records)
 
     # then
+    assert cli_output_without_lisence_records == cli_output
     assert cli_output == "".join(
         [
             "\t/requirements.txt\n",
