@@ -27,6 +27,7 @@ from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES, PURL_TYPE_MAVEN, DEFAULT_CYCLONE_SCHEMA_VERSION, \
     CYCLONE_SCHEMA_VERSION, FILE_NAME_TO_PURL_TYPE, IMAGE_DISTRO_TO_PURL_TYPE, TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE, \
     BC_SEVERITY_TO_CYCLONEDX_LEVEL, ImageDetails
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -68,6 +69,7 @@ class CycloneDX:
             image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
@@ -78,6 +80,7 @@ class CycloneDX:
 
 
             for check in report.failed_checks:
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):
@@ -174,12 +177,12 @@ class CycloneDX:
         file_name = Path(resource.file_path).name
         if check_type is CheckType.SCA_IMAGE:
             package_type = resource.vulnerability_details['package_type']
-            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails).distro.split(' ')[0]
+            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails()).distro.split(' ')[0]
             file_path = resource.file_path.split(' ')[0]
             if package_type == 'os':
                 purl_type = IMAGE_DISTRO_TO_PURL_TYPE.get(image_distro_name, 'generic')
                 namespace = f'{self.repo_id}/{file_path}/{image_distro_name.lower()}'
-                qualifiers = f'distro={resource.vulnerability_details.get("image_details", ImageDetails).distro_release}'
+                qualifiers = f'distro={resource.vulnerability_details.get("image_details", ImageDetails()).distro_release}'
             else:
                 purl_type = TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE.get(package_type, 'generic')
                 namespace = f"{self.repo_id}/{file_path}"
@@ -213,7 +216,7 @@ class CycloneDX:
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
         image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
-                                                                         ImageDetails).image_id
+                                                                         ImageDetails()).image_id
         file_path = resource.file_path.split(' ')[0]
         image_purl = PackageURL(
             type='oci',

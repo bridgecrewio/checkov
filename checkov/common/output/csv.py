@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
 from checkov.common.output.cyclonedx_consts import ImageDetails
 
@@ -26,13 +26,6 @@ HEADER_OSS_PACKAGES = [
     "Vulnerability",
     "Severity",
     "Licenses",
-]
-HEADER_CONTAINER_IMAGE = [
-    "Image ID",
-    "Path",
-    "Git Org",
-    "Git Repository",
-    "Image Distro",
 ]
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
@@ -56,7 +49,8 @@ class CSVSBOM:
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
         if report.check_type in [CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE]:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
-                self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
+                if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                    self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
             for resource in report.extra_resources:
                 self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
         else:
@@ -89,22 +83,6 @@ class CSVSBOM:
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
                 "Licenses": resource.vulnerability_details.get("licenses"),
-            }
-        )
-
-    def add_container_image_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
-        if not resource.vulnerability_details:
-            # this shouldn't happen
-            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
-            return
-
-        self.container_rows.append(
-            {
-                "Image ID": resource.vulnerability_details.get("image_details", ImageDetails).image_id,
-                "Path": resource.file_path.split(' ')[0],
-                "Git Org": git_org,
-                "Git Repository": git_repository,
-                "Image Distro": resource.vulnerability_details.get("image_details", ImageDetails).distro
             }
         )
 

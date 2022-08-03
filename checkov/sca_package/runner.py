@@ -13,7 +13,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_report_record
+from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
 from checkov.common.output.cyclonedx_consts import ImageDetails
@@ -132,17 +132,29 @@ class Runner(BaseRunner):
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
-        image_details: ImageDetails | None = ImageDetails
+        image_details: ImageDetails | None = None
     ) -> None:
         licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
-        for item in license_statuses:
-            licenses_per_package_map[get_package_alias(item["package_name"], item["package_version"])].append(item["license"])
+
+        for license_status in license_statuses:
+            # filling 'licenses_per_package_map', will be used in the call to 'create_report_cve_record' for efficient
+            # extracting of license per package
+            package_name, package_version, license = license_status["package_name"], license_status["package_version"], license_status["license"]
+            licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
+
+            license_record = create_report_license_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=scanned_file_path,
+                check_class=self._check_class,
+                licenses_status=license_status
+            )
+            report.add_record(license_record)
 
         vulnerable_packages = []
 
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
-            record = create_report_record(
+            cve_record = create_report_cve_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
@@ -151,22 +163,23 @@ class Runner(BaseRunner):
                 runner_filter=runner_filter,
                 image_details=image_details
             )
-            if not runner_filter.should_run_check(check_id=record.check_id, bc_check_id=record.bc_check_id,
-                                                  severity=record.severity):
+            if not runner_filter.should_run_check(check_id=cve_record.check_id, bc_check_id=cve_record.bc_check_id,
+                                                  severity=cve_record.severity):
                 if runner_filter.checks:
                     continue
                 else:
-                    record.check_result = {
+                    cve_record.check_result = {
                         "result": CheckResult.SKIPPED,
                         "suppress_comment": f"{vulnerability['id']} is skipped"
                     }
 
-            report.add_resource(record.resource)
-            report.add_record(record)
+            report.add_resource(cve_record.resource)
+            report.add_record(cve_record)
             vulnerable_packages.append(get_package_alias(package_name, package_version))
 
         for package in packages:
             if get_package_alias(package["name"], package["version"]) not in vulnerable_packages:
+                # adding resources without cves for adding them also in the output-bom-repors
                 report.extra_resources.add(
                     ExtraResource(
                         file_abs_path=scanned_file_path,
