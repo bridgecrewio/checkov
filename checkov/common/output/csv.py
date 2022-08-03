@@ -110,7 +110,7 @@ class CSVSBOM:
             "Severity": severity,
         }
 
-        if resource.details:
+        if isinstance(resource, Record) and resource.details:
             self.iac_rows_have_details = True
             row["Details"] = "|".join(resource.details)
 
