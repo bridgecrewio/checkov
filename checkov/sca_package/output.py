@@ -58,12 +58,12 @@ def create_report_record(
     vulnerability_details: dict[str, Any],
     licenses: str,
     runner_filter: RunnerFilter | None = None,
-    image_details: ImageDetails | None = ImageDetails
+    image_details: ImageDetails | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
-    if hasattr(image_details, 'package_types'):
+    if image_details:
         package_type = image_details.package_types.get(f'{package_name}@{package_version}', '')
     else:
         package_type = ''
