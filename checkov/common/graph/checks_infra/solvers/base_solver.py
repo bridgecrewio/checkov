@@ -7,7 +7,7 @@ from checkov.common.graph.checks_infra.enums import SolverType
 
 
 class BaseSolver:
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, solver_type: SolverType) -> None:
         self.solver_type = solver_type

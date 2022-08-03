@@ -1,4 +1,6 @@
 import os
+import platform
+
 import pytest
 import time
 
@@ -14,19 +16,32 @@ from checkov.terraform.runner import Runner as tf_runner
 performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
-        'threshold': 13.0
+        'threshold': {
+            "Darwin": 18.0,
+            "Linux": 12.0,
+            "Windows": 14.0,
+        }
     },
     'cloudformation': {
         'repo_name': 'aws-cloudformation-templates',
-        'threshold': 300.0
+        'threshold': {
+            "Darwin": 350.0,
+            "Linux": 250.0,
+            "Windows": 300.0,
+        }
     },
     'kubernetes': {
         'repo_name': 'kubernetes-yaml-templates',
-        'threshold': 400.0
+        'threshold': {
+            "Darwin": 550.0,
+            "Linux": 300.0,
+            "Windows": 500.0,
+        }
     }
 }
 
-deviation_percent = 10
+DEVIATION_PERCENT = 10
+SYSTEM_NAME = platform.system()
 
 
 @pytest.mark.benchmark(
@@ -34,13 +49,13 @@ deviation_percent = 10
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
-    min_rounds=5,
+    min_rounds=10,
     timer=time.time,
     warmup=False,
 )
 def test_terraform_performance(benchmark):
     repo_name = performance_configurations['terraform']['repo_name']
-    repo_threshold = performance_configurations['terraform']['threshold']
+    repo_threshold = performance_configurations['terraform']['threshold'][SYSTEM_NAME]
 
     def run_terraform_scan():
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -51,7 +66,7 @@ def test_terraform_performance(benchmark):
         assert len(reports) > 0
 
     benchmark(run_terraform_scan)
-    assert benchmark.stats.stats.mean <= repo_threshold + (deviation_percent / 100.0) * repo_threshold
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100.0) * repo_threshold
 
 
 @pytest.mark.benchmark(
@@ -65,7 +80,7 @@ def test_terraform_performance(benchmark):
 )
 def test_cloudformation_performance(benchmark):
     repo_name = performance_configurations['cloudformation']['repo_name']
-    repo_threshold = performance_configurations['cloudformation']['threshold']
+    repo_threshold = performance_configurations['cloudformation']['threshold'][SYSTEM_NAME]
 
     def run_cloudformation_scan():
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -76,7 +91,7 @@ def test_cloudformation_performance(benchmark):
         assert len(reports) > 0
 
     benchmark(run_cloudformation_scan)
-    assert benchmark.stats.stats.mean <= repo_threshold + (deviation_percent / 100) * repo_threshold
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
 
 
 @pytest.mark.benchmark(
@@ -90,7 +105,7 @@ def test_cloudformation_performance(benchmark):
 )
 def test_k8_performance(benchmark):
     repo_name = performance_configurations['kubernetes']['repo_name']
-    repo_threshold = performance_configurations['kubernetes']['threshold']
+    repo_threshold = performance_configurations['kubernetes']['threshold'][SYSTEM_NAME]
 
     def run_kubernetes_scan():
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -101,4 +116,4 @@ def test_k8_performance(benchmark):
         assert len(reports) > 0
 
     benchmark(run_kubernetes_scan)
-    assert benchmark.stats.stats.mean <= repo_threshold + (deviation_percent / 100) * repo_threshold
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold

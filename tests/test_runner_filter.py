@@ -17,6 +17,7 @@ from checkov.runner_filter import RunnerFilter
             ["all"],
             ["terraform", "secrets"],
             {
+                "argo_workflows",
                 "arm",
                 "bicep",
                 "cloudformation",
@@ -33,6 +34,7 @@ from checkov.runner_filter import RunnerFilter
                 "gitlab_ci",
                 "bitbucket_configuration",
                 "bitbucket_pipelines",
+                "circleci_pipelines",
                 "kustomize",
                 "sca_package",
                 "openapi",

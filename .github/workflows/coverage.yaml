@@ -8,18 +8,19 @@ on:
 jobs:
   update-coverage:
     runs-on: [ self-hosted, public, linux, x64 ]
+    environment: release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5.0.0
+        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@c4e89fac7e8767b327bbad6cb4d859eda999cf08  # v4
         with:
           python-version: 3.7
       - uses: imranismail/setup-kustomize@v1

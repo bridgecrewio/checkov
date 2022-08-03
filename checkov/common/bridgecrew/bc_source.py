@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 
 class SourceType:
+    __slots__ = ("name", "upload_results")
+
     def __init__(self, name: str, upload_results: bool):
         self.name = name
         self.upload_results = upload_results

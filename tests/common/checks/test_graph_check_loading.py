@@ -16,6 +16,8 @@ class TestGraphChecks(unittest.TestCase):
         runner_filter = RunnerFilter()
         for check in registry.checks:
             self.assertFalse(runner_filter.is_external_check(check))
+            # The BC ID should not be populated with a CKV2 ID
+            self.assertIsNone(check.bc_id)
 
     def test_external_graph_check_load(self):
         runner = Runner()

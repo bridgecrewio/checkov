@@ -1,0 +1,9 @@
+metadata:
+  id: "StringLengthGreaterThan"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: description
+  operator: length_greater_than
+  value: "15"

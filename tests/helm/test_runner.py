@@ -40,6 +40,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.check_type, CheckType.HELM)
         for record in all_checks:
             self.assertIn(record.repo_file_path, record.file_path)
+        for resource in report.resources:
+            self.assertIn('/infrastructure/helm-tiller/pwnchart/templates', resource)
 
 
 if __name__ == "__main__":

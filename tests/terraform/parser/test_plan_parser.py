@@ -38,6 +38,15 @@ class TestPlanFileParser(unittest.TestCase):
         self.assertFalse(resource_attributes['metadata'][0]['c'][0])
         self.assertFalse(resource_attributes['metadata'][0]['d'][0])
 
+    def test_encodings(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        plan_files = ['tfplan_mac_utf8.json', 'tfplan_win_utf8.json', 'tfplan_win_utf16.json']
+
+        for plan_file in plan_files:
+            plan_path = os.path.join(current_dir, "resources", "plan_encodings", plan_file)
+            tf_definition, _ = parse_tf_plan(plan_path, {})
+            self.assertEqual(list(tf_definition['resource'][0].keys())[0], "aws_s3_bucket")
+
 
 if __name__ == '__main__':
     unittest.main()

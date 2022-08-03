@@ -56,9 +56,9 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 curr_md.module_link = match.group('LINK')
                                 continue
 
-                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"[^\\d]*(?P<VERSION>.*)"'), line)
+                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"(?P<operator>=|!=|>=|>|<=|<|~>)?\\s*(?P<version>[\\d.]+-?\\w*)"'), line)
                             if match:
-                                curr_md.version = match.group('VERSION')
+                                curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
                     logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
                     continue
@@ -70,9 +70,11 @@ def should_download(path: str) -> bool:
     return not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
 
 
-def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download, run_parallel=False):
+def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download, run_parallel=False,
+                    modules_to_load: List[ModuleDownload] = None):
     module_loader_registry.root_dir = path
-    modules_to_load = find_modules(path)
+    if not modules_to_load:
+        modules_to_load = find_modules(path)
 
     def _download_module(m):
         if should_download_module(m.module_link):

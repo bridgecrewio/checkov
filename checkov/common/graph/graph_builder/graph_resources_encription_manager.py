@@ -6,13 +6,13 @@ from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
 @dataclass
 class EncryptionResult:
-    enctypted: bool
+    encrypted: str
     reason: str
 
 
 class GraphResourcesEncryptionManager():
     def __init__(self) -> None:
-        self._encription_by_resource_type: Dict[str, Any] = None
+        self._encription_by_resource_type: Dict[str, Any] = {}
 
     def set_encription_by_resource_type(self, encription_by_resource_type: Dict[str, Any]) -> None:
         self._encription_by_resource_type = encription_by_resource_type
@@ -25,5 +25,5 @@ class GraphResourcesEncryptionManager():
         attributes = vertex.get_attribute_dict()
         is_encrypted, reason = encryption_conf.is_encrypted(attributes)
         # TODO: Does not support possible dependency (i.e. S3 Object being encrypted due to S3 Bucket config)
-        enctypted = (EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value)
-        return EncryptionResult(enctypted, reason)
+        encrypted = (EncryptionValues.ENCRYPTED.value if is_encrypted else EncryptionValues.UNENCRYPTED.value)
+        return EncryptionResult(encrypted, reason)

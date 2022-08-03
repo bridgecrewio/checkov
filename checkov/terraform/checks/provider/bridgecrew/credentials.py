@@ -2,6 +2,7 @@ import re
 from typing import Dict, List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.terraform.checks.provider.base_check import BaseProviderCheck
 from checkov.common.models.consts import bridgecrew_token_pattern
 
@@ -19,11 +20,11 @@ class BridgecrewCredentials(BaseProviderCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
-    @staticmethod
-    def secret_found(conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
+    def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
             value = conf[field][0]
             if re.match(pattern, value) is not None:
+                conf[f'{self.id}_secret'] = value
                 return True
         return False
 

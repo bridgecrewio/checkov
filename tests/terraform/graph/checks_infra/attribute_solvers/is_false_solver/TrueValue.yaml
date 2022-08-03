@@ -1,0 +1,11 @@
+metadata:
+  id: "TrueValue"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_neptune_cluster"
+  attribute: "skip_final_snapshot"
+  operator: "is_false"
+

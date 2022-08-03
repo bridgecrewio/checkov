@@ -31,9 +31,11 @@ class K8sKustomizeRunner(K8sRunner):
                  source: str = "Kubernetes",
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
+
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.report_mutator_data = {}
         self.check_type = CheckType.KUSTOMIZE
+        self.pbar.turn_off_progress_bar()
 
     def set_external_data(self,
                           definitions: Optional[Dict[str, Dict[str, Any]]],
@@ -51,20 +53,21 @@ class K8sKustomizeRunner(K8sRunner):
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'], 
+        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'],
         kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
             entity_context = self.context[k8_file][resource_id]
-            
-            if file_abs_path in kustomizeFileMappings:
-                realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[file_abs_path]]
-                if 'overlay' in realKustomizeEnvMetadata["type"]:
-                    kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
-                else:
-                    kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
-            else: 
-                kustomizeResourceID = "Unknown error. This is a bug."
+
+            if file_abs_path not in kustomizeFileMappings:
+                logging.warning(f"couldn't find {file_abs_path} path in kustomizeFileMappings")
+                continue
+
+            realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[file_abs_path]]
+            if 'overlay' in realKustomizeEnvMetadata["type"]:
+                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
+            else:
+                kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
@@ -109,8 +112,9 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
-                else: 
-                    kustomizeResourceID = "Unknown error. This is a bug."
+                else:
+                    logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
+                    continue
                 code_lines = entity_context.get("code_lines")
                 file_line_range = self.line_range(code_lines)
 
@@ -155,25 +159,6 @@ class Runner(BaseRunner):
     def get_kustomize_metadata(self):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
-
-    @staticmethod
-    def _findKustomizeDirectories(root_folder, files, excluded_paths):
-        kustomizeDirectories = []
-        if not excluded_paths:
-            excluded_paths = []
-        if files:
-            logging.info('Running with --file argument; file must be a kustomization.yaml file')
-            for file in files:
-                if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
-                    kustomizeDirectories.append(os.path.dirname(file))
-
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, excluded_paths)
-                filter_ignored_paths(root, f_names, excluded_paths)
-                [kustomizeDirectories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
-
-        return kustomizeDirectories
 
     def _parseKustomization(self, parseKustomizationData):
         # We may have multiple results for "kustomization.yaml" files. These could be:
@@ -394,12 +379,12 @@ class Runner(BaseRunner):
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
-        kustomizeDirectories = self._findKustomizeDirectories(root_folder, files, runner_filter.excluded_paths)
+        kustomizeDirectories = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)
         for kustomizedir in kustomizeDirectories:
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         self.target_folder_path = tempfile.mkdtemp()
         for filePath in self.kustomizeProcessedFolderAndMeta:    
-            if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
+            if self.kustomizeProcessedFolderAndMeta[filePath].get('type') == 'overlay':
                 self._handle_overlay_case(filePath)
         
         if platform.system() == 'Windows':
@@ -428,6 +413,9 @@ class Runner(BaseRunner):
         self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
 
     def run(self, root_folder, external_checks_dir=None, files=None, runner_filter=RunnerFilter(), collect_skip_comments=True):
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
         try:
@@ -483,3 +471,22 @@ class Runner(BaseRunner):
                     raise Exception(f'Not a valid Kubernetes manifest (no apiVersion) while parsing Kustomize template: {FilePath}. Templated output: {currentFileName}.')
         except IsADirectoryError:
             pass
+
+
+def find_kustomize_directories(root_folder, files, excluded_paths):
+    kustomize_directories = []
+    if not excluded_paths:
+        excluded_paths = []
+    if files:
+        logging.info('Running with --file argument; file must be a kustomization.yaml file')
+        for file in files:
+            if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
+                kustomize_directories.append(os.path.dirname(file))
+
+    if root_folder:
+        for root, d_names, f_names in os.walk(root_folder):
+            filter_ignored_paths(root, d_names, excluded_paths)
+            filter_ignored_paths(root, f_names, excluded_paths)
+            [kustomize_directories.append(os.path.abspath(root)) for x in f_names if x in Runner.kustomizeSupportedFileTypes]
+
+        return kustomize_directories

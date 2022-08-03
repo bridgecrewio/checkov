@@ -117,6 +117,7 @@ class TestCfnUtils(unittest.TestCase):
                     "id": "CKV_AWS_16",
                     "suppress_comment": "Ensure all data stored in the RDS is securely encrypted at rest",
                     "bc_id": "BC_AWS_GENERAL_4",
+                    "line_number": 30
                 },
                 {
                     "id": "CKV_AWS_17",

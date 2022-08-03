@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import itertools
 from collections import defaultdict
@@ -15,11 +17,13 @@ from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY
-from checkov.common.typing import _CheckResult
+from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.typing import _CheckResult, _LicenseStatus
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -47,19 +51,76 @@ class CveCount:
         ]
 
 
-def create_report_record(
-    rootless_file_path: str, file_abs_path: str, check_class: str, vulnerability_details: Dict[str, Any],
-    runner_filter: RunnerFilter = RunnerFilter()
+def create_report_license_record(
+    rootless_file_path: str,
+    file_abs_path: str,
+    check_class: str,
+    licenses_status: _LicenseStatus,
 ) -> Record:
+    package_name = licenses_status["package_name"]
+    package_version = licenses_status["package_version"]
+
+    check_result: _CheckResult = {
+        "result": CheckResult.FAILED,
+    }
+
+    policy = licenses_status["policy"]
+    status = licenses_status["status"]
+
+    if status == "COMPLIANT":
+        check_result = {
+            "result": CheckResult.PASSED,
+        }
+
+    code_block = [(0, f"{package_name}: {package_version}")]
+
+    details = {
+        "package_name": package_name,
+        "package_version": package_version,
+        "license": licenses_status["license"],
+        "status": status,
+        "policy": policy,
+    }
+
+    record = Record(
+        check_id=policy,
+        bc_check_id=policy,
+        check_name=SCA_LICENSE_CHECK_NAME,
+        check_result=check_result,
+        code_block=code_block,
+        file_path=get_file_path_for_record(rootless_file_path),
+        file_line_range=[0, 0],
+        resource=get_resource_for_record(rootless_file_path, package_name),
+        check_class=check_class,
+        evaluations=None,
+        file_abs_path=file_abs_path,
+        vulnerability_details=details,
+    )
+    return record
+
+
+def create_report_cve_record(
+    rootless_file_path: str,
+    file_abs_path: str,
+    check_class: str,
+    vulnerability_details: dict[str, Any],
+    licenses: str,
+    runner_filter: RunnerFilter | None = None,
+    image_details: ImageDetails | None = None
+) -> Record:
+    runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
+    if image_details:
+        package_type = image_details.package_types.get(f'{package_name}@{package_version}', '')
+    else:
+        package_type = ''
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
     if severity == "moderate":
         severity = "medium"
     description = vulnerability_details.get("description")
-    resource = f"{rootless_file_path}.{package_name}"
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
@@ -82,11 +143,14 @@ def create_report_record(
     fixed_versions: List[Union[packaging_version.Version, packaging_version.LegacyVersion]] = []
     status = vulnerability_details.get("status") or "open"
     if status != "open":
-        fixed_versions = [
-            packaging_version.parse(version.strip()) for version in status.replace("fixed in", "").split(",")
-        ]
-        lowest_fixed_version = str(min(fixed_versions))
+        parsed_current_version = packaging_version.parse(package_version)
+        for version in status.replace("fixed in", "").split(","):
+            parsed_version = packaging_version.parse(version.strip())
+            if parsed_version > parsed_current_version:
+                fixed_versions.append(parsed_version)
 
+        if fixed_versions:
+            lowest_fixed_version = str(min(fixed_versions))
 
     details = {
         "id": cve_id,
@@ -94,6 +158,8 @@ def create_report_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
+        "package_type": package_type,
+        "image_details": image_details,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
@@ -103,17 +169,18 @@ def create_report_record(
         or (datetime.now() - timedelta(days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "lowest_fixed_version": lowest_fixed_version,
         "fixed_versions": fixed_versions,
+        "licenses": licenses,
     }
 
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
         bc_check_id=f"BC_{cve_id.replace('-', '_')}",
-        check_name="SCA package scan",
+        check_name=SCA_PACKAGE_SCAN_CHECK_NAME,
         check_result=check_result,
         code_block=code_block,
-        file_path=f"/{rootless_file_path}",
+        file_path=get_file_path_for_record(rootless_file_path),
         file_line_range=[0, 0],
-        resource=resource,
+        resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
@@ -179,6 +246,8 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
             fix_versions_lists = []
 
             for record in records:
+                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 cve_count.total += 1
 
                 if record.check_result["result"] == CheckResult.SKIPPED:
@@ -276,14 +345,15 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
 
 
 def create_fixable_cve_summary_table_part(
-    table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
+        table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
         header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
-        fixable_table.add_row([f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+        fixable_table.add_row(
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -297,7 +367,7 @@ def create_fixable_cve_summary_table_part(
 
 
 def create_package_overview_table_part(
-    table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
+        table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
@@ -356,9 +426,9 @@ def create_package_overview_table_part(
 
 
 async def _report_results_to_bridgecrew_async(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     package_scanning_int = PackageScanningIntegration()
     args = [
@@ -381,8 +451,8 @@ async def _report_results_to_bridgecrew_async(
 
 
 def report_results_to_bridgecrew(
-    scan_results: "Iterable[Dict[str, Any]]",
-    bc_integration: BcPlatformIntegration,
-    bc_api_key: str
+        scan_results: "Iterable[Dict[str, Any]]",
+        bc_integration: BcPlatformIntegration,
+        bc_api_key: str
 ) -> "Sequence[int]":
     return asyncio.run(_report_results_to_bridgecrew_async(scan_results, bc_integration, bc_api_key))

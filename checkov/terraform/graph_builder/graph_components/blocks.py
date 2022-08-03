@@ -8,6 +8,8 @@ from checkov.terraform.graph_builder.utils import remove_module_dependency_in_pa
 
 
 class TerraformBlock(Block):
+    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module")
+
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
                  id: str = "", source: str = "") -> None:
         """

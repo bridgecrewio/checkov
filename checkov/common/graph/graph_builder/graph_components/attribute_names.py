@@ -31,12 +31,12 @@ def props(cls: Any) -> List[str]:
 reserved_attribute_names = props(CustomAttributes)
 
 
-class EncryptionValues(Enum):
+class EncryptionValues(str, Enum):
     ENCRYPTED = "ENCRYPTED"
     UNENCRYPTED = "UNENCRYPTED"
 
 
-class EncryptionTypes(Enum):
+class EncryptionTypes(str, Enum):
     KMS_VALUE = "KMS"
     NODE_TO_NODE = "node-to-node"
     DEFAULT_KMS = "Default KMS"

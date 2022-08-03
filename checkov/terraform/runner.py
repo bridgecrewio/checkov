@@ -2,6 +2,8 @@ import copy
 import dataclasses
 import logging
 import os
+import platform
+from pathlib import Path
 from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
@@ -10,6 +12,7 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
@@ -18,6 +21,7 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -35,7 +39,6 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
 
-
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
@@ -50,7 +53,7 @@ class Runner(BaseRunner):
         db_connector: NetworkxConnector = NetworkxConnector(),
         external_registries: Optional[List[BaseRegistry]] = None,
         source: str = "Terraform",
-        graph_class: Type[LocalGraph] = TerraformLocalGraph,
+        graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: Optional[TerraformGraphManager] = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
@@ -61,8 +64,9 @@ class Runner(BaseRunner):
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(source=source,
-                                                                                                   db_connector=db_connector)
+        self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
+            source=source,
+            db_connector=db_connector)
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: Dict[str, Dict] = {}
         self.referrer_cache: Dict[str, str] = {}
@@ -76,13 +80,16 @@ class Runner(BaseRunner):
     }
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: str,
+            external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
+            runner_filter: RunnerFilter = RunnerFilter(),
+            collect_skip_comments: bool = True
     ) -> Report:
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         parsing_errors = {}
         self.load_external_checks(external_checks_dir)
@@ -121,10 +128,14 @@ class Runner(BaseRunner):
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, root_folder)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                    local_graph.vertices,
+                    root_folder,
+                )
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
+        self.pbar.initiate(len(self.definitions))  # type: ignore
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         report.add_parsing_errors(list(parsing_errors.keys()))
@@ -147,7 +158,9 @@ class Runner(BaseRunner):
         connected_entity = entity.get('connected_node')
         if not connected_entity:
             return None
-        connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(connected_entity)
+        connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(
+            connected_entity
+        )
         if not connected_entity_context:
             return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
@@ -163,7 +176,7 @@ class Runner(BaseRunner):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder, runner_filter: RunnerFilter):
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter)
 
@@ -181,6 +194,8 @@ class Runner(BaseRunner):
                             break
                     copy_of_check_result['entity'] = entity.get(CustomAttributes.CONFIG)
                     connected_node_data = self.get_connected_node(entity, root_folder)
+                    if platform.system() == "Windows":
+                        root_folder = os.path.split(full_file_path)[0]
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -232,7 +247,8 @@ class Runner(BaseRunner):
             logging.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
+    def check_tf_definition(self, report: Report, root_folder: Path, runner_filter: RunnerFilter,
+                            collect_skip_comments=True) -> None:
         parser_registry.reset_definitions_context()
         if not self.context:
             definitions_context = {}
@@ -242,11 +258,14 @@ class Runner(BaseRunner):
             logging.debug('Created definitions context')
 
         for full_file_path, definition in self.definitions.items():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
             abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
+            self.pbar.update()
+        self.pbar.close()
 
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
                        scanned_file, runner_filter, module_referrer: Optional[str]):
@@ -273,7 +292,7 @@ class Runner(BaseRunner):
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
-            entity_id = ".".join(definition_path)       # example: aws_s3_bucket.my_bucket
+            entity_id = ".".join(definition_path)  # example: aws_s3_bucket.my_bucket
 
             caller_file_path = None
             caller_file_line_range = None
@@ -282,7 +301,7 @@ class Runner(BaseRunner):
                 referrer_id = self._find_id_for_referrer(full_file_path)
 
                 if referrer_id:
-                    entity_id = f"{referrer_id}.{entity_id}"        # ex: module.my_module.aws_s3_bucket.my_bucket
+                    entity_id = f"{referrer_id}.{entity_id}"  # ex: module.my_module.aws_s3_bucket.my_bucket
                     abs_caller_file = module_referrer[:module_referrer.rindex("#")]
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
@@ -308,7 +327,10 @@ class Runner(BaseRunner):
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
             try:
-                entity_context = data_structures_utils.get_inner_dict(definition_context[full_file_path], entity_context_path)
+                entity_context = data_structures_utils.get_inner_dict(
+                    definition_context[full_file_path],
+                    entity_context_path,
+                )
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 skipped_checks = entity_context.get('skipped_checks')
@@ -332,34 +354,48 @@ class Runner(BaseRunner):
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
-            for check, check_result in results.items():
-                record = Record(
-                    check_id=check.id,
-                    bc_check_id=check.bc_id,
-                    check_name=check.name,
-                    check_result=check_result,
-                    code_block=entity_code_lines,
-                    file_path=scanned_file,
-                    file_line_range=entity_lines_range,
-                    resource=entity_id,
-                    evaluations=entity_evaluations,
-                    check_class=check.__class__.__module__,
-                    file_abs_path=absolut_scanned_file_path,
-                    entity_tags=tags,
-                    caller_file_path=caller_file_path,
-                    caller_file_line_range=caller_file_line_range,
-                    severity=check.severity,
-                    bc_category=check.bc_category,
-                    benchmarks=check.benchmarks
-                )
+            if results:
+                for check, check_result in results.items():
+                    censored_code_lines = omit_secret_value_from_checks(check, check_result, entity_code_lines,
+                                                                        entity_config)
+                    record = Record(
+                        check_id=check.id,
+                        bc_check_id=check.bc_id,
+                        check_name=check.name,
+                        check_result=check_result,
+                        code_block=censored_code_lines,
+                        file_path=scanned_file,
+                        file_line_range=entity_lines_range,
+                        resource=entity_id,
+                        evaluations=entity_evaluations,
+                        check_class=check.__class__.__module__,
+                        file_abs_path=absolut_scanned_file_path,
+                        entity_tags=tags,
+                        caller_file_path=caller_file_path,
+                        caller_file_line_range=caller_file_line_range,
+                        severity=check.severity,
+                        bc_category=check.bc_category,
+                        benchmarks=check.benchmarks
+                    )
 
-                if CHECKOV_CREATE_GRAPH:
-                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get('.'.join([entity_type, entity_name]))
-                    if breadcrumb:
-                        record = GraphRecord(record, breadcrumb)
+                    if CHECKOV_CREATE_GRAPH:
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
+                            '.'.join([entity_type, entity_name]))
+                        if breadcrumb:
+                            record = GraphRecord(record, breadcrumb)
 
-                record.set_guideline(check.guideline)
-                report.add_record(record=record)
+                    record.set_guideline(check.guideline)
+                    report.add_record(record=record)
+            else:
+                if block_type == "resource":
+                    # resources without checks, but not existing ones
+                    report.extra_resources.add(
+                        ExtraResource(
+                            file_abs_path=absolut_scanned_file_path,
+                            file_path=scanned_file,
+                            resource=entity_id,
+                        )
+                    )
 
     def _parse_files(self, files, scan_hcl, parsing_errors):
         def parse_file(file):
@@ -414,7 +450,8 @@ class Runner(BaseRunner):
                     for resource_name in definition_context[definition][next_type][resource_type]:
                         # append the skipped checks from the module to the other resources.
                         # this could also be from a module to another module.
-                        self.context[definition][next_type][resource_type][resource_name]["skipped_checks"] += skipped_checks
+                        self.context[definition][next_type][resource_type][resource_name][
+                            "skipped_checks"] += skipped_checks
 
     @staticmethod
     def _strip_module_referrer(file_path: str) -> Tuple[str, Optional[str]]:

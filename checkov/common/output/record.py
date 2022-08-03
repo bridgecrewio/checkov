@@ -4,6 +4,7 @@ import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
+from enum import Enum
 
 from colorama import init, Fore, Style
 from termcolor import colored
@@ -16,11 +17,14 @@ from checkov.common.util.type_forcers import force_int
 
 init(autoreset=True)
 
+ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
+CURRENT_LOCAL_DRIVE = Path.cwd().drive
 DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratings
-
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
-ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
+SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
+SCA_LICENSE_CHECK_NAME = "SCA license"
+
 
 class Record:
     def __init__(
@@ -84,7 +88,7 @@ class Record:
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
         # matches file paths given in the BC platform and should always be a unix path
         repo_file_path = Path(file_path)
-        if Path.cwd().drive == repo_file_path.drive:
+        if CURRENT_LOCAL_DRIVE == repo_file_path.drive:
             return convert_to_unix_path(f"/{os.path.relpath(repo_file_path)}").replace("/..", "")
 
         return f"/{'/'.join(repo_file_path.parts[1:])}"

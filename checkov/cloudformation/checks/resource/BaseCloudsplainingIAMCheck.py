@@ -47,6 +47,8 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                     if not policy_statement:
                         # When using unresolved Cfn functions, policy is an str
                         policy_doc = policy[policy_doc_key]
+                        if not isinstance(policy_doc, dict):
+                            return CheckResult.UNKNOWN
                         converted_policy_doc = convert_cloudformation_conf_to_iam_policy(policy_doc)
                         statement_key = 'Statement'
                         if statement_key in converted_policy_doc:

@@ -6,14 +6,15 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_table,
-    create_report_record,
+    create_report_cve_record,
+    create_report_license_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,
 )
 
 
-def test_create_report_record():
+def test_create_report_cve_record():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -26,7 +27,7 @@ def test_create_report_record():
         "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
         "severity": "critical",
         "packageName": "django",
-        "packageVersion": "1.2",
+        "packageVersion": "1.12",
         "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
         "riskFactors": ["Attack complexity: low", "Attack vector: network", "Critical severity", "Has fix"],
         "impactedVersions": ["<1.11.27"],
@@ -36,11 +37,12 @@ def test_create_report_record():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
+        licenses='OSI_BDS',
     )
 
     # then
@@ -49,7 +51,7 @@ def test_create_report_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.2")]
+    assert record.code_block == [(0, "django: 1.12")]
     assert (
         record.description
         == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
@@ -60,16 +62,16 @@ def test_create_report_record():
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
     assert record.severity == Severities[BcSeverities.CRITICAL]
-    assert record.short_description == "CVE-2019-19844 - django: 1.2"
-    assert record.vulnerability_details["lowest_fixed_version"] == "1.11.27"
+    assert record.short_description == "CVE-2019-19844 - django: 1.12"
+    assert record.vulnerability_details["lowest_fixed_version"] == "2.2.9"
     assert record.vulnerability_details["fixed_versions"] == [
         packaging_version.parse("3.0.1"),
         packaging_version.parse("2.2.9"),
-        packaging_version.parse("1.11.27"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_moderate_severity():
+def test_create_report_cve_record_moderate_severity():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -92,18 +94,19 @@ def test_create_report_record_moderate_severity():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
+        licenses='OSI_BDS',
     )
 
     # then
     assert record.severity == Severities[BcSeverities.MEDIUM]
 
 
-def test_create_report_record_severity_filter():
+def test_create_report_cve_record_severity_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -126,12 +129,13 @@ def test_create_report_record_severity_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(checks=['HIGH'])
+        runner_filter=RunnerFilter(checks=['HIGH']),
+        licenses='OSI_BDS',
     )
 
     # then
@@ -158,9 +162,10 @@ def test_create_report_record_severity_filter():
         packaging_version.parse("2.2.9"),
         packaging_version.parse("1.11.27"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
-def test_create_report_record_package_filter():
+def test_create_report_cve_record_package_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -183,12 +188,13 @@ def test_create_report_record_package_filter():
     }
 
     # when
-    record = create_report_record(
+    record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        runner_filter=RunnerFilter(skip_cve_package=['django', 'requests'])
+        runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
+        licenses='OSI_BDS',
     )
 
     # then
@@ -215,6 +221,7 @@ def test_create_report_record_package_filter():
         packaging_version.parse("2.2.9"),
         packaging_version.parse("1.11.27"),
     ]
+    assert record.vulnerability_details["licenses"] == 'OSI_BDS'
 
 
 def test_calculate_lowest_compliant_version():
@@ -237,7 +244,7 @@ def test_calculate_lowest_compliant_version():
     assert compliant_version == "2.2.24"
 
 
-def test_create_cli_table():
+def test_create_cli_cves_table():
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
@@ -366,22 +373,47 @@ def test_create_cli_output():
             "fixDate": "2016-08-05T17:59:00+02:00",
         },
     ]
-
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "OSI_BDS",
+            "status": "COMPLIANT",
+            "policy": "BC_LIC_1"
+        },
+        {
+            "package_name": "flask",
+            "package_version": "0.6",
+            "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+            "status": "OPEN",
+            "policy": "BC_LIC_1"
+        }
+    ]
     # when
-    records = [
-        create_report_record(
+    cves_records = [
+        create_report_cve_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=file_abs_path,
             check_class=check_class,
             vulnerability_details=details,
+            licenses='Unknown',
         )
         for details in vulnerabilities_details
     ]
-
-    # when
-    cli_output = create_cli_output(True, records)
+    license_records = [
+            create_report_license_record(
+                rootless_file_path=rootless_file_path,
+                file_abs_path=file_abs_path,
+                check_class=check_class,
+                licenses_status=license_status
+            )
+            for license_status in license_statuses
+        ]
+    cli_output_without_lisence_records = create_cli_output(True, cves_records)
+    cli_output = create_cli_output(True, cves_records + license_records)
 
     # then
+    assert cli_output_without_lisence_records == cli_output
     assert cli_output == "".join(
         [
             "\t/requirements.txt\n",

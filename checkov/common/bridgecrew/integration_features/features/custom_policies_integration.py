@@ -18,7 +18,7 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
+        super().__init__(bc_integration, order=1)  # must be after policy metadata
         self.platform_policy_parser = NXGraphCheckParser()
         self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: Dict[str, List[dict]] = defaultdict(list)
@@ -44,11 +44,13 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
+                        policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
+                    check.bc_id = check.id
                     if check.frameworks:
                         for f in check.frameworks:
                             if f.lower() == "cloudformation":

@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Any, Optional
 import dpath
 
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.plan_parser import parse_tf_plan
+from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
@@ -42,8 +42,9 @@ def create_definitions(
         for file in files:
             if file.endswith(".json"):
                 current_tf_definitions, current_definitions_raw = parse_tf_plan(file, out_parsing_errors)
-                tf_definitions[file] = current_tf_definitions
-                definitions_raw[file] = current_definitions_raw
+                if current_tf_definitions and current_definitions_raw:
+                    tf_definitions[file] = current_tf_definitions
+                    definitions_raw[file] = current_definitions_raw
             else:
                 logging.debug(f'Failed to load {file} as is not a .json file, skipping')
     return tf_definitions, definitions_raw
@@ -84,6 +85,6 @@ def get_entity_context(definitions, definitions_raw, definition_path, full_file_
                 entity_context['end_line'] = resource_defintion['end_line'][0]
                 entity_context["code_lines"] = definitions_raw[full_file_path][
                                                entity_context["start_line"]: entity_context["end_line"]]
-                entity_context['address'] = resource_defintion['__address__']
+                entity_context['address'] = resource_defintion[TF_PLAN_RESOURCE_ADDRESS]
                 return entity_context
     return entity_context

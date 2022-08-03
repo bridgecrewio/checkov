@@ -1,10 +1,17 @@
+from __future__ import annotations
+
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+
+
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.GITLAB_CI
+    check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
+
+    def __init__(self):
+        super().__init__()
 
     def require_external_checks(self):
         return False
@@ -25,7 +32,7 @@ class Runner(YamlRunner, ImageReferencer):
     def included_paths(self):
         return [".gitlab-ci.yml",".gitlab-ci.yaml"]
 
-    def get_images(self, file_path):
+    def get_images(self, file_path: str) -> set[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -55,12 +62,13 @@ class Runner(YamlRunner, ImageReferencer):
         imagesKeys = ["image","services"]
         workflow, workflow_line_numbers = self._parse_file(file_path)
 
-        for job_name, job_object in workflow.items():
+        for job_object in workflow.values():
             if isinstance(job_object, dict):
                 start_line = job_object.get('__startline__', 0)
                 end_line = job_object.get('__endline__', 0)
                 for key, subjob in job_object.items():
                     if key in imagesKeys:
+                        imagename = ""
                         if isinstance(subjob, dict):
                             start_line = subjob.get('__startline__', 0)
                             end_line = subjob.get('__endline__', 0)
@@ -76,17 +84,21 @@ class Runner(YamlRunner, ImageReferencer):
                                 elif isinstance(service, str):
                                     imagename = service
                                 if imagename:
-                                    image_id = self.inspect(imagename)
-                                    if image_id:
-                                        image_obj = Image(file_path=file_path, name=imagename, image_id=image_id, start_line=start_line,
-                                                        end_line=end_line)
-                                        images.add(image_obj)
+                                    image_obj = Image(
+                                        file_path=file_path,
+                                        name=imagename,
+                                        start_line=start_line,
+                                        end_line=end_line,
+                                    )
+                                    images.add(image_obj)
                                     imagename = ""      
                         if imagename:
-                            image_id = self.inspect(imagename)
-                            if image_id:
-                                image_obj = Image(file_path=file_path, name=imagename, image_id=image_id, start_line=start_line,
-                                                  end_line=end_line)
-                                images.add(image_obj)
+                            image_obj = Image(
+                                file_path=file_path,
+                                name=imagename,
+                                start_line=start_line,
+                                end_line=end_line,
+                            )
+                            images.add(image_obj)
                             imagename = ""
         return images

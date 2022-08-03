@@ -124,7 +124,7 @@ def validating_webhook():
 def todict(obj):
     if hasattr(obj, 'attribute_map'):
         result = {}
-        for k, v in getattr(obj, 'attribute_map').items():
+        for k, v in obj.attribute_map.items():
             val = getattr(obj, k)
             if val is not None:
                 result[v] = todict(val)

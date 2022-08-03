@@ -10,7 +10,7 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 
 class Runner(ObjectRunner):
-    check_type = CheckType.JSON
+    check_type = CheckType.JSON  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
@@ -20,14 +20,20 @@ class Runner(ObjectRunner):
         from checkov.json_doc.registry import registry
         return registry
 
-    def _parse_file(self, f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(  # type:ignore[override]  # expected behaviour but should be aligned
+        self, f: str
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None:
         if not f.endswith(".json"):
             return None
 
-        content: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = parse(f)
+        content: tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] = parse(f)
         return content
 
-    def get_start_end_lines(self, end: int, result_config: DictNode, start: int) -> tuple[int, int]:
+    def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
+        if not isinstance(result_config, DictNode):
+            # shouldn't happen
+            return 0, 0
+
         start = result_config.start_mark.line
         end = result_config.end_mark.line
         return end, start

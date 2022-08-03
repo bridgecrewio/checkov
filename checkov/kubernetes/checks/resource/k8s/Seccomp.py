@@ -42,6 +42,12 @@ class Seccomp(BaseK8Check):
                         if "template" in conf["spec"]["jobTemplate"]["spec"]:
                             if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["metadata"]
+                            elif "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
+                                if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]:
+                                    metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]["metadata"]
+                                elif "securityContext" in conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]:
+                                    security_profile = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]["securityContext"].get("seccompProfile", {}).get("type")
+                                    return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
         else:
             inner_metadata = self.get_inner_entry(conf, "metadata")
             metadata = inner_metadata if inner_metadata else metadata

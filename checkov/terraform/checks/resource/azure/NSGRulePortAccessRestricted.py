@@ -78,7 +78,9 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
                     or (
                         source_address_prefixes
                         and source_address_prefixes[0]
-                        and any(prefix.lower() in INTERNET_ADDRESSES for prefix in source_address_prefixes[0])
+                        and isinstance(source_address_prefixes[0], list)
+                        and any((isinstance(prefix, str) and prefix.lower()) in INTERNET_ADDRESSES for prefix in
+                                source_address_prefixes[0])
                     )
                 )
             ):
