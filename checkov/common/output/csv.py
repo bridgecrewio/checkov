@@ -10,6 +10,7 @@ from typing import Any, TYPE_CHECKING
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
+from checkov.common.output.cyclonedx_consts import ImageDetails
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -20,17 +21,23 @@ HEADER_OSS_PACKAGES = [
     "Package",
     "Version",
     "Path",
-    "git org",
-    "git repository",
+    "Git Org",
+    "Git Repository",
     "Vulnerability",
     "Severity",
     "Licenses",
 ]
-HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
+HEADER_CONTAINER_IMAGE = [
+    "Image ID",
+    "Path",
+    "Git Org",
+    "Git Repository",
+    "Image Distro",
+]
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
-HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
+HEADER_IAC = ["Resource", "Path", "Git Org", "Git Repository", "Misconfigurations", "Severity"]
 
 CTA_NO_API_KEY = (
     "SCA, image and runtime findings are only available with Bridgecrew. Signup at "
@@ -47,14 +54,16 @@ class CSVSBOM:
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
-        if report.check_type == CheckType.SCA_PACKAGE:
+        if report.check_type in [CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE]:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
                 self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository)
             for resource in report.extra_resources:
                 self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository)
-        elif report.check_type == CheckType.SCA_IMAGE:
-            # needs to be implemented separately
-            return
+            if report.check_type == CheckType.SCA_IMAGE:
+                for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
+                    self.add_container_image_resources(resource=record, git_org=git_org, git_repository=git_repository)
+                for resource in report.extra_resources:
+                    self.add_container_image_resources(resource=resource, git_org=git_org, git_repository=git_repository)
         else:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
                 self.add_iac_resources(resource=record, git_org=git_org, git_repository=git_repository)
@@ -78,11 +87,27 @@ class CSVSBOM:
                 "Package": resource.vulnerability_details["package_name"],
                 "Version": resource.vulnerability_details["package_version"],
                 "Path": resource.file_path,
-                "git org": git_org,
-                "git repository": git_repository,
+                "Git Org": git_org,
+                "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
                 "Licenses": resource.vulnerability_details.get("licenses"),
+            }
+        )
+
+    def add_container_image_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
+        if not resource.vulnerability_details:
+            # this shouldn't happen
+            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            return
+
+        self.container_rows.append(
+            {
+                "Image ID": resource.vulnerability_details.get("image_details", ImageDetails).image_id,
+                "Path": resource.file_path.split(' ')[0],
+                "Git Org": git_org,
+                "Git Repository": git_repository,
+                "Image Distro": resource.vulnerability_details.get("image_details", ImageDetails).distro
             }
         )
 
@@ -104,8 +129,8 @@ class CSVSBOM:
             {
                 "Resource": resource.resource,
                 "Path": resource.file_path,
-                "git org": git_org,
-                "git repository": git_repository,
+                "Git Org": git_org,
+                "Git Repository": git_repository,
                 "Misconfigurations": misconfig,
                 "Severity": severity,
             }
