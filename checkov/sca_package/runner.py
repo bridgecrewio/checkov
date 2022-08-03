@@ -132,7 +132,7 @@ class Runner(BaseRunner):
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
-        image_details: ImageDetails | None = ImageDetails
+        image_details: ImageDetails | None = None
     ) -> None:
         licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
