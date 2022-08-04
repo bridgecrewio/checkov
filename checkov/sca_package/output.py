@@ -60,7 +60,10 @@ def create_report_license_record(
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
     policy = licenses_status["policy"]
-    status = licenses_status["status"]
+    bc_status = licenses_status["status"]
+
+    # renaming the status name from the one in platform's report to be convenient with checkov's-report
+    status = "FAILED" if bc_status == "OPEN" else bc_status
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
