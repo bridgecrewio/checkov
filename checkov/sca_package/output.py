@@ -252,7 +252,8 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
                     else:
                         cve_count.to_fix += 1
 
-                    # best way to dynamically access an class instance attribute
+                    # best way to dynamically access an class instance attribute.
+                    # (we can't just do cve_count.severity_str to access the correct severity)
                     severity_str = record.severity.name.lower()
                     setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
