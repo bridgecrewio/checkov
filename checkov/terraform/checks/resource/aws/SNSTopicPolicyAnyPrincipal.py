@@ -24,7 +24,7 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
                 condition_values = policy.get('Statement', [{}])[0].get('Condition', {}).values()
                 if condition_values and not any(isinstance(condition, dict) for condition in condition_values):
                     return CheckResult.UNKNOWN
-                policy = Policy(conf["policy"][0])
+                policy = Policy(policy)
                 if policy.is_internet_accessible():
                     return CheckResult.FAILED
             else:
