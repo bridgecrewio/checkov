@@ -47,7 +47,7 @@ class CSVSBOM:
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
-        if report.check_type in [CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE]:
+        if report.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
@@ -138,7 +138,7 @@ class CSVSBOM:
     def persist_report_container_images(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_OSS_PACKAGES,
+            header=HEADER_CONTAINER_IMAGE,
             rows=self.container_rows,
             is_api_key=is_api_key,
         )
