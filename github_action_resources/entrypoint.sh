@@ -26,7 +26,7 @@ export BC_SOURCE=githubActions
 [[ -n "$INPUT_HARD_FAIL_ON" ]] && HARD_FAIL_ON_FLAG="--hard-fail-on $INPUT_HARD_FAIL_ON"
 [[ -n "$INPUT_VAR_FILE" ]] && VAR_FILE_FLAG="--var-file $INPUT_VAR_FILE"
 [[ -n "$DOCKER_IMAGE" ]] && DOCKER_IMAGE_FLAG="--docker-image $DOCKER_IMAGE"
-[[ -n "$DOCKERFILE_PATH" ]] && DOCKERFILE_PATH_FLAG="--docker-image $DOCKERFILE_PATH"
+[[ -n "$DOCKERFILE_PATH" ]] && DOCKERFILE_PATH_FLAG="--dockerfile-path $DOCKERFILE_PATH"
 
 
 if [ -n "$INPUT_COMPACT" ] && [ "$INPUT_COMPACT" = "true" ]; then
@@ -111,15 +111,15 @@ echo "BC_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}""
 
 # If Docker image is used, default to that
 if [ -n "$API_KEY_VARIABLE" ] && [ -n "$DOCKER_IMAGE"]; then
-  echo "checkov --bc-api-key <API_KEY> --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG" #Unsure what other flags should work
-  CHECKOV_RESULTS=$(checkov --bc-api-key $API_KEY_VARIABLE --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG) #Unsure what other flags should work
+  echo "checkov --bc-api-key <API_KEY> --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG"
+  CHECKOV_RESULTS=$(checkov --bc-api-key $API_KEY_VARIABLE --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG)
 # Else if File Variable exists then use -f flag to scan specific resources
 else
   if [ -n "$INPUT_FILE" ]; then
     RESOURCE_TO_SCAN="-f $INPUT_FILE"
     echo "running checkov on file: $INPUT_FILE"
   else
-  # Otherwise exists then use -d flag for directory scaning
+  # Otherwise exists then use -d flag for directory scanning
     RESOURCE_TO_SCAN="-d $INPUT_DIRECTORY"
     echo "running checkov on directory: $INPUT_DIRECTORY"
   fi 
