@@ -177,7 +177,7 @@ class TestBomOutput:
         csv_output_str = csv_sbom_report.get_csv_output_packages(check_type=CheckType.SCA_IMAGE)
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,Unknown\n"
+            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\n"
             "requests,,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\n"
         )
 
@@ -185,7 +185,7 @@ class TestBomOutput:
 
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"Unknown\"\n"
+            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"\"\n"
             "requests,,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\"\"\n"
         )
 
