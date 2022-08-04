@@ -110,6 +110,9 @@ def scan_resource_conf(self, conf):
     return CheckResult.FAILED
 ```
 
+Produces the following CLI report:
+![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan-cli-details.png)
+
 7. Conclude the policy name and operationalize it with the statement:
 
 ```python
