@@ -9,6 +9,7 @@ from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.common import ImageDetails
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
@@ -16,7 +17,6 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
-from checkov.common.output.cyclonedx_consts import ImageDetails
 
 
 class Runner(BaseRunner):

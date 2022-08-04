@@ -19,11 +19,11 @@ from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.typing import _CheckResult, _LicenseStatus
-from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.output.common import ImageDetails
+from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
-from checkov.common.output.cyclonedx_consts import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
 
