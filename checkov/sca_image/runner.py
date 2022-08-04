@@ -132,6 +132,8 @@ class Runner(PackageRunner):
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
+        self._code_repo_path = Path(root_folder) if root_folder else None
+
         report = Report(self.check_type)
 
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
@@ -149,7 +151,6 @@ class Runner(PackageRunner):
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
-
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
@@ -200,11 +201,19 @@ class Runner(PackageRunner):
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+            dockerfile_path = Path(dockerfile_path)
+            if self._code_repo_path:
+                try:
+                    dockerfile_path = dockerfile_path.relative_to(self._code_repo_path)
+                except ValueError:
+                    # Path.is_relative_to() was implemented in Python 3.9
+                    pass
+            rootless_file_path = str(dockerfile_path).replace(Path(dockerfile_path).anchor, "", 1)
 
             self.parse_vulns_to_records(
                 report=report,
                 scanned_file_path=os.path.abspath(dockerfile_path),
-                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
@@ -273,7 +282,6 @@ class Runner(PackageRunner):
         if image_id.startswith("sha256:"):
             return image_id[:17]
         return image_id[:10]
-
 
     def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
         image_packages = scan_result.get('packages', [])
