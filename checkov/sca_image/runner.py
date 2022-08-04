@@ -16,13 +16,13 @@ from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer, Image
+from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
-from checkov.common.output.cyclonedx_consts import ImageDetails
 
 
 class Runner(PackageRunner):

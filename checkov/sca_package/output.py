@@ -19,11 +19,11 @@ from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.typing import _CheckResult, _LicenseStatus
-from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scanning import PackageScanningIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.output.common import ImageDetails
+from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
-from checkov.common.output.cyclonedx_consts import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -59,18 +59,17 @@ def create_report_license_record(
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
+    policy = licenses_status["policy"]
+    bc_status = licenses_status["status"]
+
+    # renaming the status name from the one in platform's report to be convenient with checkov's-report
+    status = "FAILED" if bc_status == "OPEN" else bc_status
 
     check_result: _CheckResult = {
         "result": CheckResult.FAILED,
     }
-
-    policy = licenses_status["policy"]
-    status = licenses_status["status"]
-
     if status == "COMPLIANT":
-        check_result = {
-            "result": CheckResult.PASSED,
-        }
+        check_result["result"] = CheckResult.PASSED
 
     code_block = [(0, f"{package_name}: {package_version}")]
 
@@ -239,61 +238,107 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
 
     for file_path, packages in group_by_file_path_package_map.items():
         cve_count = CveCount(fixable=fixable)
-        package_details_map = defaultdict(dict)
-
+        package_cves_details_map = defaultdict(dict)
+        package_licenses_details_map = defaultdict(dict)
+        should_print_licenses_table = False
         for package_name, records in packages.items():
             package_version = None
             fix_versions_lists = []
 
             for record in records:
-                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
-                    continue
-                cve_count.total += 1
+                if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                    cve_count.total += 1
 
-                if record.check_result["result"] == CheckResult.SKIPPED:
-                    cve_count.skipped += 1
-                    continue
-                else:
-                    cve_count.to_fix += 1
+                    if record.check_result["result"] == CheckResult.SKIPPED:
+                        cve_count.skipped += 1
+                        continue
+                    else:
+                        cve_count.to_fix += 1
 
-                # best way to dynamically access an class instance attribute
-                severity_str = record.severity.name.lower()
-                setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
+                    # best way to dynamically access an class instance attribute.
+                    # (we can't just do cve_count.severity_str to access the correct severity)
+                    severity_str = record.severity.name.lower()
+                    setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
-                if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
-                    cve_count.has_fix += 1
+                    if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
+                        cve_count.has_fix += 1
 
-                fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
-                if package_version is None:
-                    package_version = record.vulnerability_details["package_version"]
+                    fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
+                    if package_version is None:
+                        package_version = record.vulnerability_details["package_version"]
 
-                package_details_map[package_name].setdefault("cves", []).append(
-                    {
-                        "id": record.vulnerability_details["id"],
-                        "severity": severity_str,
-                        "fixed_version": record.vulnerability_details["lowest_fixed_version"],
-                    }
-                )
+                    package_cves_details_map[package_name].setdefault("cves", []).append(
+                        {
+                            "id": record.vulnerability_details["id"],
+                            "severity": severity_str,
+                            "fixed_version": record.vulnerability_details["lowest_fixed_version"],
+                        }
+                    )
+                elif record.check_name == SCA_LICENSE_CHECK_NAME:
+                    should_print_licenses_table = True
+                    package_licenses_details_map[package_name].setdefault("license_statuses", []).append(
+                        _LicenseStatus(package_name=package_name,
+                                       package_version=record.vulnerability_details["package_version"],
+                                       policy=record.vulnerability_details["policy"],
+                                       license=record.vulnerability_details["license"],
+                                       status=record.vulnerability_details["status"])
+                    )
 
-            if package_name in package_details_map.keys():
-                package_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
-                package_details_map[package_name]["current_version"] = package_version
-                package_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
+            if package_name in package_cves_details_map:
+                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[package_name]["current_version"] = package_version
+                package_cves_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
                 )
 
-        cli_outputs.append(
-            create_cli_table(
-                file_path=file_path,
-                cve_count=cve_count,
-                package_details_map=package_details_map,
+        if cve_count.total > 0:
+            cli_outputs.append(
+                create_cli_cves_table(
+                    file_path=file_path,
+                    cve_count=cve_count,
+                    package_details_map=package_cves_details_map,
+                )
             )
-        )
+        if should_print_licenses_table:
+            cli_outputs.append(
+                create_cli_license_violations_table(
+                    file_path=file_path,
+                    license_statuses=[status for package_name in package_licenses_details_map
+                                      for status in package_licenses_details_map[package_name].get("license_statuses", [])]
+                )
+            )
 
-    return "".join(cli_outputs)
+    return "\n".join(cli_outputs)
 
 
-def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
+def create_cli_license_violations_table(file_path: str, license_statuses: List[_LicenseStatus]) -> str:
+    columns = 5
+    table_width = 120.0
+    column_width = int(table_width / columns)
+    table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
+    table.set_style(SINGLE_BORDER)
+    table.field_names = [
+        "Package name",
+        "Package version",
+        "Policy ID",
+        "License",
+        "Status",
+    ]
+    for curr_license_status in license_statuses:
+        table.add_row([curr_license_status["package_name"], curr_license_status["package_version"],
+                       curr_license_status["policy"], curr_license_status["license"], curr_license_status["status"]])
+    table.align = "l"
+    table.min_width = column_width
+    table.max_width = column_width
+    # some hack for making the table's width as same as the cves-table's
+    table_lines = [f"\t{line[:-2]}{line[-3]}{line[-2:]}" for line in table.get_string().splitlines(keepends=True)]
+    return (
+        f"\t{file_path} - Licenses Statuses:\n"
+        f"{''.join(table_lines)}\n"
+    )
+
+
+def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
     column_width = int(120 / columns)
@@ -312,7 +357,7 @@ def create_cli_table(file_path: str, cve_count: CveCount, package_details_map: D
     )
 
     return (
-        f"\t{file_path}\n"
+        f"\t{file_path} - CVEs Summary:\n"
         f"{''.join(cve_table_lines)}\n"
         f"{''.join(fixable_table_lines)}"
         f"{''.join(package_table_lines)}\n"

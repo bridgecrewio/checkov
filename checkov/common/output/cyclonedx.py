@@ -23,10 +23,11 @@ from cyclonedx.model.vulnerability import (
 from cyclonedx.output import get_instance
 from packageurl import PackageURL  # type:ignore[import]
 
+from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES, PURL_TYPE_MAVEN, DEFAULT_CYCLONE_SCHEMA_VERSION, \
     CYCLONE_SCHEMA_VERSION, FILE_NAME_TO_PURL_TYPE, IMAGE_DISTRO_TO_PURL_TYPE, TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE, \
-    BC_SEVERITY_TO_CYCLONEDX_LEVEL, ImageDetails
+    BC_SEVERITY_TO_CYCLONEDX_LEVEL
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
