@@ -18,6 +18,7 @@ class ModuleSource:
     root_module: str
     inner_module: str
     version: str
+    username: str
 
 
 class GenericGitLoader(ModuleLoader):
@@ -111,6 +112,7 @@ class GenericGitLoader(ModuleLoader):
 
         return ModuleSource(
             protocol=module_source_components[0], root_module=root_module, inner_module=inner_module, version=version,
+            username=username[1] if username and username[1] != "git@" else ""
         )
 
     def _process_generic_git_repo(self, module_params: ModuleParams) -> None:
@@ -124,6 +126,8 @@ class GenericGitLoader(ModuleLoader):
             )
             module_params.inner_module = module_source.inner_module
             module_params.module_source = f"{module_source.protocol}//{module_source.root_module}"
+            if module_source.username:
+                module_params.module_source = f"{module_source.protocol}//{module_source.username}{module_source.root_module}"
             if module_source.version != "HEAD":
                 module_params.module_source += f"?ref={module_source.version}"
         else:

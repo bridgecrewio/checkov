@@ -40,7 +40,7 @@ class Registry(BaseCheckRegistry):
                             entity_type,
                             results,
                             scanned_file,
-                            skip_info,
+                            skip_info
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
@@ -52,7 +52,7 @@ class Registry(BaseCheckRegistry):
                             entity_type,
                             results,
                             scanned_file,
-                            skip_info,
+                            skip_info
                         )
         if isinstance(entity, list):
             for item in entity:
@@ -64,7 +64,7 @@ class Registry(BaseCheckRegistry):
                         entity_type,
                         results,
                         scanned_file,
-                        skip_info,
+                        skip_info
                     )
                     if result == CheckResult.FAILED:
                         break
@@ -82,7 +82,7 @@ class Registry(BaseCheckRegistry):
                 entity_type,
                 results,
                 scanned_file,
-                skip_info,
+                skip_info
             )
 
     def _scan_yaml_document(
@@ -174,12 +174,12 @@ class Registry(BaseCheckRegistry):
     def update_result(
             self,
             check: BaseCheck,
-            entity_configuration: Dict[str, Any],
+            entity_configuration: dict[str, Any],
             entity_name: str,
             entity_type: str,
             results: Dict[str, Any],
             scanned_file: str,
-            skip_info: _SkippedCheck,
+            skip_info: _SkippedCheck
     ) -> CheckResult:
         check_result = self.run_check(
             check,
@@ -222,13 +222,14 @@ class Registry(BaseCheckRegistry):
         return result
 
     def get_result_key(self, check: BaseCheck,
-                       entity_configuration: Dict[str, Any],
+                       entity_configuration: dict[str, Any],
                        entity_name: str,
                        entity_type: str,
                        scanned_file: str,
                        skip_info: _SkippedCheck) -> str:
         if STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
+
         if isinstance(entity_configuration, list):
             start_line = None
             end_line = None
@@ -246,6 +247,7 @@ class Registry(BaseCheckRegistry):
                         start_line = subconf_startline
             if start_line and end_line:
                 return f'{entity_type}.{entity_name}.{check.id}[{start_line}:{end_line}]'
+
         return f'{entity_type}.{entity_name}.{check.id}'
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:

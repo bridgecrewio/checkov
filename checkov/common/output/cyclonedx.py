@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast, Dict, Any
 
 from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
@@ -20,11 +20,14 @@ from cyclonedx.model.vulnerability import (
     VulnerabilityScoreSource,
     VulnerabilitySeverity,
 )
-from cyclonedx.output import SchemaVersion, get_instance
+from cyclonedx.output import get_instance
 from packageurl import PackageURL  # type:ignore[import]
 
-from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.output.report import CheckType
+from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES, PURL_TYPE_MAVEN, DEFAULT_CYCLONE_SCHEMA_VERSION, \
+    CYCLONE_SCHEMA_VERSION, FILE_NAME_TO_PURL_TYPE, IMAGE_DISTRO_TO_PURL_TYPE, TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE, \
+    BC_SEVERITY_TO_CYCLONEDX_LEVEL, ImageDetails
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -33,41 +36,8 @@ else:
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
-    from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
+    from checkov.common.output.record import Record
     from checkov.common.output.report import Report
-
-DEFAULT_CYCLONE_SCHEMA_VERSION = SchemaVersion.V1_4
-CYCLONE_SCHEMA_VERSION: dict[str, SchemaVersion] = {
-    "1.4": DEFAULT_CYCLONE_SCHEMA_VERSION,
-    "1.3": SchemaVersion.V1_3,
-    "1.2": SchemaVersion.V1_2,
-    "1.1": SchemaVersion.V1_1,
-    "1.0": SchemaVersion.V1_0,
-}
-PURL_TYPE_MAVEN = "maven"
-FILE_NAME_TO_PURL_TYPE = {
-    "build.gradle": "maven",
-    "build.gradle.kts": PURL_TYPE_MAVEN,
-    "composer.json": "composer",
-    "Gemfile": "gem",
-    "go.mod": "golang",
-    "go.sum": "golang",
-    "package.json": "npm",
-    "package-lock.json": "npm",
-    "Pipfile": "pypi",
-    "Pipfile.lock": "pypi",
-    "pom.xml": "maven",
-    "requirements.txt": "pypi",
-    "yarn.lock": "npm",
-}
-BC_SEVERITY_TO_CYCLONEDX_LEVEL = {
-    BcSeverities.CRITICAL: VulnerabilitySeverity.CRITICAL,
-    BcSeverities.HIGH: VulnerabilitySeverity.HIGH,
-    BcSeverities.MEDIUM: VulnerabilitySeverity.MEDIUM,
-    BcSeverities.LOW: VulnerabilitySeverity.LOW,
-    BcSeverities.NONE: VulnerabilitySeverity.NONE,
-}
-
 
 class CycloneDX:
     def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
@@ -91,8 +61,12 @@ class CycloneDX:
         bom.metadata.tools.add(this_tool)
 
         for report in self.reports:
-            if report.check_type == CheckType.SCA_PACKAGE and self.export_iac_only:
+            if report.check_type in SCA_CHECKTYPES and self.export_iac_only:
                 continue
+
+            # if the report is of SCA_IMAGE type, we should add to the report one image component per image
+            is_image_report = report.check_type == CheckType.SCA_IMAGE
+            image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
                 if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
@@ -100,6 +74,10 @@ class CycloneDX:
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
+
+                if is_image_report and check.file_path not in image_resources_for_image_components:
+                    image_resources_for_image_components[check.file_path] = check
+
 
             for check in report.failed_checks:
                 if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
@@ -119,19 +97,28 @@ class CycloneDX:
                 component.add_vulnerability(vulnerability)
                 bom.components.add(component)
 
+                if is_image_report:
+                    if check.file_path not in image_resources_for_image_components:
+                        image_resources_for_image_components[check.file_path] = check
+
             for resource in report.extra_resources:
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
                 if not bom.has_component(component=component):
                     bom.components.add(component)
 
+            if is_image_report:
+                for image_resource in image_resources_for_image_components:
+                    self.create_image_component(resource=image_resources_for_image_components[image_resource], bom=bom)
+
         return bom
 
     def create_component(self, check_type: str, resource: Record | ExtraResource) -> Component:
         """Creates a component"""
+        # purl structure conventions: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst
 
-        if check_type == CheckType.SCA_PACKAGE:
-            component = self.create_library_component(resource=resource)
+        if check_type in SCA_CHECKTYPES:
+            component = self.create_library_component(check_type=check_type, resource=resource)
         else:
             component = self.create_application_component(check_type=check_type, resource=resource)
 
@@ -172,7 +159,7 @@ class CycloneDX:
         )
         return component
 
-    def create_library_component(self, resource: Record | ExtraResource) -> Component:
+    def create_library_component(self, resource: Record | ExtraResource, check_type: str) -> Component:
         """Creates a library component
         Ex.
         <component bom-ref="pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6" type="library">
@@ -186,10 +173,22 @@ class CycloneDX:
             # this shouldn't happen
             logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
             return Component(name="unknown")
-
+        qualifiers = None
         file_name = Path(resource.file_path).name
-        purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
-        namespace = f"{self.repo_id}/{resource.file_path}"
+        if check_type is CheckType.SCA_IMAGE:
+            package_type = resource.vulnerability_details['package_type']
+            image_distro_name = resource.vulnerability_details.get('image_details', ImageDetails()).distro.split(' ')[0]
+            file_path = resource.file_path.split(' ')[0]
+            if package_type == 'os':
+                purl_type = IMAGE_DISTRO_TO_PURL_TYPE.get(image_distro_name, 'generic')
+                namespace = f'{self.repo_id}/{file_path}/{image_distro_name.lower()}'
+                qualifiers = f'distro={resource.vulnerability_details.get("image_details", ImageDetails()).distro_release}'
+            else:
+                purl_type = TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE.get(package_type, 'generic')
+                namespace = f"{self.repo_id}/{file_path}"
+        else:
+            purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
+            namespace = f"{self.repo_id}/{resource.file_path}"
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
@@ -203,6 +202,7 @@ class CycloneDX:
             namespace=namespace,
             name=package_name,
             version=package_version,
+            qualifiers=qualifiers
         )
         component = Component(
             bom_ref=str(purl),
@@ -213,6 +213,26 @@ class CycloneDX:
             purl=purl,
         )
         return component
+
+    def create_image_component(self, resource: Record, bom: Bom) -> None:
+        image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
+                                                                         ImageDetails()).image_id
+        file_path = resource.file_path.split(' ')[0]
+        image_purl = PackageURL(
+            type='oci',
+            namespace=self.repo_id,
+            name=file_path,
+            version=image_id
+        )
+        bom.components.add(
+            Component(
+                bom_ref=str(image_purl),
+                component_type=ComponentType.CONTAINER,
+                name=f'{self.repo_id}/{image_id}',
+                version='',
+                purl=image_purl
+            )
+        )
 
     def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
         """Creates a vulnerability"""
@@ -332,7 +352,7 @@ class CycloneDX:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()
+        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()  # type:ignore[arg-type]
 
         return output
 
