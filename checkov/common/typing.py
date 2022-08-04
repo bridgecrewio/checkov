@@ -54,3 +54,11 @@ class _CicdDetails(TypedDict, total=False):
     commit: str | None
     pr: str | None
     runId: str | None
+
+
+class _LicenseStatus(TypedDict):
+    package_name: str
+    package_version: str
+    policy: str
+    license: str
+    status: str

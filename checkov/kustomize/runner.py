@@ -112,8 +112,9 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
-                else: 
-                    kustomizeResourceID = "Unknown error. This is a bug."
+                else:
+                    logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
+                    continue
                 code_lines = entity_context.get("code_lines")
                 file_line_range = self.line_range(code_lines)
 

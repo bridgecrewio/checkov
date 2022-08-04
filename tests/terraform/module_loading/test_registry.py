@@ -64,11 +64,6 @@ def test_load_terraform_registry(
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GenericGitLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
-
 
 @pytest.mark.parametrize(
     "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
@@ -183,11 +178,6 @@ def test_load_generic_git(
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GenericGitLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
-
 
 @pytest.mark.parametrize(
     "source, expected_content_path, expected_git_url, expected_dest_dir, expected_module_source, expected_inner_module",
@@ -251,11 +241,6 @@ def test_load_github(
     assert content.path() == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_content_path)
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
-
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GithubLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
 
 
 # TODO: create a dummy repo in bitbucket for more consitent tests
@@ -322,11 +307,6 @@ def test_load_bitbucket(
 
     git_getter.assert_called_once_with(expected_git_url, mock.ANY)
 
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, BitbucketLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
-
 
 @pytest.mark.parametrize(
     "source, expected_content_path, expected_exception",
@@ -365,9 +345,57 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
             "",
+        ),
+       ( 
+            "git::https://github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
+        ),
+       ( 
+           "git@github.com:kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
+        ),
+       ( 
+           "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
+            "",
+        ),
+        (
+            "github.com/kartikp10/terraform-aws-security-group//modules/http-80",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD/modules/http-80",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "modules/http-80",
+        ),
+        (
+            "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/v1.2.0",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/v1.2.0",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "",
+        ),
+       ( 
+           "git@github.com:kartikp10/terraform-aws-security-group.git//modules/http-80",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "modules/http-80",
         )
     ],
-    ids=["module"],
+    ids=["github_http_module", "generic_git_module", "ssh_github_module", "generic_ssh_module","github_http_module", "generic_ssh_module_version", "github_ssh_module_version"],
 )
 @mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
@@ -393,11 +421,6 @@ def test_load_github_private(
 
     # then
     git_getter.assert_called_with(expected_git_url, create_clone_and_result_dirs=False)
-
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, GithubAccessTokenLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
 
 
 @pytest.mark.parametrize(
@@ -438,11 +461,6 @@ def test_load_bitbucket_private(
 
     # then
     git_getter.assert_called_with(expected_git_url, create_clone_and_result_dirs=False)
-
-    git_loader = next(loader for loader in registry.loaders if isinstance(loader, BitbucketAccessTokenLoader))
-    assert git_loader.dest_dir == str(Path(DEFAULT_EXTERNAL_MODULES_DIR) / expected_dest_dir)
-    assert git_loader.module_source == expected_module_source
-    assert git_loader.inner_module == expected_inner_module
 
 
 def test_load_terraform_registry_with_real_download(tmp_path: Path):
