@@ -20,9 +20,12 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
         conf_policy = conf.get("policy")
         if conf_policy:
             if isinstance(conf_policy[0], dict):
-                policy = Policy(conf["policy"][0])
-                if policy.is_internet_accessible():
-                    return CheckResult.FAILED
+                try:
+                    policy = Policy(conf["policy"][0])
+                    if policy.is_internet_accessible():
+                        return CheckResult.FAILED
+                except AttributeError:
+                    return CheckResult.UNKNOWN
             else:
                 return CheckResult.UNKNOWN
         return CheckResult.PASSED
