@@ -24,6 +24,6 @@ A CSV output would generate 3 output files:
 | xmldom   | 0.5.0    | /packages/node/twistcli-test/package-lock.json  | bridgecrewio  | terragoat       | CVE-2021-32796  | MEDIUM    |
 
 ###container_images.csv
-| Package  | Version  | Path         | Git Org       | Git Repository  | Vulnerability   | Severity  | Licenses  |
-|:---------|:---------|:-------------|:--------------|:----------------|:----------------|:----------|:----------|
-| xmldom   | 0.5.0    | /Dockerfile  | bridgecrewio  | terragoat       | CVE-2021-32796  | MEDIUM    |
+| Package  | Version  | Path                             | Git Org       | Git Repository  | Vulnerability   | Severity  | Licenses  |
+|:---------|:---------|:---------------------------------|:--------------|:----------------|:----------------|:----------|:----------|
+| xmldom   | 0.5.0    | /Dockerfile  (sha256:6a353e22ce) | bridgecrewio  | terragoat       | CVE-2021-32796  | MEDIUM    |
