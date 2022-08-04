@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os.path
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional, List, Union, Dict, Any
 
@@ -131,6 +132,8 @@ class Runner(PackageRunner):
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
+        self._code_repo_path = Path(root_folder) if root_folder else None
+
         report = Report(self.check_type)
 
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
@@ -151,8 +154,8 @@ class Runner(PackageRunner):
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
@@ -198,11 +201,18 @@ class Runner(PackageRunner):
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+            if self._code_repo_path:
+                try:
+                    dockerfile_path = str(Path(dockerfile_path).relative_to(self._code_repo_path))
+                except ValueError:
+                    # Path.is_relative_to() was implemented in Python 3.9
+                    pass
+            rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
 
             self.parse_vulns_to_records(
                 report=report,
                 scanned_file_path=os.path.abspath(dockerfile_path),
-                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
@@ -248,10 +258,17 @@ class Runner(PackageRunner):
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+        if self._code_repo_path:
+            try:
+                dockerfile_path = str(Path(dockerfile_path).relative_to(self._code_repo_path))
+            except ValueError:
+                # Path.is_relative_to() was implemented in Python 3.9
+                pass
+        rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
         self.parse_vulns_to_records(
             report=report,
             scanned_file_path=os.path.abspath(dockerfile_path),
-            rootless_file_path=f"{dockerfile_path} ({image_id})",
+            rootless_file_path=f"{rootless_file_path} ({image_id})",
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
             packages=[],
@@ -272,7 +289,6 @@ class Runner(PackageRunner):
             return image_id[:17]
         return image_id[:10]
 
-
     def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
         image_packages = scan_result.get('packages', [])
         image_package_types = {
@@ -285,3 +301,6 @@ class Runner(PackageRunner):
             package_types=image_package_types,
             image_id=image_id
         )
+
+    def included_paths(self) -> Iterable[str]:
+        return ['.github', '.circleci']
