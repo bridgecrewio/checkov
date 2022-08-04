@@ -9,7 +9,7 @@ from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
-from checkov.common.output.cyclonedx_consts import ImageDetails
+from checkov.common.output.common import ImageDetails
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
