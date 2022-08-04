@@ -138,7 +138,7 @@ class CSVSBOM:
     def persist_report_container_images(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_OSS_PACKAGES,
+            header=HEADER_CONTAINER_IMAGE,
             rows=self.container_rows,
             is_api_key=is_api_key,
         )
