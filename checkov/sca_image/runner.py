@@ -201,14 +201,13 @@ class Runner(PackageRunner):
             vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
-            dockerfile_path = Path(dockerfile_path)
             if self._code_repo_path:
                 try:
-                    dockerfile_path = dockerfile_path.relative_to(self._code_repo_path)
+                    dockerfile_path = str(Path(dockerfile_path).relative_to(self._code_repo_path))
                 except ValueError:
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
-            rootless_file_path = str(dockerfile_path).replace(Path(dockerfile_path).anchor, "", 1)
+            rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
 
             self.parse_vulns_to_records(
                 report=report,
