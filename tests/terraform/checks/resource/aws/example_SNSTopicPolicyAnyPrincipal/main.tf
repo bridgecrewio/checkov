@@ -27,7 +27,7 @@ resource "aws_sns_topic_policy" "sns_tp1" {
 POLICY
 }
 
-# pass
+# should return as unknown dou to condition parsing error.
 resource "aws_sns_topic_policy" "sns_tp_unknown" {
   arn = aws_sns_topic.test.arn
 
