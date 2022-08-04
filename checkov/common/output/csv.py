@@ -164,11 +164,15 @@ class CSVSBOM:
                 writer.writerow(header)
                 writer.writerow([CTA_NO_API_KEY])
 
-    def get_csv_output_oss_packages(self) -> str:
+    def get_csv_output_packages(self, check_type: str) -> str:
         # header
         csv_output = ','.join(HEADER_OSS_PACKAGES) + '\n'
+        csv_table = {
+            CheckType.SCA_PACKAGE: self.package_rows,
+            CheckType.SCA_IMAGE: self.container_rows
+        }
 
-        for row in self.package_rows:
+        for row in csv_table[check_type]:
             for header in HEADER_OSS_PACKAGES:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
