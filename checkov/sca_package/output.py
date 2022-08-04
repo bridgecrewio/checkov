@@ -434,7 +434,7 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
                 # hack to make multiple package tables look like one
                 line = line.replace(package_table.top_junction_char, package_table.junction_char)
 
-            # some hack for making the table's width as same as the cves-table's
+            # hack for making the table's width as same as the cves-table's
             package_table_lines.append(f"\t{line[:-2]}{line[-3]}{line[-2:]}")
 
     return (
