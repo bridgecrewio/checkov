@@ -239,7 +239,7 @@ class Report:
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE:
-                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n\n"
+                message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
         output_data += colored(message, "cyan")
