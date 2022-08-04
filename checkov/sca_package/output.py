@@ -310,6 +310,66 @@ def create_cli_output(fixable=True, *cve_records: List[Record]) -> str:
     return "\n".join(cli_outputs)
 
 
+def create_cli_license_violations_table(file_path: str, package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
+    package_table_lines: List[str] = []
+    columns = 5
+    table_width = 120.0
+    column_width = int(table_width / columns)
+    package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
+    package_table.set_style(SINGLE_BORDER)
+    package_table.field_names = [
+        "Package name",
+        "Package version",
+        "Policy ID",
+        "License",
+        "Status",
+    ]
+    for package_idx, (package_name, license_statuses) in enumerate(package_licenses_details_map.items()):
+        if package_idx > 0:
+            del package_table_lines[-1]
+            package_table.header = False
+            package_table.clear_rows()
+
+        for idx, license_status in enumerate(license_statuses):
+            col_package_name = ""
+            col_package_version = ""
+            if idx == 0:
+                col_package_name = package_name
+                col_package_version = license_status["package_version"]
+
+            package_table.add_row(
+                [
+                    col_package_name,
+                    col_package_version,
+                    license_status["policy"],
+                    license_status["license"],
+                    license_status["status"],
+                ]
+            )
+
+        package_table.align = "l"
+        package_table.min_width = column_width
+        package_table.max_width = column_width
+
+        for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
+            if idx == 0 and package_idx != 0:
+                # hack to make multiple tables look like one
+                line = line.replace(package_table.top_left_junction_char, package_table.left_junction_char).replace(
+                    package_table.top_right_junction_char, package_table.right_junction_char
+                )
+            if package_idx > 0:
+                # hack to make multiple package tables look like one
+                line = line.replace(package_table.top_junction_char, package_table.junction_char)
+
+            # hack for making the table's width as same as the cves-table's
+            package_table_lines.append(f"\t{line[:-2]}{line[-3]}{line[-2:]}")
+
+    return (
+        f"\t{file_path} - Licenses Statuses:\n"
+        f"{''.join(package_table_lines)}\n"
+    )
+
+
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
     table_width = 120
@@ -381,66 +441,6 @@ def create_fixable_cve_summary_table_part(
         del fixable_table_lines[-1]
 
     return fixable_table_lines
-
-
-def create_cli_license_violations_table(file_path: str, package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
-    package_table_lines: List[str] = []
-    columns = 5
-    table_width = 120.0
-    column_width = int(table_width / columns)
-    package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
-    package_table.set_style(SINGLE_BORDER)
-    package_table.field_names = [
-        "Package name",
-        "Package version",
-        "Policy ID",
-        "License",
-        "Status",
-    ]
-    for package_idx, (package_name, license_statuses) in enumerate(package_licenses_details_map.items()):
-        if package_idx > 0:
-            del package_table_lines[-1]
-            package_table.header = False
-            package_table.clear_rows()
-
-        for idx, license_status in enumerate(license_statuses):
-            col_package_name = ""
-            col_package_version = ""
-            if idx == 0:
-                col_package_name = package_name
-                col_package_version = license_status["package_version"]
-
-            package_table.add_row(
-                [
-                    col_package_name,
-                    col_package_version,
-                    license_status["policy"],
-                    license_status["license"],
-                    license_status["status"],
-                ]
-            )
-
-        package_table.align = "l"
-        package_table.min_width = column_width
-        package_table.max_width = column_width
-
-        for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
-            if idx == 0 and package_idx != 0:
-                # hack to make multiple tables look like one
-                line = line.replace(package_table.top_left_junction_char, package_table.left_junction_char).replace(
-                    package_table.top_right_junction_char, package_table.right_junction_char
-                )
-            if package_idx > 0:
-                # hack to make multiple package tables look like one
-                line = line.replace(package_table.top_junction_char, package_table.junction_char)
-
-            # hack for making the table's width as same as the cves-table's
-            package_table_lines.append(f"\t{line[:-2]}{line[-3]}{line[-2:]}")
-
-    return (
-        f"\t{file_path} - Licenses Statuses:\n"
-        f"{''.join(package_table_lines)}\n"
-    )
 
 
 def create_package_overview_table_part(
