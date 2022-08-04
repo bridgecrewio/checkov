@@ -274,6 +274,7 @@ class TestBomOutput:
         result_files_list = runner_registry.print_iac_bom_reports(output_path=str(output_path),
                                                                   scan_reports=reports,
                                                                   output_types=output_types)
+
         assert len(result_files_list) == len(output_types)
         for result_file in result_files_list.values():
             assert os.path.exists(result_file)
