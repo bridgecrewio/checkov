@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os.path
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional, List, Union, Dict, Any
 
@@ -149,10 +150,11 @@ class Runner(PackageRunner):
                 self.pbar.update()
             self.pbar.close()
 
+
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
+                filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
+                filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
                     self.iterate_image_files(abs_fname, report, runner_filter)
@@ -285,3 +287,6 @@ class Runner(PackageRunner):
             package_types=image_package_types,
             image_id=image_id
         )
+
+    def included_paths(self) -> Iterable[str]:
+        return ['.github', '.circleci']
