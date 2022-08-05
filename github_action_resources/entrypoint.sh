@@ -25,8 +25,6 @@ export BC_SOURCE=githubActions
 [[ -n "$INPUT_SOFT_FAIL_ON" ]] && SOFT_FAIL_ON_FLAG="--soft-fail-on $INPUT_SOFT_FAIL_ON"
 [[ -n "$INPUT_HARD_FAIL_ON" ]] && HARD_FAIL_ON_FLAG="--hard-fail-on $INPUT_HARD_FAIL_ON"
 [[ -n "$INPUT_VAR_FILE" ]] && VAR_FILE_FLAG="--var-file $INPUT_VAR_FILE"
-[[ -n "$DOCKER_IMAGE" ]] && DOCKER_IMAGE_FLAG="--docker-image $DOCKER_IMAGE"
-[[ -n "$DOCKERFILE_PATH" ]] && DOCKERFILE_PATH_FLAG="--dockerfile-path $DOCKERFILE_PATH"
 
 
 if [ -n "$INPUT_COMPACT" ] && [ "$INPUT_COMPACT" = "true" ]; then
@@ -110,7 +108,9 @@ echo "BC_RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHU
 echo "BC_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}""
 
 # If Docker image is used, default to that
-if [ -n "$API_KEY_VARIABLE" ] && [ -n "$DOCKER_IMAGE"]; then
+if [ -n "$INPUT_DOCKER_IMAGE" ]; then
+  DOCKER_IMAGE_FLAG="--docker-image $INPUT_DOCKER_IMAGE"
+  DOCKERFILE_PATH_FLAG="--dockerfile-path $INPUT_DOCKERFILE_PATH"
   echo "checkov --bc-api-key <API_KEY> --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG"
   CHECKOV_RESULTS=$(checkov --bc-api-key $API_KEY_VARIABLE --branch $GIT_BRANCH --repo-id $GITHUB_REPOSITORY $DOCKER_IMAGE_FLAG $DOCKERFILE_PATH_FLAG)
 # Else if File Variable exists then use -f flag to scan specific resources
