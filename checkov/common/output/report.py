@@ -326,6 +326,7 @@ class Report:
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
                 "level": level,
+                "attachments": [{'description': detail} for detail in record.details],
                 "message": {
                     "text": record.description if record.description else record.check_name,
                 },

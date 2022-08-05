@@ -44,6 +44,8 @@ class CSVSBOM:
         self.container_rows: list[dict[str, Any]] = []
         self.package_rows: list[dict[str, Any]] = []
 
+        self.iac_rows_have_details: bool = False
+
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
@@ -102,16 +104,20 @@ class CSVSBOM:
             # IaC resources shouldn't be added multiple times, if they don't have any misconfiguration
             return
 
-        self.iac_rows.append(
-            {
-                "Resource": resource.resource,
-                "Path": resource.file_path,
-                "Git Org": git_org,
-                "Git Repository": git_repository,
-                "Misconfigurations": misconfig,
-                "Severity": severity,
-            }
-        )
+        row = {
+            "Resource": resource.resource,
+            "Path": resource.file_path,
+            "Git Org": git_org,
+            "Git Repository": git_repository,
+            "Misconfigurations": misconfig,
+            "Severity": severity,
+        }
+
+        if isinstance(resource, Record) and resource.details:
+            self.iac_rows_have_details = True
+            row["Details"] = "|".join(resource.details)
+
+        self.iac_rows.append(row)
         self.iac_resource_cache.add(resource_id)
 
     def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
@@ -132,7 +138,7 @@ class CSVSBOM:
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_IAC,
+            header=[*HEADER_IAC, "Details"] if self.iac_rows_have_details else HEADER_IAC,
             rows=self.iac_rows,
             is_api_key=True,
         )

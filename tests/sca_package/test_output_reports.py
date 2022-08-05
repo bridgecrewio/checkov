@@ -156,6 +156,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2016_6186",
@@ -172,6 +173,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2016_7401",
@@ -188,6 +190,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2021_33203",
@@ -204,6 +207,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2019_1010083",
@@ -220,6 +224,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2018_1000656",
@@ -236,6 +241,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2020_26160",
@@ -252,6 +258,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2020_29652",
@@ -274,6 +281,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 "justification": "CVE-2020-29652 is skipped",
                             }
                         ],
+                        "attachments": []
                     },
                 ],
             }
