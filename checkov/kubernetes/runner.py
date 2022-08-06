@@ -4,7 +4,6 @@ import logging
 import operator
 import os
 from functools import reduce
-from pickle import NONE
 from typing import Type, Any, TYPE_CHECKING
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
