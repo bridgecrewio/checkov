@@ -4,6 +4,7 @@ import logging
 import operator
 import os
 from functools import reduce
+from pickle import NONE
 from typing import Type, Any, TYPE_CHECKING
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -104,6 +105,12 @@ class Runner(BaseRunner):
     def check_definitions(
         self, root_folder: str | None, runner_filter: RunnerFilter, report: Report, collect_skip_comments: bool = True
     ) -> Report:
+        # Run checks for collections first.
+        if (len(self.definitions)>0):
+            file_abs_path = _get_entity_abs_path(root_folder, list(self.definitions.keys())[0])
+            k8_file_path = f"/{os.path.relpath(file_abs_path, root_folder)}"
+            report = self.run_check(None, self.definitions, file_abs_path, k8_file_path,  report, runner_filter)
+
         for k8_file in self.definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(k8_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
@@ -122,15 +129,18 @@ class Runner(BaseRunner):
                 if entity_type == "Kustomization":
                     continue
 
-                skipped_checks = get_skipped_checks(entity_conf)
-                results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
-
-                # TODO? - Variable Eval Message!
-                variable_evaluations = {}
-
-                report = self.mutateKubernetesResults(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations)
+                report = self.run_check(k8_file, entity_conf, file_abs_path, k8_file_path, report, runner_filter)
             self.pbar.update()
         self.pbar.close()
+        return report
+
+    def run_check(self, k8_file, entity_conf, file_abs_path, k8_file_path, report, runner_filter) -> Report:
+        skipped_checks = get_skipped_checks(entity_conf)
+        results = registry.scan(k8_file, entity_conf, skipped_checks, runner_filter)
+
+        # TODO? - Variable Eval Message!
+        variable_evaluations = {}
+        report = self.mutateKubernetesResults(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations)
         return report
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
@@ -144,28 +154,47 @@ class Runner(BaseRunner):
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         if results:
-            for check, check_result in results.items():
-                resource_id = get_resource_id(entity_conf)
-                entity_context = self.context[k8_file][resource_id]
+            if k8_file:
+                for check, check_result in results.items():
+                    resource_id = get_resource_id(entity_conf)
+                    entity_context = self.context[k8_file][resource_id]
+                
+                    record = Record(
+                        check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                        check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
+                        file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                        resource=resource_id, evaluations=variable_evaluations,
+                        check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
+                    record.set_guideline(check.guideline)
+                    report.add_record(record=record)
 
-                record = Record(
-                    check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                    check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                    resource=resource_id, evaluations=variable_evaluations,
-                    check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
-                record.set_guideline(check.guideline)
-                report.add_record(record=record)
+            else:
+                #resource_id = "collection"
+                for k8_file, records in results.items():
+                    for check, check_result in records.items():
+                        resource_id =  get_resource_id(entity_conf[k8_file][0])
+                        entity_context = self.context[k8_file][resource_id]
+
+                        record = Record(
+                            check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                            check_result=check_result, code_block=entity_context.get("code_lines"), file_path=k8_file_path,
+                            file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                            resource=resource_id, evaluations=variable_evaluations,
+                            check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
+                        record.set_guideline(check.guideline)
+                        report.add_record(record=record)
+
         else:
-            resource_id = get_resource_id(entity_conf)
-            # resources without checks, but not existing ones
-            report.extra_resources.add(
-                ExtraResource(
-                    file_abs_path=file_abs_path,
-                    file_path=k8_file_path,
-                    resource=resource_id,
+            if k8_file:
+                resource_id = get_resource_id(entity_conf)
+                # resources without checks, but not existing ones
+                report.extra_resources.add(
+                    ExtraResource(
+                        file_abs_path=file_abs_path,
+                        file_path=k8_file_path,
+                        resource=resource_id,
+                    )
                 )
-            )
 
         return report
 

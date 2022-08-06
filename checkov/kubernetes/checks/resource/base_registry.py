@@ -8,7 +8,12 @@ class Registry(BaseCheckRegistry):
         return kind, conf
 
     def scan(self, scanned_file, entity, skipped_checks, runner_filter):
-        (entity_type, entity_configuration) = self.extract_entity_details(entity)
+        if scanned_file:
+            (entity_type, entity_configuration) = self.extract_entity_details(entity)
+        else:
+            entity_type = "collection"
+            entity_configuration = entity
+
         results = {}
         checks = self.get_checks(entity_type)
         for check in checks:
@@ -20,9 +25,16 @@ class Registry(BaseCheckRegistry):
             if self._should_run_scan(check, entity_configuration, runner_filter):
                 self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
 
-                result = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                if entity_type == "collection":
+                    for scanned_file in entity_configuration.keys():
+                        result = {}
+                        result[check] = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
                                    entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
-                results[check] = result
+                        results[scanned_file]=result
+                else:
+                   results[check] = check.run(scanned_file=scanned_file, entity_configuration=entity_configuration,
+                                   entity_name=entity_type, entity_type=entity_type, skip_info=skip_info)
+                   
         return results
 
     @staticmethod

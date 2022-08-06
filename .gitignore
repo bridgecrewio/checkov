@@ -170,3 +170,4 @@ fabric.properties
 # vim 
 .vim/
 .vimspector.json
+/.vs

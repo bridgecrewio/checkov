@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscaler-pod
+spec:
+  selector:
+    matchLabels:
+      run: autoscaler-pod
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: autoscaler-pod
+    spec:
+      containers:
+      - name: php-apache
+        image: k8s.gcr.io/hpa-example
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
