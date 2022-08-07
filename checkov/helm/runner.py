@@ -79,7 +79,7 @@ class Runner(BaseRunner):
         with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
             try:
                 chart_meta = yaml.safe_load(chartyaml)
-            except yaml.YAMLError:
+            except (yaml.YAMLError, UnicodeDecodeError):
                 logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
                 return None
         return chart_meta
