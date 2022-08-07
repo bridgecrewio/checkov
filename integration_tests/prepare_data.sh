@@ -19,6 +19,8 @@ else
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o sarif
+  pipenv run checkov -s --framework github_configuration -d integration_tests/example_workflow_file/bitbucket/ -o json > checkov_report_github_config.json
+
   pipenv run checkov -s --framework cloudformation -d cfngoat/ -o json --external-checks-dir ./checkov/cloudformation/checks/graph_checks/aws > checkov_report_cfngoat.json
   pipenv run checkov -s -d kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
   pipenv run checkov -s -d kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json

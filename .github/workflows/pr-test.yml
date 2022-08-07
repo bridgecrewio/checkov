@@ -111,6 +111,8 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ORG: bridgecrewio
         run: |
           # Just making sure the API key tests don't run on PRs
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
