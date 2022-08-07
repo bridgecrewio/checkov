@@ -14,8 +14,8 @@ class TestCheckovConfig(unittest.TestCase):
         # > path/to/checkov/checkov_config_report_terragoat.json
         report_path = os.path.join(os.path.dirname(current_dir), "checkov_report_github_config.json")
         with open(report_path) as json_file:
+            print(f"Got checkov_report_github_config result: {json_file}\n")
             data = json.load(json_file)
-            print(f"Got checkov_report_github_config result: {data}")
             self.assertEqual(data["summary"]["parsing_errors"], 0,
                              f"expecting 0 parsing errors but got: {data['results']['parsing_errors']}")
             self.assertEqual(data["summary"]["failed"], 3,
