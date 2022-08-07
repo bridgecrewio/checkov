@@ -151,7 +151,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines circleci_pipelines all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
