@@ -94,11 +94,14 @@ class BaseVCSDAL:
             if request.status == 200:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
+                    print(f"Github errors: {data}")
                     logging.debug("received errors %s", data)
                     return None
                 return data
 
             else:
+                print(f"Github status: {request.status}")
+                print(f"Github answer: {request.data}")
                 logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception:
             logging.debug(f"Query failed {query}", exc_info=True)
