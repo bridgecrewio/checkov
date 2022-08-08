@@ -122,9 +122,11 @@ class Runner(YamlRunner, ImageReferencer):
             for result in results:
                 image_name = result.get("image", None)
                 if image_name:
-                    image_id = self.inspect(image_name)
-                    image_obj = Image(file_path=file_path, name=image_name, image_id=image_id,
-                                      start_line=result["__startline__"],
-                                      end_line=result["__endline__"])
+                    image_obj = Image(
+                        file_path=file_path,
+                        name=image_name,
+                        start_line=result["__startline__"],
+                        end_line=result["__endline__"],
+                    )
                     images.add(image_obj)
         return images

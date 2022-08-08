@@ -16,7 +16,7 @@ from termcolor import colored
 from checkov import sca_package
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -239,7 +239,7 @@ class Report:
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE:
-                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n\n"
+                message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
         output_data += colored(message, "cyan")
@@ -288,6 +288,7 @@ class Report:
         information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
 
         for record in self.failed_checks + self.skipped_checks:
+            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -325,6 +326,7 @@ class Report:
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
                 "level": level,
+                "attachments": [{'description': detail} for detail in record.details],
                 "message": {
                     "text": record.description if record.description else record.check_name,
                 },
@@ -427,6 +429,8 @@ class Report:
                 severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
+                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 if not record.vulnerability_details:
                     # this shouldn't normally happen
                     logging.warning(f"Vulnerability check without details {record.file_path}")

@@ -19,7 +19,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 41)
+        self.assertEqual(len(report.passed_checks), 127)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_on_suspectcurl(self):
@@ -106,6 +106,23 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[2].job[0] == 'secure-job'
         assert report.passed_checks[2].triggers[0] == {'pull_request'}
         assert report.passed_checks[2].workflow_name == 'unsecure-worfklow'
+
+    def test_runner_on_non_empty_workflow_dispatch(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/workflow_dispatch.yaml"
+        file_dir = [str(file_path)]
+
+        checks = ["CKV_GHA_7"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert report.failed_checks[0].job[0] == None
+        assert report.failed_checks[0].triggers[0] == {'workflow_dispatch'}
+        assert report.failed_checks[0].workflow_name == None
 
     def test_runner_on_supply_chain(self):
         # given

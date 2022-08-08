@@ -145,7 +145,7 @@ class RunnerRegistry:
                     git_org = ""
                     git_repository = ""
                     if 'repo_id' in config and config.repo_id is not None:
-                        git_org,git_repository = config.repo_id.split('/')
+                        git_org, git_repository = config.repo_id.split('/')
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
             exit_codes.append(report.get_exit_code(config.soft_fail, config.soft_fail_on, config.hard_fail_on))
@@ -222,7 +222,7 @@ class RunnerRegistry:
             if output_formats:
                 print(OUTPUT_DELIMITER)
         if "cyclonedx" in config.output:
-            cyclonedx = CycloneDX(reports=cyclonedx_reports)
+            cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
             cyclonedx_output = cyclonedx.get_xml_output()
 
             print(cyclonedx_output)
@@ -232,9 +232,9 @@ class RunnerRegistry:
                 print(OUTPUT_DELIMITER)
         if "csv" in config.output:
             is_api_key = False
-            if 'bc_api_key' in config and  config.bc_api_key is not None:
+            if 'bc_api_key' in config and config.bc_api_key is not None:
                 is_api_key = True
-            csv_sbom_report.persist_report(is_api_key)
+            csv_sbom_report.persist_report(is_api_key=is_api_key, output_path=config.output_file_path)
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt',
@@ -242,15 +242,45 @@ class RunnerRegistry:
                       'sarif': 'results_sarif.sarif',
                       'json': 'results_json.json',
                       'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml',
-                      'csv': 'results_csv.csv'}
+                      'cyclonedx': 'results_cyclonedx.xml'}
         if config.output_file_path:
             for output in config.output:
-                self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
-                                         data=data_outputs[output],
-                                         data_format=output)
+                if output in file_names:
+                    self.save_output_to_file(file_name=f'{config.output_file_path}/{file_names[output]}',
+                                             data=data_outputs[output],
+                                             data_format=output)
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
+
+    def print_iac_bom_reports(self, output_path: str,
+                              scan_reports: list[Report],
+                              output_types: list[str]) -> dict[str, str]:
+
+        output_files = {
+            'cyclonedx': 'results_cyclonedx.xml',
+            'csv': 'results_iac.csv'
+        }
+
+        # create cyclonedx report
+        if 'cyclonedx' in output_types:
+            cyclonedx_output_path = output_files['cyclonedx']
+            cyclonedx = CycloneDX(reports=scan_reports,
+                                  repo_id=metadata_integration.bc_integration.repo_id,
+                                  export_iac_only=True)
+            cyclonedx_output = cyclonedx.get_xml_output()
+            self.save_output_to_file(file_name=os.path.join(output_path, cyclonedx_output_path),
+                                     data=cyclonedx_output,
+                                     data_format="cyclonedx")
+
+        # create csv report
+        if 'csv' in output_types:
+            csv_sbom_report = CSVSBOM()
+            for report in scan_reports:
+                if not report.is_empty():
+                    csv_sbom_report.add_report(report=report, git_org="", git_repository="")
+            csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
+
+        return {key: os.path.join(output_path, value) for key, value in output_files.items()}
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:

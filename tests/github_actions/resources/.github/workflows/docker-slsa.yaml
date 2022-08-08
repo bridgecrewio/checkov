@@ -1,0 +1,235 @@
+### This workflow uses the SLSA generic provenenace generator workflow for a docker build
+### Borrowed from https://github.com/marco-lancini/utils/blob/main/ci/github/docker-build-sign-sbom/reusable-docker.yml
+
+name: Reusable workflow - Docker
+
+on:
+  workflow_call:
+    inputs:
+      FOLDER:
+        required: true
+        type: string
+      AWS_ACCOUNT_NAME:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
+      AWS_ROLE:
+        required: true
+        type: string
+      REGISTRY:
+        required: true
+        type: string
+      IMAGE_NAME:
+        required: true
+        type: string
+      IMAGE_TAG:
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  # ============================================================================
+  # BUILD
+  # ============================================================================
+  build:
+    name: build
+    runs-on: ubuntu-20.04
+
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+
+    outputs:
+      digest: ${{ steps.build-and-push-step.outputs.digest }}
+
+    steps:
+      - name: 📂 Checkout repository
+        uses: actions/checkout@v3.0.2
+
+      # ========================================================================
+      # Install Tooling
+      # ========================================================================
+      # Install cosign except on PR
+      - name: 🔻 Install cosign
+        if: github.event_name != 'pull_request'
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.9.0'
+
+      # Setup docker build
+      - name: 🔻 Setup Docker buildx
+        uses: docker/setup-buildx-action@v2
+
+      # ========================================================================
+      # Authenticate to AWS/ECR (except on PR)
+      # ========================================================================
+      # Get OIDC Token
+      - name: 🎟 Configure AWS Credentials
+        if: github.event_name != 'pull_request'
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      # Login against ECR
+      - name: 🎟 Login to Amazon ECR
+        if: github.event_name != 'pull_request'
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # ========================================================================
+      # Build locally and run Trivy (only in PR)
+      # ========================================================================
+      - name: 🚧 Build locally
+        if: github.event_name == 'pull_request'
+        id: build_local
+        uses: docker/build-push-action@master
+        with:
+          push: false
+          file: ${{ inputs.FOLDER }}/Dockerfile
+          tags: ${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+          # Needed for trivy
+          outputs: type=docker
+
+      - name: 🛡 Run Trivy vulnerability scanner
+        if: github.event_name == 'pull_request'
+        id: docker_trivy
+        uses: aquasecurity/trivy-action@0.2.5
+        continue-on-error: true
+        with:
+          image-ref: ${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+          format: 'table'
+          # WARN ONLY
+          exit-code: '0'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      # ========================================================================
+      # PR Output (only in PR)
+      # ========================================================================
+      - name: 📄 Show Build Output
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        env:
+          BUILD: ${{ steps.build_local.outputs.metadata }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Image: 📋 \`${{ inputs.IMAGE_NAME }}\`
+            |     | Step        | Result                                       |
+            | --- | ----------  | -------------------------------------------- |
+            | 📖  | **Build**   | \`${{ steps.build_local.outcome }}\`               |
+            | 🛡  | **Trivy**   | \`${{ steps.docker_trivy.outcome }}\`               |
+            ### Build:
+            <details>
+            <summary>Build output</summary>
+            \`\`\`${process.env.BUILD}
+            \`\`\`
+            </details>
+            ---
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      # ========================================================================
+      # Build Image and push to ECR (except on PR)
+      # ========================================================================
+      # Extract metadata (tags, labels) for Docker
+      - name: 📭 Extract Docker metadata
+        if: ${{ github.event_name != 'pull_request' }}
+        id: meta
+        uses: docker/metadata-action@v3.6.0
+        with:
+          images: ${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}
+
+      # Build and push container image with Buildx (don't push on PR)
+      - name: 🔨 Build and push container image
+        if: github.ref == 'refs/heads/main' && ${{ github.event_name != 'pull_request' }}
+        id: build-and-push-step
+        uses: docker/build-push-action@master
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          file: ${{ inputs.FOLDER }}/Dockerfile
+          labels: ${{ steps.meta.outputs.labels }}
+          # Use tags: ${{ steps.meta.outputs.tags }} if you want to tag the image with branch name
+          tags: ${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}
+
+      # ========================================================================
+      # Sign Image Digest (except on PR)
+      # ========================================================================
+      # Sign the resulting Docker image digest except on PRs.
+      # This will only write to the public Rekor transparency log when the
+      # repository is public to avoid leaking data
+      # If you would like to publish transparency data even for private images,
+      #  pass --force to cosign below
+      - name: 🔏 Sign the published image
+        if: github.ref == 'refs/heads/main' && ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: 'true'
+        run: cosign sign ${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}:${{ inputs.IMAGE_TAG }}@${{ steps.build-and-push-step.outputs.digest }} -a "repo=${{ github.repository }}" -a "ref=${{ github.sha }}"
+
+  sbom:
+    name: sbom
+    runs-on: ubuntu-20.04
+    needs: [build]
+
+    # Don't run in PR
+    if: github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      IMAGE_DIGEST: ${{ needs.build.outputs.digest }}
+
+    steps:
+      # ========================================================================
+      # Install Tooling
+      # ========================================================================
+      # Install cosign except on PR
+      - name: 🔻 Install cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.9.0'
+
+      # Install syft
+      - name: 🔻 Install Syft
+        uses: anchore/sbom-action/download-syft@v0.11.0
+
+      # ========================================================================
+      # Authenticate to AWS/ECR (except on PR)
+      # ========================================================================
+      # Get OIDC Token
+      - name: 🎟 Configure AWS Credentials
+        if: github.event_name != 'pull_request'
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.AWS_ROLE }}
+          role-session-name: GithubActionsSession
+
+      # Login against ECR
+      - name: 🎟 Login to Amazon ECR
+        if: github.event_name != 'pull_request'
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # ========================================================================
+      # Create SBOM and attach it to image
+      # ========================================================================
+      - name: 🎫 Attach SBOM to image
+        env:
+          COSIGN_EXPERIMENTAL: 'true'
+        run: |
+          syft "${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}@${IMAGE_DIGEST}" -o spdx-json=sbom-spdx.json
+          cosign attest --predicate sbom-spdx.json --type spdx "${{ inputs.REGISTRY }}/${{ inputs.IMAGE_NAME }}@${IMAGE_DIGEST}"
+          echo "::notice title=Verify SBOM attestation::COSIGN_EXPERIMENTAL=1 cosign verify-attestation ${{ inputs.REGISTRY }}/${IMAGE_NAME}@${IMAGE_DIGEST} | jq '.payload |= @base64d | .payload | fromjson | select(.predicateType == \"https://spdx.dev/Document\") | .predicate.Data | fromjson'"

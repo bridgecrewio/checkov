@@ -23,6 +23,7 @@ class TestLBTargetGroupDefinesHealthcheck(unittest.TestCase):
         failing_resources = {
             'aws_lb_target_group.fail',
             'aws_lb_target_group.fail2',
+            'aws_lb_target_group.fail3',
         }
         skipped_resources = {}
 

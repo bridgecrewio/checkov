@@ -19,3 +19,8 @@ def test_file_with_class_special_attributes():
 def test_dataclass_skip():
     errors = run_validator_for_test_file('dataclass_skip.py')
     assert len(errors) == 0
+
+
+def test_typing_class_skip():
+    errors = run_validator_for_test_file('typing_class_skip.py')
+    assert len(errors) == 0

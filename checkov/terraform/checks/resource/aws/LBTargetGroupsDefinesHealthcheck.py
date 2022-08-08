@@ -20,7 +20,7 @@ class LBTargetGroupDefinesHealthCheck(BaseResourceCheck):
             health_checks = conf.get('health_check')
             if health_checks and isinstance(health_checks, list):
                 healthcheck = health_checks[0]
-                if healthcheck.get('path'):
+                if isinstance(healthcheck, dict) and healthcheck.get('path'):
                     return CheckResult.PASSED
             self.evaluated_keys = ['health_check']
             return CheckResult.FAILED

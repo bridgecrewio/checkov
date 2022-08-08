@@ -102,7 +102,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks,runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -126,7 +126,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities, definitions[file_path]), # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -160,7 +160,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
     def included_paths(self) -> Iterable[str]:
         return []
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod
@@ -182,9 +182,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        # it is correct that 'True' can be a key. It is easier to ignore the typing here,
-        # then to support it all the way up.
-        triggers = definition.get(True)  # type:ignore[call-overload]
+        triggers = definition.get("on")
         try:
             if isinstance(triggers, str):
                 triggers_set.add(triggers)

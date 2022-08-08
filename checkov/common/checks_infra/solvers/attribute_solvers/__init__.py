@@ -26,3 +26,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.length_greater_than_a
 from checkov.common.checks_infra.solvers.attribute_solvers.length_greater_than_or_equal_attribute_solver import LengthGreaterThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.length_less_than_attribute_solver import LengthLessThanAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.length_less_than_or_equal_attribute_solver import LengthLessThanOrEqualAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.is_true_attribute_solver import IsTrueAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.is_false_attribute_solver import IsFalseAttributeSolver  # noqa

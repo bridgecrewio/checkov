@@ -107,6 +107,8 @@ definition:
 | Length Less Than Or Equal   | `length_less_than_or_equal`      |
 | Length Greater Than   | `length_greater_than`   |
 | Length Greater Than Or Equal   | `length_greater_than_or_equal`   |
+| Is False              | `is_false`              |
+| Is True               | `is_true`               |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
@@ -117,7 +119,7 @@ All those operators are supporting JSONPath attribute expression by adding the `
 | `cond_type` | string | Must be `attribute`                                                                                                                                                                                                                                                                                      |
 | `resource_type` | collection of strings | Use either `all` or `[resource types from list]`                                                                                                                                                                                                                                                         |
 | `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period`                                                                                                                                                                                                                  |
-| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal` |
+| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal`, `is_true`, `is_false` |
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                                              |
 
 
@@ -245,7 +247,7 @@ The logic in the policy definition shown below is:
 
 ```yaml
 #....
-defintion:
+definition:
   and:
   - #filter block 1
   - #block 2
@@ -266,7 +268,7 @@ The definition below inverts the example in the previous section.
 
 ```yaml
 #....
-defintion:
+definition:
   not:
     and:
     - #filter block 1
@@ -280,7 +282,7 @@ The following code is also valid (the child of `not` is a list of length 1):
 
 ```yaml
 #....
-defintion:
+definition:
   not:
   - and:
     - #filter block 1
