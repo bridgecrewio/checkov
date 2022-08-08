@@ -31,6 +31,7 @@ class EmptyWorkflowDispatch(BaseGithubActionsCheck):
                 return CheckResult.PASSED, conf
             else:
                 return CheckResult.UNKNOWN, conf
+
         workflow_dispatch = conf.get("workflow_dispatch")
         if isinstance(workflow_dispatch, dict):
             workflow_dispatch_inputs = workflow_dispatch.get("inputs", {})
