@@ -818,4 +818,18 @@ resource "aws_security_group_rule" "dax_cluster_egress" {
   security_group_id = aws_security_group.pass_dax_cluster.id
 }
 
+# Memory DB 
 
+resource "aws_security_group" "pass_memorydb_cluster" {
+  name        = "redis-secgrp"
+  description = "Redis Security Group"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_memorydb_cluster" "pass_memorydb_cluster" {
+  acl_name                 = "open-access"
+  name                     = "test-memorydb"
+  node_type                = "db.t4g.small"
+  security_group_ids       = [aws_security_group.pass_memorydb_cluster.id]
+  depends_on               = [ aws_security_group.pass_memorydb_cluster ]
+}

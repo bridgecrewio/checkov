@@ -349,20 +349,38 @@ def test_create_cli_license_violations_table():
     # given
     file_path = "/requirements.txt"
 
-    license_statuses = [
-        {
-            "package_name": "django",
-            "package_version": "1.2",
-            "license": "DUMMY_LICENSE",
-            "status": "OPEN",
-            "policy": "BC_LIC_1"
-        }
-    ]
+    package_licenses_details_map = {
+        "django": [
+            {
+                "package_name": "django",
+                "package_version": "1.2",
+                "license": "DUMMY_LICENSE",
+                "status": "OPEN",
+                "policy": "BC_LIC_1"
+            },
+            {
+                "package_name": "django",
+                "package_version": "1.2",
+                "license": "DUMMY_LICENSE2",
+                "status": "OPEN",
+                "policy": "BC_LIC_1"
+            },
+        ],
+        "flask": [
+            {
+                "package_name": "flask",
+                "package_version": "0.6",
+                "license": "DUMMY_LICENSE3",
+                "status": "OPEN",
+                "policy": "BC_LIC_1"
+            },
+        ]
+    }
 
     # when
     table = create_cli_license_violations_table(
         file_path=file_path,
-        license_statuses=license_statuses
+        package_licenses_details_map=package_licenses_details_map
     )
 
     # then
@@ -373,6 +391,9 @@ def test_create_cli_license_violations_table():
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ django                 │ 1.2                    │ BC_LIC_1               │ DUMMY_LICENSE          │ OPEN                    │\n",
+            "\t│                        │                        │ BC_LIC_1               │ DUMMY_LICENSE2         │ OPEN                    │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
+            "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_LICENSE3         │ OPEN                    │\n",
             "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
     )
@@ -467,6 +488,7 @@ def test_create_cli_output():
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ django                 │ 1.2                    │ BC_LIC_1               │ DUMMY_LICENSE          │ FAILED                  │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ FAILED                  │\n",
             "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
@@ -550,6 +572,7 @@ def test_create_cli_output_without_cve_records():
             "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │\n",
             "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ django                 │ 1.2                    │ BC_LIC_1               │ DUMMY_LICENSE          │ FAILED                  │\n",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
             "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ FAILED                  │\n",
             "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
