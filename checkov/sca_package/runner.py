@@ -189,6 +189,7 @@ class Runner(BaseRunner):
                         vulnerability_details={
                             "package_name": package["name"],
                             "package_version": package["version"],
+                            "licenses": ', '.join(licenses_per_package_map[get_package_alias(package["name"], package["version"])]) or 'Unknown',
                         }
                     )
                 )
