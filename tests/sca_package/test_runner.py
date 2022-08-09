@@ -104,7 +104,11 @@ def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):
     # then
     assert summary["passed"] == 0
     assert summary["failed"] == 0
-    assert summary["skipped"] == 8
+    assert summary["skipped"] > 0
+
+    assert any(c for c in report.skipped_checks if c.check_id.startswith('CKV_CVE'))
+    assert any(c for c in report.skipped_checks if c.check_id.startswith('BC_LIC'))
+
     assert summary["parsing_errors"] == 0
 
 

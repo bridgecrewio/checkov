@@ -18,6 +18,8 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 
 
 class Runner(BaseRunner):
@@ -144,12 +146,26 @@ class Runner(BaseRunner):
             package_name, package_version, license = license_status["package_name"], license_status["package_version"], license_status["license"]
             licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
 
+            policy = license_status["policy"]
+
             license_record = create_report_license_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
                 licenses_status=license_status
             )
+
+            if not runner_filter.should_run_check(check_id=policy, bc_check_id=policy,
+                                                  severity=metadata_integration.get_severity(policy),
+                                                  report_type=self.report_type):
+                if runner_filter.checks:
+                    continue
+                else:
+                    license_record.check_result = {
+                        "result": CheckResult.SKIPPED,
+                        "suppress_comment": f"{policy} is skipped"
+                    }
+
             report.add_resource(license_record.resource)
             report.add_record(license_record)
 
