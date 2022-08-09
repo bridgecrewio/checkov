@@ -31,9 +31,10 @@ def test_run(mocker: MockerFixture, scan_result):
         "path/to/go.sum.golang.org/x/crypto",
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
+        "path/to/requirements.txt.requests",
         "path/to/sub/requirements.txt.requests",
     }
-    assert len(report.passed_checks) == 3
+    assert len(report.passed_checks) == 4
     assert len(report.failed_checks) == 9
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
@@ -72,6 +73,11 @@ def test_run(mocker: MockerFixture, scan_result):
     assert "licenses" in cve_record_with_2_license.vulnerability_details
     assert cve_record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
 
+    extra_resource = next((c for c in report.extra_resources if c.resource == "path/to/requirements.txt.requests"), None)
+    assert extra_resource is not None
+    assert "licenses" in extra_resource.vulnerability_details
+    assert extra_resource.vulnerability_details["licenses"] == "OSI_APACHE"
+
 
 def test_run_with_empty_scan_result(mocker: MockerFixture):
     # given
@@ -106,9 +112,10 @@ def test_run_with_skip(mocker: MockerFixture, scan_result):
         "path/to/go.sum.golang.org/x/crypto",
         "path/to/requirements.txt.django",
         "path/to/requirements.txt.flask",
+        "path/to/requirements.txt.requests",
         "path/to/sub/requirements.txt.requests",
     }
-    assert len(report.passed_checks) == 3
+    assert len(report.passed_checks) == 4
     assert len(report.failed_checks) == 8
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
