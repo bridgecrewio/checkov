@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 import logging
@@ -8,10 +10,11 @@ from typing import Dict, Optional, Tuple, List, Type, Any, Set
 
 import dpath.util
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
@@ -36,15 +39,17 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
+from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources, SUPPORTED_AWS_IMAGE_RESOURCE_TYPES
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
+SUPPORTED_IMAGE_RESOURCE_TYPES = SUPPORTED_AWS_IMAGE_RESOURCE_TYPES
 
 
-class Runner(BaseRunner):
+class Runner(ImageReferencerMixin, BaseRunner):
     check_type = CheckType.TERRAFORM
 
     def __init__(
@@ -86,7 +91,7 @@ class Runner(BaseRunner):
             files: Optional[List[str]] = None,
             runner_filter: RunnerFilter = RunnerFilter(),
             collect_skip_comments: bool = True
-    ) -> Report:
+    ) -> Report | list[Report]:
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -145,6 +150,18 @@ class Runner(BaseRunner):
             merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
+
+        if bc_integration.bc_api_key and any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+                supported_resource_types=SUPPORTED_IMAGE_RESOURCE_TYPES,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
 
         return report
 
@@ -500,3 +517,11 @@ class Runner(BaseRunner):
         for file, file_content in self.definitions.items():
             if "module" in file_content:
                 __cache_file_content(file_modules=file_content["module"])
+
+    def extract_images(self, resources: list[dict[str, Any]]) -> list[Image]:
+        images = []
+
+        for resource in resources:
+            images.extend(extract_images_from_aws_resources(resource))
+
+        return images

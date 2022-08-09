@@ -19,6 +19,7 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.sca.output import parse_vulns_to_records
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
@@ -209,8 +210,9 @@ class Runner(PackageRunner):
                     pass
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
 
-            self.parse_vulns_to_records(
+            parse_vulns_to_records(
                 report=report,
+                check_class=self._check_class,
                 scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
@@ -231,8 +233,9 @@ class Runner(PackageRunner):
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
             vulnerabilities = result.get("vulnerabilities") or []
-            self.parse_vulns_to_records(
+            parse_vulns_to_records(
                 report=report,
+                check_class=self._check_class,
                 scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
@@ -265,8 +268,9 @@ class Runner(PackageRunner):
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
         rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-        self.parse_vulns_to_records(
+        parse_vulns_to_records(
             report=report,
+            check_class=self._check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
             rootless_file_path=f"{rootless_file_path} ({image_id})",
             runner_filter=runner_filter,
