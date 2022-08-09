@@ -63,6 +63,8 @@ def test_run(mocker: MockerFixture, scan_result):
         packaging_version.parse("v0.0.0-20201216223049-8b5274cf687f"),
     ]
 
+    # making sure cve-records have licenses (the one belongs to the associated package) - this data will be printed
+    # as part of the BON report.
     cve_record_with_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.django" and c.check_name == "SCA package scan"), None)
     assert cve_record_with_license is not None
     assert "licenses" in cve_record_with_license.vulnerability_details
@@ -73,6 +75,8 @@ def test_run(mocker: MockerFixture, scan_result):
     assert "licenses" in cve_record_with_2_license.vulnerability_details
     assert cve_record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
 
+    # making sure extra-resources (a scanned packages without cves) also have licenses - this data will be printed
+    # as part of the BON report.
     extra_resource = next((c for c in report.extra_resources if c.resource == "path/to/requirements.txt.requests"), None)
     assert extra_resource is not None
     assert "licenses" in extra_resource.vulnerability_details
