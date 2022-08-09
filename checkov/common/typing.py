@@ -64,3 +64,12 @@ class _ExitCodeThresholds(TypedDict):
     soft_fail_threshold: Severity | None
     hard_fail_checks: list[str]
     hard_fail_threshold: Severity | None
+
+
+class _LicenseStatus(TypedDict):
+    package_name: str
+    package_version: str
+    policy: str
+    license: str
+    status: str
+

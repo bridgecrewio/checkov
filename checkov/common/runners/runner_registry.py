@@ -214,7 +214,7 @@ class RunnerRegistry:
                     git_org = ""
                     git_repository = ""
                     if 'repo_id' in config and config.repo_id is not None:
-                        git_org,git_repository = config.repo_id.split('/')
+                        git_org, git_repository = config.repo_id.split('/')
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             logging.debug(f'Getting exit code for report {report.check_type}')
             exit_code_thresholds = self.get_fail_thresholds(config, report.check_type)

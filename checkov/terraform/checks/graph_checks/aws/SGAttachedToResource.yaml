@@ -47,6 +47,7 @@ definition:
         - aws_sagemaker_notebook_instance
         - aws_vpc_endpoint
         - aws_mq_broker
+        - aws_memorydb_cluster
       operator:  exists
       attribute: networking
       cond_type: connection

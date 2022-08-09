@@ -6,6 +6,7 @@ from lark import Tree
 from packaging.version import LegacyVersion, Version
 
 from checkov.common.bridgecrew.severities import Severity
+from checkov.common.output.common import ImageDetails
 
 
 class CustomJSONEncoder(json.JSONEncoder):
@@ -22,5 +23,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return o.name
         elif isinstance(o, complex):
             return str(o)
+        elif isinstance(o, ImageDetails):
+            return o.__dict__
         else:
             return json.JSONEncoder.default(self, o)
