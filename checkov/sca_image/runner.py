@@ -21,6 +21,8 @@ from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.typing import _LicenseStatus
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -245,6 +247,39 @@ class Runner(PackageRunner):
 
         return report
 
+    def get_license_statuses(self, packages: list[dict[str, Any]]) -> List[_LicenseStatus]:
+        mocked_license_statuses: List[_LicenseStatus] = []
+        for package in packages:
+            mocked_license_statuses.append(_LicenseStatus(package_name=package.get("name", ""),
+                                                    package_version=package.get("version", ""),
+                                                    policy=package.get("policy", "BC_LIC1"),
+                                                    license=", ".join(package.get("licenses", [])),
+                                                    status=package.get("status", "COMPLIANT")))
+        requests_input = [
+            {"name": package.get("name", ""), "version": package.get("name", ""), "lang": package.get("type", "")}
+            for package in packages
+        ]
+        get_license_violation_url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
+        try:
+            response = request_wrapper("POST", get_license_violation_url,
+                                       headers=bc_integration.get_default_headers("POST"),
+                                       json={"packages": requests_input},
+                                       should_call_raise_for_status=True)
+            response_json = response.json()
+            license_statuses = [
+                _LicenseStatus(package_name=license_violation.get("name", ""),
+                               package_version=license_violation.get("version", ""),
+                               policy=license_violation.get("policy", "BC_LIC1"),
+                               license=", ".join(license_violation.get("licenses", [])),
+                               status=license_violation.get("status", "COMPLIANT"))
+                for license_violation in response_json.get("violations", [])
+            ]
+            return license_statuses
+            # return mocked_license_statuses
+        except Exception as e:
+            logging.error(f"failing when trying to get licenses-violations: {e}", exc_info=True)
+            return []
+
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
         """
         THIS METHOD HANDLES CUSTOM IMAGE SCANNING THAT COMES DIRECTLY FROM CLI PARAMETERS
@@ -257,6 +292,8 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
+        license_statuses = self.get_license_statuses(result.get("packages") or [])
+        print(license_statuses)
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
@@ -272,7 +309,7 @@ class Runner(PackageRunner):
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
             packages=[],
-            license_statuses=[],
+            license_statuses=license_statuses,
             image_details=image_details
         )
         return report
