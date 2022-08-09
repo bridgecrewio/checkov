@@ -14,13 +14,13 @@ class KubeletClientCa(BaseK8sContainerCheck):
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["command"]
         if conf.get("command"):
-             if "kubelet" in conf["command"]:
+            if "kubelet" in conf["command"]:
                 hasClientCaFile = False
                 for command in conf["command"]:
                     if command.startswith("--client-ca-file"):
                         if len(command.split("=")) == 2:
                             hasClientCaFile = True
-                return CheckResult.PASSED if hasClientCaFile else CheckResult.FAILED
+                return CheckResult.PASSED if hasClientCaFile else CheckResult.FAILED             
 
         return CheckResult.PASSED
 
