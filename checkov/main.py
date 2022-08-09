@@ -472,7 +472,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'being available in Checkov.',
                action='store_true')
     parser.add('--use-enforcement-rules', action='store_true',
-               help='Use the Enforcement Rules configured in the platform for hard / soft fail logic. With this option, '
+               help='Use the Enforcement rules configured in the platform for hard / soft fail logic. With this option, '
                     'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
                     'this behavior: any check with a severity below the selected rule\'s soft-fail threshold will be '
                     'skipped; any check with a severity equal to or greater than the rule\'s hard-fail threshold will '
