@@ -20,6 +20,12 @@ class EmptyWorkflowDispatch(BaseGithubActionsCheck):
         )
 
     def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if isinstance(conf, list):
+            for sub_conf in conf:
+                if sub_conf == "workflow_dispatch":
+                    return CheckResult.PASSED, sub_conf
+            return CheckResult.UNKNOWN, {}
+
         if isinstance(conf, str):
             if conf == "workflow_dispatch":
                 return CheckResult.PASSED, conf
