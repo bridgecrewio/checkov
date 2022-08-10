@@ -5,10 +5,35 @@ from pathlib import Path
 # from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 #
 # from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.kustomize.runner import Runner
 
 class TestRunnerValid(unittest.TestCase):
+    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+
+        # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
+
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        runner.templateRendererCommandOptions = "build"
+        filter = RunnerFilter(framework=['kustomize'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.KUSTOMIZE: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+
     @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
     def test_record_relative_path_with_relative_dir(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).

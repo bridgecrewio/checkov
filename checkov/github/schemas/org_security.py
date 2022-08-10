@@ -31,12 +31,19 @@ class OrgSecuritySchema(VCSSchema):
                                     "type": "boolean"
                                 },
                                 "samlIdentityProvider": {
-                                    "type": "object",
-                                    "properties": {
-                                        "ssoUrl": {
-                                            "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "ssoUrl": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "null"
                                         }
-                                    }
+                                    ]
                                 }
                             },
                             "required": [

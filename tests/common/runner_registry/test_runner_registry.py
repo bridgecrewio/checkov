@@ -6,7 +6,8 @@ import os
 import io
 from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -96,6 +97,7 @@ class TestRunnerRegistry(unittest.TestCase):
             soft_fail_on=None,
             hard_fail_on=None,
             output_file_path=None,
+            use_enforcement_rules=None
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
@@ -123,6 +125,7 @@ class TestRunnerRegistry(unittest.TestCase):
             soft_fail_on=None,
             hard_fail_on=None,
             output_file_path=None,
+            use_enforcement_rules=None
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
@@ -197,6 +200,11 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry.filter_runners_for_files(['manifest.json'])
         self.assertIn("kubernetes", set(r.check_type for r in runner_registry.runners))
 
+    def test_runners_have_code_category(self):
+        checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+        for runner in checkov_runners:
+            self.assertIn(runner, CodeCategoryMapping)
+
 
 def test_non_compact_json_output(capsys):
     # given
@@ -216,6 +224,7 @@ def test_non_compact_json_output(capsys):
         soft_fail_on=None,
         hard_fail_on=None,
         output_file_path=None,
+        use_enforcement_rules=None
     )
 
     # when

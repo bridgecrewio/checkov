@@ -1,8 +1,12 @@
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
+
+    def __init__(self):
+        super().__init__(CheckType.HELM)
 
     def extract_entity_details(self, entity):
         kind = entity["kind"]

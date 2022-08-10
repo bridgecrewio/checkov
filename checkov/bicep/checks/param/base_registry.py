@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from pycep.typing import ParameterAttributes
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
@@ -13,7 +14,7 @@ class Registry(BaseCheckRegistry):
     def __init__(self) -> None:
         self.entity_to_check_map: dict[str, set[str]] = defaultdict(set)
 
-        super().__init__()
+        super().__init__(report_type=CheckType.BICEP)
 
     def register(self, check: BaseCheck) -> None:
         if self._BaseCheckRegistry__loading_external_checks:  # type:ignore[attr-defined]  # they exist
