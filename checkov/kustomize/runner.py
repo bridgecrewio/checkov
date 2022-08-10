@@ -34,6 +34,7 @@ class K8sKustomizeRunner(K8sRunner):
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
 
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
+        self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data = {}
         self.pbar.turn_off_progress_bar()
 
