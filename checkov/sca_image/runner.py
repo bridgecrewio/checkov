@@ -220,7 +220,8 @@ class Runner(PackageRunner):
                 vulnerabilities=vulnerabilities,
                 packages=[],
                 license_statuses=[],
-                image_details=image_details
+                image_details=image_details,
+                report_type=self.report_type,
             )
 
             return report
@@ -243,6 +244,7 @@ class Runner(PackageRunner):
                 vulnerabilities=vulnerabilities,
                 packages=[],
                 license_statuses=[],
+                report_type=self.report_type,
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -278,7 +280,8 @@ class Runner(PackageRunner):
             vulnerabilities=vulnerabilities,
             packages=[],
             license_statuses=[],
-            image_details=image_details
+            image_details=image_details,
+            report_type=self.report_type,
         )
         return report
 

@@ -6,19 +6,25 @@ from typing import TYPE_CHECKING, Any
 
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
+    integration as metadata_integration,
+)
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.sca.commons import get_file_path_for_record, get_resource_for_record, get_package_alias
+from checkov.common.sca.commons import (
+    get_file_path_for_record,
+    get_resource_for_record,
+    get_package_alias,
+    UNFIXABLE_VERSION,
+)
 from checkov.common.typing import _LicenseStatus, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.output.common import ImageDetails
     from checkov.common.output.report import Report
-
-UNFIXABLE_VERSION = "N/A"
 
 
 def create_report_license_record(
@@ -165,6 +171,7 @@ def parse_vulns_to_records(
     packages: list[dict[str, Any]],
     license_statuses: list[_LicenseStatus],
     image_details: ImageDetails | None = None,
+    report_type: str | None = None,
 ) -> None:
     licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
@@ -178,12 +185,29 @@ def parse_vulns_to_records(
         )
         licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
 
+        policy = license_status["policy"]
+
         license_record = create_report_license_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             licenses_status=license_status,
         )
+
+        if not runner_filter.should_run_check(
+            check_id=policy,
+            bc_check_id=policy,
+            severity=metadata_integration.get_severity(policy),
+            report_type=report_type,
+        ):
+            if runner_filter.checks:
+                continue
+            else:
+                license_record.check_result = {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": f"{policy} is skipped",
+                }
+
         report.add_resource(license_record.resource)
         report.add_record(license_record)
 
@@ -201,7 +225,10 @@ def parse_vulns_to_records(
             image_details=image_details,
         )
         if not runner_filter.should_run_check(
-            check_id=cve_record.check_id, bc_check_id=cve_record.bc_check_id, severity=cve_record.severity
+            check_id=cve_record.check_id,
+            bc_check_id=cve_record.bc_check_id,
+            severity=cve_record.severity,
+            report_type=report_type,
         ):
             if runner_filter.checks:
                 continue
@@ -226,7 +253,10 @@ def parse_vulns_to_records(
                     vulnerability_details={
                         "package_name": package["name"],
                         "package_version": package["version"],
-                        "licenses": ', '.join(licenses_per_package_map[get_package_alias(package["name"], package["version"])]) or 'Unknown',
+                        "licenses": ", ".join(
+                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]
+                        )
+                        or "Unknown",
                     },
                 )
             )

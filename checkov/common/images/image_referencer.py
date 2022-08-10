@@ -123,6 +123,7 @@ class ImageReferencerMixin:
         report = Report(CheckType.SCA_IMAGE)
         root_path = Path(root_path) if root_path else None
         check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
+        report_type = CheckType.SCA_IMAGE
 
         for image in images:
             self.add_image_record(
@@ -132,6 +133,7 @@ class ImageReferencerMixin:
                 dockerfile_path=image.file_path,
                 image=image,
                 runner_filter=runner_filter,
+                report_type=report_type,
             )
 
         return report
@@ -144,6 +146,7 @@ class ImageReferencerMixin:
         dockerfile_path: str,
         image: Image,
         runner_filter: RunnerFilter,
+        report_type: str,
     ) -> None:
         """Adds an image record to the given report, if possible"""
 
@@ -173,6 +176,7 @@ class ImageReferencerMixin:
                 packages=[],
                 license_statuses=[],
                 image_details=image_details,
+                report_type=report_type,
             )
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli

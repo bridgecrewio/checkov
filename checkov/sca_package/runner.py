@@ -116,6 +116,7 @@ class Runner(BaseRunner):
                 vulnerabilities=vulnerabilities,
                 packages=packages,
                 license_statuses=license_statuses,
+                report_type=self.report_type,
             )
 
         return report

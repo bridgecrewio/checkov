@@ -11,7 +11,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.sca.output import UNFIXABLE_VERSION
+from checkov.common.sca.commons import UNFIXABLE_VERSION
 from checkov.common.typing import _LicenseStatus
 
 

@@ -1,3 +1,5 @@
+UNFIXABLE_VERSION = "N/A"
+
 def get_file_path_for_record(rootless_file_path: str) -> str:
     return f"/{rootless_file_path}"
 
