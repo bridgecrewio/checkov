@@ -269,7 +269,6 @@ class Runner(PackageRunner):
                 for license_violation in response_json.get("violations", [])
             ]
             return license_statuses
-            # return mocked_license_statuses
         except Exception as e:
             logging.error(f"failing when trying to get licenses-violations: {e}", exc_info=True)
             return []
