@@ -1,3 +1,4 @@
+from typing import Any
 
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
@@ -16,7 +17,9 @@ class ReverseShellNetcat(BaseGithubActionsCheck):
             supported_entities=['jobs','jobs.*.steps[]']
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if not isinstance(conf, dict):
+            return CheckResult.UNKNOWN, conf
         run = conf.get("run", "")
         if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
             return CheckResult.FAILED, conf

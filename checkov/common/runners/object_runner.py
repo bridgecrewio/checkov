@@ -199,6 +199,8 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         if jobs:
             for job_name, job_instance in jobs.items():
                 if job_name != START_LINE and job_name != END_LINE:
+                    if not isinstance(job_instance, dict):
+                        continue
                     end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_name
 
                     steps = job_instance.get('steps')

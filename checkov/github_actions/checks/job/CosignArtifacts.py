@@ -22,6 +22,8 @@ class CosignSignPresent(BaseGithubActionsCheck):
         )
 
     def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if not isinstance(conf, dict):
+            return CheckResult.UNKNOWN, conf
         build_found = False
         for jobname, jobdetail in conf.items():
             if jobname == START_LINE:
