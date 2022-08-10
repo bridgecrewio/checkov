@@ -155,6 +155,12 @@ class Runner(BaseRunner):
         target_dir.replace("//", "/")
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
+        if not chart_name:
+            logging.info(
+                f"Error parsing chart located {chart_dir}, chart has no name available",
+                exc_info=True,
+            )
+            return
         if target_dir.endswith('/'):
             target_dir = target_dir[:-1]
         if target_dir.endswith(chart_name):
