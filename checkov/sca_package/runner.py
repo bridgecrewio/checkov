@@ -17,7 +17,8 @@ from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
-from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
+from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias, \
+    get_package_type
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 
@@ -209,6 +210,7 @@ class Runner(BaseRunner):
                             "package_name": package["name"],
                             "package_version": package["version"],
                             "licenses": ', '.join(licenses_per_package_map[get_package_alias(package["name"], package["version"])]) or 'Unknown',
+                            "package_type": get_package_type(package["name"], package["version"], image_details)
                         }
                     )
                 )

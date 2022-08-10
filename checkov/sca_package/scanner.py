@@ -57,7 +57,7 @@ class Scanner:
         else:
             scan_results: List[Dict[str, Any]] = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
-        if any(scan_result["packages"] is None for scan_result in scan_results):
+        if any(scan_result.get("packages") is None for scan_result in scan_results):
             image_scanner.setup_twistcli()
 
             if os.getenv("PYCHARM_HOSTED") == "1":
