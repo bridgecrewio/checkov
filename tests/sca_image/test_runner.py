@@ -48,14 +48,14 @@ def test_licenses_status(mock_bc_integration):
             {
                 "name": "github.com/apparentlymart/go-textseg/v12",
                 "version": "v12.0.0",
-                "license": "NOT_FOUND",
+                "license": "Apache-2.0",
                 "policy": "BC_LIC_1",
                 "status": "COMPLIANT"
             },
             {
                 "name": "docutils",
                 "version": "0.15.2",
-                "license": "NOT_FOUND",
+                "license": "Apache-2.0",
                 "policy": "BC_LIC_1",
                 "status": "COMPLIANT"
             },
@@ -73,6 +73,6 @@ def test_licenses_status(mock_bc_integration):
     image_runner = Runner()
     license_statuses = image_runner.get_license_statuses(packages_input)
     assert license_statuses == [
-        _LicenseStatus(package_name='github.com/apparentlymart/go-textseg/v12', package_version='v12.0.0', policy='BC_LIC_1', license='', status='COMPLIANT'),
-        _LicenseStatus(package_name='docutils', package_version='0.15.2', policy='BC_LIC_1', license='', status= 'COMPLIANT')
+        _LicenseStatus(package_name='github.com/apparentlymart/go-textseg/v12', package_version='v12.0.0', policy='BC_LIC_1', license='Apache-2.0', status='COMPLIANT'),
+        _LicenseStatus(package_name='docutils', package_version='0.15.2', policy='BC_LIC_1', license='Apache-2.0', status= 'COMPLIANT')
     ]

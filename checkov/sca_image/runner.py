@@ -248,13 +248,6 @@ class Runner(PackageRunner):
         return report
 
     def get_license_statuses(self, packages: list[dict[str, Any]]) -> List[_LicenseStatus]:
-        mocked_license_statuses: List[_LicenseStatus] = []
-        for package in packages:
-            mocked_license_statuses.append(_LicenseStatus(package_name=package.get("name", ""),
-                                                    package_version=package.get("version", ""),
-                                                    policy=package.get("policy", "BC_LIC1"),
-                                                    license=", ".join(package.get("licenses", [])),
-                                                    status=package.get("status", "COMPLIANT")))
         requests_input = [
             {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
             for package in packages
@@ -270,7 +263,7 @@ class Runner(PackageRunner):
                 _LicenseStatus(package_name=license_violation.get("name", ""),
                                package_version=license_violation.get("version", ""),
                                policy=license_violation.get("policy", "BC_LIC1"),
-                               license=", ".join(license_violation.get("licenses", [])),
+                               license=license_violation.get("license", ""),
                                status=license_violation.get("status", "COMPLIANT"))
                 for license_violation in response_json.get("violations", [])
             ]
@@ -293,7 +286,6 @@ class Runner(PackageRunner):
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
         license_statuses = self.get_license_statuses(result.get("packages") or [])
-        print(license_statuses)
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
