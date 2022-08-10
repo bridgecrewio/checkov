@@ -258,6 +258,7 @@ class Runner(PackageRunner):
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
+        packages = result.get("packages") or []
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
@@ -272,7 +273,7 @@ class Runner(PackageRunner):
             rootless_file_path=f"{rootless_file_path} ({image_id})",
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
-            packages=[],
+            packages=packages,
             license_statuses=[],
             image_details=image_details
         )
