@@ -17,7 +17,7 @@ class Registry(BaseCheckRegistry):
         self.graph_registry.load_checks()
         self.graph_check_ids = [check.id for check in self.graph_registry.checks]
 
-        super().__init__()
+        super().__init__(report_type=CheckType.BICEP)
 
     def register(self, check: BaseCheck) -> None:
         # a copy of the original method to be able to prioritize Bicep styled checks over the ARM equivalent

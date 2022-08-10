@@ -1,7 +1,11 @@
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class Registry(BaseCheckRegistry):
+
+    def __init__(self):
+        super().__init__(report_type=CheckType.ARM)
 
     def extract_entity_details(self, entity):
         resource_name, resource = next(iter(entity.items()))

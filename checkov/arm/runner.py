@@ -8,7 +8,8 @@ from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.util.secrets import omit_secret_value_from_checks
@@ -113,7 +114,8 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(resource)
 
                             results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                                 runner_filter)
+                                                                 runner_filter, report_type=CheckType.ARM)
+
                             if results:
                                 for check, check_result in results.items():
                                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
