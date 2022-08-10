@@ -20,7 +20,7 @@ class CosignSignSBOM(BaseGithubActionsCheck):
         )
 
     def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
-        if not conf or not isinstance(conf, dict):
+        if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
 
         build_found = False
