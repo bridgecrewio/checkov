@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.runners.object_runner import Runner as ObjectRunner
 

@@ -16,8 +16,8 @@ ENDLINE_MARK = "__endline__"
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:
+        super().__init__(report_type=report_type)
         self._scanner: dict[str, _ScannerCallableAlias] = {
             BlockType.ARRAY: self._scan_yaml_array,
             BlockType.OBJECT: self._scan_yaml_object,
@@ -108,7 +108,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if (x["id"] == check.id and entity[STARTLINE_MARK] <= x['line_number'] <= entity[ENDLINE_MARK])] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_yaml_document)
                 if check.path:
                     target = entity
@@ -227,7 +227,7 @@ class Registry(BaseCheckRegistry):
                        entity_type: str,
                        scanned_file: str,
                        skip_info: _SkippedCheck) -> str:
-        if STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
+        if isinstance(entity_configuration, dict) and STARTLINE_MARK in entity_configuration and ENDLINE_MARK in entity_configuration:
             return f'{entity_type}.{entity_name}.{check.id}[{entity_configuration[STARTLINE_MARK]}:{entity_configuration[ENDLINE_MARK]}]'
 
         if isinstance(entity_configuration, list):

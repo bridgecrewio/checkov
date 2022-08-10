@@ -9,23 +9,27 @@ from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.extra_resource import ExtraResource
-from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
 from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 
 
 class Runner(BaseRunner):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
+    def __init__(self, report_type=check_type) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: str | None = None
         self._code_repo_path: Path | None = None
+        self.report_type = report_type
 
     def prepare_and_scan(
             self,
@@ -142,12 +146,26 @@ class Runner(BaseRunner):
             package_name, package_version, license = license_status["package_name"], license_status["package_version"], license_status["license"]
             licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
 
+            policy = license_status["policy"]
+
             license_record = create_report_license_record(
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
                 licenses_status=license_status
             )
+
+            if not runner_filter.should_run_check(check_id=policy, bc_check_id=policy,
+                                                  severity=metadata_integration.get_severity(policy),
+                                                  report_type=self.report_type):
+                if runner_filter.checks:
+                    continue
+                else:
+                    license_record.check_result = {
+                        "result": CheckResult.SKIPPED,
+                        "suppress_comment": f"{policy} is skipped"
+                    }
+
             report.add_resource(license_record.resource)
             report.add_record(license_record)
 
@@ -164,8 +182,9 @@ class Runner(BaseRunner):
                 runner_filter=runner_filter,
                 image_details=image_details
             )
+
             if not runner_filter.should_run_check(check_id=cve_record.check_id, bc_check_id=cve_record.bc_check_id,
-                                                  severity=cve_record.severity):
+                                                  severity=cve_record.severity, report_type=self.report_type):
                 if runner_filter.checks:
                     continue
                 else:

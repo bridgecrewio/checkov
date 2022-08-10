@@ -5,7 +5,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
