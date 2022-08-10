@@ -2,13 +2,12 @@ from packaging import version as packaging_version
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
+from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_cves_table,
     create_cli_license_violations_table,
-    create_report_cve_record,
-    create_report_license_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,

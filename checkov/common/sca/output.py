@@ -12,9 +12,9 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.sca.commons import get_file_path_for_record, get_resource_for_record, get_package_alias
 from checkov.common.typing import _LicenseStatus, _CheckResult
+from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
-    from checkov.runner_filter import RunnerFilter
     from checkov.common.output.common import ImageDetails
     from checkov.common.output.report import Report
 
