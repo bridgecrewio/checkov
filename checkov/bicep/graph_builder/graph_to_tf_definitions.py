@@ -12,7 +12,7 @@ from checkov.bicep.graph_builder.local_graph import BicepElements, BicepElements
 if TYPE_CHECKING:
     from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
 
-BLOCK_TYPE_TO_BICEP_ELEMENTS_MAP: dict[BlockTypeAlias, BicepElements] = {
+BLOCK_TYPE_TO_BICEP_ELEMENTS_MAP = {
     BlockType.MODULE: BicepElements.MODULES,
     BlockType.OUTPUT: BicepElements.OUTPUTS,
     BlockType.PARAM: BicepElements.PARAMETERS,
