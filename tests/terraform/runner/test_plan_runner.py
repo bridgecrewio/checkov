@@ -622,6 +622,36 @@ class TestRunnerValid(unittest.TestCase):
         resource_ids = [check.resource for check in report.failed_checks]
         self.assertCountEqual(resource_ids,["aws_secretsmanager_secret.default", "aws_secretsmanager_secret.default"])
 
+    def test_runner_nested_child_modules_with_connections(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"
+
+        passing_resources = {
+            "aws_s3_bucket.submodule_bucket",
+            "aws_s3_bucket.module_bucket",
+            "aws_s3_bucket.root_bucket",
+        }
+        failing_resources = {
+            "aws_s3_bucket.this",
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"]),
+        )
+
+        # then
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 1)
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
