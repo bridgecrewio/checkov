@@ -16,8 +16,9 @@ from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
 from checkov.common.images.image_referencer import ImageReferencer, Image
+from checkov.common.output.report import Report, merge_reports
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
-from checkov.common.output.report import Report, CheckType, merge_reports
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
@@ -29,7 +30,7 @@ class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__(report_type=self.check_type)
         self._check_class: Optional[str] = None
         self._code_repo_path: Optional[Path] = None
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"

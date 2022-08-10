@@ -6,6 +6,7 @@ from typing import List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.serverless.base_registry import EntityDetails
@@ -22,7 +23,7 @@ from checkov.serverless.checks.service.registry import service_registry
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
 from checkov.serverless.parsers.parser import parse
 from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN

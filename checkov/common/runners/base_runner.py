@@ -102,7 +102,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         pass
 
-    def run_graph_checks_results(self, runner_filter: RunnerFilter) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
+    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
         checks_results: Dict[BaseGraphCheck, List[Dict[str, Any]]] = {}
 
         if not self.graph_manager or not self.graph_registry:
@@ -112,7 +112,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)  # type:ignore[union-attr]
+            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         return checks_results
 
