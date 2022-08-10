@@ -109,7 +109,7 @@ class ImageReferencerMixin:
         resources = [
             block
             for node, block in graph_connector.nodes(data=True)
-            if block and block[CustomAttributes.RESOURCE_TYPE] in supported_resource_types
+            if block and block.get(CustomAttributes.RESOURCE_TYPE) in supported_resource_types
         ]
         if not resources:
             return None
