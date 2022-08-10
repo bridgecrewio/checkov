@@ -286,7 +286,7 @@ class Runner(PackageRunner):
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
         packages = result.get("packages") or []
-        license_statuses = self.get_license_statuses(result.get("packages") or [])
+        license_statuses = self.get_license_statuses(packages)
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
