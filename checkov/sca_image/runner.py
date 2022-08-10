@@ -256,7 +256,7 @@ class Runner(PackageRunner):
                                                     license=", ".join(package.get("licenses", [])),
                                                     status=package.get("status", "COMPLIANT")))
         requests_input = [
-            {"name": package.get("name", ""), "version": package.get("name", ""), "lang": package.get("type", "")}
+            {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
             for package in packages
         ]
         get_license_violation_url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
