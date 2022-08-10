@@ -3,7 +3,7 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.alicloud.PasswordPolicyReuse import check
+from checkov.terraform.checks.resource.alicloud.RAMPasswordPolicyReuse import check
 
 
 class TestPasswordPolicyReuse(unittest.TestCase):

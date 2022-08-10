@@ -10,7 +10,8 @@ from typing import List, Optional, Dict, Any, Type
 import yaml
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
@@ -32,9 +33,9 @@ class K8sKustomizeRunner(K8sRunner):
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
 
-        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
-        self.report_mutator_data = {}
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
+        self.report_mutator_data = {}
         self.pbar.turn_off_progress_bar()
 
     def set_external_data(self,
@@ -112,8 +113,9 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
-                else: 
-                    kustomizeResourceID = "Unknown error. This is a bug."
+                else:
+                    logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
+                    continue
                 code_lines = entity_context.get("code_lines")
                 file_line_range = self.line_range(code_lines)
 
@@ -383,7 +385,7 @@ class Runner(BaseRunner):
             self.kustomizeProcessedFolderAndMeta[kustomizedir] = self._parseKustomization(kustomizedir)
         self.target_folder_path = tempfile.mkdtemp()
         for filePath in self.kustomizeProcessedFolderAndMeta:    
-            if self.kustomizeProcessedFolderAndMeta[filePath]['type'] == 'overlay':
+            if self.kustomizeProcessedFolderAndMeta[filePath].get('type') == 'overlay':
                 self._handle_overlay_case(filePath)
         
         if platform.system() == 'Windows':

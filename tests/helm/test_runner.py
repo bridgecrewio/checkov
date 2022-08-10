@@ -2,6 +2,7 @@ import os
 import subprocess
 import unittest
 
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.helm.runner import Runner
@@ -42,6 +43,25 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(record.repo_file_path, record.file_path)
         for resource in report.resources:
             self.assertIn('/infrastructure/helm-tiller/pwnchart/templates', resource)
+
+    @unittest.skipIf(not helm_exists(), "helm not installed")
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['helm'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.HELM: Severities[BcSeverities.OFF]}
+        report = runner.run(
+            root_folder=scan_dir_path, runner_filter=filter
+        )
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
 
 if __name__ == "__main__":

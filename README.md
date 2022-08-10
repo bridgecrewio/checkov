@@ -202,8 +202,8 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 
 ### Running or skipping checks 
 
-Using command line flags you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
+By using command line flags, you can specify to run only named checks (allow list) or run all checks except 
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information about how these flags work together.
 
 ## Examples
 

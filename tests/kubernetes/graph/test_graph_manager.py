@@ -20,10 +20,13 @@ class TestKubernetesGraphManager(TestGraph):
                 "Service.default.kafka-hs"],
             os.path.join(root_dir, "example_multiple.yaml"): [
                 "PodDisruptionBudget.a.a",
-                "Service.default.a"]
+                "Service.default.a"],
+            os.path.join(root_dir, "graph.yaml"): [
+                "StatefulSet.default.cassandra",
+                "Deployment.default.my-nginx"]
         }
-        self.assertEqual(3, len(local_graph.vertices))
-        self.assertEqual(3, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(5, len(local_graph.vertices))
+        self.assertEqual(5, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
 
         for v in local_graph.vertices:
             self.assertIn(v.name, expected_resources_by_file[v.path])

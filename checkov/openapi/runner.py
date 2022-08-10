@@ -7,7 +7,7 @@ from typing import Any, Callable  # noqa: F401  # Callable is used in the TypeAl
 from typing_extensions import TypeAlias
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 
@@ -84,5 +84,5 @@ class Runner(YamlRunner, JsonRunner):
         except Exception:
             return False
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         return ",".join(supported_entities)

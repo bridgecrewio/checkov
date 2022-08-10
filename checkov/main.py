@@ -31,7 +31,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
@@ -107,7 +107,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     argcomplete.autocomplete(parser)
     config = parser.parse_args(argv)
 
-    normalize_config(config)
+    normalize_config(config, parser)
 
     logger.debug(f'Checkov version: {version}')
     logger.debug(f'Python executable: {sys.executable}')
@@ -147,7 +147,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
-                                 secrets_scan_file_type=config.secrets_scan_file_type)
+                                 secrets_scan_file_type=config.secrets_scan_file_type, use_enforcement_rules=config.use_enforcement_rules)
+
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -244,6 +245,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    if config.use_enforcement_rules:
+        runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
@@ -402,10 +406,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
                     'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
                     'above the lowest severity in the list will be included. This option can be combined with '
-                    '--skip-check. If it is, priority is given to checks explicitly listed by ID or wildcard over '
-                    'checks listed by severity. For example, if you use --check CKV_123 and --skip-check LOW, then '
-                    'CKV_123 will run even if it is a LOW severity. In the case of a tie (e.g., --check MEDIUM and '
-                    '--skip-check HIGH for a medium severity check), then the check will be skipped. If you use a '
+                    '--skip-check. If it is, then the logic is to first take all checks that match this list, and then '
+                    'remove all checks that match the skip list. For example, if you use --check CKV_123 and '
+                    '--skip-check LOW, then CKV_123 will not run if it is a LOW severity. Similarly, if you use '
+                    '--check CKV_789 --skip-check MEDIUM, then CKV_789 will run if it is a HIGH severity. If you use a '
                     'check ID here along with an API key, and the check is not part of the BC / PC platform, then the '
                     'check will still be run (see --include-all-checkov-policies for more info).',
                action='append', default=None,
@@ -467,6 +471,17 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'custom policies and suppressions if using an API token. Note: it will prevent BC platform IDs from '
                     'being available in Checkov.',
                action='store_true')
+    parser.add('--use-enforcement-rules', action='store_true',
+               help='Use the Enforcement rules configured in the platform for hard / soft fail logic. With this option, '
+                    'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
+                    'this behavior: any check with a severity below the selected rule\'s soft-fail threshold will be '
+                    'skipped; any check with a severity equal to or greater than the rule\'s hard-fail threshold will '
+                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list. For '
+                    'example, if the given enforcement rule has a hard-fail value of HIGH and a soft-fail value of MEDIUM,'
+                    'this is the equivalent of using the flags `--skip-check LOW --hard-fail-on HIGH`. You can use --check, '
+                    '--skip-check, --soft-fail, --soft-fail-on, or --hard-fail-on to override portions of an enforcement rule. '
+                    'Note, however, that the logic of applying the --check list and then the --skip-check list (as described '
+                    'above under --check) still applies here. Requires a BC or PC platform API key.')
     parser.add('--no-guide', action='store_true',
                default=False,
                help='Deprecated - use --skip-download')
@@ -546,7 +561,7 @@ def get_external_checks_dir(config: Any) -> Any:
     return external_checks_dir
 
 
-def normalize_config(config: Namespace) -> None:
+def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
     if config.no_guide:
         logger.warning('--no-guide is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
@@ -566,8 +581,12 @@ def normalize_config(config: Namespace) -> None:
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
 
+    if config.use_enforcement_rules and not config.bc_api_key:
+        parser.error('Must specify an API key with --use-enforcement-rules')
+
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
         logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
+
 
 
 if __name__ == '__main__':

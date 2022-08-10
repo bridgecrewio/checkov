@@ -358,6 +358,40 @@ def scan_result() -> List[Dict[str, Any]]:
                 },
             ],
             "vulnerabilityDistribution": {"critical": 1, "high": 3, "medium": 2, "low": 0, "total": 6},
+            "license_statuses": [
+                {
+                    "packageName": "django",
+                    "packageVersion": "1.2",
+                    "packageLang": "python",
+                    "license": "OSI_BDS",
+                    "status": "COMPLIANT",
+                    "policy": "BC_LIC_1"
+                },
+                {
+                    "packageName": "flask",
+                    "packageVersion": "0.6",
+                    "packageLang": "python",
+                    "license": "OSI_APACHE",
+                    "status": "COMPLIANT",
+                    "policy": "BC_LIC_1"
+                },
+                {
+                    "packageName": "flask",
+                    "packageVersion": "0.6",
+                    "packageLang": "python",
+                    "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+                    "status": "OPEN",
+                    "policy": "BC_LIC_1"
+                },
+                {
+                    "packageName": "requests",
+                    "packageVersion": "2.26.0",
+                    "packageLang": "python",
+                    "license": "OSI_APACHE",
+                    "status": "COMPLIANT",
+                    "policy": "BC_LIC_1"
+                }
+            ],
         },
         {
             "repository": "/path/to/sub/requirements.txt",
@@ -374,6 +408,16 @@ def scan_result() -> List[Dict[str, Any]]:
             "complianceDistribution": {"critical": 0, "high": 0, "medium": 0, "low": 0, "total": 0},
             "vulnerabilities": None,
             "vulnerabilityDistribution": {"critical": 0, "high": 0, "medium": 0, "low": 0, "total": 0},
+            "license_statuses": [
+                {
+                    "packageName": "requests",
+                    "packageVersion": "2.26.0",
+                    "packageLang": "python",
+                    "license": "OSI_APACHE",
+                    "status": "COMPLIANT",
+                    "policy": "BC_LIC_1"
+                }
+            ],
         },
         {
             "repository": "/path/to/go.sum",

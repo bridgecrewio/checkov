@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 
 # Import of the checks registry for a specific resource type
 from checkov.example_runner.checks.job_registry import registry as job_registry
