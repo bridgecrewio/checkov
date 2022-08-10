@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Optional, Dict, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -11,15 +11,14 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-    from checkov.common.bridgecrew.severities import Severity
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=0)
         self.skip_paths: set[str] = set()
-        self.enforcement_rule = None
-        self.code_category_configs: Dict[CodeCategoryType, CodeCategoryConfiguration] = {}
+        self.enforcement_rule: dict[str, Any] = {}
+        self.code_category_configs: dict[str, CodeCategoryConfiguration] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -48,14 +47,14 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.debug("Scanning without applying scanning configs from the platform.", exc_info=True)
 
     @staticmethod
-    def _get_code_category_object(code_category_config, code_category_type: str) -> Optional[CodeCategoryConfiguration]:
+    def _get_code_category_object(code_category_config: dict[str, Any], code_category_type: str) -> CodeCategoryConfiguration | None:
         if code_category_type not in code_category_config:
             return None
         soft_fail_threshold = Severities[code_category_config[code_category_type]['softFailThreshold']]
         hard_fail_threshold = Severities[code_category_config[code_category_type]['hardFailThreshold']]
         return CodeCategoryConfiguration(code_category_type, soft_fail_threshold, hard_fail_threshold)
 
-    def _set_exclusion_paths(self, vcs_config) -> None:
+    def _set_exclusion_paths(self, vcs_config: dict[str, Any]) -> None:
         for section in vcs_config['scannedFiles']['sections']:
             repos = section['repos']
             if any(repo for repo in repos if self.bc_integration.repo_matches(repo)):
@@ -64,7 +63,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
 
         logging.debug(f'Skipping the following paths based on platform settings: {self.skip_paths}')
 
-    def _set_enforcement_rules(self, enforcement_rules_config) -> None:
+    def _set_enforcement_rules(self, enforcement_rules_config: dict[str, Any]) -> None:
         rules = enforcement_rules_config['rules']
         default_rule = next(r for r in rules if r['mainRule'] is True)
         other_rules = [r for r in rules if r != default_rule]
@@ -105,7 +104,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.info('Found exactly one matching enforcement rule for the specified repo')
             self.enforcement_rule = matched_rules[0]
 
-        logging.debug(f'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
+        logging.debug('Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
         for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:
@@ -113,9 +112,11 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             if config:
                 self.code_category_configs[code_category_type] = config
 
-    def is_code_review_disabled(self, code_category_type: CodeCategoryType) -> bool:
+    def is_code_review_disabled(self, code_category_type: str) -> bool:
         config = self.code_category_configs[code_category_type]
-        return config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]
+        if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]:
+            return True
+        return False
 
 
 integration = RepoConfigIntegration(bc_integration)

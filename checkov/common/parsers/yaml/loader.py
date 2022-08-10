@@ -49,7 +49,7 @@ class SafeLineLoader(SafeLoader):
         mapping['__endline__'] = node.end_mark.line + 1
         return mapping
 
-    bool_values = {
+    bool_values = {  # noqa: CCE003  # used to override the SafeLoader default behaviour
         'yes': True,
         'no': False,
         'true': True,

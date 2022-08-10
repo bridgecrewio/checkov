@@ -6,21 +6,20 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, Set, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate
 from termcolor import colored
 
 from checkov import sca_package
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
 from checkov.version import version
 
@@ -233,7 +232,8 @@ class Report:
         information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
 
         for record in self.failed_checks + self.skipped_checks:
-            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
+            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                continue
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,

@@ -70,7 +70,8 @@ class CycloneDX:
             image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
@@ -81,7 +82,8 @@ class CycloneDX:
 
 
             for check in report.failed_checks:
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
+                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):

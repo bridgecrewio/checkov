@@ -1,6 +1,8 @@
 import logging
+from typing import TYPE_CHECKING
 
-from checkov.common.runners.runner_registry import RunnerRegistry
+if TYPE_CHECKING:
+    from checkov.common.runners.runner_registry import RunnerRegistry
 
 logger = logging.getLogger(__name__)
 

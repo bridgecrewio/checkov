@@ -108,4 +108,3 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     def get_output_id(self, use_bc_ids: bool) -> str:
         return self.bc_id if self.bc_id and use_bc_ids else self.id
-
