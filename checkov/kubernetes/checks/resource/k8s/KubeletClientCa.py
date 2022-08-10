@@ -7,7 +7,7 @@ from checkov.kubernetes.checks.resource.base_container_check import BaseK8sConta
 class KubeletClientCa(BaseK8sContainerCheck):
     def __init__(self) -> None:
         # CIS-1.6 4.2.3
-        id = "CKV_K8S_140"
+        id = "CKV_K8S_C140"
         name = "Ensure that the --client-ca-file argument is set as appropriate"
         super().__init__(name=name, id=id)
 
@@ -15,14 +15,13 @@ class KubeletClientCa(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["command"]
         if conf.get("command"):
             if "kubelet" in conf["command"]:
-                hasClientCaFile = False
                 for command in conf["command"]:
                     if command.startswith("--client-ca-file"):
-                        if len(command.split("=")) == 2:
-                            hasClientCaFile = True
-                return CheckResult.PASSED if hasClientCaFile else CheckResult.FAILED             
-
-        return CheckResult.PASSED
+                        if len(command.split("=")) == 2: 
+                            if (command.split("=")[1]).strip() != '':
+                                return CheckResult.PASSED
+                        return CheckResult.FAILED                     
+                return CheckResult.FAILED
 
 
 check = KubeletClientCa()
