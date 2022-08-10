@@ -198,10 +198,11 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         jobs = definition.get('jobs')
         if jobs:
             for job_name, job_instance in jobs.items():
+                if not isinstance(job_instance, dict):
+                    continue
                 if job_name != START_LINE and job_name != END_LINE:
-                    if not isinstance(job_instance, dict):
-                        continue
-                    end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_name
+                    end_line: int = job_instance.get(END_LINE, -1)
+                    end_line_to_job_name_dict[end_line] = job_name
 
                     steps = job_instance.get('steps')
                     if steps:
