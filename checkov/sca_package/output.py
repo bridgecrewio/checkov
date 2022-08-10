@@ -23,7 +23,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.package_scann
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.output.common import ImageDetails
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record
+from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_type
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -110,10 +110,7 @@ def create_report_cve_record(
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
-    if image_details:
-        package_type = image_details.package_types.get(f'{package_name}@{package_version}', '')
-    else:
-        package_type = ''
+    package_type = get_package_type(package_name, package_version, image_details)
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
