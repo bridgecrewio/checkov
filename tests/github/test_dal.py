@@ -22,7 +22,6 @@ def test_org_security(mocker: MockerFixture):
             }
         }
     }
-    graphql_mock = mocker.MagicMock(return_value=mock_data)
-    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", graphql_mock)
+    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data)
     result = dal.get_organization_security()
     assert result
