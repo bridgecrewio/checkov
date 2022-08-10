@@ -11,9 +11,14 @@ class SecurityRequirement(BaseOpenapiCheckV2):
         id = "CKV_OPENAPI_6"
         name = "Ensure that security requirement defined in securityDefinitions - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
-        supported_resources = ['security']
-        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
-                         block_type=BlockType.DOCUMENT)
+        supported_resources = ["security"]
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_resources,
+            block_type=BlockType.DOCUMENT,
+        )
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         self.evaluated_keys = ["securityDefinitions"]
@@ -22,11 +27,11 @@ class SecurityRequirement(BaseOpenapiCheckV2):
 
         security_definitions = conf["securityDefinitions"]
         if not self.check_security_conf(conf, security_definitions):
-            return CheckResult.FAILED, conf['security']
+            return CheckResult.FAILED, conf["security"]
 
-        if 'paths' not in conf:
+        if "paths" not in conf:
             return CheckResult.FAILED, conf
-        paths = conf['paths']
+        paths = conf["paths"]
         if not isinstance(paths, dict):
             return CheckResult.FAILED, conf
 
@@ -37,14 +42,17 @@ class SecurityRequirement(BaseOpenapiCheckV2):
                 if self.is_start_end_line(op_name):
                     continue
                 if not self.check_security_conf(op_val, security_definitions):
-                    return CheckResult.FAILED, op_val['security']
+                    return CheckResult.FAILED, op_val["security"]
 
         return CheckResult.PASSED, conf
 
     def check_security_conf(self, conf: dict[str, Any], security_definitions: dict[str, Any]) -> bool:
-        self.evaluated_keys = ['security']
-        return not('security' in conf and conf['security']
-                   and not self.is_requirements_defined(conf['security'], security_definitions))
+        self.evaluated_keys = ["security"]
+        return not (
+            "security" in conf
+            and conf["security"]
+            and not self.is_requirements_defined(conf["security"], security_definitions)
+        )
 
     def is_requirements_defined(self, security: list[dict[str, Any]], security_definitions: dict[str, Any]) -> bool:
         for scheme in security:
@@ -54,5 +62,6 @@ class SecurityRequirement(BaseOpenapiCheckV2):
                 if scheme_type not in security_definitions:
                     return False
         return True
+
 
 check = SecurityRequirement()

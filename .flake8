@@ -3,8 +3,8 @@
 [flake8]
 max-line-length = 120
 # E501 doesn't work with black together
-ignore = E127,E128,E129,E203,E231,E302,E303,E305,E501,E731,W291,W292,W293,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B950
-select = C,E,F,W,B,B9,A
+ignore = E203,E231,E302,E305,E501,E731,W291,W292,W293,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B950,TC001,TC002,TC003,TC006
+select = C,E,F,W,B,B9,A,TC
 extend-exclude = .github, .pytest_cache, bin/*, docs/*, kubernetes/*, venv/*, tests/*, flake8_plugins/*, checkov/cloudformation/*, checkov/terraform/*, checkov/example_runner/*, checkov/kustomize/*, checkov/helm/*
 
 [flake8:local-plugins]

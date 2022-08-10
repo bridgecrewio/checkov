@@ -37,20 +37,4 @@ class PostgreSQLServerLogCheckpointsEnabled(BaseResourceCheck):
             return CheckResult.FAILED
 
 
-
-'''
-        if "resources" in conf:
-            if conf["resources"]:
-                for resource in conf["resources"]:
-                    if "type" in resource:
-                        if resource["type"] == "Microsoft.DBforPostgreSQL/servers/configurations" or \
-                                resource["type"] == "configurations":
-                            if "name" in resource and resource["name"] == "log_checkpoints":
-                                if "properties" in resource:
-                                    if "value" in resource["properties"] and \
-                                            resource["properties"]["value"].lower() == "on":
-                                        return CheckResult.PASSED
-
-        return CheckResult.FAILED
-'''
 check = PostgreSQLServerLogCheckpointsEnabled()

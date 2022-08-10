@@ -448,8 +448,11 @@ class BcPlatformIntegration:
             finally:
                 if request and request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
-                elif response and try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
-                                                        response.get('message', '')):
+                elif (
+                    response
+                    and try_num < MAX_RETRIES
+                    and re.match("The integration ID .* in progress", response.get("message", ""))
+                ):
                     logging.info(
                         f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1

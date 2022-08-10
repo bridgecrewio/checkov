@@ -35,7 +35,6 @@ class BaseCheckRegistry:
         self.check_id_allowlist: Optional[List[str]] = None
         self.report_type = report_type
 
-
     def register(self, check: BaseCheck) -> None:
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
         #                      (see BaseResourceCheck.__init__() for the various frameworks). The only

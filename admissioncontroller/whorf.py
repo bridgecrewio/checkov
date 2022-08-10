@@ -46,8 +46,7 @@ def validating_webhook():
     if namespace in ignore_list:
         response = 'Namespace in ignore list. Ignoring validation'
         webhook.logger.error('Namespace in ignore list. Ignoring validation!')
-        return admission_response(True, uid, response)    
-
+        return admission_response(True, uid, response)
 
     jsonfile = "tmp/" + uid + "-req.json"
     yamlfile = "tmp/" + uid + "-req.yaml"
@@ -77,7 +76,6 @@ def validating_webhook():
         f'{request_info["request"]["object"]["kind"]}/'
         f'{request_info["request"]["object"]["metadata"]["name"]}'
     )
-
 
     if cp.returncode != 0:
 

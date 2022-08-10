@@ -4,12 +4,14 @@ repos:
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
+        language_version: python3.9
         additional_dependencies:
           - dlint
           - flake8-bugbear
+          - flake8-type-checking
   - repo: https://github.com/isidentical/teyit  # unit test formatter
     rev: 0.4.3
     hooks:
