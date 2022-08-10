@@ -252,7 +252,7 @@ class Runner(BaseRunner[None]):
     def search_for_suppression(
             check_id: str,
             bc_check_id: str,
-            severity: Severity,
+            severity: Severity | None,
             secret: PotentialSecret,
             runner_filter: RunnerFilter
     ) -> _CheckResult | None:
