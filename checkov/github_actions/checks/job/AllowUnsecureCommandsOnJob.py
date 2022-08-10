@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from typing import Any
+from typing import Any, Tuple, Dict
 
 from checkov.common.models.enums import CheckResult
 
@@ -19,7 +17,7 @@ class AllowUnsecureCommandsOnJob(BaseGithubActionsCheck):
             supported_entities=['jobs', 'jobs.*.steps[]']
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+    def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
         if "env" not in conf:

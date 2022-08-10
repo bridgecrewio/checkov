@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.checks.base_github_action_check import BaseGithubActionsCheck
@@ -17,7 +17,7 @@ class ReverseShellNetcat(BaseGithubActionsCheck):
             supported_entities=['jobs','jobs.*.steps[]']
         )
 
-    def scan_entity_conf(self, conf: Dict[str, Any]) -> tuple[CheckResult, Dict[str, Any]]:
+    def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
         run = conf.get("run", "")
