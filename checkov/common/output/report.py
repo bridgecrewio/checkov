@@ -12,7 +12,6 @@ from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[i
 from tabulate import tabulate
 from termcolor import colored
 
-from checkov import sca_package
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
@@ -21,6 +20,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_package.output import create_cli_output
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -83,7 +83,7 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str | None = None) -> dict[str, Any]:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False) -> dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -190,7 +190,7 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += sca_package.output.create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
+                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
@@ -548,6 +548,8 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
+    base_report.resources.update(report_to_merge.resources)
+    base_report.extra_resources.update(report_to_merge.extra_resources)
 
 
 def remove_duplicate_results(report: Report) -> Report:
