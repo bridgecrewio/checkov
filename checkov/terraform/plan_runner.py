@@ -12,7 +12,9 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
@@ -107,7 +109,7 @@ class Runner(TerraformRunner):
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
 
-                results = registry.scan(scanned_file, entity, [], runner_filter)
+                results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan

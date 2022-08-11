@@ -23,7 +23,8 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import CheckType, Report
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks
@@ -138,7 +139,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                             scanned_file=str(file_path),
                             entity={name: conf},
                             skipped_checks=[],
-                            runner_filter=runner_filter,
+                            runner_filter=runner_filter
                         )
 
                         if results:
@@ -200,7 +201,7 @@ class Runner(BaseRunner[BicepGraphManager]):
     def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""
 
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:

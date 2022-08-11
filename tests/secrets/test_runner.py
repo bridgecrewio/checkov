@@ -3,6 +3,7 @@ import unittest
 import os
 from pathlib import Path
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.secrets.runner import Runner
@@ -24,6 +25,22 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/cfn"
+        runner = Runner()
+        filter = RunnerFilter(framework=['secrets'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.SECRETS: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
         report.print_console()
 
     def test_runner_passing_check(self):
@@ -94,7 +111,9 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET_2']))
-        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, 'CKV_SECRET_6')
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
 
@@ -129,7 +148,9 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', checks=['MEDIUM']))
-        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, 'CKV_SECRET_6')
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
 
@@ -149,7 +170,9 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', skip_checks=['MEDIUM']))
-        self.assertEqual(len(report.skipped_checks), 1)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, 'CKV_SECRET_6')
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
 
@@ -159,7 +182,8 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='secrets', skip_checks=['CKV_SECRET*']))
-        self.assertEqual(len(report.skipped_checks), 2)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
 

@@ -369,9 +369,33 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "",
+        ),
+        (
+            "github.com/kartikp10/terraform-aws-security-group//modules/http-80",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD/modules/http-80",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "modules/http-80",
+        ),
+        (
+            "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/v1.2.0",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "github.com/kartikp10/terraform-aws-s3-bucket1/v1.2.0",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
+            "",
+        ),
+       ( 
+           "git@github.com:kartikp10/terraform-aws-security-group.git//modules/http-80",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "github.com/kartikp10/terraform-aws-security-group/HEAD",
+            "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
+            "modules/http-80",
         )
     ],
-    ids=["github_http_module", "generic_git_module", "ssh_github_module", "generic_ssh_module"],
+    ids=["github_http_module", "generic_git_module", "ssh_github_module", "generic_ssh_module","github_http_module", "generic_ssh_module_version", "github_ssh_module_version"],
 )
 @mock.patch.dict(os.environ, {"GITHUB_PAT": "ghp_xxxxxxxxxxxxxxxxx"})
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)

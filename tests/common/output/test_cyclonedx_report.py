@@ -7,9 +7,9 @@ from checkov.common.output.report import Report, CheckType
 from cyclonedx.model.component import Component, ComponentType
 from pytest_mock import MockerFixture
 
+from checkov.common.output.common import ImageDetails
 from checkov.common.output.cyclonedx import CycloneDX
-from checkov.common.output.cyclonedx_consts import ImageDetails
-from checkov.sca_package.output import create_report_cve_record
+from checkov.common.sca.output import create_report_cve_record
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
@@ -123,7 +123,6 @@ def test_valid_cyclonedx_image_bom():
 
 
 def test_sca_packages_cyclonedx_bom():
-    from checkov.sca_package.output import create_report_cve_record
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"

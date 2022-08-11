@@ -2,30 +2,33 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
-from typing import Any, TYPE_CHECKING
 
-from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
+from typing import List, Dict, Any, TYPE_CHECKING
+
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+    from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 
 
 class BaseRegistry:
     def __init__(self, parser: BaseGraphCheckParser) -> None:
-        self.checks: list[BaseGraphCheck] = []
+        self.checks: List[BaseGraphCheck] = []
         self.parser = parser
 
     def load_checks(self) -> None:
         raise NotImplementedError
 
     def run_checks(
-        self, graph_connector: DiGraph, runner_filter: RunnerFilter
-    ) -> dict[BaseGraphCheck, list[dict[str, Any]]]:
-        check_results: dict[BaseGraphCheck, list[dict[str, Any]]] = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c)]
+        self, graph_connector: DiGraph, runner_filter: RunnerFilter, report_type: str
+    ) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
+
+        check_results: Dict[BaseGraphCheck, List[Dict[str, Any]]] = {}
+        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
                 [executor.submit(self.run_check_parallel, check, check_results, graph_connector)

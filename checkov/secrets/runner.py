@@ -21,7 +21,8 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
@@ -174,9 +175,7 @@ class Runner(BaseRunner[None]):
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
-                                                                               bc_check_id=bc_check_id,
-                                                                               severity=severity):
+                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -253,12 +252,11 @@ class Runner(BaseRunner[None]):
     def search_for_suppression(
             check_id: str,
             bc_check_id: str,
-            severity: Severity,
+            severity: Severity | None,
             secret: PotentialSecret,
             runner_filter: RunnerFilter
     ) -> _CheckResult | None:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id,
-                                              severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

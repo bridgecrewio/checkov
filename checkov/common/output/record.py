@@ -4,7 +4,6 @@ import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
-from enum import Enum
 
 from colorama import init, Fore, Style
 from termcolor import colored
@@ -50,7 +49,8 @@ class Record:
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
-        connected_node: Optional[Dict[str, Any]] = None
+        connected_node: Optional[Dict[str, Any]] = None,
+        details: Optional[List[str]] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -83,6 +83,7 @@ class Record:
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
+        self.details: List[str] = details or []
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -156,6 +157,16 @@ class Record:
         code_lines = ""
         if self.code_block:
             code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
+
+        detail = ""
+        if self.details:
+            detail_buffer = [colored(f"\tDetails: {self.details[0]}\n", "blue")]
+
+            for t in self.details[1:]:
+                detail_buffer.append(colored(f"\t\t{t}\n", "blue"))
+
+            detail = "".join(detail_buffer)
+
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:
             caller_file_details = colored(
@@ -179,12 +190,12 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{suppress_comment}{file_details}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"
         else:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
 
     def __str__(self) -> str:
         return self.to_string()
