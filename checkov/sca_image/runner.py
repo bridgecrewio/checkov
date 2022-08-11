@@ -272,8 +272,9 @@ class Runner(PackageRunner):
             ]
             return license_statuses
         except Exception as e:
-            logging.error(f"failing when trying to get licenses-violations: {e}", exc_info=True)
-            return []
+            error_message = "failing when trying to get licenses-violations. it is apparently some unexpected" \
+                            f"connection issue. please try later. in case it keep happening. please report. error is:\n{e}"
+            raise Exception(error_message)
 
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
         """
