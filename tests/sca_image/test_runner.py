@@ -170,19 +170,19 @@ def test_run(mock_bc_integration):
     )
 
     runner = Runner()
-
+    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
     # when
     dockerfile_path = "/Users/ipeleg/Work/checkov/tests/sca_image/examples/dockerfile/Dockerfile"
     image_id = "sha256:123456"
-    report = runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, dockerfile_path=dockerfile_path, image_id=image_id)
+    report = runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter, dockerfile_path=dockerfile_path, image_id=image_id)
 
     # then
     assert report.check_type == "sca_image"
     assert report.resources == {'Dockerfile (sha256:123456).pcre2', 'Dockerfile (sha256:123456).perl'}
 
     assert len(report.passed_checks) == 1
-    assert len(report.failed_checks) == 4
-    assert len(report.skipped_checks) == 0
+    assert len(report.failed_checks) == 3
+    assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
 
     cve_record = next((c for c in report.failed_checks if c.resource == "Dockerfile (sha256:123456).pcre2" and c.check_name == "SCA package scan"), None)
@@ -210,6 +210,10 @@ def test_run(mock_bc_integration):
     assert {"licenses", "package_type"} <= cve_record.vulnerability_details.keys()
     assert cve_record.vulnerability_details["licenses"] == "Apache-2.0"
     assert cve_record.vulnerability_details["package_type"] == "os"
+
+    skipped_record = report.skipped_checks[0]
+    assert skipped_record.check_result == {"result": CheckResult.SKIPPED, 'suppress_comment': 'CVE-2022-1586 is skipped'}
+    assert skipped_record.short_description == "CVE-2022-1586 - pcre2: 10.39-3build1"
 
     # making sure extra-resources (a scanned packages without cves) also have licenses - this data will be printed
     # as part of the BON report.
