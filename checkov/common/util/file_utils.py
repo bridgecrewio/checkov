@@ -4,7 +4,7 @@ import gzip
 import io
 import logging
 import sys
-
+from typing import Dict, Any
 
 def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
@@ -26,7 +26,7 @@ def compress_file_gzip_base64(input_path: str) -> str:
     try:
         with open(input_path, 'rb') as json_results_file:
             data = json_results_file.read()
-        additional_params = {}
+        additional_params: Dict[str, Any] = {}
         if sys.version_info >= (3, 8):
             additional_params["mtime"] = 0
         zip_file = gzip.compress(data, **additional_params)  # to gzip - return in bytes
