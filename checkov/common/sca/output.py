@@ -18,6 +18,7 @@ from checkov.common.sca.commons import (
     get_resource_for_record,
     get_package_alias,
     UNFIXABLE_VERSION,
+    get_package_type,
 )
 from checkov.common.typing import _LicenseStatus, _CheckResult
 from checkov.runner_filter import RunnerFilter
@@ -32,6 +33,7 @@ def create_report_license_record(
     file_abs_path: str,
     check_class: str,
     licenses_status: _LicenseStatus,
+    image_details: ImageDetails | None = None,
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
@@ -55,6 +57,7 @@ def create_report_license_record(
         "license": licenses_status["license"],
         "status": status,
         "policy": policy,
+        "package_type": get_package_type(package_name, package_version, image_details),
     }
 
     record = Record(
@@ -86,10 +89,7 @@ def create_report_cve_record(
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
-    if image_details:
-        package_type = image_details.package_types.get(f"{package_name}@{package_version}", "")
-    else:
-        package_type = ""
+    package_type = get_package_type(package_name, package_version, image_details)
     cve_id = vulnerability_details["id"].upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
@@ -102,9 +102,15 @@ def create_report_cve_record(
     }
 
     if runner_filter.skip_cve_package and package_name in runner_filter.skip_cve_package:
-        check_result = {"result": CheckResult.SKIPPED, "suppress_comment": f"Filtered by package '{package_name}'"}
+        check_result = {
+            "result": CheckResult.SKIPPED,
+            "suppress_comment": f"Filtered by package '{package_name}'",
+        }
     elif not runner_filter.within_threshold(Severities[severity.upper()]):
-        check_result = {"result": CheckResult.SKIPPED, "suppress_comment": "Filtered by severity"}
+        check_result = {
+            "result": CheckResult.SKIPPED,
+            "suppress_comment": "Filtered by severity",
+        }
 
     code_block = [(0, f"{package_name}: {package_version}")]
 
@@ -192,6 +198,7 @@ def parse_vulns_to_records(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             licenses_status=license_status,
+            image_details=image_details,
         )
 
         if not runner_filter.should_run_check(
@@ -257,6 +264,7 @@ def parse_vulns_to_records(
                             licenses_per_package_map[get_package_alias(package["name"], package["version"])]
                         )
                         or "Unknown",
+                        "package_type": get_package_type(package["name"], package["version"], image_details),
                     },
                 )
             )

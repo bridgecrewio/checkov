@@ -193,7 +193,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             solver = check.operator
 
         return operators_to_attributes_solver_classes.get(solver, lambda *args: None)(
-                check.resource_types, check.attribute, check.attribute_value, check.is_jsonpath_check
+            check.resource_types, check.attribute, check.attribute_value, check.is_jsonpath_check
         )
 
     def get_check_solver(self, check: BaseGraphCheck) -> BaseSolver:

@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 131)
+        self.assertEqual(len(report.passed_checks), 133)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_honors_enforcement_rules(self):
@@ -220,6 +220,23 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].job[0] == "analyze"
         assert report.passed_checks[0].triggers[0] == {'push', 'schedule', 'pull_request', 'workflow_dispatch'}
         assert report.passed_checks[0].workflow_name == 'CodeQL'
+
+    def test_runner_on_suspectcurl(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/empty_jobs.yaml"
+        file_dir = [str(file_path)]
+        checks = ["CKV_GHA_6", "CKV_GHA_5"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert len(report.failed_checks) == 0
+        assert len(report.passed_checks) == 0
+        assert len(report.skipped_checks) == 0
+        assert len(report.parsing_errors) == 0
 
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from packaging import version as packaging_version
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
@@ -13,7 +17,7 @@ from checkov.sca_package.output import (
     CveCount,
 )
 
-def get_vulnerabilities_details() -> list:
+def get_vulnerabilities_details() -> list[dict[str, Any]]:
     return [
         {
             "id": "CVE-2019-19844",

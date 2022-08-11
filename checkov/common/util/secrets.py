@@ -5,15 +5,15 @@ import logging
 import re
 
 # secret categories for use as constants
-from typing import Any
-
-from pycep.typing import ParameterAttributes, ResourceAttributes
-
-from checkov.common.typing import _CheckResult
-
-from checkov.common.checks.base_check import BaseCheck
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.typing import _CheckResult
+    from pycep.typing import ParameterAttributes, ResourceAttributes
+
 
 AWS = 'aws'
 AZURE = 'azure'

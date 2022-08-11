@@ -3,16 +3,15 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
-from networkx import DiGraph
+from typing import List, Dict, Any, TYPE_CHECKING
 
-from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+    from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 
 
 class BaseRegistry:

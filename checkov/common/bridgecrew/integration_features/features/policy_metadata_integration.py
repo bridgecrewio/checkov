@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import json
 import logging
+from typing import TYPE_CHECKING, Any, cast
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -7,15 +10,19 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
+if TYPE_CHECKING:
+    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.bridgecrew.severities import Severity
+
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
-    def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=0)
-        self.check_metadata = {}
-        self.bc_to_ckv_id_mapping = {}
-        self.pc_to_ckv_id_mapping = {}
+    def __init__(self, bc_integration: BcPlatformIntegration) -> None:
+        super().__init__(bc_integration=bc_integration, order=0)
+        self.check_metadata: dict[str, Any] = {}
+        self.bc_to_ckv_id_mapping: dict[str, str] = {}
+        self.pc_to_ckv_id_mapping: dict[str, str] = {}
         self.severity_key = 'severity'
-        self.filtered_policy_ids = []
+        self.filtered_policy_ids: list[str] = []
 
     def is_valid(self) -> bool:
         return (
@@ -71,38 +78,38 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
     def get_bc_id(self, checkov_id: str) -> str:
-        return self.check_metadata.get(checkov_id, {}).get('id')
+        return cast(str, self.check_metadata.get(checkov_id, {}).get('id'))
 
     def get_guideline(self, checkov_id: str) -> str:
-        return self.check_metadata.get(checkov_id, {}).get('guideline')
+        return cast(str, self.check_metadata.get(checkov_id, {}).get('guideline'))
 
-    def get_severity(self, checkov_id):
-        severity = self.check_metadata.get(checkov_id, {}).get(self.severity_key)
+    def get_severity(self, checkov_id: str) -> Severity | None:
+        severity: str | Severity | None = self.check_metadata.get(checkov_id, {}).get(self.severity_key)
         if not severity:
             severity = self.check_metadata.get(checkov_id, {}).get('severity')
-        if severity and type(severity) == str:
-            severity = Severities[severity]  # not all runners register their checks in time for being processed above
-        return severity
+        if severity and isinstance(severity, str):
+            return Severities[severity]  # not all runners register their checks in time for being processed above
+        return cast(None, severity)
 
-    def get_category(self, checkov_id):
-        return self.check_metadata.get(checkov_id, {}).get('category')
+    def get_category(self, checkov_id: str) -> str:
+        return cast(str, self.check_metadata.get(checkov_id, {}).get('category'))
 
-    def get_benchmarks(self, checkov_id):
-        return self.check_metadata.get(checkov_id, {}).get('benchmarks')
+    def get_benchmarks(self, checkov_id: str) -> dict[str, list[str]] | None:
+        return cast("dict[str, list[str]] | None", self.check_metadata.get(checkov_id, {}).get('benchmarks'))
 
-    def get_prisma_policy_title(self, checkov_id):
-        return self.check_metadata.get(checkov_id, {}).get('descriptiveTitle')
+    def get_prisma_policy_title(self, checkov_id: str) -> str:
+        return cast(str, self.check_metadata.get(checkov_id, {}).get('descriptiveTitle'))
 
-    def get_policy_metadata(self, checkov_id):
+    def get_policy_metadata(self, checkov_id: str) -> dict[str, Any] | None:
         return self.check_metadata.get(checkov_id)
 
-    def get_ckv_id_from_bc_id(self, bc_id):
+    def get_ckv_id_from_bc_id(self, bc_id: str) -> str | None:
         return self.bc_to_ckv_id_mapping.get(bc_id)
 
-    def get_ckv_id_from_pc_id(self, pc_id):
+    def get_ckv_id_from_pc_id(self, pc_id: str) -> str | None:
         return self.pc_to_ckv_id_mapping.get(pc_id)
 
-    def _handle_public_metadata(self, check_metadata):
+    def _handle_public_metadata(self, check_metadata: dict[str, Any]) -> None:
         guidelines = check_metadata['guidelines']
         self.bc_to_ckv_id_mapping = check_metadata['idMapping']
 
@@ -119,7 +126,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     'id': bc_id
                 }
 
-    def _handle_customer_run_config(self, run_config):
+    def _handle_customer_run_config(self, run_config: dict[str, Any]) -> None:
         self.check_metadata = run_config['policyMetadata']
         for ckv_id, pol in self.check_metadata.items():
             self.bc_to_ckv_id_mapping[pol['id']] = ckv_id
@@ -136,7 +143,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 if pc_policy_id:
                     self.pc_to_ckv_id_mapping[pc_policy_id] = custom_policy['id']
 
-    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata):
+    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]]) -> None:
         if isinstance(prisma_policy_metadata, list):
             for metadata in prisma_policy_metadata:
                 logging.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")

@@ -14,6 +14,7 @@ from checkov.common.parsers.json.errors import NullError, DuplicateError, Decode
 
 class Mark:
     """Mark of line and column"""
+    __slots__ = ("column", "line")
 
     def __init__(self, line: int, column: int) -> None:
         self.line = line
@@ -60,15 +61,15 @@ def py_scanstring(
             continue
         try:
             esc = s[end]
-        except IndexError:
-            raise DecodeError('Unterminated string starting at', s, begin)
+        except IndexError as err:
+            raise DecodeError('Unterminated string starting at', s, begin) from err
         # If not a unicode escape sequence, must be in the lookup table
         if esc != 'u':
             try:
                 char = _b[esc]
-            except KeyError:
+            except KeyError as err:
                 msg = 'Invalid \\escape: {0!r}'.format(esc)
-                raise DecodeError(msg, s, end)
+                raise DecodeError(msg, s, end) from err
             end += 1
         else:
             uni = _decode_uXXXX(s, end)
@@ -117,8 +118,8 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         """ Scan once internal function """
         try:
             nextchar = string[idx]
-        except IndexError:
-            raise StopIteration(idx)
+        except IndexError as err:
+            raise StopIteration(idx) from err
 
         if nextchar == '"':
             return parse_string(string, idx + 1, strict)
@@ -217,7 +218,7 @@ class Decoder(JSONDecoder):
         self.parse_array = self.json_array
         self.parse_string = py_scanstring
         self.memo: dict[str, str] = {}
-        setattr(self, "object_pairs_hook", self.check_duplicates)
+        setattr(self, "object_pairs_hook", self.check_duplicates)  # noqa: B010  # it is method assignment
         self.scan_once = py_make_scanner(self)
         self.newline_indexes: list[int] = []
 
@@ -272,9 +273,9 @@ class Decoder(JSONDecoder):
                         result = object_pairs_hook(pairs, beg_mark, end_mark)
                         return result, end + 1
                     except DuplicateError as err:
-                        raise DecodeError('Duplicate found {}'.format(err), s, end)
+                        raise DecodeError('Duplicate found', s, end) from err
                     except NullError as err:
-                        raise DecodeError('Null Error {}'.format(err), s, end)
+                        raise DecodeError('Null Error', s, end) from err
                 pairs = {}
                 if object_hook is not None:
                     beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1, self.newline_indexes)
@@ -309,9 +310,9 @@ class Decoder(JSONDecoder):
             beg_mark, end_mark = get_beg_end_mark(s, begin, begin + len(key), self.newline_indexes)
             try:
                 value, end = scan_once(s, end)
-            except StopIteration:
+            except StopIteration as err:
                 logging.debug("Failed to scan string", exc_info=True)
-                raise DecodeError('Expecting value', s, end_mark.line)
+                raise DecodeError('Expecting value', s, end_mark.line) from err
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
             try:
@@ -338,9 +339,9 @@ class Decoder(JSONDecoder):
                 beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end, self.newline_indexes)
                 result = object_pairs_hook(pairs, beg_mark, end_mark)
             except DuplicateError as err:
-                raise DecodeError('Duplicate found {}'.format(err), s, begin, key)
+                raise DecodeError('Duplicate found', s, begin, key) from err
             except NullError as err:
-                raise DecodeError('Null Error {}'.format(err), s, begin, key)
+                raise DecodeError('Null Error', s, begin, key) from err
             return result, end
 
         pairs = dict(pairs)
