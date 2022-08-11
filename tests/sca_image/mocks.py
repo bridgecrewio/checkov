@@ -48,3 +48,7 @@ def mock_scan(self: Runner, image_id: str, dockerfile_path: str, runner_filter: 
                 ],
                           'vulnerabilityDistribution': {'critical': 0, 'high': 0, 'medium': 2, 'low': 6, 'total': 8},
                           'vulnerabilityScanPassed': True}])
+
+
+def mock_scan_empty(self: Runner, image_id: str, dockerfile_path: str, runner_filter: RunnerFilter | None = None) -> Dict[str, Any]:
+    return {}

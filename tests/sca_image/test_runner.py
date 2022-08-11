@@ -13,7 +13,7 @@ from checkov.sca_image.runner import Runner
 from checkov.github_actions.runner import Runner as GHA_Runner
 from checkov.common.typing import _LicenseStatus
 from checkov.common.models.enums import CheckResult
-from .mocks import mock_scan
+from .mocks import mock_scan, mock_scan_empty
 
 WORKFLOW_EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
@@ -238,3 +238,49 @@ def test_run(mock_bc_integration):
     assert license_resource.vulnerability_details["status"] == "FAILED"
     assert license_resource.vulnerability_details["policy"] == "BC_LIC_1"
     assert license_resource.vulnerability_details["package_type"] == "os"
+
+
+@mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan_empty)
+@responses.activate
+def test_run_with_empty_scan_result(mock_bc_integration):
+    # given
+    response_json = {
+        "violations": [
+            {
+                "name": "pcre2",
+                "version": "10.39-3build1",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "COMPLIANT"
+            },
+            {
+                "name": "perl",
+                "version": "5.34.0-3ubuntu1",
+                "license": "Apache-2.0-Fake",
+                "policy": "BC_LIC_1",
+                "status": "OPEN"
+            },
+        ]
+    }
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        json=response_json,
+        status=200
+    )
+
+    runner = Runner()
+    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
+    # when
+    dockerfile_path = "/Users/ipeleg/Work/checkov/tests/sca_image/examples/dockerfile/Dockerfile"
+    image_id = "sha256:123456"
+    report = runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter, dockerfile_path=dockerfile_path, image_id=image_id)
+
+    # then
+    assert report.check_type == "sca_image"
+    assert report.resources == set()
+
+    assert len(report.passed_checks) == 0
+    assert len(report.failed_checks) == 0
+    assert len(report.skipped_checks) == 0
+    assert len(report.parsing_errors) == 0
