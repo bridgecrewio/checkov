@@ -153,7 +153,8 @@ class Runner(BaseRunner):
                 rootless_file_path=rootless_file_path,
                 file_abs_path=scanned_file_path,
                 check_class=self._check_class,
-                licenses_status=license_status
+                licenses_status=license_status,
+                image_details=image_details,
             )
 
             if not runner_filter.should_run_check(check_id=policy, bc_check_id=policy,

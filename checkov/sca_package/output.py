@@ -56,6 +56,7 @@ def create_report_license_record(
     file_abs_path: str,
     check_class: str,
     licenses_status: _LicenseStatus,
+    image_details: ImageDetails | None = None,
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
@@ -79,6 +80,7 @@ def create_report_license_record(
         "license": licenses_status["license"],
         "status": status,
         "policy": policy,
+        "package_type": get_package_type(package_name, package_version, image_details),
     }
 
     record = Record(
