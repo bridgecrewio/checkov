@@ -60,6 +60,21 @@ class Runner(YamlRunner, ImageReferencer):
             new_key = f'jobs.{job_name}.steps.{step_name}'
         return new_key
 
+    @staticmethod
+    def generate_resource_key(definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        """
+        Generate resource key without the previous format of key (needed in get_resource)
+        """
+        jobs_dict: dict[str, Any] = definition.get("jobs", {})
+        for job_name, job in jobs_dict.items():
+            if not isinstance(job, dict):
+                continue
+
+            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
+                return f'jobs.{job_name}'
+
+        return ''
+
     def get_images(self, file_path: str) -> set[Image]:
         """
         Get container images mentioned in a file
@@ -113,6 +128,7 @@ class Runner(YamlRunner, ImageReferencer):
                         name=image,
                         start_line=start_line,
                         end_line=end_line,
+                        related_resource_id=Runner.generate_resource_key(workflow, start_line, end_line)
                     )
                     images.add(image_obj)
 
