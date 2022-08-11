@@ -17,7 +17,9 @@ def extract_tar_archive(source_path: str, dest_path: str) -> None:
 
 def compress_file_gzip_base64(input_path: str) -> str:
     """
-    getting compressed-result, where the compression is deterministic
+    by default the method gzip.compress isn't deterministic as it adds some header that is affected by the current timestamp.
+    in python>=3.8, we can make that header fixable, so the compression is deterministic (by adding the flag mine=0).
+    we prefer it to be deterministic as in some cases we use it had hash-value
     (adding mtime=0 makes it by adding to the result some fixed timestamp.
     when omitting it (or setting None), the result are affected by the current timestamp)
     """
