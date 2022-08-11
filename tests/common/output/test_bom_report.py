@@ -18,7 +18,7 @@ from checkov.terraform.runner import Runner as tf_runner
 
 
 class TestBomOutput:
-    def test_csv_output(self, tmp_path: Path):
+    def test_iac_csv_output(self, tmp_path: Path):
         test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/../runner_registry/example_s3_tf"
         runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
         runner_registry = RunnerRegistry(
@@ -53,6 +53,7 @@ class TestBomOutput:
             "severity": "high",
             "package_name": "flask",
             "package_version": "0.6",
+            "licenses": "",
         }
         record = Record(
             check_id=f"CKV_{cve_id.replace('-', '_')}",
@@ -76,6 +77,7 @@ class TestBomOutput:
             vulnerability_details={
                 "package_name": "requests",
                 "package_version": "",
+                'licenses': 'Apache-2.0'
             }
         )
 
@@ -93,7 +95,7 @@ class TestBomOutput:
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\n"
+            "requests,,/requirements.txt,acme,bridgecrewio/example,,,Apache-2.0\n"
         )
 
         assert csv_output == expected_csv
@@ -101,7 +103,7 @@ class TestBomOutput:
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"\"\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"\"\n"
+            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"Apache-2.0\"\n"
         )
 
         assert csv_output_str == expected_csv
@@ -161,6 +163,7 @@ class TestBomOutput:
             vulnerability_details={
                 "package_name": "requests",
                 "package_version": "",
+                'licenses': "",
             }
         )
 
@@ -177,7 +180,7 @@ class TestBomOutput:
         csv_output_str = csv_sbom_report.get_csv_output_packages(check_type=CheckType.SCA_IMAGE)
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\n"
+            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,Unknown\n"
             "requests,,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\n"
         )
 
@@ -185,7 +188,7 @@ class TestBomOutput:
 
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"\"\n"
+            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"Unknown\"\n"
             "requests,,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\"\"\n"
         )
 

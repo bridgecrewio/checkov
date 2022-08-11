@@ -71,8 +71,6 @@ class CSVSBOM:
         if isinstance(resource, Record) and resource.severity is not None:
             # ExtraResource don't have a CVE/Severity
             severity = resource.severity.name
-        licences = resource.vulnerability_details.get("licenses") if \
-            resource.vulnerability_details.get("licenses") != 'Unknown' else ''
         csv_table = {
             CheckType.SCA_PACKAGE: self.package_rows,
             CheckType.SCA_IMAGE: self.container_rows
@@ -86,7 +84,7 @@ class CSVSBOM:
                 "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
-                "Licenses": licences,
+                "Licenses": resource.vulnerability_details.get("licenses"),
             }
         )
 

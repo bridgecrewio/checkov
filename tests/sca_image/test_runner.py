@@ -127,5 +127,9 @@ def test_licenses_status_on_failure(mock_bc_integration):
     )
 
     image_runner = Runner()
-    license_statuses = image_runner.get_license_statuses(packages_input)
-    assert license_statuses == []
+    try:
+        # we expect to have failure here, in case the of http/connection error
+        image_runner.get_license_statuses(packages_input)
+        assert False
+    except:
+        assert True
