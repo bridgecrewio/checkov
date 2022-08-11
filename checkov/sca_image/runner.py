@@ -38,6 +38,7 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.base_url = bc_integration.api_url
+        self.get_license_violation_url = f"{self.base_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
@@ -253,9 +254,8 @@ class Runner(PackageRunner):
             {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
             for package in packages
         ]
-        get_license_violation_url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
         try:
-            response = request_wrapper("POST", get_license_violation_url,
+            response = request_wrapper("POST", self.get_license_violation_url,
                                        headers=bc_integration.get_default_headers("POST"),
                                        json={"packages": requests_input},
                                        should_call_raise_for_status=True)

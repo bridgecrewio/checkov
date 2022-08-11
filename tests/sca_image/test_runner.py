@@ -1,7 +1,8 @@
 from pathlib import Path
 from urllib.parse import quote_plus
-
 import responses
+import os
+from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -108,3 +109,23 @@ def test_licenses_status(mock_bc_integration):
         _LicenseStatus(package_name='github.com/apparentlymart/go-textseg/v12', package_version='v12.0.0', policy='BC_LIC_1', license='Apache-2.0', status='COMPLIANT'),
         _LicenseStatus(package_name='docutils', package_version='0.15.2', policy='BC_LIC_1', license='Apache-2.0', status= 'COMPLIANT')
     ]
+
+
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "1", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+@responses.activate
+def test_licenses_status_on_failure(mock_bc_integration):
+    packages_input = [
+        {"name": "docutils", "version": "0.15.2", "lang": "python"},
+        {"name": "github.com/apparentlymart/go-textseg/v12", "version": "v12.0.0", "lang": "go"}
+    ]
+
+    # given
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        status=500
+    )
+
+    image_runner = Runner()
+    license_statuses = image_runner.get_license_statuses(packages_input)
+    assert license_statuses == []
