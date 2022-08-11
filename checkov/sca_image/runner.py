@@ -254,6 +254,8 @@ class Runner(PackageRunner):
             {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
             for package in packages
         ]
+        if not requests_input:
+            return []
         try:
             response = request_wrapper("POST", self.get_license_violation_url,
                                        headers=bc_integration.get_default_headers("POST"),
