@@ -2,9 +2,6 @@ import os
 import unittest
 from pathlib import Path
 
-# from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-#
-# from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
