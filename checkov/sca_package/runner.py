@@ -3,22 +3,16 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Sequence, Any
-from collections import defaultdict
 
 from checkov.common.sca.output import parse_vulns_to_records
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
-from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.output.common import ImageDetails
-from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.scanner import Scanner
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
-    integration as metadata_integration
 
 
 class Runner(BaseRunner):
