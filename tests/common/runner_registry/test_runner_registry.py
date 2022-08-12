@@ -1,5 +1,5 @@
 import argparse
-import csv
+import json
 import unittest
 
 import os
@@ -103,10 +103,14 @@ class TestRunnerRegistry(unittest.TestCase):
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
             runner_registry.print_reports(scan_reports=reports, config=config)
 
-        output = captured_output.getvalue()
+        output = json.loads(captured_output.getvalue())
+        passed_checks = output["results"]["passed_checks"]
+        failed_checks = output["results"]["failed_checks"]
 
-        assert 'code_block' not in output
-        assert 'connected_node' not in output
+        assert all(check["code_block"] is None for check in passed_checks)
+        assert all(check["connected_node"] is None for check in passed_checks)
+        assert all(check["code_block"] is None for check in failed_checks)
+        assert all(check["connected_node"] is None for check in failed_checks)
 
     def test_compact_csv_output(self):
         test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
