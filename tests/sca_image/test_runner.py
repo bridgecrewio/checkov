@@ -172,20 +172,21 @@ def test_run(mock_bc_integration):
     runner = Runner()
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
     # when
-    dockerfile_path = "/Users/ipeleg/Work/checkov/tests/sca_image/examples/dockerfile/Dockerfile"
+    dockerfile_path = "/path/to/Dockerfile"
     image_id = "sha256:123456"
     report = runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter, dockerfile_path=dockerfile_path, image_id=image_id)
 
     # then
+    rootless_path = "path/to/Dockerfile"
     assert report.check_type == "sca_image"
-    assert report.resources == {'Dockerfile (sha256:123456).pcre2', 'Dockerfile (sha256:123456).perl'}
+    assert report.resources == {f'{rootless_path} (sha256:123456).pcre2', f'{rootless_path} (sha256:123456).perl'}
 
     assert len(report.passed_checks) == 1
     assert len(report.failed_checks) == 3
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
 
-    cve_record = next((c for c in report.failed_checks if c.resource == "Dockerfile (sha256:123456).pcre2" and c.check_name == "SCA package scan"), None)
+    cve_record = next((c for c in report.failed_checks if c.resource == f"{rootless_path} (sha256:123456).pcre2" and c.check_name == "SCA package scan"), None)
     assert cve_record is not None
     assert cve_record.bc_check_id == "BC_CVE_2022_1587"
     assert cve_record.check_id == "CKV_CVE_2022_1587"
@@ -197,11 +198,11 @@ def test_run(mock_bc_integration):
         "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. "
         "This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
     )
-    assert cve_record.file_abs_path == "/Users/ipeleg/Work/checkov/tests/Dockerfile"
+    assert cve_record.file_abs_path == f"/{rootless_path}"
     assert cve_record.file_line_range == [0, 0]
-    assert cve_record.file_path == "/Dockerfile (sha256:123456)"
-    assert cve_record.repo_file_path == "/Dockerfile"
-    assert cve_record.resource == "Dockerfile (sha256:123456).pcre2"
+    assert cve_record.file_path == f"/{rootless_path} (sha256:123456)"
+    assert cve_record.repo_file_path == f"/{rootless_path}"
+    assert cve_record.resource == f"{rootless_path} (sha256:123456).pcre2"
     assert cve_record.severity == Severities[BcSeverities.LOW]
     assert cve_record.short_description == "CVE-2022-1587 - pcre2: 10.39-3build1"
     assert cve_record.vulnerability_details["lowest_fixed_version"] == "N/A"
@@ -217,13 +218,13 @@ def test_run(mock_bc_integration):
 
     # making sure extra-resources (a scanned packages without cves) also have licenses - this data will be printed
     # as part of the BON report.
-    extra_resource = next((c for c in report.extra_resources if c.resource == "Dockerfile (sha256:123456).bzip2"), None)
+    extra_resource = next((c for c in report.extra_resources if c.resource == f"{rootless_path} (sha256:123456).bzip2"), None)
     assert extra_resource is not None
     assert "licenses" in extra_resource.vulnerability_details
     assert extra_resource.vulnerability_details["licenses"] == "Unknown"
 
     license_resource = next((c for c in report.failed_checks if c.check_name == "SCA license" if
-                             c.resource == "Dockerfile (sha256:123456).perl"), None)
+                             c.resource == f"{rootless_path} (sha256:123456).perl"), None)
     assert license_resource is not None
     print(license_resource.resource)
     assert license_resource.check_id == "BC_LIC_1"
