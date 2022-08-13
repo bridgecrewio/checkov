@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import atexit
 import json
 import logging
@@ -7,12 +9,10 @@ import shutil
 import signal
 import sys
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
 
 import argcomplete
 import configargparse
-from configargparse import ArgumentParser
-from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
@@ -62,6 +62,10 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+
+if TYPE_CHECKING:
+    from configargparse import ArgumentParser, Namespace
+
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None

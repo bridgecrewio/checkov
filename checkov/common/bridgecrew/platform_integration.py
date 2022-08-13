@@ -23,7 +23,6 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
-from typing_extensions import TypeGuard
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.run_metadata.registry import registry
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
     from requests import Response
+    from typing_extensions import TypeGuard
 
 
 SLEEP_SECONDS = 1

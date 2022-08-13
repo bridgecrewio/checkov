@@ -1,12 +1,15 @@
-import itertools
-from typing import Any, List, Dict, Optional, Tuple
+from __future__ import annotations
 
-from networkx import DiGraph
+import itertools
+from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 
 class BaseConnectionSolver(BaseSolver):
