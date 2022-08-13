@@ -37,13 +37,13 @@ jobs:
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv!=2022.8.13  # skip the bad version for now
       - uses: imranismail/setup-kustomize@v1
         if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==22.0.3
+          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -76,13 +76,13 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv!=2022.8.13  # skip the bad version for now
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Build & install checkov package
         run: |
           pipenv --python 3.7
-          pipenv run pip install --upgrade pip==22.0.3
+          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
@@ -105,7 +105,7 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv!=2022.8.13  # skip the bad version for now
       - name: Install dependencies
         run: |
           pipenv --python 3.7
@@ -138,7 +138,7 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv!=2022.8.13  # skip the bad version for now
       - name: Install dependencies
         run: |
           pipenv --python 3.7
