@@ -201,7 +201,6 @@ class Runner(PackageRunner):
             image_details=image_details,
             report_type=self.report_type,
         )
-
         return report
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
@@ -219,6 +218,7 @@ class Runner(PackageRunner):
             return report
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
 
@@ -233,11 +233,11 @@ class Runner(PackageRunner):
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-            rootless_file_path = f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} " \
-                                 f"({image_id}))"
+            rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
+                                           f"{image.end_line} ({image_id}))"
 
-            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path, image_details,
-                                                    runner_filter)
+            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report,
+                                                    image_details, runner_filter)
 
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
@@ -248,8 +248,10 @@ class Runner(PackageRunner):
 
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
-            rootless_file_path = f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))"
-            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path, None, runner_filter)
+            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
+                                           f"{image.end_line} ({image_id}))"
+            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, None,
+                                                    runner_filter)
 
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -302,8 +304,8 @@ class Runner(PackageRunner):
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
         rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-        rootless_file_path = f"{rootless_file_path} ({image_id})"
-        return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path, image_details,
+        rootless_file_path_to_report = f"{rootless_file_path} ({image_id})"
+        return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, image_details,
                                                 runner_filter)
 
     def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
