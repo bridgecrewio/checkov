@@ -65,7 +65,7 @@ class Scanner:
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
                 logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
                 scan_results = [
-                    await self.execute_twistcli_scan(input_path) if scan_results[idx]["packages"] is None else
+                    await self.execute_twistcli_scan(input_path) if scan_results[idx].get("packages") is None else
                     scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
@@ -73,7 +73,7 @@ class Scanner:
                 indices_to_fix: List[int] = [
                     idx
                     for idx in range(len(input_paths_as_list))
-                    if scan_results[idx]["packages"] is None
+                    if scan_results[idx].get("packages") is None
                 ]
                 new_scan_results = await asyncio.gather(*[
                     self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix

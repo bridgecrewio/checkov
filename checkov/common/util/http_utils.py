@@ -123,14 +123,18 @@ def request_wrapper(
         except requests.exceptions.ConnectionError as connection_error:
             logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
             if i != request_max_tries - 1:
-                time.sleep(sleep_between_request_tries * (i + 1))
+                sleep_secs = sleep_between_request_tries * (i + 1)
+                logging.info(f"retrying attempt number {i+2} in {sleep_secs} seconds")
+                time.sleep(sleep_secs)
                 continue
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
             logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
             status_code = http_error.response.status_code
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
-                time.sleep(sleep_between_request_tries * (i + 1))
+                sleep_secs = sleep_between_request_tries * (i + 1)
+                logging.info(f"retrying attempt number {i+2} in {sleep_secs} seconds")
+                time.sleep(sleep_secs)
                 continue
             raise http_error
     else:

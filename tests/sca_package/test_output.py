@@ -1,20 +1,23 @@
+from __future__ import annotations
+
+from typing import Any
+
 from packaging import version as packaging_version
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult
+from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
     calculate_lowest_compliant_version,
     create_cli_cves_table,
     create_cli_license_violations_table,
-    create_report_cve_record,
-    create_report_license_record,
     create_cli_output,
     compare_cve_severity,
     CveCount,
 )
 
-def get_vulnerabilities_details() -> list:
+def get_vulnerabilities_details() -> list[dict[str, Any]]:
     return [
         {
             "id": "CVE-2019-19844",

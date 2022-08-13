@@ -20,8 +20,11 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.sca.output import parse_vulns_to_records
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.typing import _LicenseStatus
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -36,6 +39,7 @@ class Runner(PackageRunner):
         self._check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         self.raw_report: Optional[Dict[str, Any]] = None
         self.base_url = bc_integration.api_url
+        self.get_license_violation_url = f"{self.base_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
@@ -210,15 +214,17 @@ class Runner(PackageRunner):
                     pass
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
 
-            self.parse_vulns_to_records(
+            parse_vulns_to_records(
                 report=report,
+                check_class=self._check_class,
                 scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
                 license_statuses=[],
-                image_details=image_details
+                image_details=image_details,
+                report_type=self.report_type,
             )
 
             return report
@@ -232,19 +238,48 @@ class Runner(PackageRunner):
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
             vulnerabilities = result.get("vulnerabilities") or []
-            self.parse_vulns_to_records(
+            parse_vulns_to_records(
                 report=report,
+                check_class=self._check_class,
                 scanned_file_path=os.path.abspath(dockerfile_path),
                 rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=[],
                 license_statuses=[],
+                report_type=self.report_type,
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
 
         return report
+
+    def get_license_statuses(self, packages: list[dict[str, Any]]) -> List[_LicenseStatus]:
+        requests_input = [
+            {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
+            for package in packages
+        ]
+        if not requests_input:
+            return []
+        try:
+            response = request_wrapper("POST", self.get_license_violation_url,
+                                       headers=bc_integration.get_default_headers("POST"),
+                                       json={"packages": requests_input},
+                                       should_call_raise_for_status=True)
+            response_json = response.json()
+            license_statuses = [
+                _LicenseStatus(package_name=license_violation.get("name", ""),
+                               package_version=license_violation.get("version", ""),
+                               policy=license_violation.get("policy", "BC_LIC1"),
+                               license=license_violation.get("license", ""),
+                               status=license_violation.get("status", "COMPLIANT"))
+                for license_violation in response_json.get("violations", [])
+            ]
+            return license_statuses
+        except Exception as e:
+            error_message = "failing when trying to get licenses-violations. it is apparently some unexpected " \
+                            "connection issue. please try later. in case it keep happening. please report."
+            raise Exception(error_message) from e
 
     def get_image_id_report(self, dockerfile_path: str, image_id: str, runner_filter: RunnerFilter) -> Report:
         """
@@ -259,6 +294,7 @@ class Runner(PackageRunner):
         result = scan_result.get('results', [{}])[0]
         vulnerabilities = result.get("vulnerabilities") or []
         packages = result.get("packages") or []
+        license_statuses = self.get_license_statuses(packages)
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
@@ -267,15 +303,17 @@ class Runner(PackageRunner):
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
         rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-        self.parse_vulns_to_records(
+        parse_vulns_to_records(
             report=report,
+            check_class=self._check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
             rootless_file_path=f"{rootless_file_path} ({image_id})",
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,
             packages=packages,
-            license_statuses=[],
-            image_details=image_details
+            license_statuses=license_statuses,
+            image_details=image_details,
+            report_type=self.report_type,
         )
         return report
 
