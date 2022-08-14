@@ -139,12 +139,13 @@ class Runner(PackageRunner):
 
         self._code_repo_path = Path(root_folder) if root_folder else None
 
+        report = Report(self.check_type)
+
         if "dockerfile_path" in kwargs and "image_id" in kwargs:
             dockerfile_path = kwargs['dockerfile_path']
             image_id = kwargs['image_id']
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
 
-        report = Report(self.check_type)
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report
@@ -182,26 +183,6 @@ class Runner(PackageRunner):
                                                          runner_filter=runner_filter)
                     merge_reports(report, image_report)
 
-    def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
-                                    image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
-        report = Report(self.check_type)
-        vulnerabilities = result.get("vulnerabilities", [])
-        packages = result.get("packages", [])
-        license_statuses = self.get_license_statuses(packages)
-        parse_vulns_to_records(
-            report=report,
-            check_class=self._check_class,
-            scanned_file_path=os.path.abspath(dockerfile_path),
-            rootless_file_path=rootless_file_path,
-            runner_filter=runner_filter,
-            vulnerabilities=vulnerabilities,
-            packages=packages,
-            license_statuses=license_statuses,
-            image_details=image_details,
-            report_type=self.report_type,
-        )
-        return report
-
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
         """
 
@@ -210,16 +191,19 @@ class Runner(PackageRunner):
         :param runner_filter:
         :return: vulnerability report
         """
+        report = Report(self.check_type)
+
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
-            return Report(self.check_type)
+            return report
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
-
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
+
             self.raw_report = cached_results
             result = cached_results.get('results', [{}])[0]
+            vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
             if self._code_repo_path:
@@ -229,29 +213,46 @@ class Runner(PackageRunner):
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-            rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
 
-            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report,
-                                                    image_details, runner_filter)
+            parse_vulns_to_records(
+                report=report,
+                check_class=self._check_class,
+                scanned_file_path=os.path.abspath(dockerfile_path),
+                rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                license_statuses=[],
+                image_details=image_details,
+                report_type=self.report_type,
+            )
 
+            return report
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
             image_id = ImageReferencer.inspect(image.name)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
-                return Report(self.check_type)
+                return report
 
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
-            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
-            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, None,
-                                                    runner_filter)
+            vulnerabilities = result.get("vulnerabilities") or []
+            parse_vulns_to_records(
+                report=report,
+                check_class=self._check_class,
+                scanned_file_path=os.path.abspath(dockerfile_path),
+                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                runner_filter=runner_filter,
+                vulnerabilities=vulnerabilities,
+                packages=[],
+                license_statuses=[],
+                report_type=self.report_type,
+            )
         else:
             logging.info(f"No cache hit for image {image.name}")
 
-        return Report(self.check_type)
+        return report
 
     def get_license_statuses(self, packages: list[dict[str, Any]]) -> List[_LicenseStatus]:
         requests_input = [
@@ -284,11 +285,16 @@ class Runner(PackageRunner):
         """
         THIS METHOD HANDLES CUSTOM IMAGE SCANNING THAT COMES DIRECTLY FROM CLI PARAMETERS
         """
+        report = Report(self.check_type)
+
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
-            return Report(self.check_type)
+            return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
+        vulnerabilities = result.get("vulnerabilities") or []
+        packages = result.get("packages") or []
+        license_statuses = self.get_license_statuses(packages)
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
         if self._code_repo_path:
             try:
@@ -297,9 +303,19 @@ class Runner(PackageRunner):
                 # Path.is_relative_to() was implemented in Python 3.9
                 pass
         rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
-        rootless_file_path_to_report = f"{rootless_file_path} ({image_id})"
-        return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, image_details,
-                                                runner_filter)
+        parse_vulns_to_records(
+            report=report,
+            check_class=self._check_class,
+            scanned_file_path=os.path.abspath(dockerfile_path),
+            rootless_file_path=f"{rootless_file_path} ({image_id})",
+            runner_filter=runner_filter,
+            vulnerabilities=vulnerabilities,
+            packages=packages,
+            license_statuses=license_statuses,
+            image_details=image_details,
+            report_type=self.report_type,
+        )
+        return report
 
     def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
         """Extracts a shortened version of the image ID from the scan result"""
