@@ -144,7 +144,7 @@ class Runner(PackageRunner):
             image_id = kwargs['image_id']
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
 
-        report = self.get_empty_report()
+        report = Report(self.check_type)
         if not files and not root_folder:
             logging.debug("No resources to scan.")
             return report
