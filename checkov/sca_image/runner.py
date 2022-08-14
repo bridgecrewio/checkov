@@ -184,7 +184,7 @@ class Runner(PackageRunner):
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
-        report = self.get_empty_report()
+        report = Report(self.check_type)
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
         license_statuses = self.get_license_statuses(packages)
@@ -212,7 +212,7 @@ class Runner(PackageRunner):
         """
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
-            return self.get_empty_report()
+            return Report(self.check_type)
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
 
@@ -240,7 +240,7 @@ class Runner(PackageRunner):
             image_id = ImageReferencer.inspect(image.name)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
-                return self.get_empty_report()
+                return Report(self.check_type)
 
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
@@ -251,7 +251,7 @@ class Runner(PackageRunner):
         else:
             logging.info(f"No cache hit for image {image.name}")
 
-        return self.get_empty_report()
+        return Report(self.check_type)
 
     def get_license_statuses(self, packages: list[dict[str, Any]]) -> List[_LicenseStatus]:
         requests_input = [
@@ -286,7 +286,7 @@ class Runner(PackageRunner):
         """
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
-            return self.get_empty_report()
+            return Report(self.check_type)
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
@@ -328,6 +328,3 @@ class Runner(PackageRunner):
 
     def included_paths(self) -> Iterable[str]:
         return ['.github', '.circleci']
-
-    def get_empty_report(self) -> Report:
-        return Report(self.check_type)
