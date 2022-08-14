@@ -20,7 +20,7 @@ class AllowUnsecureCommandsOnJob(BaseGithubActionsCheck):
     def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
-        if "env" not in conf:
+        if "env" not in conf or not conf["env"]:
             return CheckResult.PASSED, conf
         env_variables = conf.get("env", {})
         if env_variables.get("ACTIONS_ALLOW_UNSECURE_COMMANDS", False):
