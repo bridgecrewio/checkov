@@ -23,7 +23,7 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"

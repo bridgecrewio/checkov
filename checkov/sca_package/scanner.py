@@ -105,6 +105,7 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
+            logging.info(f"result for {input_path} exists in the cache")
             return self.parse_api_result(input_path, response_json["outputData"])
 
         return self.run_scan_busy_wait(input_path, response_json['id'])
