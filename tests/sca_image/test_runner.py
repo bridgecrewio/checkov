@@ -24,6 +24,31 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     # given
     image_id_encoded = quote_plus(f"image:{image_name}")
 
+    response_json = {
+        "violations": [
+            {
+                "name": "readline",
+                "version": "8.1.2-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "OPEN"
+            },
+            {
+                "name": "libnsl",
+                "version": "2.0.0-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "COMPLIANT"
+            },
+        ]
+    }
+
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        json=response_json,
+        status=200
+    )
     responses.add(
         method=responses.GET,
         url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
@@ -37,12 +62,16 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR)
 
     # then
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
     responses.assert_call_count(
         mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", 1
     )
+    responses.assert_call_count(
+        mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations", 1
+    )
 
-    assert len(report.failed_checks) == 3
+    assert len(report.failed_checks) == 4
+    assert len(report.passed_checks) == 1
 
 
 @responses.activate
@@ -50,6 +79,31 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     # given
     image_id_encoded = quote_plus(f"image:{image_name}")
 
+    response_json = {
+        "violations": [
+            {
+                "name": "readline",
+                "version": "8.1.2-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "OPEN"
+            },
+            {
+                "name": "libnsl",
+                "version": "2.0.0-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "COMPLIANT"
+            },
+        ]
+    }
+
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        json=response_json,
+        status=200
+    )
     responses.add(
         method=responses.GET,
         url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
@@ -70,7 +124,7 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     # then
     assert summary["passed"] == 0
     assert summary["failed"] == 0
-    assert summary["skipped"] == 3
+    assert summary["skipped"] == 5
     assert summary["parsing_errors"] == 0
 
 
