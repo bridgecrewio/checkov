@@ -185,8 +185,8 @@ class Runner(PackageRunner):
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
         report = self.get_empty_report()
-        vulnerabilities = result.get("vulnerabilities") or []
-        packages = result.get("packages") or []
+        vulnerabilities = result.get("vulnerabilities", [])
+        packages = result.get("packages", [])
         license_statuses = self.get_license_statuses(packages)
         parse_vulns_to_records(
             report=report,
