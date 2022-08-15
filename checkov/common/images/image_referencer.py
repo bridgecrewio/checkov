@@ -14,7 +14,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.sca.output import parse_vulns_to_records
+from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 
 if TYPE_CHECKING:
     from checkov.runner_filter import RunnerFilter
@@ -157,7 +157,6 @@ class ImageReferencerMixin:
             logging.info(f"Found cached scan results of image {image.name}")
 
             result = cached_results.get("results", [{}])[0]
-            vulnerabilities = result.get("vulnerabilities") or []
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
             if root_path:
@@ -167,17 +166,17 @@ class ImageReferencerMixin:
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
+            rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
+                                           f"{image.end_line} ({image_id}))"
 
-            parse_vulns_to_records(
+            self.add_vulnerability_records(
                 report=report,
+                result=result,
                 check_class=check_class,
-                scanned_file_path=os.path.abspath(dockerfile_path),
-                rootless_file_path=f"{rootless_file_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
-                runner_filter=runner_filter,
-                vulnerabilities=vulnerabilities,
-                packages=[],
-                license_statuses=[],
+                dockerfile_path=dockerfile_path,
+                rootless_file_path=rootless_file_path_to_report,
                 image_details=image_details,
+                runner_filter=runner_filter,
                 report_type=report_type,
             )
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
@@ -193,16 +192,18 @@ class ImageReferencerMixin:
 
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
-            vulnerabilities = result.get("vulnerabilities") or []
-            parse_vulns_to_records(
+            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
+                                           f"{image.end_line} ({image_id}))"
+
+            self.add_vulnerability_records(
                 report=report,
+                result=result,
                 check_class=check_class,
-                scanned_file_path=os.path.abspath(dockerfile_path),
-                rootless_file_path=f"{dockerfile_path} ({image.name} lines:{image.start_line}-{image.end_line} ({image_id}))",
+                dockerfile_path=dockerfile_path,
+                rootless_file_path=rootless_file_path_to_report,
+                image_details=None,
                 runner_filter=runner_filter,
-                vulnerabilities=vulnerabilities,
-                packages=[],
-                license_statuses=[],
+                report_type=report_type,
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -229,6 +230,33 @@ class ImageReferencerMixin:
             distro_release=scan_result.get("distroRelease", ""),
             package_types=image_package_types,
             image_id=image_id,
+        )
+
+    def add_vulnerability_records(
+        self,
+        report: Report,
+        result: dict[str, Any],
+        check_class: str,
+        dockerfile_path: str,
+        rootless_file_path: str,
+        image_details: ImageDetails | None,
+        runner_filter: RunnerFilter,
+        report_type: str,
+    ) -> None:
+        vulnerabilities = result.get("vulnerabilities", [])
+        packages = result.get("packages", [])
+        license_statuses = get_license_statuses(packages)
+        parse_vulns_to_records(
+            report=report,
+            check_class=check_class,
+            scanned_file_path=os.path.abspath(dockerfile_path),
+            rootless_file_path=rootless_file_path,
+            runner_filter=runner_filter,
+            vulnerabilities=vulnerabilities,
+            packages=packages,
+            license_statuses=license_statuses,
+            image_details=image_details,
+            report_type=report_type,
         )
 
     @abstractmethod
