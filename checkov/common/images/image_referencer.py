@@ -126,7 +126,7 @@ class ImageReferencerMixin:
         report_type = CheckType.SCA_IMAGE
 
         for image in images:
-            self.add_image_record(
+            self.add_image_records(
                 report=report,
                 root_path=root_path,
                 check_class=check_class,
@@ -138,7 +138,7 @@ class ImageReferencerMixin:
 
         return report
 
-    def add_image_record(
+    def add_image_records(
         self,
         report: Report,
         root_path: Path | None,
