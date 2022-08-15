@@ -221,7 +221,9 @@ class Runner(PackageRunner):
             self.raw_report = cached_results
             result = cached_results.get('results', [{}])[0]
             image_id = self.extract_image_short_id(result)
-            image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+            image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id,
+                                                                        image_name=image.name,
+                                                                        related_resource_id=image.related_resource_id)
             if self._code_repo_path:
                 try:
                     dockerfile_path = str(Path(dockerfile_path).relative_to(self._code_repo_path))
@@ -313,7 +315,8 @@ class Runner(PackageRunner):
             return image_id[:17]
         return image_id[:10]
 
-    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
+    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str, image_name: str = '',
+                                               related_resource_id: str = '') -> ImageDetails:
         image_packages = scan_result.get('packages', [])
         image_package_types = {
             f'{package["name"]}@{package["version"]}': package['type']
@@ -323,7 +326,9 @@ class Runner(PackageRunner):
             distro=scan_result.get('distro', ''),
             distro_release=scan_result.get('distroRelease', ''),
             package_types=image_package_types,
-            image_id=image_id
+            image_id=image_id,
+            name=image_name,
+            related_resource_id=related_resource_id
         )
 
     def included_paths(self) -> Iterable[str]:
