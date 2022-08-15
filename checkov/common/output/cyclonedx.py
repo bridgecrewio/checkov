@@ -80,7 +80,6 @@ class CycloneDX:
                 if is_image_report and check.file_path not in image_resources_for_image_components:
                     image_resources_for_image_components[check.file_path] = check
 
-
             for check in report.failed_checks:
                 if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
@@ -196,7 +195,7 @@ class CycloneDX:
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
 
-        if purl_type == PURL_TYPE_MAVEN:
+        if purl_type == PURL_TYPE_MAVEN and '_' in package_name:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
 
