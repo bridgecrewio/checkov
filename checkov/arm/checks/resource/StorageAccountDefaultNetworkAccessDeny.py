@@ -28,6 +28,8 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
         if "properties" in conf:
             if "networkAcls" in conf["properties"]:
                 if "defaultAction" in conf["properties"]["networkAcls"]:
+                    if not isinstance(conf["properties"]["networkAcls"], dict):
+                        return CheckResult.UNKNOWN
                     if conf["properties"]["networkAcls"]["defaultAction"] == "Deny":
                         return CheckResult.PASSED
         return CheckResult.FAILED
