@@ -22,7 +22,8 @@ if TYPE_CHECKING:
 
 
 class Image:
-    def __init__(self, file_path: str, name: str, start_line: int, end_line: int) -> None:
+    def __init__(self, file_path: str, name: str, start_line: int, end_line: int,
+                 related_resource_id: str | None = None) -> None:
         """
 
         :param file_path: example: 'checkov/integration_tests/example_workflow_file/.github/workflows/vulnerable_container.yaml'
@@ -35,6 +36,7 @@ class Image:
         self.start_line = start_line
         self.name = name
         self.file_path = file_path
+        self.related_resource_id = related_resource_id
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, self.__class__):

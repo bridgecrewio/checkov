@@ -456,5 +456,5 @@ class RunnerRegistry:
             results = report.get('results', {})
             for result in results.values():
                 for result_dict in result:
-                    result_dict.pop('code_block', None)
-                    result_dict.pop('connected_node', None)
+                    result_dict["code_block"] = None
+                    result_dict["connected_node"] = None

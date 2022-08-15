@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import uuid
+
 import requests
 import logging
 import time
@@ -19,7 +21,6 @@ from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
     from requests import Response
-
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,8 @@ def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> 
 
 
 def extract_error_message(response: requests.Response | HTTPResponse) -> Optional[str]:
-    if (isinstance(response, requests.Response) and response.content) or (isinstance(response, HTTPResponse) and response.data):
+    if (isinstance(response, requests.Response) and response.content) or (
+            isinstance(response, HTTPResponse) and response.data):
         raw = response.content if isinstance(response, requests.Response) else response.data
         try:
             content = json.loads(raw)
@@ -95,12 +97,12 @@ def get_prisma_get_headers() -> dict[str, str]:
 
 
 def request_wrapper(
-    method: str,
-    url: str,
-    headers: dict[str, Any],
-    data: Any | None = None,
-    json: dict[str, Any] | None = None,
-    should_call_raise_for_status: bool = False
+        method: str,
+        url: str,
+        headers: dict[str, Any],
+        data: Any | None = None,
+        json: dict[str, Any] | None = None,
+        should_call_raise_for_status: bool = False
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -116,24 +118,27 @@ def request_wrapper(
 
     for i in range(request_max_tries):
         try:
+            headers["X-Request-Id"] = str(uuid.uuid4())
             response = requests.request(method, url, headers=headers, data=data, json=json)
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
             logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.exception("request_wrapper connection error")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
-                logging.info(f"retrying attempt number {i+2} in {sleep_secs} seconds")
+                logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
             status_code = http_error.response.status_code
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.exception("request_wrapper http error")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
-                logging.info(f"retrying attempt number {i+2} in {sleep_secs} seconds")
+                logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
             raise http_error
@@ -143,9 +148,9 @@ def request_wrapper(
 
 
 async def aiohttp_client_session_wrapper(
-    url: str,
-    headers: dict[str, Any],
-    payload: dict[str, Any]
+        url: str,
+        headers: dict[str, Any],
+        payload: dict[str, Any]
 ) -> int:
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
@@ -155,7 +160,8 @@ async def aiohttp_client_session_wrapper(
     # 2. ClientOSError
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
         for i in range(request_max_tries):
-            logging.info(f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
+            logging.info(
+                f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
             try:
                 async with session.post(
                         url=url, headers=headers, json=payload

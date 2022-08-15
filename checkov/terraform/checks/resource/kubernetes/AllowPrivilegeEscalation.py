@@ -25,6 +25,8 @@ class AllowPrivilegeEscalation(BaseResourceCheck):
         spec = spec_list[0]
         if spec:
             containers = spec.get("container")
+            if not containers:
+                return CheckResult.UNKNOWN
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
