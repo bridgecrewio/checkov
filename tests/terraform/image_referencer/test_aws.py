@@ -1,4 +1,4 @@
-from pathlib import Path
+from networkx import DiGraph
 
 from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
@@ -30,9 +30,11 @@ def test_extract_images_from_aws_resources():
         ],
         "resource_type": "aws_ecs_task_definition",
     }
+    graph = DiGraph()
+    graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_aws_resources(resource=resource)
+    images = extract_images_from_aws_resources(graph_connector=graph)
 
     # then
     assert images == [
@@ -68,9 +70,11 @@ def test_extract_images_from_aws_resources_with_no_image():
         ],
         "resource_type": "aws_ecs_task_definition",
     }
+    graph = DiGraph()
+    graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_aws_resources(resource=resource)
+    images = extract_images_from_aws_resources(graph_connector=graph)
 
     # then
     assert not images

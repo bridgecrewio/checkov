@@ -10,7 +10,6 @@ from typing import cast, Any, TYPE_CHECKING
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
@@ -100,7 +99,6 @@ class ImageReferencerMixin:
         graph_connector: DiGraph,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
-        supported_resource_types: Iterable[str],
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
 
@@ -108,15 +106,7 @@ class ImageReferencerMixin:
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
             return None
 
-        resources = [
-            block
-            for node, block in graph_connector.nodes(data=True)
-            if block and block.get(CustomAttributes.RESOURCE_TYPE) in supported_resource_types
-        ]
-        if not resources:
-            return None
-
-        images = self.extract_images(resources=resources)
+        images = self.extract_images(graph_connector=graph_connector)
         if not images:
             return None
 
@@ -260,7 +250,9 @@ class ImageReferencerMixin:
         )
 
     @abstractmethod
-    def extract_images(self, resources: list[dict[str, Any]]) -> list[Image]:
-        """Tries to find image references in supported resource types"""
+    def extract_images(
+        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+    ) -> list[Image]:
+        """Tries to find image references in the graph or supported resource"""
 
         pass

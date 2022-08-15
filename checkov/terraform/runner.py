@@ -6,7 +6,7 @@ import logging
 import os
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List, Type, Any, Set
+from typing import Dict, Optional, Tuple, List, Type, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
@@ -40,14 +40,16 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
-from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources, SUPPORTED_AWS_IMAGE_RESOURCE_TYPES
+from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-SUPPORTED_IMAGE_RESOURCE_TYPES = SUPPORTED_AWS_IMAGE_RESOURCE_TYPES
 
 
 class Runner(ImageReferencerMixin, BaseRunner):
@@ -157,7 +159,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 graph_connector=self.graph_manager.get_reader_endpoint(),
                 root_path=root_folder,
                 runner_filter=runner_filter,
-                supported_resource_types=SUPPORTED_IMAGE_RESOURCE_TYPES,
             )
 
             if image_report:
@@ -519,10 +520,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if "module" in file_content:
                 __cache_file_content(file_modules=file_content["module"])
 
-    def extract_images(self, resources: list[dict[str, Any]]) -> list[Image]:
-        images = []
+    def extract_images(self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
 
-        for resource in resources:
-            images.extend(extract_images_from_aws_resources(resource))
+        images = extract_images_from_aws_resources(graph_connector=graph_connector)
 
         return images
