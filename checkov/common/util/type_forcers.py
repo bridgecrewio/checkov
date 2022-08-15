@@ -85,7 +85,7 @@ def is_yaml(data: str) -> bool:
         return False
 
 
-def extract_policy_dict(policy: dict[str, Any] | str) -> dict[str, Any] | None:
+def extract_policy_dict(policy: Any) -> dict[str, Any] | None:
     if isinstance(policy, dict):
         return policy
     if isinstance(policy, str):
@@ -96,6 +96,15 @@ def extract_policy_dict(policy: dict[str, Any] | str) -> dict[str, Any] | None:
             return None
 
     return None
+
+
+def extract_json(json_str: Any) -> dict[str, Any] | list[dict[str, Any]] | None:
+    """Tries to return a json object from a possible string value"""
+
+    if isinstance(json_str, list):
+        return json_str
+
+    return extract_policy_dict(json_str)
 
 
 def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> list[str]:

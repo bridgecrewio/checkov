@@ -11,7 +11,6 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
 from checkov.github_actions.runner import Runner as GHA_Runner
-from checkov.common.typing import _LicenseStatus
 from checkov.common.models.enums import CheckResult
 from .mocks import mock_scan, mock_scan_empty
 
@@ -126,48 +125,6 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     assert summary["failed"] == 0
     assert summary["skipped"] == 5
     assert summary["parsing_errors"] == 0
-
-
-@responses.activate
-def test_licenses_status(mock_bc_integration):
-    packages_input = [
-        {"name": "docutils", "version": "0.15.2", "lang": "python"},
-        {"name": "github.com/apparentlymart/go-textseg/v12", "version": "v12.0.0", "lang": "go"}
-    ]
-
-    response_json = {
-        "violations": [
-            {
-                "name": "github.com/apparentlymart/go-textseg/v12",
-                "version": "v12.0.0",
-                "license": "Apache-2.0",
-                "policy": "BC_LIC_1",
-                "status": "COMPLIANT"
-            },
-            {
-                "name": "docutils",
-                "version": "0.15.2",
-                "license": "Apache-2.0",
-                "policy": "BC_LIC_1",
-                "status": "COMPLIANT"
-            },
-        ]
-    }
-
-    # given
-    responses.add(
-        method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
-        json=response_json,
-        status=200
-    )
-
-    image_runner = Runner()
-    license_statuses = image_runner.get_license_statuses(packages_input)
-    assert license_statuses == [
-        _LicenseStatus(package_name='github.com/apparentlymart/go-textseg/v12', package_version='v12.0.0', policy='BC_LIC_1', license='Apache-2.0', status='COMPLIANT'),
-        _LicenseStatus(package_name='docutils', package_version='0.15.2', policy='BC_LIC_1', license='Apache-2.0', status= 'COMPLIANT')
-    ]
 
 
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "1", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
