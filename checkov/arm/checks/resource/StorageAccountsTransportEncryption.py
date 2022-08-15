@@ -19,12 +19,9 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
-        if isinstance(properties, dict):
-            https = str(properties.get("supportsHttpsTrafficOnly")).lower()
-            if https == "true":
-                return CheckResult.PASSED
-            elif https == "false":
-                return CheckResult.FAILED
+        if isinstance(properties, dict) and "supportsHttpsTrafficOnly" in properties:
+            https = str(properties["supportsHttpsTrafficOnly"]).lower()
+            return CheckResult.PASSED if https == "true" else CheckResult.FAILED
 
         # Use default if supportsHttpsTrafficOnly is not set
         if "apiVersion" in conf:
