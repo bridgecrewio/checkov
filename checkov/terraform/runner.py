@@ -154,7 +154,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         report = remove_duplicate_results(report)
 
-        if os.environ.get('CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING', False)\
+        if os.environ.get('CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF', False)\
                 and bc_integration.bc_api_key\
                 and any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
             image_report = self.check_container_image_references(
