@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pytest_mock import MockerFixture
@@ -14,6 +15,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
     code_lines = "1-23"
     test_file = RESOURCES_PATH / file_name
+    os.environ['CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF'] = "True"
 
     mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
@@ -58,6 +60,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     image_name = "busybox"
     code_lines = "1-38"
     test_file = RESOURCES_PATH / file_name
+    os.environ['CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF'] = "True"
 
     mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
@@ -98,6 +101,7 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     image_name = "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0"
     code_lines = "36-69"
     test_file = RESOURCES_PATH / file_name
+    os.environ['CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF'] = "True"
 
     mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
@@ -140,6 +144,7 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     code_lines_1 = "1-31"
     code_lines_2 = "1-31"
     test_file = RESOURCES_PATH / file_name
+    os.environ['CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF'] = "True"
 
     mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
@@ -183,6 +188,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     image_name = "amazon/amazon-lightsail:hello-world"
     code_lines = "1-32"
     test_file = RESOURCES_PATH / file_name
+    os.environ['CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING_TF'] = "True"
 
     mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
