@@ -7,6 +7,7 @@ import os.path
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional, List, Union, Dict, Any
+import tempfile
 
 import requests
 
@@ -70,9 +71,10 @@ class Runner(PackageRunner):
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         try:
-            output_path = Path(f'results-{image_id}.json')
-            scan_result = asyncio.run(self.execute_scan(image_id, output_path))
-            self.upload_results_to_cache(output_path, image_id)
+            with tempfile.TemporaryDirectory() as tmp_output_dir:
+                output_path = Path(os.path.join(tmp_output_dir, f'results-{image_id}.json'))
+                scan_result = asyncio.run(self.execute_scan(image_id, output_path))
+                self.upload_results_to_cache(output_path, image_id)
             logging.info(f"SCA image scanning successfully scanned the image {image_id}")
             return scan_result
         except Exception:
@@ -121,8 +123,6 @@ class Runner(PackageRunner):
             logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
         else:
             logging.info(f"Failed to upload scan results to cache with id={image_id}")
-
-        output_path.unlink()
 
     def run(
             self,
