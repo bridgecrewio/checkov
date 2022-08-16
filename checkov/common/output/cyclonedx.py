@@ -195,7 +195,7 @@ class CycloneDX:
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
 
-        if purl_type == PURL_TYPE_MAVEN:
+        if purl_type == PURL_TYPE_MAVEN and '_' in package_name:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
 

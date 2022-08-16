@@ -26,7 +26,7 @@ def test_run(mocker: MockerFixture, scan_result):
 
     # then
     assert report.check_type == "sca_package"
-    print(report.resources)
+
     assert report.resources == {
         "path/to/go.sum.github.com/dgrijalva/jwt-go",
         "path/to/go.sum.golang.org/x/crypto",
@@ -82,6 +82,18 @@ def test_run(mocker: MockerFixture, scan_result):
     assert extra_resource is not None
     assert "licenses" in extra_resource.vulnerability_details
     assert extra_resource.vulnerability_details["licenses"] == "OSI_APACHE"
+
+    license_resource = next((c for c in report.failed_checks if c.check_name == "SCA license" if c.resource == "path/to/requirements.txt.flask"), None)
+    assert license_resource is not None
+    assert license_resource.check_id == "BC_LIC_1"
+    assert license_resource.bc_check_id == "BC_LIC_1"
+    assert license_resource.check_result == {"result": CheckResult.FAILED}
+    assert {"package_name", "package_name", "license", "status", "policy"} <= license_resource.vulnerability_details.keys()
+    assert license_resource.vulnerability_details["package_name"] == "flask"
+    assert license_resource.vulnerability_details["package_version"] == "0.6"
+    assert license_resource.vulnerability_details["license"] == "DUMMY_OTHER_LICENSE"
+    assert license_resource.vulnerability_details["status"] == "FAILED"
+    assert license_resource.vulnerability_details["policy"] == "BC_LIC_1"
 
 
 def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):

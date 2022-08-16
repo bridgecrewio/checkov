@@ -9,6 +9,7 @@ from packaging import version as packaging_version
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
 )
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
@@ -20,12 +21,13 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
 )
-from checkov.common.typing import _LicenseStatus, _CheckResult
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.output.common import ImageDetails
     from checkov.common.output.report import Report
+    from checkov.common.typing import _LicenseStatus, _CheckResult
 
 
 def create_report_license_record(
@@ -268,3 +270,38 @@ def parse_vulns_to_records(
                     },
                 )
             )
+
+
+def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]:
+    requests_input = [
+        {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
+        for package in packages
+    ]
+    if not requests_input:
+        return []
+    try:
+        response = request_wrapper(
+            method="POST",
+            url=f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations",
+            headers=bc_integration.get_default_headers("POST"),
+            json={"packages": requests_input},
+            should_call_raise_for_status=True
+        )
+        response_json = response.json()
+        license_statuses: list[_LicenseStatus] = [
+            {
+                "package_name": license_violation.get("name", ""),
+                "package_version": license_violation.get("version", ""),
+                "policy": license_violation.get("policy", "BC_LIC1"),
+                "license": license_violation.get("license", ""),
+                "status": license_violation.get("status", "COMPLIANT")
+            }
+            for license_violation in response_json.get("violations", [])
+        ]
+        return license_statuses
+    except Exception as e:
+        error_message = (
+            "failing when trying to get licenses-violations. it is apparently some unexpected "
+            "connection issue. please try later. in case it keep happening. please report."
+        )
+        raise Exception(error_message) from e
