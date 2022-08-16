@@ -3,6 +3,7 @@ from pathlib import Path
 from pytest_mock import MockerFixture
 
 from checkov.common.output.report import CheckType
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
@@ -14,8 +15,8 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
     code_lines = "1-23"
     test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
 
-    mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
         return_value=image_cached_result,
@@ -26,7 +27,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)])
+    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -58,8 +59,8 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     image_name = "busybox"
     code_lines = "1-38"
     test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
 
-    mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
         return_value=image_cached_result,
@@ -70,7 +71,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)])
+    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -98,8 +99,8 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     image_name = "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0"
     code_lines = "36-69"
     test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
 
-    mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
         return_value=image_cached_result,
@@ -110,7 +111,7 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)])
+    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -140,8 +141,8 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     code_lines_1 = "1-31"
     code_lines_2 = "1-31"
     test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
 
-    mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
         return_value=image_cached_result,
@@ -152,7 +153,7 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)])
+    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -183,8 +184,8 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     image_name = "amazon/amazon-lightsail:hello-world"
     code_lines = "1-32"
     test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
 
-    mocker.patch("checkov.terraform.runner.bc_integration.bc_api_key", return_value="xyz")
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
         return_value=image_cached_result,
@@ -195,7 +196,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)])
+    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
