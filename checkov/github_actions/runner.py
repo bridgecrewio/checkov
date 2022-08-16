@@ -116,12 +116,19 @@ class Runner(YamlRunner, ImageReferencer):
             if isinstance(job_object, dict):
                 container = job_object.get("container", {})
                 image = None
-                start_line = container.get('__startline__', 0)
-                end_line = container.get('__endline__', 0)
+                start_line = 0
+                end_line = 0
+
                 if isinstance(container, dict):
                     image = container.get("image", "")
+                    start_line = container.get('__startline__', 0)
+                    end_line = container.get('__endline__', 0)
+
                 elif isinstance(container, str):
                     image = container
+                    start_line = [line_number for line_number, line in workflow_line_numbers if image in line][0]
+                    end_line = start_line + 1
+
                 if image:
                     image_obj = Image(
                         file_path=file_path,
