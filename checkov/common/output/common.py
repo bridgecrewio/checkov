@@ -9,5 +9,5 @@ class ImageDetails:
     distro_release: str = ''
     image_id: str = ''
     package_types: dict[str, str] = field(default_factory=dict)
-    name: str = ''
-    related_resource_id: str = ''
+    name: str | None  = ''
+    related_resource_id: str | None  = ''
