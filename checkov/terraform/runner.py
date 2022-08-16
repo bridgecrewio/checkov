@@ -154,7 +154,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         report = remove_duplicate_results(report)
 
-        if bc_integration.bc_api_key and any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+        if False and bc_integration.bc_api_key and any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
             image_report = self.check_container_image_references(
                 graph_connector=self.graph_manager.get_reader_endpoint(),
                 root_path=root_folder,
