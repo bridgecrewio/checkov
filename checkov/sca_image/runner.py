@@ -316,8 +316,8 @@ class Runner(PackageRunner):
         return image_id[:10]
 
     def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str,
-                                               image_name: str = '',
-                                               related_resource_id: Optional[str] = '') -> ImageDetails:
+                                               image_name: str | None = None,
+                                               related_resource_id: str | None = None) -> ImageDetails:
         image_packages = scan_result.get('packages', [])
         image_package_types = {
             f'{package["name"]}@{package["version"]}': package['type']
