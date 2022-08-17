@@ -37,7 +37,7 @@ class Runner(YamlRunner, ImageReferencer):
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] = super()._parse_file(f)
-            if entity_schema and is_schema_valid(entity_schema[0]):
+            if entity_schema and Runner.is_schema_valid(entity_schema[0]):
                 return entity_schema
         return None
 
