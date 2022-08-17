@@ -8,6 +8,7 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.github_actions.checks.registry import registry
+from checkov.github_actions.schema_validator import is_schema_valid
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
@@ -32,8 +33,9 @@ class Runner(YamlRunner, ImageReferencer):
         self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
-            return super()._parse_file(f)
-
+            entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] = super()._parse_file(f)
+            if entity_schema and is_schema_valid(entity_schema[0]):
+                return entity_schema
         return None
 
     def is_workflow_file(self, file_path: str) -> bool:
