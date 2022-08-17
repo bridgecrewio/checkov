@@ -1,4 +1,3 @@
-from __future__ import annotations
 import pytest
 
 
@@ -70,5 +69,5 @@ def definition():
 
 
 @pytest.fixture()
-def bad_schema_files() -> set[str]:
+def bad_schema_files():
     return {'bad_format.yaml', 'empty_jobs.yaml'}

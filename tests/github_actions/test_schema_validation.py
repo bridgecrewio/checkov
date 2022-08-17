@@ -1,4 +1,3 @@
-from __future__ import annotations
 import os
 from pathlib import Path
 
@@ -7,7 +6,7 @@ from checkov.github_actions.runner import Runner
 RESOURCE_DIR = Path(__file__).parent / "resources/.github/workflows"
 
 
-def test_schema_validation(bad_schema_files: set[str]):
+def test_schema_validation(bad_schema_files):
     runner = Runner()
     results = {}
     filenames = set()
