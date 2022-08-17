@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from urllib.parse import quote_plus
 import responses
-import os
 from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -125,30 +124,6 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     assert summary["failed"] == 0
     assert summary["skipped"] == 5
     assert summary["parsing_errors"] == 0
-
-
-@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "1", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
-@responses.activate
-def test_licenses_status_on_failure(mock_bc_integration):
-    packages_input = [
-        {"name": "docutils", "version": "0.15.2", "lang": "python"},
-        {"name": "github.com/apparentlymart/go-textseg/v12", "version": "v12.0.0", "lang": "go"}
-    ]
-
-    # given
-    responses.add(
-        method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
-        status=500
-    )
-
-    image_runner = Runner()
-    try:
-        # we expect to have failure here, in case the of http/connection error
-        image_runner.get_license_statuses(packages_input)
-        assert False
-    except:
-        assert True
 
 
 @mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan)

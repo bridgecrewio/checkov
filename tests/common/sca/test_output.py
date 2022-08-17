@@ -1,3 +1,6 @@
+import os
+from unittest import mock
+
 import responses
 
 from checkov.common.sca.output import get_license_statuses
@@ -54,3 +57,26 @@ def test_licenses_status(mock_bc_integration):
             "status": "COMPLIANT",
         },
     ]
+
+
+@mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "1", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+@responses.activate
+def test_licenses_status_on_failure(mock_bc_integration):
+    # given
+    packages_input = [
+        {"name": "docutils", "version": "0.15.2", "lang": "python"},
+        {"name": "github.com/apparentlymart/go-textseg/v12", "version": "v12.0.0", "lang": "go"}
+    ]
+
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        status=500
+    )
+
+    # when
+    # we expect no failure here, in case of a http/connection error
+    license_statuses = get_license_statuses(packages_input)
+
+    # then
+    assert len(license_statuses) == 0
