@@ -22,6 +22,7 @@ DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratin
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
 SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
+SCA_IMAGE_SCAN_CHECK_NAME = "SCA package scan"
 SCA_LICENSE_CHECK_NAME = "SCA license"
 
 
