@@ -192,25 +192,13 @@ jobs:
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
           echo "::set-output name=version::$new_tag"
-          echo "::set-output name=notes::$RELEASE_NOTE"
         id: version
-      - name: release
-        uses: actions/create-release@v1
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}
-          body: ${{ steps.version.outputs.notes }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: create python package
         run: |
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@37f50c210e3d2f9450da2cd423303d6a14a6e29f  # v1
         with:
-          user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
