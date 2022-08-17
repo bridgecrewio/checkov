@@ -39,7 +39,8 @@ class RunnerFilter(object):
             use_enforcement_rules: bool = False,
             filtered_policy_ids: Optional[List[str]] = None,
             show_progress_bar: Optional[bool] = True,
-            secrets_scan_file_type: Optional[List[str]] = None
+            secrets_scan_file_type: Optional[List[str]] = None,
+            run_image_referencer: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -95,6 +96,7 @@ class RunnerFilter(object):
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = filtered_policy_ids or []
         self.secrets_scan_file_type = secrets_scan_file_type
+        self.run_image_referencer = run_image_referencer
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}

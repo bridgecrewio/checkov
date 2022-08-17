@@ -16,8 +16,26 @@ from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 
 if TYPE_CHECKING:
+    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.runner_filter import RunnerFilter
     from networkx import DiGraph
+
+
+def enable_image_referencer(
+    bc_integration: BcPlatformIntegration, frameworks: Iterable[str] | None, skip_frameworks: Iterable[str] | None
+) -> bool:
+    """Checks, if Image Referencer should be enabled"""
+
+    if skip_frameworks and CheckType.SCA_IMAGE in skip_frameworks:
+        return False
+
+    if bc_integration.bc_api_key:
+        if not frameworks:
+            return True
+        if any(framework in frameworks for framework in ("all", CheckType.SCA_IMAGE)):
+            return True
+
+    return False
 
 
 class Image:
