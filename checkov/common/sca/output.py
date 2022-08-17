@@ -21,6 +21,7 @@ from checkov.common.sca.commons import (
     get_package_alias,
     UNFIXABLE_VERSION,
     get_package_type,
+    normalize_twistcli_language,
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -273,11 +274,16 @@ def parse_vulns_to_records(
             )
 
 
-def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]:
-    requests_input = [
-        {"name": package.get("name", ""), "version": package.get("version", ""), "lang": package.get("type", "")}
+def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {"name": package.get("name", ""), "version": package.get("version", ""),
+         "lang": normalize_twistcli_language(package.get("type", ""))}
         for package in packages
     ]
+
+
+def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]:
+    requests_input = _get_request_input(packages)
     if not requests_input:
         return []
     try:

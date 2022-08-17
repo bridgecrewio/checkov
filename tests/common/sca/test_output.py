@@ -3,7 +3,28 @@ from unittest import mock
 
 import responses
 
-from checkov.common.sca.output import get_license_statuses
+from checkov.common.sca.output import get_license_statuses, _get_request_input
+
+
+def test_get_request_input():
+    packages_input = [
+        {"name": "docutils", "version": "0.15.2", "type": "python"},
+        {"name": "github.com/apparentlymart/go-textseg/v12", "version": "v12.0.0", "lang": "go"},
+        {"name": "ruby_package", "version": "9.9.9", "type": "ruby"},
+        {"name": "ruby_package2", "version": "8.8.8", "type": "gem"},
+        {"name": "empty_type_package", "version": "8.8.8", "type": ""},
+        {"name": "invalid_type_package", "version": "8.8.8", "type": "bbbbb"}
+    ]
+    request_input = _get_request_input(packages_input)
+
+    assert request_input == [
+        {'name': 'docutils', 'version': '0.15.2', 'lang': 'python'},
+        {'name': 'github.com/apparentlymart/go-textseg/v12', 'version': 'v12.0.0', 'lang': ''},
+        {'name': 'ruby_package', 'version': '9.9.9', 'lang': 'ruby'},
+        {'name': 'ruby_package2', 'version': '8.8.8', 'lang': 'ruby'},
+        {'name': 'empty_type_package', 'version': '8.8.8', 'lang': ''},
+        {'name': 'invalid_type_package', 'version': '8.8.8', 'lang': 'bbbbb'}
+    ]
 
 
 @responses.activate
