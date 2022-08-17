@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
@@ -299,9 +300,11 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
             for license_violation in response_json.get("violations", [])
         ]
         return license_statuses
-    except Exception as e:
+    except Exception:
         error_message = (
             "failing when trying to get licenses-violations. it is apparently some unexpected "
             "connection issue. please try later. in case it keep happening. please report."
         )
-        raise Exception(error_message) from e
+        logging.info(error_message, exc_info=True)
+
+    return []
