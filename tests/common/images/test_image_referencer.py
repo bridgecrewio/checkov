@@ -1,7 +1,7 @@
 import pytest
 
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.images.commons import enable_image_referencer
+from checkov.common.images.image_referencer import enable_image_referencer
 
 
 @pytest.mark.parametrize(
