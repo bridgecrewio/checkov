@@ -23,7 +23,7 @@ class AllowUnsecureCommandsOnJob(BaseGithubActionsCheck):
         if "env" not in conf or not conf["env"]:
             return CheckResult.PASSED, conf
         env_variables = conf.get("env", {})
-        if env_variables.get("ACTIONS_ALLOW_UNSECURE_COMMANDS", False):
+        if isinstance(env_variables, dict) and env_variables.get("ACTIONS_ALLOW_UNSECURE_COMMANDS", False):
             return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
