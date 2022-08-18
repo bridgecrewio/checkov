@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString, HexHighEntropyString
 from detect_secrets.plugins.keyword import KeywordDetector
 from detect_secrets.plugins.base import BasePlugin
@@ -9,6 +8,7 @@ from typing import Generator, Any, TYPE_CHECKING
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 
 if TYPE_CHECKING:
+    from detect_secrets.core.potential_secret import PotentialSecret
     from detect_secrets.util.code_snippet import CodeSnippet
 
 MAX_LINE_LENGTH = 10000

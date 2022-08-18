@@ -5,9 +5,6 @@ import logging
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
-from pycep.typing import BicepJson
-from typing_extensions import Literal
-
 from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
@@ -35,6 +32,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
+    from pycep.typing import BicepJson
+    from typing_extensions import Literal
 
 
 class Runner(BaseRunner[BicepGraphManager]):
@@ -215,7 +214,7 @@ class Runner(BaseRunner[BicepGraphManager]):
 
                 file_code_lines = self.definitions_raw[entity_file_path]
                 start_line = entity["__start_line__"]
-                end_line = cast(int, entity["__end_line__"])
+                end_line = cast("int", entity["__end_line__"])
 
                 record = Record(
                     check_id=check.id,

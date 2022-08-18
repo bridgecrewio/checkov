@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-from pycep.typing import ResourceAttributes
+from typing import TYPE_CHECKING
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from pycep.typing import ResourceAttributes
 
 
 class Registry(BaseCheckRegistry):
