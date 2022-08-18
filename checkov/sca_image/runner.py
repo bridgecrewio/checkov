@@ -131,7 +131,7 @@ class Runner(PackageRunner):
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
-    ) -> Report | dict[str, Any]:
+    ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -180,8 +180,8 @@ class Runner(PackageRunner):
                                                              runner_filter=runner_filter)
                         merge_reports(report, image_report)
                     else:
-                        image_report = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
-                        report.image_cached_results.append(image_report)
+                        image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
+                        report.image_cached_results.append(image_cached_report)
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
@@ -219,6 +219,7 @@ class Runner(PackageRunner):
             docker_image_name=image.name,
             related_resource_id=image.related_resource_id)
         return payload
+
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
         """
