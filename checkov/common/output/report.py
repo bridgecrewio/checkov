@@ -6,7 +6,7 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast, TypedDict
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate
@@ -38,6 +38,19 @@ SEVERITY_TO_SARIF_LEVEL = {
 }
 
 
+class ImageCachedResultsReport(TypedDict):
+    dockerImageName: str
+    dockerFilePath: str
+    dockerFileContent: str
+    type: str
+    sourceId: str
+    branch: str
+    sourceType: str
+    vulnerabilities: List[Any]
+    packages: List[Any]
+    relatedResourceId: str
+
+
 class Report:
     def __init__(self, check_type: str):
         self.check_type = check_type
@@ -47,6 +60,7 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
+        self.image_cached_results: List[ImageCachedResultsReport] = []
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
