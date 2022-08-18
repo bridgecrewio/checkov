@@ -10,7 +10,6 @@ from typing import Dict, Optional, Tuple, List, Type, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -90,11 +89,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
     def run(
             self,
             root_folder: str,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
     ) -> Report | list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -154,7 +154,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         report = remove_duplicate_results(report)
 
-        if bc_integration.bc_api_key and any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+        if runner_filter.run_image_referencer:
             image_report = self.check_container_image_references(
                 graph_connector=self.graph_manager.get_reader_endpoint(),
                 root_path=root_folder,
@@ -167,7 +167,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         return report
 
-    def load_external_checks(self, external_checks_dir: List[str]) -> None:
+    def load_external_checks(self, external_checks_dir: list[str] | None) -> None:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)

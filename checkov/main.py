@@ -30,6 +30,7 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
@@ -143,6 +144,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.var_file:
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
+    run_image_referencer = enable_image_referencer(
+        bc_integration=bc_integration,
+        frameworks=config.framework,
+        skip_frameworks=config.skip_framework,
+    )
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
@@ -151,7 +158,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
-                                 secrets_scan_file_type=config.secrets_scan_file_type, use_enforcement_rules=config.use_enforcement_rules)
+                                 secrets_scan_file_type=config.secrets_scan_file_type,
+                                 use_enforcement_rules=config.use_enforcement_rules,
+                                 run_image_referencer=run_image_referencer)
 
     if outer_registry:
         runner_registry = outer_registry
