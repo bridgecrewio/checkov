@@ -272,32 +272,3 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     assert len(report.failed_checks) == 0
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
-
-
-
-# @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
-# @mock.patch.dict(os.environ, {"PRESENT_CACHED_RESULTS": "true"})
-# def test_run_with_present_cached_results_env():
-#     # when
-#     image_runner = Runner()
-#     runner_filter = RunnerFilter(framework=['sca_image'])
-#     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=runner_filter)
-#
-#     assert len(report.passed_checks) == 0
-#     assert len(report.failed_checks) == 0
-#     assert len(report.skipped_checks) == 0
-#     assert len(report.parsing_errors) == 0
-#
-#
-# @mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan_image)
-# @responses.activate
-# def test_run_without_present_cached_results_env():
-#     # when
-#     image_runner = Runner()
-#     runner_filter = RunnerFilter(framework=['sca_image'])
-#     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=runner_filter)
-#
-#     assert len(report.passed_checks) == 565
-#     assert len(report.failed_checks) == 62
-#     assert len(report.skipped_checks) == 0
-#     assert len(report.parsing_errors) == 0
