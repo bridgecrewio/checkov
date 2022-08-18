@@ -6,7 +6,7 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, TypedDict, Dict, Union, Any, Optional, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate

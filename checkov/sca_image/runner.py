@@ -26,8 +26,6 @@ from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
-PRESENT_CACHED_RESULTS = os.getenv('PRESENT_CACHED_RESULTS', False)
-
 
 class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
@@ -175,7 +173,7 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    if not PRESENT_CACHED_RESULTS:
+                    if not strtobool(os.getenv('PRESENT_CACHED_RESULTS', "False")):
                         image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
                                                              runner_filter=runner_filter)
                         merge_reports(report, image_report)
@@ -219,7 +217,6 @@ class Runner(PackageRunner):
             docker_image_name=image.name,
             related_resource_id=image.related_resource_id)
         return payload
-
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
         """

@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 import responses
 from unittest import mock
 
-from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
@@ -15,6 +14,7 @@ from checkov.common.models.enums import CheckResult
 from .mocks import mock_scan, mock_scan_empty, mock_scan_image
 
 WORKFLOW_EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
+WORKFLOW_IMAGE_EXAMPLES_DIR = Path(__file__).parent / "examples/example/.github/workflows"
 DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
 
 
@@ -112,11 +112,7 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
 
     # when
     image_runner = Runner()
-    filter = RunnerFilter(framework=['sca_image'], use_enforcement_rules=True)
-    # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
-    # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
-    image_runner.image_referencers = [GHA_Runner()]
+    filter = RunnerFilter(framework=['sca_image'])
     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
 
     summary = report.get_summary()
@@ -272,3 +268,22 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     assert len(report.failed_checks) == 0
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
+
+
+@mock.patch.dict(os.environ, {"PRESENT_CACHED_RESULTS": "True"})
+@mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
+@mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
+@responses.activate
+def test_run_without_present_cached_results_env():
+    # when
+    image_runner = Runner()
+    runner_filter = RunnerFilter(framework=['sca_image'])
+    image_runner.image_referencers = [GHA_Runner()]
+    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=runner_filter)
+
+    assert len(report.passed_checks) == 0
+    assert len(report.failed_checks) == 0
+    assert len(report.skipped_checks) == 0
+    assert len(report.parsing_errors) == 0
+    assert len(report.image_cached_results) == 1
+
