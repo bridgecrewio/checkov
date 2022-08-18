@@ -66,3 +66,8 @@ def definition():
         "__startline__": 1,
         "__endline__": 30
     }
+
+
+@pytest.fixture()
+def bad_schema_files():
+    return {'bad_format.yaml', 'empty_jobs.yaml'}
