@@ -5,7 +5,7 @@ from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from checkov.common.output.report import CheckType
 from cyclonedx.output import SchemaVersion
 
-SCA_CHECKTYPES = [CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE]
+SCA_CHECKTYPES = (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE)
 
 PURL_TYPE_MAVEN = "maven"
 
