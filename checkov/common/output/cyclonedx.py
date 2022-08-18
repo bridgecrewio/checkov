@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
+
 class CycloneDX:
     def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
         self.repo_id = f"{repo_id}/" if repo_id is not None else ""
@@ -70,7 +71,7 @@ class CycloneDX:
             image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
@@ -81,7 +82,7 @@ class CycloneDX:
                     image_resources_for_image_components[check.file_path] = check
 
             for check in report.failed_checks:
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
