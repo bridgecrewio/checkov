@@ -15,6 +15,7 @@ on:
       - checkov/version.py
       - kubernetes/requirements.txt
       - coverage.svg
+      - '.swm/**'
 
 concurrency:
   group: 'build'

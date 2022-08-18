@@ -24,12 +24,10 @@ class DockerSocketVolume(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf:
-                if "jobTemplate" in conf["spec"]:
-                    if "spec" in conf["spec"]["jobTemplate"]:
-                        if "template" in conf["spec"]["jobTemplate"]["spec"]:
-                            if "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+            if "spec" in conf and "jobTemplate" in conf["spec"]:
+                job_template_spec = conf["spec"]["jobTemplate"].get("spec")
+                if job_template_spec and "template" in job_template_spec and "spec" in job_template_spec["template"]:
+                    spec = job_template_spec["template"]["spec"]
         else:
             inner_spec = self.get_inner_entry(conf, "spec")
             spec = inner_spec if inner_spec else spec
