@@ -4,9 +4,14 @@ on:
     - cron:  '8 22 * * 1'
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   pipenv-update:
     runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
         with:
@@ -34,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v4.0.4
+        uses: peter-evans/create-pull-request@20dac2ed4875a1a8422d233a68f69088637446df  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

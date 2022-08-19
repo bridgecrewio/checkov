@@ -21,6 +21,7 @@ on:
     - cron: '17 4 * * 2'
   workflow_dispatch:
 
+permissions: read-all
 
 jobs:
   analyze:
@@ -42,7 +43,7 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pip pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@v10
+        uses: tj-actions/verify-changed-files@6e986dfff1f61105bc496287b5bbf0776092737e  # v10
         id: changed_files
         with:
           files: Pipfile.lock
@@ -52,11 +53,11 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@2ca79b6fa8d3ec278944088b4aa5f46912db5d63  # v2
         with:
           languages: python
           setup-python-dependencies: false
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@2ca79b6fa8d3ec278944088b4aa5f46912db5d63  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@2ca79b6fa8d3ec278944088b4aa5f46912db5d63  # v2
