@@ -23,7 +23,6 @@ SUPPORTED_AWS_IMAGE_RESOURCE_TYPES = {
 
 def extract_images_from_aws_resources(graph_connector: DiGraph) -> list[Image]:
     images = []
-    image_names = []
 
     resource_nodes = [
         node
@@ -34,7 +33,10 @@ def extract_images_from_aws_resources(graph_connector: DiGraph) -> list[Image]:
     supported_resources_graph = graph_connector.subgraph(resource_nodes)
 
     for _, resource in supported_resources_graph.nodes(data=True):
-        if resource[CustomAttributes.RESOURCE_TYPE] == "aws_apprunner_service":
+        image_names: list[str] = []
+        resource_type = resource[CustomAttributes.RESOURCE_TYPE]
+
+        if resource_type == "aws_apprunner_service":
             image_repo = find_in_dict(input_dict=resource, key_path="source_configuration/image_repository")
             if isinstance(image_repo, dict):
                 repo_type = image_repo.get("image_repository_type")
@@ -42,7 +44,7 @@ def extract_images_from_aws_resources(graph_connector: DiGraph) -> list[Image]:
                 if name and isinstance(name, str) and repo_type == "ECR_PUBLIC":
                     image_names.append(name)
 
-        elif resource[CustomAttributes.RESOURCE_TYPE] == "aws_batch_job_definition":
+        elif resource_type == "aws_batch_job_definition":
             properties = extract_json(resource.get("container_properties"))
             if isinstance(properties, dict):
                 name = properties.get("image")
@@ -58,12 +60,12 @@ def extract_images_from_aws_resources(graph_connector: DiGraph) -> list[Image]:
                         if name and isinstance(name, str):
                             image_names.append(name)
 
-        elif resource[CustomAttributes.RESOURCE_TYPE] == "aws_codebuild_project":
+        elif resource_type == "aws_codebuild_project":
             name = find_in_dict(input_dict=resource, key_path="environment/image")
             if name and isinstance(name, str) and not name.startswith("aws/codebuild/"):  # AWS provided images have an internal identifier
                 image_names.append(name)
 
-        elif resource[CustomAttributes.RESOURCE_TYPE] == "aws_ecs_task_definition":
+        elif resource_type == "aws_ecs_task_definition":
             definitions = extract_json(resource.get("container_definitions"))
             if isinstance(definitions, list):
                 for definition in definitions:
@@ -71,7 +73,7 @@ def extract_images_from_aws_resources(graph_connector: DiGraph) -> list[Image]:
                     if name and isinstance(name, str):
                         image_names.append(name)
 
-        elif resource[CustomAttributes.RESOURCE_TYPE] == "aws_lightsail_container_service_deployment_version":
+        elif resource_type == "aws_lightsail_container_service_deployment_version":
             containers = resource.get("container")
             if containers:
                 for container in force_list(containers):
