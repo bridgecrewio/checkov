@@ -50,4 +50,4 @@ jobs:
         with:
           ACCESS_TOKEN: ${{ secrets.PAT_TOKEN }}
           PATH: "CHANGELOG.md"
-          TYPE: "feat:Feature,fix:Bug Fix,break:Breaking Change,docs:Documentation"
+          TYPE: "feat:Feature,fix:Bug Fix,break:Breaking Change,platform:Platform,docs:Documentation"
