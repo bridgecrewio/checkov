@@ -8,7 +8,7 @@ on:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: thehanimo/pr-title-checker@49341cf67d43f8469a3ba4c696968139925dbe7f  # v1
         with:
