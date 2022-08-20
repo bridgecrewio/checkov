@@ -95,7 +95,7 @@ def get_entity_value_as_string(value: Any) -> str:
 def get_folder_definitions(
         root_folder: str, excluded_paths: list[str] | None, out_parsing_errors: dict[str, str] | None = None
 ) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
-    out_parsing_errors = out_parsing_errors or {}
+    out_parsing_errors = {} if out_parsing_errors is None else out_parsing_errors
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -174,7 +174,7 @@ def create_definitions(
         out_parsing_errors: dict[str, str] | None = None
 ) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
     runner_filter = runner_filter or RunnerFilter()
-    out_parsing_errors = out_parsing_errors or {}
+    out_parsing_errors = {} if out_parsing_errors is None else out_parsing_errors
     definitions: dict[str, DictNode] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
