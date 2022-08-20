@@ -43,7 +43,7 @@ class CosignSignSBOM(BaseGithubActionsCheck):
                             build_found = True
 
         if build_found:
-            return CheckResult.FAILED, conf            
+            return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
 

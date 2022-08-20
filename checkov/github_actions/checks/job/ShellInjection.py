@@ -15,7 +15,7 @@ class DontAllowShellInjection(BaseGithubActionsCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['jobs','jobs.*.steps[]']
+            supported_entities=('jobs', 'jobs.*.steps[]')
         )
 
     def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
