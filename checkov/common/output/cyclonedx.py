@@ -8,7 +8,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
 
-from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
+from cyclonedx.model import (
+    XsUri,
+    ExternalReference,
+    ExternalReferenceType,
+    sha1sum,
+    HashAlgorithm,
+    HashType,
+    LicenseChoice,
+    License,
+)
 from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import (
@@ -25,9 +34,16 @@ from packageurl import PackageURL  # type:ignore[import]
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import CheckType
-from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES, PURL_TYPE_MAVEN, DEFAULT_CYCLONE_SCHEMA_VERSION, \
-    CYCLONE_SCHEMA_VERSION, FILE_NAME_TO_PURL_TYPE, IMAGE_DISTRO_TO_PURL_TYPE, TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE, \
-    BC_SEVERITY_TO_CYCLONEDX_LEVEL
+from checkov.common.output.cyclonedx_consts import (
+    SCA_CHECKTYPES,
+    PURL_TYPE_MAVEN,
+    DEFAULT_CYCLONE_SCHEMA_VERSION,
+    CYCLONE_SCHEMA_VERSION,
+    FILE_NAME_TO_PURL_TYPE,
+    IMAGE_DISTRO_TO_PURL_TYPE,
+    TWISTCLI_PACKAGE_TYPE_TO_PURL_TYPE,
+    BC_SEVERITY_TO_CYCLONEDX_LEVEL,
+)
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if sys.version_info >= (3, 8):
@@ -196,16 +212,24 @@ class CycloneDX:
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
 
-        if purl_type == PURL_TYPE_MAVEN and '_' in package_name:
+        if purl_type == PURL_TYPE_MAVEN and "_" in package_name:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
+
+        # add licenses, if exists
+        license_choices = None
+        licenses = resource.vulnerability_details.get("licenses")
+        if licenses:
+            license_choices = [
+                LicenseChoice(license_=License(license_name=license)) for license in licenses.split(", ")
+            ]
 
         purl = PackageURL(
             type=purl_type,
             namespace=namespace,
             name=package_name,
             version=package_version,
-            qualifiers=qualifiers
+            qualifiers=qualifiers,
         )
         component = Component(
             bom_ref=str(purl),
@@ -213,6 +237,7 @@ class CycloneDX:
             name=package_name,
             version=package_version,
             component_type=ComponentType.LIBRARY,
+            licenses=license_choices,
             purl=purl,
         )
         return component
@@ -224,15 +249,15 @@ class CycloneDX:
             type='oci',
             namespace=self.repo_id,
             name=file_path,
-            version=image_id
+            version=image_id,
         )
         bom.components.add(
             Component(
                 bom_ref=str(image_purl),
                 component_type=ComponentType.CONTAINER,
-                name=f'{self.repo_id}/{image_id}',
-                version='',
-                purl=image_purl
+                name=f"{self.repo_id}/{image_id}",
+                version="",
+                purl=image_purl,
             )
         )
 
