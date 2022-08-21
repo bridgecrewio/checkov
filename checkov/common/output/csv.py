@@ -84,7 +84,7 @@ class CSVSBOM:
                 "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
-                "Licenses": resource.vulnerability_details.get("licenses").replace(",", ""),
+                "Licenses": resource.vulnerability_details.get("licenses", "Unknown").replace(",", ""),
             }
         )
 
