@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import responses
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
@@ -112,7 +113,11 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
 
     # when
     image_runner = Runner()
-    filter = RunnerFilter(framework=['sca_image'])
+    filter = RunnerFilter(framework=['sca_image'], use_enforcement_rules=True)
+    # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+    # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+    filter.enforcement_rule_configs = {CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
+    image_runner.image_referencers = [GHA_Runner()]
     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
 
     summary = report.get_summary()
