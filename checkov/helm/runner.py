@@ -155,6 +155,12 @@ class Runner(BaseRunner):
     def _get_target_dir(chart_item, root_folder, target_folder_path):
         (chart_dir, chart_meta) = chart_item
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
+        if not chart_name:
+            logging.info(
+                f"Error parsing chart located {chart_dir}, chart has no name available",
+                exc_info=True,
+            )
+            return None
         target_dir = chart_dir.replace(root_folder, f'{target_folder_path}/')
         target_dir.replace("//", "/")
         if target_dir.endswith('/'):
@@ -211,6 +217,8 @@ class Runner(BaseRunner):
     @staticmethod
     def _convert_chart_to_k8s(chart_item, root_folder, target_folder_path, helm_command, runner_filter):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
+        if not target_dir:
+            return
         o = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         try:
             Runner._parse_output(target_dir, o)
