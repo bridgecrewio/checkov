@@ -284,7 +284,7 @@ def test_run_with_present_cached_results_env():
     image_runner = Runner()
     runner_filter = RunnerFilter(framework=['sca_image'])
     image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=runner_filter)
+    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
 
     assert len(report.passed_checks) == 0
     assert len(report.failed_checks) == 0
@@ -292,3 +292,27 @@ def test_run_with_present_cached_results_env():
     assert len(report.parsing_errors) == 0
     assert len(report.image_cached_results) == 1
 
+
+@mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
+@responses.activate
+def test_run_without_present_cached_results_env(mock_bc_integration, image_name2, cached_scan_result2):
+    # given
+    image_id_encoded = quote_plus(f"image:{image_name2}")
+
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+        json=cached_scan_result2,
+        status=200,
+    )
+
+    image_runner = Runner()
+    runner_filter = RunnerFilter(framework=['sca_image'])
+    image_runner.image_referencers = [GHA_Runner()]
+    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
+
+    assert len(report.passed_checks) == 0
+    assert len(report.failed_checks) == 1
+    assert len(report.skipped_checks) == 0
+    assert len(report.parsing_errors) == 0
+    assert len(report.image_cached_results) == 0
