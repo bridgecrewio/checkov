@@ -358,7 +358,7 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand):
-        logging.debug(f"Kustomization at {filePath} likley a {kustomizeProcessedFolderAndMeta[filePath]['type']}")
+        logging.debug(f"Kustomization at {filePath} likley a {kustomizeProcessedFolderAndMeta[filePath].get('type')}")
         try:
             output = Runner._get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta)
             return output
