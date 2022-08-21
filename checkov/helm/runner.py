@@ -154,6 +154,8 @@ class Runner(BaseRunner):
     @staticmethod
     def _get_target_dir(chart_item, root_folder, target_folder_path):
         (chart_dir, chart_meta) = chart_item
+        target_dir = chart_dir.replace(root_folder, f'{target_folder_path}/')
+        target_dir.replace("//", "/")
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         if not chart_name:
             logging.info(
@@ -161,8 +163,6 @@ class Runner(BaseRunner):
                 exc_info=True,
             )
             return None
-        target_dir = chart_dir.replace(root_folder, f'{target_folder_path}/')
-        target_dir.replace("//", "/")
         if target_dir.endswith('/'):
             target_dir = target_dir[:-1]
         if target_dir.endswith(chart_name):
