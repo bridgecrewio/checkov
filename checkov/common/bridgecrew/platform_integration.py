@@ -23,7 +23,6 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
-from typing_extensions import TypeGuard
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.run_metadata.registry import registry
@@ -32,7 +31,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
     from requests import Response
+    from typing_extensions import TypeGuard
 
 
 SLEEP_SECONDS = 1
@@ -186,7 +186,7 @@ class BcPlatformIntegration:
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
                                                  ca_certs=ca_certificate,
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
@@ -194,7 +194,7 @@ class BcPlatformIntegration:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
@@ -448,8 +448,11 @@ class BcPlatformIntegration:
             finally:
                 if request and request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
-                elif response and try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
-                                                        response.get('message', '')):
+                elif (
+                    response
+                    and try_num < MAX_RETRIES
+                    and re.match("The integration ID .* in progress", response.get("message", ""))
+                ):
                     logging.info(
                         f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1
@@ -545,6 +548,7 @@ class BcPlatformIntegration:
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)

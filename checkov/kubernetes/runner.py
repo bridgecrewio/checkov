@@ -14,7 +14,8 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports, CheckType
+from checkov.common.output.report import Report, merge_reports
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -42,6 +43,7 @@ class Runner(BaseRunner):
         source: str = "Kubernetes",
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
+        report_type: str = check_type
     ) -> None:
         db_connector = db_connector or NetworkxConnector()
 
@@ -54,6 +56,7 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_raw = {}
         self.report_mutator_data = None
+        self.report_type = report_type
 
     def run(
         self,
@@ -135,7 +138,7 @@ class Runner(BaseRunner):
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.report_type)
         report = self.mutateKubernetesGraphResults(root_folder, runner_filter, report, checks_results)
         return report
 

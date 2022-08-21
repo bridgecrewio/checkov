@@ -2,7 +2,7 @@ Resources:
   MyDBDisabled:
     Type: 'AWS::RDS::DBInstance'
     Properties:
-      DBName: 'mydb-disabled'
+      DBName: 'mydb_disabled'
       DBInstanceClass: 'db.t3.micro'
       Engine: 'mysql'
       MasterUsername: 'master'

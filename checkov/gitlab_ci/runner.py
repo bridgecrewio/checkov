@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
-
 
 
 class Runner(YamlRunner, ImageReferencer):

@@ -10,7 +10,8 @@ from typing import List, Optional, Dict, Any, Type
 import yaml
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
@@ -32,9 +33,9 @@ class K8sKustomizeRunner(K8sRunner):
                  graph_manager: Optional[GraphManager] = None,
                  external_registries: Optional[List[BaseRegistry]] = None) -> None:
 
-        super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
-        self.report_mutator_data = {}
+        super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
+        self.report_mutator_data = {}
         self.pbar.turn_off_progress_bar()
 
     def set_external_data(self,
@@ -112,8 +113,9 @@ class K8sKustomizeRunner(K8sRunner):
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
-                else: 
-                    kustomizeResourceID = "Unknown error. This is a bug."
+                else:
+                    logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
+                    continue
                 code_lines = entity_context.get("code_lines")
                 file_line_range = self.line_range(code_lines)
 
@@ -167,8 +169,8 @@ class Runner(BaseRunner):
         # We need parse some of the Kustomization.yaml files to work out which
         # This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
         # TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
-        yaml_path = os.path.join(parseKustomizationData,"kustomization.yaml")
-        yml_path = os.path.join(parseKustomizationData,"kustomization.yml")
+        yaml_path = os.path.join(parseKustomizationData, "kustomization.yaml")
+        yml_path = os.path.join(parseKustomizationData, "kustomization.yml")
         if os.path.isfile(yml_path):
             kustomization_path = yml_path
         elif os.path.isfile(yaml_path):
@@ -331,13 +333,13 @@ class Runner(BaseRunner):
         proc = subprocess.Popen([templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
-            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {kustomizeProcessedFolderAndMeta[filePath]['type']}.")
+            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {kustomizeProcessedFolderAndMeta[filePath].get('type')}.")
         return output
 
     @staticmethod
     def _get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta) -> str:
         env_or_base_path_prefix = None
-        if kustomizeProcessedFolderAndMeta[filePath]['type'] == "overlay":
+        if kustomizeProcessedFolderAndMeta[filePath].get('type') == "overlay":
             if 'calculated_bases' not in kustomizeProcessedFolderAndMeta[filePath]:
                 logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {filePath}")
                 env_or_base_path_prefix = ""
@@ -346,7 +348,7 @@ class Runner(BaseRunner):
                 mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
                 env_or_base_path_prefix = f"{mostSignificantBasePath}/{kustomizeProcessedFolderAndMeta[filePath]['overlay_name']}"
 
-        if kustomizeProcessedFolderAndMeta[filePath]['type'] == "base":
+        if kustomizeProcessedFolderAndMeta[filePath].get('type') == "base":
             # Validated base last three parents as a path
             basePathParents = pathlib.Path(kustomizeProcessedFolderAndMeta[filePath]['filePath']).parents
             mostSignificantBasePath = "/" + basePathParents._parts[-4] + "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2]

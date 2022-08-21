@@ -51,10 +51,16 @@ class TestCloudformationGraphManager(TestCase):
             ],
             os.path.join(root_dir, "fail.yaml"): [
                 "AWS::SQS::Queue.UnencryptedQueue",
+            ],
+            os.path.join(root_dir, "graph.yaml"): [
+                "AWS::AppSync::GraphQLApi.GoodAppSyncGraphQLApi",
+                "AWS::WAFv2::WebACL.GoodWAFv2WebACL",
+                "AWS::WAFv2::WebACLAssociation.WebACLAssociation",
+                "AWS::AppSync::GraphQLApi.NoWAFAppSyncGraphQLApi"
             ]
         }
-        self.assertEqual(43, len(local_graph.vertices))
-        self.assertEqual(23, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(47, len(local_graph.vertices))
+        self.assertEqual(27, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
         self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
         self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
         self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))

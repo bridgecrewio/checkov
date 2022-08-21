@@ -7,15 +7,6 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload
 
 from pycep.transformer import BicepElement
-from pycep.typing import (
-    BicepJson,
-    ResourceAttributes,
-    GlobalsAttributes,
-    ParameterAttributes,
-    VariableAttributes,
-    OutputAttributes,
-    ModuleAttributes,
-)
 from typing_extensions import Literal, TypeAlias
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
@@ -29,6 +20,15 @@ from checkov.common.util.type_forcers import force_int
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
+    from pycep.typing import (
+        BicepJson,
+        ResourceAttributes,
+        GlobalsAttributes,
+        ParameterAttributes,
+        VariableAttributes,
+        OutputAttributes,
+        ModuleAttributes,
+    )
 
 
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
