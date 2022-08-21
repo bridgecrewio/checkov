@@ -208,7 +208,7 @@ class Runner(BaseRunner):
             return None 
 
     @staticmethod
-    def _convert_chart_to_k8s(self, chart_item, root_folder, target_folder_path, helm_command, runner_filter):
+    def _convert_chart_to_k8s(chart_item, root_folder, target_folder_path, helm_command, runner_filter):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         o = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         try:
