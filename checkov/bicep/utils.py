@@ -4,12 +4,14 @@ import logging
 import os
 from collections.abc import Collection
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.bicep.parser import Parser
-from pycep.typing import BicepJson
+
+if TYPE_CHECKING:
+    from pycep.typing import BicepJson
 
 
 BICEP_POSSIBLE_ENDINGS = [".bicep"]

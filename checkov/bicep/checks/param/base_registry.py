@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from collections import defaultdict
-
-from pycep.typing import ParameterAttributes
+from typing import TYPE_CHECKING
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from pycep.typing import ParameterAttributes
 
 
 class Registry(BaseCheckRegistry):

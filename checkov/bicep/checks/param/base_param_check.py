@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from pycep.typing import ParameterAttributes
-from typing_extensions import NotRequired
 
 from checkov.bicep.checks.param.registry import registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+
+if TYPE_CHECKING:
+    from typing_extensions import NotRequired
 
 
 class CheckovParameterAttributes(ParameterAttributes):

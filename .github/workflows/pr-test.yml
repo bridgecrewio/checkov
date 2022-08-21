@@ -2,6 +2,8 @@ name: PR Test
 
 on: pull_request
 
+permissions: read-all
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -66,7 +68,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +89,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
@@ -134,7 +136,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |

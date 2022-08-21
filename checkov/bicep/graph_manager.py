@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Type, TYPE_CHECKING, TypeVar
 
-from pycep.typing import BicepJson
 
 from checkov.bicep.parser import Parser
 from checkov.bicep.utils import get_scannable_file_paths
@@ -14,6 +13,7 @@ from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 if TYPE_CHECKING:
     import networkx as nx
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
+    from pycep.typing import BicepJson
 
 _Block = TypeVar("_Block", bound="Block")
 
