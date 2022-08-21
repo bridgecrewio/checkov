@@ -10,6 +10,7 @@ RUN set -eux; \
             git \
             wget \
             curl \
+            openssh-client \
     ; \
     \
     wget -q -O get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3; \

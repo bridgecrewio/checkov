@@ -22,7 +22,9 @@ class GoogleCloudSqlServerNoPublicIP(BaseResourceCheck):
         if 'settings' in conf.keys() and 'ip_configuration' in conf['settings'][0] and \
                 'ipv4_enabled' in conf['settings'][0]['ip_configuration'][0]:
             ipconfiguration = conf['settings'][0]['ip_configuration'][0]
-            if ipconfiguration['ipv4_enabled'][0]:
+            ipv4_enabled = ipconfiguration['ipv4_enabled']
+            ipv4_enabled = ipv4_enabled[0] if isinstance(ipv4_enabled, list) else ipv4_enabled
+            if ipv4_enabled:
                 self.evaluated_keys = ['database_version/[0]/SQLSERVER',
                                        'settings/[0]/ip_configuration/[0]/ipv4_enabled']
                 return CheckResult.FAILED

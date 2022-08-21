@@ -4,26 +4,31 @@ on:
     - cron:  '8 22 * * 1'
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   pipenv-update:
     runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5.0.0
+        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -34,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v4.0.4
+        uses: peter-evans/create-pull-request@20dac2ed4875a1a8422d233a68f69088637446df  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

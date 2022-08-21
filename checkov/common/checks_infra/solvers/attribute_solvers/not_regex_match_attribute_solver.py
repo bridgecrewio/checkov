@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict
+from typing import Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
 from .regex_match_attribute_solver import RegexMatchAttributeSolver

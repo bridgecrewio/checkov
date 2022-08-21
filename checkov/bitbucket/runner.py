@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from checkov.bitbucket.dal import Bitbucket
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
 
 class Runner(JsonRunner):
-    check_type = "bitbucket_configuration"  # noqa: CCE003  # a static attribute
+    check_type = CheckType.BITBUCKET_CONFIGURATION  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         self.bitbucket = Bitbucket()

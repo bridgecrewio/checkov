@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List, TYPE_CHECKING
+from typing import Set, Optional, Union, List, TYPE_CHECKING, Dict
 
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -35,13 +36,18 @@ class RunnerFilter(object):
             all_external: bool = False,
             var_files: Optional[List[str]] = None,
             skip_cve_package: Optional[List[str]] = None,
+            use_enforcement_rules: bool = False,
             filtered_policy_ids: Optional[List[str]] = None,
             show_progress_bar: Optional[bool] = True,
-            secrets_scan_file_type: Optional[List[str]] = None
+            secrets_scan_file_type: Optional[List[str]] = None,
+            run_image_referencer: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
+
+        self.use_enforcement_rules = use_enforcement_rules
+        self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -90,6 +96,15 @@ class RunnerFilter(object):
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = filtered_policy_ids or []
         self.secrets_scan_file_type = secrets_scan_file_type
+        self.run_image_referencer = run_image_referencer
+
+    def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
+        self.enforcement_rule_configs = {}
+        for report_type, code_category in CodeCategoryMapping.items():
+            config = enforcement_rule_configs.get(code_category)
+            if not config:
+                raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
+            self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
         self,
@@ -97,6 +112,7 @@ class RunnerFilter(object):
         check_id: str | None = None,
         bc_check_id: str | None = None,
         severity: Severity | None = None,
+        report_type: str | None = None
     ) -> bool:
         if check:
             check_id = check.id
@@ -105,9 +121,24 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
-        run_severity = severity and self.check_threshold and severity.level >= self.check_threshold.level
+        # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
+        if self.use_enforcement_rules and report_type:
+            if not self.check_threshold and not self.skip_check_threshold:
+                check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
+                skip_check_threshold = None
+            else:
+                check_threshold = self.check_threshold
+                skip_check_threshold = self.skip_check_threshold
+        else:
+            if self.use_enforcement_rules:
+                # this is a warning for us (but there is nothing the user can do about it)
+                logging.debug(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
+            check_threshold = self.check_threshold
+            skip_check_threshold = self.skip_check_threshold
+
+        run_severity = severity and check_threshold and severity.level >= check_threshold.level
         explicit_run = self.checks and self.check_matches(check_id, bc_check_id, self.checks)
-        implicit_run = not self.checks and not self.check_threshold
+        implicit_run = not self.checks and not check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
         is_policy_filtered = self.is_policy_filtered(check_id)
         # True if this check is present in the allow list, or if there is no allow list
@@ -127,7 +158,7 @@ class RunnerFilter(object):
         if not is_policy_filtered:
             should_run_check = False
 
-        skip_severity = severity and self.skip_check_threshold and severity.level <= self.skip_check_threshold.level
+        skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
 
         should_skip_check = (

@@ -1,6 +1,7 @@
 import responses
 
 from checkov.terraform.module_loading.loaders.registry_loader import RegistryLoader
+from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 @responses.activate
@@ -15,11 +16,11 @@ def test_module_version_url_invoked_once():
     )
     loader = RegistryLoader()
     RegistryLoader.modules_versions_cache = {}  # reset cache
-    loader.module_source = "terraform-aws-modules/example"
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", "", "", "")
 
     # when
-    loader._is_matching_loader()
-    loader._is_matching_loader()
+    loader._is_matching_loader(module_params)
+    loader._is_matching_loader(module_params)
 
     # then
     responses.assert_call_count(module_version_url, 1)

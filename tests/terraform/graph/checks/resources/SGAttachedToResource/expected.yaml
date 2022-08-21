@@ -24,6 +24,7 @@ pass:
   - "aws_security_group.pass_glue"
   - "aws_security_group.pass_lambda"
   - "aws_security_group.pass_lb"
+  - "aws_security_group.pass_memorydb_cluster"
   - "aws_security_group.pass_mq_broker"
   - "aws_security_group.pass_mq"
   - "aws_security_group.pass_msk"

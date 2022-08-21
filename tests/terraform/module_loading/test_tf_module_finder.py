@@ -20,7 +20,7 @@ class TestModuleFinder(unittest.TestCase):
         self.assertEqual(1, len(remote_modules))
         for m in remote_modules:
             if 'terraform-aws-modules' in m.module_link:
-                self.assertEqual('2.1.0', m.version)
+                self.assertEqual('~>2.1.0', m.version)
             else:
                 self.assertIsNone(m.version)
 

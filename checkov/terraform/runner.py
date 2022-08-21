@@ -1,23 +1,26 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 import logging
 import os
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List, Type, Any, Set
+from typing import Dict, Optional, Tuple, List, Type, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, merge_reports, remove_duplicate_results, CheckType
+from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.config_utils import should_scan_hcl_files
@@ -36,15 +39,19 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 # Allow the evaluation of empty variables
+from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
-class Runner(BaseRunner):
+class Runner(ImageReferencerMixin, BaseRunner):
     check_type = CheckType.TERRAFORM
 
     def __init__(
@@ -82,11 +89,12 @@ class Runner(BaseRunner):
     def run(
             self,
             root_folder: str,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
-    ) -> Report:
+    ) -> Report | list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -146,9 +154,20 @@ class Runner(BaseRunner):
 
         report = remove_duplicate_results(report)
 
+        if runner_filter.run_image_referencer:
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
+
         return report
 
-    def load_external_checks(self, external_checks_dir: List[str]) -> None:
+    def load_external_checks(self, external_checks_dir: list[str] | None) -> None:
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
@@ -178,7 +197,7 @@ class Runner(BaseRunner):
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -375,7 +394,8 @@ class Runner(BaseRunner):
                         caller_file_line_range=caller_file_line_range,
                         severity=check.severity,
                         bc_category=check.bc_category,
-                        benchmarks=check.benchmarks
+                        benchmarks=check.benchmarks,
+                        details=check.details
                     )
 
                     if CHECKOV_CREATE_GRAPH:
@@ -499,3 +519,12 @@ class Runner(BaseRunner):
         for file, file_content in self.definitions.items():
             if "module" in file_content:
                 __cache_file_content(file_modules=file_content["module"])
+
+    def extract_images(self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        images = extract_images_from_aws_resources(graph_connector=graph_connector)
+
+        return images

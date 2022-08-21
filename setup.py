@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.44",
+        "bc-python-hcl2==0.3.45",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -66,10 +66,11 @@ setup(
         "jsonpath_ng",
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.7",
+        "pycep-parser==0.3.8",
         "charset-normalizer",
-        "pyston_lite_autoload==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
-        "pyston-lite==2.3.4.1; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'"
+        "pyston_lite_autoload==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
+        "pyston-lite==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
+        "schema"
     ],
     license="Apache License 2.0",
     name="checkov",

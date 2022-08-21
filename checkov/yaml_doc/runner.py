@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.runners.object_runner import Runner as ObjectRunner
 
@@ -31,6 +31,8 @@ class Runner(ObjectRunner):
         self, end: int, result_config: dict[str, Any] | list[dict[str, Any]], start: int
     ) -> tuple[int, int]:
         if result_config and isinstance(result_config, list):
+            if not isinstance(result_config[0], dict):
+                return -1, -1
             start = result_config[0]["__startline__"] - 1
             end = result_config[len(result_config) - 1]["__endline__"]
         elif result_config and isinstance(result_config, dict):

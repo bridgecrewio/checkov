@@ -4,9 +4,12 @@ import logging
 import os
 from collections.abc import Collection
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pycep import BicepParser
-from pycep.typing import BicepJson
+
+if TYPE_CHECKING:
+    from pycep.typing import BicepJson
 
 
 class Parser:

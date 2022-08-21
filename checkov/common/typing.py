@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable
-from typing_extensions import TypeAlias
-
-from typing_extensions import TypedDict
+from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
-    from checkov.common.models.enums import CheckResult
+    from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.models.enums import CheckResult
 
 
 _ScannerCallableAlias: TypeAlias = Callable[
@@ -54,3 +53,19 @@ class _CicdDetails(TypedDict, total=False):
     commit: str | None
     pr: str | None
     runId: str | None
+
+
+class _ExitCodeThresholds(TypedDict):
+    soft_fail: bool
+    soft_fail_checks: list[str]
+    soft_fail_threshold: Severity | None
+    hard_fail_checks: list[str]
+    hard_fail_threshold: Severity | None
+
+
+class _LicenseStatus(TypedDict):
+    package_name: str
+    package_version: str
+    policy: str
+    license: str
+    status: str

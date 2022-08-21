@@ -6,7 +6,7 @@ import jmespath
 
 from checkov.bitbucket_pipelines.registry import registry
 from checkov.common.images.image_referencer import ImageReferencer, Image
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 

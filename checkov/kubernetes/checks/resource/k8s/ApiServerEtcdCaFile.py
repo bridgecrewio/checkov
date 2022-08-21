@@ -8,7 +8,7 @@ from checkov.kubernetes.checks.resource.k8s.k8s_check_utils import extract_comma
 class ApiServerEtcdCaFile(BaseK8sContainerCheck):
     def __init__(self) -> None:
         id = "CKV_K8S_102"
-        name = "Ensure that the --etcd-ca-file argument is set as appropriate"
+        name = "Ensure that the --etcd-cafile argument is set as appropriate"
         super().__init__(name=name, id=id)
 
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
@@ -16,7 +16,7 @@ class ApiServerEtcdCaFile(BaseK8sContainerCheck):
         keys, values = extract_commands(conf)
 
         if "kube-apiserver" in keys:
-            if "--etcd-ca-file" not in keys:
+            if "--etcd-cafile" not in keys:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED
