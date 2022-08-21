@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Iterable
-from typing import Any, Callable  # noqa: F401  # Callable is used in the TypeAlias
-
-from typing_extensions import TypeAlias
+from typing import Any, Callable, TYPE_CHECKING  # noqa: F401  # Callable is used in the TypeAlias
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 _ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 _ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"

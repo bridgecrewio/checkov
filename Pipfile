@@ -33,10 +33,11 @@ types-termcolor = "*"
 types-tqdm = "*"
 types-urllib3 = "*"
 pre-commit = "*"
-flake8 = "<5.0.0"  # dlint has currently n upper cap on flake8 <5.0.0
+flake8 = "*"
 dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
+flake8-type-checking = {version = "*", markers="python_version >= '3.8'"}
 
 [packages]
 #

@@ -416,7 +416,6 @@ class Report:
         properties = {k: v for k, v in config.__dict__.items() if v is not None}
         return properties
 
-
     def _create_test_case_failure_output(self, record: Record) -> str:
         """Creates the failure output for a JUnit XML test case
 

@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Dict, Any
+from typing import TYPE_CHECKING, cast, Any
 
 from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
@@ -218,8 +218,7 @@ class CycloneDX:
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
-        image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
-                                                                         ImageDetails()).image_id
+        image_id = cast("dict[str, Any]", resource.vulnerability_details).get('image_details', ImageDetails()).image_id
         file_path = resource.file_path.split(' ')[0]
         image_purl = PackageURL(
             type='oci',
