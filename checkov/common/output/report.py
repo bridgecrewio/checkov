@@ -47,6 +47,7 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
+        self.image_cached_results: List[dict[str, Any]] = []
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
