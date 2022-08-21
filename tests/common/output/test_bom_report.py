@@ -233,7 +233,7 @@ class TestBomOutput:
             vulnerability_details={
                 "package_name": "requests",
                 "package_version": "",
-                "licenses": "MIT, Apache"
+                "licenses": "MIT Apache"
             }
         )
 
@@ -251,7 +251,7 @@ class TestBomOutput:
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,MIT\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"MIT, Apache\"\n"
+            "requests,,/requirements.txt,acme,bridgecrewio/example,,,MIT Apache\n"
         )
 
         assert csv_output == expected_csv
@@ -259,7 +259,7 @@ class TestBomOutput:
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
             "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"MIT\"\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"MIT, Apache\"\n"
+            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"MIT Apache\"\n"
         )
 
         assert csv_output_str == expected_csv
