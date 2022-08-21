@@ -355,14 +355,17 @@ class Runner(BaseRunner):
         return env_or_base_path_prefix
 
     @staticmethod
-    def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
+    def _get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand):
         logging.debug(f"Kustomization at {filePath} likley a {kustomizeProcessedFolderAndMeta[filePath]['type']}")
         try:
             output = Runner._get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta)
+            return output
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
-            return
+            return None
 
+    @staticmethod
+    def _parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings):
         env_or_base_path_prefix = Runner._get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta)
         if env_or_base_path_prefix is None:
             logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
@@ -376,6 +379,13 @@ class Runner(BaseRunner):
         cur_writer = Runner._get_parsed_output(filePath, extractDir, output, sharedKustomizeFileMappings)
         if cur_writer:
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
+        
+    @staticmethod
+    def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
+        output = Runner._get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand)
+        if not output:
+            return
+        Runner._parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
         kustomizeDirectories = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)

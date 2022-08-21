@@ -209,10 +209,10 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _convert_chart_to_k8s(self, chart_item, root_folder, target_folder_path, helm_command, runner_filter):
-        target_dir = K8sHelmRunner._get_target_dir(chart_item, root_folder, target_folder_path)
-        o = K8sHelmRunner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
+        target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
+        o = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         try:
-            K8sHelmRunner._parse_output(target_dir, o)
+            Runner._parse_output(target_dir, o)
         except Exception:
             (chart_dir, chart_meta) = chart_item
             chart_name = chart_meta.get('name', chart_meta.get('Name'))
@@ -225,7 +225,7 @@ class Runner(BaseRunner):
     def _get_chart_dir_and_meta(root_folder, files, runner_filter):
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
-            lambda cd: (cd, K8sHelmRunner.parse_helm_chart_details(cd)), chart_directories))
+            lambda cd: (cd, Runner.parse_helm_chart_details(cd)), chart_directories))
         # remove parsing failures
         chart_dir_and_meta = [chart_meta for chart_meta in chart_dir_and_meta if chart_meta[1]]
         return chart_dir_and_meta
@@ -241,13 +241,13 @@ class Runner(BaseRunner):
         self.root_folder = root_folder
         self.runner_filter = runner_filter
         self.target_folder_path = tempfile.mkdtemp()
-        chart_dir_and_meta = K8sHelmRunner._get_chart_dir_and_meta(self.root_folder, files, self.runner_filter)
+        chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, self.runner_filter)
         
-        list(parallel_runner.run_function(lambda cd: K8sHelmRunner._convert_chart_to_k8s(cd, self.root_folder, 
+        list(parallel_runner.run_function(lambda cd: Runner._convert_chart_to_k8s(cd, self.root_folder, 
                                                                                          self.target_folder_path, 
                                                                                          self.helm_command, 
                                                                                          self.runner_filter), chart_dir_and_meta))
-        return K8sHelmRunner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
+        return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter = RunnerFilter(), collect_skip_comments: bool = True) -> Report:
