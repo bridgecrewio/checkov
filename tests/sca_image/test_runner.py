@@ -275,12 +275,12 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     assert len(report.parsing_errors) == 0
 
 
-@mock.patch.dict(os.environ, {"PRESENT_CACHED_RESULTS": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_PRESENT_CACHED_RESULTS": "True"})
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
 @responses.activate
-def test_run_without_present_cached_results_env():
-    # when
+def test_run_with_present_cached_results_env():
+
     image_runner = Runner()
     runner_filter = RunnerFilter(framework=['sca_image'])
     image_runner.image_referencers = [GHA_Runner()]
