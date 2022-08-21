@@ -53,7 +53,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")   # issue between Python versions
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
