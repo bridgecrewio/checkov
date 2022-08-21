@@ -21,7 +21,6 @@ from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 
 
 class K8sHelmRunner(k8_runner):
@@ -205,7 +204,7 @@ class Runner(BaseRunner):
                 return None
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
-            return o
+            return o, chart_item
 
         except Exception:
             logging.info(
@@ -219,7 +218,7 @@ class Runner(BaseRunner):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         if not target_dir:
             return
-        o = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
+        o, _ = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         try:
             Runner._parse_output(target_dir, o)
         except Exception:
