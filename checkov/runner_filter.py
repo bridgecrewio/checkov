@@ -212,8 +212,6 @@ class RunnerFilter(object):
         result['download_external_modules'] = self.download_external_modules
         result['external_modules_download_path'] = self.external_modules_download_path
         result['evaluate_variables'] = self.evaluate_variables
-        result['runners'] = self.runners
-        result['skip_framework'] = self.skip_framework
         result['excluded_paths'] = self.excluded_paths
         result['all_external'] = self.all_external
         result['var_files'] = self.var_files
