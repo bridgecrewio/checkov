@@ -3,12 +3,13 @@
 [//]: # "
     # PR Title
     Be aware that we use the title to create changelog automatically and therefore only allow specific prefixes
-    - feat:  to indicate new features or checks
-    - fix:   to indicate a bugfix or handling of edge cases of existing checks
-    - break: to indicate a breaking change
-    - docs:  to indicate an update to our documentation
-    - chore: to indicate adjustments to workflow files or dependency updates
-    Addtionally we encourage adding a scope to the prefix, which indicates the targeted framework, otherwise 'general' will be assumed.
+    - break:    to indicate a breaking change, this supersedes any of the types
+    - feat:     to indicate new features or checks
+    - fix:      to indicate a bugfix or handling of edge cases of existing checks
+    - docs:     to indicate an update to our documentation
+    - chore:    to indicate adjustments to workflow files or dependency updates
+    - platform: to indicate a change needed for the platform
+    Additionally we encourage adding a scope to the prefix, which indicates the targeted framework, otherwise 'general' will be assumed.
     ex.
     feat(terraform): add CKV_AWS_123 to ensure that VPC Endpoint Service is configured for Manual Acceptance
 "
