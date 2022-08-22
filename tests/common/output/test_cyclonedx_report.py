@@ -76,9 +76,14 @@ def test_valid_cyclonedx_image_bom():
         'fixDate': '2022-07-07T16:15:00+03:00'
     }
 
-    record: Record = create_report_cve_record(rootless_file_path=rootless_file_path,
-                                          file_abs_path=file_abs_path, check_class=check_class,
-                                          vulnerability_details=vulnerability, licenses='', image_details=image_details)
+    record: Record = create_report_cve_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability,
+        licenses="BSD-3-Clause",
+        image_details=image_details,
+    )
     report = Report(check_type='sca_image')
     report.add_record(record)
 
@@ -95,14 +100,15 @@ def test_valid_cyclonedx_image_bom():
         version='7.74.0-1.3+deb11u1',
         qualifiers={'distro': 'bullseye'}
     )
-    package_component = Component(
-        name='curl',
-        purl=package_purl,
-        group=None,
-        component_type=ComponentType.LIBRARY,
-        version='7.74.0-1.3+deb11u1'
-    )
-    assert cyclonedx.bom.has_component(package_component)
+
+    package_component = cyclonedx.bom.get_component_by_purl(purl=package_purl)
+
+    assert package_component is not None
+    assert package_component.name == "curl"
+    assert package_component.type == ComponentType.LIBRARY
+    assert package_component.version == "7.74.0-1.3+deb11u1"
+    assert len(package_component.licenses) == 1
+    assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
 
     image_purl = PackageURL(
         name='Dockerfile',
