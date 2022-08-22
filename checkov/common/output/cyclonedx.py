@@ -6,7 +6,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Dict, Any
+from typing import TYPE_CHECKING, cast, Any
 
 from cyclonedx.model import XsUri, ExternalReference, ExternalReferenceType, sha1sum, HashAlgorithm, HashType
 from cyclonedx.model.bom import Bom, Tool
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
+
 class CycloneDX:
     def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
         self.repo_id = f"{repo_id}/" if repo_id is not None else ""
@@ -70,7 +71,8 @@ class CycloneDX:
             image_resources_for_image_components = {}
 
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if not bom.has_component(component=component):
@@ -79,9 +81,9 @@ class CycloneDX:
                 if is_image_report and check.file_path not in image_resources_for_image_components:
                     image_resources_for_image_components[check.file_path] = check
 
-
             for check in report.failed_checks:
-                if report.check_type == CheckType.SCA_PACKAGE and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME: continue
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
                 if bom.has_component(component=component):
@@ -194,7 +196,7 @@ class CycloneDX:
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
 
-        if purl_type == PURL_TYPE_MAVEN:
+        if purl_type == PURL_TYPE_MAVEN and '_' in package_name:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
 
@@ -216,8 +218,7 @@ class CycloneDX:
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
-        image_id = cast(Dict[str, Any], resource.vulnerability_details).get('image_details',
-                                                                         ImageDetails()).image_id
+        image_id = cast("dict[str, Any]", resource.vulnerability_details).get('image_details', ImageDetails()).image_id
         file_path = resource.file_path.split(' ')[0]
         image_purl = PackageURL(
             type='oci',

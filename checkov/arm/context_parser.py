@@ -46,8 +46,11 @@ class ContextParser(object):
         # Substitute Parameters and Variables
         for key_entry in keys_w_params:
             try:
-                param = re.sub(re.compile(r"\[parameters\('|'\)]"), "", self._get_from_dict(dict(self.arm_template),
-                                                                                key_entry[:-1])[key_entry[-1]])
+                param = re.sub(
+                    re.compile(r"\[parameters\('|'\)]"),
+                    "",
+                    self._get_from_dict(dict(self.arm_template), key_entry[:-1])[key_entry[-1]],
+                )
                 if param in parameter_defaults:
                     logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
                     self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
@@ -56,8 +59,11 @@ class ContextParser(object):
 
         for key_entry in keys_w_vars:
             try:
-                param = re.sub(re.compile(r"\[variables\('|'\)]"), "", self._get_from_dict(dict(self.arm_template),
-                                                                               key_entry[:-1])[key_entry[-1]])
+                param = re.sub(
+                    re.compile(r"\[variables\('|'\)]"),
+                    "",
+                    self._get_from_dict(dict(self.arm_template),key_entry[:-1])[key_entry[-1]],
+                )
                 if param in variable_values.keys():
                     self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
                     logging.debug(

@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import concurrent.futures
 import re
-from typing import List, Tuple, Dict, Any, Optional, Pattern
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
-from networkx import DiGraph
 from jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -12,8 +13,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.util.var_utils import is_terraform_variable_dependent, is_cloudformation_variable_dependent
+from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")

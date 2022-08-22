@@ -33,10 +33,11 @@ types-termcolor = "*"
 types-tqdm = "*"
 types-urllib3 = "*"
 pre-commit = "*"
-flake8 = "<5.0.0"  # dlint has currently n upper cap on flake8 <5.0.0
+flake8 = "*"
 dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
+flake8-type-checking = {version = "*", markers="python_version >= '3.8'"}
 
 [packages]
 #
@@ -80,6 +81,7 @@ pycep-parser = "==0.3.8"
 charset-normalizer = "*"
 pyston_lite_autoload = {version = "==2.3.4.2", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'"}
 pyston-lite = {version = "==2.3.4.2", markers="python_version == '3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'"}
+schema = "*"
 
 [requires]
 python_version = "3.7"

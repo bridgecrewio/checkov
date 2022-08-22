@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict
+from typing import Optional, Any, Dict
 from collections.abc import Sized
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver

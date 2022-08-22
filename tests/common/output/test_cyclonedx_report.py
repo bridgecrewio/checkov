@@ -9,7 +9,7 @@ from pytest_mock import MockerFixture
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.cyclonedx import CycloneDX
-from checkov.sca_package.output import create_report_cve_record
+from checkov.common.sca.output import create_report_cve_record
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
@@ -123,7 +123,6 @@ def test_valid_cyclonedx_image_bom():
 
 
 def test_sca_packages_cyclonedx_bom():
-    from checkov.sca_package.output import create_report_cve_record
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -194,3 +193,55 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
     assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
 
     assert "http://cyclonedx.org/schema/bom/1.3" in output
+
+
+def test_create_library_component_maven_package() -> None:
+    # given
+    cyclone = CycloneDX([Report(CheckType.SCA_IMAGE)], repo_id="12345")
+    package = {"name": 'org.bouncycastle_bcpkix-jdk15on',
+               "version": '1.69.00'}
+    rootless_file_path = "Dockerfile"
+
+    resource = ExtraResource(
+        file_abs_path="/path/to/Dockerfile",
+        file_path=rootless_file_path,
+        resource=f"{rootless_file_path}.{package['name']}",
+        vulnerability_details={
+            "package_name": package["name"],
+            "package_version": package["version"],
+            "licenses": "Unknown",
+            "package_type": 'jar',
+        },
+    )
+
+    component = cyclone.create_library_component(resource, CheckType.SCA_IMAGE)
+
+    assert component.purl.name == 'bcpkix-jdk15on'
+    assert component.purl.version == '1.69.00'
+    assert component.purl.namespace == '12345/Dockerfile/org.bouncycastle'
+
+
+def test_create_library_component_maven_package_without_group_name() -> None:
+    # given
+    cyclone = CycloneDX([Report(CheckType.SCA_IMAGE)], repo_id="12345")
+    package = {"name": 'bcpkix-jdk15on',
+               "version": '1.69.00'}
+    rootless_file_path = "Dockerfile"
+
+    resource = ExtraResource(
+        file_abs_path="/path/to/Dockerfile",
+        file_path=rootless_file_path,
+        resource=f"{rootless_file_path}.{package['name']}",
+        vulnerability_details={
+            "package_name": package["name"],
+            "package_version": package["version"],
+            "licenses": "Unknown",
+            "package_type": 'jar',
+        },
+    )
+
+    component = cyclone.create_library_component(resource, CheckType.SCA_IMAGE)
+
+    assert component.purl.name == 'bcpkix-jdk15on'
+    assert component.purl.version == '1.69.00'
+    assert component.purl.namespace == '12345/Dockerfile'

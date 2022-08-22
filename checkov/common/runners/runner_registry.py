@@ -11,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from json import dumps
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar, Tuple
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
 
 from typing_extensions import Literal
 
@@ -25,13 +25,13 @@ from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, merge_reports
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
@@ -59,6 +59,7 @@ class RunnerRegistry:
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
         self.tool = tool_name
+        self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -89,9 +90,28 @@ class RunnerRegistry:
 
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
-        for scan_report in reports:
+        merged_reports = self._merge_reports(reports)
+
+        for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports
+
+    def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
+        """Merges reports with the same check_type"""
+
+        merged_reports = []
+
+        for report in reports:
+            sub_reports: list[Report] = force_list(report)
+            for sub_report in sub_reports:
+                if sub_report.check_type in self._check_type_to_report_map:
+                    merge_reports(self._check_type_to_report_map[sub_report.check_type], sub_report)
+                else:
+                    self._check_type_to_report_map[sub_report.check_type] = sub_report
+
+                merged_reports.append(sub_report)
+
+        return merged_reports
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)
@@ -161,7 +181,7 @@ class RunnerRegistry:
                 else:
                     hard_fail_threshold = enf_rule.hard_fail_threshold
                     soft_fail = enf_rule.is_global_soft_fail()
-                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')  # type:ignore[union-attr] # it is not null
+                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
             else:
                 logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
         else:
@@ -434,7 +454,7 @@ class RunnerRegistry:
     def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
         for report in report_jsons:
             results = report.get('results', {})
-            for key, result in results.items():
+            for result in results.values():
                 for result_dict in result:
-                    result_dict.pop('code_block', None)
-                    result_dict.pop('connected_node', None)
+                    result_dict["code_block"] = None
+                    result_dict["connected_node"] = None

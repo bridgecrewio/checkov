@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import atexit
 import json
 import logging
@@ -7,12 +9,10 @@ import shutil
 import signal
 import sys
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
 
 import argcomplete
 import configargparse
-from configargparse import ArgumentParser
-from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
@@ -30,6 +30,7 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
@@ -62,6 +63,10 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+
+if TYPE_CHECKING:
+    from configargparse import ArgumentParser, Namespace
+
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
@@ -139,6 +144,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.var_file:
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
+    run_image_referencer = enable_image_referencer(
+        bc_integration=bc_integration,
+        frameworks=config.framework,
+        skip_frameworks=config.skip_framework,
+    )
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
@@ -147,7 +158,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
-                                 secrets_scan_file_type=config.secrets_scan_file_type, use_enforcement_rules=config.use_enforcement_rules)
+                                 secrets_scan_file_type=config.secrets_scan_file_type,
+                                 use_enforcement_rules=config.use_enforcement_rules,
+                                 run_image_referencer=run_image_referencer)
 
     if outer_registry:
         runner_registry = outer_registry
@@ -434,26 +447,26 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'overrides this option, except for the case when a result does not match either of the soft fail '
                     'or hard fail criteria, in which case this flag determines the result.', action='store_true')
     parser.add('--soft-fail-on',
-                        help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use '
-                             'a severity, then any severity equal to or less than the highest severity in the list '
-                             'will result in a soft fail. This option may be used with --hard-fail-on, using the same '
-                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
-                             'taking precedence in a tie. If a given result does not meet the --soft-fail-on nor '
-                             'the --hard-fail-on criteria, then the default is to hard fail',
-                        action='append',
-                        default=None)
+               help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
+                    'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                    'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use '
+                    'a severity, then any severity equal to or less than the highest severity in the list '
+                    'will result in a soft fail. This option may be used with --hard-fail-on, using the same '
+                    'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                    'taking precedence in a tie. If a given result does not meet the --soft-fail-on nor '
+                    'the --hard-fail-on criteria, then the default is to hard fail',
+               action='append',
+               default=None)
     parser.add('--hard-fail-on',
-                        help='Exits with a non-zero exit code for specified checks. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a '
-                             'severity, then any severity equal to or greater than the lowest severity in the list will '
-                             'result in a hard fail. This option can be used with --soft-fail-on, using the same '
-                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
-                             'taking precedence in a tie.',
-                        action='append',
-                        default=None)
+               help='Exits with a non-zero exit code for specified checks. Enter one or more items '
+                    'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                    'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a '
+                    'severity, then any severity equal to or greater than the lowest severity in the list will '
+                    'result in a hard fail. This option can be used with --soft-fail-on, using the same '
+                    'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                    'taking precedence in a tie.',
+               action='append',
+               default=None)
     parser.add('--bc-api-key', env_var='BC_API_KEY', sanitize=True,
                help='Bridgecrew API key or Prisma Cloud Access Key (see --prisma-api-url)')
     parser.add('--prisma-api-url', env_var='PRISMA_API_URL', default=None,
@@ -531,9 +544,12 @@ def add_parser_args(parser: ArgumentParser) -> None:
         ),
         default=None,
     )
-    parser.add('--output-baseline-as-skipped',
+    parser.add(
+        '--output-baseline-as-skipped',
         help="output checks that are skipped due to baseline file presence",
-        action='store_true', default=False)
+        action='store_true',
+        default=False,
+    )
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
@@ -586,7 +602,6 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
 
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
         logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
-
 
 
 if __name__ == '__main__':

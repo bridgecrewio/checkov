@@ -3,23 +3,16 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Sequence, Any
-from collections import defaultdict
 
+from checkov.common.sca.output import parse_vulns_to_records
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
-from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.output.common import ImageDetails
-from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_report_cve_record, create_report_license_record
 from checkov.sca_package.scanner import Scanner
-from checkov.sca_package.commons import get_resource_for_record, get_file_path_for_record, get_package_alias
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
-    integration as metadata_integration
 
 
 class Runner(BaseRunner):
@@ -115,103 +108,19 @@ class Runner(BaseRunner):
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            self.parse_vulns_to_records(
+            parse_vulns_to_records(
                 report=report,
+                check_class=self._check_class,
                 scanned_file_path=str(package_file_path),
                 rootless_file_path=rootless_file_path,
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
                 packages=packages,
                 license_statuses=license_statuses,
+                report_type=self.report_type,
             )
 
         return report
-
-    def parse_vulns_to_records(
-        self,
-        report: Report,
-        scanned_file_path: str,
-        rootless_file_path: str,
-        runner_filter: RunnerFilter,
-        vulnerabilities: list[dict[str, Any]],
-        packages: list[dict[str, Any]],
-        license_statuses: list[_LicenseStatus],
-        image_details: ImageDetails | None = None
-    ) -> None:
-        licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
-
-        for license_status in license_statuses:
-            # filling 'licenses_per_package_map', will be used in the call to 'create_report_cve_record' for efficient
-            # extracting of license per package
-            package_name, package_version, license = license_status["package_name"], license_status["package_version"], license_status["license"]
-            licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
-
-            policy = license_status["policy"]
-
-            license_record = create_report_license_record(
-                rootless_file_path=rootless_file_path,
-                file_abs_path=scanned_file_path,
-                check_class=self._check_class,
-                licenses_status=license_status
-            )
-
-            if not runner_filter.should_run_check(check_id=policy, bc_check_id=policy,
-                                                  severity=metadata_integration.get_severity(policy),
-                                                  report_type=self.report_type):
-                if runner_filter.checks:
-                    continue
-                else:
-                    license_record.check_result = {
-                        "result": CheckResult.SKIPPED,
-                        "suppress_comment": f"{policy} is skipped"
-                    }
-
-            report.add_resource(license_record.resource)
-            report.add_record(license_record)
-
-        vulnerable_packages = []
-
-        for vulnerability in vulnerabilities:
-            package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
-            cve_record = create_report_cve_record(
-                rootless_file_path=rootless_file_path,
-                file_abs_path=scanned_file_path,
-                check_class=self._check_class,
-                vulnerability_details=vulnerability,
-                licenses=', '.join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or 'Unknown',
-                runner_filter=runner_filter,
-                image_details=image_details
-            )
-
-            if not runner_filter.should_run_check(check_id=cve_record.check_id, bc_check_id=cve_record.bc_check_id,
-                                                  severity=cve_record.severity, report_type=self.report_type):
-                if runner_filter.checks:
-                    continue
-                else:
-                    cve_record.check_result = {
-                        "result": CheckResult.SKIPPED,
-                        "suppress_comment": f"{vulnerability['id']} is skipped"
-                    }
-
-            report.add_resource(cve_record.resource)
-            report.add_record(cve_record)
-            vulnerable_packages.append(get_package_alias(package_name, package_version))
-
-        for package in packages:
-            if get_package_alias(package["name"], package["version"]) not in vulnerable_packages:
-                # adding resources without cves for adding them also in the output-bom-repors
-                report.extra_resources.add(
-                    ExtraResource(
-                        file_abs_path=scanned_file_path,
-                        file_path=get_file_path_for_record(rootless_file_path),
-                        resource=get_resource_for_record(rootless_file_path, package["name"]),
-                        vulnerability_details={
-                            "package_name": package["name"],
-                            "package_version": package["version"],
-                            "licenses": ', '.join(licenses_per_package_map[get_package_alias(package["name"], package["version"])]) or 'Unknown',
-                        }
-                    )
-                )
 
     def find_scannable_files(
         self,

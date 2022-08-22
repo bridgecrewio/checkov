@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import json
 import os
+import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
+
+from schema import SchemaError  # type: ignore
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.github_actions.checks.registry import registry
+from checkov.github_actions.schema_validator import schema
 from checkov.yaml_doc.runner import Runner as YamlRunner
-
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
@@ -32,8 +36,9 @@ class Runner(YamlRunner, ImageReferencer):
         self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
-            return super()._parse_file(f)
-
+            entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] = super()._parse_file(f)
+            if entity_schema and Runner.is_schema_valid(entity_schema[0]):
+                return entity_schema
         return None
 
     def is_workflow_file(self, file_path: str) -> bool:
@@ -59,6 +64,21 @@ class Runner(YamlRunner, ImageReferencer):
             step_name = Runner.resolve_step_name(definitions["jobs"][job_name], start_line, end_line)
             new_key = f'jobs.{job_name}.steps.{step_name}'
         return new_key
+
+    @staticmethod
+    def generate_resource_key(definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        """
+        Generate resource key without the previous format of key (needed in get_resource)
+        """
+        jobs_dict: dict[str, Any] = definition.get("jobs", {})
+        for job_name, job in jobs_dict.items():
+            if not isinstance(job, dict):
+                continue
+
+            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
+                return f'jobs.{job_name}'
+
+        return ''
 
     def get_images(self, file_path: str) -> set[Image]:
         """
@@ -101,18 +121,26 @@ class Runner(YamlRunner, ImageReferencer):
             if isinstance(job_object, dict):
                 container = job_object.get("container", {})
                 image = None
-                start_line = container.get('__startline__', 0)
-                end_line = container.get('__endline__', 0)
+                start_line = 0
+                end_line = 0
+
                 if isinstance(container, dict):
                     image = container.get("image", "")
+                    start_line = container.get('__startline__', 0)
+                    end_line = container.get('__endline__', 0)
+
                 elif isinstance(container, str):
                     image = container
+                    start_line = [line_number for line_number, line in workflow_line_numbers if image in line][0]
+                    end_line = start_line + 1
+
                 if image:
                     image_obj = Image(
                         file_path=file_path,
                         name=image,
                         start_line=start_line,
                         end_line=end_line,
+                        related_resource_id=Runner.generate_resource_key(workflow, start_line, end_line)
                     )
                     images.add(image_obj)
 
@@ -148,3 +176,17 @@ class Runner(YamlRunner, ImageReferencer):
                 return cast(str, name)
 
         return ""
+
+    @staticmethod
+    def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
+        valid = False
+        try:
+            schema.validate(config)
+            valid = True
+        except SchemaError as e:
+            logging.info(f'Given entity configuration does not match the schema\n'
+                         f'config={json.dumps(config, indent=4)}\n'
+                         f'schema={json.dumps(schema.json_schema("https://example.com/my-schema.json"), indent=4)}')
+            logging.info(f'Error: {e}', exc_info=e)
+
+        return valid

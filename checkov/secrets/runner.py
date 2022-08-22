@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, cast
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
-from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -33,6 +32,7 @@ from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
+    from detect_secrets.core.potential_secret import PotentialSecret
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
@@ -252,7 +252,7 @@ class Runner(BaseRunner[None]):
     def search_for_suppression(
             check_id: str,
             bc_check_id: str,
-            severity: Severity,
+            severity: Severity | None,
             secret: PotentialSecret,
             runner_filter: RunnerFilter
     ) -> _CheckResult | None:
