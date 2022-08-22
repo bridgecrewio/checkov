@@ -203,7 +203,7 @@ class RunnerFilter(object):
             return True
         return check_id in self.filtered_policy_ids
     
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self):
         result = {}
         result['framework'] = self.framework
         result['checks'] = self.checks
