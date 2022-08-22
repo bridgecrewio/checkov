@@ -3,12 +3,13 @@ from __future__ import annotations
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List, TYPE_CHECKING, Dict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from helm.runner import Runner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -202,3 +203,68 @@ class RunnerFilter(object):
         if not self.filtered_policy_ids:
             return True
         return check_id in self.filtered_policy_ids
+    
+    def to_dict(self) -> Dict[str, Any]:
+        result = {}
+        result['framework'] = self.framework
+        result['checks'] = self.checks
+        result['skip_checks'] = self.skip_checks
+        result['include_all_checkov_policies'] = self.include_all_checkov_policies
+        result['download_external_modules'] = self.download_external_modules
+        result['external_modules_download_path'] = self.external_modules_download_path
+        result['evaluate_variables'] = self.evaluate_variables
+        result['runners'] = self.runners
+        result['skip_framework'] = self.skip_framework
+        result['excluded_paths'] = self.excluded_paths
+        result['all_external'] = self.all_external
+        result['var_files'] = self.var_files
+        result['skip_cve_package'] = self.skip_cve_package
+        result['use_enforcement_rules'] = self.use_enforcement_rules
+        result['filtered_policy_ids'] = self.filtered_policy_ids
+        result['show_progress_bar'] = self.show_progress_bar
+        result['secrets_scan_file_type'] = self.secrets_scan_file_type
+        result['run_image_referencer'] = self.run_image_referencer
+        return result
+
+    @staticmethod
+    def from_dict(obj: Dict[str, Any]) -> RunnerFilter:
+        framework = obj.get('framework')
+        checks = obj.get('checks')
+        skip_checks = obj.get('skip_checks')
+        include_all_checkov_policies = obj.get('include_all_checkov_policies')
+        if include_all_checkov_policies is None:
+            include_all_checkov_policies = True
+        download_external_modules = obj.get('download_external_modules')
+        if download_external_modules is None:
+            download_external_modules = False
+        external_modules_download_path = obj.get('external_modules_download_path')
+        if external_modules_download_path is None:
+            external_modules_download_path = DEFAULT_EXTERNAL_MODULES_DIR
+        evaluate_variables = obj.get('evaluate_variables')
+        if evaluate_variables is None:
+            evaluate_variables = True
+        runners = obj.get('runners')
+        skip_framework = obj.get('skip_framework')
+        excluded_paths = obj.get('excluded_paths')
+        all_external = obj.get('all_external')
+        if all_external is None:
+            all_external = False
+        var_files = obj.get('var_files')
+        skip_cve_package = obj.get('skip_cve_package')
+        use_enforcement_rules = obj.get('use_enforcement_rules')
+        if use_enforcement_rules is None:
+            use_enforcement_rules = False
+        filtered_policy_ids = obj.get('filtered_policy_ids')
+        show_progress_bar = obj.get('show_progress_bar')
+        if show_progress_bar is None:
+            show_progress_bar = True
+        secrets_scan_file_type = obj.get('secrets_scan_file_type')
+        run_image_referencer = obj.get('run_image_referencer')
+        if run_image_referencer is None:
+            run_image_referencer = False
+        runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
+                                     download_external_modules, external_modules_download_path, evaluate_variables,
+                                     runners, skip_framework, excluded_paths, all_external, var_files, skip_cve_package,
+                                     use_enforcement_rules, filtered_policy_ids, show_progress_bar,
+                                     secrets_scan_file_type, run_image_referencer)
+        return runner_filter
