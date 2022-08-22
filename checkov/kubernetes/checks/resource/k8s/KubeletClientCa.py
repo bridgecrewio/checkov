@@ -17,10 +17,10 @@ class KubeletClientCa(BaseK8sContainerCheck):
             if "kubelet" in conf["command"]:
                 for command in conf["command"]:
                     if command.startswith("--client-ca-file"):
-                        if len(command.split("=")) == 2: 
+                        if len(command.split("=")) == 2:
                             if (command.split("=")[1]).strip() != '':
                                 return CheckResult.PASSED
-                        return CheckResult.FAILED                     
+                        return CheckResult.FAILED
                 return CheckResult.FAILED
 
 

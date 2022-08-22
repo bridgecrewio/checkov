@@ -21,7 +21,7 @@ class IAMRoleAllowsPublicAssume(BaseResourceCheck):
             if isinstance(assume_role_policy_doc, str):
                 try:
                     assume_role_policy_doc = json.loads(assume_role_policy_doc)
-                except Exception as e:
+                except Exception:
                     return CheckResult.UNKNOWN
             if isinstance(assume_role_policy_doc, dict) and assume_role_policy_doc.get("Statement"):
                 statements = assume_role_policy_doc["Statement"]
