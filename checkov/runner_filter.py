@@ -9,7 +9,6 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeC
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
-from helm.runner import Runner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
