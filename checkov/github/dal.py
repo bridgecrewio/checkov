@@ -42,7 +42,6 @@ class Github(BaseVCSDAL):
         self.default_branch_cache = {}
         self.org = os.getenv('GITHUB_ORG', '')
 
-
     def _headers(self):
         return {"Accept": "application/vnd.github.v3+json",
                 "Authorization": "token {}".format(self.token)}
