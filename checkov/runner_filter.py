@@ -261,7 +261,7 @@ class RunnerFilter(object):
             run_image_referencer = False
         runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
                                      download_external_modules, external_modules_download_path, evaluate_variables,
-                                     runners, skip_framework, excluded_paths, all_external, var_files, skip_cve_package,
-                                     use_enforcement_rules, filtered_policy_ids, show_progress_bar,
+                                     runners, skip_framework, excluded_paths, all_external, var_files,
+                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
                                      secrets_scan_file_type, run_image_referencer)
         return runner_filter
