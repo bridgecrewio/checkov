@@ -54,6 +54,42 @@ class TestRunnerValid(unittest.TestCase):
         )
         report.print_console()
 
+    def test_pre_validate_non_openapi_file(self) -> None:
+        runner = Runner()
+        file_content = """
+                    '---
+            :audit_id: 2018-04-23T224508479Z
+            :status_id: 2018-04-23T224508479Z
+            :environment: ss-uw1-stg
+            :ref: 1.0.0-86-d9c550ede2e6b64ce3b758769e755c2a6584478c
+            :repo: email_classifier
+            :creator: deploybot
+            :task: deployment
+            :status: :pending
+            :description: \'\'
+            '
+        """
+        result = runner.pre_validate_file(file_content)
+        self.assertFalse(result)
+
+    def test_pre_validate_openapi_file(self) -> None:
+        runner = Runner()
+        file_content = """
+            'openapi: 3.0.0
+                info:
+                  title: test
+                  version: 1.0.0
+                security:
+                - test: []
+                components:
+                  securitySchemes:
+                  - test:
+                      type: http
+                      scheme: basic
+                '
+        """
+        result = runner.pre_validate_file(file_content)
+        self.assertTrue(result)
 
 if __name__ == "__main__":
     unittest.main()

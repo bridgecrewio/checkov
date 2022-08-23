@@ -101,8 +101,6 @@ class Runner(YamlRunner, JsonRunner):
         return content
 
     def pre_validate_file(self, file_content: str) -> bool:
-        # openapi_keywords = re.compile(r"(openapi)|(swagger)")
-        # match = re.search(openapi_keywords, file_content)
         openapi_keywords = ["swagger", "openapi"]
         match = any(keyword in file_content for keyword in openapi_keywords)
         if match:
