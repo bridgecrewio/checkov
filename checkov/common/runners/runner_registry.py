@@ -368,7 +368,10 @@ class RunnerRegistry:
             csv_sbom_report = CSVSBOM()
             for report in scan_reports:
                 if not report.is_empty():
-                    git_org, git_repository = account_id.split('/')
+                    if account_id:
+                        git_org, git_repository = account_id.split('/')
+                    else:
+                        git_org, git_repository = "", ""
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
