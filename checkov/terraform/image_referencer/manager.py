@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
-from checkov.terraform.image_referencer.azure import extract_images_from_azure_resources
+from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
+from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
@@ -19,7 +19,10 @@ class TerraformImageReferencerManager:
     def extract_images_from_resources(self) -> list[Image]:
         images = []
 
-        images.extend(extract_images_from_aws_resources(graph_connector=self.graph_connector))
-        images.extend(extract_images_from_azure_resources(graph_connector=self.graph_connector))
+        aws_provider = AwsTerraformProvider(graph_connector=self.graph_connector)
+        azure_provider = AzureTerraformProvider(graph_connector=self.graph_connector)
+
+        images.extend(aws_provider.extract_images_from_resources())
+        images.extend(azure_provider.extract_images_from_resources())
 
         return images

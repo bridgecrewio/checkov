@@ -1,10 +1,10 @@
 from networkx import DiGraph
 
 from checkov.common.images.image_referencer import Image
-from checkov.terraform.image_referencer.azure import extract_images_from_azure_resources
+from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 
 
-def test_extract_images_from_azure_resources():
+def extract_images_from_resources():
     # given
     resource = {
         "file_path_": "/batch.tf",
@@ -25,7 +25,8 @@ def test_extract_images_from_azure_resources():
     graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_azure_resources(graph_connector=graph)
+    azure_provider = AzureTerraformProvider(graph_connector=graph)
+    images = azure_provider.extract_images_from_resources()
 
     # then
     assert images == [
@@ -34,7 +35,7 @@ def test_extract_images_from_azure_resources():
     ]
 
 
-def test_extract_images_from_aws_resources_with_no_image():
+def test_extract_images_from_resources_with_no_image():
     # given
     resource = {
         "file_path_": "/batch.tf",
@@ -55,7 +56,8 @@ def test_extract_images_from_aws_resources_with_no_image():
     graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_azure_resources(graph_connector=graph)
+    azure_provider = AzureTerraformProvider(graph_connector=graph)
+    images = azure_provider.extract_images_from_resources()
 
     # then
     assert not images
