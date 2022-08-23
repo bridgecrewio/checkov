@@ -64,7 +64,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.parsing_errors), 0)
         
     @unittest.skipIf(not helm_exists(), "helm not installed")
-    def test_runner_ghost(self):
+    def test_runner_invalid_chart(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "runner", "resources", "schema-registry")
 
