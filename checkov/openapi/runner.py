@@ -8,6 +8,7 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
+from pathlib import Path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -37,7 +38,6 @@ class Runner(YamlRunner, JsonRunner):
             return self.parse_format(f, JsonRunner._parse_file)
         elif f.endswith(".yml") or f.endswith(".yaml"):
             return self.parse_format(f, YamlRunner._parse_file)
-
         return None
 
     def parse_format(
@@ -46,7 +46,14 @@ class Runner(YamlRunner, JsonRunner):
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         try:
-            parsed_file = func(self, f)
+            if f.endswith(".json"):
+                parsed_file = func(self, f)
+            elif f.endswith(".yml") or f.endswith(".yaml"):
+                content = self.load_yaml_file(f)
+                valid_openapi_file = self.pre_validate_file(content)
+                if not valid_openapi_file:
+                    return None
+                parsed_file = func(self, f, content)
             if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
                 return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
         except ValueError:
@@ -87,3 +94,17 @@ class Runner(YamlRunner, JsonRunner):
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         return ",".join(supported_entities)
+
+    def load_yaml_file(self, filename: str | Path) -> str:
+        file_path = filename if isinstance(filename, Path) else Path(filename)
+        content = file_path.read_text()
+        return content
+
+    def pre_validate_file(self, file_content: str) -> bool:
+        # openapi_keywords = re.compile(r"(openapi)|(swagger)")
+        # match = re.search(openapi_keywords, file_content)
+        openapi_keywords = ["swagger", "openapi"]
+        match = any(keyword in file_content for keyword in openapi_keywords)
+        if match:
+            return True
+        return False
