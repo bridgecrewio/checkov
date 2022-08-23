@@ -182,7 +182,7 @@ class CSVSBOM:
             for header in HEADER_OSS_PACKAGES:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
-                    csv_output += f'{field}'
+                    csv_output += f'\"{field}\"'
                 elif header == 'Licenses':
                     csv_output += f',\"{field}\"'
                 else:
