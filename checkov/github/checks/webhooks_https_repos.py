@@ -31,6 +31,8 @@ class WebhookHttpsRepo(BaseGithubCheck):
                     insecure_ssl = item_config.get('insecure_ssl', '0')
                     if re.match("^http://", url) or insecure_ssl != '0':
                         return CheckResult.FAILED, item_config
+        if repository_webhooks_schema.validate(conf):
+            return CheckResult.PASSED, conf
 
 
 check = WebhookHttpsRepo()
