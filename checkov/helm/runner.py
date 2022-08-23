@@ -169,7 +169,7 @@ class Runner(BaseRunner):
         return target_dir
 
     @staticmethod 
-    def _get_binary_output(chart_item, target_dir, helm_command, runner_filter):
+    def get_binary_output(chart_item, target_dir, helm_command, runner_filter):
         (chart_dir, chart_meta) = chart_item
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
@@ -218,7 +218,7 @@ class Runner(BaseRunner):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         if not target_dir:
             return
-        o, _ = Runner._get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
+        o, _ = Runner.get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         try:
             Runner._parse_output(target_dir, o)
         except Exception:
