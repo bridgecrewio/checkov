@@ -385,7 +385,7 @@ class Runner(BaseRunner):
         
     @staticmethod
     def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
-        output = Runner.get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand)
+        output, _ = Runner.get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand)
         if not output:
             return
         Runner._parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings)
