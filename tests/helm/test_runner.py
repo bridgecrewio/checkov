@@ -42,7 +42,7 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             self.assertIn(record.repo_file_path, record.file_path)
         for resource in report.resources:
-            self.assertIn('/infrastructure/helm-tiller/pwnchart/templates', resource)
+            self.assertIn('/helm-tiller/pwnchart/templates', resource)
 
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_honors_enforcement_rules(self):
@@ -72,12 +72,9 @@ class TestRunnerValid(unittest.TestCase):
         filter = RunnerFilter(framework=['helm'], use_enforcement_rules=False)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-        try:
-            report = runner.run(
-                root_folder=scan_dir_path, runner_filter=filter
-            )
-        except Exception:
-            assert 1 == 2
+        report = runner.run(
+            root_folder=scan_dir_path, runner_filter=filter
+        )
 
         self.assertEqual(len(report.failed_checks), 0)
 
