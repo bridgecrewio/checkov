@@ -205,22 +205,8 @@ class RunnerFilter(object):
     
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
-        result['framework'] = self.framework
-        result['checks'] = self.checks
-        result['skip_checks'] = self.skip_checks
-        result['include_all_checkov_policies'] = self.include_all_checkov_policies
-        result['download_external_modules'] = self.download_external_modules
-        result['external_modules_download_path'] = self.external_modules_download_path
-        result['evaluate_variables'] = self.evaluate_variables
-        result['excluded_paths'] = self.excluded_paths
-        result['all_external'] = self.all_external
-        result['var_files'] = self.var_files
-        result['skip_cve_package'] = self.skip_cve_package
-        result['use_enforcement_rules'] = self.use_enforcement_rules
-        result['filtered_policy_ids'] = self.filtered_policy_ids
-        result['show_progress_bar'] = self.show_progress_bar
-        result['secrets_scan_file_type'] = self.secrets_scan_file_type
-        result['run_image_referencer'] = self.run_image_referencer
+        for key, value in self.__dict__.items():
+            result[key] = value
         return result
 
     @staticmethod
