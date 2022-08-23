@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import fnmatch
 from collections.abc import Iterable
-from typing import Set, Optional, Union, List, TYPE_CHECKING, Dict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
@@ -202,3 +202,52 @@ class RunnerFilter(object):
         if not self.filtered_policy_ids:
             return True
         return check_id in self.filtered_policy_ids
+    
+    def to_dict(self) -> Dict[str, Any]:
+        result: Dict[str, Any] = {}
+        for key, value in self.__dict__.items():
+            result[key] = value
+        return result
+
+    @staticmethod
+    def from_dict(obj: Dict[str, Any]) -> RunnerFilter:
+        framework = obj.get('framework')
+        checks = obj.get('checks')
+        skip_checks = obj.get('skip_checks')
+        include_all_checkov_policies = obj.get('include_all_checkov_policies')
+        if include_all_checkov_policies is None:
+            include_all_checkov_policies = True
+        download_external_modules = obj.get('download_external_modules')
+        if download_external_modules is None:
+            download_external_modules = False
+        external_modules_download_path = obj.get('external_modules_download_path')
+        if external_modules_download_path is None:
+            external_modules_download_path = DEFAULT_EXTERNAL_MODULES_DIR
+        evaluate_variables = obj.get('evaluate_variables')
+        if evaluate_variables is None:
+            evaluate_variables = True
+        runners = obj.get('runners')
+        skip_framework = obj.get('skip_framework')
+        excluded_paths = obj.get('excluded_paths')
+        all_external = obj.get('all_external')
+        if all_external is None:
+            all_external = False
+        var_files = obj.get('var_files')
+        skip_cve_package = obj.get('skip_cve_package')
+        use_enforcement_rules = obj.get('use_enforcement_rules')
+        if use_enforcement_rules is None:
+            use_enforcement_rules = False
+        filtered_policy_ids = obj.get('filtered_policy_ids')
+        show_progress_bar = obj.get('show_progress_bar')
+        if show_progress_bar is None:
+            show_progress_bar = True
+        secrets_scan_file_type = obj.get('secrets_scan_file_type')
+        run_image_referencer = obj.get('run_image_referencer')
+        if run_image_referencer is None:
+            run_image_referencer = False
+        runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
+                                     download_external_modules, external_modules_download_path, evaluate_variables,
+                                     runners, skip_framework, excluded_paths, all_external, var_files,
+                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
+                                     secrets_scan_file_type, run_image_referencer)
+        return runner_filter
