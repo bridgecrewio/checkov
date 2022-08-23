@@ -166,7 +166,7 @@ class Runner(YamlRunner, ImageReferencer):
 
     @staticmethod
     def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for step in job_definition.get('steps', {}):
+        for step in [step for step in job_definition.get('steps', {}) if step is not None]:
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
                 try:
                     name = step["name"]
@@ -180,6 +180,8 @@ class Runner(YamlRunner, ImageReferencer):
     @staticmethod
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
+        if isinstance(config, dict):
+            config = [config]
         try:
             schema.validate(config)
             valid = True
