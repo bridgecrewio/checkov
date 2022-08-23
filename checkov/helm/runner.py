@@ -201,7 +201,7 @@ class Runner(BaseRunner):
             if e:
                 logging.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
-                return None
+                return None, None
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
             return o, chart_item
@@ -211,7 +211,7 @@ class Runner(BaseRunner):
                 f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
                 exc_info=True,
             )
-            return None 
+            return None, None
 
     @staticmethod
     def _convert_chart_to_k8s(chart_item, root_folder, target_folder_path, helm_command, runner_filter):
