@@ -345,7 +345,7 @@ class RunnerRegistry:
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
                               output_types: list[str],
-                              account_id: str | None = None) -> dict[str, str]:
+                              account_id: str | None = None) -> dict[str, str]: # type:ignore[union-attr]  # None will be removed after method calling print_iac_bom_reports will be removed
 
         output_files = {
             'cyclonedx': 'results_cyclonedx.xml',
