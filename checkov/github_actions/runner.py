@@ -11,6 +11,7 @@ from schema import SchemaError  # type: ignore
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.type_forcers import force_list
 from checkov.github_actions.checks.registry import registry
 from checkov.github_actions.schema_validator import schema
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -180,8 +181,7 @@ class Runner(YamlRunner, ImageReferencer):
     @staticmethod
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
-        if isinstance(config, dict):
-            config = [config]
+        config = force_list(config)
         try:
             schema.validate(config)
             valid = True
