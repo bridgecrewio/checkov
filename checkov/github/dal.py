@@ -49,7 +49,7 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="repos/{}/{}/branches/{}/protection".format(self.repo_owner, self.current_repository, self.current_branch),
+                endpoint=f"repos/{self.repo_owner}/{self.current_repository}/branches/{self.current_branch}/protection",
                 allowed_status_codes=[200, 404])
             return branch_protection_rules
         return None
