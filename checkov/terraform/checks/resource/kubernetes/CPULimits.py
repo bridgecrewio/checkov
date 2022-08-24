@@ -21,6 +21,8 @@ class CPULimits(BaseResourceCheck):
         spec = conf['spec'][0]
 
         containers = spec.get("container")
+        if not containers:
+            return CheckResult.PASSED
         for idx, container in enumerate(containers):
             if type(container) != dict:
                 return CheckResult.UNKNOWN
