@@ -205,7 +205,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                     end_line: int = job_instance.get(END_LINE, -1)
                     end_line_to_job_name_dict[end_line] = job_name
 
-                    steps = [step for step in job_instance.get('steps', []) if step]
+                    steps = [step for step in job_instance.get('steps', []) or [] if step]
                     if steps:
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name

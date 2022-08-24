@@ -167,7 +167,7 @@ class Runner(YamlRunner, ImageReferencer):
 
     @staticmethod
     def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for step in [step for step in job_definition.get('steps', []) if step]:
+        for step in [step for step in job_definition.get('steps', []) or [] if step]:
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
                 try:
                     name = step["name"]
