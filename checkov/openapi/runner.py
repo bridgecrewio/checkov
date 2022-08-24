@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
 _ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
-_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
+_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
 
