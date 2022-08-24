@@ -195,7 +195,7 @@ resource "kubernetes_pod" "pass" {
   }
 }
 
-resource "kubernetes_pod" "pass2" {
+resource "kubernetes_pod" "unknown" {
   metadata {
     name = "terraform-example"
   }

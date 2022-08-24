@@ -22,7 +22,7 @@ class CPULimits(BaseResourceCheck):
 
         containers = spec.get("container")
         if not containers:
-            return CheckResult.PASSED
+            return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
             if type(container) != dict:
                 return CheckResult.UNKNOWN
