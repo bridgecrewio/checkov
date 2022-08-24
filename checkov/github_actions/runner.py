@@ -11,6 +11,7 @@ from schema import SchemaError  # type: ignore
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.type_forcers import force_list
 from checkov.github_actions.checks.registry import registry
 from checkov.github_actions.schema_validator import schema
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -166,7 +167,7 @@ class Runner(YamlRunner, ImageReferencer):
 
     @staticmethod
     def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for step in job_definition.get('steps', {}):
+        for step in [step for step in job_definition.get('steps', []) or [] if step]:
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
                 try:
                     name = step["name"]
@@ -180,13 +181,13 @@ class Runner(YamlRunner, ImageReferencer):
     @staticmethod
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
+        config = force_list(config)
         try:
             schema.validate(config)
             valid = True
-        except SchemaError as e:
+        except SchemaError:
             logging.info(f'Given entity configuration does not match the schema\n'
                          f'config={json.dumps(config, indent=4)}\n'
                          f'schema={json.dumps(schema.json_schema("https://example.com/my-schema.json"), indent=4)}')
-            logging.info(f'Error: {e}', exc_info=e)
 
         return valid
