@@ -185,10 +185,9 @@ class Runner(YamlRunner, ImageReferencer):
         try:
             schema.validate(config)
             valid = True
-        except SchemaError as e:
+        except SchemaError:
             logging.info(f'Given entity configuration does not match the schema\n'
                          f'config={json.dumps(config, indent=4)}\n'
                          f'schema={json.dumps(schema.json_schema("https://example.com/my-schema.json"), indent=4)}')
-            logging.info(f'Error: {e}', exc_info=e)
 
         return valid
