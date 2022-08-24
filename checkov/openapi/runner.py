@@ -13,8 +13,8 @@ from pathlib import Path
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-_ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
-_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
+_ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
+_ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class Runner(YamlRunner, JsonRunner):
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         try:
             if f.endswith(".json"):
-                parsed_file = func(self, f)
+                parsed_file = func(self, f, None)
             elif f.endswith(".yml") or f.endswith(".yaml"):
                 content = self.load_yaml_file(f)
                 valid_openapi_file = self.pre_validate_file(content)
