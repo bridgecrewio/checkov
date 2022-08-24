@@ -21,7 +21,7 @@ class Runner(ObjectRunner):
         return registry
 
     def _parse_file(  # type:ignore[override]  # expected behaviour but should be aligned
-        self, f: str
+        self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None:
         if not f.endswith(".json"):
             return None
