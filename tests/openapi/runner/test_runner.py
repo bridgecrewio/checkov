@@ -95,6 +95,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_results_consistency(self) -> None:
         current_dir = os.path.dirname(__file__)
         valid_dir_path = os.path.join(current_dir, "resources")
+        results_file_path = os.path.join(current_dir, "resources/runner_results/results.sarif")
         runner = Runner()
         checks = ["CKV_OPENAPI_1", "CKV_OPENAPI_4", "CKV_OPENAPI_3"]
         report = runner.run(
@@ -106,11 +107,12 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(report.skipped_checks, [])
 
-        with open("resources/runner_results/results.sarif") as f:
+        with open(results_file_path) as f:
             expected_report_dict = json.loads(f.read())
         json_sarif_report = report.get_sarif_json("test")
         del json_sarif_report["runs"][0]["tool"]
         self.assertEqual(json_sarif_report, expected_report_dict)
+
 
 if __name__ == "__main__":
     unittest.main()
