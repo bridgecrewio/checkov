@@ -18,10 +18,10 @@ class TestConnectInstanceS3StorageConfigUsesCMK(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_aws_connect_instance_storage_config.pass",
+            "aws_connect_instance_storage_config.pass",
         }
         failing_resources = {
-            "aws_aws_connect_instance_storage_config.fail",
+            "aws_connect_instance_storage_config.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

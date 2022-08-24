@@ -12,7 +12,7 @@ class ConnectInstanceS3StorageConfigUsesCMK(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return 'storage_config/[0]s3_config/[0]/encryption_config/[0]/key_id'
+        return 'storage_config/[0]/s3_config/[0]/encryption_config/[0]/key_id'
 
     def get_expected_value(self):
         return ANY_VALUE
