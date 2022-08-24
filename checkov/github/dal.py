@@ -29,7 +29,7 @@ class Github(BaseVCSDAL):
         self.graphql_api_url = f"{self.api_url}/graphql"
 
         self.token = os.getenv('GITHUB_TOKEN', '')
-
+        self.repo_owner = os.getenv('GITHUB_REPO_OWNER', '')
         self.current_repository = os.getenv('GITHUB_REPOSITORY', '')
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
         if not self.current_branch:
@@ -49,7 +49,7 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch),
+                endpoint=f"repos/{self.repo_owner}/{self.current_repository}/branches/{self.current_branch}/protection",
                 allowed_status_codes=[200, 404])
             return branch_protection_rules
         return None

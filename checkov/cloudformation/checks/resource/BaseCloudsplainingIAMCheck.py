@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import json
 import logging
 from abc import abstractmethod
-from typing import Dict
 from collections import defaultdict
+from typing import Any
+
 from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
@@ -15,14 +18,23 @@ from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_c
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
-    policy_document_cache: Dict[str, Dict[str, PolicyDocument]] = defaultdict(lambda: defaultdict(PolicyDocument))
+    policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(lambda: defaultdict(PolicyDocument))  # noqa: CCE003
 
-    def __init__(self, name, id):
-        super().__init__(name=name, id=id, categories=[CheckCategories.IAM],
-            supported_resources=["AWS::IAM::Policy", "AWS::IAM::ManagedPolicy", "AWS::IAM::Group",
-            "AWS::IAM::Role", "AWS::IAM::User"])
+    def __init__(self, name: str, id: str) -> None:
+        super().__init__(
+            name=name,
+            id=id,
+            categories=[CheckCategories.IAM],
+            supported_resources=[
+                "AWS::IAM::Policy",
+                "AWS::IAM::ManagedPolicy",
+                "AWS::IAM::Group",
+                "AWS::IAM::Role",
+                "AWS::IAM::User",
+            ]
+        )
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if conf.get('Properties'):
             props_conf = conf['Properties']
             policies_key = 'Policies'
@@ -66,5 +78,5 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
 
     @multi_signature()
     @abstractmethod
-    def cloudsplaining_analysis(self, policy):
+    def cloudsplaining_analysis(self, policy: PolicyDocument) -> list[str]:
         raise NotImplementedError()

@@ -148,7 +148,7 @@ def admission_response(allowed, uid, message):
                     }
                     })
 
-def getConfig(configfile):  
+def getConfig(configfile):
     cf = {}
     with open(configfile) as myfile:
         for line in myfile:

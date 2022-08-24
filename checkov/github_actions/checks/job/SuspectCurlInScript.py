@@ -13,7 +13,7 @@ class SuspectCurlInScript(BaseGithubActionsCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['jobs','jobs.*.steps[]']
+            supported_entities=('jobs', 'jobs.*.steps[]')
         )
 
     def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
@@ -21,7 +21,7 @@ class SuspectCurlInScript(BaseGithubActionsCheck):
             return CheckResult.UNKNOWN, conf
         run = conf.get("run", "")
         if "curl" in run:
-            badstuff = ['curl','secret']
+            badstuff = ('curl', 'secret')
             lines = run.split("\n")
             for line in lines:
                 if all(x in line for x in badstuff):

@@ -48,6 +48,6 @@ jobs:
         if: steps.prepare_release.outputs.create_release == 'true'
         uses: BobAnkh/auto-generate-changelog@4a2eb69805db4af39f374dc95eb502669fb4af95  # v1
         with:
-          ACCESS_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.GH_PAT_SECRET }}
           PATH: "CHANGELOG.md"
-          TYPE: "feat:Feature,fix:Bug Fix,break:Breaking Change,docs:Documentation"
+          TYPE: "feat:Feature,fix:Bug Fix,break:Breaking Change,platform:Platform,docs:Documentation"

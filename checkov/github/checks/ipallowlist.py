@@ -1,7 +1,7 @@
 from checkov.github.base_github_org_security import OrgSecurity
 
 
-class Github2FA(OrgSecurity):
+class GithubIPAllowList(OrgSecurity):
     def __init__(self):
         name = "Ensure GitHub organization security settings has IP allow list enabled"
         id = "CKV_GITHUB_3"
@@ -17,4 +17,4 @@ class Github2FA(OrgSecurity):
         return "ENABLED"
 
 
-check = Github2FA()
+check = GithubIPAllowList()

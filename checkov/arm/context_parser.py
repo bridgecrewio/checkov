@@ -62,7 +62,7 @@ class ContextParser(object):
                 param = re.sub(
                     re.compile(r"\[variables\('|'\)]"),
                     "",
-                    self._get_from_dict(dict(self.arm_template),key_entry[:-1])[key_entry[-1]],
+                    self._get_from_dict(dict(self.arm_template), key_entry[:-1])[key_entry[-1]],
                 )
                 if param in variable_values.keys():
                     self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])

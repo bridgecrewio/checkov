@@ -344,7 +344,8 @@ class RunnerRegistry:
 
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
-                              output_types: list[str]) -> dict[str, str]:
+                              output_types: list[str],
+                              account_id: str | None = None) -> dict[str, str]:
 
         output_files = {
             'cyclonedx': 'results_cyclonedx.xml',
@@ -367,7 +368,11 @@ class RunnerRegistry:
             csv_sbom_report = CSVSBOM()
             for report in scan_reports:
                 if not report.is_empty():
-                    csv_sbom_report.add_report(report=report, git_org="", git_repository="")
+                    if account_id:
+                        git_org, git_repository = account_id.split('/')
+                    else:
+                        git_org, git_repository = "", ""
+                    csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
         return {key: os.path.join(output_path, value) for key, value in output_files.items()}
