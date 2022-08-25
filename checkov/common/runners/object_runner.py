@@ -133,7 +133,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end, ''),
                         triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
