@@ -279,6 +279,11 @@ class CycloneDX:
           <source>
             <name>checkov</name>
           </source>
+          <ratings>
+            <rating>
+              <severity>medium</severity>
+            </rating>
+          </ratings>
           <description>Resource: aws_s3_bucket.example. Ensure all data stored in the S3 bucket have versioning enabled</description>
           <advisories>
             <advisory>
@@ -297,9 +302,18 @@ class CycloneDX:
         if resource.guideline:
             advisories = [VulnerabilityAdvisory(url=XsUri(resource.guideline))]
 
+        severity = VulnerabilitySeverity.UNKNOWN
+        if resource.severity:
+            severity = BC_SEVERITY_TO_CYCLONEDX_LEVEL.get(resource.severity.name, VulnerabilitySeverity.UNKNOWN)
+
         vulnerability = Vulnerability(
             id=resource.check_id,
             source=VulnerabilitySource(name="checkov"),
+            ratings=[
+                VulnerabilityRating(
+                    severity=severity,
+                )
+            ],
             description=f"Resource: {resource.resource}. {resource.check_name}",
             affects_targets=[BomTarget(ref=component.bom_ref.value)],
             advisories=advisories,
