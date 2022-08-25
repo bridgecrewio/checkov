@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
 
+from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
-from cyclonedx.model.component import Component, ComponentType
 from pytest_mock import MockerFixture
 
 from checkov.common.output.common import ImageDetails
@@ -37,7 +38,10 @@ def test_valid_cyclonedx_bom():
     assert component.purl.version.startswith('sha1:')
     assert component.type == ComponentType.APPLICATION
 
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+    vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
+    assert len(vulnerabilities) == 4
+    # doesn't matter which vulnerability, they are all unknown for runs without platform connection
+    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
     assert "http://cyclonedx.org/schema/bom/1.4" in output
 
@@ -109,6 +113,10 @@ def test_valid_cyclonedx_image_bom():
     assert package_component.version == "7.74.0-1.3+deb11u1"
     assert len(package_component.licenses) == 1
     assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
+
+    vulnerabilities = package_component.get_vulnerabilities()
+    assert len(vulnerabilities) == 1
+    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
 
     image_purl = PackageURL(
         name='Dockerfile',
