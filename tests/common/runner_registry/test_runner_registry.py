@@ -224,6 +224,13 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertEqual(expected_git_repo, result_git_repo)
         self.assertEqual(expected_git_org, result_git_org)
 
+        account_id = "name"
+        expected_git_org = ""
+        expected_git_repo = ""
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
         account_id = ""
         expected_git_org = ""
         expected_git_repo = ""

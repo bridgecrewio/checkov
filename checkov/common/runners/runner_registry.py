@@ -463,13 +463,10 @@ class RunnerRegistry:
 
     @staticmethod
     def extract_git_info_from_account_id(account_id: str | None) -> tuple[str, str]:
-        if account_id:
-            try:
-                account_id_list = account_id.split('/')
-                git_org = '/'.join(account_id_list[0:-1])
-                git_repository = account_id_list[-1]
-            except Exception:
-                git_org, git_repository = "", ""
+        if account_id and '/' in account_id:
+            account_id_list = account_id.split('/')
+            git_org = '/'.join(account_id_list[0:-1])
+            git_repository = account_id_list[-1]
         else:
             git_org, git_repository = "", ""
 
