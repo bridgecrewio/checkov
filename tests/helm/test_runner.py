@@ -23,7 +23,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "infrastructure")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace("\\", "/")
@@ -42,12 +42,12 @@ class TestRunnerValid(unittest.TestCase):
         for record in all_checks:
             self.assertIn(record.repo_file_path, record.file_path)
         for resource in report.resources:
-            self.assertIn('/infrastructure/helm-tiller/pwnchart/templates', resource)
+            self.assertIn('/helm-tiller/pwnchart/templates', resource)
 
     @unittest.skipIf(not helm_exists(), "helm not installed")
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "infrastructure")
 
         runner = Runner()
         filter = RunnerFilter(framework=['helm'], use_enforcement_rules=True)
@@ -62,6 +62,21 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
+        
+    @unittest.skipIf(not helm_exists(), "helm not installed")
+    def test_runner_invalid_chart(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "schema-registry")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['helm'], use_enforcement_rules=False)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        report = runner.run(
+            root_folder=scan_dir_path, runner_filter=filter
+        )
+
+        self.assertEqual(len(report.failed_checks), 0)
 
 
 if __name__ == "__main__":

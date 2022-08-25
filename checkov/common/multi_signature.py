@@ -21,7 +21,7 @@ class _MultiSignataureMethod(Protocol):
         ...
 
 
-class MultiSignatureMeta(ABCMeta):
+class MultiSignatureMeta(ABCMeta):  # noqa: B024  # needs to be ABCMeta, because of the super().__new__ call
     __multi_signature_methods__: dict[str, _MultiSignataureMethod]  # noqa: CCE003
 
     def __new__(cls, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> MultiSignatureMeta:

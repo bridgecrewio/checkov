@@ -17,7 +17,7 @@ class SuspectCurlInScript(BaseGitlabCICheck):
 
     def scan_entity_conf(self, conf):
         if "curl" in conf:
-            badstuff = ['curl','$CI_']
+            badstuff = ('curl', '$CI_')
             lines = conf.split("\n")
             for line in lines:
                 if all(x in line for x in badstuff):

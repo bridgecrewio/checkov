@@ -102,8 +102,8 @@ class TestBomOutput:
 
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"\"\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"Apache-2.0\"\n"
+            "\"flask\",0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"\"\n"
+            "\"requests\",,/requirements.txt,acme,bridgecrewio/example,,,\"Apache-2.0\"\n"
         )
 
         assert csv_output_str == expected_csv
@@ -188,8 +188,8 @@ class TestBomOutput:
 
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "mariadb-10.5,1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"Unknown\"\n"
-            "requests,,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\"\"\n"
+            "\"mariadb-10.5\",1:10.5.15-0+deb11u1,/example/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,CVE-2022-32091,CRITICAL,\"Unknown\"\n"
+            "\"requests\",,/Dockerfile (sha256:ba9a86c8195c9eba8504720144d22e39736d61dcaf119e328948b4b96f118b29),acme,bridgecrewio/example,,,\"\"\n"
         )
 
         assert csv_output_str == expected_csv
@@ -258,8 +258,8 @@ class TestBomOutput:
 
         expected_csv = (
             "Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n"
-            "flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"MIT\"\n"
-            "requests,,/requirements.txt,acme,bridgecrewio/example,,,\"MIT, Apache\"\n"
+            "\"flask\",0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,\"MIT\"\n"
+            "\"requests\",,/requirements.txt,acme,bridgecrewio/example,,,\"MIT, Apache\"\n"
         )
 
         assert csv_output_str == expected_csv

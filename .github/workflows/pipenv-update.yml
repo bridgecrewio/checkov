@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@20dac2ed4875a1a8422d233a68f69088637446df  # v4
+        uses: peter-evans/create-pull-request@18f90432bedd2afd6a825469ffd38aa24712a91d  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

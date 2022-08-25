@@ -1,35 +1,43 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from collections.abc import Iterable
+
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def require_external_checks(self):
+    def require_external_checks(self) -> bool:
         return False
 
-    def import_registry(self):
+    def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(self, f):
+    def _parse_file(
+        self, f: str, file_content: str | None = None
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
-            return super()._parse_file(f)
+            return super()._parse_file(f=f, file_content=file_content)
 
-    def is_workflow_file(self, file_path):
+    def is_workflow_file(self, file_path: str) -> bool:
         """
         :return: True if the file mentioned is in the gitlab workflow name .gitlab-ci.yml. Otherwise: False
         """
-        return file_path.endswith((".gitlab-ci.yml",".gitlab-ci.yaml"))
+        return file_path.endswith((".gitlab-ci.yml", ".gitlab-ci.yaml"))
 
-    def included_paths(self):
-        return [".gitlab-ci.yml",".gitlab-ci.yaml"]
+    def included_paths(self) -> Iterable[str]:
+        return (".gitlab-ci.yml", ".gitlab-ci.yaml")
 
     def get_images(self, file_path: str) -> set[Image]:
         """
@@ -49,7 +57,7 @@ class Runner(YamlRunner, ImageReferencer):
             services:
                 - name: privateregistry/stuff/my-postgres:11.7
                   alias: db-postgres
-                - name: redis:latest  
+                - name: redis:latest
                 - nginx:1.17
         Source: https://docs.gitlab.com/ee/ci/docker/using_docker_images.html
 
@@ -58,7 +66,7 @@ class Runner(YamlRunner, ImageReferencer):
         """
 
         images = set()
-        imagesKeys = ["image","services"]
+        imagesKeys = ("image", "services")
         workflow, workflow_line_numbers = self._parse_file(file_path)
 
         for job_object in workflow.values():
@@ -90,7 +98,7 @@ class Runner(YamlRunner, ImageReferencer):
                                         end_line=end_line,
                                     )
                                     images.add(image_obj)
-                                    imagename = ""      
+                                    imagename = ""
                         if imagename:
                             image_obj = Image(
                                 file_path=file_path,

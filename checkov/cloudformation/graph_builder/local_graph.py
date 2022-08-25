@@ -171,11 +171,15 @@ class CloudformationLocalGraph(LocalGraph):
                             if dest_vertex_index is not None:
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
-                            logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
-                                         f"and vertex_path {vertex_path} as target_id is not a string")
+                            logging.debug(
+                                f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                                f"and vertex_path {vertex_path} as target_id is not a string"
+                            )
                 else:
-                    logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
-                                 f"and vertex_path {vertex_path} as target_ids is not a list")
+                    logging.debug(
+                        f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                        f"and vertex_path {vertex_path} as target_ids is not a list"
+                    )
 
     def _extract_source_value_attrs(self, matching_path):
         """ matching_path for Resource = [template_section, source_id, 'Properties', ... , key, value]
@@ -309,7 +313,7 @@ class CloudformationLocalGraph(LocalGraph):
         return regex.findall(string)
 
     def _fill_in_out_edges(self) -> None:
-        for i, vertex in enumerate(self.vertices):
+        for i in range(len(self.vertices)):
             if i not in self.in_edges:
                 self.in_edges[i] = []
             if i not in self.out_edges:

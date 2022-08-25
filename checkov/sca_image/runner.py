@@ -140,7 +140,6 @@ class Runner(PackageRunner):
             dockerfile_path = kwargs['dockerfile_path']
             image_id = kwargs['image_id']
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
-
         report = Report(self.check_type)
         if not files and not root_folder:
             logging.debug("No resources to scan.")
@@ -152,7 +151,6 @@ class Runner(PackageRunner):
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
-
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
@@ -175,9 +173,13 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
-                                                         runner_filter=runner_filter)
-                    merge_reports(report, image_report)
+                    if not strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                        image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
+                                                             runner_filter=runner_filter)
+                        merge_reports(report, image_report)
+                    else:
+                        image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
+                        report.image_cached_results.append(image_cached_report)
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
@@ -185,6 +187,7 @@ class Runner(PackageRunner):
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
+
         parse_vulns_to_records(
             report=report,
             check_class=self._check_class,
@@ -198,6 +201,22 @@ class Runner(PackageRunner):
             report_type=self.report_type,
         )
         return report
+
+    def get_image_cached_results(self, dockerfile_path: str, image: Image) -> dict[str, Any]:
+        """
+            :param dockerfile_path: path of a file that might contain a container image
+            :param image: Image object
+            :return: cached_results report
+        """
+        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+        payload: dict[str, Any] = docker_image_scanning_integration.create_report(
+            twistcli_scan_result=cached_results,
+            bc_platform_integration=bc_integration,
+            file_path=dockerfile_path,
+            file_content=image.file_path,
+            docker_image_name=image.name,
+            related_resource_id=image.related_resource_id)
+        return payload
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
         """
@@ -230,7 +249,6 @@ class Runner(PackageRunner):
             rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
             rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
-
             return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report,
                                                     image_details, runner_filter)
 
