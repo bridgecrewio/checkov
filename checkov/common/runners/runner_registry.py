@@ -462,7 +462,7 @@ class RunnerRegistry:
                     result_dict["connected_node"] = None
 
     @staticmethod
-    def extract_git_info_from_account_id(account_id: str) -> tuple[str, str]:
+    def extract_git_info_from_account_id(account_id: str | None) -> tuple[str, str]:
         if account_id:
             try:
                 account_id_list = account_id.split('/')
