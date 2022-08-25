@@ -209,6 +209,28 @@ class TestRunnerRegistry(unittest.TestCase):
         for runner in checkov_runners:
             self.assertIn(runner, CodeCategoryMapping)
 
+    def test_extract_git_info_from_account_id(self):
+        account_id = "owner/name"
+        expected_git_org = "owner"
+        expected_git_repo = "name"
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
+        account_id = "owner/with/slash/separator/name"
+        expected_git_org = "owner/with/slash/separator"
+        expected_git_repo = "name"
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
+        account_id = ""
+        expected_git_org = ""
+        expected_git_repo = ""
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
 
 def test_non_compact_json_output(capsys):
     # given
