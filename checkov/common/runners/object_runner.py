@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
-    workflow_name: str | None
+    workflow_name: str
     jobs: dict[int, str]
 
 
@@ -47,7 +47,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                 (definitions[file], definitions_raw[file]) = result
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
-                    workflow_name = definition.get('name')
+                    workflow_name = definition.get('name', '')
                     triggers = self._get_triggers(definition)
                     jobs = self._get_jobs(definition)
                     self.map_file_path_to_gha_metadata_dict[file] = \
