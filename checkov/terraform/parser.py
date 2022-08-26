@@ -8,12 +8,11 @@ from collections.abc import Sequence
 from copy import deepcopy
 from json import dumps, loads
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type, TYPE_CHECKING
 
 import deep_merge
 import hcl2
 from lark import Tree
-from typing_extensions import TypeAlias
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.config_utils import should_scan_hcl_files
@@ -29,6 +28,10 @@ from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import eval_string, find_var_blocks
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
 
 _Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
 
