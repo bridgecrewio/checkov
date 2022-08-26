@@ -155,7 +155,7 @@ class Parser:
         keys_referenced_as_modules: Set[str] = set()
 
         if include_sub_dirs:
-            for sub_dir, d_names, f_names in os.walk(self.directory):
+            for sub_dir, d_names, _ in os.walk(self.directory):
                 # filter subdirectories for future iterations (we filter files while iterating the directory)
                 _filter_ignored_paths(sub_dir, d_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
@@ -777,9 +777,7 @@ def clean_bad_definitions(tf_definition_list: _Hcl2Payload) -> _Hcl2Payload:
         block_type: [
             definition
             for definition in definition_list
-            if block_type in GOOD_BLOCK_TYPES
-               or not isinstance(definition, dict)
-               or len(definition) == 1
+            if block_type in GOOD_BLOCK_TYPES or not isinstance(definition, dict) or len(definition) == 1
         ]
         for block_type, definition_list in tf_definition_list.items()
     }

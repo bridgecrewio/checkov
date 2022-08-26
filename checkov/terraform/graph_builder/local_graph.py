@@ -221,7 +221,7 @@ class TerraformLocalGraph(LocalGraph):
                     for index in self.vertices_by_module_dependency.get((target_path, self.module.module_address_map.get((vertex.path, vertex.name))), {}).get(BlockType.VARIABLE, [])
                     if self.get_dirname(self.vertices[index].path) == dest_module_path
                 ]
-                for attribute, value in vertex.attributes.items():
+                for attribute in vertex.attributes.keys():
                     if attribute in MODULE_RESERVED_ATTRIBUTES:
                         continue
                     target_variable = next((v for v in target_variables if self.vertices[v].name == attribute), None)

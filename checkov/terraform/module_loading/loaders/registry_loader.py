@@ -18,7 +18,7 @@ from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 class RegistryLoader(ModuleLoader):
-    modules_versions_cache: Dict[str, List[str]] = {}
+    modules_versions_cache: Dict[str, List[str]] = {}  # noqa: CCE003  # public data
 
     def __init__(self) -> None:
         super().__init__()

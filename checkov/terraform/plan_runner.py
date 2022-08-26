@@ -1,14 +1,15 @@
+from __future__ import annotations
+
 import logging
 import os
 import platform
 
-from typing import Optional, List, Type
+from typing import Type
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
@@ -32,34 +33,40 @@ TF_LIFECYCLE_CHECK_IDS = {
 
 
 class Runner(TerraformRunner):
-    check_type = CheckType.TERRAFORM_PLAN
+    check_type = CheckType.TERRAFORM_PLAN  # noqa: CCE003  # a static attribute
 
-    def __init__(self, graph_class: Type[LocalGraph] = TerraformLocalGraph,
-                 graph_manager: Optional[TerraformGraphManager] = None,
-                 db_connector: NetworkxConnector = NetworkxConnector(),
-                 external_registries: Optional[List[BaseRegistry]] = None,
-                 source: str = "Terraform"):
-        super().__init__(graph_class=graph_class, graph_manager=graph_manager, db_connector=db_connector,
-                         external_registries=external_registries, source=source)
+    def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+                 graph_manager: TerraformGraphManager | None = None,
+                 db_connector: NetworkxConnector | None = None,
+                 external_registries: list[BaseRegistry] | None = None,
+                 source: str = "Terraform") -> None:
+        super().__init__(
+            graph_class=graph_class,
+            graph_manager=graph_manager,
+            db_connector=db_connector or NetworkxConnector(),
+            external_registries=external_registries,
+            source=source,
+        )
         self.file_extensions = ['.json']  # override what gets set from the TF runner
         self.definitions = None
         self.context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
-    block_type_registries = {
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
     }
 
     def run(
             self,
-            root_folder: Optional[str] = None,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            root_folder: str | None = None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         report = Report(self.check_type)
-        parsing_errors = {}
+        parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
@@ -96,7 +103,7 @@ class Runner(TerraformRunner):
                   definition_context,
                   full_file_path, root_folder, report, scanned_file,
                   block_type, runner_filter=None, entity_context_path_header=None,
-                  module_referrer: Optional[str] = None):
+                  module_referrer: str | None = None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:

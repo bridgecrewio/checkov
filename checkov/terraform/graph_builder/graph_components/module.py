@@ -1,13 +1,21 @@
+from __future__ import annotations
+
 import json
 import os
 from copy import deepcopy
-from typing import List, Dict, Any, Set, Callable, Tuple
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
 from hcl2 import START_LINE, END_LINE
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
+_AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str], None]"
+
 
 class Module:
     def __init__(
@@ -219,7 +227,7 @@ class Module:
     def get_resources_types(self) -> List[str]:
         return list(self.resources_types)
 
-    _block_type_to_func: Dict[BlockType, Callable[["Module", List[Dict[str, Dict[str, Any]]], str], None]] = {
+    _block_type_to_func: Dict[BlockType, _AddBlockTypeCallable] = {  # noqa: CCE003  # a static attribute
         BlockType.DATA: _add_data,
         BlockType.LOCALS: _add_locals,
         BlockType.MODULE: _add_module,

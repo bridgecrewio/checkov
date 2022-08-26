@@ -253,5 +253,5 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
             if lower_case_value == "true":
                 value_list[i] = True
             if lower_case_value == "false":
-                value_list[i] = False         
+                value_list[i] = False
     return value_list

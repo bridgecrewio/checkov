@@ -6,7 +6,7 @@ from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsp
 
 
 class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
-    excluded_actions = {"ecr:GetAuthorizationToken"}
+    excluded_actions = {"ecr:GetAuthorizationToken"}  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         name = "Ensure IAM policies does not allow credentials exposure"

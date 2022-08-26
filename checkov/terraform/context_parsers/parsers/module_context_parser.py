@@ -23,7 +23,6 @@ class ModuleContextParser(BaseContextParser):
                 "code_lines": self.file_lines[entity_config[START_LINE] - 1: entity_config[END_LINE]],
             }
 
-
         return self.context
 
 

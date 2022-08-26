@@ -252,11 +252,12 @@ class TerraformVariableRenderer(VariableRenderer):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
-            for attribute in filter(
-                lambda attr: attr not in reserved_attribute_names
-                and not attribute_has_nested_attributes(attr, vertex.attributes),
-                vertex.attributes,
-            ):
+            filtered_attributes = [
+                attr
+                for attr in vertex.attributes
+                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+            ]
+            for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val
                 if not isinstance(lst_curr_val, list):
