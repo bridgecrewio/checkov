@@ -10,11 +10,12 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-    from checkov.common.output.record import Record
     from checkov.common.output.report import Report
+    from checkov.common.output.record import Record
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
@@ -70,7 +71,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         still_failed_checks = []
         still_passed_checks = []
         for check in scan_report.failed_checks + scan_report.passed_checks:
-            relevant_suppressions = self.suppressions.get(check.check_id)
+            check_id = check.check_id
+            if check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                check_id = 'BC_VUL_2'
+                check.check_id = check_id
+
+            relevant_suppressions = self.suppressions.get(check_id)
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
