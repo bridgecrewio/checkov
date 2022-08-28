@@ -179,7 +179,8 @@ class Runner(PackageRunner):
                         merge_reports(report, image_report)
                     else:
                         image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
-                        report.image_cached_results.append(image_cached_report)
+                        if image_cached_report:
+                            report.image_cached_results.append(image_cached_report)
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
@@ -209,6 +210,10 @@ class Runner(PackageRunner):
             :return: cached_results report
         """
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+        if not cached_results:
+            # TODO: do we want to trigger a scan in this case?
+            logging.info(f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
+            return {}
         payload: dict[str, Any] = docker_image_scanning_integration.create_report(
             twistcli_scan_result=cached_results,
             bc_platform_integration=bc_integration,
