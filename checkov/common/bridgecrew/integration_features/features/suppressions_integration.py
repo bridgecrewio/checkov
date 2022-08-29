@@ -147,6 +147,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 if entity_tags.get(key) == value:
                     return True
 
+        elif type == 'CvesAccounts':
+            if self.bc_integration.repo_id in suppression['accountIds']:
+                if record.vulnerability_details and record.vulnerability_details['id'] in suppression['cves']:
+                    return True
+            return False
+
         return False
 
     def _suppression_valid_for_run(self, suppression: dict[str, Any]) -> bool:
