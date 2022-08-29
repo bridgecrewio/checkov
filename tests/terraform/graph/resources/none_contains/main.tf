@@ -6,7 +6,7 @@ resource "azurerm_key_vault" "kv" {
     for_each = []
     content {
       default_action             = "Deny"
-      bypass                     = "AzureServices"
+      bypass                     = ""
       ip_rules                   = null
       virtual_network_subnet_ids = null
     }
