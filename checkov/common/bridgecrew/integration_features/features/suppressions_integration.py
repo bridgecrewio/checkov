@@ -5,6 +5,8 @@ import re
 from itertools import groupby
 from typing import TYPE_CHECKING, Pattern, Any
 
+from checkov.common.bridgecrew.check_type import CheckType
+
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -74,10 +76,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             check_id = check.check_id
             # in order to be able to suppress by policy we assign the relevant check id for package / image scan
             # and avoiding licenses vulns
-            if scan_report.check_type == 'sca_package' and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+            if scan_report.check_type == CheckType.SCA_PACKAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                 check_id = 'BC_VUL_2'
                 check.check_id = check_id
-            if scan_report.check_type == 'sca_image' and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+            if scan_report.check_type == CheckType.SCA_IMAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                 check_id = 'BC_VUL_1'
                 check.check_id = check_id
 
