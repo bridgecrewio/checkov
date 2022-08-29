@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 class DynamoDBTableReplicaKMSUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure DynamoDB table replica KMS encryption uses CMK"
-        id = "CKV_AWS_26244" #needs verification
+        id = "CKV_AWS_9997" #needs verification
         supported_resources = ['aws_dynamodb_table_replica']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
