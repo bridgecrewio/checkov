@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure Domain Name System Security Extensions (DNSSEC) signing is enabled for Amazon Route 53 public hosted zones"
-  id: "CKV2_AWS_9999"
+  id: "CKV2_AWS_38"
   category: "NETWORKING"
 definition:
  and :

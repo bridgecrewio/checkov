@@ -6,7 +6,7 @@ from checkov.common.models.consts import ANY_VALUE
 class ConnectInstanceS3StorageConfigUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Connect Instance S3 Storage Config uses CMK"
-        id = "CKV_AWS_9996" #kindly confirm the number to use
+        id = "CKV_AWS_270" #kindly confirm the number to use
         supported_resources = ['aws_connect_instance_storage_config']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure Domain Name System (DNS) query logging is enabled for Amazon Route 53 hosted zones"
-  id: "CKV2_AWS_9998"
+  id: "CKV2_AWS_39"
   category: "LOGGING"
 definition:
  and :
