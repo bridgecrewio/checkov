@@ -68,8 +68,6 @@ class TestContainsSolver(TestBaseSolver):
 
     def test_none_network_acl_ips(self):
         root_folder = '../../../resources/none_contains'
-        # this tests a specific condition related to wildcard expression evaluation and is not necessarily a full
-        # solver test
         check_id = "NetworkACL"
         should_pass = []
         should_fail = ['azurerm_key_vault.kv']
