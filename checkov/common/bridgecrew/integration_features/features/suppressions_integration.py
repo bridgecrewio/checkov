@@ -5,16 +5,19 @@ import re
 from itertools import groupby
 from typing import TYPE_CHECKING, Pattern, Any
 
+from checkov.common.bridgecrew.check_type import CheckType
+
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-    from checkov.common.output.record import Record
     from checkov.common.output.report import Report
+    from checkov.common.output.record import Record
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
@@ -70,6 +73,13 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         still_failed_checks = []
         still_passed_checks = []
         for check in scan_report.failed_checks + scan_report.passed_checks:
+            # in order to be able to suppress by policy we assign the relevant check id for package / image scan
+            # and avoiding licenses vulns
+            if scan_report.check_type == CheckType.SCA_PACKAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                check.check_id = 'BC_VUL_2'
+            if scan_report.check_type == CheckType.SCA_IMAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                check.check_id = 'BC_VUL_1'
+
             relevant_suppressions = self.suppressions.get(check.check_id)
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
