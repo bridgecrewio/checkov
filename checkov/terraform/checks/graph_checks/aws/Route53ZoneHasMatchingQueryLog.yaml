@@ -14,9 +14,6 @@ definition:
       - aws_route53_zone
       connected_resource_types:
       - aws_route53_query_log
-      - aws_route53_key_signing_key
-      - aws_cloudwatch_log_resource_policy
-      - aws_cloudwatch_log_group
       operator: exists
 
 
