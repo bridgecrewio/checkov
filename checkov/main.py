@@ -322,6 +322,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         runner = sca_image_runner()
         result = runner.run(root_folder='', image_id=config.docker_image,
                             dockerfile_path=config.dockerfile_path, runner_filter=runner_filter)
+        integration_feature_registry.run_post_runner(result)
         bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), files=files)
         bc_integration.persist_scan_results([result])
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
@@ -513,7 +514,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--var-file', action='append',
                help='Variable files to load in addition to the default files (see '
                     'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
-                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.' 
+                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.'
                     'Requires using --directory, not --file.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",

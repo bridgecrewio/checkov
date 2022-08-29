@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
-    workflow_name: str | None
+    workflow_name: str
     jobs: dict[int, str]
 
 
@@ -47,7 +47,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                 (definitions[file], definitions_raw[file]) = result
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
-                    workflow_name = definition.get('name')
+                    workflow_name = definition.get('name', '')
                     triggers = self._get_triggers(definition)
                     jobs = self._get_jobs(definition)
                     self.map_file_path_to_gha_metadata_dict[file] = \
@@ -133,7 +133,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end, ''),
                         triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
@@ -205,7 +205,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                     end_line: int = job_instance.get(END_LINE, -1)
                     end_line_to_job_name_dict[end_line] = job_name
 
-                    steps = job_instance.get('steps')
+                    steps = [step for step in job_instance.get('steps', []) or [] if step]
                     if steps:
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name

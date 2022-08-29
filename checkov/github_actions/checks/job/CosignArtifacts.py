@@ -27,7 +27,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
         for jobname, jobdetail in conf.items():
             if jobname == START_LINE:
                 return CheckResult.PASSED, conf
-            steps = jobdetail.get("steps")
+            steps = [step for step in jobdetail.get("steps", []) or [] if step]
             if steps:
                 for step in steps:
                     if build_found:
@@ -43,7 +43,7 @@ class CosignSignPresent(BaseGithubActionsCheck):
                             build_found = True
 
         if build_found:
-            return CheckResult.FAILED, conf            
+            return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
 

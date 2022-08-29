@@ -15,7 +15,7 @@ class BitbucketRunMetadataExtractor(RunMetaDataExtractor):
         pr_id = os.getenv("BITBUCKET_PR_ID", "")
         pr_url = ""
         commit_hash = os.getenv("BITBUCKET_COMMIT", "")
-        repository_url = os.getenv("BITBUCKET_GIT_HTTP_ORIGIN","")
+        repository_url = os.getenv("BITBUCKET_GIT_HTTP_ORIGIN", "")
         commit_url = ""
         author_name = ""
         author_url = ""

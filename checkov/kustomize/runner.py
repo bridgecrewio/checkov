@@ -324,7 +324,7 @@ class Runner(BaseRunner):
         return cur_writer
 
     @staticmethod
-    def _get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta):
+    def _get_kubectl_output(filePath, templateRendererCommand, source_type):
         # Template out the Kustomizations to Kubernetes YAML
         if templateRendererCommand == "kubectl":
             templateRenderCommandOptions = "kustomize"
@@ -333,7 +333,7 @@ class Runner(BaseRunner):
         proc = subprocess.Popen([templateRendererCommand, templateRenderCommandOptions, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
-            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {kustomizeProcessedFolderAndMeta[filePath].get('type')}.")
+            f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
         return output
 
     @staticmethod
@@ -357,14 +357,18 @@ class Runner(BaseRunner):
         return env_or_base_path_prefix
 
     @staticmethod
-    def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
-        logging.debug(f"Kustomization at {filePath} likley a {kustomizeProcessedFolderAndMeta[filePath].get('type')}")
+    def get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand):
+        source_type = kustomizeProcessedFolderAndMeta[filePath].get('type')
+        logging.debug(f"Kustomization at {filePath} likley a {source_type}")
         try:
-            output = Runner._get_kubectl_output(filePath, templateRendererCommand, kustomizeProcessedFolderAndMeta)
+            output = Runner._get_kubectl_output(filePath, templateRendererCommand, source_type)
+            return output, filePath
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {filePath}.", exc_info=True)
-            return
+            return None, None
 
+    @staticmethod
+    def _parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings):
         env_or_base_path_prefix = Runner._get_env_or_base_path_prefix(filePath, kustomizeProcessedFolderAndMeta)
         if env_or_base_path_prefix is None:
             logging.warning(f"env_or_base_path_prefix is None, filePath: {filePath}", exc_info=True)
@@ -378,6 +382,13 @@ class Runner(BaseRunner):
         cur_writer = Runner._get_parsed_output(filePath, extractDir, output, sharedKustomizeFileMappings)
         if cur_writer:
             Runner._curWriterValidateStoreMapAndClose(cur_writer, filePath, sharedKustomizeFileMappings)
+        
+    @staticmethod
+    def _run_kustomize_parser(filePath, sharedKustomizeFileMappings, kustomizeProcessedFolderAndMeta, templateRendererCommand, target_folder_path):
+        output, _ = Runner.get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand)
+        if not output:
+            return
+        Runner._parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings)
 
     def run_kustomize_to_k8s(self, root_folder, files, runner_filter):
         kustomizeDirectories = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)

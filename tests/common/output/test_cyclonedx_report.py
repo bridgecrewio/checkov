@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
 
+from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
-from cyclonedx.model.component import Component, ComponentType
 from pytest_mock import MockerFixture
 
 from checkov.common.output.common import ImageDetails
@@ -37,7 +38,10 @@ def test_valid_cyclonedx_bom():
     assert component.purl.version.startswith('sha1:')
     assert component.type == ComponentType.APPLICATION
 
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+    vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
+    assert len(vulnerabilities) == 4
+    # doesn't matter which vulnerability, they are all unknown for runs without platform connection
+    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
     assert "http://cyclonedx.org/schema/bom/1.4" in output
 
@@ -76,9 +80,14 @@ def test_valid_cyclonedx_image_bom():
         'fixDate': '2022-07-07T16:15:00+03:00'
     }
 
-    record: Record = create_report_cve_record(rootless_file_path=rootless_file_path,
-                                          file_abs_path=file_abs_path, check_class=check_class,
-                                          vulnerability_details=vulnerability, licenses='', image_details=image_details)
+    record: Record = create_report_cve_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability,
+        licenses="BSD-3-Clause",
+        image_details=image_details,
+    )
     report = Report(check_type='sca_image')
     report.add_record(record)
 
@@ -95,14 +104,19 @@ def test_valid_cyclonedx_image_bom():
         version='7.74.0-1.3+deb11u1',
         qualifiers={'distro': 'bullseye'}
     )
-    package_component = Component(
-        name='curl',
-        purl=package_purl,
-        group=None,
-        component_type=ComponentType.LIBRARY,
-        version='7.74.0-1.3+deb11u1'
-    )
-    assert cyclonedx.bom.has_component(package_component)
+
+    package_component = cyclonedx.bom.get_component_by_purl(purl=package_purl)
+
+    assert package_component is not None
+    assert package_component.name == "curl"
+    assert package_component.type == ComponentType.LIBRARY
+    assert package_component.version == "7.74.0-1.3+deb11u1"
+    assert len(package_component.licenses) == 1
+    assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
+
+    vulnerabilities = package_component.get_vulnerabilities()
+    assert len(vulnerabilities) == 1
+    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
 
     image_purl = PackageURL(
         name='Dockerfile',

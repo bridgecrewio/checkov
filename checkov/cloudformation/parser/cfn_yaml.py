@@ -106,14 +106,12 @@ class NodeConstructor(SafeConstructor):
             except TypeError:
                 raise CfnParseError(
                     self.filename,
-                    'Unable to construct key {} (line {})'.format(
-                        key, key_node.start_mark.line + 1),
-                    key_node.start_mark.line, key_node.start_mark.column, key)
+                    f'Unable to construct key {key} (line {key_node.start_mark.line + 1})',
+                    key_node.start_mark.line, key_node.start_mark.column, key) from None
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
-                    'Duplicate resource found "{}" (line {})'.format(
-                        key, key_node.start_mark.line + 1),
+                    f'Duplicate resource found "{key}" (line {key_node.start_mark.line + 1})',
                     key_node.start_mark.line, key_node.start_mark.column, key)
             mapping[key] = value
 

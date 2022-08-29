@@ -38,14 +38,14 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
-# Allow the evaluation of empty variables
-from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
+from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
 
 if TYPE_CHECKING:
     from networkx import DiGraph
 
+# Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
@@ -525,6 +525,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
             # should not happen
             return []
 
-        images = extract_images_from_aws_resources(graph_connector=graph_connector)
+        manager = TerraformImageReferencerManager(graph_connector=graph_connector)
+        images = manager.extract_images_from_resources()
 
         return images

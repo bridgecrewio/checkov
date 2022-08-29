@@ -88,6 +88,17 @@ resource "aws_alb_listener" "https_fs_1_2" {
   }
 }
 
+# gateway LB
+resource "aws_lb" "gateway_lb" {
+  load_balancer_type = "gateway"
+  name               = "example"
+}
+
+resource "aws_lb_listener" "gateway_listener" {
+  load_balancer_arn = aws_lb.gateway_lb.id
+}
+
+
 # failure
 
 resource "aws_lb_listener" "http" {
@@ -153,4 +164,28 @@ resource "aws_lb_listener" "cognito" {
     redirect {
     }
   }
+}
+
+resource "aws_lb_listener" "wrong_redirect" {
+  load_balancer_arn = var.aws_lb_arn
+  protocol          = "HTTP"
+  port              = "80"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol = "HTTP"
+    }
+  }
+}
+
+# not gateway LB
+resource "aws_lb" "not_gateway_lb" {
+  load_balancer_type = "not gateway"
+  name               = "example"
+}
+
+resource "aws_lb_listener" "not_gateway_listener" {
+  load_balancer_arn = aws_lb.not_gateway_lb.id
 }
