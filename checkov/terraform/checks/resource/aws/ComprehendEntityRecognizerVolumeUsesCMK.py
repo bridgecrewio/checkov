@@ -6,7 +6,7 @@ from checkov.common.models.consts import ANY_VALUE
 class ComprehendEntityRecognizerVolumeUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Comprehend Entity Recognizer's volume is encrypted by KMS using a customer managed Key (CMK)"
-        id = "CKV_AWS_268" # actual number to be confirmed
+        id = "CKV_AWS_268" 
         supported_resources = ['aws_comprehend_entity_recognizer']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
