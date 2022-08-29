@@ -254,6 +254,34 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
 
+    def test_suppress_by_policy_BC_VUL_1(self):
+        instance = BcPlatformIntegration()
+
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'Policy',
+            'id': 'efc9357e-5517-4407-818f-814e7cc341d1',
+            'policyId': 'BC_VUL_1',
+            'comment': 'test',
+            'checkovPolicyId': 'BC_VUL_1'
+        }
+
+        record1 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record2 = Record(check_id='CKV_AWS_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
+
     def test_account_suppression(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
