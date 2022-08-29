@@ -73,17 +73,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         still_failed_checks = []
         still_passed_checks = []
         for check in scan_report.failed_checks + scan_report.passed_checks:
-            check_id = check.check_id
             # in order to be able to suppress by policy we assign the relevant check id for package / image scan
             # and avoiding licenses vulns
             if scan_report.check_type == CheckType.SCA_PACKAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
-                check_id = 'BC_VUL_2'
-                check.check_id = check_id
+                check.check_id = 'BC_VUL_2'
             if scan_report.check_type == CheckType.SCA_IMAGE and check.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
-                check_id = 'BC_VUL_1'
-                check.check_id = check_id
+                check.check_id = 'BC_VUL_1'
 
-            relevant_suppressions = self.suppressions.get(check_id)
+            relevant_suppressions = self.suppressions.get(check.check_id)
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
