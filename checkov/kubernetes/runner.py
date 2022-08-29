@@ -195,7 +195,7 @@ class Runner(BaseRunner):
                     check_name=check.name,
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
-                    file_path=entity_file_path,
+                    file_path=f"/{os.path.relpath(entity_file_abs_path, root_folder)}",
                     file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
                     resource=entity.get(CustomAttributes.ID),
                     evaluations={},
