@@ -80,7 +80,7 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                            'django,1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,OSI_BDS',
                            'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
                            'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
-                           'golang.org/x/crypto,v0.0.0-20200622213623-75b288015ac9,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,Unknown',
+                           'golang.org/x/crypto,v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,Unknown',
                            'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,Unknown',
                            'requests,2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
                            'requests,2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
@@ -99,7 +99,7 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                                '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"OSI_BDS"',
                                '"flask",0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
                                '"flask",0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
-                               '"golang.org/x/crypto",v0.0.0-20200622213623-75b288015ac9,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"Unknown"',
+                               '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"Unknown"',
                                '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"Unknown"',
                                '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
                                '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
@@ -226,10 +226,10 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 "id": "CKV_CVE_2020_29652",
                                 "name": "SCA package scan",
                                 "shortDescription": {
-                                    "text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"
+                                    "text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"
                                 },
                                 "fullDescription": {
-                                    "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c for Go allows remote attackers to cause a denial of service against SSH servers."
+                                    "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                                 },
                                 "help": {
                                     "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nGuideline: None"'
@@ -365,7 +365,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                         "ruleIndex": 7,
                         "level": "error",
                         "message": {
-                            "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c for Go allows remote attackers to cause a denial of service against SSH servers."
+                            "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                         },
                         "locations": [
                             {
@@ -510,8 +510,8 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "\n",
                     "\t\t0 | github.com/dgrijalva/jwt-go: v3.2.0</failure>\n",
                     "\t\t</testcase>\n",
-                    '\t\t<testcase name="[HIGH][CVE-2020-29652] golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9" classname="/path/to/go.sum.golang.org/x/crypto" file="/path/to/go.sum">\n',
-                    '\t\t\t<skipped type="skipped" message="CVE-2020-29652 skipped for golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"/>\n',
+                    '\t\t<testcase name="[HIGH][CVE-2020-29652] golang.org/x/crypto: v0.0.1" classname="/path/to/go.sum.golang.org/x/crypto" file="/path/to/go.sum">\n',
+                    '\t\t\t<skipped type="skipped" message="CVE-2020-29652 skipped for golang.org/x/crypto: v0.0.1"/>\n',
                     "\t\t</testcase>\n",
                     "\t</testsuite>\n",
                     "</testsuites>\n",
