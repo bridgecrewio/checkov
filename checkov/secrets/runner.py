@@ -6,6 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
+from os.path import exists
 from typing import TYPE_CHECKING, cast
 
 from detect_secrets import SecretsCollection
@@ -80,9 +81,7 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': [
+        plugins_used = [
                 {
                     'name': 'AWSKeyDetector'
                 },
@@ -128,6 +127,22 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
+        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS", None)
+        logging.info(f"Custom detector flag set to {custom_plugins}")
+        if custom_plugins:
+            detector_path = f"/tmp/plugins/platform_regex_detector.py"
+            file_exists = exists(detector_path)
+            if file_exists:
+                logging.info(f"Custom detector found at {detector_path}. Loading...")
+                plugins_used.append({
+                    'name': 'PlatformRegexDetector',
+                    'path': f'file://{detector_path}'
+                })
+            else:
+                logging.info(f"Custom detector not found at path {detector_path}. Skipping...")
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': plugins_used
         }) as settings:
             report = Report(self.check_type)
             if not runner_filter.show_progress_bar:
@@ -165,7 +180,10 @@ class Runner(BaseRunner[None]):
             self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
-                check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                if hasattr(secret, 'check_id'):
+                    check_id = secret.check_id
+                else:
+                    check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
