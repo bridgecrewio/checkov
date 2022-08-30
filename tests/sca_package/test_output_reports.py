@@ -15,9 +15,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 def test_console_output(sca_package_report):
     console_output = sca_package_report.print_console(False, False, None, None, False)
-    print()
-    print(console_output)
-    print()
+
     # then
     assert console_output == "\n".join(
         ['\x1b[34msca_package scan results:',
