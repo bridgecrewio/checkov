@@ -24,14 +24,14 @@ class BcSeverities:
 
 
 Severities = {
-    BcSeverities.NONE: Severity(BcSeverities.NONE, 0),
+    BcSeverities.NONE: Severity(BcSeverities.NONE, -999),
     BcSeverities.INFO: Severity(BcSeverities.INFO, 1),
     BcSeverities.LOW: Severity(BcSeverities.LOW, 2),
     BcSeverities.MEDIUM: Severity(BcSeverities.MEDIUM, 3),
-    BcSeverities.MODERATE: Severity(BcSeverities.MEDIUM, 4),
-    BcSeverities.HIGH: Severity(BcSeverities.HIGH, 5),
-    BcSeverities.IMPORTANT: Severity(BcSeverities.HIGH, 5),
-    BcSeverities.CRITICAL: Severity(BcSeverities.CRITICAL, 6),
+    BcSeverities.MODERATE: Severity(BcSeverities.MEDIUM, 3),
+    BcSeverities.HIGH: Severity(BcSeverities.HIGH, 4),
+    BcSeverities.IMPORTANT: Severity(BcSeverities.HIGH, 4),
+    BcSeverities.CRITICAL: Severity(BcSeverities.CRITICAL, 5),
     BcSeverities.OFF: Severity(BcSeverities.OFF, 999),
 }
 
