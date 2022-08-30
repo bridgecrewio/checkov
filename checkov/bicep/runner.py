@@ -222,7 +222,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                     check_name=check.name,
                     check_result=clean_check_result,
                     code_block=file_code_lines[start_line - 1 : end_line],
-                    file_path=str(clean_file_path(entity_file_path)),
+                    file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
                     file_line_range=[start_line, end_line],
                     resource=entity.get(CustomAttributes.ID),
                     check_class=check.__class__.__module__,

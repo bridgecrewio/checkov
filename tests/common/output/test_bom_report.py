@@ -27,7 +27,10 @@ class TestBomOutput:
         reports = runner_registry.run(root_folder=test_files_dir)
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_iac_bom_reports(output_path=str(tmp_path), scan_reports=reports, output_types=['csv'])
+            runner_registry.print_iac_bom_reports(output_path=str(tmp_path),
+                                                  scan_reports=reports,
+                                                  output_types=['csv'],
+                                                  account_id="org/name")
         output = captured_output.getvalue()
         assert 'Persisting SBOM to' in output
         iac_file_path = tmp_path / 'results_iac.csv'
@@ -276,7 +279,8 @@ class TestBomOutput:
 
         result_files_list = runner_registry.print_iac_bom_reports(output_path=str(output_path),
                                                                   scan_reports=reports,
-                                                                  output_types=output_types)
+                                                                  output_types=output_types,
+                                                                  account_id="org/name")
 
         assert len(result_files_list) == len(output_types)
         for result_file in result_files_list.values():
