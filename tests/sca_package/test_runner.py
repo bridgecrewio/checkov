@@ -14,16 +14,9 @@ from checkov.sca_package.runner import Runner
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 
-def test_run(mocker: MockerFixture, scan_result):
+def test_run(sca_package_report):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-
-    # when
-    report = Runner().run(root_folder=EXAMPLES_DIR)
-
+    report = sca_package_report
     # then
     assert report.check_type == "sca_package"
 
