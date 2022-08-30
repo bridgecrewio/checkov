@@ -440,7 +440,7 @@ def scan_result() -> List[Dict[str, Any]]:
                 {
                     "type": "go",
                     "name": "golang.org/x/crypto",
-                    "version": "v0.0.0-20200622213623-75b288015ac9",
+                    "version": "v0.0.1",
                     "path": "/path/to/go.sum",
                 },
                 {
@@ -461,13 +461,13 @@ def scan_result() -> List[Dict[str, Any]]:
             "vulnerabilities": [
                 {
                     "id": "CVE-2020-29652",
-                    "status": "fixed in v0.0.0-20201216223049-8b5274cf687f",
+                    "status": "fixed in v0.0.2",
                     "cvss": 7.5,
                     "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-                    "description": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c for Go allows remote attackers to cause a denial of service against SSH servers.",
+                    "description": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.",
                     "severity": "high",
                     "packageName": "golang.org/x/crypto",
-                    "packageVersion": "v0.0.0-20200622213623-75b288015ac9",
+                    "packageVersion": "v0.0.1",
                     "link": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                     "riskFactors": [
                         "Has fix",
@@ -476,7 +476,7 @@ def scan_result() -> List[Dict[str, Any]]:
                         "Attack vector: network",
                         "DoS",
                     ],
-                    "impactedVersions": ["<v0.0.0-20201216223049-8b5274cf687f"],
+                    "impactedVersions": ["<v0.0.2"],
                     "publishedDate": "2020-12-17T06:15:00+01:00",
                     "discoveredDate": "2020-12-17T05:15:00Z",
                     "fixDate": "2020-12-17T06:15:00+01:00",

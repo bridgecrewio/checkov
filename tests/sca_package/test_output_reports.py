@@ -15,7 +15,9 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 def test_console_output(sca_package_report):
     console_output = sca_package_report.print_console(False, False, None, None, False)
-
+    print()
+    print(console_output)
+    print()
     # then
     assert console_output == "\n".join(
         ['\x1b[34msca_package scan results:',
@@ -53,8 +55,8 @@ def test_console_output(sca_package_report):
          '\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤',
          '\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │',
          '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
-         '\t│ golang.org/x/crypt │ CVE-2020-29652     │ high               │ v0.0.0-20200622213 │ v0.0.0-20201216223 │ v0.0.0-20201216223 │',
-         '\t│ o                  │                    │                    │ 623-75b288015ac9   │ 049-8b5274cf687f   │ 049-8b5274cf687f   │',
+         '\t│ golang.org/x/crypt │ CVE-2020-29652     │ high               │ v0.0.1             │ 0.0.2              │ 0.0.2              │',
+         '\t│ o                  │                    │                    │                    │                    │                    │',
          '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
          '\t│ github.com/dgrijal │ CVE-2020-26160     │ high               │ v3.2.0             │ 4.0.0rc1           │ 4.0.0rc1           │',
          '\t│ va/jwt-go          │                    │                    │                    │                    │                    │',
