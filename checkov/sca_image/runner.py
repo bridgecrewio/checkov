@@ -218,7 +218,7 @@ class Runner(PackageRunner):
             twistcli_scan_result=cached_results,
             bc_platform_integration=bc_integration,
             file_path=dockerfile_path,
-            file_content=image.file_path,
+            file_content=f'image: {image.name}',
             docker_image_name=image.name,
             related_resource_id=image.related_resource_id)
         return payload
