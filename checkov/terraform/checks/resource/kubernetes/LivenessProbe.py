@@ -21,6 +21,8 @@ class LivenessProbe(BaseResourceValueCheck):
         spec = conf.get('spec', [None])[0]
         if spec and isinstance(spec, dict):
             containers = spec.get("container")
+            if containers is None:
+                return CheckResult.UNKNOWN
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
