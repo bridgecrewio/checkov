@@ -1,7 +1,8 @@
 import unittest
 
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -212,6 +213,62 @@ class TestSuppressionsIntegration(unittest.TestCase):
         }
 
         record1 = Record(check_id='CKV_AWS_79', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record2 = Record(check_id='CKV_AWS_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
+
+    def test_suppress_by_policy_BC_VUL_2(self):
+        instance = BcPlatformIntegration()
+
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'Policy',
+            'id': '73114538-553a-4401-9ab4-d720e773024a',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress policy package_scan',
+            'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record2 = Record(check_id='BC_VUL_22', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
+
+    def test_suppress_by_policy_BC_VUL_1(self):
+        instance = BcPlatformIntegration()
+
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'Policy',
+            'id': 'efc9357e-5517-4407-818f-814e7cc341d1',
+            'policyId': 'BC_VUL_1',
+            'comment': 'test',
+            'checkovPolicyId': 'BC_VUL_1'
+        }
+
+        record1 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
@@ -443,12 +500,14 @@ class TestSuppressionsIntegration(unittest.TestCase):
 
         suppressions_integration.suppressions = {suppression['checkovPolicyId']: [suppression]}
 
-        record1 = Record(check_id='CKV_AWS_79', check_name=None, check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
+        record1 = Record(check_id='CKV_AWS_79', check_name=None,
+                         check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
                          check_class=None, file_abs_path='.', entity_tags=None)
-        record2 = Record(check_id='CKV_AWS_1', check_name=None, check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
+        record2 = Record(check_id='CKV_AWS_1', check_name=None,
+                         check_result={'result': CheckResult.FAILED, 'evaluated_keys': ['multi_az']},
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,

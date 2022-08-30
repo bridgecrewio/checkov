@@ -146,9 +146,9 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         # then
-        assert report.failed_checks[0].job[0] == None
+        assert report.failed_checks[0].job[0] == ''
         assert report.failed_checks[0].triggers[0] == {'workflow_dispatch'}
-        assert report.failed_checks[0].workflow_name == None
+        assert report.failed_checks[0].workflow_name == ''
 
     def test_runner_on_list_typed_workflow_dispatch(self):
         # given

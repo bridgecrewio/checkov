@@ -51,6 +51,15 @@ def mock_scan(self: Runner, image_id: str, dockerfile_path: str, runner_filter: 
                           'vulnerabilityScanPassed': True}])
 
 
+def mock_get_images(self: Runner, file_path: str) -> Dict[str, Any]:
+    return [Image(
+                file_path='fake_path',
+                name='fake_image',
+                start_line=1,
+                end_line=12
+            )]
+
+
 def mock_scan_empty(self: Runner, image_id: str, dockerfile_path: str, runner_filter: RunnerFilter | None = None) -> Dict[str, Any]:
     return {}
 
