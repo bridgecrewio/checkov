@@ -215,7 +215,7 @@ def scan_result2() -> Dict[str, Any]:
     }
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='package')
 def scan_result() -> List[Dict[str, Any]]:
     return [
         {
@@ -541,13 +541,14 @@ def scan_result_success_response() -> Dict[str, Any]:
      'compressionMethod': 'gzip'}
 
 
-@pytest.fixture(scope='module')
-def sca_package_report(module_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
+@pytest.fixture(scope='package')
+def sca_package_report(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
+    print("\none timeee\n")
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result
-    module_mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+    package_mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
 
     # when
     return Runner().run(root_folder=EXAMPLES_DIR)
