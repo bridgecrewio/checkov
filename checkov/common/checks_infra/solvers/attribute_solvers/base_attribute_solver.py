@@ -30,7 +30,6 @@ OPERATION_TO_FUNC = {
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
-    parsed_attributes = {}
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
                  ) -> None:
@@ -39,6 +38,7 @@ class BaseAttributeSolver(BaseSolver):
         self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
+        self.parsed_attributes = {}
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -83,10 +83,10 @@ class BaseAttributeSolver(BaseSolver):
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         attribute_matches: List[str] = []
         if self.is_jsonpath_check:
-            parsed_attr = BaseAttributeSolver.parsed_attributes.get(self.attribute)
+            parsed_attr = self.parsed_attributes.get(self.attribute)
             if parsed_attr is None:
                 parsed_attr = parse(self.attribute)
-                BaseAttributeSolver.parsed_attributes[self.attribute] = parsed_attr
+                self.parsed_attributes[self.attribute] = parsed_attr
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)
                 if full_path not in vertex:
