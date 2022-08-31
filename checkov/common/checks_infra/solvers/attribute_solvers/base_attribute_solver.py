@@ -38,7 +38,7 @@ class BaseAttributeSolver(BaseSolver):
         self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
-        self.parsed_attributes = {}
+        self.parsed_attributes: Dict[str, Any] = {}
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -87,6 +87,8 @@ class BaseAttributeSolver(BaseSolver):
             if parsed_attr is None:
                 parsed_attr = parse(self.attribute)
                 self.parsed_attributes[self.attribute] = parsed_attr
+            else:
+                a = 0
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)
                 if full_path not in vertex:
