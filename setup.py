@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.45",
+        "bc-python-hcl2==0.3.46",
         "cloudsplaining>=0.4.1",
         "deep_merge",
         "tabulate",
@@ -66,7 +66,7 @@ setup(
         "jsonpath_ng",
         "jsonschema~=3.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.8",
+        "pycep-parser==0.3.9",
         "charset-normalizer",
         "pyston_lite_autoload==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
         "pyston-lite==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
