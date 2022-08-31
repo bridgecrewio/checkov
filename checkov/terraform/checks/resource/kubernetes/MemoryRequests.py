@@ -18,7 +18,7 @@ class MemoryRequests(BaseResourceCheck):
 
         containers = spec.get("container")
         if containers is None:
-            return CheckResult.UNKNOWN 
+            return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
             if type(container) != dict:
                 return CheckResult.UNKNOWN
