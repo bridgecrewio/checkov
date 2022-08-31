@@ -258,12 +258,10 @@ kube-system namespace:
 checkov -d . --skip-check kube-system
 ```
 
-Run a scan of a container image:
+Run a scan of a container image. First pull or build the image then refer to it by the hash, ID, or name:tag:
 ```sh
-checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ... --repo-id test/test_docker
-```
-OR
-```sh
+checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ...
+
 checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
 ```
 
