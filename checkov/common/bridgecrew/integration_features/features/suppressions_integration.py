@@ -154,8 +154,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         elif type == 'Cves':
-            if self.bc_integration.repo_id in suppression['accountIds']:
-                if record.file_path == suppression['cves'][0]['id']:
+            if self.bc_integration.repo_id in suppression['accountIds'] and record.file_path == suppression['cves'][0]['id']:
                     for cve in suppression['cves']:
                         if record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']:
                             return True
