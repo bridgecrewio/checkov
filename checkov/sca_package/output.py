@@ -166,6 +166,7 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
+    package_table.header_align = "l"
     package_table.field_names = [
         "Package name",
         "Package version",
@@ -298,6 +299,7 @@ def create_package_overview_table_part(
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
+    package_table.header_align = "l"
     package_table.field_names = [
         "Package",
         "CVE ID",
