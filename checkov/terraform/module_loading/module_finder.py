@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -8,12 +10,10 @@ from checkov.terraform.module_loading.registry import module_loader_registry
 
 
 class ModuleDownload:
-    source_dir: str
-    module_link: str = None
-    version: str = None
-
-    def __init__(self, source_dir):
+    def __init__(self, source_dir: str) -> None:
         self.source_dir = source_dir
+        self.module_link: str | None = None
+        self.version: str | None = None
 
     def __str__(self):
         return f"{self.source_dir} -> {self.module_link} ({self.version})"
@@ -25,7 +25,7 @@ class ModuleDownload:
 
 def find_modules(path: str) -> List[ModuleDownload]:
     modules_found = []
-    for root, dir_names, full_file_names in os.walk(path):
+    for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith('.tf'):
                 continue

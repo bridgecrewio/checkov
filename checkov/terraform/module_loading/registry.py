@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import hashlib
@@ -12,8 +14,8 @@ if TYPE_CHECKING:
 
 
 class ModuleLoaderRegistry:
-    loaders: List["ModuleLoader"] = []
-    module_content_cache: Dict[str, Optional[ModuleContent]] = {}
+    loaders: List["ModuleLoader"] = []  # noqa: CCE003
+    module_content_cache: Dict[str, Optional[ModuleContent]] = {}  # noqa: CCE003
 
     def __init__(
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
@@ -93,6 +95,9 @@ information, see `loader.ModuleLoader.load`.
 
     def register(self, loader: "ModuleLoader") -> None:
         self.loaders.append(loader)
+
+    def reset_module_content_cache(self) -> None:
+        self.module_content_cache = {}
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()

@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, Any
 
 from hcl2 import START_LINE, END_LINE
-from typing_extensions import TypeAlias
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
 

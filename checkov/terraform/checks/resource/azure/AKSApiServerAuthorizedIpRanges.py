@@ -1,4 +1,6 @@
-from typing import List, Any
+from __future__ import annotations
+
+from typing import Any
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -16,14 +18,15 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "api_server_authorized_ip_ranges/[0]"
 
-    def get_expected_values(self) -> List[Any]:
-        return [ANY_VALUE]
+    def get_expected_value(self) -> Any:
+        return ANY_VALUE
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # can't be set for private cluster
-        private_cluster_enabled = conf.get('private_cluster_enabled',[False])[0]
+        private_cluster_enabled = conf.get("private_cluster_enabled", [False])[0]
         if private_cluster_enabled:
             return CheckResult.PASSED
         return super().scan_resource_conf(conf)
+
 
 check = AKSApiServerAuthorizedIpRanges()
