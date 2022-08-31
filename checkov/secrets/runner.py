@@ -127,10 +127,10 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
-        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS", None)
+        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH", None)
         logging.info(f"Custom detector flag set to {custom_plugins}")
         if custom_plugins:
-            detector_path = f"/tmp/plugins/platform_regex_detector.py"
+            detector_path = f"{custom_plugins}/platform_regex_detector.py"
             file_exists = exists(detector_path)
             if file_exists:
                 logging.info(f"Custom detector found at {detector_path}. Loading...")
