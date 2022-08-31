@@ -440,6 +440,98 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
 
+    def test_supress_by_cve_for_package_scan(self):
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'some/repo'
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+        'suppressionType': 'Cves',
+        'policyId': 'BC_VUL_2',
+        'comment': 'suppress cve ',
+        'accountIds': ['some/repo'],
+        'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
+                 {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
+        'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-35920'})
+        record2 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2021-23727'})
+        record3 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-45452'})
+        record4 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/notrequirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-45452'})
+
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
+
+    def test_supress_by_cve_for_package_scan_with_different_repo_id(self):
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'some/repo'
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+        'suppressionType': 'Cves',
+        'policyId': 'BC_VUL_2',
+        'comment': 'suppress cve ',
+        'accountIds': ['other/repo'],
+        'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
+                 {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
+        'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-35920'})
+        record2 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2021-23727'})
+        record3 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/requirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-45452'})
+        record4 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='/notrequirements.txt',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-45452'})
+
+        self.assertFalse(suppressions_integration._check_suppression(record1, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
+
     def test_account_suppression(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
