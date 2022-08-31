@@ -153,6 +153,13 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return True
             return False
 
+        elif type == 'Cves':
+            if self.bc_integration.repo_id in suppression['accountIds'] and record.file_abs_path == suppression['cves'][0]['id'][1:]:
+                for cve in suppression['cves']:
+                    if record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']:
+                        return True
+            return False
+
         return False
 
     def _suppression_valid_for_run(self, suppression: dict[str, Any]) -> bool:
