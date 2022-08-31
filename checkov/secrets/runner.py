@@ -81,7 +81,8 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        plugins_used = [
+        plugins_used = \
+            [
                 {
                     'name': 'AWSKeyDetector'
                 },
