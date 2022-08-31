@@ -262,6 +262,10 @@ Run a scan of a container image:
 ```sh
 checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ... --repo-id test/test_docker
 ```
+OR
+```sh
+checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
 
 Run an SCA scan of packages in a repo:
 ```sh
