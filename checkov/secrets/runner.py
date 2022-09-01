@@ -6,6 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
+from os.path import exists
 from typing import TYPE_CHECKING, cast
 
 from detect_secrets import SecretsCollection
@@ -80,9 +81,8 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': [
+        plugins_used = \
+            [
                 {
                     'name': 'AWSKeyDetector'
                 },
@@ -128,6 +128,21 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
+        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
+        logging.info(f"Custom detector flag set to {custom_plugins}")
+        if custom_plugins:
+            detector_path = f"{custom_plugins}/custom_regex_detector.py"
+            if exists(detector_path):
+                logging.info(f"Custom detector found at {detector_path}. Loading...")
+                plugins_used.append({
+                    'name': 'CustomRegexDetector',
+                    'path': f'file://{detector_path}'
+                })
+            else:
+                logging.info(f"Custom detector not found at path {detector_path}. Skipping...")
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': plugins_used
         }) as settings:
             report = Report(self.check_type)
             if not runner_filter.show_progress_bar:
@@ -165,7 +180,10 @@ class Runner(BaseRunner[None]):
             self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
-                check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                if hasattr(secret, 'check_id'):
+                    check_id = secret.check_id      # type: ignore
+                else:
+                    check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
@@ -238,6 +256,7 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
+            logging.info(f'file {full_file_path} results {file_results}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
