@@ -128,15 +128,14 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
-        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH", None)
+        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
         logging.info(f"Custom detector flag set to {custom_plugins}")
         if custom_plugins:
-            detector_path = f"{custom_plugins}/platform_regex_detector.py"
-            file_exists = exists(detector_path)
-            if file_exists:
+            detector_path = f"{custom_plugins}/custom_regex_detector.py"
+            if exists(detector_path):
                 logging.info(f"Custom detector found at {detector_path}. Loading...")
                 plugins_used.append({
-                    'name': 'PlatformRegexDetector',
+                    'name': 'CustomRegexDetector',
                     'path': f'file://{detector_path}'
                 })
             else:
@@ -257,6 +256,7 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
+            logging.info(f'file {full_file_path} results {file_results}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
