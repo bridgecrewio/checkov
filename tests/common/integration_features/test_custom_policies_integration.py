@@ -46,7 +46,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # response from API
         policies = [
             {
-                "id": "mikepolicies_AWS_1625063607541",
+                "id": "policy_id_1",
                 "title": "yaml1",
                 "severity": "MEDIUM",
                 "category": "General",
@@ -67,7 +67,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "mikepolicies_aws_1625063842021",
+                "id": "policy_id_2",
                 "title": "ui1",
                 "severity": "HIGH",
                 "category": "General",
@@ -84,7 +84,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "kpande_AWS_1635180094606",
+                "id": "policy_id_3",
                 "title": "Check that all EC2 instances are tagged with yor_trace",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -107,7 +107,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 ],
             },
             {
-                "id": "kpande_AWS_1635187541652",
+                "id": "policy_id_4",
                 "title": "Custom - ensure MSK Cluster logging is enabled",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -176,33 +176,33 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         test_files_dir = current_dir + "/example_custom_policy_dir"
 
         report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter())
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 1)
 
         report = tf_runner.run(root_folder=test_files_dir,
-                               runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 0)
+                               runner_filter=RunnerFilter(checks=['policy_id_2']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 0)
 
         report = tf_runner.run(root_folder=test_files_dir,
-                               runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+                               runner_filter=RunnerFilter(skip_checks=['policy_id_2']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 0)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 1)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
+                                runner_filter=RunnerFilter(checks=['policy_id_4']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 2)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 0)
+                                runner_filter=RunnerFilter(checks=['policy_id_3']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
+                                runner_filter=RunnerFilter(skip_checks=['policy_id_3']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 0)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 2)
 
     def test_pre_scan_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -257,7 +257,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # response from API
         policies = [
             {
-                "id": "mikepolicies_AWS_1625063607541",
+                "id": "policy_id_1",
                 "title": "yaml1",
                 "severity": "MEDIUM",
                 "category": "General",
@@ -276,7 +276,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "mikepolicies_aws_1625063842021",
+                "id": "policy_id_2",
                 "title": "ui1",
                 "severity": "HIGH",
                 "category": "General",
@@ -293,7 +293,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "kpande_AWS_1635180094606",
+                "id": "policy_id_3",
                 "title": "Check that all EC2 instances are tagged with yor_trace",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -316,7 +316,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 ],
             },
             {
-                "id": "kpande_AWS_1635187541652",
+                "id": "policy_id_4",
                 "title": "Custom - ensure MSK Cluster logging is enabled",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -377,8 +377,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
-
-
+        
+        
 def mock_custom_policies_response():
     return {
         "customPolicies": [
