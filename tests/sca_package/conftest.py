@@ -543,7 +543,6 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 @pytest.fixture(scope='package')
 def sca_package_report(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
-    print("\none timeee\n")
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()

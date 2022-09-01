@@ -3,9 +3,18 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from unittest import mock
+import responses
+from pathlib import Path
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
+from checkov.runner_filter import RunnerFilter
+from checkov.sca_image.runner import Runner
+from checkov.common.output.report import Report
+from .mocks import mock_scan
+
+DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
 
 
 @pytest.fixture()
@@ -13,7 +22,7 @@ def image_id() -> str:
     return "sha256:6fd085fc6410"
 
 
-@pytest.fixture()
+@pytest.fixture(scope='package')
 def mock_bc_integration() -> BcPlatformIntegration:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     bc_integration.setup_bridgecrew_credentials(
@@ -98,3 +107,41 @@ def cached_scan_result2() -> dict[str, str]:
 def cached_scan_result3() -> dict[str, str]:
     return {'outputType': 'Error', 'outputData': '', 'compressionMethod': 'gzip'}
 
+
+@pytest.fixture(scope='package')
+@mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan)
+@responses.activate
+def sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
+    # given
+    response_json = {
+        "violations": [
+            {
+                "name": "pcre2",
+                "version": "10.39-3build1",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "COMPLIANT"
+            },
+            {
+                "name": "perl",
+                "version": "5.34.0-3ubuntu1",
+                "license": "Apache-2.0-Fake",
+                "policy": "BC_LIC_1",
+                "status": "OPEN"
+            },
+        ]
+    }
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        json=response_json,
+        status=200
+    )
+
+    runner = Runner()
+    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
+    # when
+    dockerfile_path = "/path/to/Dockerfile"
+    image_id = "sha256:123456"
+    return runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter,
+                      dockerfile_path=dockerfile_path, image_id=image_id)
