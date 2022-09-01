@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class WebhookInsecureSsl(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure GitHub repository webhook uses secure SSL"
+        name = "Ensure GitHub repository webhooks are using HTTPS"
         id = "CKV_GIT_2"
         supported_resources = ["github_repository_webhook"]
         categories = [CheckCategories.GENERAL_SECURITY]
