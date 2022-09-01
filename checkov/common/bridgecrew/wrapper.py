@@ -89,10 +89,6 @@ def enrich_and_persist_checks_metadata(
     """
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
-        if scan_report.is_empty():
-            # only save checks metadata for reports with check results
-            continue
-
         check_type = scan_report.check_type
         checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
