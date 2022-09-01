@@ -38,7 +38,7 @@ class BaseAttributeSolver(BaseSolver):
         self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
-        self.parsed_attributes: Dict[str, Any] = {}
+        self.parsed_attributes: Dict[Optional[str], Any] = {}
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
