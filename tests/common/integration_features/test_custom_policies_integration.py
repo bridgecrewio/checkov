@@ -253,6 +253,131 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual(2, len(scan_reports.failed_checks))
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
 
+    def test_policy_load_with_resources_types_as_str(self):
+        # response from API
+        policies = [
+            {
+                "id": "mikepolicies_AWS_1625063607541",
+                "title": "yaml1",
+                "severity": "MEDIUM",
+                "category": "General",
+                "guideline": "yaml1",
+                "code": json.dumps({
+                    "or": [
+                        {
+                            "value": "xyz",
+                            "operator": "equals",
+                            "attribute": "xyz",
+                            "cond_type": "attribute",
+                            "resource_types": "aws_s3_bucket"
+                        }
+                    ]
+                }),
+                "benchmarks": {},
+            },
+            {
+                "id": "mikepolicies_aws_1625063842021",
+                "title": "ui1",
+                "severity": "HIGH",
+                "category": "General",
+                "guideline": "ui1",
+                "code": json.dumps({
+                    "value": "abc",
+                    "operator": "equals",
+                    "attribute": "region",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "aws_s3_bucket"
+                    ]
+                }),
+                "benchmarks": {},
+            },
+            {
+                "id": "kpande_AWS_1635180094606",
+                "title": "Check that all EC2 instances are tagged with yor_trace",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "LOW",
+                "pcSeverity": "null",
+                "category": "General",
+                "guideline": "Check for YOR tagging",
+                "code": json.dumps({
+                    "operator": "exists",
+                    "attribute": "Tags.yor_trace",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "AWS::EC2::Instance"
+                    ]
+                }),
+                "benchmarks": {},
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
+            },
+            {
+                "id": "kpande_AWS_1635187541652",
+                "title": "Custom - ensure MSK Cluster logging is enabled",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "MEDIUM",
+                "pcSeverity": "null",
+                "category": "Logging",
+                "resourceTypes": [
+                    "AWS::MSK::Cluster"
+                ],
+                "accountsData": {},
+                "guideline": "Some sample guidelines",
+                "isCustom": True,
+                "code": json.dumps({
+                    "or": [
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.S3.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.Firehose.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        }
+                    ]
+                }),
+                "benchmarks": {},
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
+            }
+        ]
+
+        # for this test, we simulate some of the check registry manipulation; otherwise the singleton
+        # instance will be modified and break other tests.
+
+        parser = NXGraphCheckParser()
+
+        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+            Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
+        checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
+        registry.checks = checks  # simulate that the policy downloader will do
+
 
 def mock_custom_policies_response():
     return {
