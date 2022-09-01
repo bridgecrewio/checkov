@@ -1,10 +1,10 @@
 from networkx import DiGraph
 
 from checkov.common.images.image_referencer import Image
-from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
+from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
 
 
-def test_extract_images_from_aws_resources():
+def test_extract_images_from_resources():
     # given
     resource = {
         "file_path_": "/ecs.tf",
@@ -34,7 +34,8 @@ def test_extract_images_from_aws_resources():
     graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_aws_resources(graph_connector=graph)
+    aws_provider = AwsTerraformProvider(graph_connector=graph)
+    images = aws_provider.extract_images_from_resources()
 
     # then
     assert images == [
@@ -53,7 +54,7 @@ def test_extract_images_from_aws_resources():
     ]
 
 
-def test_extract_images_from_aws_resources_with_no_image():
+def test_extract_images_from_resources_with_no_image():
     # given
     resource = {
         "file_path_": "/ecs.tf",
@@ -74,7 +75,8 @@ def test_extract_images_from_aws_resources_with_no_image():
     graph.add_node(1, **resource)
 
     # when
-    images = extract_images_from_aws_resources(graph_connector=graph)
+    aws_provider = AwsTerraformProvider(graph_connector=graph)
+    images = aws_provider.extract_images_from_resources()
 
     # then
     assert not images

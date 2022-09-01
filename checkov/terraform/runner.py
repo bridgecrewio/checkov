@@ -6,7 +6,7 @@ import logging
 import os
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Tuple, List, Type, Any, Set, TYPE_CHECKING
+from typing import Dict, Optional, Tuple, Type, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
@@ -38,48 +38,49 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
-# Allow the evaluation of empty variables
-from checkov.terraform.image_referencer.aws import extract_images_from_aws_resources
+from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
 
 if TYPE_CHECKING:
     from networkx import DiGraph
 
+# Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
 class Runner(ImageReferencerMixin, BaseRunner):
-    check_type = CheckType.TERRAFORM
+    check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
-        parser: Parser = Parser(),
-        db_connector: NetworkxConnector = NetworkxConnector(),
-        external_registries: Optional[List[BaseRegistry]] = None,
+        parser: Parser | None = None,
+        db_connector: NetworkxConnector | None = None,
+        external_registries: list[BaseRegistry] | None = None,
         source: str = "Terraform",
         graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
-        graph_manager: Optional[TerraformGraphManager] = None
+        graph_manager: TerraformGraphManager | None = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.parser = parser
+        self.parser = parser or Parser()
         self.definitions = None
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
             source=source,
-            db_connector=db_connector)
+            db_connector=db_connector or NetworkxConnector(),
+        )
         self.graph_registry = get_graph_checks_registry(self.check_type)
-        self.definitions_with_modules: Dict[str, Dict] = {}
+        self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
 
-    block_type_registries = {
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
         'data': data_registry,
         'provider': provider_registry,
@@ -99,7 +100,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-        parsing_errors = {}
+        parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
         scan_hcl = should_scan_hcl_files()
         local_graph = None
@@ -146,7 +147,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.pbar.initiate(len(self.definitions))  # type: ignore
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
-        report.add_parsing_errors(list(parsing_errors.keys()))
+        report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
@@ -494,7 +495,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         if not self.definitions_with_modules:
             self._prepare_definitions_with_modules()
-        for file, file_content in self.definitions_with_modules.items():
+        for file_content in self.definitions_with_modules.values():
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
                     if "__resolved__" not in module_content:
@@ -508,23 +509,24 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.non_referred_cache.add(full_file_path)
         return None
 
-    def _prepare_definitions_with_modules(self):
-        def __cache_file_content(file_modules: list):
+    def _prepare_definitions_with_modules(self) -> None:
+        def __cache_file_content(file_name: str, file_modules: list[dict[str, Any]]) -> None:
             for modules in file_modules:
                 for module_content in modules.values():
                     if "__resolved__" in module_content:
-                        self.definitions_with_modules[file] = file_content
+                        self.definitions_with_modules[file_name] = file_content
                         return
 
         for file, file_content in self.definitions.items():
             if "module" in file_content:
-                __cache_file_content(file_modules=file_content["module"])
+                __cache_file_content(file_name=file, file_modules=file_content["module"])
 
     def extract_images(self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None) -> list[Image]:
         if not graph_connector:
             # should not happen
             return []
 
-        images = extract_images_from_aws_resources(graph_connector=graph_connector)
+        manager = TerraformImageReferencerManager(graph_connector=graph_connector)
+        images = manager.extract_images_from_resources()
 
         return images

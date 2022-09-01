@@ -13,6 +13,7 @@ class ContainsAttributeSolver(BaseAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
         att = vertex.get(attribute, "{}")  # type:ignore[arg-type]  # due to attribute can be None
+        att = "{}" if att is None else att
         if isinstance(att, str):
             try:
                 att = json.loads(att.replace("'", '"'))

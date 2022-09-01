@@ -18,6 +18,7 @@ tests/terraform/module_loading/test_registry.py
 tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
+tests/helm/runner/resources/schema-registry
 .*Scans.md
 docs/5.Contribution/New-Provider.md
 docs/2.Basics/Scanning Credentials and Secrets.md

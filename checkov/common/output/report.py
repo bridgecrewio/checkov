@@ -158,12 +158,18 @@ class Report:
         logging.debug('No failed check triggered hard fail - returning 0')
         return 0
 
-    def is_empty(self) -> bool:
-        return (
-            len(self.passed_checks + self.failed_checks + self.skipped_checks)
+    def is_empty(self, full: bool = False) -> bool:
+        checks_count = (
+            len(self.passed_checks)
+            + len(self.failed_checks)
+            + len(self.skipped_checks)
             + len(self.parsing_errors)
-            == 0
         )
+
+        if full:
+            checks_count += len(self.resources) + len(self.extra_resources) + len(self.image_cached_results)
+
+        return checks_count == 0
 
     def print_console(
         self,

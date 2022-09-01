@@ -345,7 +345,7 @@ class RunnerRegistry:
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
                               output_types: list[str],
-                              account_id: str | None = None) -> dict[str, str]:
+                              account_id: str) -> dict[str, str]:
 
         output_files = {
             'cyclonedx': 'results_cyclonedx.xml',
@@ -368,10 +368,7 @@ class RunnerRegistry:
             csv_sbom_report = CSVSBOM()
             for report in scan_reports:
                 if not report.is_empty():
-                    if account_id:
-                        git_org, git_repository = account_id.split('/')
-                    else:
-                        git_org, git_repository = "", ""
+                    git_org, git_repository = self.extract_git_info_from_account_id(account_id)
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
@@ -463,3 +460,14 @@ class RunnerRegistry:
                 for result_dict in result:
                     result_dict["code_block"] = None
                     result_dict["connected_node"] = None
+
+    @staticmethod
+    def extract_git_info_from_account_id(account_id: str) -> tuple[str, str]:
+        if '/' in account_id:
+            account_id_list = account_id.split('/')
+            git_org = '/'.join(account_id_list[0:-1])
+            git_repository = account_id_list[-1]
+        else:
+            git_org, git_repository = "", ""
+
+        return git_org, git_repository

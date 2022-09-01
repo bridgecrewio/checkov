@@ -24,7 +24,7 @@ def get_scannable_file_paths(root_folder: str | Path | None = None, files: list[
 
     if root_folder:
         root_path = Path(root_folder)
-        file_paths = {file_path for file_path in root_path.rglob("*.bicep")}
+        file_paths = {file_path for file_path in root_path.rglob("*.bicep") if file_path.is_file()}
     if files:
         for file in files:
             if file.endswith(".bicep"):

@@ -14,16 +14,9 @@ from checkov.sca_package.runner import Runner
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 
-def test_run(mocker: MockerFixture, scan_result):
+def test_run(sca_package_report):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-
-    # when
-    report = Runner().run(root_folder=EXAMPLES_DIR)
-
+    report = sca_package_report
     # then
     assert report.check_type == "sca_package"
 
@@ -47,9 +40,9 @@ def test_run(mocker: MockerFixture, scan_result):
     assert cve_record.check_class == "mock.mock.MagicMock"  # not the real one
     assert cve_record.check_name == "SCA package scan"
     assert cve_record.check_result == {"result": CheckResult.FAILED}
-    assert cve_record.code_block == [(0, "golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9")]
+    assert cve_record.code_block == [(0, "golang.org/x/crypto: v0.0.1")]
     assert cve_record.description == (
-        "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c "
+        "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 "
         "for Go allows remote attackers to cause a denial of service against SSH servers."
     )
     assert cve_record.file_abs_path == "/path/to/go.sum"
@@ -58,10 +51,10 @@ def test_run(mocker: MockerFixture, scan_result):
     assert cve_record.repo_file_path == "/path/to/go.sum"
     assert cve_record.resource == "path/to/go.sum.golang.org/x/crypto"
     assert cve_record.severity == Severities[BcSeverities.HIGH]
-    assert cve_record.short_description == "CVE-2020-29652 - golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"
-    assert cve_record.vulnerability_details["lowest_fixed_version"] == "v0.0.0-20201216223049-8b5274cf687f"
+    assert cve_record.short_description == "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"
+    assert cve_record.vulnerability_details["lowest_fixed_version"] == "0.0.2"
     assert cve_record.vulnerability_details["fixed_versions"] == [
-        packaging_version.parse("v0.0.0-20201216223049-8b5274cf687f"),
+        packaging_version.parse("v0.0.2"),
     ]
 
     # making sure cve-records have licenses (the one belongs to the associated package) - this data will be printed

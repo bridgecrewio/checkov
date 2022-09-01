@@ -183,9 +183,9 @@ def get_referenced_vertices_in_value(
 
     if isinstance(value, str):
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(value):
-            logging.info(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
-                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                         f'to {str(len(value) + 1)} or to 0 to allow rendering of any length')
+            logging.debug(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
+                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                          f'to {str(len(value) + 1)} or to 0 to allow rendering of any length')
         else:
             if cleanup_functions:
                 for func in cleanup_functions:

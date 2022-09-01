@@ -381,9 +381,11 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
 
-        self.scan_reports = scan_reports
-        reduced_scan_reports = reduce_scan_reports(scan_reports)
-        checks_metadata_paths = enrich_and_persist_checks_metadata(scan_reports, self.s3_client, self.bucket,
+        # just process reports with actual results in it
+        self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
+
+        reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+        checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)

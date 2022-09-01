@@ -13,6 +13,7 @@ class Severity:
 @dataclass
 class BcSeverities:
     NONE = 'NONE'
+    INFO = 'INFO'
     LOW = 'LOW'
     MEDIUM = 'MEDIUM'
     HIGH = 'HIGH'
@@ -23,13 +24,14 @@ class BcSeverities:
 
 
 Severities = {
-    BcSeverities.NONE: Severity(BcSeverities.NONE, 0),
-    BcSeverities.LOW: Severity(BcSeverities.LOW, 1),
-    BcSeverities.MEDIUM: Severity(BcSeverities.MEDIUM, 2),
-    BcSeverities.MODERATE: Severity(BcSeverities.MEDIUM, 2),
-    BcSeverities.HIGH: Severity(BcSeverities.HIGH, 3),
-    BcSeverities.IMPORTANT: Severity(BcSeverities.HIGH, 3),
-    BcSeverities.CRITICAL: Severity(BcSeverities.CRITICAL, 4),
+    BcSeverities.NONE: Severity(BcSeverities.NONE, -999),
+    BcSeverities.INFO: Severity(BcSeverities.INFO, 1),
+    BcSeverities.LOW: Severity(BcSeverities.LOW, 2),
+    BcSeverities.MEDIUM: Severity(BcSeverities.MEDIUM, 3),
+    BcSeverities.MODERATE: Severity(BcSeverities.MEDIUM, 3),
+    BcSeverities.HIGH: Severity(BcSeverities.HIGH, 4),
+    BcSeverities.IMPORTANT: Severity(BcSeverities.HIGH, 4),
+    BcSeverities.CRITICAL: Severity(BcSeverities.CRITICAL, 5),
     BcSeverities.OFF: Severity(BcSeverities.OFF, 999),
 }
 

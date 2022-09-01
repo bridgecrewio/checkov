@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
       - name: Install pipenv
         run: |
@@ -219,7 +219,7 @@ jobs:
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -240,7 +240,7 @@ jobs:
           echo "::set-output name=major_version::$checkov_major_version"
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -265,7 +265,7 @@ jobs:
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -276,7 +276,7 @@ jobs:
       - name: Image digest
         run: echo ${{ steps.docker_publish.outputs.digest }}
       - name: Update deployment
-        uses: jacobtomlinson/gha-find-replace@master
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3  # v2
         with:
           find: "image: bridgecrew/whorf@sha256:[a-f0-9]{64}"
           replace: "image: ${{ steps.docker_publish.outputs.digest }}"
@@ -300,7 +300,7 @@ jobs:
           echo "::set-output name=version::$checkov_version"
           echo "::set-output name=major_version::$checkov_major_version"
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
