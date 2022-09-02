@@ -86,7 +86,7 @@ def persist_run_metadata(run_metadata: str, s3_client: BaseClient, bucket: str, 
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=run_metadata.encode('utf-8'))
     except Exception:
         logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
-        raiseq
+        raise
 
 
 def enrich_and_persist_checks_metadata(
