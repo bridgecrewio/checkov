@@ -432,6 +432,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 6.1\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Exploit exists', 'Has fix', 'Medium severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
+                    "  Fixed Version: 1.11.27\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -446,6 +449,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N\n",
                     "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                    "Fix Details:\n",
+                    "  Status: fixed in 1.9.10, 1.8.15\n",
+                    "  Fixed Version: 1.8.15\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -460,6 +466,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 4.9\n",
                     "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 3.2.4, 3.1.12, 2.2.24\n",
+                    "  Fixed Version: 2.2.24\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -474,6 +483,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 1.0\n",
+                    "  Fixed Version: 1.0\n",
                     "\n",
                     "Resource: path/to/requirements.txt.flask\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -488,6 +500,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 0.12.3\n"
+                    "  Fixed Version: 0.12.3\n"
                     "\n",
                     "Resource: path/to/requirements.txt.flask\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -502,6 +517,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.7\n",
                     "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N\n",
                     "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in v4.0.0-preview1\n",
+                    "  Fixed Version: 4.0.0rc1\n",
                     "\n",
                     "Resource: path/to/go.sum.github.com/dgrijalva/jwt-go\n",
                     "File: /path/to/go.sum: 0-0\n",
