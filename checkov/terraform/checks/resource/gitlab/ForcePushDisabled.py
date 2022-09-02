@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class ForcePushDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure force push is disabled"
+        name = "Ensure GitLab branch protection rules does not allow force pushes"
         id = "CKV_GLB_2"
         supported_resources = ["gitlab_branch_protection"]
         categories = [CheckCategories.GENERAL_SECURITY]
