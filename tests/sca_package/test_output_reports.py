@@ -433,8 +433,8 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Exploit exists', 'Has fix', 'Medium severity']\n",
                     "Fix Details:\n"
-                    "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
-                    "  Fixed Version: 1.11.27\n",
+                    "  Status: fixed in 1.9.8, 1.8.14\n",
+                    "  Fixed Version: 1.8.14\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
