@@ -69,8 +69,6 @@ jobs:
         run: |
           # https://github.com/aio-libs/aiohttp/issues/6600
           echo "AIOHTTP_NO_EXTENSIONS=1" >> $GITHUB_ENV
-          echo "FROZENLIST_NO_EXTENSIONS=1" >> $GITHUB_ENV
-          echo "YARL_NO_EXTENSIONS=1" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
