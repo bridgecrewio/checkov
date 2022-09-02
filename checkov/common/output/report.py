@@ -462,8 +462,9 @@ class Report:
 
         if self.check_type == CheckType.SCA_PACKAGE:
             if record.vulnerability_details:
-                if (record.vulnerability_details.get('lowest_fixed_version') is not None):
-                    fix = record.vulnerability_details.get('lowest_fixed_version')
+                lowest_fixed_version = record.vulnerability_details.get('lowest_fixed_version')
+                if lowest_fixed_version is not None:
+                    fix = lowest_fixed_version
                 else:
                     fixlist = record.vulnerability_details.get('fixed_versions')
                     if fixlist is not None:
