@@ -29,7 +29,7 @@ from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
-    enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
+    enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -398,6 +398,14 @@ class BcPlatformIntegration:
         target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
+
+    def persist_run_metadata(self, run_metadata: str) -> None:
+        if not self.use_s3_integration:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
 
     def commit_repository(self, branch: str) -> str | None:
         """

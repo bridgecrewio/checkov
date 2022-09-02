@@ -114,11 +114,14 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     normalize_config(config, parser)
 
-    logger.debug(f'Checkov version: {version}')
-    logger.debug(f'Python executable: {sys.executable}')
-    logger.debug(f'Python version: {sys.version}')
-    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
-    logger.debug(parser.format_values(sanitize=True))
+    run_metadata = f"""Run metadata:
+Checkov version: {version}
+Python executable: {sys.executable}
+Python version: {sys.version}
+Checkov executable (argv[0]): {sys.argv[0]}
+{parser.format_values(sanitize=True)}"""
+
+    logger.debug(run_metadata)
 
     if config.add_check:
         resp = prompt.Prompt()
@@ -294,6 +297,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
+                bc_integration.persist_run_metadata(run_metadata)
                 url = bc_integration.commit_repository(config.branch)
 
             if config.create_baseline:
@@ -327,6 +331,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.persist_scan_results([result])
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
+        bc_integration.persist_run_metadata(run_metadata)
         url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports([result], config, url=url)
         return exit_code
@@ -351,6 +356,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
+            bc_integration.persist_run_metadata(run_metadata)
             url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
