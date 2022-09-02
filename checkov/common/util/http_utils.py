@@ -9,7 +9,7 @@ import time
 import os
 import aiohttp
 import asyncio
-from typing import Any, TYPE_CHECKING, cast, Optional
+from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
 
@@ -23,6 +23,16 @@ if TYPE_CHECKING:
     from requests import Response
 
 logger = logging.getLogger(__name__)
+
+
+@overload
+def normalize_bc_url(url: None) -> None:
+    ...
+
+
+@overload
+def normalize_bc_url(url: str) -> str:
+    ...
 
 
 def normalize_bc_url(url: str | None) -> str | None:
