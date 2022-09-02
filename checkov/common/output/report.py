@@ -462,6 +462,14 @@ class Report:
 
         if self.check_type == CheckType.SCA_PACKAGE:
             if record.vulnerability_details:
+                lowest_fixed_version = record.vulnerability_details.get('lowest_fixed_version')
+                if lowest_fixed_version is not None:
+                    fix = lowest_fixed_version
+                else:
+                    fixlist = record.vulnerability_details.get('fixed_versions')
+                    if fixlist is not None:
+                        fix = fixlist
+
                 failure_output.extend(
                     [
                         "",
@@ -471,6 +479,9 @@ class Report:
                         f"Base Score: {record.vulnerability_details.get('cvss')}",
                         f"Vector: {record.vulnerability_details.get('vector')}",
                         f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                        "Fix Details:",
+                        f"  Status: {record.vulnerability_details.get('status')}",
+                        f"  Fixed Version: {fix}",
                     ]
                 )
             else:
