@@ -463,11 +463,11 @@ class Report:
         if self.check_type == CheckType.SCA_PACKAGE:
             if record.vulnerability_details:
                 if (record.vulnerability_details.get('lowest_fixed_version') is not None):
-                    fix=record.vulnerability_details.get('lowest_fixed_version')
+                    fix = record.vulnerability_details.get('lowest_fixed_version')
                 else:
-                    fixlist=record.vulnerability_details.get('fixed_versions')
+                    fixlist = record.vulnerability_details.get('fixed_versions')
                     if fixlist is not None:
-                        fix=fixlist
+                        fix = fixlist
 
                 failure_output.extend(
                     [
@@ -481,7 +481,6 @@ class Report:
                         "Fix Details:",
                         f"  Status: {record.vulnerability_details.get('status')}",
                         f"  Fixed Version: {fix}",
-                        f"  Detail: {record.vulnerability_details.get('link')}",                
                     ]
                 )
             else:
