@@ -16,13 +16,17 @@ class OpenstackCredentials(BaseProviderCheck):
         """
         see: https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs#configuration-reference
         """
+        result = CheckResult.PASSED
         if conf.get("password"):
-            return CheckResult.FAILED
+            conf[f'{self.id}_secret_1'] = conf.get('password')[0]
+            result = CheckResult.FAILED
         if conf.get("token"):
-            return CheckResult.FAILED
+            conf[f'{self.id}_secret_2'] = conf.get('token')[0]
+            result = CheckResult.FAILED
         if conf.get("application_credential_secret"):
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+            conf[f'{self.id}_secret_3'] = conf.get('application_credential_secret')[0]
+            result = CheckResult.FAILED
+        return result
 
 
 check = OpenstackCredentials()

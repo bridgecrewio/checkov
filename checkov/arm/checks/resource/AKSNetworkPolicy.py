@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.parsers.node import DictNode
 
 
 class AKSNetworkPolicy(BaseResourceCheck):
@@ -17,11 +18,15 @@ class AKSNetworkPolicy(BaseResourceCheck):
                 # No networkProfile option to configure
                 return CheckResult.FAILED
 
-        if "properties" in conf:
-            if "networkProfile" in conf["properties"]:
-                if "networkPolicy" in conf["properties"]["networkProfile"]:
-                    if conf["properties"]["networkProfile"]["networkPolicy"]:
-                        return CheckResult.PASSED
+        properties = conf.get('properties')
+        if not properties or not isinstance(properties, DictNode):
+            return CheckResult.FAILED
+        network_profile = properties.get('networkProfile')
+        if not network_profile:
+            return CheckResult.FAILED
+        network_policy = network_profile.get('networkPolicy')
+        if network_policy:
+            return CheckResult.PASSED
         return CheckResult.FAILED
 
 check = AKSNetworkPolicy()

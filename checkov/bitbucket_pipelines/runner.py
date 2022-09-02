@@ -1,13 +1,17 @@
+from __future__ import annotations
+
+from typing import Any
+
 import jmespath
 
 from checkov.bitbucket_pipelines.registry import registry
 from checkov.common.images.image_referencer import ImageReferencer, Image
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.BITBUCKET_PIPELINES
+    check_type = CheckType.BITBUCKET_PIPELINES  # noqa: CCE003  # a static attribute
 
     def __init__(self):
         super().__init__()
@@ -28,7 +32,7 @@ class Runner(YamlRunner, ImageReferencer):
         """
         return file_path.endswith(("bitbucket-pipelines.yml", "bitbucket-pipelines.yaml"))
 
-    def get_images(self, file_path):
+    def get_images(self, file_path: str) -> set[Image]:
         """
         Get container images mentioned in a file
         :param file_path: File to be inspected
@@ -72,7 +76,7 @@ class Runner(YamlRunner, ImageReferencer):
 
         """
 
-        images = set()
+        images: set[Image] = set()
 
         workflow, workflow_line_numbers = self._parse_file(file_path)
         self.add_default_and_pipelines_images(workflow, images, file_path)
@@ -80,7 +84,7 @@ class Runner(YamlRunner, ImageReferencer):
 
         return images
 
-    def add_default_and_pipelines_images(self, workflow: dict, images: set, file_path: str) -> None:
+    def add_default_and_pipelines_images(self, workflow: dict[str, Any], images: set[Image], file_path: str) -> None:
         """
 
         :param workflow: parsed workflow file
@@ -95,24 +99,25 @@ class Runner(YamlRunner, ImageReferencer):
             for result in results:
                 image_name = result.get("image", None)
                 if image_name:
-                    image_id = self.inspect(image_name)
-                    image_obj = Image(file_path=file_path, name=image_name, image_id=image_id,
-                                      start_line=result["__startline__"],
-                                      end_line=result["__endline__"])
+                    image_obj = Image(
+                        file_path=file_path,
+                        name=image_name,
+                        start_line=result["__startline__"],
+                        end_line=result["__endline__"],
+                    )
                     images.add(image_obj)
 
-    def add_root_image(self, file_path: str, images: set,
-                       workflow_line_numbers: dict, workflow: dict) -> None:
+    def add_root_image(
+        self, file_path: str, images: set[Image], workflow_line_numbers: list[tuple[int, str]], workflow: dict[str, Any]
+    ) -> None:
         root_image = workflow.get("image", "")
 
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
                 if "image" in line_txt and not line_txt.startswith(' '):
-                    image_id = self.inspect(root_image)
                     image_obj = Image(
                         file_path=file_path,
                         name=root_image,
-                        image_id=image_id,
                         start_line=line_number,
                         end_line=line_number,
                     )

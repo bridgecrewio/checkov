@@ -26,13 +26,14 @@ class TestCPURequests(unittest.TestCase):
             "kubernetes_pod.fail2",
             "kubernetes_pod.fail3",
             "kubernetes_pod.fail4",
+            "kubernetes_pod.fail5",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["failed"], 9)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -57,8 +57,8 @@ class CloudformationLocalGraph(LocalGraph):
             if not isinstance(attributes, dict):
                 attributes = DictNode({}, resource.start_mark, resource.end_mark)
             attributes["resource_type"] = resource_type
-            attributes["__startline__"] = resource["__startline__"]
-            attributes["__endline__"] = resource["__endline__"]
+            attributes["__startline__"] = resource.get("__startline__")
+            attributes["__endline__"] = resource.get("__endline__")
             attributes.start_mark = resource.start_mark
             attributes.end_mark = attributes.end_mark
             return attributes
@@ -171,11 +171,15 @@ class CloudformationLocalGraph(LocalGraph):
                             if dest_vertex_index is not None:
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
-                            logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
-                                         f"and vertex_path {vertex_path} as target_id is not a string")
+                            logging.debug(
+                                f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
+                                f"and vertex_path {vertex_path} as target_id is not a string"
+                            )
                 else:
-                    logging.debug(f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
-                                 f"and vertex_path {vertex_path} as target_ids is not a list")
+                    logging.debug(
+                        f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
+                        f"and vertex_path {vertex_path} as target_ids is not a list"
+                    )
 
     def _extract_source_value_attrs(self, matching_path):
         """ matching_path for Resource = [template_section, source_id, 'Properties', ... , key, value]
@@ -309,7 +313,7 @@ class CloudformationLocalGraph(LocalGraph):
         return regex.findall(string)
 
     def _fill_in_out_edges(self) -> None:
-        for i, vertex in enumerate(self.vertices):
+        for i in range(len(self.vertices)):
             if i not in self.in_edges:
                 self.in_edges[i] = []
             if i not in self.out_edges:
@@ -343,7 +347,10 @@ class CloudformationLocalGraph(LocalGraph):
     def _is_of_type(cfndict, identifier, *template_sections):
         if isinstance(identifier, str):
             for ts in template_sections:
-                if cfndict.get(ts, {}).get(identifier):
+                ts_var = cfndict.get(ts, {})
+                if ts_var is None:
+                    continue
+                if ts_var.get(identifier):
                     return True
         return False
 

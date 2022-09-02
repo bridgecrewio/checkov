@@ -46,7 +46,7 @@ class ParallelRunner:
             processes.append((process, parent_conn, len(group_of_items)))
             process.start()
 
-        for process, parent_conn, group_len in processes:
+        for _, parent_conn, group_len in processes:
             for _ in range(group_len):
                 try:
                     yield parent_conn.recv()

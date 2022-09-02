@@ -1,27 +1,41 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.StorageAccountsTransportEncryption import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestAzureManagedDiscEncryption(unittest.TestCase):
+class TestStorageAccountsTransportEncryption(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_StorageAccountsTransportEncryption"
 
-    def test_failure(self):
-        resource_conf = {'name': ['test'], 'resource_group_name': ['${azurerm_resource_group.rg.name}'],
-                         'location': ['${var.location}'], 'account_kind': ['StorageV2'], 'account_tier': ['Premium'],
-                         'account_replication_type': ['LRS']}
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success(self):
-        resource_conf = {'name': ['test'], 'resource_group_name': ['${azurerm_resource_group.rg.name}'],
-                         'location': ['${var.location}'], 'account_kind': ['StorageV2'],
-                         'account_tier': ['Premium'], 'account_replication_type': ['LRS'],
-                         'enable_https_traffic_only': [True]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "azurerm_storage_account.default",
+            "azurerm_storage_account.enabled",
+        }
+        failing_resources = {
+            "azurerm_storage_account.disabled",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

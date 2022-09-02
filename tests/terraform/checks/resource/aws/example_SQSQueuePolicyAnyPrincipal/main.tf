@@ -26,9 +26,9 @@ resource "aws_sqs_queue_policy" "q2" {
     "Version":"2012-10-17",
     "Statement":[
        {
-           "Principal": { 
+           "Principal": {
             "AWS": [
-                "arn:aws:iam::123456789101:role/sqs", 
+                "arn:aws:iam::123456789101:role/sqs",
                 "*"
             ]
           },
@@ -50,7 +50,7 @@ resource "aws_sqs_queue_policy" "q3" {
     "Version":"2012-10-17",
     "Statement":[
        {
-          "Principal": { 
+          "Principal": {
             "AWS": "arn:aws:iam::*:role/sqs"
           },
           "Effect": "Allow",
@@ -71,7 +71,7 @@ resource "aws_sqs_queue_policy" "q4" {
     "Version":"2012-10-17",
     "Statement":[
        {
-           "Principal": { 
+           "Principal": {
             "AWS": "*"
           },
           "Effect": "Allow",
@@ -247,4 +247,32 @@ POLICY
 # unknown
 resource "aws_sqs_queue" "aq7" {
   policy = data.aws_iam_policy_document.bucket_policy.json
+}
+
+
+# unknown
+resource "aws_sqs_queue_policy" "aq8" {
+  queue_url = "my_url"
+
+  policy = jsonencode({
+      Version = "2012-10-17"
+      Id = "my_polivy"
+      Statement = [for v in [] :
+        {
+          Sid = "sid"
+          Action = [
+            "sqs:SendMessage"
+          ]
+          Principal = "*"
+          Effect   = "Allow"
+          Resource = "queue"
+          Condition = {
+            ArnEquals = {
+              "aws:SourceArn": "${v}"
+            }
+          }
+        }
+      ]
+    })
+
 }

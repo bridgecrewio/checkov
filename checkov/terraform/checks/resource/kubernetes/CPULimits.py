@@ -21,6 +21,8 @@ class CPULimits(BaseResourceCheck):
         spec = conf['spec'][0]
 
         containers = spec.get("container")
+        if not containers:
+            return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
             if type(container) != dict:
                 return CheckResult.UNKNOWN
@@ -28,7 +30,7 @@ class CPULimits(BaseResourceCheck):
                 resources = container.get("resources")[0]
                 if resources.get('limits'):
                     limits = resources.get('limits')[0]
-                    if limits.get('cpu'):
+                    if isinstance(limits, dict) and limits.get('cpu'):
                         return CheckResult.PASSED
                     self.evaluated_keys = [f'spec/[0]/container/[{idx}]/resources/[0]/limits']
                     return CheckResult.FAILED

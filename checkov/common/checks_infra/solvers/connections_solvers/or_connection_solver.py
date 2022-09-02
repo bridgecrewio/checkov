@@ -1,20 +1,24 @@
-from typing import Optional, List, Tuple, Dict, Any
+from __future__ import annotations
 
-from networkx.classes.digraph import DiGraph
+from typing import Optional, List, Tuple, Dict, Any, TYPE_CHECKING
+
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+
 
 class OrConnectionSolver(ComplexConnectionSolver):
-    operator = Operators.OR
+    operator = Operators.OR  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
         passed, failed = self.run_attribute_solvers(graph_connector)
         failed = OrConnectionSolver._filter_failed(failed, passed)
         connection_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseConnectionSolver)]

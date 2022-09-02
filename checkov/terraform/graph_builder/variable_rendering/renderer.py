@@ -252,11 +252,12 @@ class TerraformVariableRenderer(VariableRenderer):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
-            for attribute in filter(
-                lambda attr: attr not in reserved_attribute_names
-                and not attribute_has_nested_attributes(attr, vertex.attributes),
-                vertex.attributes,
-            ):
+            filtered_attributes = [
+                attr
+                for attr in vertex.attributes
+                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+            ]
+            for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val
                 if not isinstance(lst_curr_val, list):
@@ -285,9 +286,9 @@ class TerraformVariableRenderer(VariableRenderer):
     def evaluate_value(self, val: Any) -> Any:
         val_length: int = len(str(val))
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < val_length:
-            logging.info(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
-                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                         f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
+            logging.debug(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
+                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                          f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
             return val
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val

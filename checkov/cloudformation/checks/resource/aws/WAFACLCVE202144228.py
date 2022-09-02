@@ -34,7 +34,7 @@ class WAFACLCVE202144228(BaseResourceCheck):
                             excluded_rules = managed_group.get("ExcludedRules") or []
                             # rule 'Log4JRCE' should not be set to count
                             for idx_excluded_rule, excluded_rule in enumerate(excluded_rules):
-                                if excluded_rule.get("Name") == "Log4JRCE":
+                                if isinstance(excluded_rule, dict) and excluded_rule.get("Name") == "Log4JRCE":
                                     self.evaluated_keys = [
                                         f"Properties/Rules/[{idx_rule}]/Statement/ManagedRuleGroupStatement/Name",
                                         f"Properties/Rules/[{idx_rule}]/Statement/ManagedRuleGroupStatement/ExcludedRules/[{idx_excluded_rule}]/Name",

@@ -4,9 +4,12 @@ import logging
 import os
 from collections.abc import Collection
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pycep import BicepParser
-from pycep.typing import BicepJson
+
+if TYPE_CHECKING:
+    from pycep.typing import BicepJson
 
 
 class Parser:
@@ -19,7 +22,7 @@ class Parser:
         try:
             template = self.bicep_parser.parse(text=content)
         except Exception:
-            logging.error(f"[bicep] Couldn't parse {file_path}", exc_info=True)
+            logging.debug(f"[bicep] Couldn't parse {file_path}", exc_info=True)
             return None, None
 
         file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]

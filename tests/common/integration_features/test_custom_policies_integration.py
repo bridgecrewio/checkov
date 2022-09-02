@@ -46,7 +46,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # response from API
         policies = [
             {
-                "id": "mikepolicies_AWS_1625063607541",
+                "id": "policy_id_1",
                 "title": "yaml1",
                 "severity": "MEDIUM",
                 "category": "General",
@@ -67,7 +67,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "mikepolicies_aws_1625063842021",
+                "id": "policy_id_2",
                 "title": "ui1",
                 "severity": "HIGH",
                 "category": "General",
@@ -84,7 +84,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 "benchmarks": {},
             },
             {
-                "id": "kpande_AWS_1635180094606",
+                "id": "policy_id_3",
                 "title": "Check that all EC2 instances are tagged with yor_trace",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -107,7 +107,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                 ],
             },
             {
-                "id": "kpande_AWS_1635187541652",
+                "id": "policy_id_4",
                 "title": "Custom - ensure MSK Cluster logging is enabled",
                 "descriptiveTitle": "null",
                 "constructiveTitle": "null",
@@ -176,33 +176,33 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         test_files_dir = current_dir + "/example_custom_policy_dir"
 
         report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter())
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 1)
 
         report = tf_runner.run(root_folder=test_files_dir,
-                               runner_filter=RunnerFilter(checks=['mikepolicies_aws_1625063842021']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 0)
+                               runner_filter=RunnerFilter(checks=['policy_id_2']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 0)
 
         report = tf_runner.run(root_folder=test_files_dir,
-                               runner_filter=RunnerFilter(skip_checks=['mikepolicies_aws_1625063842021']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_aws_1625063842021']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'mikepolicies_AWS_1625063607541']), 1)
+                               runner_filter=RunnerFilter(skip_checks=['policy_id_2']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_2']), 0)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_1']), 1)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635187541652']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
+                                runner_filter=RunnerFilter(checks=['policy_id_4']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 2)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(checks=['kpande_AWS_1635180094606']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 1)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 0)
+                                runner_filter=RunnerFilter(checks=['policy_id_3']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 1)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 0)
 
         report = cfn_runner.run(root_folder=test_files_dir,
-                                runner_filter=RunnerFilter(skip_checks=['kpande_AWS_1635180094606']))
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635180094606']), 0)
-        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'kpande_AWS_1635187541652']), 2)
+                                runner_filter=RunnerFilter(skip_checks=['policy_id_3']))
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 0)
+        self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 2)
 
     def test_pre_scan_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -218,7 +218,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         k8s_registry = get_graph_checks_registry("kubernetes").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -251,7 +253,132 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual(2, len(scan_reports.failed_checks))
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
 
+    def test_policy_load_with_resources_types_as_str(self):
+        # response from API
+        policies = [
+            {
+                "id": "policy_id_1",
+                "title": "yaml1",
+                "severity": "MEDIUM",
+                "category": "General",
+                "guideline": "yaml1",
+                "code": json.dumps({
+                    "or": [
+                        {
+                            "value": "xyz",
+                            "operator": "equals",
+                            "attribute": "xyz",
+                            "cond_type": "attribute",
+                            "resource_types": "aws_s3_bucket"
+                        }
+                    ]
+                }),
+                "benchmarks": {},
+            },
+            {
+                "id": "policy_id_2",
+                "title": "ui1",
+                "severity": "HIGH",
+                "category": "General",
+                "guideline": "ui1",
+                "code": json.dumps({
+                    "value": "abc",
+                    "operator": "equals",
+                    "attribute": "region",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "aws_s3_bucket"
+                    ]
+                }),
+                "benchmarks": {},
+            },
+            {
+                "id": "policy_id_3",
+                "title": "Check that all EC2 instances are tagged with yor_trace",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "LOW",
+                "pcSeverity": "null",
+                "category": "General",
+                "guideline": "Check for YOR tagging",
+                "code": json.dumps({
+                    "operator": "exists",
+                    "attribute": "Tags.yor_trace",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "AWS::EC2::Instance"
+                    ]
+                }),
+                "benchmarks": {},
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
+            },
+            {
+                "id": "policy_id_4",
+                "title": "Custom - ensure MSK Cluster logging is enabled",
+                "descriptiveTitle": "null",
+                "constructiveTitle": "null",
+                "severity": "MEDIUM",
+                "pcSeverity": "null",
+                "category": "Logging",
+                "resourceTypes": [
+                    "AWS::MSK::Cluster"
+                ],
+                "accountsData": {},
+                "guideline": "Some sample guidelines",
+                "isCustom": True,
+                "code": json.dumps({
+                    "or": [
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.S3.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.Firehose.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        },
+                        {
+                            "value": "true",
+                            "operator": "equals",
+                            "attribute": "LoggingInfo.BrokerLogs.CloudWatchLogs.Enabled",
+                            "cond_type": "attribute",
+                            "resource_types": [
+                                "AWS::MSK::Cluster"
+                            ]
+                        }
+                    ]
+                }),
+                "benchmarks": {},
+                "frameworks": [
+                    "Terraform",
+                    "CloudFormation"
+                ],
+            }
+        ]
 
+        # for this test, we simulate some of the check registry manipulation; otherwise the singleton
+        # instance will be modified and break other tests.
+
+        parser = NXGraphCheckParser()
+
+        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+            Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
+        checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
+        registry.checks = checks  # simulate that the policy downloader will do
+        
+        
 def mock_custom_policies_response():
     return {
         "customPolicies": [

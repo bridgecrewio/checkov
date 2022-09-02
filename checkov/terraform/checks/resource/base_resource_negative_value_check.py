@@ -47,6 +47,11 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
                 # we don't provide resources_types as we want to stay provider agnostic
                 return CheckResult.UNKNOWN
+            # value can still be a list
+            if isinstance(value, list):
+                for val in value:
+                    if val in bad_values:
+                        return CheckResult.FAILED
             if value in bad_values or ANY_VALUE in bad_values:
                 return CheckResult.FAILED
             else:

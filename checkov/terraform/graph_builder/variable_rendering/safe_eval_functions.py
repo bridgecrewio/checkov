@@ -124,7 +124,7 @@ def update_datetime(dt: datetime, delta: datetime.timedelta, adding: bool) -> da
 '''
 From docs:
 duration is a string representation of a time difference, consisting of sequences of number and unit pairs,
- like "1.5h" or "1h30m". The accepted units are "ns", "us" (or "µs"), "ms", "s", "m", and "h". 
+ like "1.5h" or "1h30m". The accepted units are "ns", "us" (or "µs"), "ms", "s", "m", and "h".
  The first number may be negative to indicate a negative duration, like "-2h5m".
 '''
 def timeadd(input_str: str, time_delta: str) -> str:
@@ -136,9 +136,9 @@ def timeadd(input_str: str, time_delta: str) -> str:
         adding = False
         time_delta = time_delta[1:]
     # Split out into each of the deltas
-    deltas = re.split(r'(\d*\.*\d+)',time_delta)
+    deltas = re.split(r'(\d*\.*\d+)', time_delta)
     # Needed to strip the leading empty element
-    deltas = list(filter(None,deltas))
+    deltas = list(filter(None, deltas))
     while len(deltas) > 0:
         amount = float(deltas[0])
         interval = deltas[1]
@@ -157,7 +157,7 @@ def timeadd(input_str: str, time_delta: str) -> str:
         elif interval == 'ns':  # Crude, but timedelta does not deal with nanoseconds
             delta = datetime.timedelta(microseconds=(amount / 1000))
 
-        dt = update_datetime(dt,delta,adding)
+        dt = update_datetime(dt, delta, adding)
         
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -209,15 +209,15 @@ def process_formatting_codes(format_str: str, dt: datetime) -> str:
     return format_str
 
 '''
-From docs: This function is intended for producing common machine-oriented timestamp formats such as 
-those defined in RFC822, RFC850, and RFC1123. It is not suitable for truly human-oriented date 
+From docs: This function is intended for producing common machine-oriented timestamp formats such as
+those defined in RFC822, RFC850, and RFC1123. It is not suitable for truly human-oriented date
 formatting because it is not locale-aware.
-Any non-letter characters, such as punctuation, are reproduced verbatim in the output. 
-To include literal letters in the format string, enclose them in single quotes '. 
+Any non-letter characters, such as punctuation, are reproduced verbatim in the output.
+To include literal letters in the format string, enclose them in single quotes '.
 To include a literal quote, escape it by doubling the quotes.
 Function works through the format string halting on single quotes to process any formatting
 '''
-def formatdate(format_str:str, input_str: str) -> str:
+def formatdate(format_str: str, input_str: str) -> str:
     # Convert the input str to a date
     input_str = input_str.replace("Z", "+00:00")
     dt = datetime.datetime.fromisoformat(input_str)
@@ -236,7 +236,7 @@ def formatdate(format_str:str, input_str: str) -> str:
                     processed_format_str += "'"
                 in_quote = not in_quote
             else:
-                processed_format_str += ch 
+                processed_format_str += ch
         else:
             if ch != last_ch and last_ch != "":  # new format code and the start of the string
                 processed_format_str += process_formatting_codes(format_str_segment, dt)

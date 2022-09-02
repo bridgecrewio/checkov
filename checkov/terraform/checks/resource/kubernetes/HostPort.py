@@ -28,6 +28,8 @@ class HostPort(BaseResourceCheck):
         spec = conf.get('spec')[0]
         if spec:
             containers = spec.get("container")
+            if containers is None:
+                return CheckResult.UNKNOWN
             for idx, container in enumerate(containers):
                 if not isinstance(container, dict):
                     return CheckResult.UNKNOWN

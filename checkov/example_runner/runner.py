@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 
 # Import of the checks registry for a specific resource type
 from checkov.example_runner.checks.job_registry import registry as job_registry
@@ -43,7 +43,7 @@ class Runner(YamlRunner):
         return self.block_type_registries["jobs"]
 
     def _parse_file(
-        self, f: str
+        self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         # EDIT" add conditional here to ensure this file is something we should parse.
         # Below is this example for github actions

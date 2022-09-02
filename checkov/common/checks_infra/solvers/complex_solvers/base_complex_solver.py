@@ -1,13 +1,16 @@
-from typing import List, Any, Tuple, Dict
+from __future__ import annotations
 
-from networkx import DiGraph
+from typing import List, Any, Tuple, Dict, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+
 
 class BaseComplexSolver(BaseSolver):
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         if solvers is None:

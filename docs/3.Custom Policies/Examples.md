@@ -24,6 +24,23 @@ definition:
        operator: "exists"
 ```
 
+## Basic Query - Terraform plan resource not deleted
+
+```yaml
+---
+metadata:
+  name: "Ensure Secret is not deleted"
+  id: "CKV2_AWS_1"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_secretsmanager_secret
+  attribute: __change_actions__
+  operator: not_contains
+  value: delete
+```
+
 ## OR at Top Level - Two Attribute Blocks
 
 ```yaml
@@ -147,6 +164,43 @@ definition:
           value:
            - "aws_ebs_volume"
           operator: "within"
+```
+
+## Simple Connection State Block and Filter and Attribute Blocks - Data block example
+
+```yaml
+---
+metadata:
+ name: "Ensure admin groups are not created"
+ id: "CKV2_AZURE_999"
+ category: "IAM"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - azuredevops_group_membership
+    - or:
+        - cond_type: connection
+          resource_types:
+            - azuredevops_group_membership
+          connected_resource_types:
+            - data.azuredevops_group
+          operator: not_exists
+        - and:
+          - cond_type: connection
+            resource_types:
+              - azuredevops_group_membership
+            connected_resource_types:
+              - data.azuredevops_group
+            operator: exists
+          - cond_type: attribute
+            resource_types:
+              - data.azuredevops_group
+            attribute: name
+            operator: not_equals
+            value: "Build Administrators"
 ```
 
 ## Complex Definition - Connection State Block and Filter and Attribute Blocks - Example 1
@@ -334,4 +388,19 @@ definition:
           attribute: "from_port"
           operator: "equals"
           value: "22"
+```
+
+## Using a wildcard to evaluate all elements of a list
+
+The following policy will pass if and only if all of the `cidr_blocks` arrays within the `ingress` blocks of a security group do not contain `0.0.0.0/0`.
+
+```yaml
+definition:
+  not:
+    cond_type: attribute
+    resource_types:
+      - "aws_security_group"
+    attribute: "ingress.*.cidr_blocks"
+    operator: "contains"
+    value: "0.0.0.0/0"
 ```

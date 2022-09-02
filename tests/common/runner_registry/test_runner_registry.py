@@ -1,17 +1,20 @@
 import argparse
+import json
 import unittest
 
 import os
 import io
 from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+import re
 
 
 class TestRunnerRegistry(unittest.TestCase):
@@ -94,6 +97,39 @@ class TestRunnerRegistry(unittest.TestCase):
             soft_fail_on=None,
             hard_fail_on=None,
             output_file_path=None,
+            use_enforcement_rules=None
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=reports, config=config)
+
+        output = json.loads(captured_output.getvalue())
+        passed_checks = output["results"]["passed_checks"]
+        failed_checks = output["results"]["failed_checks"]
+
+        assert all(check["code_block"] is None for check in passed_checks)
+        assert all(check["connected_node"] is None for check in passed_checks)
+        assert all(check["code_block"] is None for check in failed_checks)
+        assert all(check["connected_node"] is None for check in failed_checks)
+
+    def test_compact_csv_output(self):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_s3_tf"
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=True,
+            output=['csv'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+            use_enforcement_rules=None
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
@@ -101,8 +137,21 @@ class TestRunnerRegistry(unittest.TestCase):
 
         output = captured_output.getvalue()
 
-        assert 'code_block' not in output
-        assert 'connected_node' not in output
+        self.assertIn('Persisting SBOM to ', output)
+        iac_file_path = re.search("Persisting SBOM to (.*iac.csv)", output).group(1)
+        with open(iac_file_path) as file:
+            content = file.readlines()
+            header = content[:1][0]
+            self.assertEqual('Resource,Path,Git Org,Git Repository,Misconfigurations,Severity\n', header)
+            rows = content[1:]
+            self.assertIn('aws_s3_bucket', rows[0])
+        oss_file_path = re.search("Persisting SBOM to (.*oss_packages.csv)", output).group(1)
+        with open(oss_file_path) as file:
+            content = file.readlines()
+            header = content[:1][0]
+            self.assertEqual('Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n', header)
+            row = content[1:][0]
+            self.assertIn('bridgecrew.cloud', row)
 
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
@@ -148,6 +197,47 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'secrets'})
 
+        runner_filter = RunnerFilter(framework=['all'], runners=checkov_runners)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS
+        )
+        runner_registry.filter_runners_for_files(['manifest.json'])
+        self.assertIn("kubernetes", set(r.check_type for r in runner_registry.runners))
+
+    def test_runners_have_code_category(self):
+        checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+        for runner in checkov_runners:
+            self.assertIn(runner, CodeCategoryMapping)
+
+    def test_extract_git_info_from_account_id(self):
+        account_id = "owner/name"
+        expected_git_org = "owner"
+        expected_git_repo = "name"
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
+        account_id = "owner/with/slash/separator/name"
+        expected_git_org = "owner/with/slash/separator"
+        expected_git_repo = "name"
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
+        account_id = "name"
+        expected_git_org = ""
+        expected_git_repo = ""
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
+        account_id = ""
+        expected_git_org = ""
+        expected_git_repo = ""
+        result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
+        self.assertEqual(expected_git_repo, result_git_repo)
+        self.assertEqual(expected_git_org, result_git_org)
+
 
 def test_non_compact_json_output(capsys):
     # given
@@ -167,6 +257,7 @@ def test_non_compact_json_output(capsys):
         soft_fail_on=None,
         hard_fail_on=None,
         output_file_path=None,
+        use_enforcement_rules=None
     )
 
     # when

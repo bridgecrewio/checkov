@@ -5,7 +5,7 @@ from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
 
 # condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.common.util.type_forcers import force_int
-from checkov.terraform.parser_utils import find_var_blocks
+from checkov.common.util.parser_utils import find_var_blocks
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
@@ -21,17 +21,28 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     if isinstance(input_str, str) and CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
-        logging.info(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
-                     f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                     f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
+        logging.debug(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
+                      f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                      f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
         return input_str
     evaluated_value = _try_evaluate(input_str)
     if type(evaluated_value) is not str:
         return input_str if callable(evaluated_value) else evaluated_value
     evaluated_value = evaluated_value.replace("\n", "")
     evaluated_value = evaluated_value.replace(",,", ",")
+
+    # if we try to strip interpolations but that does not help evaluation, then we should add them back in the case that
+    # the interpolated string is part of a substring, so it can be identified by the "is_variable_dependent" method.
+    # For example, the value "abc-${var.x}-xyz" will not be identified as a variable if we remove the interpolation
+    # However, if the full value is just an interpolated variable, like ${var.xyz}, then we can leave them off, because
+    # it won't affect that method and breaks certain policies and other logic that was written in a specific way
+    value_before_removing_interpolations = evaluated_value
     if not keep_interpolations:
         evaluated_value = remove_interpolation(evaluated_value)
+    if '${' + evaluated_value + '}' == value_before_removing_interpolations:
+        value_before_removing_interpolations = evaluated_value
+    value_after_removing_interpolations = evaluated_value
+
     evaluated_value = evaluate_map(evaluated_value)
     evaluated_value = evaluate_list_access(evaluated_value)
     evaluated_value = strip_double_quotes(evaluated_value)
@@ -41,7 +52,12 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_json_types(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
-    return evaluated_value if callable(second_evaluated_value) else second_evaluated_value
+    if callable(second_evaluated_value):
+        return evaluated_value
+    elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
+        return value_before_removing_interpolations
+    else:
+        return second_evaluated_value
 
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
@@ -69,7 +85,7 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
         return original_str if keep_origin else str_to_replace
 
     string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
-    return string_without_interpolation.replace(str_to_replace, str(replaced_value)).replace(" ", "")
+    return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
 def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:

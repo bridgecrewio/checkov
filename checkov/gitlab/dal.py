@@ -40,8 +40,8 @@ class Gitlab(BaseVCSDAL):
 
     def get_project_approvals(self):
         if self.project_id:
-            project_approvals = self._request(
-                endpoint=f"projects/{self.project_id}/approvals")
+            project_approvals = self._request(endpoint=f"projects/{self.project_id}/approvals",
+                                              allowed_status_codes=[200])
             return project_approvals
         return None
 
@@ -52,15 +52,13 @@ class Gitlab(BaseVCSDAL):
             BaseVCSDAL.persist(path=self.gitlab_project_approvals_file_path, conf=project_approvals)
 
     def get_groups(self):
-        groups = self._request(
-            endpoint="groups")
+        groups = self._request(endpoint="groups", allowed_status_codes=[200])
         return groups
 
     def persist_groups(self):
         groups = self.get_groups()
         if groups:
             BaseVCSDAL.persist(path=self.gitlab_groups_file_path, conf=groups)
-
 
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", "True")):

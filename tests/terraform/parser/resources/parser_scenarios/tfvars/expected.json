@@ -25,7 +25,7 @@
         "aws_s3_bucket": {
           "my_bucket": {
             "bucket": [
-              "hello-nimrodIsCöoler-nine-dev-abc-xyz-qwerty"
+              "hello-nimrodIsCöoler-${nine}-${dev}-abc-xyz-qwerty"
             ],
             "__start_line__": 17,
             "__end_line__": 19
