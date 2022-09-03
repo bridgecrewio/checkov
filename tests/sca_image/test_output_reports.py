@@ -1,5 +1,7 @@
+import os.path
 import xml
 from pathlib import Path
+import xml.dom.minidom
 
 from mock.mock import MagicMock
 from pytest_mock import MockerFixture
@@ -9,8 +11,10 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM
+from checkov.common.output.cyclonedx import CycloneDX
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+OUTPUTS_DIR = Path(__file__).parent / "outputs"
 
 
 def test_console_output(sca_image_report):
@@ -41,6 +45,21 @@ def test_console_output(sca_image_report):
          '']
 
     )
+
+
+def test_get_cyclonedx_report(sca_image_report, tmp_path: Path):
+    cyclonedx_reports = [sca_image_report]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+    dom = xml.dom.minidom.parseString(cyclonedx_output)
+    pretty_xml_as_string = str(dom.toprettyxml())
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    actual_pretty_xml_as_list = [line for line in pretty_xml_as_string.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+    expected_pretty_xml_as_list = [line for line in expected_pretty_xml.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
 
 def test_get_csv_report(sca_image_report, tmp_path: Path):
