@@ -1,14 +1,7 @@
 import os.path
-import xml
 from pathlib import Path
 import xml.dom.minidom
 
-from mock.mock import MagicMock
-from pytest_mock import MockerFixture
-
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
