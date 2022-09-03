@@ -3,12 +3,6 @@ import xml.dom.minidom
 import os
 from pathlib import Path
 
-from mock.mock import MagicMock
-from pytest_mock import MockerFixture
-
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM, FILE_NAME_OSS_PACKAGES
 from checkov.common.output.cyclonedx import CycloneDX
@@ -129,15 +123,9 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
     assert set(csv_output_str_as_list) == set(expected_csv_output_str)
 
 
-def test_get_sarif_json(mocker: MockerFixture, scan_result):
+def test_get_sarif_json(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # when
     sarif_output = report.get_sarif_json("Checkov")
@@ -406,15 +394,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     }
 
 
-def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
+def test_get_junit_xml_string(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # when
     test_suites = [report.get_test_suite()]
