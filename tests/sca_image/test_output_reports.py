@@ -88,3 +88,233 @@ def test_get_csv_report(sca_image_report, tmp_path: Path):
     # the order is not the same always. making sure the header is at the same row
     assert csv_output_str_as_list[0] == expected_csv_output_str[0]
     assert set(csv_output_str_as_list) == set(expected_csv_output_str)
+
+
+def test_get_sarif_json(sca_image_report):
+    # given
+    sarif_output = sca_image_report.get_sarif_json("Checkov")
+
+    # then
+    sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
+    print(sarif_output)
+    assert sarif_output == \
+           {
+               "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+               "version": "2.1.0",
+               "runs": [
+                   {
+                       "tool": {
+                           "driver": {
+                               "name": "Checkov",
+                               "version": "2.0.x",
+                               "informationUri": "https://checkov.io",
+                               "rules": [
+                                   {
+                                       "id": "BC_LIC_1",
+                                       "name": "SCA license",
+                                       "shortDescription": {
+                                           "text": "SCA license"
+                                       },
+                                       "fullDescription": {
+                                           "text": "SCA license"
+                                       },
+                                       "help": {
+                                           "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                       },
+                                       "defaultConfiguration": {
+                                           "level": "error"
+                                       }
+                                   },
+                                   {
+                                       "id": "CKV_CVE_2020_16156",
+                                       "name": "SCA package scan",
+                                       "shortDescription": {
+                                           "text": "CVE-2020-16156 - perl: 5.34.0-3ubuntu1"
+                                       },
+                                       "fullDescription": {
+                                           "text": "CPAN 2.28 allows Signature Verification Bypass."
+                                       },
+                                       "help": {
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                       },
+                                       "defaultConfiguration": {
+                                           "level": "error"
+                                       }
+                                   },
+                                   {
+                                       "id": "CKV_CVE_2022_1587",
+                                       "name": "SCA package scan",
+                                       "shortDescription": {
+                                           "text": "CVE-2022-1587 - pcre2: 10.39-3build1"
+                                       },
+                                       "fullDescription": {
+                                           "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
+                                       },
+                                       "help": {
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                       },
+                                       "defaultConfiguration": {
+                                           "level": "error"
+                                       }
+                                   },
+                                   {
+                                       "id": "CKV_CVE_2022_1586",
+                                       "name": "SCA package scan",
+                                       "shortDescription": {
+                                           "text": "CVE-2022-1586 - pcre2: 10.39-3build1"
+                                       },
+                                       "fullDescription": {
+                                           "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT."
+                                       },
+                                       "help": {
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                       },
+                                       "defaultConfiguration": {
+                                           "level": "error"
+                                       }
+                                   }
+                               ],
+                               "organization": "bridgecrew"
+                           }
+                       },
+                       "results": [
+                           {
+                               "ruleId": "BC_LIC_1",
+                               "ruleIndex": 0,
+                               "level": "error",
+                               "attachments": [
+
+                               ],
+                               "message": {
+                                   "text": "SCA license"
+                               },
+                               "locations": [
+                                   {
+                                       "physicalLocation": {
+                                           "artifactLocation": {
+                                               "uri": "path/to/Dockerfile (sha256:123456)"
+                                           },
+                                           "region": {
+                                               "startLine": 1,
+                                               "endLine": 1
+                                           }
+                                       }
+                                   }
+                               ]
+                           },
+                           {
+                               "ruleId": "CKV_CVE_2020_16156",
+                               "ruleIndex": 1,
+                               "level": "warning",
+                               "attachments": [
+
+                               ],
+                               "message": {
+                                   "text": "CPAN 2.28 allows Signature Verification Bypass."
+                               },
+                               "locations": [
+                                   {
+                                       "physicalLocation": {
+                                           "artifactLocation": {
+                                               "uri": "path/to/Dockerfile (sha256:123456)"
+                                           },
+                                           "region": {
+                                               "startLine": 1,
+                                               "endLine": 1
+                                           }
+                                       }
+                                   }
+                               ]
+                           },
+                           {
+                               "ruleId": "CKV_CVE_2022_1587",
+                               "ruleIndex": 2,
+                               "level": "note",
+                               "attachments": [
+
+                               ],
+                               "message": {
+                                   "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
+                               },
+                               "locations": [
+                                   {
+                                       "physicalLocation": {
+                                           "artifactLocation": {
+                                               "uri": "path/to/Dockerfile (sha256:123456)"
+                                           },
+                                           "region": {
+                                               "startLine": 1,
+                                               "endLine": 1
+                                           }
+                                       }
+                                   }
+                               ]
+                           },
+                           {
+                               "ruleId": "CKV_CVE_2022_1586",
+                               "ruleIndex": 3,
+                               "level": "note",
+                               "attachments": [
+
+                               ],
+                               "message": {
+                                   "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT."
+                               },
+                               "locations": [
+                                   {
+                                       "physicalLocation": {
+                                           "artifactLocation": {
+                                               "uri": "path/to/Dockerfile (sha256:123456)"
+                                           },
+                                           "region": {
+                                               "startLine": 1,
+                                               "endLine": 1
+                                           }
+                                       }
+                                   }
+                               ],
+                               "suppressions": [
+                                   {
+                                       "kind": "external",
+                                       "justification": "CVE-2022-1586 is skipped"
+                                   }
+                               ]
+                           }
+                       ]
+                   }
+               ]
+           }
+
+
+def test_get_junit_xml_string(sca_image_report):
+    # given
+    test_suites = [sca_image_report.get_test_suite()]
+    junit_xml_output = sca_image_report.get_junit_xml_string(test_suites)
+
+    # then
+    assert (
+        xml.dom.minidom.parseString(junit_xml_output).toprettyxml()
+        == xml.dom.minidom.parseString(
+            "\n".join(
+                ['<?xml version="1.0" ?>', '<testsuites disabled="0" errors="0" failures="3" tests="5" time="0.0">',
+                 '\t<testsuite disabled="0" errors="0" failures="3" name="sca_image scan" skipped="1" tests="5" time="0">',
+                 '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)"/>',
+                 '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
+                 '\t\t\t<failure type="failure" message="SCA license">',
+                 'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                 'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
+                 '\t\t<testcase name="[MEDIUM][CKV_CVE_2020_16156] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
+                 '\t\t\t<failure type="failure" message="SCA package scan">',
+                 'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                 'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
+                 '\t\t<testcase name="[LOW][CKV_CVE_2022_1587] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
+                 '\t\t\t<failure type="failure" message="SCA package scan">',
+                 'Resource: path/to/Dockerfile (sha256:123456).pcre2', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                 'Guideline: None', '', '\t\t0 | pcre2: 10.39-3build1</failure>', '\t\t</testcase>',
+                 '\t\t<testcase name="[LOW][CKV_CVE_2022_1586] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
+                 '\t\t\t<skipped type="skipped" message="CVE-2022-1586 is skipped"/>', '\t\t</testcase>',
+                 '\t</testsuite>', '</testsuites>', '']
+            )
+        ).toprettyxml()
+    )
+
