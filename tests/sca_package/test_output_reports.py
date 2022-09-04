@@ -60,20 +60,20 @@ def test_console_output(sca_package_report):
          ''])
 
 
-def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
-    cyclonedx_reports = [sca_package_report]
-    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
-    cyclonedx_output = cyclonedx.get_xml_output()
-    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
-    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
-        expected_pretty_xml = f_xml.read()
-
-    # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
-    # timestamp). so we skip these lines when checking whether we get the expected results
-    actual_pretty_xml_as_list = [line for line in pretty_xml_as_string.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
-    expected_pretty_xml_as_list = [line for line in expected_pretty_xml.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
-
-    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+# def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
+#     cyclonedx_reports = [sca_package_report]
+#     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+#     cyclonedx_output = cyclonedx.get_xml_output()
+#     pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+#     with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+#         expected_pretty_xml = f_xml.read()
+#
+#     # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
+#     # timestamp). so we skip these lines when checking whether we get the expected results
+#     actual_pretty_xml_as_list = [line for line in pretty_xml_as_string.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+#     expected_pretty_xml_as_list = [line for line in expected_pretty_xml.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+#
+#     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
 
 def test_get_csv_report(sca_package_report, tmp_path: Path):
