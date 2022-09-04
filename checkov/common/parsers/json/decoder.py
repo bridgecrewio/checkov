@@ -321,11 +321,9 @@ class Decoder(JSONDecoder):
 
             beg_mark, end_mark = get_beg_end_mark(s, begin, begin + len(key), self.newline_indexes)
             try:
-                yo = end
                 value, end = scan_once(s, end)
             except StopIteration as err:
                 logging.debug("Failed to scan string", exc_info=True)
-                scan_once(s, yo)
                 raise DecodeError('Expecting value', s, end_mark.line) from err
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
