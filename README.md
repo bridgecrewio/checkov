@@ -258,6 +258,29 @@ kube-system namespace:
 checkov -d . --skip-check kube-system
 ```
 
+Run a scan of a container image. First pull or build the image then refer to it by the hash, ID, or name:tag:
+```sh
+checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ...
+
+checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
+
+Run an SCA scan of packages in a repo:
+```sh
+checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
+```
+
+Run a scan of a directory with environment variables removing buffering, adding info level logs, turning on image referencer:
+```sh
+PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE checkov -d .
+```
+OR enable the environment variables for multiple runs
+```sh
+export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
+checkov -d .
+```
+
+
 ### Suppressing/Ignoring a check
 
 Like any static-analysis tool it is limited by its analysis scope. 
