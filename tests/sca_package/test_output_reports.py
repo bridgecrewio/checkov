@@ -1,16 +1,14 @@
 import xml
+import xml.dom.minidom
+import os
 from pathlib import Path
 
-from mock.mock import MagicMock
-from pytest_mock import MockerFixture
-
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM, FILE_NAME_OSS_PACKAGES
+from checkov.common.output.cyclonedx import CycloneDX
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+OUTPUTS_DIR = Path(__file__).parent / "outputs"
 
 
 def test_console_output(sca_package_report):
@@ -62,6 +60,22 @@ def test_console_output(sca_package_report):
          ''])
 
 
+def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
+    # timestamp). so we skip these lines when checking whether we get the expected results
+    actual_pretty_xml_as_list = [line for line in pretty_xml_as_string.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+    expected_pretty_xml_as_list = [line for line in expected_pretty_xml.split("\n") if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line]
+
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+
 def test_get_csv_report(sca_package_report, tmp_path: Path):
     csv_sbom_report = CSVSBOM()
     csv_sbom_report.add_report(report=sca_package_report, git_org="acme", git_repository="bridgecrewio/example")
@@ -80,15 +94,13 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                            'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
                            'golang.org/x/crypto,v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,Unknown',
                            'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,Unknown',
+                           'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
+                           'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
                            'requests,2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
                            'requests,2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
-                           'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
-                           'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
                            '']
     csv_output_as_list = csv_output.split("\n")
-    # the order is not the same always. making sure the header is at the same row
-    assert csv_output_as_list[0] == expected_csv_output[0]
-    assert set(csv_output_as_list) == set(expected_csv_output)
+    assert csv_output_as_list == expected_csv_output
 
     expected_csv_output_str = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses',
                                '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"OSI_BDS"',
@@ -100,25 +112,20 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                                '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"Unknown"',
                                '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"Unknown"',
                                '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
-                               '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
                                '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
                                '"requests",2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
+                               '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
                                '']
     csv_output_str_as_list = csv_output_str.split("\n")
-    # the order is not the same always. making sure the header is at the same row
-    assert csv_output_str_as_list[0] == expected_csv_output_str[0]
-    assert set(csv_output_str_as_list) == set(expected_csv_output_str)
+    assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(mocker: MockerFixture, scan_result):
+def test_get_sarif_json(sca_package_report_with_skip_scope_function):
+    # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
+    # a report that is unique for the scope of the function
+
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip_scope_function
 
     # when
     sarif_output = report.get_sarif_json("Checkov")
@@ -387,15 +394,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     }
 
 
-def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
+def test_get_junit_xml_string(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # when
     test_suites = [report.get_test_suite()]
@@ -420,7 +421,7 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']\n",
                     "Fix Details:\n",
                     "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
-                    "  Fixed Version: 1.11.27\n",                    
+                    "  Fixed Version: 1.11.27\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
