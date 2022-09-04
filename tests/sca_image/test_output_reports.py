@@ -294,27 +294,28 @@ def test_get_junit_xml_string(sca_image_report):
     junit_xml_output = sca_image_report.get_junit_xml_string(test_suites)
 
     # then
-    assert junit_xml_output == "\n".join(
-        [
-            '<?xml version="1.0" ?>', '<testsuites disabled="0" errors="0" failures="3" tests="5" time="0.0">',
-             '\t<testsuite disabled="0" errors="0" failures="3" name="sca_image scan" skipped="1" tests="5" time="0">',
-             '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)"/>',
-             '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
-             '\t\t\t<failure type="failure" message="SCA license">',
-             'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
-             'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
-             '\t\t<testcase name="[MEDIUM][CKV_CVE_2020_16156] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
-             '\t\t\t<failure type="failure" message="SCA package scan">',
-             'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
-             'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
-             '\t\t<testcase name="[LOW][CKV_CVE_2022_1587] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
-             '\t\t\t<failure type="failure" message="SCA package scan">',
-             'Resource: path/to/Dockerfile (sha256:123456).pcre2', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
-             'Guideline: None', '', '\t\t0 | pcre2: 10.39-3build1</failure>', '\t\t</testcase>',
-             '\t\t<testcase name="[LOW][CKV_CVE_2022_1586] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
-             '\t\t\t<skipped type="skipped" message="CVE-2022-1586 is skipped"/>', '\t\t</testcase>',
-             '\t</testsuite>', '</testsuites>', ''
-        ]
-    )
-
-
+    assert xml.dom.minidom.parseString(junit_xml_output).toprettyxml() == \
+           xml.dom.minidom.parseString(
+               "\n".join(
+                    [
+                        '<?xml version="1.0" ?>', '<testsuites disabled="0" errors="0" failures="3" tests="5" time="0.0">',
+                         '\t<testsuite disabled="0" errors="0" failures="3" name="sca_image scan" skipped="1" tests="5" time="0">',
+                         '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)"/>',
+                         '\t\t<testcase name="[NONE][BC_LIC_1] SCA license" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
+                         '\t\t\t<failure type="failure" message="SCA license">',
+                         'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                         'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
+                         '\t\t<testcase name="[MEDIUM][CKV_CVE_2020_16156] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)">',
+                         '\t\t\t<failure type="failure" message="SCA package scan">',
+                         'Resource: path/to/Dockerfile (sha256:123456).perl', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                         'Guideline: None', '', '\t\t0 | perl: 5.34.0-3ubuntu1</failure>', '\t\t</testcase>',
+                         '\t\t<testcase name="[LOW][CKV_CVE_2022_1587] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
+                         '\t\t\t<failure type="failure" message="SCA package scan">',
+                         'Resource: path/to/Dockerfile (sha256:123456).pcre2', 'File: /path/to/Dockerfile (sha256:123456): 0-0',
+                         'Guideline: None', '', '\t\t0 | pcre2: 10.39-3build1</failure>', '\t\t</testcase>',
+                         '\t\t<testcase name="[LOW][CKV_CVE_2022_1586] SCA package scan" classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)">',
+                         '\t\t\t<skipped type="skipped" message="CVE-2022-1586 is skipped"/>', '\t\t</testcase>',
+                         '\t</testsuite>', '</testsuites>', ''
+                    ]
+               )
+        ).toprettyxml()
