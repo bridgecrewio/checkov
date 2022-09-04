@@ -120,9 +120,9 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
     assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(sca_package_report_with_skip):
+def test_get_sarif_json(sca_package_report_with_skip_for_sarif_json):
     # given
-    report = sca_package_report_with_skip
+    report = sca_package_report_with_skip_for_sarif_json
 
     # when
     sarif_output = report.get_sarif_json("Checkov")

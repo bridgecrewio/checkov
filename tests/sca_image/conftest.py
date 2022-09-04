@@ -108,11 +108,9 @@ def cached_scan_result3() -> dict[str, str]:
     return {'outputType': 'Error', 'outputData': '', 'compressionMethod': 'gzip'}
 
 
-@pytest.fixture(scope='package')
 @mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan)
 @responses.activate
-def sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
-    # given
+def get_sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
     response_json = {
         "violations": [
             {
@@ -140,8 +138,17 @@ def sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
 
     runner = Runner()
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
-    # when
     dockerfile_path = "/path/to/Dockerfile"
     image_id = "sha256:123456"
     return runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter,
                       dockerfile_path=dockerfile_path, image_id=image_id)
+
+
+@pytest.fixture(scope='package')
+def sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
+    return get_sca_image_report(mock_bc_integration)
+
+
+@pytest.fixture(scope='function')
+def sca_image_report_for_sarif_json(mock_bc_integration: BcPlatformIntegration) -> Report:
+    return get_sca_image_report(mock_bc_integration)
