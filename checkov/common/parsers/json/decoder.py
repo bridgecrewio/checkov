@@ -121,9 +121,18 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         except IndexError as err:
             raise StopIteration(idx) from err
 
-        if nextchar == '"' and string[idx + 1] != '"':
+        try:
+            nextchar_plus_1 = string[idx + 1]
+        except IndexError:
+            nextchar_plus_1 = None
+        try:
+            nextchar_plus_2 = string[idx + 2]
+        except IndexError:
+            nextchar_plus_2 = None
+        
+        if nextchar == '"' and (nextchar_plus_1 != '"' or nextchar_plus_2 != '"'):
             return parse_string(string, idx + 1, strict)
-        if nextchar == '"' and string[idx + 1] == '"' and string[idx + 2] == '"':
+        if nextchar == '"' and nextchar_plus_1 == '"' and nextchar_plus_2 == '"':
             result, end = parse_string(string, idx + 3, strict)
             return result, end + 2
         if nextchar == '{':
@@ -312,9 +321,11 @@ class Decoder(JSONDecoder):
 
             beg_mark, end_mark = get_beg_end_mark(s, begin, begin + len(key), self.newline_indexes)
             try:
+                yo = end
                 value, end = scan_once(s, end)
             except StopIteration as err:
                 logging.debug("Failed to scan string", exc_info=True)
+                scan_once(s, yo)
                 raise DecodeError('Expecting value', s, end_mark.line) from err
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
