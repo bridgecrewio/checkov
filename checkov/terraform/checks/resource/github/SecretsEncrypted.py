@@ -10,7 +10,7 @@ class SecretsEncrypted(BaseResourceNegativeValueCheck):
         #  -from github docs "It is also advised that you do not store plaintext values in your code but rather populate
         #  the encrypted_value using fields from a resource, data source or variable as,
         #  while encrypted in state, these will be easily accessible in your code"
-        name = "Ensure Secrets are encrypted"
+        name = "Ensure GitHub Actions secrets are encrypted"
         id = "CKV_GIT_4"
         supported_resources = (
             "github_actions_environment_secret",
