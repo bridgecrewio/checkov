@@ -270,7 +270,7 @@ Run an SCA scan of packages in a repo:
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
 ```
 
-Run a scan of a directory with environment variables removing buffering, adding info level logs, turning on image referencer:
+Run a scan of a directory with environment variables removing buffering, adding debug level logs, turning on image referencer:
 ```sh
 PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE checkov -d .
 ```
