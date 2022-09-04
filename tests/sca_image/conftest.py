@@ -150,5 +150,5 @@ def sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
 
 
 @pytest.fixture(scope='function')
-def sca_image_report_for_sarif_json(mock_bc_integration: BcPlatformIntegration) -> Report:
+def sca_image_report_scope_function(mock_bc_integration: BcPlatformIntegration) -> Report:
     return get_sca_image_report(mock_bc_integration)

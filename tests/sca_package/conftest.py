@@ -568,5 +568,5 @@ def sca_package_report_with_skip(package_mocker: MockerFixture, scan_result: Lis
 
 
 @pytest.fixture(scope='function')
-def sca_package_report_with_skip_for_sarif_json(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
+def sca_package_report_with_skip_scope_function(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
     return get_sca_package_report_with_skip(package_mocker, scan_result)

@@ -89,9 +89,12 @@ def test_get_csv_report(sca_image_report, tmp_path: Path):
     assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(sca_image_report_for_sarif_json):
+def test_get_sarif_json(sca_image_report_scope_function):
+    # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
+    # a report that is unique for the scope of the function
+
     # given
-    sarif_output = sca_image_report_for_sarif_json.get_sarif_json("Checkov")
+    sarif_output = sca_image_report_scope_function.get_sarif_json("Checkov")
 
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
