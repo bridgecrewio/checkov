@@ -54,8 +54,8 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     }
     assert sca_image_report.image_cached_results[0]['dockerImageName'] == \
            'public.ecr.aws/aws-containers/hello-app-runner:latest'
-    assert sca_image_report.image_cached_results[0]['relatedResourceId'] == '/Users/cshayner/development/checkov/' \
-           'tests/terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example'
+    assert 'terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example' in \
+           sca_image_report.image_cached_results[0]['relatedResourceId']
     assert sca_image_report.image_cached_results[0]['packages'] == [
         {'type': 'os', 'name': 'zlib', 'version': '1.2.12-r1', 'licenses': ['Zlib']}
     ]
