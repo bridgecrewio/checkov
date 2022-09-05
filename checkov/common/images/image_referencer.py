@@ -10,6 +10,8 @@ from typing import cast, Any, TYPE_CHECKING
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
+from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
+    docker_image_scanning_integration
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
@@ -159,10 +161,19 @@ class ImageReferencerMixin:
         report_type: str,
     ) -> None:
         """Adds an image record to the given report, if possible"""
+        from checkov.common.bridgecrew.platform_integration import bc_integration
 
         cached_results: dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
+            payload: dict[str, Any] = docker_image_scanning_integration.create_report(
+                twistcli_scan_result=cached_results,
+                bc_platform_integration=bc_integration,
+                file_path=dockerfile_path,
+                file_content=f'image: {image.name}',
+                docker_image_name=image.name,
+                related_resource_id=image.related_resource_id)
+            report.image_cached_results.append(payload)
 
             result = cached_results.get("results", [{}])[0]
             image_id = self.extract_image_short_id(result)
