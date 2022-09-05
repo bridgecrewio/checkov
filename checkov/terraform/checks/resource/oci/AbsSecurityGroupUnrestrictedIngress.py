@@ -2,6 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_int
 
+
 class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def __init__(self, check_id: str, port: int) -> None:
         name = f"Ensure no security groups rules allow ingress from 0.0.0.0/0 to port {port}"
