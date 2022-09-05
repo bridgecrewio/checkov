@@ -46,6 +46,6 @@ def test_extract_images_from_resources():
 
     # then
     assert images == [
-        Image(file_path="/ecs.tf", name="nginx", start_line=1, end_line=31),
-        Image(file_path="/batch.tf", name="python:3.9-alpine", start_line=1, end_line=25),
+        Image(file_path="/ecs.tf", name="nginx", start_line=1, end_line=31, related_resource_id='/ecs.tf:None'),
+        Image(file_path="/batch.tf", name="python:3.9-alpine", start_line=1, end_line=25, related_resource_id='/batch.tf:None'),
     ]
