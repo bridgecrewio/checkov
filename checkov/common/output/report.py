@@ -571,14 +571,12 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
 
 def remove_duplicate_results(report: Report) -> Report:
     def dedupe_records(origin_records: list[Record]) -> list[Record]:
-        record_cache = []
-        new_records = []
+        unique_records: Dict[str, Record] = {}
         for record in origin_records:
             record_hash = record.get_unique_string()
-            if record_hash not in record_cache:
-                new_records.append(record)
-                record_cache.append(record_hash)
-        return new_records
+            unique_records[record_hash] = record
+
+        return list(unique_records.values())
 
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)
