@@ -57,6 +57,7 @@ INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
 INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
 MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 
+
 def get_vertices_references(
     str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
 ) -> List[TerraformVertexReference]:

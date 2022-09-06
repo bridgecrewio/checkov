@@ -13,3 +13,6 @@ class ExtraResource:
         self.file_path = file_path
         self.resource = resource  # resource ID
         self.vulnerability_details = vulnerability_details  # only set for SCA resources
+
+    def __lt__(self, other: ExtraResource) -> bool:
+        return (self.file_abs_path, self.resource) < (other.file_abs_path, other.resource)

@@ -121,8 +121,20 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         except IndexError as err:
             raise StopIteration(idx) from err
 
-        if nextchar == '"':
+        try:
+            nextchar_plus_1 = string[idx + 1]
+        except IndexError:
+            nextchar_plus_1 = None
+        try:
+            nextchar_plus_2 = string[idx + 2]
+        except IndexError:
+            nextchar_plus_2 = None
+        
+        if nextchar == '"' and (nextchar_plus_1 != '"' or nextchar_plus_2 != '"'):
             return parse_string(string, idx + 1, strict)
+        if nextchar == '"' and nextchar_plus_1 == '"' and nextchar_plus_2 == '"':
+            result, end = parse_string(string, idx + 3, strict)
+            return result, end + 2
         if nextchar == '{':
             return parse_object(
                 (string, idx + 1), strict,

@@ -132,16 +132,9 @@ def test_run_with_empty_scan_result(mocker: MockerFixture):
     assert report.resources == set()
 
 
-def test_run_with_skip(mocker: MockerFixture, scan_result):
+def test_run_with_skip(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    # when
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # then
     assert report.check_type == "sca_package"
