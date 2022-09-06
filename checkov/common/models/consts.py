@@ -1,6 +1,5 @@
 import re
 
-SCAN_HCL_FLAG = "CKV_SCAN_HCL"
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template", ".bicep", ".hcl"]
 SUPPORTED_PACKAGE_FILES = {
     "bower.json",
