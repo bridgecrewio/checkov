@@ -158,6 +158,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
+                                 secrets_scan_file_type=config.secrets_scan_file_type,
                                  use_enforcement_rules=config.use_enforcement_rules,
                                  run_image_referencer=run_image_referencer,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
@@ -559,6 +560,15 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
                     'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
                     'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
+    parser.add('--secrets-scan-file-type',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_FILE_TYPE',
+               action='append',
+               help='add scan secret for requested files. You can specify this argument multiple times to add '
+                    'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
+                    '".template", ".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile", '
+                    '".java", ".rb", ".go", ".cs", ".txt") specify the argument with `--secrets-scan-file-type all`. '
+                    'default scan will be for ".tf", ".yml", ".yaml", ".json", ".template" and exclude "Pipfile.lock", "yarn.lock", "package-lock.json", "requirements.txt"')
     parser.add('--enable-secret-scan-all-files',
                default=False,
                env_var='CKV_SECRETS_SCAN_ENABLE_ALL',
