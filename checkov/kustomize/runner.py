@@ -37,22 +37,22 @@ class K8sKustomizeRunner(K8sRunner):
         graph_manager: GraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data = {}
         self.pbar.turn_off_progress_bar()
 
-    def set_external_data(self,
-                          definitions: Optional[Dict[str, Dict[str, Any]]],
-                          context: Optional[Dict[str, Dict[str, Any]]],
-                          breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
-                          report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
-                          ):
+    def set_external_data(
+        self,
+        definitions: Optional[Dict[str, Dict[str, Any]]],
+        context: Optional[Dict[str, Dict[str, Any]]],
+        breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
+        report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
+    ) -> None:
         super().set_external_data(definitions, context, breadcrumbs)
         self.report_mutator_data = report_mutator_data
-        
+
     def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
         self.report_mutator_data = report_mutator_data
 
@@ -86,7 +86,7 @@ class K8sKustomizeRunner(K8sRunner):
                 check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
-        
+
         return report
 
     def line_range(self, code_lines):
@@ -190,7 +190,7 @@ class Runner(BaseRunner):
                 fileContent = yaml.safe_load(kustomizationFile)
             except yaml.YAMLError:
                 logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
-    
+
             if 'resources' in fileContent:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] = "base"
@@ -213,7 +213,7 @@ class Runner(BaseRunner):
 
             if metadata.get('type') == "overlay":
                 self.potentialOverlays.append(metadata['filePath'])
-               
+
         return metadata
 
     def check_system_deps(self):
@@ -235,13 +235,13 @@ class Runner(BaseRunner):
                         logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectlVersion}")
                         self.templateRendererCommand = self.kubectl_command
                         return None
-            
+
             except Exception:
                 logging.debug(f"An error occured testing the {self.kubectl_command} command: {e}")
                 pass
 
         elif shutil.which(self.kustomize_command) is not None:
-    
+
             try:
                 proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
@@ -258,7 +258,7 @@ class Runner(BaseRunner):
             except Exception:
                 logging.debug(f"An error occured testing the {self.kustomize_command} command: {e}")
                 pass
-        
+
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
@@ -315,8 +315,7 @@ class Runner(BaseRunner):
                     if cur_writer:
                         # Here we are about to close a "complete" file. The function will validate it looks like a K8S manifest before continuing.
                         Runner._curWriterValidateStoreMapAndClose(cur_writer, file_path, shared_kustomize_file_mappings)
-                    file_path = os.path.join(extract_dir, str(source))
-                    parent = os.path.dirname(file_path)
+                    parent = os.path.dirname(os.path.join(extract_dir, str(source)))
                     os.makedirs(parent, exist_ok=True)
                     cur_source_file = source
                     cur_writer = open(os.path.join(extract_dir, str(source)), 'a')
@@ -402,7 +401,7 @@ class Runner(BaseRunner):
         cur_writer = Runner._get_parsed_output(file_path, extract_dir, output_str, shared_kustomize_file_mappings)
         if cur_writer:
             Runner._curWriterValidateStoreMapAndClose(cur_writer, file_path, shared_kustomize_file_mappings)
-        
+
     @staticmethod
     def _run_kustomize_parser(
         filePath: str,
@@ -426,7 +425,7 @@ class Runner(BaseRunner):
         for filePath in self.kustomizeProcessedFolderAndMeta:
             if self.kustomizeProcessedFolderAndMeta[filePath].get('type') == 'overlay':
                 self._handle_overlay_case(filePath)
-        
+
         if platform.system() == 'Windows':
             sharedKustomizeFileMappings: dict[str, str] = {}
             for filePath in self.kustomizeProcessedFolderAndMeta:
@@ -434,7 +433,7 @@ class Runner(BaseRunner):
                                              self.templateRendererCommand, self.target_folder_path)
             self.kustomizeFileMappings = sharedKustomizeFileMappings
             return
-        
+
         manager = multiprocessing.Manager()
         # make sure we have new dict
         sharedKustomizeFileMappings = copy.copy(manager.dict())
