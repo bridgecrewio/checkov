@@ -121,6 +121,7 @@ class ImageReferencerMixin:
         runner_filter: RunnerFilter,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
+        from checkov.common.bridgecrew.platform_integration import bc_integration
 
         # skip complete run, if flag '--check' was used without a CVE check ID
         if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
@@ -146,6 +147,7 @@ class ImageReferencerMixin:
                 image=image,
                 runner_filter=runner_filter,
                 report_type=report_type,
+                bc_integration=bc_integration,
             )
 
         return report
@@ -159,9 +161,9 @@ class ImageReferencerMixin:
         image: Image,
         runner_filter: RunnerFilter,
         report_type: str,
+        bc_integration,
     ) -> None:
         """Adds an image record to the given report, if possible"""
-        from checkov.common.bridgecrew.platform_integration import bc_integration
 
         cached_results: dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
         if cached_results:
