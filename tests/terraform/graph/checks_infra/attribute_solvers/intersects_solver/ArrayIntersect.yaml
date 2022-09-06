@@ -1,0 +1,12 @@
+metadata:
+  id: "ArrayIntersect"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_xyz"
+  attribute: "arr"
+  operator: "intersects"
+  value:
+    - "allowed1"
