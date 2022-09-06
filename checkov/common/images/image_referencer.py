@@ -161,7 +161,7 @@ class ImageReferencerMixin:
         image: Image,
         runner_filter: RunnerFilter,
         report_type: str,
-        bc_integration,
+        bc_integration: BcPlatformIntegration,
     ) -> None:
         """Adds an image record to the given report, if possible"""
 
