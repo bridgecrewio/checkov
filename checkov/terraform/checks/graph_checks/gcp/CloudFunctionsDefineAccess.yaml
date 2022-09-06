@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_GCP_10"
+  name: "Ensure Cloud functions have access defined"
+  category: "Security"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - google_cloudfunctions_function
+      operator: within
+    - resource_types:
+        - google_cloudfunctions_function
+      connected_resource_types:
+        - google_cloudfunctions_function_iam_policy
+        - google_cloudfunctions_function_iam_binding
+        - google_cloudfunctions_function_iam_member
+      operator:  exists
+      cond_type: connection
