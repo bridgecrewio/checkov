@@ -227,7 +227,7 @@ class Parser:
                 explicit_var_files.append(file)
 
             # Resource files
-            elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
+            elif file.name.endswith(".tf") or file.name.endswith('.hcl'):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
         files_to_data = self._load_files(tf_files_to_load)
