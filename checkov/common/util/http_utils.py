@@ -9,7 +9,7 @@ import time
 import os
 import aiohttp
 import asyncio
-from typing import Any, TYPE_CHECKING, cast, Optional
+from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
 
@@ -25,11 +25,27 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@overload
+def normalize_bc_url(url: None) -> None:
+    ...
+
+
+@overload
+def normalize_bc_url(url: str) -> str:
+    ...
+
+
+def normalize_bc_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    return url.lower().replace('http:', 'https:').strip().rstrip('/')
+
+
 def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
-    return url.lower().replace('//app', '//api').replace('http:', 'https:').rstrip('/')
+    return url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
 
 
 def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:

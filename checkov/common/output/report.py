@@ -462,6 +462,14 @@ class Report:
 
         if self.check_type == CheckType.SCA_PACKAGE:
             if record.vulnerability_details:
+                lowest_fixed_version = record.vulnerability_details.get('lowest_fixed_version')
+                if lowest_fixed_version is not None:
+                    fix = lowest_fixed_version
+                else:
+                    fixlist = record.vulnerability_details.get('fixed_versions')
+                    if fixlist is not None:
+                        fix = fixlist
+
                 failure_output.extend(
                     [
                         "",
@@ -471,6 +479,9 @@ class Report:
                         f"Base Score: {record.vulnerability_details.get('cvss')}",
                         f"Vector: {record.vulnerability_details.get('vector')}",
                         f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                        "Fix Details:",
+                        f"  Status: {record.vulnerability_details.get('status')}",
+                        f"  Fixed Version: {fix}",
                     ]
                 )
             else:
@@ -560,14 +571,12 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
 
 def remove_duplicate_results(report: Report) -> Report:
     def dedupe_records(origin_records: list[Record]) -> list[Record]:
-        record_cache = []
-        new_records = []
+        unique_records: Dict[str, Record] = {}
         for record in origin_records:
             record_hash = record.get_unique_string()
-            if record_hash not in record_cache:
-                new_records.append(record)
-                record_cache.append(record_hash)
-        return new_records
+            unique_records[record_hash] = record
+
+        return list(unique_records.values())
 
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)

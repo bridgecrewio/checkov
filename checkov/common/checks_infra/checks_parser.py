@@ -48,6 +48,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.util.type_forcers import force_list
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
@@ -150,7 +151,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             for sub_solver in sub_solvers:
                 check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
             resources_types_of_sub_solvers = [
-                q.resource_types for q in check.sub_checks if q is not None and q.resource_types is not None
+                force_list(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
             check.resource_types = list(set(sum(resources_types_of_sub_solvers, [])))
             if any(q.type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION] for q in check.sub_checks):
