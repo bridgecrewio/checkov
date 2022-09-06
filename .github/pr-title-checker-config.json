@@ -7,7 +7,7 @@
     "prefixes": [
       "chore: "
     ],
-    "regexp": "(fix|feat|break|docs|chore|platform)\\((argo|arm|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph)\\): "
+    "regexp": "^(fix|feat|break|docs|chore|platform)\\((argo|arm|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph)\\): "
   },
   "MESSAGES": {
     "success": "PR title is valid",
