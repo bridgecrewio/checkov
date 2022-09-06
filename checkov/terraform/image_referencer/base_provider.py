@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Callable, Any
 
 from hcl2 import START_LINE, END_LINE
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
+from checkov.common.util.str_utils import removeprefix
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -49,6 +51,7 @@ class BaseTerraformProvider:
                         name=name,
                         start_line=resource[START_LINE],
                         end_line=resource[END_LINE],
+                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}'
                     )
                 )
 
