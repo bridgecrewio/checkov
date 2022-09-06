@@ -39,7 +39,6 @@ class RunnerFilter(object):
             use_enforcement_rules: bool = False,
             filtered_policy_ids: Optional[List[str]] = None,
             show_progress_bar: Optional[bool] = True,
-            secrets_scan_file_type: Optional[List[str]] = None,
             run_image_referencer: bool = False,
             enable_secret_scan_all_files: bool = False,
             black_list_secret_scan: Optional[List[str]] = None
@@ -97,7 +96,6 @@ class RunnerFilter(object):
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = filtered_policy_ids or []
-        self.secrets_scan_file_type = secrets_scan_file_type
         self.run_image_referencer = run_image_referencer
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
         self.black_list_secret_scan = black_list_secret_scan
@@ -245,7 +243,6 @@ class RunnerFilter(object):
         show_progress_bar = obj.get('show_progress_bar')
         if show_progress_bar is None:
             show_progress_bar = True
-        secrets_scan_file_type = obj.get('secrets_scan_file_type')
         run_image_referencer = obj.get('run_image_referencer')
         if run_image_referencer is None:
             run_image_referencer = False
@@ -257,5 +254,5 @@ class RunnerFilter(object):
                                      download_external_modules, external_modules_download_path, evaluate_variables,
                                      runners, skip_framework, excluded_paths, all_external, var_files,
                                      skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
-                                     secrets_scan_file_type, run_image_referencer, enable_secret_scan_all_files, black_list_secret_scan)
+                                     run_image_referencer, enable_secret_scan_all_files, black_list_secret_scan)
         return runner_filter

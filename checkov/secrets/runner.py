@@ -62,7 +62,6 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
-ADDED_TO_SECRET_SCAN_FILES_TYPES = SOURCE_CODE_EXTENSION + SUPPORTED_FILE_EXTENSIONS
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
@@ -153,8 +152,8 @@ class Runner(BaseRunner[None]):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                black_list_secret_scan = runner_filter.black_list_secret_scan
-                black_list_secret_scan_lower = [file_type.lower() for file_type in black_list_secret_scan] if black_list_secret_scan else []
+                black_list_secret_scan = runner_filter.black_list_secret_scan or []
+                black_list_secret_scan_lower = [file_type.lower() for file_type in black_list_secret_scan]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
