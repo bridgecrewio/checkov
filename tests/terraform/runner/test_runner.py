@@ -14,7 +14,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -1252,39 +1251,18 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
-
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
-        self.assertEqual(len(report.resources), 1)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
         self.assertEqual(len(report.resources), 2)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_scan_hcl_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
 
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
-        self.assertEqual(len(report.resources), 0)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
         self.assertEqual(len(report.resources), 1)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_exclude_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

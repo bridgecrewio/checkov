@@ -15,7 +15,6 @@ import hcl2
 from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
-from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.variables.context import EvaluationContext
@@ -78,7 +77,6 @@ class Parser:
         self.external_modules_source_map = {}
         self.module_address_map = {}
         self.tf_var_files = tf_var_files
-        self.scan_hcl = should_scan_hcl_files()
         self.dirname_cache = {}
 
         if self.out_evaluations_context is None:
@@ -115,10 +113,8 @@ class Parser:
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
-    def parse_file(
-        self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None, scan_hcl: bool = False
-    ) -> Optional[Dict[str, Any]]:
-        if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
+    def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
+        if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
             parse_result = _load_or_die_quietly(file, parsing_errors)
             if parse_result:
                 parse_result = self._serialize_definitions(parse_result)
@@ -231,7 +227,7 @@ class Parser:
                 explicit_var_files.append(file)
 
             # Resource files
-            elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
+            elif file.name.endswith(".tf") or file.name.endswith('.hcl'):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
         files_to_data = self._load_files(tf_files_to_load)
