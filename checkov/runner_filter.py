@@ -246,9 +246,7 @@ class RunnerFilter(object):
         run_image_referencer = obj.get('run_image_referencer')
         if run_image_referencer is None:
             run_image_referencer = False
-        enable_secret_scan_all_files = obj.get('enable_secret_scan_all_files')
-        if enable_secret_scan_all_files is None:
-            enable_secret_scan_all_files = False
+        enable_secret_scan_all_files = bool(obj.get('enable_secret_scan_all_files'))
         black_list_secret_scan = obj.get('black_list_secret_scan')
         runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
                                      download_external_modules, external_modules_download_path, evaluate_variables,
