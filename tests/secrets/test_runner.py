@@ -227,7 +227,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path,
                             external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets',
+                            runner_filter=RunnerFilter(framework=['secrets'],
                                                        black_list_secret_scan=['.py', 'Dockerfile', '.tf', '.yml'],
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 2)
@@ -237,7 +237,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.py']))
+                            runner_filter=RunnerFilter(framework=['secrets'], black_list_secret_scan=['.ts', 'Dockerfile', '.tf', '.yml'],
+                                                       enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_requested_file_type_only_yml(self):
@@ -245,7 +246,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.yml']))
+                            runner_filter=RunnerFilter(framework=['secrets'], black_list_secret_scan=['.py', 'Dockerfile', '.tf', '.ts'],
+                                                       enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_requested_file_type_only_tf(self):
@@ -253,16 +255,18 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets',
-                                                       secrets_scan_file_type=['.tf']))
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       black_list_secret_scan=['.py', 'Dockerfile', '.ts', '.yml'],
+                                                       enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
 
-    def test_runner_requested_file_type_only_py_ts_yml(self):
+    def test_runner_requested_file_type_only_tf_yml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['.yml', '.tf']))
+                            runner_filter=RunnerFilter(framework=['secrets'], black_list_secret_scan=['.py', 'Dockerfile', '.ts'],
+                                                       enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 5)
 
     def test_runner_requested_file_type_all(self):
@@ -270,7 +274,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['all']))
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 11)
 
     def test_runner_requested_file_only_dockerfile(self):
@@ -278,7 +282,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=['Dockerfile']))
+                            runner_filter=RunnerFilter(framework=['secrets'], black_list_secret_scan=['.py', '.tf', '.ts', '.yml'],
+                                                       enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 2)
 
     def test_runner_no_requested_file(self):
@@ -286,7 +291,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets', secrets_scan_file_type=[]))
+                            runner_filter=RunnerFilter(framework=['secrets']))
         self.assertEqual(len(report.failed_checks), 7)
 
 
