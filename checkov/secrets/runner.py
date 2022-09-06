@@ -152,9 +152,6 @@ class Runner(BaseRunner[None]):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
-                secrets_scan_file_type = runner_filter.secrets_scan_file_type
-                if secrets_scan_file_type:
-                    secrets_scan_file_type_lower = [file_type.lower() for file_type in secrets_scan_file_type]
                 enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
                 black_list_secret_scan = runner_filter.black_list_secret_scan
                 black_list_secret_scan_lower = [file_type.lower() for file_type in black_list_secret_scan] if black_list_secret_scan else []
