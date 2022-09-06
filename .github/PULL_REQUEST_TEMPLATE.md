@@ -9,7 +9,7 @@
     - docs:     to indicate an update to our documentation
     - chore:    to indicate adjustments to workflow files or dependency updates
     - platform: to indicate a change needed for the platform
-    Additionally we encourage adding a scope to the prefix, which indicates the targeted framework, otherwise 'general' will be assumed.
+    Additionally a scope is needs to be added to the prefix, which indicates the targeted framework, in doubt choose 'general'.
     ex.
     feat(terraform): add CKV_AWS_123 to ensure that VPC Endpoint Service is configured for Manual Acceptance
 "
