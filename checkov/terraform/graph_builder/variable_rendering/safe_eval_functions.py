@@ -1,10 +1,10 @@
 import itertools
 import logging
 import re
+from datetime import datetime, timedelta
 from functools import reduce
 from math import ceil, floor, log
 from typing import Union, Any, Dict, Callable, List, Optional
-import datetime
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
@@ -114,23 +114,26 @@ def wrap_func(f: Callable[..., Any], *args: Any) -> Any:
         raise ValueError
     return res
 
-def update_datetime(dt: datetime, delta: datetime.timedelta, adding: bool) -> datetime:
+
+def update_datetime(dt: datetime, delta: timedelta, adding: bool) -> datetime:
     if adding is True:
         dt = dt + delta
     else:
         dt = dt - delta
     return dt
 
-'''
-From docs:
-duration is a string representation of a time difference, consisting of sequences of number and unit pairs,
- like "1.5h" or "1h30m". The accepted units are "ns", "us" (or "µs"), "ms", "s", "m", and "h".
- The first number may be negative to indicate a negative duration, like "-2h5m".
-'''
+
 def timeadd(input_str: str, time_delta: str) -> str:
+    '''
+    From docs:
+    duration is a string representation of a time difference, consisting of sequences of number and unit pairs,
+     like "1.5h" or "1h30m". The accepted units are "ns", "us" (or "µs"), "ms", "s", "m", and "h".
+     The first number may be negative to indicate a negative duration, like "-2h5m".
+    '''
+
     # Convert the date to allowing parsing
     input_str = input_str.replace("Z", "+00:00")
-    dt = datetime.datetime.fromisoformat(input_str)
+    dt = datetime.fromisoformat(input_str)
     adding = True
     if time_delta[0] == '-':
         adding = False
@@ -143,23 +146,24 @@ def timeadd(input_str: str, time_delta: str) -> str:
         amount = float(deltas[0])
         interval = deltas[1]
         deltas = deltas[2:]
-        delta = datetime.timedelta(0)
+        delta = timedelta(0)
         if interval == 'h':
-            delta = datetime.timedelta(hours=amount)
+            delta = timedelta(hours=amount)
         elif interval == 'm':
-            delta = datetime.timedelta(minutes=amount)
+            delta = timedelta(minutes=amount)
         elif interval == 's':
-            delta = datetime.timedelta(seconds=amount)
+            delta = timedelta(seconds=amount)
         elif interval == 'ms':
-            delta = datetime.timedelta(milliseconds=amount)
+            delta = timedelta(milliseconds=amount)
         elif interval == 'us' or interval == 'µs':
-            delta = datetime.timedelta(microseconds=amount)
+            delta = timedelta(microseconds=amount)
         elif interval == 'ns':  # Crude, but timedelta does not deal with nanoseconds
-            delta = datetime.timedelta(microseconds=(amount / 1000))
+            delta = timedelta(microseconds=(amount / 1000))
 
         dt = update_datetime(dt, delta, adding)
         
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
 
 def process_formatting_codes(format_str: str, dt: datetime) -> str:
     format_mapping = {
@@ -208,19 +212,21 @@ def process_formatting_codes(format_str: str, dt: datetime) -> str:
 
     return format_str
 
-'''
-From docs: This function is intended for producing common machine-oriented timestamp formats such as
-those defined in RFC822, RFC850, and RFC1123. It is not suitable for truly human-oriented date
-formatting because it is not locale-aware.
-Any non-letter characters, such as punctuation, are reproduced verbatim in the output.
-To include literal letters in the format string, enclose them in single quotes '.
-To include a literal quote, escape it by doubling the quotes.
-Function works through the format string halting on single quotes to process any formatting
-'''
+
 def formatdate(format_str: str, input_str: str) -> str:
+    '''
+    From docs: This function is intended for producing common machine-oriented timestamp formats such as
+    those defined in RFC822, RFC850, and RFC1123. It is not suitable for truly human-oriented date
+    formatting because it is not locale-aware.
+    Any non-letter characters, such as punctuation, are reproduced verbatim in the output.
+    To include literal letters in the format string, enclose them in single quotes '.
+    To include a literal quote, escape it by doubling the quotes.
+    Function works through the format string halting on single quotes to process any formatting
+    '''
+
     # Convert the input str to a date
     input_str = input_str.replace("Z", "+00:00")
-    dt = datetime.datetime.fromisoformat(input_str)
+    dt = datetime.fromisoformat(input_str)
 
     processed_format_str = ""
     format_str_segment = ""
