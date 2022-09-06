@@ -14,6 +14,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
+
 # Inherit either that YamlRunner or the JSONRunner or ObjectRunner
 # depending on IaC type or for the latter if a totally new IaC type
 class Runner(YamlRunner):
@@ -23,10 +24,10 @@ class Runner(YamlRunner):
     # ...
     #   MY_TYPE = "my_type"
     #
-    check_type = CheckType.MY_TYPE  # type:ignore[attr-defined]  # just used as an example
+    check_type = CheckType.MY_TYPE  # type:ignore[attr-defined]  # noqa: CCE003  # a static attribute
 
     # Define your block type
-    block_type_registries = {
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         "jobs": job_registry,
     }
 

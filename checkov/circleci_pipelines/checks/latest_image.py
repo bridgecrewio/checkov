@@ -5,6 +5,7 @@ from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleC
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 
+
 class ImageReferenceLatestTag(BaseCircleCIPipelinesCheck):
     def __init__(self) -> None:
         name = "Ensure the pipeline image uses a non latest version tag"
@@ -13,7 +14,7 @@ class ImageReferenceLatestTag(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}']
+            supported_entities=('jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}',)
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:

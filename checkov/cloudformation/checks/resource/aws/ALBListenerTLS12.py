@@ -14,6 +14,7 @@ supported_policy_prefixes = {
     'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2")
 }
 
+
 class ALBListenerTLS12(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that Load Balancer Listener is using at least TLS v1.2"
