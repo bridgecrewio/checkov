@@ -60,7 +60,6 @@ class Gitlab(BaseVCSDAL):
         if groups:
             BaseVCSDAL.persist(path=self.gitlab_groups_file_path, conf=groups)
 
-
     def persist_all_confs(self):
         if strtobool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", "True")):
             self.persist_project_approvals()

@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import concurrent.futures
 import re
-from typing import List, Tuple, Dict, Any, Optional, Pattern
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
-from networkx import DiGraph
 from jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -12,8 +13,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.util.var_utils import is_terraform_variable_dependent, is_cloudformation_variable_dependent
+from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
@@ -34,6 +38,7 @@ class BaseAttributeSolver(BaseSolver):
         self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
+        self.parsed_attributes: Dict[Optional[str], Any] = {}
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -78,7 +83,10 @@ class BaseAttributeSolver(BaseSolver):
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         attribute_matches: List[str] = []
         if self.is_jsonpath_check:
-            parsed_attr = parse(self.attribute)
+            parsed_attr = self.parsed_attributes.get(self.attribute)
+            if parsed_attr is None:
+                parsed_attr = parse(self.attribute)
+                self.parsed_attributes[self.attribute] = parsed_attr
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)
                 if full_path not in vertex:
@@ -119,7 +127,7 @@ class BaseAttributeSolver(BaseSolver):
 
     @staticmethod
     def _is_variable_dependant(value: Any, source: str) -> bool:
-        if source == 'Terraform' and is_terraform_variable_dependent(value):
+        if source.lower() == 'terraform' and is_terraform_variable_dependent(value):
             return True
         # TODO add logic for CloudFormation
         # elif source == 'CloudFormation' and is_cloudformation_variable_dependent(value):

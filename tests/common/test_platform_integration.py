@@ -106,7 +106,7 @@ class TestBCApiUrl(unittest.TestCase):
         check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
 
         self.assertEqual(check_same_severity.name, 'Ensure IAM password policy requires at least one uppercase letter')
-        self.assertEqual(check_same_severity.severity, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.CRITICAL])
         self.assertEqual(check_no_desc_title.severity, Severities[BcSeverities.MEDIUM])
 
@@ -124,7 +124,7 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertEqual(check_same_severity.name, 'AWS IAM password policy does not have an uppercase character')
         self.assertEqual(check_different_severity.name, 'AWS IAM policy attached to users')
         self.assertEqual(check_no_desc_title.name, 'Ensure S3 bucket has block public ACLS enabled')
-        self.assertEqual(check_same_severity.severity, Severities[BcSeverities.MEDIUM])
+        self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
 
@@ -165,8 +165,8 @@ def mock_customer_run_config():
                 "id": "BC_AWS_IAM_5",
                 "title": "Ensure IAM password policy requires at least one uppercase letter",
                 "guideline": "https://docs.bridgecrew.io/docs/iam_5",
-                "severity": "MEDIUM",
-                "pcSeverity": "MEDIUM",
+                "severity": "INFO",
+                "pcSeverity": "INFO",
                 "category": "IAM",
                 "checkovId": "CKV_AWS_15",
                 "constructiveTitle": "Ensure AWS IAM password policy has an uppercase character",

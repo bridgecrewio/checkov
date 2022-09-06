@@ -254,6 +254,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
+    def test_AppLoadBalancerTLS12(self):
+        self.go("AppLoadBalancerTLS12")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
@@ -324,3 +327,9 @@ def load_yaml_data(source_file_name: str, dir_path: str) -> dict[str, Any] | Non
         expected_data = yaml.safe_load(f)
 
     return json.loads(json.dumps(expected_data))
+
+    def test_Route53ZoneEnableDNSSECSigning(self):
+        self.go("Route53ZoneEnableDNSSECSigning")
+
+    def test_Route53ZoneHasMatchingQueryLog(self):
+        self.go("Route53ZoneHasMatchingQueryLog")

@@ -1,0 +1,1101 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "acme AWS CloudTrail and Config Security Audit Integration",
+  "Mappings": {
+    "acmeEnvironment": {
+      "env": {
+        "organizationID": "${account_id}",
+        "SnsNameForConfirmCustomerDeployment": "${sns_name}"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": """Required Parameters"""
+          },
+          "Parameters": [
+            "CustomerName",
+            "ResourceNamePrefix",
+            "ExternalID",
+            "LogFilesExpiration",
+            "CreateTrail"
+          ]
+        },
+        {
+          "Label": {
+            "default": "New Trail Options"
+          },
+          "Parameters": [
+            "NewTrailLogFilePrefix"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Existing Trail Setup"
+          },
+          "Parameters": [
+            "ExistingTrailBucketName",
+            "ExistingTrailTopicArn",
+            "SecurityAccountId"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "ResourceNamePrefix": {
+          "default": "Resource name prefix"
+        },
+        "CustomerName": {
+          "default": "Customer name"
+        },
+        "ExternalID": {
+          "default": "ExternalID"
+        },
+        "CreateTrail": {
+          "default": """Create new trail?"""
+        },
+        "NewTrailLogFilePrefix": {
+          "default": """Log file prefix\n hello"""
+        },
+        "ExistingTrailBucketName": {
+          "default": "Bucket name"
+        },
+        "ExistingTrailTopicArn": {
+          "default": "Topic ARN"
+        },
+        "LogFilesExpiration": {
+          "default": "LifecycleConfigurationExpirationInDays"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "ResourceNamePrefix": {
+      "Description": "Names of resources created by the stack will be prefixed with this value to ensure uniqueness.",
+      "Type": "String",
+      "Default": "acme",
+      "MinLength": "1",
+      "MaxLength": "32",
+      "AllowedPattern": "^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$",
+      "ConstraintDescription": "Invalid resource name prefix value.  Must match pattern ^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"
+    },
+    "CustomerName": {
+      "Description": "Customer name as defined on acme Signup",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "1224",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "must contain only alphanumeric characters."
+    },
+    "ExternalID": {
+      "Description": "The cross-account access role created by the stack will use this value for its ExternalID.",
+      "Type": "String",
+      "MinLength": "2",
+      "MaxLength": "1224",
+      "AllowedPattern": "[\\w+=,.@:\\/-]*",
+      "ConstraintDescription": "Invalid ExternalID value.  Must match pattern [\\w+=,.@:\\/-]*"
+    },
+    "CreateTrail": {
+      "Description": """You can have a new multi-region CloudTrail trail be created (along with a new S3 bucket and SNS topic), or use your existing trail setup.""",
+      "Type": "String",
+      "AllowedValues": [
+        "Yes",
+        "No"
+      ],
+      "Default": "Yes"
+    },
+    "NewTrailLogFilePrefix": {
+      "Description": "If you want the new trail to prefix its log file names, provide the prefix to use.  Otherwise, leave it blank.",
+      "Default": "",
+      "Type": "String",
+      "MaxLength": "64",
+      "AllowedPattern": "[a-zA-Z0-9-_.!()* ]*",
+      "ConstraintDescription": "Invalid log file prefix.  Must match pattern [a-zA-Z0-9-_.!()* ]*"
+    },
+    "ExistingTrailBucketName": {
+      "Description": "Provide the name of the S3 bucket for your existing trail setup.  The bucket must be owned by the current account.",
+      "Default": "",
+      "Type": "String",
+      "MaxLength": "128"
+    },
+    "ExistingTrailTopicArn": {
+      "Description": "Provide the ARN of the SNS topic for your existing trail setup. The SNS must be subscribe to the existing bucket",
+      "Default": "",
+      "Type": "String",
+      "MaxLength": "256"
+    },
+    "SecurityAccountId": {
+      "Description": "In case of an existing CloudTrail trail saving logs to another account, please provide the account ID for that account",
+      "Default": "",
+      "Type": "String",
+      "AllowedPattern": "\\d{12}|\\d{0}",
+      "MaxLength": "12"
+    },
+    "LogFilesExpiration": {
+      "Description": "Number of days log files will be saved for. After this many days, log files will be deleted",
+      "Type": "Number",
+      "Default": "30",
+      "MinValue": "7",
+      "MaxValue": "365"
+    }
+  },
+  "Conditions": {
+    "CreateNewTrail": {
+      "Fn::Equals": [
+        {
+          "Ref": "CreateTrail"
+        },
+        "Yes"
+      ]
+    },
+    "UseExistingTrail": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "CreateTrail"
+            },
+            "Yes"
+          ]
+        }
+      ]
+    },
+    "NewTrailUsesLogFilePrefix": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "NewTrailLogFilePrefix"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "SecurityAccountExists": {
+      "Fn::Equals": [
+        {
+          "Ref": "SecurityAccountId"
+        },
+        ""
+      ]
+    }
+  },
+  "Resources": {
+    "acmeCWSBucket": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws-",
+              {
+                "Ref": "AWS::AccountId"
+              }
+            ]
+          ]
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "Delete old log files",
+              "Status": "Enabled",
+              "ExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              },
+              "NoncurrentVersionExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              }
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "Fn::If": [
+                  "CreateNewTrail",
+                  {
+                    "KMSMasterKeyID": {
+                      "Ref": "CloudtrailKMSKeyAlias"
+                    },
+                    "SSEAlgorithm": "aws:kms"
+                  },
+                  {
+                    "SSEAlgorithm": "AES256"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "acmeCWSBucket2": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws-",
+              {
+                "Ref": "AWS::AccountId"
+              }
+            ]
+          ]
+        },
+        "LoggingConfiguration": {
+          "DestinationBucketName": "dest-bucket",
+          "LogFilePrefix": ""
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "Delete old log files",
+              "Status": "Enabled",
+              "ExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              },
+              "NoncurrentVersionExpirationInDays": {
+                "Ref": "LogFilesExpiration"
+              }
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "Fn::If": [
+                  "CreateNewTrail",
+                  {
+                    "KMSMasterKeyID": {
+                      "Ref": "CloudtrailKMSKeyAlias"
+                    },
+                    "SSEAlgorithm": "aws:kms"
+                  },
+                  {
+                    "SSEAlgorithm": "AES256"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "acmeCWSBucketPolicy": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "acmeCWSBucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Id": "acmeCWSBucketPolicy",
+          "Statement": [
+            {
+              "Sid": "CloudTrailAclCheck",
+              "Action": "s3:GetBucketAcl",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "acmeCWSBucket"
+                    }
+                  ]
+                ]
+              },
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              }
+            },
+            {
+              "Sid": "CloudTrailWrite",
+              "Action": "s3:PutObject",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "acmeCWSBucket"
+                    },
+                    {
+                      "Fn::If": [
+                        "NewTrailUsesLogFilePrefix",
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "/",
+                              {
+                                "Ref": "NewTrailLogFilePrefix"
+                              }
+                            ]
+                          ]
+                        },
+                        ""
+                      ]
+                    },
+                    "/AWSLogs/",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "s3:x-amz-acl": "bucket-owner-full-control"
+                },
+                "Bool": {
+                  "aws:SecureTransport": "true"
+                }
+              }
+            },
+            {
+              "Sid": "DenyUnsecureTransport",
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "acmeCWSBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "acmeCWSBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Principal": "*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "acmeCWSTopic": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws"
+            ]
+          ]
+        }
+      }
+    },
+    "acmeCWSTopicPolicy": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "CloudTrailPublish",
+              "Action": "SNS:Publish",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Resource": "*"
+            }
+          ]
+        },
+        "Topics": [
+          {
+            "Ref": "acmeCWSTopic"
+          }
+        ]
+      }
+    },
+    "acmeCWSTrail": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::CloudTrail::Trail",
+      "DependsOn": [
+        "acmeCWSTopicPolicy",
+        "acmeCWSBucketPolicy"
+      ],
+      "Properties": {
+        "TrailName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws"
+            ]
+          ]
+        },
+        "S3BucketName": {
+          "Ref": "acmeCWSBucket"
+        },
+        "S3KeyPrefix": {
+          "Fn::If": [
+            "NewTrailUsesLogFilePrefix",
+            {
+              "Ref": "NewTrailLogFilePrefix"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "SnsTopicName": {
+          "Fn::GetAtt": [
+            "acmeCWSTopic",
+            "TopicName"
+          ]
+        },
+        "KMSKeyId": {
+          "Ref": "CloudtrailKMSKeyAlias"
+        },
+        "EnableLogFileValidation": true,
+        "IncludeGlobalServiceEvents": true,
+        "IsMultiRegionTrail": true,
+        "IsLogging": true
+      }
+    },
+    "CloudtrailKMSKey": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description": "KMS for Cloudtrail, shared with Lacework and acme",
+        "Enabled": true,
+        "EnableKeyRotation": true,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Id": "key-default-1",
+          "Statement": [
+            {
+              "Sid": "Enable owner account permissions",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow CloudTrail to encrypt logs",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Action": [
+                "kms:GenerateDataKey*",
+                "kms:ReEncryptFrom"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "StringLike": {
+                  "kms:EncryptionContext:aws:cloudtrail:arn": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:cloudtrail:*:",
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        ":trail/*"
+                      ]
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "Sid": "Allow CloudTrail to describe key",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Action": "kms:DescribeKey",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Enable acme & Lacework log decryption",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": [
+                "kms:Decrypt"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "kms:CallerAccount": {
+                    "Ref": "AWS::AccountId"
+                  }
+                },
+                "StringLike": {
+                  "kms:EncryptionContext:aws:cloudtrail:arn": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:aws:cloudtrail:*:",
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        ":trail/*"
+                      ]
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "KeyUsage": "ENCRYPT_DECRYPT"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "787370fe-e579-465f-98c5-f1c84f79a810"
+        }
+      }
+    },
+    "CloudtrailKMSKeyAlias": {
+      "Condition": "CreateNewTrail",
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": {
+          "Fn::Join": [
+            "",
+            [
+              "alias/",
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-CloudtrailKey"
+            ]
+          ]
+        },
+        "TargetKeyId": {
+          "Ref": "CloudtrailKMSKey"
+        }
+      }
+    },
+    "acmeCWSQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecws"
+            ]
+          ]
+        },
+        "VisibilityTimeout": 43200
+      }
+    },
+    "acmeCWSQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AwsSnsAccess",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "sqs:SendMessage"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {
+                    "Fn::If": [
+                      "CreateNewTrail",
+                      {
+                        "Ref": "acmeCWSTopic"
+                      },
+                      {
+                        "Ref": "ExistingTrailTopicArn"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "Sid": "acmeSqsAccess",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Fn::FindInMap": [
+                          "acmeEnvironment",
+                          "env",
+                          "organizationID"
+                        ]
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListDeadLetterSourceQueues",
+                "sqs:ChangeMessageVisibility"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Queues": [
+          {
+            "Ref": "acmeCWSQueue"
+          }
+        ]
+      }
+    },
+    "acmeCWSSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "acmeCWSQueue",
+            "Arn"
+          ]
+        },
+        "Protocol": "sqs",
+        "TopicArn": {
+          "Fn::If": [
+            "CreateNewTrail",
+            {
+              "Ref": "acmeCWSTopic"
+            },
+            {
+              "Ref": "ExistingTrailTopicArn"
+            }
+          ]
+        }
+      }
+    },
+    "acmeCWSSACrossAccountAccessRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ResourceNamePrefix"
+              },
+              "-acmecwssarole"
+            ]
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Fn::FindInMap": [
+                          "acmeEnvironment",
+                          "env",
+                          "organizationID"
+                        ]
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": {
+                    "Ref": "ExternalID"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/SecurityAudit",
+          "arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess"
+        ],
+        "Policies": [
+          {
+            "PolicyName": "acmeCWSPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "ConsumeNotifications",
+                  "Action": [
+                    "sqs:GetQueueAttributes",
+                    "sqs:GetQueueUrl",
+                    "sqs:DeleteMessage",
+                    "sqs:ReceiveMessage"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "acmeCWSQueue",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Sid": "ListLogFiles",
+                  "Action": [
+                    "s3:ListBucket"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "arn:aws:s3:::",
+                          {
+                            "Fn::If": [
+                              "UseExistingTrail",
+                              {
+                                "Ref": "ExistingTrailBucketName"
+                              },
+                              {
+                                "Ref": "acmeCWSBucket"
+                              }
+                            ]
+                          },
+                          {
+                            "Fn::If": [
+                              "NewTrailUsesLogFilePrefix",
+                              "/",
+                              ""
+                            ]
+                          },
+                          {
+                            "Fn::If": [
+                              "NewTrailUsesLogFilePrefix",
+                              {
+                                "Ref": "NewTrailLogFilePrefix"
+                              },
+                              ""
+                            ]
+                          },
+                          "/AWSLogs/*"
+                        ]
+                      ]
+                    }
+                  ],
+                  "Condition": {
+                    "StringLike": {
+                      "s3:prefix": [
+                        {
+                          "Fn::Join": [
+                            "",
+                            [
+                              {
+                                "Fn::If": [
+                                  "NewTrailUsesLogFilePrefix",
+                                  {
+                                    "Ref": "NewTrailLogFilePrefix"
+                                  },
+                                  ""
+                                ]
+                              },
+                              {
+                                "Fn::If": [
+                                  "NewTrailUsesLogFilePrefix",
+                                  "/",
+                                  ""
+                                ]
+                              },
+                              "AWSLogs/*"
+                            ]
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Sid": "ReadLogFiles",
+                  "Action": [
+                    "s3:Get*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "arn:aws:s3:::",
+                          {
+                            "Fn::If": [
+                              "UseExistingTrail",
+                              {
+                                "Ref": "ExistingTrailBucketName"
+                              },
+                              {
+                                "Ref": "acmeCWSBucket"
+                              }
+                            ]
+                          },
+                          {
+                            "Fn::If": [
+                              "NewTrailUsesLogFilePrefix",
+                              "/",
+                              ""
+                            ]
+                          },
+                          {
+                            "Fn::If": [
+                              "NewTrailUsesLogFilePrefix",
+                              {
+                                "Ref": "NewTrailLogFilePrefix"
+                              },
+                              ""
+                            ]
+                          },
+                          "/AWSLogs/*"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Sid": "GetAccountAlias",
+                  "Action": [
+                    "iam:ListAccountAliases"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Sid": "GetMetricDataAccess",
+                  "Action": [
+                    "cloudwatch:GetMetricData"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "eksCluster": {
+      "Type": "AWS::EKS::Cluster",
+      "Properties": {
+        "EncryptionConfig" : [
+          {
+            "Provider": {
+              "KeyArn": ""
+            },
+            "Resources": ["secrets"]
+          }
+        ]
+      }
+    },
+    "acmeSnsCustomResource": {
+      "Type": "Custom::acmeSnsCustomResource",
+      "DependsOn": [
+        "acmeCWSQueuePolicy"
+      ],
+      "Properties": {
+        "Type": "AWS_CT_CFG",
+        "ServiceToken": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:sns:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Fn::FindInMap": [
+                  "acmeEnvironment",
+                  "env",
+                  "organizationID"
+                ]
+              },
+              ":",
+              {
+                "Fn::FindInMap": [
+                  "acmeEnvironment",
+                  "env",
+                  "SnsNameForConfirmCustomerDeployment"
+                ]
+              }
+            ]
+          ]
+        },
+        "IntegrationName": {
+          "Ref": "AWS::StackName"
+        },
+        "CrossAccountRoleArn": {
+          "Fn::GetAtt": [
+            "acmeCWSSACrossAccountAccessRole",
+            "Arn"
+          ]
+        },
+        "ExternalId": {
+          "Ref": "ExternalID"
+        },
+        "SqsQueueUrl": {
+          "Ref": "acmeCWSQueue"
+        },
+        "CustomerName": {
+          "Ref": "CustomerName"
+        },
+        "DeploymentRegion": {
+          "Ref": "AWS::Region"
+        },
+        "ActionType": "CustomerSignUp",
+        "Account": "acme",
+        "TemplateVersion": "${template_version}",
+        "AWSAccountId": {
+          "Ref": "AWS::AccountId"
+        },
+        "SecurityAccountId": {
+          "Fn::If": [
+            "SecurityAccountExists",
+            {
+              "Ref": "AWS::AccountId"
+            },
+            {
+              "Ref": "SecurityAccountId"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "RoleARN": {
+      "Description": "Cross-account access role ARN to share with acme for CloudTrail integration",
+      "Value": {
+        "Fn::GetAtt": [
+          "acmeCWSSACrossAccountAccessRole",
+          "Arn"
+        ]
+      }
+    },
+    "CustomerName": {
+      "Description": "Customer name as defined on acme Signup",
+      "Value": {
+        "Ref": "CustomerName"
+      }
+    },
+    "SQSQueueURL": {
+      "Description": "SQS queue URL to share with acme for CloudTrail Integration",
+      "Value": {
+        "Ref": "acmeCWSQueue"
+      }
+    },
+    "SQSQueueARN": {
+      "Description": "SQS queue ARN to share with acme for CloudTrail Integration",
+      "Value": {
+        "Fn::GetAtt": [
+          "acmeCWSQueue",
+          "Arn"
+        ]
+      }
+    },
+    "DeploymentRegion": {
+      "Description": "The region that the customer installed this cloud-formation template",
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "TemplateVersion": {
+      "Description": "acme.io template version",
+      "Value": "${template_version}"
+    }
+  }
+}

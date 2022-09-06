@@ -194,3 +194,30 @@ resource "kubernetes_pod" "pass" {
     dns_policy = "None"
   }
 }
+
+resource "kubernetes_pod" "unknown" {
+  metadata {
+    name = "terraform-example"
+  }
+
+  spec {
+    host_ipc = true
+    host_pid = true
+
+    dns_config {
+      nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+      searches    = ["example.com"]
+
+      option {
+        name  = "ndots"
+        value = 1
+      }
+
+      option {
+        name = "use-vc"
+      }
+    }
+
+    dns_policy = "None"
+  }
+}

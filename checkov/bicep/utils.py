@@ -4,12 +4,14 @@ import logging
 import os
 from collections.abc import Collection
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.bicep.parser import Parser
-from pycep.typing import BicepJson
+
+if TYPE_CHECKING:
+    from pycep.typing import BicepJson
 
 
 BICEP_POSSIBLE_ENDINGS = [".bicep"]
@@ -22,7 +24,7 @@ def get_scannable_file_paths(root_folder: str | Path | None = None, files: list[
 
     if root_folder:
         root_path = Path(root_folder)
-        file_paths = {file_path for file_path in root_path.rglob("*.bicep")}
+        file_paths = {file_path for file_path in root_path.rglob("*.bicep") if file_path.is_file()}
     if files:
         for file in files:
             if file.endswith(".bicep"):

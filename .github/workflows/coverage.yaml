@@ -5,28 +5,32 @@ on:
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   update-coverage:
     runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      contents: write
     environment: release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5.0.0
+        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.7
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - name: Install dependencies
         run: |
           pipenv --python 3.7

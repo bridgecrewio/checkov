@@ -5,22 +5,22 @@ import json
 import logging
 import os
 from collections.abc import Iterable
-from dataclasses import dataclass
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
 from tabulate import tabulate
 from termcolor import colored
 
-from checkov import sca_package
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
+from checkov.common.typing import _ExitCodeThresholds
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_package.output import create_cli_output
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -28,33 +28,6 @@ if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
 
 init(autoreset=True)
-
-@dataclass
-class CheckType:
-    BITBUCKET_PIPELINES = "bitbucket_pipelines"
-    CIRCLECI_PIPELINES = "circleci_pipelines"
-    ARGO_WORKFLOWS = "argo_workflows"
-    ARM = "arm"
-    BICEP = "bicep"
-    CLOUDFORMATION = "cloudformation"
-    DOCKERFILE = "dockerfile"
-    GITHUB_CONFIGURATION = "github_configuration"
-    GITHUB_ACTIONS = "github_actions"
-    GITLAB_CONFIGURATION = "gitlab_configuration"
-    GITLAB_CI = "gitlab_ci"
-    BITBUCKET_CONFIGURATION = "bitbucket_configuration"
-    HELM = "helm"
-    JSON = "json"
-    YAML = "yaml"
-    KUBERNETES = "kubernetes"
-    KUSTOMIZE = "kustomize"
-    OPENAPI = "openapi"
-    SCA_PACKAGE = "sca_package"
-    SCA_IMAGE = "sca_image"
-    SECRETS = "secrets"
-    SERVERLESS = "serverless"
-    TERRAFORM = "terraform"
-    TERRAFORM_PLAN = "terraform_plan"
 
 SEVERITY_TO_SARIF_LEVEL = {
     "critical": "error",
@@ -74,6 +47,7 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
+        self.image_cached_results: List[dict[str, Any]] = []
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -110,7 +84,7 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str | None = None) -> dict[str, Any]:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False) -> dict[str, Any]:
         if not url:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         if is_quiet:
@@ -134,63 +108,34 @@ class Report:
                 "url": url,
             }
 
-    def get_exit_code(
-        self,
-        soft_fail: bool,
-        soft_fail_on: list[str] | None = None,
-        hard_fail_on: list[str] | None = None,
-    ) -> int:
+    def get_exit_code(self, exit_code_thresholds: _ExitCodeThresholds) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
-        :param soft_fail: If true, exit code is always 0. (default is false)
-        :param soft_fail_on: A list of checks that will return exit code 0 if they fail. Other failing checks will
-        result exit code 1.
-        :param hard_fail_on: A list of checks that will return exit code 1 if they fail. Other failing checks will
-        result exit code 0.
         :return: Exit code 0 or 1.
         """
 
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
-        logging.debug(f'In get_exit_code; soft_fail: {soft_fail}, soft_fail_on: {soft_fail_on}, hard_fail_on: {hard_fail_on}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+        logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+
+        soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
+        soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
+        hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']
+        hard_fail_threshold = exit_code_thresholds['hard_fail_threshold']
+        soft_fail = exit_code_thresholds['soft_fail']
+
+        has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+        has_hard_fail_values = hard_fail_on_checks or hard_fail_threshold
 
         if self.parsing_errors and hard_fail_on_parsing_errors:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
-        elif not self.failed_checks or (not soft_fail_on and not hard_fail_on and soft_fail):
+        elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
             logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
-        elif not soft_fail_on and not hard_fail_on and self.failed_checks:
+        elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
             logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
             return 1
-
-        soft_fail_on_checks = []
-        soft_fail_threshold = None
-        # soft fail on the highest severity threshold in the list
-        for val in convert_csv_string_arg_to_list(soft_fail_on):
-            if val.upper() in Severities:
-                val = val.upper()
-                if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
-                    soft_fail_threshold = Severities[val]
-            else:
-                soft_fail_on_checks.append(val)
-
-        logging.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
-        logging.debug(f'Soft fail checks: {soft_fail_on_checks}')
-
-        hard_fail_on_checks = []
-        hard_fail_threshold = None
-        # hard fail on the lowest threshold in the list
-        for val in convert_csv_string_arg_to_list(hard_fail_on):
-            if val.upper() in Severities:
-                val = val.upper()
-                if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
-                    hard_fail_threshold = Severities[val]
-            else:
-                hard_fail_on_checks.append(val)
-
-        logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
-        logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
 
         for failed_check in self.failed_checks:
             check_id = failed_check.check_id
@@ -213,12 +158,18 @@ class Report:
         logging.debug('No failed check triggered hard fail - returning 0')
         return 0
 
-    def is_empty(self) -> bool:
-        return (
-            len(self.passed_checks + self.failed_checks + self.skipped_checks)
+    def is_empty(self, full: bool = False) -> bool:
+        checks_count = (
+            len(self.passed_checks)
+            + len(self.failed_checks)
+            + len(self.skipped_checks)
             + len(self.parsing_errors)
-            == 0
         )
+
+        if full:
+            checks_count += len(self.resources) + len(self.extra_resources) + len(self.image_cached_results)
+
+        return checks_count == 0
 
     def print_console(
         self,
@@ -239,14 +190,14 @@ class Report:
             )
         else:
             if self.check_type == CheckType.SCA_PACKAGE:
-                message = f"\nFound CVEs: {summary['failed']}, Skipped CVEs: {summary['skipped']}\n\n"
+                message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
         output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += sca_package.output.create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
+                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
@@ -288,6 +239,8 @@ class Report:
         information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
 
         for record in self.failed_checks + self.skipped_checks:
+            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                continue
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -325,6 +278,7 @@ class Report:
                 "ruleId": record.check_id,
                 "ruleIndex": idx,
                 "level": level,
+                "attachments": [{'description': detail} for detail in record.details],
                 "message": {
                     "text": record.description if record.description else record.check_name,
                 },
@@ -427,6 +381,8 @@ class Report:
                 severity = record.severity.name
 
             if self.check_type == CheckType.SCA_PACKAGE:
+                if record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
                 if not record.vulnerability_details:
                     # this shouldn't normally happen
                     logging.warning(f"Vulnerability check without details {record.file_path}")
@@ -465,7 +421,6 @@ class Report:
 
         properties = {k: v for k, v in config.__dict__.items() if v is not None}
         return properties
-
 
     def _create_test_case_failure_output(self, record: Record) -> str:
         """Creates the failure output for a JUnit XML test case
@@ -507,6 +462,14 @@ class Report:
 
         if self.check_type == CheckType.SCA_PACKAGE:
             if record.vulnerability_details:
+                lowest_fixed_version = record.vulnerability_details.get('lowest_fixed_version')
+                if lowest_fixed_version is not None:
+                    fix = lowest_fixed_version
+                else:
+                    fixlist = record.vulnerability_details.get('fixed_versions')
+                    if fixlist is not None:
+                        fix = fixlist
+
                 failure_output.extend(
                     [
                         "",
@@ -516,6 +479,9 @@ class Report:
                         f"Base Score: {record.vulnerability_details.get('cvss')}",
                         f"Vector: {record.vulnerability_details.get('vector')}",
                         f"Risk Factors: {record.vulnerability_details.get('risk_factors')}",
+                        "Fix Details:",
+                        f"  Status: {record.vulnerability_details.get('status')}",
+                        f"  Fixed Version: {fix}",
                     ]
                 )
             else:
@@ -599,18 +565,18 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
+    base_report.resources.update(report_to_merge.resources)
+    base_report.extra_resources.update(report_to_merge.extra_resources)
 
 
 def remove_duplicate_results(report: Report) -> Report:
     def dedupe_records(origin_records: list[Record]) -> list[Record]:
-        record_cache = []
-        new_records = []
+        unique_records: Dict[str, Record] = {}
         for record in origin_records:
             record_hash = record.get_unique_string()
-            if record_hash not in record_cache:
-                new_records.append(record)
-                record_cache.append(record_hash)
-        return new_records
+            unique_records[record_hash] = record
+
+        return list(unique_records.values())
 
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)

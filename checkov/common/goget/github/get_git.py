@@ -25,7 +25,7 @@ class GitGetter(BaseGetter):
         if search_tag:
             self.tag = search_tag.group("tag")
             # remove tag/ or tags/ from ref= to get actual branch name
-            self.tag = re.sub('tag.*/','', self.tag)
+            self.tag = re.sub('tag.*/', '', self.tag)
         url = re.sub(TAG_PATTERN, '', url)
 
         super().__init__(url)

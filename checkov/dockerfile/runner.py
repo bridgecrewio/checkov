@@ -5,7 +5,8 @@ import os
 from typing import TYPE_CHECKING, Callable
 
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.util.dockerfile import is_docker_file
@@ -75,8 +76,7 @@ class Runner(BaseRunner):
             skipped_checks = collect_skipped_checks(definitions[docker_file_path])
             instructions = definitions[docker_file_path]
 
-            results = registry.scan(docker_file_path, instructions, skipped_checks,
-                                    runner_filter)
+            results = registry.scan(docker_file_path, instructions, skipped_checks, runner_filter)
 
             for check, check_result in results.items():
                 result_configuration = check_result['results_configuration']

@@ -1,11 +1,18 @@
 import unittest
 from pathlib import Path
 
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.github_actions.checks.registry import registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.GITHUB_ACTIONS)
+
     def test_runner(self):
         # given
         test_dir = Path(__file__).parent / "resources"
@@ -19,8 +26,27 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 41)
+        self.assertEqual(len(report.passed_checks), 151)
         self.assertEqual(len(report.skipped_checks), 0)
+
+    def test_runner_honors_enforcement_rules(self):
+        # given
+        test_dir = Path(__file__).parent / "resources"
+        filter = RunnerFilter(framework=['github_actions'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF]}
+
+        # when
+        report = Runner().run(
+            root_folder=str(test_dir), runner_filter=filter
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_runner_on_suspectcurl(self):
         # given
@@ -107,6 +133,38 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[2].triggers[0] == {'pull_request'}
         assert report.passed_checks[2].workflow_name == 'unsecure-worfklow'
 
+    def test_runner_on_non_empty_workflow_dispatch(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/workflow_dispatch.yaml"
+        file_dir = [str(file_path)]
+
+        checks = ["CKV_GHA_7"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert report.failed_checks[0].job[0] == ''
+        assert report.failed_checks[0].triggers[0] == {'workflow_dispatch'}
+        assert report.failed_checks[0].workflow_name == ''
+
+    def test_runner_on_list_typed_workflow_dispatch(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yaml"
+        file_dir = [str(file_path)]
+
+        checks = ["CKV_GHA_7"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert len(report.failed_checks) == 0
+
     def test_runner_on_supply_chain(self):
         # given
         file_path = Path(__file__).parent / "resources/.github/workflows/supply_chain.yaml"
@@ -162,6 +220,23 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].job[0] == "analyze"
         assert report.passed_checks[0].triggers[0] == {'push', 'schedule', 'pull_request', 'workflow_dispatch'}
         assert report.passed_checks[0].workflow_name == 'CodeQL'
+
+    def test_runner_on_suspectcurl(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/empty_jobs.yaml"
+        file_dir = [str(file_path)]
+        checks = ["CKV_GHA_6", "CKV_GHA_5"]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
+        )
+
+        # then
+        assert len(report.failed_checks) == 0
+        assert len(report.passed_checks) == 0
+        assert len(report.skipped_checks) == 0
+        assert len(report.parsing_errors) == 0
 
 
 if __name__ == "__main__":

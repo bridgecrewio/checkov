@@ -2,22 +2,24 @@ name: PR Test
 
 on: pull_request
 
+permissions: read-all
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.9
       - name: pre-commit
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507  # v3
 
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -30,13 +32,13 @@ jobs:
   mypy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+    - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
       with:
         python-version: 3.7
     - name: Install pipenv
       run: |
-        python -m pip install --no-cache-dir --upgrade pipenv
+        python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
     - name: Install dependencies
       run: |
         pipenv --python 3.7
@@ -54,19 +56,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,21 +83,21 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v3
-      - uses: azure/setup-helm@e4f3964f67aac34233ac06d6614802b7040f2a7c  # v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==22.0.3
+          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -128,21 +130,21 @@ jobs:
       working-directory: ./performance_tests
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v3
-      - uses: azure/setup-helm@e4f3964f67aac34233ac06d6614802b7040f2a7c  # v3
-      - uses: imranismail/setup-kustomize@v1
+      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
+          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==22.0.3
+          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-benchmark
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'

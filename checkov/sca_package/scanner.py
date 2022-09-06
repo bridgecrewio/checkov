@@ -57,7 +57,7 @@ class Scanner:
         else:
             scan_results: List[Dict[str, Any]] = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
-        if any(scan_result["packages"] is None for scan_result in scan_results):
+        if any(scan_result.get("packages") is None for scan_result in scan_results):
             image_scanner.setup_twistcli()
 
             if os.getenv("PYCHARM_HOSTED") == "1":
@@ -65,7 +65,7 @@ class Scanner:
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
                 logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
                 scan_results = [
-                    await self.execute_twistcli_scan(input_path) if scan_results[idx]["packages"] is None else
+                    await self.execute_twistcli_scan(input_path) if scan_results[idx].get("packages") is None else
                     scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
@@ -73,7 +73,7 @@ class Scanner:
                 indices_to_fix: List[int] = [
                     idx
                     for idx in range(len(input_paths_as_list))
-                    if scan_results[idx]["packages"] is None
+                    if scan_results[idx].get("packages") is None
                 ]
                 new_scan_results = await asyncio.gather(*[
                     self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix
@@ -105,6 +105,7 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
+            logging.info(f"result for {input_path} exists in the cache")
             return self.parse_api_result(input_path, response_json["outputData"])
 
         return self.run_scan_busy_wait(input_path, response_json['id'])

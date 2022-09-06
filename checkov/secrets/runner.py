@@ -6,12 +6,12 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict
+from os.path import exists
+from typing import TYPE_CHECKING, cast
 
-from detect_secrets import SecretsCollection  # type:ignore[import]
-from detect_secrets.core import scan  # type:ignore[import]
-from detect_secrets.core.potential_secret import PotentialSecret  # type:ignore[import]
-from detect_secrets.settings import transient_settings  # type:ignore[import]
+from detect_secrets import SecretsCollection
+from detect_secrets.core import scan
+from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -21,7 +21,8 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
@@ -32,6 +33,7 @@ from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
+    from detect_secrets.core.potential_secret import PotentialSecret
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
@@ -79,9 +81,8 @@ class Runner(BaseRunner[None]):
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        with transient_settings({
-            # Only run scans with only these plugins.
-            'plugins_used': [
+        plugins_used = \
+            [
                 {
                     'name': 'AWSKeyDetector'
                 },
@@ -127,6 +128,21 @@ class Runner(BaseRunner[None]):
                     'limit': ENTROPY_KEYWORD_LIMIT
                 }
             ]
+        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
+        logging.info(f"Custom detector flag set to {custom_plugins}")
+        if custom_plugins:
+            detector_path = f"{custom_plugins}/custom_regex_detector.py"
+            if exists(detector_path):
+                logging.info(f"Custom detector found at {detector_path}. Loading...")
+                plugins_used.append({
+                    'name': 'CustomRegexDetector',
+                    'path': f'file://{detector_path}'
+                })
+            else:
+                logging.info(f"Custom detector not found at path {detector_path}. Skipping...")
+        with transient_settings({
+            # Only run scans with only these plugins.
+            'plugins_used': plugins_used
         }) as settings:
             report = Report(self.check_type)
             if not runner_filter.show_progress_bar:
@@ -162,9 +178,12 @@ class Runner(BaseRunner[None]):
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
-            secrets_duplication: Dict[str, bool] = {}
+            secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
-                check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                if hasattr(secret, 'check_id'):
+                    check_id = secret.check_id      # type: ignore
+                else:
+                    check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
@@ -174,9 +193,7 @@ class Runner(BaseRunner[None]):
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if runner_filter.checks and not runner_filter.should_run_check(check_id=check_id,
-                                                                               bc_check_id=bc_check_id,
-                                                                               severity=severity):
+                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 line_text = linecache.getline(secret.filename, secret.line_number)
@@ -190,7 +207,9 @@ class Runner(BaseRunner[None]):
                     runner_filter=runner_filter,
                 ) or result
                 report.add_resource(f'{secret.filename}:{secret.secret_hash}')
-                line_text_censored = omit_secret_value_from_line(secret.secret_value, line_text)
+                # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
+                # via 'load_secret_from_dict'
+                line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
@@ -212,7 +231,7 @@ class Runner(BaseRunner[None]):
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
         results = parallel_runner.run_function(
-            func=lambda f: list((Runner._safe_scan(f, base_path))),
+            func=lambda f: Runner._safe_scan(f, base_path),
             items=files_to_scan,
             run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
         )
@@ -237,6 +256,7 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
+            logging.info(f'file {full_file_path} results {file_results}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
@@ -251,12 +271,11 @@ class Runner(BaseRunner[None]):
     def search_for_suppression(
             check_id: str,
             bc_check_id: str,
-            severity: Severity,
+            severity: Severity | None,
             secret: PotentialSecret,
             runner_filter: RunnerFilter
     ) -> _CheckResult | None:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id,
-                                              severity=severity) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

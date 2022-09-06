@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
-    workflow_name: str | None
+    workflow_name: str
     jobs: dict[int, str]
 
 
@@ -47,7 +47,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                 (definitions[file], definitions_raw[file]) = result
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
-                    workflow_name = definition.get('name')
+                    workflow_name = definition.get('name', '')
                     triggers = self._get_triggers(definition)
                     jobs = self._get_jobs(definition)
                     self.map_file_path_to_gha_metadata_dict[file] = \
@@ -96,13 +96,14 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
-                self._load_files(f_names, definitions, definitions_raw, lambda f: os.path.join(root, f))
+                files_to_load = [os.path.join(root, f_name) for f_name in f_names]
+                self._load_files(files_to_load=files_to_load, definitions=definitions, definitions_raw=definitions_raw)
 
         self.pbar.initiate(len(definitions))
         for file_path in definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks,runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -126,13 +127,13 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities, definitions[file_path]),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
                         entity_tags=None,
                         severity=check.severity,
-                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end),
+                        job=self.map_file_path_to_gha_metadata_dict[file_path]["jobs"].get(end, ''),
                         triggers=self.map_file_path_to_gha_metadata_dict[file_path]["triggers"],
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
@@ -145,7 +146,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         code_block=definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities), # type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -160,7 +161,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
     def included_paths(self) -> Iterable[str]:
         return []
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str]) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod
@@ -182,9 +183,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()
-        # it is correct that 'True' can be a key. It is easier to ignore the typing here,
-        # then to support it all the way up.
-        triggers = definition.get(True)  # type:ignore[call-overload]
+        triggers = definition.get("on")
         try:
             if isinstance(triggers, str):
                 triggers_set.add(triggers)
@@ -200,10 +199,13 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         jobs = definition.get('jobs')
         if jobs:
             for job_name, job_instance in jobs.items():
+                if not isinstance(job_instance, dict):
+                    continue
                 if job_name != START_LINE and job_name != END_LINE:
-                    end_line_to_job_name_dict[job_instance.get(END_LINE)] = job_name
+                    end_line: int = job_instance.get(END_LINE, -1)
+                    end_line_to_job_name_dict[end_line] = job_name
 
-                    steps = job_instance.get('steps')
+                    steps = [step for step in job_instance.get('steps', []) or [] if step]
                     if steps:
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name

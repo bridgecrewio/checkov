@@ -37,7 +37,7 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
     ),
     "aws_ebs_volume": GenericResourceEncryption("aws_ebs_volume", {"encrypted": [True], "kms_key_id": []}),
     "aws_elasticache_replication_group": GenericResourceEncryption(
-        "aws_elasticache_replication_group", {"at_rest_encryption_enabled": [True], "kms_key_id": ["arn"],}
+        "aws_elasticache_replication_group", {"at_rest_encryption_enabled": [True], "kms_key_id": ["arn"]}
     ),
     "aws_elasticsearch_domain": GenericResourceEncryption(
         "aws_elasticsearch_domain",

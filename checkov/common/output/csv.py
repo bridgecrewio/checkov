@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
 
 if TYPE_CHECKING:
@@ -20,17 +20,17 @@ HEADER_OSS_PACKAGES = [
     "Package",
     "Version",
     "Path",
-    "git org",
-    "git repository",
+    "Git Org",
+    "Git Repository",
     "Vulnerability",
     "Severity",
-    "License",
+    "Licenses",
 ]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
-HEADER_IAC = ["Resource", "Path", "git org", "git repository", "Misconfigurations", "Severity"]
+HEADER_IAC = ["Resource", "Path", "Git Org", "Git Repository", "Misconfigurations", "Severity"]
 
 CTA_NO_API_KEY = (
     "SCA, image and runtime findings are only available with Bridgecrew. Signup at "
@@ -44,25 +44,24 @@ class CSVSBOM:
         self.container_rows: list[dict[str, Any]] = []
         self.package_rows: list[dict[str, Any]] = []
 
+        self.iac_rows_have_details: bool = False
+
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
     def add_report(self, report: Report, git_org: str, git_repository: str) -> None:
-        if report.check_type == CheckType.SCA_PACKAGE:
+        if report.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
-                self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository)
-            for resource in report.extra_resources:
-                self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository)
-        elif report.check_type == CheckType.SCA_IMAGE:
-            # needs to be implemented separately
-            return
+                if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
+                    self.add_sca_package_resources(resource=record, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
+            for resource in sorted(report.extra_resources):
+                self.add_sca_package_resources(resource=resource, git_org=git_org, git_repository=git_repository, check_type=report.check_type)
         else:
             for record in itertools.chain(report.failed_checks, report.passed_checks, report.skipped_checks):
                 self.add_iac_resources(resource=record, git_org=git_org, git_repository=git_repository)
-            for resource in report.extra_resources:
+            for resource in sorted(report.extra_resources):
                 self.add_iac_resources(resource=resource, git_org=git_org, git_repository=git_repository)
 
-
-    def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
+    def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str, check_type: str) -> None:
         if not resource.vulnerability_details:
             # this shouldn't happen
             logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
@@ -72,17 +71,20 @@ class CSVSBOM:
         if isinstance(resource, Record) and resource.severity is not None:
             # ExtraResource don't have a CVE/Severity
             severity = resource.severity.name
-
-        self.package_rows.append(
+        csv_table = {
+            CheckType.SCA_PACKAGE: self.package_rows,
+            CheckType.SCA_IMAGE: self.container_rows
+        }
+        csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
                 "Version": resource.vulnerability_details["package_version"],
                 "Path": resource.file_path,
-                "git org": git_org,
-                "git repository": git_repository,
+                "Git Org": git_org,
+                "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
-                "License": None,  # will be added later
+                "Licenses": resource.vulnerability_details.get("licenses"),
             }
         )
 
@@ -100,16 +102,20 @@ class CSVSBOM:
             # IaC resources shouldn't be added multiple times, if they don't have any misconfiguration
             return
 
-        self.iac_rows.append(
-            {
-                "Resource": resource.resource,
-                "Path": resource.file_path,
-                "git org": git_org,
-                "git repository": git_repository,
-                "Misconfigurations": misconfig,
-                "Severity": severity,
-            }
-        )
+        row = {
+            "Resource": resource.resource,
+            "Path": resource.file_path,
+            "Git Org": git_org,
+            "Git Repository": git_repository,
+            "Misconfigurations": misconfig,
+            "Severity": severity,
+        }
+
+        if isinstance(resource, Record) and resource.details:
+            self.iac_rows_have_details = True
+            row["Details"] = "|".join(resource.details)
+
+        self.iac_rows.append(row)
         self.iac_resource_cache.add(resource_id)
 
     def persist_report(self, is_api_key: bool, output_path: str = "") -> None:
@@ -130,7 +136,7 @@ class CSVSBOM:
     def persist_report_iac(self, file_name: str, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_IAC,
+            header=[*HEADER_IAC, "Details"] if self.iac_rows_have_details else HEADER_IAC,
             rows=self.iac_rows,
             is_api_key=True,
         )
@@ -164,15 +170,21 @@ class CSVSBOM:
                 writer.writerow(header)
                 writer.writerow([CTA_NO_API_KEY])
 
-    def get_csv_output_oss_packages(self) -> str:
+    def get_csv_output_packages(self, check_type: str) -> str:
         # header
         csv_output = ','.join(HEADER_OSS_PACKAGES) + '\n'
+        csv_table = {
+            CheckType.SCA_PACKAGE: self.package_rows,
+            CheckType.SCA_IMAGE: self.container_rows
+        }
 
-        for row in self.package_rows:
+        for row in csv_table[check_type]:
             for header in HEADER_OSS_PACKAGES:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
-                    csv_output += f'{field}'
+                    csv_output += f'\"{field}\"'
+                elif header == 'Licenses':
+                    csv_output += f',\"{field}\"'
                 else:
                     csv_output += f',{field}'
             csv_output += '\n'

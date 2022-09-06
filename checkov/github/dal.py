@@ -16,6 +16,12 @@ class Github(BaseVCSDAL):
         self.github_org_security_file_path = os.path.join(self.github_conf_dir_path, "org_security.json")
         self.github_branch_protection_rules_file_path = os.path.join(self.github_conf_dir_path,
                                                                      "branch_protection_rules.json")
+        self.github_org_webhooks_file_path = os.path.join(self.github_conf_dir_path,
+                                                          "org_webhooks.json")
+        self.github_repository_webhooks_file_path = os.path.join(self.github_conf_dir_path,
+                                                                 "repository_webhooks.json")
+        self.github_repository_collaborators_file_path = os.path.join(self.github_conf_dir_path,
+                                                                      "repository_collaborators.json")
 
     def discover(self):
 
@@ -23,7 +29,7 @@ class Github(BaseVCSDAL):
         self.graphql_api_url = f"{self.api_url}/graphql"
 
         self.token = os.getenv('GITHUB_TOKEN', '')
-
+        self.repo_owner = os.getenv('GITHUB_REPO_OWNER', '')
         self.current_repository = os.getenv('GITHUB_REPOSITORY', '')
         self.current_branch = os.getenv('GITHUB_REF_NAME', '')
         if not self.current_branch:
@@ -43,7 +49,7 @@ class Github(BaseVCSDAL):
     def get_branch_protection_rules(self):
         if self.current_branch and self.current_repository:
             branch_protection_rules = self._request(
-                endpoint="repos/{}/branches/{}/protection".format(self.current_repository, self.current_branch),
+                endpoint=f"repos/{self.repo_owner}/{self.current_repository}/branches/{self.current_branch}/protection",
                 allowed_status_codes=[200, 404])
             return branch_protection_rules
         return None
@@ -57,6 +63,41 @@ class Github(BaseVCSDAL):
         organization_security = self.get_organization_security()
         if organization_security:
             BaseVCSDAL.persist(path=self.github_org_security_file_path, conf=organization_security)
+
+    def persist_organization_webhooks(self):
+        organization_webhooks = self.get_organization_webhooks()
+        if organization_webhooks:
+            BaseVCSDAL.persist(path=self.github_org_webhooks_file_path, conf=organization_webhooks)
+
+    def get_organization_webhooks(self):
+        data = self._request(endpoint="orgs/{}/hooks".format(self.org), allowed_status_codes=[200])
+        if not data:
+            return None
+        return data
+
+    def get_repository_collaborators(self):
+        data = self._request(endpoint="repos/{}/{}/collaborators".format(self.org, self.current_repository),
+                             allowed_status_codes=[200])
+        if not data:
+            return None
+        return data
+
+    def persist_repository_collaborators(self):
+        repository_collaborators = self.get_repository_collaborators()
+        if repository_collaborators:
+            BaseVCSDAL.persist(path=self.github_repository_collaborators_file_path, conf=repository_collaborators)
+
+    def get_repository_webhooks(self):
+        data = self._request(endpoint="repos/{}/{}/hooks".format(self.org, self.current_repository),
+                             allowed_status_codes=[200])
+        if not data:
+            return None
+        return data
+
+    def persist_repository_webhooks(self):
+        repository_webhooks = self.get_repository_webhooks()
+        if repository_webhooks:
+            BaseVCSDAL.persist(path=self.github_repository_webhooks_file_path, conf=repository_webhooks)
 
     def get_organization_security(self):
         if not self._organization_security:
@@ -85,3 +126,6 @@ class Github(BaseVCSDAL):
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
             self.persist_organization_security()
             self.persist_branch_protection_rules()
+            self.persist_organization_webhooks()
+            self.persist_repository_webhooks()
+            self.persist_repository_collaborators()

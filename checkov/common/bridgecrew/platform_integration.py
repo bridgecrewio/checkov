@@ -23,7 +23,6 @@ from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
-from typing_extensions import TypeGuard
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.run_metadata.registry import registry
@@ -32,14 +31,14 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
-    get_auth_error_message
+    get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
     from requests import Response
+    from typing_extensions import TypeGuard
 
 
 SLEEP_SECONDS = 1
@@ -91,7 +91,7 @@ class BcPlatformIntegration:
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
-        self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
@@ -186,7 +186,7 @@ class BcPlatformIntegration:
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
                                                  ca_certs=ca_certificate,
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
@@ -194,7 +194,7 @@ class BcPlatformIntegration:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])  # type:ignore[no-untyped-call]
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
@@ -381,9 +381,11 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
 
-        self.scan_reports = scan_reports
-        reduced_scan_reports = reduce_scan_reports(scan_reports)
-        checks_metadata_paths = enrich_and_persist_checks_metadata(scan_reports, self.s3_client, self.bucket,
+        # just process reports with actual results in it
+        self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
+
+        reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+        checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
                                                                    self.repo_path)
         dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
@@ -448,8 +450,11 @@ class BcPlatformIntegration:
             finally:
                 if request and request.status == 201 and response and response.get("result") == "Success":
                     logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
-                elif response and try_num < MAX_RETRIES and re.match('The integration ID .* in progress',
-                                                        response.get('message', '')):
+                elif (
+                    response
+                    and try_num < MAX_RETRIES
+                    and re.match("The integration ID .* in progress", response.get("message", ""))
+                ):
                     logging.info(
                         f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1
@@ -545,6 +550,7 @@ class BcPlatformIntegration:
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)

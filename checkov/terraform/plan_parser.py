@@ -121,29 +121,67 @@ def _prepare_resource_block(
 
 
 def _find_child_modules(
-    child_modules: ListNode, resource_changes: dict[str, dict[str, Any]]
+    child_modules: ListNode, resource_changes: dict[str, dict[str, Any]], root_module_conf: dict[str, Any]
 ) -> List[Dict[str, Dict[str, Any]]]:
+    """ Find all child modules if any. Including any amount of nested child modules.
+
+    :param child_modules: list of terraform child_module objects
+    :param resource_changes: a resource address to resource changes dict
+    :param root_module_conf: configuration block of the root module
+    :returns:
+        list of terraform resource blocks
     """
-    Find all child modules if any. Including any amount of nested child modules.
-    :type: child_modules: list of tf child_module objects
-    :rtype: resource_blocks: list of hcl resources
-    """
+
     resource_blocks = []
     for child_module in child_modules:
-        if child_module.get("child_modules", []):
-            nested_child_modules = child_module.get("child_modules", [])
-            nested_blocks = _find_child_modules(nested_child_modules, resource_changes)
+        nested_child_modules = child_module.get("child_modules", [])
+        if nested_child_modules:
+            nested_blocks = _find_child_modules(
+                child_modules=nested_child_modules,
+                resource_changes=resource_changes,
+                root_module_conf=root_module_conf
+            )
             for resource in nested_blocks:
                 resource_blocks.append(resource)
+
+        module_address = child_module.get("address", "")
+        module_call_resources = _get_module_call_resources(
+            module_address=module_address,
+            root_module_conf=root_module_conf,
+        )
+
         for resource in child_module.get("resources", []):
+            module_call_conf = None
+            if module_address and module_call_resources:
+                module_call_conf = next(
+                    (
+                        module_call_resource
+                        for module_call_resource in module_call_resources
+                        if f"{module_address}.{module_call_resource['address']}" == resource["address"]
+                    ),
+                    None
+                )
+
             resource_block, prepared = _prepare_resource_block(
                 resource=resource,
-                conf=None,
+                conf=module_call_conf,
                 resource_changes=resource_changes,
             )
             if prepared is True:
                 resource_blocks.append(resource_block)
     return resource_blocks
+
+
+def _get_module_call_resources(module_address: str, root_module_conf: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extracts the resources from the 'module_calls' block under 'configuration'"""
+
+    for module_name in module_address.split("."):
+        if module_name == "module":
+            # module names are always prefixed with 'module.', therefore skip it
+            continue
+        root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
+
+    return root_module_conf.get("resources", [])
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -190,9 +228,14 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
         if prepared is True:
             tf_definition["resource"].append(resource_block)
     child_modules = template.get("planned_values", {}).get("root_module", {}).get("child_modules", [])
+    root_module_conf = template.get("configuration", {}).get("root_module", {})
     # Terraform supports modules within modules so we need to search
     # in nested modules to find all resource blocks
-    resource_blocks = _find_child_modules(child_modules, resource_changes)
+    resource_blocks = _find_child_modules(
+        child_modules=child_modules,
+        resource_changes=resource_changes,
+        root_module_conf=root_module_conf,
+    )
     for resource in resource_blocks:
         tf_definition["resource"].append(resource)
     return tf_definition, template_lines
@@ -210,5 +253,5 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
             if lower_case_value == "true":
                 value_list[i] = True
             if lower_case_value == "false":
-                value_list[i] = False         
+                value_list[i] = False
     return value_list

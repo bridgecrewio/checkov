@@ -1,0 +1,65 @@
+name: Nightly Run
+
+on:
+  schedule:
+    # daily at 23:00 UTC
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  release:
+    runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT_SECRET }}
+      - name: Prepare Release
+        id: prepare_release
+        run: |
+          # grab latest release and tag to compare and decide to create a new one
+          create_release=true
+          latest_gh_release=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest"  | grep -Po '"tag_name": "\K.*?(?=")')
+          latest_tag=$(git describe --abbrev=0 --tags)
+
+          if [ "$latest_gh_release" = "$latest_tag" ]
+          then
+            create_release=false
+          fi
+
+          echo "::set-output name=create_release::$create_release"
+          echo "::set-output name=latest_release_version::$latest_gh_release"
+          echo "::set-output name=version::$latest_tag"
+      - name: Build GitHub Release changelog
+        if: steps.prepare_release.outputs.create_release == 'true'
+        id: build_github_release
+        uses: mikepenz/release-changelog-builder-action@000e44613cdb6c340ac98cb1582f99e8d3230058  # v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
+        with:
+          configuration: ".github/release-changelog-config.json"
+          fromTag: ${{ steps.prepare_release.outputs.latest_release_version }}
+          toTag: ${{ steps.prepare_release.outputs.version }}
+      - name: Create GitHub Release
+        if: steps.prepare_release.outputs.create_release == 'true'
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
+        with:
+          tag_name: ${{ steps.prepare_release.outputs.version }}
+          name: ${{ steps.prepare_release.outputs.version }}
+          body: ${{ steps.build_github_release.outputs.changelog }}
+      - name: Update CHANGELOG.md
+        if: steps.prepare_release.outputs.create_release == 'true'
+        uses: stefanzweifel/changelog-updater-action@d03272ada6fcd985ecd5cedbf984f472081b7b92  # v1
+        with:
+          latest-version: ${{ steps.prepare_release.outputs.version }}
+          release-notes: ${{ steps.build_github_release.outputs.changelog }}
+      - name: Commit updated CHANGELOG.md
+        if: steps.prepare_release.outputs.create_release == 'true'
+        uses: stefanzweifel/git-auto-commit-action@49620cd3ed21ee620a48530e81dba0d139c9cb80  # v4
+        with:
+          commit_message: "chore: update release notes"
+          file_pattern: CHANGELOG.md

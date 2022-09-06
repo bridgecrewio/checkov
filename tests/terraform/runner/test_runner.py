@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -21,7 +21,11 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.module.registry import module_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.data.registry import data_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
@@ -31,6 +35,12 @@ class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(provider_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(module_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(data_registry.report_type, CheckType.TERRAFORM)
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -57,8 +67,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         for record in report.failed_checks:
             self.assertNotIn(record.check_id, checks_denylist)
 
@@ -71,8 +81,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertGreaterEqual(summary['failed'], 1)
@@ -95,7 +105,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(False), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(4, summary['failed'])
@@ -834,8 +844,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
         self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
@@ -843,6 +853,23 @@ class TestRunnerValid(unittest.TestCase):
 
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -1224,39 +1251,18 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
-
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
-        self.assertEqual(len(report.resources), 1)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
         self.assertEqual(len(report.resources), 2)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_scan_hcl_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
 
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
-        self.assertEqual(len(report.resources), 0)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
         self.assertEqual(len(report.resources), 1)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_exclude_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

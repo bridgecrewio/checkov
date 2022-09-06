@@ -11,8 +11,8 @@ class DropCapabilities(BaseResourceCheck):
         name = "Minimize the admission of containers with the NET_RAW capability"
         id = "CKV_K8S_28"
 
-        supported_resources = ['kubernetes_pod']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('kubernetes_pod',)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
@@ -39,13 +39,13 @@ class DropCapabilities(BaseResourceCheck):
                             if not dropped:
                                 return CheckResult.FAILED
                         else:
-                            self.evaluated_keys = ["spec/[0]/container/{idx}/security_context/[0]/capabilities"]
+                            self.evaluated_keys = [f"spec/[0]/container/{idx}/security_context/[0]/capabilities"]
                             return CheckResult.FAILED
                     else:
-                        self.evaluated_keys = ["spec/[0]/container/{idx}/security_context"]
+                        self.evaluated_keys = [f"spec/[0]/container/{idx}/security_context"]
                         return CheckResult.FAILED
                 else:
-                    self.evaluated_keys = ["spec/[0]/container/{idx}"]
+                    self.evaluated_keys = [f"spec/[0]/container/{idx}"]
                     return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED

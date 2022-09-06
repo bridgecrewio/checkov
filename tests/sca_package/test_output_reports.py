@@ -1,26 +1,143 @@
 import xml
+import xml.dom.minidom
+import os
 from pathlib import Path
+from typing import List
 
-from mock.mock import MagicMock
-from pytest_mock import MockerFixture
-
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner
-
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.output.csv import CSVSBOM, FILE_NAME_OSS_PACKAGES
+from checkov.common.output.cyclonedx import CycloneDX
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+OUTPUTS_DIR = Path(__file__).parent / "outputs"
 
 
-def test_get_sarif_json(mocker: MockerFixture, scan_result):
+def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List[str]:
+    # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
+    # timestamp). so we skip these lines by the first 'if when checking whether we get the expected results
+    # in addition also the line that display the checkov version may be changeable, so we skip it as well
+    # (in the second 'if')
+    filtered_list = []
+    for i, line in enumerate(pretty_xml_as_list):
+        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line:
+            if i == 0 or "<name>checkov</name>" not in pretty_xml_as_list[i-1]:
+                filtered_list.append(line)
+    return filtered_list
+
+
+def test_console_output(sca_package_report):
+    console_output = sca_package_report.print_console(False, False, None, None, False)
+
+    # then
+    assert console_output == "\n".join(
+        ['\x1b[34msca_package scan results:',
+         '\x1b[0m\x1b[36m', 'Failed checks: 9, Skipped checks: 0',
+         '',
+         '\x1b[0m\t/path/to/requirements.txt - CVEs Summary:',
+         '\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐',
+         '\t│ Total CVEs: 6      │ critical: 1        │ high: 3            │ medium: 2          │ low: 0             │ skipped: 0         │',
+         '\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤',
+         '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                        │',
+         '\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤',
+         '\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │',
+         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
+         '\t│ flask              │ CVE-2019-1010083   │ high               │ 0.6                │ 1.0                │ 1.0                │',
+         '\t│                    │ CVE-2018-1000656   │ high               │                    │ 0.12.3             │                    │',
+         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
+         '\t│ django             │ CVE-2019-19844     │ critical           │ 1.2                │ 1.11.27            │ 2.2.24             │',
+         '\t│                    │ CVE-2016-7401      │ high               │                    │ 1.8.15             │                    │',
+         '\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │',
+         '\t│                    │ CVE-2021-33203     │ medium             │                    │ 2.2.24             │                    │',
+         '\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘',
+         '',
+         '\t/path/to/requirements.txt - Licenses Statuses:',
+         '\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐',
+         '\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │',
+         '\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤',
+         '\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ FAILED                  │',
+         '\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘',
+         '',
+         '\t/path/to/go.sum - CVEs Summary:',
+         '\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐',
+         '\t│ Total CVEs: 2      │ critical: 0        │ high: 2            │ medium: 0          │ low: 0             │ skipped: 0         │',
+         '\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤',
+         '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                        │',
+         '\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤',
+         '\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │',
+         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
+         '\t│ golang.org/x/crypt │ CVE-2020-29652     │ high               │ v0.0.1             │ 0.0.2              │ 0.0.2              │',
+         '\t│ o                  │                    │                    │                    │                    │                    │',
+         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
+         '\t│ github.com/dgrijal │ CVE-2020-26160     │ high               │ v3.2.0             │ 4.0.0rc1           │ 4.0.0rc1           │',
+         '\t│ va/jwt-go          │                    │                    │                    │                    │                    │',
+         '\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘',
+         ''])
+
+
+def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
+    expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
+
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+
+def test_get_csv_report(sca_package_report, tmp_path: Path):
+    csv_sbom_report = CSVSBOM()
+    csv_sbom_report.add_report(report=sca_package_report, git_org="acme", git_repository="bridgecrewio/example")
+    csv_sbom_report.persist_report_oss_packages(file_name=FILE_NAME_OSS_PACKAGES, is_api_key=True, output_path=str(tmp_path))
+    output_file_path = tmp_path / FILE_NAME_OSS_PACKAGES
+    csv_output = output_file_path.read_text()
+    csv_output_str = csv_sbom_report.get_csv_output_packages(check_type=CheckType.SCA_PACKAGE)
+
+    # then
+    expected_csv_output = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses',
+                           'django,1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,OSI_BDS',
+                           'django,1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,OSI_BDS',
+                           'django,1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2016-7401,HIGH,OSI_BDS',
+                           'django,1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,OSI_BDS',
+                           'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
+                           'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
+                           'golang.org/x/crypto,v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,Unknown',
+                           'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,Unknown',
+                           'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
+                           'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
+                           'requests,2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
+                           'requests,2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
+                           '']
+    csv_output_as_list = csv_output.split("\n")
+    assert csv_output_as_list == expected_csv_output
+
+    expected_csv_output_str = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses',
+                               '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"OSI_BDS"',
+                               '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"OSI_BDS"',
+                               '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2016-7401,HIGH,"OSI_BDS"',
+                               '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"OSI_BDS"',
+                               '"flask",0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
+                               '"flask",0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
+                               '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"Unknown"',
+                               '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"Unknown"',
+                               '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
+                               '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
+                               '"requests",2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
+                               '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
+                               '']
+    csv_output_str_as_list = csv_output_str.split("\n")
+    assert csv_output_str_as_list == expected_csv_output_str
+
+
+def test_get_sarif_json(sca_package_report_with_skip_scope_function):
+    # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
+    # a report that is unique for the scope of the function
+
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip_scope_function
 
     # when
     sarif_output = report.get_sarif_json("Checkov")
@@ -126,10 +243,10 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 "id": "CKV_CVE_2020_29652",
                                 "name": "SCA package scan",
                                 "shortDescription": {
-                                    "text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"
+                                    "text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"
                                 },
                                 "fullDescription": {
-                                    "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c for Go allows remote attackers to cause a denial of service against SSH servers."
+                                    "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                                 },
                                 "help": {
                                     "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nGuideline: None"'
@@ -156,6 +273,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2016_6186",
@@ -172,6 +290,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2016_7401",
@@ -188,6 +307,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2021_33203",
@@ -204,6 +324,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2019_1010083",
@@ -220,6 +341,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2018_1000656",
@@ -236,6 +358,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2020_26160",
@@ -252,13 +375,14 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 }
                             }
                         ],
+                        "attachments": []
                     },
                     {
                         "ruleId": "CKV_CVE_2020_29652",
                         "ruleIndex": 7,
                         "level": "error",
                         "message": {
-                            "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.0-20201203163018-be400aefbc4c for Go allows remote attackers to cause a denial of service against SSH servers."
+                            "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                         },
                         "locations": [
                             {
@@ -274,6 +398,7 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                 "justification": "CVE-2020-29652 is skipped",
                             }
                         ],
+                        "attachments": []
                     },
                 ],
             }
@@ -281,15 +406,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     }
 
 
-def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
+def test_get_junit_xml_string(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # when
     test_suites = [report.get_test_suite()]
@@ -312,6 +431,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 9.8\n",
                     "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']\n",
+                    "Fix Details:\n",
+                    "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
+                    "  Fixed Version: 1.11.27\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -326,6 +448,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 6.1\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Exploit exists', 'Has fix', 'Medium severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 1.9.8, 1.8.14\n",
+                    "  Fixed Version: 1.8.14\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -340,6 +465,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N\n",
                     "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                    "Fix Details:\n",
+                    "  Status: fixed in 1.9.10, 1.8.15\n",
+                    "  Fixed Version: 1.8.15\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -354,6 +482,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 4.9\n",
                     "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 3.2.4, 3.1.12, 2.2.24\n",
+                    "  Fixed Version: 2.2.24\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -368,6 +499,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 1.0\n",
+                    "  Fixed Version: 1.0\n",
                     "\n",
                     "Resource: path/to/requirements.txt.flask\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -382,6 +516,9 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.5\n",
                     "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in 0.12.3\n"
+                    "  Fixed Version: 0.12.3\n"
                     "\n",
                     "Resource: path/to/requirements.txt.flask\n",
                     "File: /path/to/requirements.txt: 0-0\n",
@@ -396,14 +533,17 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Base Score: 7.7\n",
                     "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N\n",
                     "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                    "Fix Details:\n"
+                    "  Status: fixed in v4.0.0-preview1\n",
+                    "  Fixed Version: 4.0.0rc1\n",
                     "\n",
                     "Resource: path/to/go.sum.github.com/dgrijalva/jwt-go\n",
                     "File: /path/to/go.sum: 0-0\n",
                     "\n",
                     "\t\t0 | github.com/dgrijalva/jwt-go: v3.2.0</failure>\n",
                     "\t\t</testcase>\n",
-                    '\t\t<testcase name="[HIGH][CVE-2020-29652] golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9" classname="/path/to/go.sum.golang.org/x/crypto" file="/path/to/go.sum">\n',
-                    '\t\t\t<skipped type="skipped" message="CVE-2020-29652 skipped for golang.org/x/crypto: v0.0.0-20200622213623-75b288015ac9"/>\n',
+                    '\t\t<testcase name="[HIGH][CVE-2020-29652] golang.org/x/crypto: v0.0.1" classname="/path/to/go.sum.golang.org/x/crypto" file="/path/to/go.sum">\n',
+                    '\t\t\t<skipped type="skipped" message="CVE-2020-29652 skipped for golang.org/x/crypto: v0.0.1"/>\n',
                     "\t\t</testcase>\n",
                     "\t</testsuite>\n",
                     "</testsuites>\n",

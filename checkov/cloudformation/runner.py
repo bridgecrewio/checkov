@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Optional, List, Type
+from typing import Type
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
@@ -18,8 +18,6 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
@@ -29,21 +27,23 @@ from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
 
-class Runner(BaseRunner):
-    check_type = CheckType.CLOUDFORMATION
+class Runner(BaseRunner[CloudformationGraphManager]):
+    check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
 
     def __init__(
             self,
-            db_connector: NetworkxConnector = NetworkxConnector(),
+            db_connector: NetworkxConnector | None = None,
             source: str = "CloudFormation",
-            graph_class: Type[LocalGraph] = CloudformationLocalGraph,
-            graph_manager: Optional[GraphManager] = None,
-            external_registries: Optional[List[BaseRegistry]] = None
+            graph_class: Type[CloudformationLocalGraph] = CloudformationLocalGraph,
+            graph_manager: CloudformationGraphManager | None = None,
+            external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        db_connector = db_connector or NetworkxConnector()
+
         super().__init__(file_extensions=['.json', '.yml', '.yaml', '.template'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.graph_manager = (
+        self.graph_manager: CloudformationGraphManager = (
             graph_manager
             if graph_manager is not None
             else CloudformationGraphManager(source=source, db_connector=db_connector)
@@ -54,11 +54,12 @@ class Runner(BaseRunner):
     def run(
             self,
             root_folder: str,
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
@@ -114,7 +115,7 @@ class Runner(BaseRunner):
 
         return report
 
-    def check_definitions(self, root_folder, runner_filter, report):
+    def check_definitions(self, root_folder: str, runner_filter: RunnerFilter, report: Report) -> None:
         for file_abs_path, definition in self.definitions.items():
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
             self.pbar.set_additional_data({'Current File Scanned': cf_file})
@@ -175,7 +176,7 @@ class Runner(BaseRunner):
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:

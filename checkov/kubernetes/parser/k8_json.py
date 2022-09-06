@@ -4,6 +4,7 @@ from typing import Tuple, Dict, Any, List
 import yaml
 from yaml.loader import SafeLoader
 
+
 def loads(content):
     """
     Load the given YAML string

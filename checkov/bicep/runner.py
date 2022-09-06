@@ -5,9 +5,6 @@ import logging
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
-from pycep.typing import BicepJson
-from typing_extensions import Literal
-
 from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
@@ -23,7 +20,8 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import CheckType, Report
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks
@@ -34,6 +32,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
+    from pycep.typing import BicepJson
+    from typing_extensions import Literal
 
 
 class Runner(BaseRunner[BicepGraphManager]):
@@ -138,7 +138,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                             scanned_file=str(file_path),
                             entity={name: conf},
                             skipped_checks=[],
-                            runner_filter=runner_filter,
+                            runner_filter=runner_filter
                         )
 
                         if results:
@@ -200,7 +200,7 @@ class Runner(BaseRunner[BicepGraphManager]):
     def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""
 
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -214,7 +214,7 @@ class Runner(BaseRunner[BicepGraphManager]):
 
                 file_code_lines = self.definitions_raw[entity_file_path]
                 start_line = entity["__start_line__"]
-                end_line = cast(int, entity["__end_line__"])
+                end_line = cast("int", entity["__end_line__"])
 
                 record = Record(
                     check_id=check.id,
@@ -222,7 +222,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                     check_name=check.name,
                     check_result=clean_check_result,
                     code_block=file_code_lines[start_line - 1 : end_line],
-                    file_path=str(clean_file_path(entity_file_path)),
+                    file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
                     file_line_range=[start_line, end_line],
                     resource=entity.get(CustomAttributes.ID),
                     check_class=check.__class__.__module__,

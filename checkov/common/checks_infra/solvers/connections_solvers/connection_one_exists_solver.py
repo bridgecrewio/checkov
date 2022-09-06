@@ -1,7 +1,11 @@
-from typing import List, Optional, Dict, Any, Tuple
+from __future__ import annotations
+
+from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 from checkov.common.checks_infra.solvers import ConnectionExistsSolver
 from checkov.common.graph.checks_infra.enums import Operators
-from networkx import DiGraph
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 
 class ConnectionOneExistsSolver(ConnectionExistsSolver):

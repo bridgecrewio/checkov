@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.json import parse
 from checkov.common.parsers.node import DictNode
 from checkov.common.runners.object_runner import Runner as ObjectRunner
@@ -21,7 +21,7 @@ class Runner(ObjectRunner):
         return registry
 
     def _parse_file(  # type:ignore[override]  # expected behaviour but should be aligned
-        self, f: str
+        self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None:
         if not f.endswith(".json"):
             return None
