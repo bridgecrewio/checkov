@@ -9,8 +9,9 @@ on:
 permissions: read-all
 
 jobs:
-  release:
+  github-release:
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     permissions:
       contents: write
     steps:
