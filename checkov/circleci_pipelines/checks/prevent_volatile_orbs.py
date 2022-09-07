@@ -5,6 +5,7 @@ from checkov.circleci_pipelines.base_circleci_pipelines_check import BaseCircleC
 from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 
+
 class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
     def __init__(self) -> None:
         name = "Ensure unversioned volatile orbs are not used."
@@ -13,7 +14,7 @@ class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=["orbs.{orbs: @}"]
+            supported_entities=("orbs.{orbs: @}",)
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
@@ -26,5 +27,6 @@ class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
                     return CheckResult.FAILED, conf
         
         return CheckResult.PASSED, conf
+
 
 check = PreventVolatileOrbs()
