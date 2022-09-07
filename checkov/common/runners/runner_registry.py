@@ -252,7 +252,7 @@ class RunnerRegistry:
                 )
             print(cli_output)
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
             if url:
                 print("More details: {}".format(url))
