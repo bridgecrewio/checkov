@@ -17,7 +17,7 @@ class TestRootContainers(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 5)
-        self.assertEqual(summary['failed'], 6)
+        self.assertEqual(summary['failed'], 7)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
