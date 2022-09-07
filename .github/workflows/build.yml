@@ -9,6 +9,7 @@ on:
       - 'docs/**'
       - 'INTHEWILD.md'
       - 'README.md'
+      - 'CHANGELOG.md'
       - '.github/**'
       - 'admissioncontroller/checkov-requirements.txt'
       - admissioncontroller/k8s/deployment.yaml
