@@ -26,7 +26,7 @@
         "on_property": "title"
     },
     "template": "${{CHANGELOG}}",
-    "pr_template": "- ${{TITLE}} - #${{NUMBER}}",
+    "pr_template": "- ${{TITLE}} - [#${{NUMBER}}](${{URL}})",
     "empty_template": "- no noteworthy changes",
     "label_extractor": [
         {
