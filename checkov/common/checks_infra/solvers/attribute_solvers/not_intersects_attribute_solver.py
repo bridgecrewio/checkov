@@ -1,10 +1,7 @@
-import logging
 from typing import Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
 from .intersects_attribute_solver import IntersectsAttributeSolver
-
-logger = logging.getLogger(__name__)
 
 
 class NotIntersectsAttributeSolver(IntersectsAttributeSolver):
