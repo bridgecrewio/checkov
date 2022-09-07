@@ -23,7 +23,7 @@ class AKSRbacEnabled(BaseResourceCheck):
         ]
 
         for key in self.evaluated_keys:
-            if dpath.search(conf, key) and dpath.get(conf, key)[0]:
+            if dpath.util.search(conf, key) and dpath.util.get(conf, key)[0]:
                 return CheckResult.PASSED
 
         return CheckResult.FAILED

@@ -67,5 +67,5 @@ class BaseVariableEvaluation(ABC):
             if entity_definitions:
                 entity_evaluation = variables_evaluations[var_name]
                 entity_evaluation["definitions"] = entity_definitions
-                dpath.new(entity_evaluations, var_name, entity_evaluation)
+                dpath.util.new(entity_evaluations, var_name, entity_evaluation)
         return entity_evaluations

@@ -149,7 +149,7 @@ def build_definitions_context(
                                 current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
 
                         code_lines = definitions_raw[file_path][start_line - 1: end_line]
-                        dpath.new(
+                        dpath.util.new(
                             definitions_context,
                             [file_path, str(file_path_definition), str(attribute)],
                             {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
@@ -159,7 +159,7 @@ def build_definitions_context(
                                 entity_code_lines=code_lines,
                                 resource_config=attr_value,
                             )
-                            dpath.new(
+                            dpath.util.new(
                                 definitions_context,
                                 [file_path, str(file_path_definition), str(attribute), "skipped_checks"],
                                 skipped_checks,

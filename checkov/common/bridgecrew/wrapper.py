@@ -92,6 +92,6 @@ def enrich_and_persist_checks_metadata(
         check_type = scan_report.check_type
         checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
-        dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
+        dpath.util.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
         _put_json_object(s3_client, checks_metadata_object, bucket, checks_metadata_object_path)
     return checks_metadata_paths
