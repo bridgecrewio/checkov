@@ -113,19 +113,12 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
 
     # when
     image_runner = Runner()
-    filter = RunnerFilter(framework=['sca_image'], use_enforcement_rules=True)
-    # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
-    # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
+    filter = RunnerFilter(framework=['sca_image'], checks=['BC_LIC_1'])
     image_runner.image_referencers = [GHA_Runner()]
     report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
 
-    summary = report.get_summary()
     # then
-    assert summary["passed"] == 0
-    assert summary["failed"] == 0
-    assert summary["skipped"] == 5
-    assert summary["parsing_errors"] == 0
+    assert not [c for c in report.passed_checks + report.failed_checks if c.check_id.startswith('CKV_CVE')]
 
 
 def test_run(sca_image_report):

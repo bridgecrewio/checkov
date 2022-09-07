@@ -50,8 +50,8 @@ class Runner(PackageRunner):
     ) -> Dict[str, Any]:
         runner_filter = runner_filter or RunnerFilter()
 
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
+        if runner_filter.checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter.checks):
             return {}
 
         if not bc_integration.bc_api_key:
@@ -232,7 +232,7 @@ class Runner(PackageRunner):
         :return: vulnerability report
         """
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if runner_filter.checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter.checks):
             return Report(self.check_type)
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")

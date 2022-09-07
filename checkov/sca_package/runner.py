@@ -35,8 +35,8 @@ class Runner(BaseRunner):
         runner_filter = runner_filter or RunnerFilter()
         excluded_file_names = excluded_file_names or set()
 
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
+        if runner_filter.checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter.checks):
             return None
 
         if not bc_integration.bc_api_key:

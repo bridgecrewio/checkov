@@ -124,7 +124,7 @@ class ImageReferencerMixin:
         from checkov.common.bridgecrew.platform_integration import bc_integration
 
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if runner_filter.checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter.checks):
             return None
 
         images = self.extract_images(graph_connector=graph_connector)
