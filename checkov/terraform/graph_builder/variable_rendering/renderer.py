@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -26,7 +28,7 @@ if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 ATTRIBUTES_NO_EVAL = ["template_body", "template"]
-VAR_TYPE_DEFAULT_VALUES = {
+VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'list': [],
     'map': {}
 }
@@ -137,7 +139,7 @@ class TerraformVariableRenderer(VariableRenderer):
             if value is not None:
                 return value
 
-        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
             var_type = attributes.get('type')
             default_val = attributes.get("default")
             if default_val is None:
@@ -152,8 +154,8 @@ class TerraformVariableRenderer(VariableRenderer):
         return None
 
     @staticmethod
-    def get_default_placeholder_value(var_type):
-        if not var_type or type(var_type) != str:
+    def get_default_placeholder_value(var_type: Any) -> list[Any] | dict[str, Any] | None:
+        if not var_type or not isinstance(var_type, str):
             return None
         match = TYPE_REGEX.match(var_type)
         return VAR_TYPE_DEFAULT_VALUES.get(match.group(2)) if match else None
@@ -267,7 +269,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 for inner_val in lst_curr_val:
                     if (
                         isinstance(inner_val, str)
-                        and not any(c in inner_val for c in ["{", "}", "[", "]", "="])
+                        and not any(c in inner_val for c in ("{", "}", "[", "]", "="))
                         or attribute in ATTRIBUTES_NO_EVAL
                     ):
                         evaluated_lst.append(inner_val)
