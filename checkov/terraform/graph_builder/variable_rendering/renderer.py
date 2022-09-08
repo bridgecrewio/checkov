@@ -42,6 +42,12 @@ class TerraformVariableRenderer(VariableRenderer):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         super().__init__(local_graph)
 
+        self.attributes_no_eval = {"template_body", "template"}
+        if os.environ.get("CKV_TERRAFORM_PROVIDER") == "OCI":
+            # OCI policy statements have a special syntax and should not be evaluated.
+            self.attributes_no_eval.add("statements")
+
+
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
@@ -203,12 +209,12 @@ class TerraformVariableRenderer(VariableRenderer):
         """
         str_to_evaluate = (
             str(changed_attribute_value)
-            if changed_attribute_key in ATTRIBUTES_NO_EVAL
+            if changed_attribute_key in self.attributes_no_eval
             else f'"{str(changed_attribute_value)}"'
         )
         str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
         evaluated_attribute_value = (
-            str_to_evaluate if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(str_to_evaluate)
+            str_to_evaluate if changed_attribute_key in self.attributes_no_eval else evaluate_terraform(str_to_evaluate)
         )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
@@ -270,7 +276,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     if (
                         isinstance(inner_val, str)
                         and not any(c in inner_val for c in ("{", "}", "[", "]", "="))
-                        or attribute in ATTRIBUTES_NO_EVAL
+                        or attribute in self.attributes_no_eval
                     ):
                         evaluated_lst.append(inner_val)
                         continue
