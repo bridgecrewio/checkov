@@ -1,4 +1,4 @@
-import dpath
+import dpath.util
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
@@ -15,10 +15,10 @@ class AKSLoggingEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if dpath.search(conf, self.provider_version_2_path):
+        if dpath.util.search(conf, self.provider_version_2_path):
             self.evaluated_keys = [self.provider_version_2_path]
             return super().scan_resource_conf(conf)
-        elif dpath.search(conf, self.provider_version_3_path):
+        elif dpath.util.search(conf, self.provider_version_3_path):
             self.evaluated_keys = [self.provider_version_3_path]
             return CheckResult.PASSED
 

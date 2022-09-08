@@ -154,14 +154,14 @@ def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw:
                     current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
 
             code_lines = definitions_raw[file_path][start_line - 1: end_line]
-            dpath.new(
+            dpath.util.new(
                 definitions_context,
                 [file_path, resource_id],
                 {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
             )
 
             skipped_checks = get_skipped_checks(resource)
-            dpath.new(
+            dpath.util.new(
                 definitions_context,
                 [file_path, resource_id, "skipped_checks"],
                 skipped_checks,
