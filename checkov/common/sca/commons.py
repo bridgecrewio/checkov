@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+from typing import List, Optional
+
 from checkov.common.output.common import ImageDetails
 
 UNFIXABLE_VERSION = "N/A"
@@ -34,6 +37,6 @@ def normalize_twistcli_language(language: str) -> str:
     return TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION.get(language, language)
 
 
-def should_run_scan(runner_filter_checks: list) -> bool:
-    return not(runner_filter_checks
+def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
+    return not (runner_filter_checks
                and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
