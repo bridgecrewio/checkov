@@ -69,7 +69,7 @@ def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw:
             entity_id = ".".join(definition_path)
             # Entity can exist only once per dir, for file as well
             entity_context = get_entity_context(definitions, definitions_raw, definition_path, full_file_path)
-            dpath.util.new(definitions_context, [full_file_path, entity_id], entity_context)
+            dpath.new(definitions_context, [full_file_path, entity_id], entity_context)
     return definitions_context
 
 
