@@ -18,7 +18,7 @@ class LocalsContextParser(BaseContextParser):
 
             local_value = local_value[0] if isinstance(local_value, list) and len(local_value) > 0 else local_value
             if type(local_value) in (int, float, bool, str, dict):
-                dpath.util.new(self.context, ["assignments", local_name], local_value)
+                dpath.new(self.context, ["assignments", local_name], local_value)
 
     def get_entity_context_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
         return []

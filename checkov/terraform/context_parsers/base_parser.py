@@ -121,7 +121,7 @@ class BaseContextParser(ABC):
                     elif metadata_integration.check_metadata:
                         skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
                     skipped_checks.append(skip_check)
-            dpath.util.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
+            dpath.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
         return self.context
 
     def _compute_definition_end_line(self, start_line_num: int) -> int:
