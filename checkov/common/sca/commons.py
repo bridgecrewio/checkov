@@ -32,3 +32,8 @@ def normalize_twistcli_language(language: str) -> str:
     this function's goal is to normalize them
     """
     return TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION.get(language, language)
+
+
+def should_run_scan(runner_filter_checks: list) -> bool:
+    return not(runner_filter_checks
+               and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
