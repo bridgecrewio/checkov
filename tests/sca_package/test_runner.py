@@ -126,7 +126,7 @@ def test_run_license_policy(mocker: MockerFixture, scan_result):
 
     # when
     runner = Runner()
-    filter = RunnerFilter(framework=['sca_package'])
+    filter = RunnerFilter(framework=['sca_package'], checks=['BC_LIC_1'])
     report = runner.run(root_folder=EXAMPLES_DIR, runner_filter=filter)
 
     # then
