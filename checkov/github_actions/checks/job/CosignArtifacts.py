@@ -27,6 +27,9 @@ class CosignSignPresent(BaseGithubActionsCheck):
         for jobname, jobdetail in conf.items():
             if jobname == START_LINE:
                 return CheckResult.PASSED, conf
+            if not isinstance(jobdetail, dict):
+                # This is not a valid job detail block, skip it
+                continue
             steps = [step for step in jobdetail.get("steps", []) or [] if step]
             if steps:
                 for step in steps:
