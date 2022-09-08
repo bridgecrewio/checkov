@@ -15,6 +15,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 
 if TYPE_CHECKING:
@@ -124,7 +125,7 @@ class ImageReferencerMixin:
         from checkov.common.bridgecrew.platform_integration import bc_integration
 
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if not should_run_scan(runner_filter.checks):
             return None
 
         images = self.extract_images(graph_connector=graph_connector)
