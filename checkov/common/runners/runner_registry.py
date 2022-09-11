@@ -108,8 +108,7 @@ class RunnerRegistry:
                     merge_reports(self._check_type_to_report_map[sub_report.check_type], sub_report)
                 else:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
-
-                merged_reports.append(sub_report)
+                    merged_reports.append(sub_report)
 
         return merged_reports
 
