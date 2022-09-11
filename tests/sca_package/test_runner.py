@@ -117,6 +117,22 @@ def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):
     assert summary["parsing_errors"] == 0
 
 
+def test_run_license_policy(mocker: MockerFixture, scan_result):
+    # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result
+    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+
+    # when
+    runner = Runner()
+    filter = RunnerFilter(framework=['sca_package'], checks=['BC_LIC_1'])
+    report = runner.run(root_folder=EXAMPLES_DIR, runner_filter=filter)
+
+    # then
+    assert not [c for c in report.passed_checks + report.failed_checks if c.check_id.startswith('CKV_CVE')]
+
+
 def test_run_with_empty_scan_result(mocker: MockerFixture):
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"

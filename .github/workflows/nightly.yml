@@ -46,20 +46,20 @@ jobs:
           fromTag: ${{ steps.prepare_release.outputs.latest_release_version }}
           toTag: ${{ steps.prepare_release.outputs.version }}
       - name: Create GitHub Release
-        if: steps.prepare_release.outputs.create_release == 'true'
+        if: steps.build_github_release.outputs.changelog != ''
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
         with:
           tag_name: ${{ steps.prepare_release.outputs.version }}
           name: ${{ steps.prepare_release.outputs.version }}
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
-        if: steps.prepare_release.outputs.create_release == 'true'
+        if: steps.build_github_release.outputs.changelog != ''
         uses: stefanzweifel/changelog-updater-action@d03272ada6fcd985ecd5cedbf984f472081b7b92  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
-        if: steps.prepare_release.outputs.create_release == 'true'
+        if: steps.build_github_release.outputs.changelog != ''
         uses: stefanzweifel/git-auto-commit-action@49620cd3ed21ee620a48530e81dba0d139c9cb80  # v4
         with:
           commit_message: "chore: update release notes"

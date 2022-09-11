@@ -28,3 +28,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.length_less_than_attr
 from checkov.common.checks_infra.solvers.attribute_solvers.length_less_than_or_equal_attribute_solver import LengthLessThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.is_true_attribute_solver import IsTrueAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.is_false_attribute_solver import IsFalseAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.intersects_attribute_solver import IntersectsAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.not_intersects_attribute_solver import NotIntersectsAttributeSolver  # noqa

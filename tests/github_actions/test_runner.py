@@ -68,6 +68,19 @@ class TestRunnerValid(unittest.TestCase):
         assert report.failed_checks[1].triggers[0] == {'push', 'workflow_dispatch'}
         assert report.failed_checks[1].workflow_name == 'CI'
 
+    def test_runner_on_bad_jobs(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/nested_jobs.yaml"
+        file_dir = [str(file_path)]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"])
+        )
+
+        # then
+        assert len(report.passed_checks) > 0
+
     def test_runner_on_shell_injection(self):
         # given
         file_path = Path(__file__).parent / "resources/.github/workflows/shell_injection.yaml"

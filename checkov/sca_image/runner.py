@@ -20,6 +20,7 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
@@ -50,8 +51,8 @@ class Runner(PackageRunner):
     ) -> Dict[str, Any]:
         runner_filter = runner_filter or RunnerFilter()
 
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
+        if not should_run_scan(runner_filter.checks):
             return {}
 
         if not bc_integration.bc_api_key:
@@ -232,7 +233,7 @@ class Runner(PackageRunner):
         :return: vulnerability report
         """
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if not should_run_scan(runner_filter.checks):
             return Report(self.check_type)
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
