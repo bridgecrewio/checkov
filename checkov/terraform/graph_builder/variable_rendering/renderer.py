@@ -27,7 +27,6 @@ from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform impor
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-ATTRIBUTES_NO_EVAL = ["template_body", "template"]
 VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'list': [],
     'map': {}
@@ -46,7 +45,6 @@ class TerraformVariableRenderer(VariableRenderer):
         if os.environ.get("CKV_TERRAFORM_PROVIDER") == "OCI":
             # OCI policy statements have a special syntax and should not be evaluated.
             self.attributes_no_eval.add("statements")
-
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
