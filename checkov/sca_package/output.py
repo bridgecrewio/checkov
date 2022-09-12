@@ -124,6 +124,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
+                    if record.check_result["result"] == CheckResult.SKIPPED:
+                        continue
                     should_print_licenses_table = True
                     package_licenses_details_map[package_name].append(
                         _LicenseStatus(package_name=package_name,
