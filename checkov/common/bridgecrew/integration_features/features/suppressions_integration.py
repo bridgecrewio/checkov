@@ -160,6 +160,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                         return True
             return False
 
+        elif type == 'LicenseType':
+            for license_type in suppression['licenseTypes']:
+                if record.vulnerability_details and record.vulnerability_details['license'] == license_type:
+                    return True
+            return False
+
         return False
 
     def _suppression_valid_for_run(self, suppression: dict[str, Any]) -> bool:

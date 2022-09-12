@@ -628,6 +628,77 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
 
+    def test_suppress_licenses_by_policy(self):
+        instance = BcPlatformIntegration()
+        suppressions_integration = SuppressionsIntegration(instance)
+
+        suppression = {'suppressionType': 'Policy',
+                       'policyId': 'BC_LIC_1',
+                       'comment': 'test licenses suppressions by policy ',
+                       'checkovPolicyId': 'BC_LIC_1'
+                       }
+        record1 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'JSON'})
+        record2 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'GPL-1.0'})
+        record3 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'GPL-2.0'})
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
+
+    def test_supress_licenses_by_type(self):
+        instance = BcPlatformIntegration()
+        suppressions_integration = SuppressionsIntegration(instance)
+
+        suppression = {'suppressionType': 'LicenseType',
+                      'policyId': 'BC_LIC_1',
+                      'comment': 'test licenses suppressions by type ',
+                      'licenseTypes': ['GPL-1.0', 'JSON'],
+                      'checkovPolicyId': 'BC_LIC_1'
+                      }
+        record1 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'JSON'})
+        record2 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'GPL-1.0'})
+        record3 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'GPL-2.0'})
+        record4 = Record(check_id='BC_LIC_2', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'license': 'GPL-1.0'})
+        self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
+        self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
+
+
     def test_account_suppression(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'org/repo'
