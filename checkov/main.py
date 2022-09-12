@@ -575,7 +575,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                action='append',
                help='black file list to filter out from the secret scanner')
     parser.add('--summary-position-bottom', action='store_true',
-               help='change the summary to be appended in the bottom after the policy violations')
+               help='Change the summary to be appended in the bottom after the policy violations')
 
 
 def get_external_checks_dir(config: Any) -> Any:
