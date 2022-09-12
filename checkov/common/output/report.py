@@ -178,6 +178,7 @@ class Report:
         created_baseline_path: str | None = None,
         baseline: Baseline | None = None,
         use_bc_ids: bool = False,
+        summary_position_bottom: bool = False
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -193,7 +194,8 @@ class Report:
                 message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
-        output_data += colored(message, "cyan")
+        if not summary_position_bottom:
+            output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
@@ -222,6 +224,8 @@ class Report:
                 f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
                 "blue",
             )
+        if summary_position_bottom:
+            output_data += colored(message, "cyan")
         return output_data
 
     @staticmethod

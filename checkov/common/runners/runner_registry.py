@@ -249,6 +249,7 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
+                    summary_position_bottom=config.summary_position_bottom
                 )
             print(cli_output)
             # Remove colors from the cli output
@@ -269,6 +270,7 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
+                    summary_position_bottom=config.summary_position_bottom
                 ))
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks
