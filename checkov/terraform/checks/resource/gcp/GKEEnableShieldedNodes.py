@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
@@ -15,8 +17,8 @@ class GKEEnableShieldedNodes(BaseResourceNegativeValueCheck):
     def get_inspected_key(self) -> str:
         return 'enable_shielded_nodes'
 
-    def get_forbidden_value(self) -> Any:
-        return False
+    def get_forbidden_values(self) -> list[Any]:
+        return [False]
 
 
 check = GKEEnableShieldedNodes()
