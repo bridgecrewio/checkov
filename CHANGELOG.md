@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.201...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.204...HEAD)
+
+## [2.1.204](https://github.com/bridgecrewio/checkov/compare/2.1.201...2.1.204) - 2022-09-12
+
+### Feature
+
+- **sca:** licenses suppressions by type - [#3491](https://github.com/bridgecrewio/checkov/pull/3491)
+
+### Bug Fix
+
+- **arm:** unexpected data type in ACRAnonymousPullDisabled - [#3496](https://github.com/bridgecrewio/checkov/pull/3496)
+- **general:** remove duplicated reports - [#3495](https://github.com/bridgecrewio/checkov/pull/3495)
 
 ## [2.1.201](https://github.com/bridgecrewio/checkov/compare/2.1.196...2.1.201) - 2022-09-08
 
