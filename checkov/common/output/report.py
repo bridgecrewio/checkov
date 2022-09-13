@@ -178,7 +178,7 @@ class Report:
         created_baseline_path: str | None = None,
         baseline: Baseline | None = None,
         use_bc_ids: bool = False,
-        summary_position: bool = 'top'
+        summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
