@@ -131,6 +131,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
             for resource in suppression['resources']:
+                if 'accountId' not in resource.keys():
+                    return False
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
@@ -148,17 +150,19 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return True
 
         elif type == 'CvesAccounts':
+            if 'accountIds' not in suppression.keys():
+                return False
             if self.bc_integration.repo_id in suppression['accountIds']:
                 if record.vulnerability_details and record.vulnerability_details['id'] in suppression['cves']:
                     return True
             return False
 
         elif type == 'Cves':
+            if 'accountIds' not in suppression.keys():
+                return False
             if self.bc_integration.repo_id in suppression['accountIds'] and record.file_abs_path == suppression['cves'][0]['id'][1:]:
-                for cve in suppression['cves']:
-                    if record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']:
-                        return True
-            return False
+                return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
+                           for cve in suppression['cves'])
 
         elif type == 'LicenseType':
             return any(record.vulnerability_details and record.vulnerability_details['license'] == license_type
