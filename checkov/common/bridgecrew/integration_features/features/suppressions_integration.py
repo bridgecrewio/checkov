@@ -33,9 +33,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def is_valid(self) -> bool:
         return (
-            self.bc_integration.is_integration_configured()
-            and not self.bc_integration.skip_download
-            and not self.integration_feature_failures
+                self.bc_integration.is_integration_configured()
+                and not self.bc_integration.skip_download
+                and not self.integration_feature_failures
         )
 
     def pre_scan(self) -> None:
@@ -82,7 +82,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             relevant_suppressions = self.suppressions.get(check.check_id)
 
-            applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
+            applied_suppression = self._check_suppressions(check,
+                                                           relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
@@ -154,10 +155,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         elif type == 'Cves':
-            if self.bc_integration.repo_id in suppression['accountIds'] and record.file_abs_path == suppression['cves'][0]['id'][1:]:
-                for cve in suppression['cves']:
-                    if record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']:
-                        return True
+            if self.bc_integration.repo_id in suppression['accountIds']:
+                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]  # type: ignore
+                suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
+                file_abs_path = record.file_abs_path.replace('\\', '/')
+                if file_abs_path == suppression_path[1:] or \
+                        file_abs_path.endswith("".join([repo_name, suppression_path])):
+                    return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
+                               for cve in suppression['cves'])
             return False
 
         elif type == 'LicenseType':
