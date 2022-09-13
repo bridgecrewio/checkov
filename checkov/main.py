@@ -33,7 +33,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
@@ -161,9 +161,10 @@ Checkov executable (argv[0]): {sys.argv[0]}
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
-                                 secrets_scan_file_type=config.secrets_scan_file_type,
                                  use_enforcement_rules=config.use_enforcement_rules,
-                                 run_image_referencer=run_image_referencer)
+                                 run_image_referencer=run_image_referencer,
+                                 enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
+                                 black_list_secret_scan=config.black_list_secret_scan)
 
     if outer_registry:
         runner_registry = outer_registry
@@ -568,11 +569,20 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=[],
                env_var='CKV_SECRETS_SCAN_FILE_TYPE',
                action='append',
-               help='add scan secret for requested files. You can specify this argument multiple times to add '
-                    'multiple file types. To scan all types (".tf", ".yml", ".yaml", ".json", '
-                    '".template", ".py", ".js", ".properties", ".pem", ".php", ".xml", ".ts", ".env", "Dockerfile", '
-                    '".java", ".rb", ".go", ".cs", ".txt") specify the argument with `--secrets-scan-file-type all`. '
-                    'default scan will be for ".tf", ".yml", ".yaml", ".json", ".template" and exclude "Pipfile.lock", "yarn.lock", "package-lock.json", "requirements.txt"')
+               help='not in use')
+    parser.add('--enable-secret-scan-all-files',
+               default=False,
+               env_var='CKV_SECRETS_SCAN_ENABLE_ALL',
+               action='store_true',
+               help='enable secret scan for all files')
+    parser.add('--black-list-secret-scan',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_BLACK_LIST',
+               action='append',
+               help='black file list to filter out from the secret scanner')
+    parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
+               help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
+                    '(after check results), default is on top.')
 
 
 def get_external_checks_dir(config: Any) -> Any:

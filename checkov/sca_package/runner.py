@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Sequence, Any
 
+from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import parse_vulns_to_records
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -35,8 +36,8 @@ class Runner(BaseRunner):
         runner_filter = runner_filter or RunnerFilter()
         excluded_file_names = excluded_file_names or set()
 
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
+        if not should_run_scan(runner_filter.checks):
             return None
 
         if not bc_integration.bc_api_key:

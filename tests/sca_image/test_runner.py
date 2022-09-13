@@ -128,41 +128,9 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     assert summary["parsing_errors"] == 0
 
 
-@mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan)
-@responses.activate
-def test_run(mock_bc_integration):
+def test_run(sca_image_report):
     # given
-    response_json = {
-        "violations": [
-            {
-                "name": "pcre2",
-                "version": "10.39-3build1",
-                "license": "Apache-2.0",
-                "policy": "BC_LIC_1",
-                "status": "COMPLIANT"
-            },
-            {
-                "name": "perl",
-                "version": "5.34.0-3ubuntu1",
-                "license": "Apache-2.0-Fake",
-                "policy": "BC_LIC_1",
-                "status": "OPEN"
-            },
-        ]
-    }
-    responses.add(
-        method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
-        json=response_json,
-        status=200
-    )
-
-    runner = Runner()
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
-    # when
-    dockerfile_path = "/path/to/Dockerfile"
-    image_id = "sha256:123456"
-    report = runner.run(root_folder=DOCKERFILE_EXAMPLES_DIR, runner_filter=runner_filter, dockerfile_path=dockerfile_path, image_id=image_id)
+    report = sca_image_report
 
     # then
     rootless_path = "path/to/Dockerfile"
@@ -227,6 +195,52 @@ def test_run(mock_bc_integration):
     assert license_resource.vulnerability_details["status"] == "FAILED"
     assert license_resource.vulnerability_details["policy"] == "BC_LIC_1"
     assert license_resource.vulnerability_details["package_type"] == "os"
+
+
+def test_run_license_policy(mock_bc_integration, image_name, cached_scan_result):
+    # given
+    image_id_encoded = quote_plus(f"image:{image_name}")
+
+    response_json = {
+        "violations": [
+            {
+                "name": "readline",
+                "version": "8.1.2-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "OPEN"
+            },
+            {
+                "name": "libnsl",
+                "version": "2.0.0-r0",
+                "license": "Apache-2.0",
+                "policy": "BC_LIC_1",
+                "status": "COMPLIANT"
+            },
+        ]
+    }
+
+    responses.add(
+        method=responses.POST,
+        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        json=response_json,
+        status=200
+    )
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+        json=cached_scan_result,
+        status=200,
+    )
+
+    # when
+    image_runner = Runner()
+    filter = RunnerFilter(framework=['sca_image'], checks=['BC_LIC_1'])
+    image_runner.image_referencers = [GHA_Runner()]
+    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
+
+    # then
+    assert not [c for c in report.passed_checks + report.failed_checks if c.check_id.startswith('CKV_CVE')]
 
 
 @mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan_empty)

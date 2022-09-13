@@ -1,0 +1,159 @@
+<?xml version="1.0" ?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" version="1" serialNumber="urn:uuid:e6e11b45-ab99-4b14-b01f-61835165706d">
+	<metadata>
+		<timestamp>2022-09-03T19:50:22.454965+00:00</timestamp>
+		<tools>
+			<tool>
+				<vendor>CycloneDX</vendor>
+				<name>cyclonedx-python-lib</name>
+				<version>2.7.1</version>
+				<externalReferences>
+					<reference type="build-system">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/actions</url>
+					</reference>
+					<reference type="distribution">
+						<url>https://pypi.org/project/cyclonedx-python-lib/</url>
+					</reference>
+					<reference type="documentation">
+						<url>https://cyclonedx.github.io/cyclonedx-python-lib/</url>
+					</reference>
+					<reference type="issue-tracker">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/issues</url>
+					</reference>
+					<reference type="license">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/LICENSE</url>
+					</reference>
+					<reference type="release-notes">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/blob/main/CHANGELOG.md</url>
+					</reference>
+					<reference type="vcs">
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib</url>
+					</reference>
+					<reference type="website">
+						<url>https://cyclonedx.org</url>
+					</reference>
+				</externalReferences>
+			</tool>
+			<tool>
+				<vendor>bridgecrew</vendor>
+				<name>checkov</name>
+				<version>UNKNOWN</version>
+				<externalReferences>
+					<reference type="build-system">
+						<url>https://github.com/bridgecrewio/checkov/actions</url>
+					</reference>
+					<reference type="distribution">
+						<url>https://pypi.org/project/checkov/</url>
+					</reference>
+					<reference type="documentation">
+						<url>https://www.checkov.io/1.Welcome/What%20is%20Checkov.html</url>
+					</reference>
+					<reference type="issue-tracker">
+						<url>https://github.com/bridgecrewio/checkov/issues</url>
+					</reference>
+					<reference type="license">
+						<url>https://github.com/bridgecrewio/checkov/blob/master/LICENSE</url>
+					</reference>
+					<reference type="social">
+						<url>https://twitter.com/bridgecrewio</url>
+					</reference>
+					<reference type="vcs">
+						<url>https://github.com/bridgecrewio/checkov</url>
+					</reference>
+					<reference type="website">
+						<url>https://www.checkov.io/</url>
+					</reference>
+				</externalReferences>
+			</tool>
+		</tools>
+	</metadata>
+	<components>
+		<component type="container" bom-ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456">
+			<name>bridgecrewio/example//sha256:123456</name>
+			<purl>pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456</purl>
+		</component>
+		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1">
+			<name>bzip2</name>
+			<version>1.0.8-5build1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1">
+			<name>libidn2</name>
+			<version>2.3.2-2build1</version>
+			<licenses>
+				<license>
+					<name>Unknown</name>
+				</license>
+			</licenses>
+			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1</purl>
+		</component>
+		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy">
+			<name>pcre2</name>
+			<version>10.39-3build1</version>
+			<licenses>
+				<license>
+					<name>Apache-2.0</name>
+				</license>
+			</licenses>
+			<purl>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</purl>
+		</component>
+		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy">
+			<name>perl</name>
+			<version>5.34.0-3ubuntu1</version>
+			<licenses>
+				<license>
+					<name>Apache-2.0-Fake</name>
+				</license>
+			</licenses>
+			<purl>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</purl>
+		</component>
+	</components>
+	<dependencies>
+		<dependency ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456"/>
+		<dependency ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1"/>
+		<dependency ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1"/>
+		<dependency ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy"/>
+		<dependency ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy"/>
+	</dependencies>
+	<vulnerabilities>
+		<vulnerability bom-ref="6bd56c92-c511-4ad0-baf1-27fac9e8a729">
+			<id>CKV_CVE_2022_1587</id>
+			<source>
+				<name>checkov</name>
+			</source>
+			<ratings>
+				<rating>
+					<severity>low</severity>
+				</rating>
+			</ratings>
+			<description>Resource: path/to/Dockerfile (sha256:123456).pcre2. SCA package scan</description>
+			<affects>
+				<target>
+					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</ref>
+				</target>
+			</affects>
+		</vulnerability>
+		<vulnerability bom-ref="1c581339-32a1-4799-8570-4e89744a1df6">
+			<id>CKV_CVE_2020_16156</id>
+			<source>
+				<name>checkov</name>
+			</source>
+			<ratings>
+				<rating>
+					<severity>medium</severity>
+				</rating>
+			</ratings>
+			<description>Resource: path/to/Dockerfile (sha256:123456).perl. SCA package scan</description>
+			<affects>
+				<target>
+					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</ref>
+				</target>
+			</affects>
+		</vulnerability>
+	</vulnerabilities>
+</bom>

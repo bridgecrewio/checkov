@@ -3,10 +3,8 @@ import re
 import unittest
 
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.models.consts import SCAN_HCL_FLAG
-from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url
+from checkov.common.util.http_utils import normalize_prisma_url, normalize_bc_url
 
 
 class TestUtils(unittest.TestCase):
@@ -40,28 +38,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(res['a'], '1')
         self.assertEqual(res['b'], '2')
 
-    def test_should_scan_hcl_env_var(self):
-        orig_value = os.getenv(SCAN_HCL_FLAG)
-
-        os.unsetenv(SCAN_HCL_FLAG)
-        self.assertFalse(should_scan_hcl_files())
-
-        os.environ[SCAN_HCL_FLAG] = 'FALSE'
-        self.assertFalse(should_scan_hcl_files())
-
-        os.environ[SCAN_HCL_FLAG] = 'TrUe'
-        self.assertTrue(should_scan_hcl_files())
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
-
     def test_normalize_prisma_url(self):
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://app0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('http://api0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io/'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url(' https://api0.prismacloud.io'))
         self.assertIsNone(normalize_prisma_url(''))
         self.assertIsNone(normalize_prisma_url(None))
+
+    def test_normalize_bc_url(self):
+        self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('https://www.bridgecrew.cloud'))
+        self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('http://www.bridgecrew.cloud'))
+        self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url('https://www.bridgecrew.cloud/'))
+        self.assertEqual('https://www.bridgecrew.cloud', normalize_bc_url(' https://www.bridgecrew.cloud'))
+        self.assertIsNone(normalize_bc_url(''))
+        self.assertIsNone(normalize_bc_url(None))
 
     def test_skip_comment_regex(self):
         self.assertIsNotNone(re.search(COMMENT_REGEX, 'checkov:skip=CKV_AWS_145: ADD REASON'))

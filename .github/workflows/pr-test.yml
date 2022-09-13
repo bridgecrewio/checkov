@@ -68,7 +68,7 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -89,7 +89,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
@@ -136,7 +136,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |

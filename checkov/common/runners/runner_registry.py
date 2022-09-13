@@ -46,6 +46,7 @@ _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif", "csv"]
+SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
@@ -108,8 +109,7 @@ class RunnerRegistry:
                     merge_reports(self._check_type_to_report_map[sub_report.check_type], sub_report)
                 else:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
-
-                merged_reports.append(sub_report)
+                    merged_reports.append(sub_report)
 
         return merged_reports
 
@@ -249,10 +249,11 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
+                    summary_position=config.summary_position
                 )
             print(cli_output)
             # Remove colors from the cli output
-            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+            ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
             if url:
                 print("More details: {}".format(url))
@@ -269,6 +270,7 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
+                    summary_position=config.summary_position
                 ))
                 master_report.failed_checks += report.failed_checks
                 master_report.skipped_checks += report.skipped_checks

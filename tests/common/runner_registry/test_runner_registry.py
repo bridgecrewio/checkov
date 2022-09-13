@@ -8,6 +8,7 @@ from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.output.report import Report
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -237,6 +238,32 @@ class TestRunnerRegistry(unittest.TestCase):
         result_git_org, result_git_repo = RunnerRegistry.extract_git_info_from_account_id(account_id)
         self.assertEqual(expected_git_repo, result_git_repo)
         self.assertEqual(expected_git_org, result_git_org)
+
+    def test_merge_reports(self):
+        # given
+        runner_registry = RunnerRegistry(banner, RunnerFilter(), *DEFAULT_RUNNERS)
+        reports = [
+            [
+                Report(check_type=CheckType.TERRAFORM),
+                Report(check_type=CheckType.SCA_IMAGE),
+            ],
+            Report(check_type=CheckType.CLOUDFORMATION),
+            Report(check_type=CheckType.SCA_IMAGE),
+        ]
+
+        # when
+        merged_reports = runner_registry._merge_reports(reports=reports)
+
+        # then
+        merged_report_check_types = [
+            report.check_type
+            for report in merged_reports
+        ]
+        self.assertCountEqual(merged_report_check_types,[
+            CheckType.TERRAFORM,
+            CheckType.CLOUDFORMATION,
+            CheckType.SCA_IMAGE,
+        ])
 
 
 def test_non_compact_json_output(capsys):
