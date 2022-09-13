@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.204...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.205...HEAD)
+
+## [2.1.205](https://github.com/bridgecrewio/checkov/compare/2.1.204...2.1.205) - 2022-09-13
+
+### Feature
+
+- **general:** add flag for summary position - [#3497](https://github.com/bridgecrewio/checkov/pull/3497)
 
 ## [2.1.204](https://github.com/bridgecrewio/checkov/compare/2.1.201...2.1.204) - 2022-09-12
 
