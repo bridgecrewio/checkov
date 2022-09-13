@@ -33,7 +33,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
@@ -574,6 +574,9 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_SECRETS_SCAN_BLACK_LIST',
                action='append',
                help='black file list to filter out from the secret scanner')
+    parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
+               help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
+                    '(after check results), default is on top.')
 
 
 def get_external_checks_dir(config: Any) -> Any:
