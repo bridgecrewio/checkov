@@ -57,3 +57,4 @@ nav_order: 2
 | `--output-baseline-as-skipped` | Output checks that are skipped due to baseline file presence |
 | `--skip-cve-package SKIP_CVE_PACKAGE` | Filter scan to run on all packages but a specific package identifier (deny list), You can specify this argument multiple times to skip multiple packages |
 | `--policy-metadata-filter POLICY_METADATA_FILTER` | Comma separated key:value string to filter policies based on Prisma Cloud policy metadata. See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for information on allowed filters. Format: policy.label=test,cloud.type=aws |
+| `--summary-position` | Chose whether the summary will be appended on top (before the checks results) or on bottom (after check results), default is on top. |
