@@ -114,7 +114,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     normalize_config(config, parser)
 
-    run_metadata = {
+    run_metadata: dict[str, str | list[str]] = {
         "checkov_version": version,
         "python_executable": sys.executable,
         "python_version": sys.version,

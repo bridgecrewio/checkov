@@ -399,7 +399,7 @@ class BcPlatformIntegration:
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
-    def persist_run_metadata(self, run_metadata: str) -> None:
+    def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
         if not self.use_s3_integration:
             return
         if not self.bucket or not self.repo_path:
