@@ -131,8 +131,6 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return any(self.bc_integration.repo_matches(account) for account in suppression['accountIds'])
         elif type == 'Resources':
             for resource in suppression['resources']:
-                if 'accountId' not in resource:
-                    return False
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
                     return True
