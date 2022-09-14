@@ -122,8 +122,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         "args": parser.format_values(sanitize=True).split('\n')
     }
 
-    logger.debug('Run metadata:')
-    logger.debug(json.dumps(run_metadata, indent=2))
+    logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
 
     if config.add_check:
         resp = prompt.Prompt()
