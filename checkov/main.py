@@ -179,7 +179,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
-        print(parser.format_values())
+        print(parser.format_values(sanitize=True))
         return None
 
     if config.bc_api_key == '':
