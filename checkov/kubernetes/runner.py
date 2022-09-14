@@ -237,7 +237,6 @@ class Runner(ImageReferencerMixin, BaseRunner[KubernetesGraphManager]):
         return images
 
 
-
 def get_relative_file_path(file_abs_path: str, root_folder: str) -> str:
     return f"/{os.path.relpath(file_abs_path, root_folder)}"
 
