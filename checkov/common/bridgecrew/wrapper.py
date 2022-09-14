@@ -81,9 +81,9 @@ def persist_checks_results(
 
 
 def persist_run_metadata(run_metadata: str, s3_client: BaseClient, bucket: str, full_repo_object_key: str) -> None:
-    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.txt'
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
     try:
-        s3_client.put_object(Bucket=bucket, Key=object_path, Body=run_metadata.encode('utf-8'))
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
     except Exception:
         logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
         raise

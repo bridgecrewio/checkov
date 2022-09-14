@@ -114,14 +114,16 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     normalize_config(config, parser)
 
-    run_metadata = f"""Run metadata:
-Checkov version: {version}
-Python executable: {sys.executable}
-Python version: {sys.version}
-Checkov executable (argv[0]): {sys.argv[0]}
-{parser.format_values(sanitize=True)}"""
+    run_metadata = {
+        "checkov_version": version,
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "checkov_executable": sys.argv[0],
+        "args": parser.format_values(sanitize=True).split('\n')
+    }
 
-    logger.debug(run_metadata)
+    logger.debug('Run metadata:')
+    logger.debug(json.dumps(run_metadata, indent=2))
 
     if config.add_check:
         resp = prompt.Prompt()
