@@ -16,7 +16,7 @@ class CloudFunctionsShouldNotBePublic(BaseResourceCheck):
                 return CheckResult.FAILED
             return CheckResult.PASSED
         if conf.get("members") and isinstance(conf.get("members")[0], list):
-            if conf.get("members")[0] == ["allUsers"]:
+            if "allUsers" in conf.get("members")[0]:
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN

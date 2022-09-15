@@ -26,6 +26,16 @@ resource "google_cloudfunctions_function_iam_binding" "pass" {
   ]
 }
 
+resource "google_cloudfunctions_function_iam_binding" "pass2" {
+  project        = google_cloudfunctions_function.pikey.project
+  region         = google_cloudfunctions_function.pikey.region
+  cloud_function = google_cloudfunctions_function.pikey.name
+  role = "roles/viewer"
+  members = [
+    "user:jane@example.com",
+    "user:anton@caughtit.com"
+  ]
+}
 
 resource "google_cloudfunctions_function_iam_binding" "fail" {
   project        = google_cloudfunctions_function.pikey.project
@@ -33,6 +43,17 @@ resource "google_cloudfunctions_function_iam_binding" "fail" {
   cloud_function = google_cloudfunctions_function.pikey.name
   role = "roles/viewer"
   members = [
+    "allUsers",
+  ]
+}
+
+resource "google_cloudfunctions_function_iam_binding" "fail2" {
+  project        = google_cloudfunctions_function.pikey.project
+  region         = google_cloudfunctions_function.pikey.region
+  cloud_function = google_cloudfunctions_function.pikey.name
+  role = "roles/viewer"
+  members = [
+    "user:anton@caughtit.com",
     "allUsers",
   ]
 }

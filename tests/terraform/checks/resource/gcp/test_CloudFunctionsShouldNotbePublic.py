@@ -20,18 +20,20 @@ class TestCloudFunctionsShouldNotBePublic(unittest.TestCase):
         passing_resources = {
             "google_cloudfunctions_function_iam_member.pass",
             "google_cloudfunctions_function_iam_binding.pass",
+            "google_cloudfunctions_function_iam_binding.pass2",
         }
 
         failing_resources = {
             "google_cloudfunctions_function_iam_member.fail",
             "google_cloudfunctions_function_iam_binding.fail",
+            "google_cloudfunctions_function_iam_binding.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
