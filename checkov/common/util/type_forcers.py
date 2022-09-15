@@ -62,8 +62,8 @@ def force_dict(obj: Any) -> dict[str, Any] | None:
     """
     if isinstance(obj, dict):
         return obj
-    if isinstance(obj, list) and len(obj) > 0 and isinstance(obj[0], dict):
-        return obj[0]
+    if (isinstance(obj, list) or isinstance(obj, tuple)) and len(obj) > 0:
+        return force_dict(obj[0])
     return None
 
 

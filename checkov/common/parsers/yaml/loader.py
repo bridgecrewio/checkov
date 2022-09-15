@@ -59,3 +59,17 @@ class SafeLineLoader(SafeLoader):
         'on': 'on',
         'off': False,
     }
+
+
+class SafeLineLoaderGhaSchema(SafeLoader):
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
+        mapping: dict[str, Any] = super().construct_mapping(node, deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
+        return mapping
+
+    bool_values = {
+        'on': 'on',
+        'yes': 'true',
+        'no': 'false',
+        'true': 'true',
+        'false': 'false'
+    }
