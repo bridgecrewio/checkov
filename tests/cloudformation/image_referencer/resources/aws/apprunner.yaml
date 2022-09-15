@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  AppRunner:
+    Type: AWS::AppRunner::Service
+    Properties:
+      ServiceName: hello-app-runner
+      SourceConfiguration:
+        AuthenticationConfiguration:
+          AccessRoleArn: "arn:aws:iam::123456789012:role/my-ecr-role"
+        AutoDeploymentsEnabled: true
+        ImageRepository:
+          ImageIdentifier: "public.ecr.aws/aws-containers/hello-app-runner:latest"
+          ImageRepositoryType: ECR_PUBLIC
+          ImageConfiguration:
+            Port: 8080
+      InstanceConfiguration:
+        Cpu: 1 vCPU
+        Memory: 3 GB

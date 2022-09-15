@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Type
+from typing import Type, Any, TYPE_CHECKING
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
@@ -13,11 +13,13 @@ from checkov.cloudformation.graph_builder.graph_components.block_types import Bl
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
+from checkov.cloudformation.image_referencer.manager import CloudFormationImageReferencerManager
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
@@ -26,8 +28,12 @@ from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+    from checkov.common.images.image_referencer import Image
 
-class Runner(BaseRunner[CloudformationGraphManager]):
+
+class Runner(ImageReferencerMixin, BaseRunner[CloudformationGraphManager]):
     check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -58,7 +64,7 @@ class Runner(BaseRunner[CloudformationGraphManager]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -112,6 +118,21 @@ class Runner(BaseRunner[CloudformationGraphManager]):
         if CHECKOV_CREATE_GRAPH:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
+
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
 
         return report
 
@@ -211,3 +232,15 @@ class Runner(BaseRunner[CloudformationGraphManager]):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+    def extract_images(
+        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = CloudFormationImageReferencerManager(graph_connector=graph_connector)
+        images = manager.extract_images_from_resources()
+
+        return images
