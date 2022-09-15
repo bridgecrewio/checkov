@@ -66,7 +66,7 @@ class SafeLineLoaderGhaSchema(SafeLoader):
         mapping: dict[str, Any] = super().construct_mapping(node, deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
         return mapping
 
-    bool_values = {
+    bool_values = {  # noqa: CCE003  # used to override the SafeLoader default behaviour
         'on': 'on',
         'yes': 'true',
         'no': 'false',

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, cast
 
 import yaml
 from jsonschema import validate, ValidationError
-from schema import SchemaError  # type: ignore
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
