@@ -36,7 +36,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
+from checkov.common.util.http_utils import get_prisma_post_headers, normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
@@ -584,7 +584,8 @@ class BcPlatformIntegration:
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
-            if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
+            # if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
+            if self.is_valid_policy_filter_suggestion(query_params):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
@@ -640,6 +641,49 @@ class BcPlatformIntegration:
                 return False
         logging.debug("--policy-metadata-filter is valid")
         return True
+
+    def is_valid_policy_filter_suggestion(self, policy_filter: dict[str, str]) -> bool:
+        if not policy_filter:
+            return False
+        for filter_name, filter_value in policy_filter.items():
+            valid_filters = self.get_policy_filter_suggestion(filter_name)
+            if valid_filters:
+                if filter_value not in valid_filters['suggestions']:
+                    logging.warning(f"Invalid filter value: {filter_value}")
+                    logging.warning(f"Allowed filter values: {valid_filters['suggestions']}")
+                    return False
+                elif filter_name == 'policy.subtype' and filter_value != 'build':
+                    logging.warning(f"Filter value not allowed: {filter_value}")
+                    logging.warning("Available options: build")
+                    return False
+                elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
+                    logging.warning(f"Filter value not allowed: {filter_value}")
+                    logging.warning("Available options: True")
+                    return False
+            else:
+                return False
+        logging.debug("--policy-metadata-filter is valid")
+        return True
+
+    def get_policy_filter_suggestion(self, filter_name: str) -> dict[str, Any]:
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_post_headers())
+            body = {
+                'filterName': filter_name
+            }
+            self.setup_http_manager()
+            if not self.http:
+                logging.error("HTTP manager was not correctly created")
+                return {}
+
+            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
+            request = self.http.request("POST", self.prisma_policy_filters_url, headers=headers, data=json.dumps(body))  # type:ignore[no-untyped-call]
+            policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
+            return policy_filters
+        except Exception:
+            logging.warning(f"Error while getting policy filter suggestions from {self.prisma_policy_filters_url} \n Please check the filter name.", exc_info=True)
+            return {}
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:

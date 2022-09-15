@@ -16,6 +16,11 @@ PRISMA_API_GET_HEADERS = {
     'Accept': 'application/json; charset=UTF-8'
 }
 
+PRISMA_API_POST_HEADERS = {
+    'Accept': 'application/json; charset=UTF-8',
+    'Content-Type': 'application/json'
+}
+
 PARSE_ERROR_FAIL_FLAG = 'CKV_PARSE_ERROR_FAIL'
 
 PRISMA_PLATFORM = 'Prisma Cloud Code Security'

@@ -14,7 +14,7 @@ from typing import Any, TYPE_CHECKING, cast, Optional, overload
 from urllib3.response import HTTPResponse
 
 from checkov.common.bridgecrew.bc_source import SourceType
-from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
+from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, PRISMA_API_POST_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
@@ -110,6 +110,10 @@ def get_default_post_headers(client: SourceType, client_version: str | None) -> 
 
 def get_prisma_get_headers() -> dict[str, str]:
     return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
+
+
+def get_prisma_post_headers() -> dict[str, str]:
+    return merge_dicts(PRISMA_API_POST_HEADERS, get_user_agent_header())
 
 
 def request_wrapper(
