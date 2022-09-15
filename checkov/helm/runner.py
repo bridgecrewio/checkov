@@ -190,7 +190,7 @@ class Runner(BaseRunner):
             helm_binary_list_chart_deps = subprocess.Popen([helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = helm_binary_list_chart_deps.communicate()
         except Exception as ex:
-            logging.error(f'Error run helm command: {str(ex)}')
+            logging.error(f'Error run helm command', exc_info=True)
             return None, None
         logging.debug(
             f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
