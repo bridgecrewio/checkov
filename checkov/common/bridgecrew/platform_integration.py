@@ -94,7 +94,7 @@ class BcPlatformIntegration:
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         self.prisma_policies_url: str | None = None
-        self.prisma_policy_filters_url: str | None = None
+        self.prisma_policy_filters_url: str = ""
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.prisma_policies_response = None
@@ -584,8 +584,7 @@ class BcPlatformIntegration:
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
-            # if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
-            if self.is_valid_policy_filter_suggestion(query_params):
+            if self.is_valid_policy_filter(query_params):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
@@ -597,7 +596,11 @@ class BcPlatformIntegration:
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
-    def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+    def get_recent_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Returns a list of recently used Prisma policy filters.
+        https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filter-options
+        """
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -615,23 +618,17 @@ class BcPlatformIntegration:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
             return {}
 
-    @staticmethod
-    def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
-        valid_filters = valid_filters or {}
-
+    def is_valid_policy_filter(self, policy_filter: dict[str, str]) -> bool:
+        """
+        Validates all policy filter names and values against data from an API that returns a list
+        of suggestions for a given filter name.
+        https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filter-options
+        """
         if not policy_filter:
             return False
-        if not valid_filters:
-            return False
+        recently_used_policy_filters = self.get_recent_prisma_policy_filters()
         for filter_name, filter_value in policy_filter.items():
-            if filter_name not in valid_filters.keys():
-                logging.warning(f"Invalid filter name: {filter_name}")
-                return False
-            elif filter_value not in valid_filters[filter_name].get('options', []):
-                logging.warning(f"Invalid filter value: {filter_value}")
-                logging.warning(f"Available options: {valid_filters[filter_name].get('options')}")
-                return False
-            elif filter_name == 'policy.subtype' and filter_value != 'build':
+            if filter_name == 'policy.subtype' and filter_value != 'build':
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning("Available options: build")
                 return False
@@ -639,51 +636,47 @@ class BcPlatformIntegration:
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning("Available options: True")
                 return False
+            elif filter_value not in recently_used_policy_filters[filter_name].get('options', []):
+                return self.prisma_policy_filter_fuzzy_find(filter_name, filter_value)
         logging.debug("--policy-metadata-filter is valid")
         return True
 
-    def is_valid_policy_filter_suggestion(self, policy_filter: dict[str, str]) -> bool:
-        if not policy_filter:
-            return False
-        for filter_name, filter_value in policy_filter.items():
-            valid_filters = self.get_policy_filter_suggestion(filter_name)
-            if valid_filters:
-                if filter_value not in valid_filters['suggestions']:
-                    logging.warning(f"Invalid filter value: {filter_value}")
-                    logging.warning(f"Allowed filter values: {valid_filters['suggestions']}")
-                    return False
-                elif filter_name == 'policy.subtype' and filter_value != 'build':
-                    logging.warning(f"Filter value not allowed: {filter_value}")
-                    logging.warning("Available options: build")
-                    return False
-                elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
-                    logging.warning(f"Filter value not allowed: {filter_value}")
-                    logging.warning("Available options: True")
-                    return False
-            else:
-                return False
-        logging.debug("--policy-metadata-filter is valid")
-        return True
-
-    def get_policy_filter_suggestion(self, filter_name: str) -> dict[str, Any]:
+    def prisma_policy_filter_fuzzy_find(self, filter_name: str, filter_value: str) -> bool:
+        """
+        Attempts to fuzzy find and validate values of prisma policy filters.
+        https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filter-options
+        """
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_post_headers())
             body = {
                 'filterName': filter_name
             }
+            if filter_value:
+                body['query'] = filter_value
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return {}
+                return False
 
-            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
-            request = self.http.request("POST", self.prisma_policy_filters_url, headers=headers, data=json.dumps(body))  # type:ignore[no-untyped-call]
-            policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
-            return policy_filters
+            logging.debug(f"Fuzzy finding {filter_value}")
+            fuzzy_find_limit = 5  # fuzzy finding suggestions is halted at 5 API calls
+            for i in range(len(filter_value)):
+                body['query'] = filter_value[:i + 2]
+                response = requests.request("POST", self.prisma_policy_filters_url, data=json.dumps(body), headers=headers)
+                response.raise_for_status()
+                res_json = json.loads(response.text)
+                logging.debug(f"Fuzzy find response for {body['query']}: \n {json.dumps(res_json)}")
+                if f"'{filter_value}'" in res_json['suggestions']:
+                    logging.debug(f"Found {filter_value}")
+                    return True
+                if i >= fuzzy_find_limit:
+                    break
+            logging.debug(f"Did not find {filter_value} in any filter suggestions for {filter_name}")
+            return False
         except Exception:
             logging.warning(f"Error while getting policy filter suggestions from {self.prisma_policy_filters_url} \n Please check the filter name.", exc_info=True)
-            return {}
+            return False
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
