@@ -74,7 +74,7 @@ def license_statuses_result() -> list[dict[str, str]]:
     ]
 
 
-@pytest.mark.skipif(os.name == "nt" and not kustomize_exists(), reason="kustomize not installed or Windows OS")
+@pytest.mark.skipif(os.name == "nt" or not kustomize_exists(), reason="kustomize not installed or Windows OS")
 def test_deployment_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 

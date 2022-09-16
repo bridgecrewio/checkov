@@ -10,7 +10,7 @@ from tests.kustomize.utils import kustomize_exists
 
 
 class TestRunnerValid(unittest.TestCase):
-    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "runner", "resources", "example")
@@ -33,7 +33,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
 
-    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_relative_dir(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
@@ -58,7 +58,7 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
-    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_oberlay(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
@@ -83,7 +83,7 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
-    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_prod2_oberlay(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
@@ -108,7 +108,7 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)\
     
-    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_no_file_type_exists(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 

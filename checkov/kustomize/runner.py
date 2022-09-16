@@ -487,7 +487,7 @@ class Runner(BaseRunner):
 
             shutil.rmtree(target_dir)
 
-        except Exception as e:
+        except Exception:
             logging.warning("Failed to run Kubernetes runner", exc_info=True)
             with tempfile.TemporaryDirectory() as save_error_dir:
                 logging.debug(
