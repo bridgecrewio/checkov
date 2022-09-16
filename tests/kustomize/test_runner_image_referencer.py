@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -8,9 +9,9 @@ from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.helm.runner import Runner
+from checkov.kustomize.runner import Runner
 from checkov.runner_filter import RunnerFilter
-from tests.helm.utils import helm_exists
+from tests.kustomize.utils import kustomize_exists
 
 RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
@@ -73,15 +74,15 @@ def license_statuses_result() -> list[dict[str, str]]:
     ]
 
 
-@pytest.mark.skipif(not helm_exists(), reason="helm not installed")
+@pytest.mark.skipif(os.name == "nt" and not kustomize_exists(), reason="kustomize not installed or Windows OS")
 def test_deployment_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "hello-world/templates/deployment.yaml"
-    image_name = "nginx:1.16.0"
-    code_lines = "3-42"
-    test_folder = RESOURCES_PATH / "image_referencer"
+    file_name = "image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml"
+    image_name = "wordpress:4.8-apache"
+    code_lines = "2-31"
+    test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
 
@@ -95,19 +96,22 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     )
 
     # when
-    reports = Runner().run(root_folder=str(test_folder), runner_filter=runner_filter)
+    runner = Runner()
+    runner.templateRendererCommand = "kustomize"
+    runner.templateRendererCommandOptions = "build"
+    reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
 
-    helm_report = next(report for report in reports if report.check_type == CheckType.HELM)
+    kustomize_report = next(report for report in reports if report.check_type == CheckType.KUSTOMIZE)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(helm_report.resources) == 3
-    assert len(helm_report.passed_checks) == 73
-    assert len(helm_report.failed_checks) == 19
-    assert len(helm_report.skipped_checks) == 0
-    assert len(helm_report.parsing_errors) == 0
+    assert len(kustomize_report.resources) == 2
+    assert len(kustomize_report.passed_checks) == 70
+    assert len(kustomize_report.failed_checks) == 20
+    assert len(kustomize_report.skipped_checks) == 0
+    assert len(kustomize_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {

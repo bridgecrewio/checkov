@@ -16,8 +16,8 @@ class KubernetesImageReferencerManager:
         self.graph_connector = graph_connector
 
     def extract_images_from_resources(self) -> list[Image]:
-        aws_provider = KubernetesProvider(graph_connector=self.graph_connector)
+        k8s_provider = KubernetesProvider(graph_connector=self.graph_connector)
 
-        images = aws_provider.extract_images_from_resources()
+        images = k8s_provider.extract_images_from_resources()
 
         return images

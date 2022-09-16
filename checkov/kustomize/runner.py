@@ -3,13 +3,16 @@ from __future__ import annotations
 import copy
 import io
 import logging
+import multiprocessing
 import os
 import pathlib
+import platform
 import shutil
 import subprocess  # nosec
 import tempfile
-from typing import Optional, Dict, Any, Type, TextIO
 import yaml
+from typing import Optional, Dict, Any, Type, TextIO, TYPE_CHECKING
+
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -21,20 +24,19 @@ from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-import multiprocessing
-import platform
+
+if TYPE_CHECKING:
+    from checkov.kubernetes.graph_manager import KubernetesGraphManager
 
 
 class K8sKustomizeRunner(K8sRunner):
     def __init__(
         self,
-        graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+        graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
         source: str = "Kubernetes",
-        graph_manager: GraphManager | None = None,
+        graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
 
@@ -465,28 +467,27 @@ class Runner(BaseRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
+        target_dir = ""
         try:
             k8s_runner = K8sKustomizeRunner()
             # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
             target_dir = self.get_k8s_target_folder_path()
             k8s_runner.report_mutator_data = self.get_kustomize_metadata()
-            chart_results = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
+
+            # the returned report can be a list of reports, which also includes an SCA image report
+            report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
             logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
-            report.failed_checks += chart_results.failed_checks
-            report.passed_checks += chart_results.passed_checks
-            report.parsing_errors += chart_results.parsing_errors
-            report.skipped_checks += chart_results.skipped_checks
-            report.resources.update(chart_results.resources)
+
             shutil.rmtree(target_dir)
 
-        except Exception:
+        except Exception as e:
             logging.warning("Failed to run Kubernetes runner", exc_info=True)
             with tempfile.TemporaryDirectory() as save_error_dir:
                 logging.debug(

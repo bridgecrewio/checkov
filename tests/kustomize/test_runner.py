@@ -6,12 +6,14 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.kustomize.runner import Runner
+from tests.kustomize.utils import kustomize_exists
+
 
 class TestRunnerValid(unittest.TestCase):
-    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "example")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
@@ -31,13 +33,13 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
 
-    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_relative_dir(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources")
+        scan_dir_path = os.path.join(current_dir, "runner", "resources", "example")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
@@ -56,12 +58,12 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
-    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_oberlay(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        scan_dir_path = Path(__file__).parent / "runner/resources/overlays/dev"
+        scan_dir_path = Path(__file__).parent / "runner/resources/example/overlays/dev"
 
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
@@ -81,12 +83,12 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)
 
-    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_prod2_oberlay(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        scan_dir_path = Path(__file__).parent / "runner/resources/overlays/prod-2"
+        scan_dir_path = Path(__file__).parent / "runner/resources/example/overlays/prod-2"
 
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
@@ -106,12 +108,12 @@ class TestRunnerValid(unittest.TestCase):
             # self.assertEqual(record.repo_file_path in record.file_path)
             self.assertIn(record.repo_file_path, record.file_path)\
     
-    @unittest.skipIf(os.name == "nt", "Skipping Kustomize test for windows OS.")
+    @unittest.skipIf(os.name == "nt" and not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_no_file_type_exists(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        scan_dir_path = Path(__file__).parent / "runner/resources/no_type"
+        scan_dir_path = Path(__file__).parent / "runner/resources/example/no_type"
 
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
