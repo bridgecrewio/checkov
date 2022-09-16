@@ -95,6 +95,8 @@ sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
 
 or using [homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
+* Updated every 15 patche releases (2.1.120, 2.1.235, 2.1.150, ...)
+
 ```sh
 brew install checkov
 ```
