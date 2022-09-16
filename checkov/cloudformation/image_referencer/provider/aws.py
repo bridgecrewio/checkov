@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from checkov.cloudformation.image_referencer.base_provider import BaseCloudFormationProvider
 from checkov.common.util.data_structures_utils import find_in_dict
-from checkov.common.util.type_forcers import force_list, extract_json
-from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
+from checkov.common.util.type_forcers import extract_json
 
 if TYPE_CHECKING:
     from networkx import DiGraph
 
 
-class AwsTerraformProvider(BaseTerraformProvider):
+class AwsCloudFormationProvider(BaseCloudFormationProvider):
     def __init__(self, graph_connector: DiGraph) -> None:
         super().__init__(
             graph_connector=graph_connector,
@@ -21,10 +21,10 @@ class AwsTerraformProvider(BaseTerraformProvider):
 def extract_images_from_aws_apprunner_service(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
-    image_repo = find_in_dict(input_dict=resource, key_path="source_configuration/image_repository")
+    image_repo = find_in_dict(input_dict=resource, key_path="SourceConfiguration/ImageRepository")
     if isinstance(image_repo, dict):
-        repo_type = image_repo.get("image_repository_type")
-        name = image_repo.get("image_identifier")
+        repo_type = image_repo.get("ImageRepositoryType")
+        name = image_repo.get("ImageIdentifier")
         if name and isinstance(name, str) and repo_type == "ECR_PUBLIC":
             image_names.append(name)
 
@@ -34,14 +34,18 @@ def extract_images_from_aws_apprunner_service(resource: dict[str, Any]) -> list[
 def extract_images_from_aws_batch_job_definition(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
-    properties = extract_json(resource.get("container_properties"))
+    properties = extract_json(resource.get("ContainerProperties"))
     if isinstance(properties, dict):
-        name = properties.get("image")
+        name = properties.get("Image")
         if name and isinstance(name, str):
             image_names.append(name)
 
-    # node properties are not supported yet
-    # https://github.com/hashicorp/terraform-provider-aws/issues/20983
+    node_range = find_in_dict(input_dict=resource, key_path="NodeProperties/NodeRangeProperties")
+    if isinstance(node_range, list):
+        for node in node_range:
+            name = find_in_dict(input_dict=node, key_path="Container/Image")
+            if name and isinstance(name, str):
+                image_names.append(name)
 
     return image_names
 
@@ -49,7 +53,7 @@ def extract_images_from_aws_batch_job_definition(resource: dict[str, Any]) -> li
 def extract_images_from_aws_codebuild_project(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
-    name = find_in_dict(input_dict=resource, key_path="environment/image")
+    name = find_in_dict(input_dict=resource, key_path="Environment/Image")
     if name and isinstance(name, str):
         # AWS provided images have an internal identifier
         if not name.startswith("aws/codebuild/"):
@@ -61,10 +65,10 @@ def extract_images_from_aws_codebuild_project(resource: dict[str, Any]) -> list[
 def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
-    definitions = extract_json(resource.get("container_definitions"))
+    definitions = extract_json(resource.get("ContainerDefinitions"))
     if isinstance(definitions, list):
         for definition in definitions:
-            name = definition.get("image")
+            name = definition.get("Image")
             if name and isinstance(name, str):
                 image_names.append(name)
 
@@ -74,10 +78,10 @@ def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> lis
 def extract_images_from_aws_lightsail_container_service_deployment_version(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
-    containers = resource.get("container")
-    if containers:
-        for container in force_list(containers):
-            name = container.get("image")
+    containers = find_in_dict(input_dict=resource, key_path="ContainerServiceDeployment/Containers")
+    if isinstance(containers, list):
+        for container in containers:
+            name = container.get("Image")
             if name and isinstance(name, str):
                 image_names.append(name)
 
@@ -86,9 +90,9 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
 
 # needs to be at the bottom to add the defined functions
 SUPPORTED_AWS_IMAGE_RESOURCE_TYPES = {
-    "aws_apprunner_service": extract_images_from_aws_apprunner_service,
-    "aws_batch_job_definition": extract_images_from_aws_batch_job_definition,
-    "aws_codebuild_project": extract_images_from_aws_codebuild_project,
-    "aws_ecs_task_definition": extract_images_from_aws_ecs_task_definition,
-    "aws_lightsail_container_service_deployment_version": extract_images_from_aws_lightsail_container_service_deployment_version,
+    "AWS::AppRunner::Service": extract_images_from_aws_apprunner_service,
+    "AWS::Batch::JobDefinition": extract_images_from_aws_batch_job_definition,
+    "AWS::CodeBuild::Project": extract_images_from_aws_codebuild_project,
+    "AWS::ECS::TaskDefinition": extract_images_from_aws_ecs_task_definition,
+    "AWS::Lightsail::Container": extract_images_from_aws_lightsail_container_service_deployment_version,
 }
