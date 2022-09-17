@@ -43,7 +43,7 @@ flake8-type-checking = {version = "*", markers="python_version >= '3.8'"}
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.45"
+bc-python-hcl2 = "==0.3.47"
 deep_merge = "*"
 tabulate = "*"
 colorama="*"
