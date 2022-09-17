@@ -31,4 +31,5 @@ class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
                     return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
+
 check = SuspectCurlInScript()
