@@ -216,8 +216,9 @@ class Runner(BaseRunner):
                 logging.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
                 return None, None
-            logging.info(
+            logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+            logging.info(f'Done helm run for: {chart_dir}')
             return o, chart_item
 
         except Exception:
