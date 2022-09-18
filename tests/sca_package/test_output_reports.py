@@ -163,8 +163,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)"
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -175,8 +176,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -187,8 +189,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -199,8 +202,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -211,8 +215,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -223,8 +228,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -235,8 +241,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": 'jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.'
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -249,8 +256,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
                                     "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                                 "defaultConfiguration": {"level": "error"},
                             },
                         ],
