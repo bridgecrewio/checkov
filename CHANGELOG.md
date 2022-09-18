@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.210...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.212...HEAD)
+
+## [2.1.212](https://github.com/bridgecrewio/checkov/compare/2.1.210...2.1.212) - 2022-09-18
+
+### Bug Fix
+
+- **helm:** helm add timeout to dependencies command - [#3525](https://github.com/bridgecrewio/checkov/pull/3525)
+- **helm:** Helm fix logs - [#3524](https://github.com/bridgecrewio/checkov/pull/3524)
 
 ## [2.1.210](https://github.com/bridgecrewio/checkov/compare/2.1.207...2.1.210) - 2022-09-15
 
