@@ -13,9 +13,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 logger = logging.getLogger(__name__)
-spec = util.spec_from_file_location(
-    "checkov.version", os.path.join("checkov", "version.py")
-)
+spec = util.spec_from_file_location("checkov.version", os.path.join("checkov", "version.py"))
 # noinspection PyUnresolvedReferences
 mod = util.module_from_spec(spec)
 spec.loader.exec_module(mod)  # type: ignore
@@ -34,8 +32,8 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "cloudsplaining>=0.4.1",
-        "deep_merge",
+        "cloudsplaining>=0.4.3",
+        "deep-merge",
         "tabulate",
         "colorama",
         "termcolor",
@@ -43,13 +41,13 @@ setup(
         "dpath>=1.5.0,<2",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
-        "GitPython",
+        "gitpython",
         "jmespath",
         "tqdm",
-        "update_checker",
-        "semantic_version",
+        "update-checker",
+        "semantic-version",
         "packaging",
-        "networkx",
+        "networkx<2.7",
         "dockerfile-parse",
         "docker",
         "configargparse",
@@ -57,21 +55,23 @@ setup(
         "detect-secrets",
         "policyuniverse",
         "typing-extensions>=4.1.0",
+        "importlib-metadata>=0.12",
         "cachetools",
         "cyclonedx-python-lib>=2.4.0,<3.0.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
         "aiomultiprocess",
-        "jsonpath_ng",
-        "jsonschema~=3.0",
+        "jsonpath-ng",
+        "jsonschema>=3.0.2,<4.0.0",
         "prettytable>=3.0.0",
         "pycep-parser==0.3.9",
         "charset-normalizer",
-        "pyston_lite_autoload==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
-        "pyston-lite==2.3.4.2; python_version=='3.8' and (sys_platform=='linux' or sys_platform=='darwin') and platform_machine == 'x86_64'",
-        "schema"
+        "pyston-lite-autoload==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "pyston-lite==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "schema",
     ],
+    dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
     name="checkov",
     version=version,
