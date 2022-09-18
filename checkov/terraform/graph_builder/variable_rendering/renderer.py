@@ -41,10 +41,24 @@ class TerraformVariableRenderer(VariableRenderer):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         super().__init__(local_graph)
 
-        self.attributes_no_eval = {"template_body", "template"}
-        if os.environ.get("CKV_TERRAFORM_PROVIDER") == "OCI":
-            # OCI policy statements have a special syntax and should not be evaluated.
-            self.attributes_no_eval.add("statements")
+    def attributes_no_eval(self, attribute: str, vertex_index: int) -> bool:
+        """
+        Check if the attribute should not be evaluated.
+        :param attribute: the attribute to check
+        :param vertex_index: the index of the current vertex
+        :return bool: True if the attribute should not be evaluated and False otherwise
+        """
+        if attribute in {"template_body", "template"}:
+            return True
+
+        # OCI policy statements have a special syntax and should not be evaluated.
+        # Check if the vertex at this index is an OCI terraform resource.
+        if attribute == "statements":
+            vertex_attributes = self.local_graph.get_vertex_attributes_by_index(vertex_index)
+            if vertex_attributes and vertex_attributes.get("resource_type", "").startswith("oci_"):
+                return True
+
+        return False
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
@@ -207,12 +221,12 @@ class TerraformVariableRenderer(VariableRenderer):
         """
         str_to_evaluate = (
             str(changed_attribute_value)
-            if changed_attribute_key in self.attributes_no_eval
+            if self.attributes_no_eval(changed_attribute_key, vertex)
             else f'"{str(changed_attribute_value)}"'
         )
         str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
         evaluated_attribute_value = (
-            str_to_evaluate if changed_attribute_key in self.attributes_no_eval else evaluate_terraform(str_to_evaluate)
+            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluate_terraform(str_to_evaluate)
         )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
@@ -254,7 +268,7 @@ class TerraformVariableRenderer(VariableRenderer):
         pass
 
     def evaluate_non_rendered_values(self) -> None:
-        for vertex in self.local_graph.vertices:
+        for index, vertex in enumerate(self.local_graph.vertices):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
@@ -274,7 +288,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     if (
                         isinstance(inner_val, str)
                         and not any(c in inner_val for c in ("{", "}", "[", "]", "="))
-                        or attribute in self.attributes_no_eval
+                        or self.attributes_no_eval(attribute, index)
                     ):
                         evaluated_lst.append(inner_val)
                         continue
