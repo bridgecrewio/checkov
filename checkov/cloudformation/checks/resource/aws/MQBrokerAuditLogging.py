@@ -17,7 +17,8 @@ class MQBrokerAuditLogging(BaseResourceValueCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         # https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/security-logging-monitoring-rabbitmq.html
         # Audit logging is not supported for RabbitMQ brokers.
-        if conf.get("Properties", {}).get("EngineType") == "RabbitMQ":
+        engine_type = conf.get("Properties", {}).get("EngineType")
+        if isinstance(engine_type, str) and engine_type.upper() == "RABBITMQ":
             return CheckResult.UNKNOWN
         return super().scan_resource_conf(conf)
 
