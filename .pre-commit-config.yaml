@@ -17,3 +17,10 @@ repos:
     hooks:
       - id: teyit
         language_version: python3.9
+  - repo: https://github.com/Madoshakalaka/pipenv-setup  # Pipfile to setup.py sync checker
+    rev: v3.2.0
+    hooks:
+      - id: pipenv-setup
+        language_version: python3.9
+        entry: pipenv-setup check
+        args: []
