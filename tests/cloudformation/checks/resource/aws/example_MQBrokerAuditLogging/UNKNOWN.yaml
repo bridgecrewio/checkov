@@ -6,7 +6,7 @@ Resources:
       AutoMinorVersionUpgrade: false
       BrokerName: Example
       DeploymentMode: SINGLE_INSTANCE
-      EngineType: RabbitMQ
+      EngineType: RABBITMQ
       EngineVersion: 3.8.6
       HostInstanceType: mq.t3.micro
       Logs:

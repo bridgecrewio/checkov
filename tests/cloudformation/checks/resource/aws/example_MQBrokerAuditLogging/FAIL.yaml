@@ -6,7 +6,7 @@ Resources:
       AutoMinorVersionUpgrade: false
       BrokerName: Example
       DeploymentMode: SINGLE_INSTANCE
-      EngineType: ActiveMQ
+      EngineType: ACTIVEMQ
       EngineVersion: 5.15.0
       HostInstanceType: mq.t3.micro
       PubliclyAccessible: true
@@ -23,7 +23,7 @@ Resources:
       AutoMinorVersionUpgrade: false
       BrokerName: Example
       DeploymentMode: SINGLE_INSTANCE
-      EngineType: ActiveMQ
+      EngineType: ACTIVEMQ
       EngineVersion: 5.15.0
       HostInstanceType: mq.t3.micro
       Logs:
