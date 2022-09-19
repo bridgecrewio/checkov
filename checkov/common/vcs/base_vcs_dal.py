@@ -14,8 +14,16 @@ from checkov.common.util.http_utils import get_user_agent_header
 
 
 class BaseVCSDAL:
+    current_branch: str
+    current_repository: str
+    token: str
+    repo_owner: str
+    graphql_api_url: str
+    api_url: str
+    default_branch_cache: dict[str, Any]
+    http: urllib3.PoolManager
+
     def __init__(self) -> None:
-        self.http: urllib3.PoolManager | None = None
         self.request_lib_http = None
         self._organization_security = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
@@ -27,12 +35,7 @@ class BaseVCSDAL:
         """
             discover parameters from execution context of checkov. usually from env variable
         """
-        self.api_url = None
-        self.graphql_api_url = None
-        self.token = None
-        self.current_repository = None
-        self.current_branch = None
-        self.default_branch_cache: dict[str, Any] = {}
+        self.default_branch_cache = {}
 
     def setup_http_manager(self, ca_certificate: str | None = None) -> None:
         """
@@ -66,14 +69,15 @@ class BaseVCSDAL:
         url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             headers = self._headers()
-            request = self.http.request("GET", url_endpoint, headers=headers)
+            request = self.http.request("GET", url_endpoint, headers=headers)  # type:ignore[no-untyped-call]
             if request.status in allowed_status_codes:
-                data = json.loads(request.data.decode("utf8"))
+                data: dict[str, Any] = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
                     return None
                 return data
         except Exception:
             logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
+        return None
 
     @abstractmethod
     def _headers(self) -> dict[str, Any]:
@@ -90,7 +94,7 @@ class BaseVCSDAL:
 
         body = json.dumps({'query': query, 'variables': variables})
         try:
-            request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)
+            request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)  # type:ignore[no-untyped-call]
             if request.status == 200:
                 data = json.loads(request.data.decode("utf8"))
                 if isinstance(data, dict) and 'errors' in data.keys():
