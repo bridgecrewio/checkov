@@ -104,8 +104,8 @@ class BaseVCSDAL:
                         logging.debug("received errors %s", data)
                         return None
                     return data
-            else:
-                logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
+                else:
+                    logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception:
             logging.debug(f"Query failed {query}", exc_info=True)
 
