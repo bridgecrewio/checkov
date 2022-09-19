@@ -86,6 +86,7 @@ setup(
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
+        "checkov.github_actions": "checkov/github_actions"
     },
     package_data={
         "checkov": ["py.typed"],
