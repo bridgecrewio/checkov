@@ -1464,9 +1464,13 @@
             "version": "==22.9.11"
         },
         "flake8-type-checking": {
+            "hashes": [
+                "sha256:70d198e93c3831b3ae24f6e80f85e3555c19c4eafb39ee4445abb2236c0b6970",
+                "sha256:a47b790ae6e13cb4c62ea36a3197eaa7b635086544071e3a49d6751f0b6cabe6"
+            ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": ">=2.0.0"
+            "version": "==2.1.3"
         },
         "frozenlist": {
             "hashes": [
