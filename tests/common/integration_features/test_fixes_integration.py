@@ -105,11 +105,10 @@ class TestFixesIntegration(unittest.TestCase):
         self.assertTrue(all(r.fixed_definition is not None for r in report.failed_checks))
 
     def setUp(self) -> None:
-        global _old_check_metadata
-        _old_check_metadata = metadata_integration.check_metadata
+        self._old_check_metadata = metadata_integration.check_metadata
 
     def tearDown(self) -> None:
-        metadata_integration.check_metadata = _old_check_metadata
+        metadata_integration.check_metadata = self._old_check_metadata
 
 
 def mock_fixes_response(check_type: str, filename: str, file_contents: str, failed_checks: Iterable[Record]
