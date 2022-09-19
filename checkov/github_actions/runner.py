@@ -42,7 +42,8 @@ class Runner(YamlRunner, ImageReferencer):
             if not file_content:
                 with open(f, 'r') as f_obj:
                     file_content = f_obj.read()
-            if entity_schema and Runner.is_schema_valid(yaml.load(file_content, Loader=loader.SafeLineLoaderGhaSchema)):
+            if entity_schema and \
+                    Runner.is_schema_valid(yaml.load(file_content, Loader=loader.SafeLineLoaderGhaSchema)):  # nosec
                 return entity_schema
         return None
 
