@@ -187,7 +187,7 @@ class Runner(YamlRunner, ImageReferencer):
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
         config = force_dict(config)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+        dir_path = os.path.dirname(__file__)
         with open(f'{dir_path}/gha_schema.json', 'r') as gha_schema_file_obj, \
              open(f'{dir_path}/github_workflow.json', 'r') as github_workflow_file_obj:
             gha_schema = json.load(gha_schema_file_obj)

@@ -55,8 +55,8 @@ def convert_str_to_bool(bool_str: bool | str) -> bool | str:
 
 def force_dict(obj: Any) -> dict[str, Any] | None:
     """
-    If the specified object is a dict, returns the object. If the object is a list of length 1 or more, and the first
-    element is a dict, returns the first element. Else returns None.
+    If the specified object is a dict, returns the object. If the specified object is a list or a tuple
+    of length 1 or more, force_dict is called recursively on the first element. Else returns None.
     :param obj:
     :return:
     """
