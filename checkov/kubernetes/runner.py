@@ -35,6 +35,14 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
 
 
+class TimeoutError(Exception):
+    pass
+
+
+def handle_timeout():
+    raise TimeoutError('command got timeout')
+
+
 class Runner(ImageReferencerMixin, BaseRunner[KubernetesGraphManager]):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 

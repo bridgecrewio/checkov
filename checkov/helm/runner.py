@@ -17,8 +17,9 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-from checkov.kubernetes.runner import Runner as k8_runner
+from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout
 from checkov.runner_filter import RunnerFilter
+import signal
 
 if TYPE_CHECKING:
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
@@ -192,7 +193,7 @@ class Runner(BaseRunner):
 
     @staticmethod
     def get_binary_output(
-        chart_item: tuple[str, dict[str, Any]], target_dir: str, helm_command: str, runner_filter: RunnerFilter
+        chart_item: tuple[str, dict[str, Any]], target_dir: str, helm_command: str, runner_filter: RunnerFilter, timeout: int = 3600
     ) -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
         (chart_dir, chart_meta) = chart_item
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
@@ -200,8 +201,12 @@ class Runner(BaseRunner):
         logging.info(
             f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
         # dependency list is nicer to parse than dependency update.
-        helm_binary_list_chart_deps = subprocess.Popen([helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-        o, e = helm_binary_list_chart_deps.communicate()
+        try:
+            helm_binary_list_chart_deps = subprocess.Popen([helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+            o, e = helm_binary_list_chart_deps.communicate()
+        except Exception:
+            logging.error('Error run helm command', exc_info=True)
+            return None, None
         logging.debug(
             f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
         if e:
@@ -218,23 +223,33 @@ class Runner(BaseRunner):
                 helm_command_args.append("--values")
                 helm_command_args.append(var)
 
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(timeout)
         try:
             # --dependency-update needed to pull in deps before templating.
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
+            signal.alarm(0)
             if e:
                 logging.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
                 return None, None
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
+            logging.info(f'Done helm run for: {chart_dir}')
             return o, chart_item
 
-        except Exception:
-            logging.info(
-                f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
-                exc_info=True,
-            )
+        except Exception as e:
+            signal.alarm(0)
+            if isinstance(e, TimeoutError):
+                logging.info(
+                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. got timeout"
+                )
+            else:
+                logging.info(
+                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
+                    exc_info=True,
+                )
             return None, None
 
     @staticmethod

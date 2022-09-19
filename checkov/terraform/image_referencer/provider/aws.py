@@ -39,12 +39,9 @@ def extract_images_from_aws_batch_job_definition(resource: dict[str, Any]) -> li
         name = properties.get("image")
         if name and isinstance(name, str):
             image_names.append(name)
-        node_range = find_in_dict(input_dict=properties, key_path="nodeProperties/nodeRangeProperties")
-        if isinstance(node_range, list):
-            for node in node_range:
-                name = find_in_dict(input_dict=node, key_path="container/image")
-                if name and isinstance(name, str):
-                    image_names.append(name)
+
+    # node properties are not supported yet
+    # https://github.com/hashicorp/terraform-provider-aws/issues/20983
 
     return image_names
 

@@ -254,6 +254,7 @@ def formatdate(format_str: str, input_str: str) -> str:
 
     return dt.strftime(processed_format_str)
 
+
 SAFE_EVAL_FUNCTIONS: List[str] = []
 SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
 

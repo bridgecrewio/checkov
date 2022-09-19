@@ -28,4 +28,5 @@ class SuspectCurlInScript(BaseGithubActionsCheck):
                     return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
+
 check = SuspectCurlInScript()

@@ -148,16 +148,24 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return True
 
         elif type == 'CvesAccounts':
+            if 'accountIds' not in suppression:
+                return False
             if self.bc_integration.repo_id in suppression['accountIds']:
                 if record.vulnerability_details and record.vulnerability_details['id'] in suppression['cves']:
                     return True
             return False
 
         elif type == 'Cves':
-            if self.bc_integration.repo_id in suppression['accountIds'] and record.file_abs_path == suppression['cves'][0]['id'][1:]:
-                for cve in suppression['cves']:
-                    if record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']:
-                        return True
+            if 'accountIds' not in suppression:
+                return False
+            if self.bc_integration.repo_id in suppression['accountIds']:
+                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]  # type: ignore
+                suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
+                file_abs_path = record.file_abs_path.replace('\\', '/')
+                if file_abs_path == suppression_path[1:] or \
+                        file_abs_path.endswith("".join([repo_name, suppression_path])):
+                    return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
+                               for cve in suppression['cves'])
             return False
 
         elif type == 'LicenseType':
