@@ -63,5 +63,6 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
             return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
+
 # Set this to your check name
 check = ExampleCheckTrueFalse()
