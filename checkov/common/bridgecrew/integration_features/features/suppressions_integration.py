@@ -148,6 +148,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     return True
 
         elif type == 'CvesAccounts':
+            if 'accountIds' not in suppression:
+                return False
             if self.bc_integration.repo_id in suppression['accountIds']:
                 if record.vulnerability_details and record.vulnerability_details['id'] in suppression['cves']:
                     return True
