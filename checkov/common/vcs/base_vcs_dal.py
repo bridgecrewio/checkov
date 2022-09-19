@@ -21,11 +21,12 @@ class BaseVCSDAL:
     graphql_api_url: str  # noqa: CCE003  # a static attribute
     api_url: str  # noqa: CCE003  # a static attribute
     default_branch_cache: dict[str, Any]  # noqa: CCE003  # a static attribute
-    http: urllib3.PoolManager  # noqa: CCE003  # a static attribute
+    http: urllib3.PoolManager | None  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         self.request_lib_http = None
         self._organization_security = None
+        self.http = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
         self.setup_conf_dir()
