@@ -70,7 +70,7 @@ class FixesIntegration(BaseIntegrationFeature):
                 ckv_id = metadata_integration.get_ckv_id_from_bc_id(fix['policyId'])
                 if not ckv_id:
                     logging.debug(f"BC ID {fix['policyId']} has no checkov ID - might be a cloned policy")
-                    ckv_id = fix['policyId']
+                    ckv_id = fix.get('policyId', '')
 
                 failed_check = failed_check_by_check_resource.get((ckv_id, fix['resourceId']))  # type:ignore[arg-type]  # ckv_id is not None here
                 if not failed_check:
