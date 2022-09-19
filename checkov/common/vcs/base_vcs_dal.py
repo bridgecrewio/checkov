@@ -14,14 +14,14 @@ from checkov.common.util.http_utils import get_user_agent_header
 
 
 class BaseVCSDAL:
-    current_branch: str
-    current_repository: str
-    token: str
-    repo_owner: str
-    graphql_api_url: str
-    api_url: str
-    default_branch_cache: dict[str, Any]
-    http: urllib3.PoolManager
+    current_branch: str  # noqa: CCE003  # a static attribute
+    current_repository: str  # noqa: CCE003  # a static attribute
+    token: str  # noqa: CCE003  # a static attribute
+    repo_owner: str  # noqa: CCE003  # a static attribute
+    graphql_api_url: str  # noqa: CCE003  # a static attribute
+    api_url: str  # noqa: CCE003  # a static attribute
+    default_branch_cache: dict[str, Any]  # noqa: CCE003  # a static attribute
+    http: urllib3.PoolManager  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         self.request_lib_http = None
