@@ -3,6 +3,7 @@ from abc import abstractmethod
 
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 
+
 class K8SEdgeBuilder:
 
     @abstractmethod
