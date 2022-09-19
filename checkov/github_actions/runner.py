@@ -18,6 +18,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 import checkov.common.parsers.yaml.loader as loader
+from checkov.github_actions.schemas import gha_schema, gha_workflow
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
@@ -187,14 +188,8 @@ class Runner(YamlRunner, ImageReferencer):
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
         config = force_dict(config)
-        dir_path = os.path.dirname(__file__)
-        with open(f'{dir_path}/gha_schema.json', 'r') as gha_schema_file_obj, \
-             open(f'{dir_path}/github_workflow.json', 'r') as github_workflow_file_obj:
-            gha_schema = json.load(gha_schema_file_obj)
-            github_workflow_schema = json.load(github_workflow_file_obj)
-
         try:
-            validate(config, github_workflow_schema)
+            validate(config, gha_workflow)
             valid = True
         except ValidationError:
             try:
