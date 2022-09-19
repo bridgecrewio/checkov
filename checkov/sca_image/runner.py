@@ -261,6 +261,9 @@ class Runner(PackageRunner):
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
             image_id = ImageReferencer.inspect(image.name)
+            if not image_id:
+                logging.info(f"Unable to extract image id from {image.name}")
+                return Report(self.check_type)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 return Report(self.check_type)
