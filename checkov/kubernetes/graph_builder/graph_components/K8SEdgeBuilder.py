@@ -15,7 +15,7 @@ class K8SEdgeBuilder:
         raise NotImplementedError
 
     @abstractmethod
-    def find_connection(self, vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[KubernetesBlock] | None:
+    def find_connection(self, vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[KubernetesBlock]:
         """
         implementation should search in each of the vertices for a possible connection
         to the vertex param according to the concrete class's rule(s).
