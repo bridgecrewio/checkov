@@ -13,7 +13,7 @@ import dpath.util
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.images.image_referencer import Image, ImageReferencerMixin
+from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
@@ -43,6 +43,7 @@ from checkov.terraform.tag_providers import get_resource_tags
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from checkov.common.images.image_referencer import Image
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -519,7 +520,9 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if "module" in file_content:
                 __cache_file_content(file_name=file, file_modules=file_content["module"])
 
-    def extract_images(self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None) -> list[Image]:
+    def extract_images(
+        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+    ) -> list[Image]:
         if not graph_connector:
             # should not happen
             return []

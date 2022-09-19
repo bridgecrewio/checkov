@@ -1,6 +1,43 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.204...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.212...HEAD)
+
+## [2.1.212](https://github.com/bridgecrewio/checkov/compare/2.1.210...2.1.212) - 2022-09-18
+
+### Bug Fix
+
+- **helm:** helm add timeout to dependencies command - [#3525](https://github.com/bridgecrewio/checkov/pull/3525)
+- **helm:** Helm fix logs - [#3524](https://github.com/bridgecrewio/checkov/pull/3524)
+
+## [2.1.210](https://github.com/bridgecrewio/checkov/compare/2.1.207...2.1.210) - 2022-09-15
+
+### Feature
+
+- **sca:** add Image Referencer for CloudFormation - [#3501](https://github.com/bridgecrewio/checkov/pull/3501)
+
+### Bug Fix
+
+- **helm:** add try catch to helm cmd run - [#3508](https://github.com/bridgecrewio/checkov/pull/3508)
+
+### Platform
+
+- **general:** upload run metadata to S3 - [#3461](https://github.com/bridgecrewio/checkov/pull/3461)
+
+## [2.1.207](https://github.com/bridgecrewio/checkov/compare/2.1.205...2.1.207) - 2022-09-14
+
+### Feature
+
+- **general:** fix format of cli command reference table - [#3504](https://github.com/bridgecrewio/checkov/pull/3504)
+
+### Bug Fix
+
+- **sca:** skip old CVE suppressions (without 'accountIds') - [#3503](https://github.com/bridgecrewio/checkov/pull/3503)
+
+## [2.1.205](https://github.com/bridgecrewio/checkov/compare/2.1.204...2.1.205) - 2022-09-13
+
+### Feature
+
+- **general:** add flag for summary position - [#3497](https://github.com/bridgecrewio/checkov/pull/3497)
 
 ## [2.1.204](https://github.com/bridgecrewio/checkov/compare/2.1.201...2.1.204) - 2022-09-12
 
