@@ -20,6 +20,6 @@ class AbsRDSParameter(BaseResourceCheck):
         params = conf.get("parameters")
         if params and isinstance(params, list):
             for param in params:
-                if param['name'][0] == self.parameter and param['value'][0] == 'ON':
+                if param['name'][0] == self.parameter and (param['value'][0]).lower() == 'on':
                     return CheckResult.PASSED
         return CheckResult.FAILED

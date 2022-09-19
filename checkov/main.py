@@ -33,7 +33,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
@@ -114,11 +114,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     normalize_config(config, parser)
 
-    logger.debug(f'Checkov version: {version}')
-    logger.debug(f'Python executable: {sys.executable}')
-    logger.debug(f'Python version: {sys.version}')
-    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
-    logger.debug(parser.format_values(sanitize=True))
+    run_metadata: dict[str, str | list[str]] = {
+        "checkov_version": version,
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "checkov_executable": sys.argv[0],
+        "args": parser.format_values(sanitize=True).split('\n')
+    }
+
+    logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
 
     if config.add_check:
         resp = prompt.Prompt()
@@ -174,7 +178,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
-        print(parser.format_values())
+        print(parser.format_values(sanitize=True))
         return None
 
     if config.bc_api_key == '':
@@ -295,6 +299,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
+                bc_integration.persist_run_metadata(run_metadata)
                 url = bc_integration.commit_repository(config.branch)
 
             if config.create_baseline:
@@ -328,6 +333,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.persist_scan_results([result])
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
+        bc_integration.persist_run_metadata(run_metadata)
         url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports([result], config, url=url)
         return exit_code
@@ -352,6 +358,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
+            bc_integration.persist_run_metadata(run_metadata)
             url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
@@ -574,6 +581,9 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_SECRETS_SCAN_BLACK_LIST',
                action='append',
                help='black file list to filter out from the secret scanner')
+    parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
+               help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
+                    '(after check results), default is on top.')
 
 
 def get_external_checks_dir(config: Any) -> Any:

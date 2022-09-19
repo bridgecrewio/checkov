@@ -33,9 +33,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def is_valid(self) -> bool:
         return (
-                self.bc_integration.is_integration_configured()
-                and not self.bc_integration.skip_download
-                and not self.integration_feature_failures
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_download
+            and not self.integration_feature_failures
         )
 
     def pre_scan(self) -> None:
@@ -82,8 +82,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             relevant_suppressions = self.suppressions.get(check.check_id)
 
-            applied_suppression = self._check_suppressions(check,
-                                                           relevant_suppressions) if relevant_suppressions else None
+            applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
@@ -155,6 +154,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             return False
 
         elif type == 'Cves':
+            if 'accountIds' not in suppression:
+                return False
             if self.bc_integration.repo_id in suppression['accountIds']:
                 repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]  # type: ignore
                 suppression_path = suppression['cves'][0]['id'].replace('\\', '/')

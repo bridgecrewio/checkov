@@ -10,6 +10,7 @@ TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION = {
     "gem": "ruby"
 }
 
+
 def get_file_path_for_record(rootless_file_path: str) -> str:
     return f"/{rootless_file_path}"
 

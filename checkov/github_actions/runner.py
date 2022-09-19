@@ -6,17 +6,18 @@ import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
-from schema import SchemaError  # type: ignore
+import yaml
+from jsonschema import validate, ValidationError
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.type_forcers import force_list
+from checkov.common.util.type_forcers import force_dict
 from checkov.github_actions.checks.registry import registry
-from checkov.github_actions.schema_validator import schema
 from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+import checkov.common.parsers.yaml.loader as loader
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
@@ -38,7 +39,11 @@ class Runner(YamlRunner, ImageReferencer):
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] = super()._parse_file(f)
-            if entity_schema and Runner.is_schema_valid(entity_schema[0]):
+            if not file_content:
+                with open(f, 'r') as f_obj:
+                    file_content = f_obj.read()
+            if entity_schema and \
+                    Runner.is_schema_valid(yaml.load(file_content, Loader=loader.SafeLineLoaderGhaSchema)):  # nosec
                 return entity_schema
         return None
 
@@ -181,13 +186,22 @@ class Runner(YamlRunner, ImageReferencer):
     @staticmethod
     def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
         valid = False
-        config = force_list(config)
+        config = force_dict(config)
+        dir_path = os.path.dirname(__file__)
+        with open(f'{dir_path}/gha_schema.json', 'r') as gha_schema_file_obj, \
+             open(f'{dir_path}/github_workflow.json', 'r') as github_workflow_file_obj:
+            gha_schema = json.load(gha_schema_file_obj)
+            github_workflow_schema = json.load(github_workflow_file_obj)
+
         try:
-            schema.validate(config)
+            validate(config, github_workflow_schema)
             valid = True
-        except SchemaError:
-            logging.info(f'Given entity configuration does not match the schema\n'
-                         f'config={json.dumps(config, indent=4)}\n'
-                         f'schema={json.dumps(schema.json_schema("https://example.com/my-schema.json"), indent=4)}')
+        except ValidationError:
+            try:
+                validate(config, gha_schema)
+                valid = True
+            except ValidationError:
+                logging.info(f'Given entity configuration does not match the schema\n'
+                             f'config={json.dumps(config, indent=4)}\n')
 
         return valid
