@@ -70,12 +70,13 @@ class BaseVCSDAL:
         url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             headers = self._headers()
-            request = self.http.request("GET", url_endpoint, headers=headers)  # type:ignore[no-untyped-call]
-            if request.status in allowed_status_codes:
-                data: dict[str, Any] = json.loads(request.data.decode("utf8"))
-                if isinstance(data, dict) and 'errors' in data.keys():
-                    return None
-                return data
+            if self.http:
+                request = self.http.request("GET", url_endpoint, headers=headers)  # type:ignore[no-untyped-call]
+                if request.status in allowed_status_codes:
+                    data: dict[str, Any] = json.loads(request.data.decode("utf8"))
+                    if isinstance(data, dict) and 'errors' in data.keys():
+                        return None
+                    return data
         except Exception:
             logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
         return None
@@ -95,14 +96,14 @@ class BaseVCSDAL:
 
         body = json.dumps({'query': query, 'variables': variables})
         try:
-            request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)  # type:ignore[no-untyped-call]
-            if request.status == 200:
-                data = json.loads(request.data.decode("utf8"))
-                if isinstance(data, dict) and 'errors' in data.keys():
-                    logging.debug("received errors %s", data)
-                    return None
-                return data
-
+            if self.http:
+                request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)  # type:ignore[no-untyped-call]
+                if request.status == 200:
+                    data = json.loads(request.data.decode("utf8"))
+                    if isinstance(data, dict) and 'errors' in data.keys():
+                        logging.debug("received errors %s", data)
+                        return None
+                    return data
             else:
                 logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception:
