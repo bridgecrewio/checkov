@@ -50,6 +50,8 @@ class TestSarifReport(unittest.TestCase):
             jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
         )
 
+        json_structure["runs"][0]["tool"]["driver"]["version"] = "9.9.9"  # override the version
+
         self.assertDictEqual(
             json_structure,
             {
@@ -60,7 +62,7 @@ class TestSarifReport(unittest.TestCase):
                         "tool": {
                             "driver": {
                                 "name": "Bridgecrew",
-                                "version": "2.1.201",
+                                "version": "9.9.9",
                                 "informationUri": "https://docs.bridgecrew.io",
                                 "rules": [
                                     {
