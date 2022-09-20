@@ -14,19 +14,18 @@ from checkov.common.util.http_utils import get_user_agent_header
 
 
 class BaseVCSDAL:
-    current_branch: str  # noqa: CCE003  # a static attribute
-    current_repository: str  # noqa: CCE003  # a static attribute
-    token: str  # noqa: CCE003  # a static attribute
-    repo_owner: str  # noqa: CCE003  # a static attribute
-    graphql_api_url: str  # noqa: CCE003  # a static attribute
-    api_url: str  # noqa: CCE003  # a static attribute
-    default_branch_cache: dict[str, Any]  # noqa: CCE003  # a static attribute
-    http: urllib3.PoolManager | None  # noqa: CCE003  # a static attribute
-
     def __init__(self) -> None:
+        self.api_url = ""
+        self.graphql_api_url = ""
+        self.token = ""
+        self.current_repository = ""
+        self.current_branch = ""
+        self.repo_owner = ""
+        self.default_branch_cache: dict[str, Any] = {}
+
         self.request_lib_http = None
         self._organization_security = None
-        self.http = None
+        self.http: urllib3.PoolManager | None = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
         self.setup_conf_dir()
