@@ -5,7 +5,7 @@ metadata:
   labels:
     component: kube-apiserver
     tier: control-plane
-  name: kube-apiserver-key-and-cert
+  name: kube-apiserver-key-and-cert-empty
   namespace: kube-system
 spec:
   containers:
