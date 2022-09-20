@@ -85,9 +85,7 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
         return original_str if keep_origin else str_to_replace
 
     string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
-    if isinstance(replaced_value, str):
-        return string_without_interpolation.replace(str_to_replace, replaced_value)
-    return replaced_value
+    return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
 def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:
