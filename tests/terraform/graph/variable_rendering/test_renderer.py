@@ -4,6 +4,7 @@ from unittest.case import TestCase
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from tests.terraform.graph.variable_rendering.expected_data import (
     expected_terragoat_local_resource_prefix,
     expected_terragoat_db_instance,
@@ -210,3 +211,10 @@ class TestRenderer(TestCase):
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('${number}'))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(None))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(123))
+
+    def test_tfvar_rendering_module_vars(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "tfvar_module_variables")
+        graph_manager = TerraformGraphManager(source='Terraform', db_connector=NetworkxConnector())
+        local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('name') == ['prometheus']

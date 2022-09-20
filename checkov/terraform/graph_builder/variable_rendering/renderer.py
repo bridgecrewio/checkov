@@ -174,7 +174,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 try:
                     default_val_eval = literal_eval(default_val)
                     if isinstance(default_val_eval, dict):
-                        value = self.extract_value_from_vertex(key_path, literal_eval(default_val))
+                        value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
                     logging.debug(f"cant evaluate this rendered value: {default_val}")
             return default_val if not value else value
