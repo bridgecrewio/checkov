@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from checkov.common.output.report import CheckType
@@ -35,6 +36,7 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
+    assert isinstance(reports, list)
     assert len(reports) == 2
 
     gitlab_ci_report = next(report for report in reports if report.check_type == CheckType.GITLAB_CI)
