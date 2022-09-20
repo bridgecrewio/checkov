@@ -263,9 +263,11 @@ class Report:
                 "help": {
                     "text": f'"{record.check_name}\nResource: {record.resource}"',
                 },
-                "helpUri": help_uri,
                 "defaultConfiguration": {"level": "error"},
             }
+            if help_uri is not None and len(help_uri) > 0:
+                rule["helpUri"] = help_uri
+
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)

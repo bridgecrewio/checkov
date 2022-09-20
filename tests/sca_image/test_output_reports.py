@@ -134,7 +134,6 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                        "help": {
                                            "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\""
                                        },
-                                       "helpUri": None,
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
