@@ -8,5 +8,3 @@ instance_interface_disk = "SCSI"
 instance_network        = "default"
 meta_env                = "airpods"
 }
-
-path = "/home/achia/shalom/project"
