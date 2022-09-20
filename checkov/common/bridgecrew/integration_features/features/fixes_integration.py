@@ -69,9 +69,13 @@ class FixesIntegration(BaseIntegrationFeature):
             for fix in all_fixes:
                 ckv_id = metadata_integration.get_ckv_id_from_bc_id(fix['policyId'])
                 if not ckv_id:
-                    logging.error(f"BC ID {fix['policyId']} has no checkov ID")
+                    logging.debug(f"BC ID {fix['policyId']} has no checkov ID - might be a cloned policy")
+                    ckv_id = fix.get('policyId', '')
+
+                failed_check = failed_check_by_check_resource.get((ckv_id, fix['resourceId']))  # type:ignore[arg-type]  # ckv_id is not None here
+                if not failed_check:
+                    logging.warning(f'Could not find the corresponding failed check for the fix for ID {ckv_id} and resource {fix["resourceId"]}')
                     continue
-                failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
                 failed_check.fixed_definition = fix['fixedDefinition']
 
     def _get_fixes_for_file(
