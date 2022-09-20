@@ -1,3 +1,4 @@
+from ast import literal_eval
 import logging
 import os
 import re
@@ -146,6 +147,9 @@ class TerraformVariableRenderer(VariableRenderer):
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
+            elif isinstance(var_type, str) and var_type.startswith('${object') and \
+                 isinstance(default_val, str) and isinstance(literal_eval(default_val), dict):
+                     value = self.extract_value_from_vertex(key_path, literal_eval(default_val))
             return default_val if not value else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
