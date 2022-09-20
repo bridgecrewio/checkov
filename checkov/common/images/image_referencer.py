@@ -117,7 +117,7 @@ class ImageReferencerMixin:
 
     def check_container_image_references(
         self,
-        graph_connector: DiGraph,
+        graph_connector: DiGraph | None,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
     ) -> Report | None:
@@ -208,6 +208,9 @@ class ImageReferencerMixin:
             runner = sca_image_runner()
 
             image_id = ImageReferencer.inspect(image.name)
+            if not image_id:
+                return None
+
             scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 return None
