@@ -176,7 +176,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     if isinstance(default_val_eval, dict):
                         value = self.extract_value_from_vertex(key_path, literal_eval(default_val))
                 except Exception:
-                    pass
+                    logging.debug(f"cant evaluate this rendered value: {default_val}")
             return default_val if not value else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
