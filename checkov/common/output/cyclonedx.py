@@ -69,7 +69,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -243,7 +243,7 @@ class CycloneDX:
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
-        image_id = cast(dict[str, Any], resource.vulnerability_details).get('image_details', ImageDetails()).image_id
+        image_id = cast("dict[str, Any]", resource.vulnerability_details).get('image_details', ImageDetails()).image_id
         file_path = resource.file_path.split(' ')[0]
         image_purl = PackageURL(
             type='oci',
