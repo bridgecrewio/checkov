@@ -217,4 +217,4 @@ class TestRenderer(TestCase):
         graph_manager = TerraformGraphManager(source='Terraform', db_connector=NetworkxConnector())
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
-        assert resources_vertex[0].attributes.get('name') == ['prometheus']
+        assert resources_vertex[0].attributes.get('name') == ['airpods']
