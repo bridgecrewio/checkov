@@ -17,7 +17,7 @@ class BaseVCSDAL:
     def __init__(self) -> None:
         self.api_url = ""
         self.graphql_api_url = ""
-        self.token = ""
+        self.token = ""  # nosec
         self.current_repository = ""
         self.current_branch = ""
         self.repo_owner = ""
