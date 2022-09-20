@@ -40,7 +40,7 @@ jobs:
           python-version: '3.10'
       - name: Setup python for CodeQL
         run: |
-          python -m pip install --no-cache-dir --upgrade pip pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
         uses: tj-actions/verify-changed-files@1d7ee9711b0a8f675208004e66bc25d593a1a0ae  # v11

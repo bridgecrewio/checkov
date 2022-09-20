@@ -110,7 +110,6 @@ def test_get_sarif_json(sca_image_report_scope_function):
 
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
-    print(sarif_output)
     assert sarif_output == \
            {
                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
@@ -133,8 +132,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "SCA license"
                                        },
                                        "help": {
-                                           "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                           "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\""
                                        },
+                                       "helpUri": None,
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
@@ -149,8 +149,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "CPAN 2.28 allows Signature Verification Bypass."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
@@ -165,8 +166,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
@@ -181,8 +183,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1586",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }

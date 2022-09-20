@@ -210,3 +210,10 @@ class TestRenderer(TestCase):
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('${number}'))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(None))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(123))
+
+    def test_tfvar_rendering_module_vars(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "tfvar_module_variables")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('name') == ['airpods']
