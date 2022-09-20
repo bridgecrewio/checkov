@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
@@ -54,4 +56,3 @@ class BaseGitlabCiProvider:
                             )
                             images.append(image_obj)
         return images
-

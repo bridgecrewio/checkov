@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 from checkov.common.output.report import Report
 
 from checkov.runner_filter import RunnerFilter
-from networkx import DiGraph
 
 from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.bridgecrew.check_type import CheckType
@@ -17,6 +16,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from collections.abc import Iterable
+    from networkx import DiGraph
 
 
 class Runner(ImageReferencerMixin, YamlRunner):
