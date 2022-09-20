@@ -22,6 +22,6 @@ def test_get_images_str_container():
 
     assert len(images) == 1
     assert images[0].name == "node:14.16"
-    assert images[0].start_line == 9
-    assert images[0].end_line == 10
+    assert images[0].start_line == 12
+    assert images[0].end_line == 13
 

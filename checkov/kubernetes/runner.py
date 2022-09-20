@@ -33,6 +33,14 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 
+class TimeoutError(Exception):
+    pass
+
+
+def handle_timeout(signum, frame):
+    raise TimeoutError('command got timeout')
+
+
 class Runner(BaseRunner):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 
