@@ -90,4 +90,3 @@ class KubernetesLocalGraph(LocalGraph):
         spec.pop('template', None)
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
-        
