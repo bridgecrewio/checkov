@@ -66,7 +66,19 @@ class KubernetesLocalGraph(LocalGraph):
     @staticmethod
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
         name = resource.get('metadata', {}).get('name')
-        selector = KubernetesSelector(resource.get('spec', {}).get('selector', {}).get('matchLabels'))
+        spec = resource.get('spec')
+        if isinstance(spec, list):
+            for spec_item in spec:
+                if spec_item.get('selector'):
+                    match_labels = spec_item.get('selector').get('matchLabels')
+                    break
+            else:
+                match_labels = None
+        elif isinstance(spec, dict):
+            match_labels = spec.get('selector', {}).get('matchLabels')
+        else:
+            match_labels = None
+        selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')
         return KubernetesBlockMetadata(selector, labels, name)
 

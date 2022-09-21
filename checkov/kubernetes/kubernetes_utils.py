@@ -187,7 +187,7 @@ def is_invalid_k8_pod_definition(definition: Dict[str, Any]) -> bool:
     if not isinstance(metadata, dict):
         return False
     spec = definition.get('spec')
-    if not isinstance(spec, dict):
+    if not isinstance(spec, dict) and not isinstance(spec, list):
         return False
     labels = metadata.get('labels')
     name = metadata.get('name')
