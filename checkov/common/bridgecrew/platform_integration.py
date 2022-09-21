@@ -74,6 +74,7 @@ SIGNUP_HEADER = merge_dicts({
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
+FUZZY_FIND_LIMIT = 5
 
 
 class BcPlatformIntegration:
@@ -658,17 +659,15 @@ class BcPlatformIntegration:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_post_headers())
             body = {
-                'filterName': filter_name
+                'filterName': filter_name,
+                'query': filter_value
             }
-            if filter_value:
-                body['query'] = filter_value
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return False
 
             logging.debug(f"Fuzzy finding {filter_value}")
-            fuzzy_find_limit = 5  # fuzzy finding suggestions is halted at 5 API calls
             for i in range(len(filter_value)):
                 body['query'] = filter_value[:i + 2]
                 response = requests.request("POST", self.prisma_policy_filters_url, data=json.dumps(body), headers=headers)
@@ -678,7 +677,7 @@ class BcPlatformIntegration:
                 if f"'{filter_value}'" in res_json['suggestions']:
                     logging.debug(f"Found {filter_value}")
                     return True
-                if i >= fuzzy_find_limit:
+                if i >= FUZZY_FIND_LIMIT:
                     break
             logging.debug(f"Did not find {filter_value} in any filter suggestions for {filter_name}")
             return False
