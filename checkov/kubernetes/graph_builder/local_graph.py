@@ -36,7 +36,7 @@ class KubernetesLocalGraph(LocalGraph):
                         file_conf.remove(resource)
                         continue
                     
-                else: 
+                else:
                     if is_invalid_k8_definition(resource) or not metadata.get('name'):
                         logging.info(f"failed to create a vertex in file {file_path}")
                         file_conf.remove(resource)
