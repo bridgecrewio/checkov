@@ -130,7 +130,6 @@ class ImageReferencerMixin:
             return None
 
         images = self.extract_images(graph_connector=graph_connector, definitions=definitions)
-        print(f"got images= {images}")
         if not images:
             return None
 
