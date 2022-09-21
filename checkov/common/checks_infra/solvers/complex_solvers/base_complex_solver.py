@@ -28,7 +28,7 @@ class BaseComplexSolver(BaseSolver):
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed_vertices = []
         failed_vertices = []
-        for data in graph_connector.nodes(data=True):
+        for _, data in graph_connector.nodes(data=True):
             if self.resource_type_pred(data, self.resource_types):
                 if self.get_operation(data):
                     passed_vertices.append(data)
