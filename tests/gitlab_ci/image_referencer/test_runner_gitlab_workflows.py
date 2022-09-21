@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 from pathlib import Path
 
@@ -14,7 +16,7 @@ RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
-
+    logging.info(f"ENV VARS={json.dumps(os.environ, indent=4)}")
     file_name = ".gitlab-ci.yml"
     image_name = "redis:latest"
     image_id = "sha256:2460522297"
