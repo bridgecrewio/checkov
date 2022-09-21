@@ -265,7 +265,7 @@ class Report:
                 },
                 "defaultConfiguration": {"level": "error"},
             }
-            if help_uri is not None and len(help_uri) > 0:
+            if help_uri:
                 rule["helpUri"] = help_uri
 
             if record.check_id not in ruleset:
