@@ -17,7 +17,7 @@ from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
-DEFAULT_RESOURCE_TYPE = 'Pod'
+DEFAULT_NESTED_RESOURCE_TYPE = 'Pod'
 
 
 def get_folder_definitions(
@@ -182,22 +182,22 @@ def is_invalid_k8_definition(definition: Dict[str, Any]) -> bool:
 
 def is_invalid_k8_pod_definition(definition: Dict[str, Any]) -> bool:
     if not isinstance(definition, dict):
-        return False
+        return True
     metadata = definition.get('metadata')
     if not isinstance(metadata, dict):
-        return False
+        return True
     spec = definition.get('spec')
     if not isinstance(spec, dict) and not isinstance(spec, list):
-        return False
+        return True
     labels = metadata.get('labels')
     name = metadata.get('name')
     if name is None and labels is None:
-        return False
-    return True
+        return True
+    return False
 
 
 def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
-    resource_type = resource.get("kind", DEFAULT_RESOURCE_TYPE)
+    resource_type = resource.get("kind", DEFAULT_NESTED_RESOURCE_TYPE)
     metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")
     name = metadata.get("name")

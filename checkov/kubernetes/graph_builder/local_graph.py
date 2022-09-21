@@ -4,7 +4,7 @@ from typing import Any, List, Dict
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
 
 
 class KubernetesLocalGraph(LocalGraph):
@@ -26,12 +26,12 @@ class KubernetesLocalGraph(LocalGraph):
                 file_conf = self._extract_nested_resources(file_conf)
 
             for resource in file_conf:
-                resource_type = resource.get('kind', DEFAULT_RESOURCE_TYPE)
+                resource_type = resource.get('kind', DEFAULT_NESTED_RESOURCE_TYPE)
                 metadata = resource.get('metadata') or {}
                 # TODO: add support for generateName
                 
-                if resource_type == DEFAULT_RESOURCE_TYPE:
-                    if not is_invalid_k8_pod_definition(resource):
+                if resource_type == DEFAULT_NESTED_RESOURCE_TYPE:
+                    if is_invalid_k8_pod_definition(resource):
                         logging.info(f"failed to create a vertex in file {file_path}")
                         file_conf.remove(resource)
                         continue
