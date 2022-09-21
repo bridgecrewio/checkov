@@ -51,8 +51,7 @@ class KubernetesLocalGraph(LocalGraph):
                 block_metadata = None
                 if create_complex_vertices:
                     block_metadata = KubernetesLocalGraph._get_k8s_block_metadata(resource)
-                
-                
+
                 self.vertices.append(KubernetesBlock(
                     block_name=block_id,
                     resource_type=resource_type,
