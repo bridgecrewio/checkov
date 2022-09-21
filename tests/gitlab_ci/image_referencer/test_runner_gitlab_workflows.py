@@ -1,5 +1,3 @@
-import logging
-import os
 from pathlib import Path
 
 from checkov.common.output.report import CheckType
@@ -15,7 +13,6 @@ RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
-    logging.info(f"ENV VARS={os.environ}")
     file_name = ".gitlab-ci.yml"
     image_name = "redis:latest"
     image_id = "sha256:2460522297"
@@ -37,7 +34,6 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
-    assert isinstance(reports, list)
     assert len(reports) == 2
 
     gitlab_ci_report = next(report for report in reports if report.check_type == CheckType.GITLAB_CI)

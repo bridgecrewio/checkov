@@ -18,7 +18,6 @@ class GitlabCiImageReferencerManager:
         gitlab_base_provider = BaseGitlabCiProvider(supported_keys=self.supported_keys,
                                                     workflow_config=self.workflow_config,
                                                     file_path=self.file_path)
-
         images: list[Image] = gitlab_base_provider.extract_images_from_workflow()
 
         return images

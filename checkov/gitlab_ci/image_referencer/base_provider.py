@@ -19,7 +19,6 @@ class BaseGitlabCiProvider:
 
     def extract_images_from_workflow(self) -> list[Image]:
         images = []
-
         for job_object in self.workflow_config.values():
             if isinstance(job_object, dict):
                 start_line, end_line = BaseGitlabCiProvider._get_start_end_lines(job_object)

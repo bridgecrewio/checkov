@@ -24,7 +24,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
     def __init__(self) -> None:
         super().__init__()
-        self.workflow_config: dict[str, Any] = {}
         self.file_path = ''
 
     def require_external_checks(self) -> bool:
@@ -38,12 +37,7 @@ class Runner(ImageReferencerMixin, YamlRunner):
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         self.file_path = f
         if self.is_workflow_file(f):
-            parsed_file = super()._parse_file(f=f, file_content=file_content)
-            if not parsed_file:
-                return None
-            config, config_line_numbers = parsed_file
-            self.workflow_config = config
-            return config, config_line_numbers
+            return super()._parse_file(f=f, file_content=file_content)
 
         return None
 
@@ -67,7 +61,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
         runner_filter = runner_filter or RunnerFilter()
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-
         if runner_filter.run_image_referencer:
             if files:
                 # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
@@ -76,7 +69,8 @@ class Runner(ImageReferencerMixin, YamlRunner):
             image_report = self.check_container_image_references(
                 graph_connector=None,
                 root_path=root_folder,
-                runner_filter=runner_filter
+                runner_filter=runner_filter,
+                definitions=self.definitions
             )
 
             if image_report:
@@ -85,11 +79,16 @@ class Runner(ImageReferencerMixin, YamlRunner):
         return report
 
     def extract_images(
-        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+        self, graph_connector: DiGraph | None = None, definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
     ) -> list[Image]:
-        manager = GitlabCiImageReferencerManager(supported_keys=("image", "services"),
-                                                 workflow_config=self.workflow_config,
-                                                 file_path=self.file_path)
-        images: list[Image] = manager.extract_images_from_workflow()
+        images: list[Image] = []
+        if not definitions:
+            return images
+
+        for file, config in definitions.items():
+            manager = GitlabCiImageReferencerManager(supported_keys=("image", "services"),
+                                                     workflow_config=config,
+                                                     file_path=file)
+            images.extend(manager.extract_images_from_workflow())
 
         return images
