@@ -18,9 +18,11 @@ class ApiServerTlsCertAndKey(BaseK8sContainerCheck):
                 hasKeyCommand = False
                 for command in conf["command"]:
                     if command.startswith("--tls-cert-file"):
-                        hasCertCommand = True
+                        if len(command.split("=")) == 2 and (command.split("=")[1]).strip():
+                            hasCertCommand = True
                     elif command.startswith("--tls-private-key-file"):
-                        hasKeyCommand = True
+                        if len(command.split("=")) == 2 and (command.split("=")[1]).strip():
+                            hasKeyCommand = True
                 return CheckResult.PASSED if hasCertCommand and hasKeyCommand else CheckResult.FAILED
 
         return CheckResult.PASSED
