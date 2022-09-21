@@ -43,6 +43,7 @@ flake8-type-checking = {version = ">=2.0.0", markers="python_version >= '3.8'", 
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
 bc-python-hcl2 = "==0.3.47"
+bc-detect-secrets = "==1.3.2"
 deep-merge = "*"
 tabulate = "*"
 colorama="*"
@@ -63,7 +64,6 @@ dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
 argcomplete = "*"
-detect_secrets = "*"
 policyuniverse = "*"
 typing-extensions = ">=4.1.0"
 importlib-metadata = ">=0.12"
