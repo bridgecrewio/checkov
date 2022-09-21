@@ -48,7 +48,10 @@ class KubernetesLocalGraph(LocalGraph):
                 attributes["__startline__"] = resource["__startline__"]
                 attributes["__endline__"] = resource["__endline__"]
                 block_id = get_resource_id(resource)
-                block_metadata = KubernetesLocalGraph._get_k8s_block_metadata(resource)
+                block_metadata = None
+                if create_complex_vertices:
+                    block_metadata = KubernetesLocalGraph._get_k8s_block_metadata(resource)
+                
                 
                 self.vertices.append(KubernetesBlock(
                     block_name=block_id,
