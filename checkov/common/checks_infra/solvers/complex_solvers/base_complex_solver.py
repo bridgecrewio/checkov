@@ -26,9 +26,12 @@ class BaseComplexSolver(BaseSolver):
         return not self._get_operation(args)
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        all_vertices_resource_types = [
-            data for _, data in graph_connector.nodes(data=True) if self.resource_type_pred(data, self.resource_types)
-        ]
-        passed_vertices = [data for data in all_vertices_resource_types if self.get_operation(data)]
-        failed_vertices = [resource for resource in all_vertices_resource_types if resource not in passed_vertices]
+        passed_vertices = []
+        failed_vertices = []
+        for _, data in graph_connector.nodes(data=True):
+            if self.resource_type_pred(data, self.resource_types):
+                if self.get_operation(data):
+                    passed_vertices.append(data)
+                else:
+                    failed_vertices.append(data)
         return passed_vertices, failed_vertices
