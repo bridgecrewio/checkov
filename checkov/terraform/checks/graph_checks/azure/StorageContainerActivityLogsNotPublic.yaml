@@ -41,22 +41,7 @@ definition:
             operator: equals
             value: false
 
-    - and:
-      - cond_type: filter
-        attribute: resource_type
-        value:
-          - azurerm_storage_container
-        operator: within
-
-      - cond_type: connection
-        resource_types:
-          - azurerm_storage_account
-        connected_resource_types:
-          - azurerm_storage_container
-          - azurerm_monitor_activity_log_alert
-        operator: exists
-
-      - or:
+    - or:
         - cond_type: attribute
           resource_types:
             - azurerm_storage_container
