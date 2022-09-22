@@ -5,11 +5,11 @@ from typing import Any
 from checkov.common.images.image_referencer import Image
 
 
-class BaseGitlabCiProvider:
+class GitlabCiProvider:
     __slots__ = ("supported_keys", "workflow_config", "file_path")
 
-    def __init__(self, supported_keys: tuple[str, str], workflow_config: dict[str, Any], file_path: str):
-        self.supported_keys = supported_keys
+    def __init__(self, workflow_config: dict[str, Any], file_path: str):
+        self.supported_keys = ("image", "services")
         self.workflow_config = workflow_config
         self.file_path = file_path
 
@@ -21,19 +21,19 @@ class BaseGitlabCiProvider:
         images = []
         for job_object in self.workflow_config.values():
             if isinstance(job_object, dict):
-                start_line, end_line = BaseGitlabCiProvider._get_start_end_lines(job_object)
+                start_line, end_line = GitlabCiProvider._get_start_end_lines(job_object)
                 for key, subjob in job_object.items():
                     if key in self.supported_keys:
                         image_name = ""
                         if isinstance(subjob, dict):
-                            start_line, end_line = BaseGitlabCiProvider._get_start_end_lines(subjob)
+                            start_line, end_line = GitlabCiProvider._get_start_end_lines(subjob)
                             image_name = subjob['name']
                         elif isinstance(subjob, str):
                             image_name = subjob
                         elif isinstance(subjob, list):
                             for service in subjob:
                                 if isinstance(service, dict):
-                                    start_line, end_line = BaseGitlabCiProvider._get_start_end_lines(service)
+                                    start_line, end_line = GitlabCiProvider._get_start_end_lines(service)
                                     image_name = service['name']
                                 elif isinstance(service, str):
                                     image_name = service

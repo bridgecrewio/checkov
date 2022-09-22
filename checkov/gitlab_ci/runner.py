@@ -86,9 +86,7 @@ class Runner(ImageReferencerMixin, YamlRunner):
             return images
 
         for file, config in definitions.items():
-            manager = GitlabCiImageReferencerManager(supported_keys=("image", "services"),
-                                                     workflow_config=config,
-                                                     file_path=file)
+            manager = GitlabCiImageReferencerManager(workflow_config=config, file_path=file)
             images.extend(manager.extract_images_from_workflow())
 
         return images

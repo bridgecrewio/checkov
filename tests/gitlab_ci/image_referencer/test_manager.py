@@ -4,7 +4,6 @@ from checkov.gitlab_ci.image_referencer.manager import GitlabCiImageReferencerMa
 
 def test_extract_images_from_workflow():
     file_path = 'tests/gitlab_ci/resources/images/.gitlab-ci.yml'
-    supported_keys = ("image", "services")
     workflow_config = {
         "default": {
             "image": "nginx:1.18",
@@ -26,9 +25,7 @@ def test_extract_images_from_workflow():
         "__endline__": 32
     }
 
-    manager = GitlabCiImageReferencerManager(supported_keys=supported_keys,
-                                             workflow_config=workflow_config,
-                                             file_path=file_path)
+    manager = GitlabCiImageReferencerManager(workflow_config=workflow_config, file_path=file_path)
     images = manager.extract_images_from_workflow()
 
     assert images == [
@@ -58,7 +55,6 @@ def test_extract_images_from_workflow():
 
 def test_extract_images_from_workflow_no_images():
     file_path = 'tests/gitlab_ci/resources/rules/.gitlab-ci.yml'
-    supported_keys = ("image", "services")
     workflow_config = {
         "script": "echo \"This job creates double pipelines!\"",
         "rules": [
@@ -84,9 +80,7 @@ def test_extract_images_from_workflow_no_images():
         "__endline__": 9
     }
 
-    manager = GitlabCiImageReferencerManager(supported_keys=supported_keys,
-                                            workflow_config=workflow_config,
-                                            file_path=file_path)
+    manager = GitlabCiImageReferencerManager(workflow_config=workflow_config, file_path=file_path)
     images = manager.extract_images_from_workflow()
 
     assert not images

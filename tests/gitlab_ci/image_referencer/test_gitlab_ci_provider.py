@@ -1,10 +1,9 @@
 from checkov.common.images.image_referencer import Image
-from checkov.gitlab_ci.image_referencer.base_provider import BaseGitlabCiProvider
+from checkov.gitlab_ci.image_referencer.base_provider import GitlabCiProvider
 
 
 def test_extract_images_from_workflow():
     file_path = 'tests/gitlab_ci/resources/images/.gitlab-ci.yml'
-    supported_keys = ("image", "services")
     workflow_config = {
               "default": {
                 "image": "nginx:1.18",
@@ -26,9 +25,7 @@ def test_extract_images_from_workflow():
               "__endline__": 32
             }
 
-    gitlab_ci_provider = BaseGitlabCiProvider(supported_keys=supported_keys,
-                                              workflow_config=workflow_config,
-                                              file_path=file_path)
+    gitlab_ci_provider = GitlabCiProvider(workflow_config=workflow_config, file_path=file_path)
     images = gitlab_ci_provider.extract_images_from_workflow()
 
     assert images == [
@@ -58,7 +55,6 @@ def test_extract_images_from_workflow():
 
 def test_extract_images_from_workflow_no_images():
     file_path = 'tests/gitlab_ci/resources/rules/.gitlab-ci.yml'
-    supported_keys = ("image", "services")
     workflow_config = {
               "script": "echo \"This job creates double pipelines!\"",
               "rules": [
@@ -84,9 +80,7 @@ def test_extract_images_from_workflow_no_images():
               "__endline__": 9
             }
 
-    gitlab_ci_provider = BaseGitlabCiProvider(supported_keys=supported_keys,
-                                              workflow_config=workflow_config,
-                                              file_path=file_path)
+    gitlab_ci_provider = GitlabCiProvider(workflow_config=workflow_config, file_path=file_path)
     images = gitlab_ci_provider.extract_images_from_workflow()
 
     assert not images
