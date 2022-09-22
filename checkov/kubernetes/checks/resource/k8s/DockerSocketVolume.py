@@ -33,7 +33,7 @@ class DockerSocketVolume(BaseK8Check):
             spec = inner_spec if inner_spec else spec
 
         # Evaluate volumes
-        if spec:
+        if spec and isinstance(spec, dict):
             volumes = spec.get("volumes", [])
             if not isinstance(volumes, list):
                 return CheckResult.UNKNOWN

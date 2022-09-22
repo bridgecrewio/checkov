@@ -9,7 +9,7 @@ import time
 import os
 import aiohttp
 import asyncio
-from typing import Any, TYPE_CHECKING, cast, Optional
+from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
 
@@ -25,11 +25,27 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+@overload
+def normalize_bc_url(url: None) -> None:
+    ...
+
+
+@overload
+def normalize_bc_url(url: str) -> str:
+    ...
+
+
+def normalize_bc_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    return url.lower().replace('http:', 'https:').strip().rstrip('/')
+
+
 def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
-    return url.lower().replace('//app', '//api').replace('http:', 'https:').rstrip('/')
+    return url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
 
 
 def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:
@@ -125,22 +141,24 @@ def request_wrapper(
             return response
         except requests.exceptions.ConnectionError as connection_error:
             logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
-            logging.exception("request_wrapper connection error")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
+
+            logging.exception("request_wrapper connection error")
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
             status_code = http_error.response.status_code
             logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
-            logging.exception("request_wrapper http error")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
+
+            logging.exception("request_wrapper http error")
             raise http_error
     else:
         raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"

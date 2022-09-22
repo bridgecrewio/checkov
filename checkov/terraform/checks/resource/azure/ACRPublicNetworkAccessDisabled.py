@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
+
 class ACRPublicNetworkAccessDisabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure ACR set to disable public networking"

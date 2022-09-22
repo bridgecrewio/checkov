@@ -13,7 +13,7 @@ import dpath.util
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.images.image_referencer import Image, ImageReferencerMixin
+from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
@@ -23,7 +23,6 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
-from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -44,6 +43,7 @@ from checkov.terraform.tag_providers import get_resource_tags
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from checkov.common.images.image_referencer import Image
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -102,7 +102,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
         report = Report(self.check_type)
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        scan_hcl = should_scan_hcl_files()
         local_graph = None
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
@@ -125,7 +124,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self.parser.evaluate_variables = False
-                self._parse_files(files, scan_hcl, parsing_errors)
+                self._parse_files(files, parsing_errors)
 
                 if CHECKOV_CREATE_GRAPH:
                     local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
@@ -418,12 +417,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         )
                     )
 
-    def _parse_files(self, files, scan_hcl, parsing_errors):
+    def _parse_files(self, files, parsing_errors):
         def parse_file(file):
-            if not (file.endswith(".tf") or (scan_hcl and file.endswith(".hcl"))):
+            if not (file.endswith(".tf") or file.endswith(".hcl")):
                 return
             file_parsing_errors = {}
-            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors, scan_hcl=scan_hcl)
+            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
             # the exceptions type can un-pickleable so we need to cast them to Exception
             for path, e in file_parsing_errors.items():
                 file_parsing_errors[path] = Exception(e.__repr__())
@@ -521,7 +520,9 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if "module" in file_content:
                 __cache_file_content(file_name=file, file_modules=file_content["module"])
 
-    def extract_images(self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None) -> list[Image]:
+    def extract_images(
+        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+    ) -> list[Image]:
         if not graph_connector:
             # should not happen
             return []

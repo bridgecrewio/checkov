@@ -178,6 +178,7 @@ class Report:
         created_baseline_path: str | None = None,
         baseline: Baseline | None = None,
         use_bc_ids: bool = False,
+        summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -193,7 +194,8 @@ class Report:
                 message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
-        output_data += colored(message, "cyan")
+        if summary_position == 'top':
+            output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
@@ -222,6 +224,8 @@ class Report:
                 f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
                 "blue",
             )
+        if summary_position == 'bottom':
+            output_data += colored(message, "cyan")
         return output_data
 
     @staticmethod
@@ -241,6 +245,12 @@ class Report:
         for record in self.failed_checks + self.skipped_checks:
             if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                 continue
+
+            help_uri = record.guideline
+            if record.vulnerability_details:
+                # use the CVE link, if it is a SCA record
+                help_uri = record.vulnerability_details.get("link")
+
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -251,10 +261,13 @@ class Report:
                     "text": record.description if record.description else record.check_name,
                 },
                 "help": {
-                    "text": f'"{record.check_name}\nResource: {record.resource}\nGuideline: {record.guideline}"',
+                    "text": f'"{record.check_name}\nResource: {record.resource}"',
                 },
                 "defaultConfiguration": {"level": "error"},
             }
+            if help_uri:
+                rule["helpUri"] = help_uri
+
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)
@@ -571,14 +584,12 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
 
 def remove_duplicate_results(report: Report) -> Report:
     def dedupe_records(origin_records: list[Record]) -> list[Record]:
-        record_cache = []
-        new_records = []
+        unique_records: Dict[str, Record] = {}
         for record in origin_records:
             record_hash = record.get_unique_string()
-            if record_hash not in record_cache:
-                new_records.append(record)
-                record_cache.append(record_hash)
-        return new_records
+            unique_records[record_hash] = record
+
+        return list(unique_records.values())
 
     report.passed_checks = dedupe_records(report.passed_checks)
     report.failed_checks = dedupe_records(report.failed_checks)

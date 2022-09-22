@@ -1,0 +1,11 @@
+metadata:
+  id: "StringAttribute"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_subnet"
+  attribute: "availability_zone"
+  operator: "intersects"
+  value: "us-"

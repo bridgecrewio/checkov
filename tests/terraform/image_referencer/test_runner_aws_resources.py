@@ -1,7 +1,9 @@
+import os
 from pathlib import Path
 
 from pytest_mock import MockerFixture
 
+from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
@@ -10,12 +12,15 @@ RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
 def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+
     # given
     file_name = "apprunner.tf"
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
     code_lines = "1-23"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
+    bc_integration.bc_source = get_source_type('disabled')
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
@@ -47,8 +52,17 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
         f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).openssl",
         f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
     }
+    assert sca_image_report.image_cached_results[0]['dockerImageName'] == \
+           'public.ecr.aws/aws-containers/hello-app-runner:latest'
+    assert 'terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example' in \
+           sca_image_report.image_cached_results[0]['relatedResourceId']
+    assert sca_image_report.image_cached_results[0]['packages'] == [
+        {'type': 'os', 'name': 'zlib', 'version': '1.2.12-r1', 'licenses': ['Zlib']}
+    ]
+
     assert len(sca_image_report.passed_checks) == 1
     assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 

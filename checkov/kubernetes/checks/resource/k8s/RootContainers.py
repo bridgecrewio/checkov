@@ -18,7 +18,7 @@ class RootContainers(BaseK8sRootContainerCheck):
         spec = self.extract_spec(conf)
 
         # Collect results
-        if spec:
+        if spec and isinstance(spec, dict):
             results = {"pod": {}, "container": []}
             results["pod"]["runAsNonRoot"] = self.check_runAsNonRoot(spec)
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 1)

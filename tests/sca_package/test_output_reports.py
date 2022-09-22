@@ -1,16 +1,28 @@
 import xml
+import xml.dom.minidom
+import os
 from pathlib import Path
+from typing import List
 
-from mock.mock import MagicMock
-from pytest_mock import MockerFixture
-
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM, FILE_NAME_OSS_PACKAGES
+from checkov.common.output.cyclonedx import CycloneDX
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+OUTPUTS_DIR = Path(__file__).parent / "outputs"
+
+
+def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List[str]:
+    # the lines with the fields "serialNumber", "bom-ref" and "timestamp" contain some not-deterministic data (uuids,
+    # timestamp). so we skip these lines by the first 'if when checking whether we get the expected results
+    # in addition also the line that display the checkov version may be changeable, so we skip it as well
+    # (in the second 'if')
+    filtered_list = []
+    for i, line in enumerate(pretty_xml_as_list):
+        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line:
+            if i == 0 or "<name>checkov</name>" not in pretty_xml_as_list[i-1]:
+                filtered_list.append(line)
+    return filtered_list
 
 
 def test_console_output(sca_package_report):
@@ -62,6 +74,20 @@ def test_console_output(sca_package_report):
          ''])
 
 
+def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
+    expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
+
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+
 def test_get_csv_report(sca_package_report, tmp_path: Path):
     csv_sbom_report = CSVSBOM()
     csv_sbom_report.add_report(report=sca_package_report, git_org="acme", git_repository="bridgecrewio/example")
@@ -80,15 +106,13 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                            'flask,0.6,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"OSI_APACHE, DUMMY_OTHER_LICENSE"',
                            'golang.org/x/crypto,v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,Unknown',
                            'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,Unknown',
+                           'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
+                           'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
                            'requests,2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
                            'requests,2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,OSI_APACHE',
-                           'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
-                           'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,Unknown',
                            '']
     csv_output_as_list = csv_output.split("\n")
-    # the order is not the same always. making sure the header is at the same row
-    assert csv_output_as_list[0] == expected_csv_output[0]
-    assert set(csv_output_as_list) == set(expected_csv_output)
+    assert csv_output_as_list == expected_csv_output
 
     expected_csv_output_str = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses',
                                '"django",1.2,/path/to/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"OSI_BDS"',
@@ -100,25 +124,20 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
                                '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"Unknown"',
                                '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"Unknown"',
                                '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
-                               '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
                                '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,"Unknown"',
                                '"requests",2.26.0,/path/to/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
+                               '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"OSI_APACHE"',
                                '']
     csv_output_str_as_list = csv_output_str.split("\n")
-    # the order is not the same always. making sure the header is at the same row
-    assert csv_output_str_as_list[0] == expected_csv_output_str[0]
-    assert set(csv_output_str_as_list) == set(expected_csv_output_str)
+    assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(mocker: MockerFixture, scan_result):
+def test_get_sarif_json(sca_package_report_with_skip_scope_function):
+    # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
+    # a report that is unique for the scope of the function
+
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip_scope_function
 
     # when
     sarif_output = report.get_sarif_json("Checkov")
@@ -144,8 +163,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)"
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -156,8 +176,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -168,8 +189,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -180,8 +202,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.django"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -192,8 +215,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -204,8 +228,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/requirements.txt.flask"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -216,8 +241,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": 'jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.'
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                                 "defaultConfiguration": {"level": "error"},
                             },
                             {
@@ -230,8 +256,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
                                     "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                                 },
                                 "help": {
-                                    "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nGuideline: None"'
+                                    "text": '"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto"'
                                 },
+                                "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                                 "defaultConfiguration": {"level": "error"},
                             },
                         ],
@@ -387,15 +414,9 @@ def test_get_sarif_json(mocker: MockerFixture, scan_result):
     }
 
 
-def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
+def test_get_junit_xml_string(sca_package_report_with_skip):
     # given
-    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
-    mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
-    runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-
-    report = Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
+    report = sca_package_report_with_skip
 
     # when
     test_suites = [report.get_test_suite()]
@@ -420,7 +441,7 @@ def test_get_junit_xml_string(mocker: MockerFixture, scan_result):
                     "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']\n",
                     "Fix Details:\n",
                     "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
-                    "  Fixed Version: 1.11.27\n",                    
+                    "  Fixed Version: 1.11.27\n",
                     "\n",
                     "Resource: path/to/requirements.txt.django\n",
                     "File: /path/to/requirements.txt: 0-0\n",

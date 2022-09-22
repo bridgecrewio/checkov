@@ -29,7 +29,7 @@ from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
-    enrich_and_persist_checks_metadata, checkov_results_prefix, _put_json_object
+    enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -38,7 +38,7 @@ from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
-    get_auth_error_message
+    get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -91,7 +91,7 @@ class BcPlatformIntegration:
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
-        self.bc_api_url = os.getenv('BC_API_URL', "https://www.bridgecrew.cloud")
+        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
@@ -398,6 +398,14 @@ class BcPlatformIntegration:
         target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
+
+    def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
+        if not self.use_s3_integration:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
 
     def commit_repository(self, branch: str) -> str | None:
         """

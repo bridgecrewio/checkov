@@ -33,6 +33,14 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 
+class TimeoutError(Exception):
+    pass
+
+
+def handle_timeout(signum, frame):
+    raise TimeoutError('command got timeout')
+
+
 class Runner(BaseRunner):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 
@@ -210,6 +218,7 @@ class Runner(BaseRunner):
 
 def get_relative_file_path(file_abs_path: str, root_folder: str) -> str:
     return f"/{os.path.relpath(file_abs_path, root_folder)}"
+
 
 def _get_entity_abs_path(root_folder: str | None, entity_file_path: str) -> str:
     if entity_file_path[0] == '/' and (root_folder and not entity_file_path.startswith(root_folder)):

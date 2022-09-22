@@ -20,6 +20,7 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
@@ -50,8 +51,8 @@ class Runner(PackageRunner):
     ) -> Dict[str, Any]:
         runner_filter = runner_filter or RunnerFilter()
 
-        # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
+        if not should_run_scan(runner_filter.checks):
             return {}
 
         if not bc_integration.bc_api_key:
@@ -173,11 +174,12 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    if not strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                    if strtobool(os.getenv('CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR', "True")):
                         image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
                                                              runner_filter=runner_filter)
                         merge_reports(report, image_report)
-                    else:
+                    if strtobool(os.getenv('CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR', "False")) or strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                        # TODO: delete the old env var option (CHECKOV_PRESENT_CACHED_RESULTS) after full migration
                         image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
                         if image_cached_report:
                             report.image_cached_results.append(image_cached_report)
@@ -232,7 +234,7 @@ class Runner(PackageRunner):
         :return: vulnerability report
         """
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if not should_run_scan(runner_filter.checks):
             return Report(self.check_type)
 
         cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")

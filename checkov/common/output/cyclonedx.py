@@ -69,7 +69,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -120,7 +120,7 @@ class CycloneDX:
                     if check.file_path not in image_resources_for_image_components:
                         image_resources_for_image_components[check.file_path] = check
 
-            for resource in report.extra_resources:
+            for resource in sorted(report.extra_resources):
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
                 if not bom.has_component(component=component):

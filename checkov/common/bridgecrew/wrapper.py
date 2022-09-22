@@ -80,6 +80,17 @@ def persist_checks_results(
     return checks_results_paths
 
 
+def persist_run_metadata(
+    run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+) -> None:
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
+    try:
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
+    except Exception:
+        logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        raise
+
+
 def enrich_and_persist_checks_metadata(
     scan_reports: list[Report], s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> dict[str, dict[str, str]]:

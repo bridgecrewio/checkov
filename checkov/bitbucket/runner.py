@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.output.report import Report
 
+
 class Runner(JsonRunner):
     check_type = CheckType.BITBUCKET_CONFIGURATION  # noqa: CCE003  # a static attribute
 

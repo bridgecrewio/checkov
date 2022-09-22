@@ -9,6 +9,7 @@ on:
       - 'docs/**'
       - 'INTHEWILD.md'
       - 'README.md'
+      - 'CHANGELOG.md'
       - '.github/**'
       - 'admissioncontroller/checkov-requirements.txt'
       - admissioncontroller/k8s/deployment.yaml
@@ -38,8 +39,8 @@ jobs:
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
         run: |
@@ -77,7 +78,7 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Build & install checkov package
@@ -106,12 +107,12 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
@@ -139,7 +140,7 @@ jobs:
           python-version: 3.7
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7

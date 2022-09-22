@@ -10,9 +10,12 @@ from typing import cast, Any, TYPE_CHECKING
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
+from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
+    docker_image_scanning_integration
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
 
 if TYPE_CHECKING:
@@ -119,9 +122,10 @@ class ImageReferencerMixin:
         runner_filter: RunnerFilter,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
+        from checkov.common.bridgecrew.platform_integration import bc_integration
 
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if not should_run_scan(runner_filter.checks):
             return None
 
         images = self.extract_images(graph_connector=graph_connector)
@@ -144,6 +148,7 @@ class ImageReferencerMixin:
                 image=image,
                 runner_filter=runner_filter,
                 report_type=report_type,
+                bc_integration=bc_integration,
             )
 
         return report
@@ -157,12 +162,21 @@ class ImageReferencerMixin:
         image: Image,
         runner_filter: RunnerFilter,
         report_type: str,
+        bc_integration: BcPlatformIntegration,
     ) -> None:
         """Adds an image record to the given report, if possible"""
 
         cached_results: dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
+            image_scanning_report: dict[str, Any] = docker_image_scanning_integration.create_report(
+                twistcli_scan_result=cached_results,
+                bc_platform_integration=bc_integration,
+                file_path=dockerfile_path,
+                file_content=f'image: {image.name}',
+                docker_image_name=image.name,
+                related_resource_id=image.related_resource_id)
+            report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
             image_id = self.extract_image_short_id(result)

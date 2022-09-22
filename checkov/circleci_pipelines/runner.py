@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 WORKFLOW_DIRECTORY = "circleci"
 
+
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.CIRCLECI_PIPELINES  # noqa: CCE003  # a static attribute
 

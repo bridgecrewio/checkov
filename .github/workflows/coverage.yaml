@@ -27,10 +27,10 @@ jobs:
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.7
-      - uses: imranismail/setup-kustomize@8fa954828ed3cfa7a487a2ba9f7104899bb48b2f  # v1
+      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python 3.7
