@@ -14,7 +14,7 @@ class GitlabCiImageReferencerManager:
         self.file_path = file_path
 
     def extract_images_from_workflow(self) -> list[Image]:
-        gitlab_base_provider = GitlabCiProvider(workflow_config=self.workflow_config, file_path=self.file_path)
-        images: list[Image] = gitlab_base_provider.extract_images_from_workflow()
+        gitlab_provider = GitlabCiProvider(workflow_config=self.workflow_config, file_path=self.file_path)
+        images: list[Image] = gitlab_provider.extract_images_from_workflow()
 
         return images

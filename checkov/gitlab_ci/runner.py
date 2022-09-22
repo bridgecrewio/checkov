@@ -24,7 +24,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
     def __init__(self) -> None:
         super().__init__()
-        self.file_path = ''
 
     def require_external_checks(self) -> bool:
         return False
