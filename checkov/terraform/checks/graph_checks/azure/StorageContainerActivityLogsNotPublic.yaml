@@ -3,38 +3,54 @@ metadata:
   id: "CKV2_AZURE_8"
   category: "LOGGING"
 definition:
-  and:
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - azurerm_storage_account
-      operator: within
-    - cond_type: connection
-      resource_types:
-        - azurerm_monitor_activity_log_alert
-      connected_resource_types:
-        - azurerm_storage_account
-      operator: exists
-    - cond_type: attribute
-      resource_types:
-        - azurerm_monitor_activity_log_alert
-      attribute: criteria.resource_id
-      operator: exists
+  or:
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - azurerm_storage_container
+        operator: within
+
+      - cond_type: connection
+        resource_types:
+          - azurerm_storage_container
+        connected_resource_types:
+          - azurerm_storage_account
+        operator: exists
+
+      - or:
+        - cond_type: connection
+          resource_types:
+            - azurerm_storage_account
+          connected_resource_types:
+            - azurerm_monitor_activity_log_alert
+          operator: not_exists
+
+        - and:
+          - cond_type: connection
+            resource_types:
+              - azurerm_storage_account
+            connected_resource_types:
+              - azurerm_monitor_activity_log_alert
+            operator: exists
+
+          - cond_type: attribute
+            resource_types:
+              - azurerm_monitor_activity_log_alert
+            attribute: enabled
+            operator: equals
+            value: false
+
     - or:
         - cond_type: attribute
           resource_types:
-            - azurerm_monitor_activity_log_alert
-          attribute: enabled
+            - azurerm_storage_container
+          attribute: container_access_type
           operator: not_exists
+
         - cond_type: attribute
           resource_types:
-            - azurerm_monitor_activity_log_alert
-          attribute: enabled
+            - azurerm_storage_container
+          attribute: container_access_type
           operator: equals
-          value: true
-    - cond_type: connection
-      resource_types:
-        - azurerm_storage_container
-      connected_resource_types:
-        - azurerm_storage_account
-      operator: exists
+          value: private
