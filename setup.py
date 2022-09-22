@@ -32,6 +32,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
+        "bc-detect-secrets==1.3.2",
         "cloudsplaining>=0.4.3",
         "deep-merge",
         "tabulate",
@@ -52,7 +53,6 @@ setup(
         "docker",
         "configargparse",
         "argcomplete",
-        "detect-secrets",
         "policyuniverse",
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
