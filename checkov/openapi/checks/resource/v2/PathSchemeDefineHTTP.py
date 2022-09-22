@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, List
+from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
@@ -19,8 +19,8 @@ class PathSchemeDefineHTTP(BaseOpenapiCheckV2):
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         paths = conf.get("paths", {})
-        # if "paths" not in conf or not isinstance(paths, dict):
-        #     return CheckResult.FAILED, conf
+        if "paths" not in conf or not isinstance(paths, dict):
+            return CheckResult.FAILED, conf
 
         for path, http_method in paths.items():
             if self.is_start_end_line(path):
