@@ -34,7 +34,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
     def _parse_file(
         self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        self.file_path = f
         if self.is_workflow_file(f):
             return super()._parse_file(f=f, file_content=file_content)
 
