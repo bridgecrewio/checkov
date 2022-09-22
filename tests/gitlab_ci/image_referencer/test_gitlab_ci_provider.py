@@ -1,5 +1,5 @@
 from checkov.common.images.image_referencer import Image
-from checkov.gitlab_ci.image_referencer.base_provider import GitlabCiProvider
+from checkov.gitlab_ci.image_referencer.provider import GitlabCiProvider
 
 
 def test_extract_images_from_workflow():

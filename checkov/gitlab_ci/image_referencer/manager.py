@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
-from checkov.gitlab_ci.image_referencer.base_provider import GitlabCiProvider
+from checkov.gitlab_ci.image_referencer.provider import GitlabCiProvider
 
 
 class GitlabCiImageReferencerManager:
