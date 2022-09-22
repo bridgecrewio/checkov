@@ -3,19 +3,19 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.enums import CheckCategories
 
 
-class LambdaDLQConfigured(BaseResourceValueCheck):
+class LambdaCodeSigningConfigured(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)"
-        id = "CKV_AWS_116"
+        name = "Ensure that AWS Lambda function is configured for a code-signing with signing profiles, which define the trusted publishers for this function"
+        id = "CKV_AWS_272"
         supported_resources = ['aws_lambda_function']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "dead_letter_config/[0]/target_arn"
+        return "code_signing_config_arn"
 
     def get_expected_value(self):
         return ANY_VALUE
 
 
-check = LambdaDLQConfigured()
+check = LambdaCodeSigningConfigured()
