@@ -1,38 +1,41 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.LambdaCodeSigningConfigured import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestLambdaCodeSigningConfigured(unittest.TestCase):
+class TestWafHasAnyRules(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_LambdaCodeSigningConfigured"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                        resource "aws_lambda_function" "fail" {
-                          function_name = "stest-env"
-                          role          = ""
-                          runtime       = "python3.8"
-                        }
-                        """)
-        resource_conf = hcl_res['resource'][0]['aws_lambda_function']['fail']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                    resource "aws_lambda_function" "pass" {
-                      function_name = "test-env"
-                      role          = ""
-                      runtime       = "python3.8"
-                      code_signing_config_arn = "123123123"
-                    }
-                        """)
-        resource_conf = hcl_res['resource'][0]['aws_lambda_function']['pass']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_lambda_function.pass"
+        }
+
+        failing_resources = {
+            "aws_lambda_function.fail"
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
