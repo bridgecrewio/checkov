@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.226...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.227...HEAD)
+
+## [2.1.227](https://github.com/bridgecrewio/checkov/compare/2.1.226...2.1.227) - 2022-09-23
+
+### Documentation
+
+- **general:** Multi skip docs - [#3561](https://github.com/bridgecrewio/checkov/pull/3561)
 
 ## [2.1.226](https://github.com/bridgecrewio/checkov/compare/2.1.223...2.1.226) - 2022-09-22
 
