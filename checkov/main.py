@@ -417,9 +417,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
-               help='Filter scan to skip specific infrastructure code frameworks. \n'
-                    'will be included automatically for some frameworks if system dependencies '
-                    'are missing.',
+               help='Filter scan to skip specific infrastructure as code frameworks.'
+                    'This will be included automatically for some frameworks if system dependencies '
+                    'are missing. Add multiple frameworks using spaces. For example, ',
+                    '--skip-framework terraform sca_package.',
                choices=checkov_runners,
                default=None,
                nargs="+")
