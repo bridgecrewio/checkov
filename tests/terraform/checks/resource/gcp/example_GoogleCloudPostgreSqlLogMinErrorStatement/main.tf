@@ -8,7 +8,7 @@ resource "google_sql_database_instance" "fail" {
     availability_type = "ZONAL"
     database_flags {
       name  = "log_min_error_statement"
-      value = "LOG"
+      value = "log"
     }
     database_flags {
       name  = "log_connections"
@@ -29,7 +29,7 @@ resource "google_sql_database_instance" "fail2" {
     availability_type = "ZONAL"
     database_flags {
       name  = "log_min_error_statement"
-      value = "FATAL"
+      value = "fatal"
     }
     database_flags {
       name  = "log_connections"
@@ -50,7 +50,7 @@ resource "google_sql_database_instance" "fail3" {
     availability_type = "ZONAL"
     database_flags {
       name  = "log_min_error_statement"
-      value = "PANIC"
+      value = "panic"
     }
     database_flags {
       name  = "log_connections"
@@ -71,33 +71,11 @@ resource "google_sql_database_instance" "pass" {
     availability_type = "ZONAL"
     database_flags {
       name  = "log_min_error_statement"
-      value = "INFO"
+      value = "info"
     }
     database_flags {
       name  = "log_connections"
       value = "on"
-    }
-    pricing_plan = "PER_USE"
-
-    tier = "db-custom-1-3840"
-  }
-}
-
-resource "google_sql_database_instance" "pass2" {
-  database_version = "POSTGRES_14"
-  name             = "general-pos121"
-  project          = "gcp-bridgecrew-deployment"
-  region           = "us-central1"
-  settings {
-    activation_policy = "ALWAYS"
-    availability_type = "ZONAL"
-    database_flags {
-      name  = "log_statement"
-      value = "mod"
-    }
-    database_flags {
-      name  = "log_min_duration_statement"
-      value = "-1"
     }
     pricing_plan = "PER_USE"
 
