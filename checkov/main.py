@@ -419,7 +419,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--skip-framework',
                help='Filter scan to skip specific infrastructure as code frameworks.'
                     'This will be included automatically for some frameworks if system dependencies '
-                    'are missing. Add multiple frameworks using spaces. For example, ',
+                    'are missing. Add multiple frameworks using spaces. For example, '
                     '--skip-framework terraform sca_package.',
                choices=checkov_runners,
                default=None,
