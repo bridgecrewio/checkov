@@ -8,7 +8,7 @@ class LambdaCodeSigningConfigured(BaseResourceValueCheck):
         name = "Ensure AWS Lambda function is configured to validate code-signing"
         id = "CKV_AWS_272"
         supported_resources = ['aws_lambda_function']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
