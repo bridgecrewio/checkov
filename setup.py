@@ -13,7 +13,9 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 logger = logging.getLogger(__name__)
-spec = util.spec_from_file_location("checkov.version", os.path.join("checkov", "version.py"))
+spec = util.spec_from_file_location(
+    "checkov.version", os.path.join("checkov", "version.py")
+)
 # noinspection PyUnresolvedReferences
 mod = util.module_from_spec(spec)
 spec.loader.exec_module(mod)  # type: ignore
@@ -32,14 +34,13 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "bc-detect-secrets==1.3.3",
-        "cloudsplaining>=0.4.3",
+        "bc-detect-secrets==1.3.4",
         "deep-merge",
         "tabulate",
         "colorama",
         "termcolor",
         "junit-xml>=1.9",
-        "dpath>=1.5.0,<2",
+        "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
         "gitpython",
@@ -48,6 +49,7 @@ setup(
         "update-checker",
         "semantic-version",
         "packaging",
+        "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "dockerfile-parse",
         "docker",
@@ -57,7 +59,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<3.0.0",
+        "cyclonedx-python-lib<3.0.0,>=2.4.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
