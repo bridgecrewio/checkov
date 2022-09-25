@@ -1,8 +1,9 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.gcp.AbsGooglePostgresqlDatabaseFlags import AbsGooglePostgresqlDatabaseFlags
 
 FLAG_NAME = 'cloudsql.enable_pgaudit'
 FLAG_VALUES = ['on']
+
 
 class GoogleCloudPostgreSqlEnablePgaudit(AbsGooglePostgresqlDatabaseFlags):
     def __init__(self):

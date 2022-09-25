@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
@@ -33,5 +33,5 @@ class AbsGooglePostgresqlDatabaseFlags(BaseResourceCheck):
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']
                             return CheckResult.PASSED
                     self.evaluated_keys = ['database_version/[0]/POSTGRES', 'settings/[0]/database_flags']
-            return CheckResult.FAILED 
+            return CheckResult.FAILED
         return CheckResult.UNKNOWN
