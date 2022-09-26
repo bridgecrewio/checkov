@@ -82,7 +82,7 @@ fi
 
 API_KEY=${API_KEY_VARIABLE}
 
-GIT_BRANCH=${GITHUB_HEAD_REF:=master}
+GIT_BRANCH=${GITHUB_HEAD_REF:="$GITHUB_REF_NAME"}
 export BC_FROM_BRANCH=${GIT_BRANCH}
 export BC_TO_BRANCH=${GITHUB_BASE_REF}
 export BC_PR_ID=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
