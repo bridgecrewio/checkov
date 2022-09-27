@@ -130,6 +130,10 @@ class Runner(ImageReferencerMixin, BaseRunner[None]):
         self.pbar.close()
 
         if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+
             image_report = self.check_container_image_references(
                 root_path=root_folder,
                 runner_filter=runner_filter,
