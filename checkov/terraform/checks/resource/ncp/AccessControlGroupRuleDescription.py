@@ -30,10 +30,9 @@ class AccessControlGroupRuleDescription(BaseResourceCheck):
 
     def check_rule(self, rule_type, conf):
         if rule_type == 'group_or_rule_description':
-            if 'description' in conf.keys():
-                self.evaluated_keys = ['description']
-                if conf['description']:
-                    return CheckResult.PASSED
+            self.evaluated_keys = ['description']
+            if conf.get('description'):
+                return CheckResult.PASSED
             return CheckResult.FAILED
 
         if rule_type in conf.keys():
