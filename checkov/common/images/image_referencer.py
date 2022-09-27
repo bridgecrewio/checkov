@@ -117,10 +117,10 @@ class ImageReferencerMixin:
 
     def check_container_image_references(
         self,
-        graph_connector: DiGraph | None,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        graph_connector: DiGraph | None = None,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
         from checkov.common.bridgecrew.platform_integration import bc_integration

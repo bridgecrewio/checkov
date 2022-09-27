@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Any
 
+from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -11,16 +12,20 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.typing import _CheckResult
+from checkov.dockerfile.image_referencer.manager import DockerfileImageReferencerManager
 from checkov.dockerfile.parser import parse, collect_skipped_checks
 from checkov.dockerfile.registry import registry
+from checkov.dockerfile.utils import DOCKERFILE_STARTLINE, DOCKERFILE_ENDLINE
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
-    from checkov.common.parsers.node import DictNode
-    from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
+    from dockerfile_parse.parser import _Instruction  # only in extra_stubs
+    from networkx import DiGraph
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.images.image_referencer import Image
 
 
-class Runner(BaseRunner):
+class Runner(ImageReferencerMixin, BaseRunner[None]):
     check_type = CheckType.DOCKERFILE  # noqa: CCE003  # a static attribute
 
     def should_scan_file(self, filename: str) -> bool:
@@ -33,7 +38,7 @@ class Runner(BaseRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -86,8 +91,8 @@ class Runner(BaseRunner):
                 if result_configuration:
                     if isinstance(result_configuration, list):
                         for res in result_configuration:
-                            startline = res['startline']
-                            endline = res['endline']
+                            startline = res[DOCKERFILE_STARTLINE]
+                            endline = res[DOCKERFILE_ENDLINE]
                             result_instruction = res["instruction"]
                             self.build_record(report,
                                               definitions_raw,
@@ -99,8 +104,8 @@ class Runner(BaseRunner):
                                               endline,
                                               result_instruction)
                     else:
-                        startline = result_configuration['startline']
-                        endline = result_configuration['endline']
+                        startline = result_configuration[DOCKERFILE_STARTLINE]
+                        endline = result_configuration[DOCKERFILE_ENDLINE]
                         result_instruction = result_configuration["instruction"]
                         self.build_record(report,
                                           definitions_raw,
@@ -123,6 +128,18 @@ class Runner(BaseRunner):
                                       result_instruction)
             self.pbar.update()
         self.pbar.close()
+
+        if runner_filter.run_image_referencer:
+            image_report = self.check_container_image_references(
+                root_path=root_folder,
+                runner_filter=runner_filter,
+                definitions=definitions,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
+
         return report
 
     def calc_record_codeblock(
@@ -142,7 +159,7 @@ class Runner(BaseRunner):
         definitions_raw: dict[str, list[str]],
         docker_file_path: str,
         file_abs_path: str,
-        check: BaseDockerfileCheck,
+        check: BaseCheck,
         check_result: _CheckResult,
         startline: int,
         endline: int,
@@ -168,11 +185,23 @@ class Runner(BaseRunner):
         record.set_guideline(check.guideline)
         report.add_record(record=record)
 
+    def extract_images(
+        self, graph_connector: DiGraph | None = None, definitions: dict[str, Any] | None = None
+    ) -> list[Image]:
+        if not definitions:
+            # should not happen
+            return []
+
+        manager = DockerfileImageReferencerManager(definitions=definitions)
+        images = manager.extract_images_from_resources()
+
+        return images
+
 
 def get_files_definitions(
     files: list[str], filepath_fn: Callable[[str], str] | None = None
-) -> tuple[dict[str, DictNode], dict[str, list[str]]]:
-    def _parse_file(file: str) -> tuple[str, tuple[dict[str, list[dict[str, int | str]]], list[str]] | None]:
+) -> tuple[dict[str, dict[str, list[_Instruction]]], dict[str, list[str]]]:
+    def _parse_file(file: str) -> tuple[str, tuple[dict[str, list[_Instruction]], list[str]] | None]:
         try:
             return file, parse(file)
         except TypeError:
