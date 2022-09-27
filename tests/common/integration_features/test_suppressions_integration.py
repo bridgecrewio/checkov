@@ -554,25 +554,25 @@ class TestSuppressionsIntegration(unittest.TestCase):
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='dockerfile/Dockerfile', entity_tags=None,
+                         check_class=None, file_abs_path='path/to/some/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-35920'})
         record2 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='dockerfile/Dockerfile', entity_tags=None,
+                         check_class=None, file_abs_path='path/to/some/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2021-23727'})
         record3 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='dockerfile/Dockerfile', entity_tags=None,
+                         check_class=None, file_abs_path='path/to/some/repos/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-45452'})
         record4 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
                          code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='notdockerfile/Dockerfile', entity_tags=None,
+                         check_class=None, file_abs_path='path/to/some/repo/notdockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-45452'})
 
         self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
@@ -599,28 +599,28 @@ class TestSuppressionsIntegration(unittest.TestCase):
         }
 
         record1 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
-                         code_block=None, file_path='/dockerfile/Dockerfile',
+                         code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='.', entity_tags=None,
+                         check_class=None, file_abs_path='other/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-35920'})
         record2 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
-                         code_block=None, file_path='/dockerfile/Dockerfile',
+                         code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='.', entity_tags=None,
+                         check_class=None, file_abs_path='other/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2021-23727'})
         record3 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
-                         code_block=None, file_path='/dockerfile/Dockerfile',
+                         code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='.', entity_tags=None,
+                         check_class=None, file_abs_path='other/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-45452'})
         record4 = Record(check_id='BC_VUL_1', check_name=None, check_result=None,
-                         code_block=None, file_path='/dockerfile/Dockerfile',
+                         code_block=None, file_path=None,
                          file_line_range=None,
                          resource=None, evaluations=None,
-                         check_class=None, file_abs_path='.', entity_tags=None,
+                         check_class=None, file_abs_path='other/repo/dockerfile/Dockerfile', entity_tags=None,
                          vulnerability_details={'id': 'CVE-2022-45452'})
 
         self.assertFalse(suppressions_integration._check_suppression(record1, suppression))

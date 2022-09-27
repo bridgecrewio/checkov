@@ -38,7 +38,7 @@ jobs:
         python-version: 3.7
     - name: Install pipenv
       run: |
-        python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+        python -m pip install --no-cache-dir --upgrade pipenv
     - name: Install dependencies
       run: |
         pipenv --python 3.7
@@ -63,7 +63,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
@@ -93,7 +93,7 @@ jobs:
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
@@ -140,7 +140,7 @@ jobs:
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
         run: |
-          python -m pip install --no-cache-dir --upgrade pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}

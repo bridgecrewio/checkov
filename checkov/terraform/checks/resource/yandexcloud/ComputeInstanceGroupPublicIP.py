@@ -1,13 +1,17 @@
-from typing import List, Any
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
+
 
 class ComputeInstanceGroupPublicIP(BaseResourceNegativeValueCheck):
     def __init__(self) -> None:
         name = "Ensure compute instance group does not have public IP."
         id = "CKV_YC_18"
-        categories = [CheckCategories.NETWORKING]
-        supported_resources = ["yandex_compute_instance_group"]
+        categories = (CheckCategories.NETWORKING,)
+        supported_resources = ("yandex_compute_instance_group",)
         super().__init__(
             name=name,
             id=id,
@@ -18,7 +22,8 @@ class ComputeInstanceGroupPublicIP(BaseResourceNegativeValueCheck):
     def get_inspected_key(self) -> str:
         return "instance_template/[0]/network_interface/[0]/nat"
 
-    def get_forbidden_values(self) -> List[Any]:
+    def get_forbidden_values(self) -> list[Any]:
         return [True]
+
 
 check = ComputeInstanceGroupPublicIP()

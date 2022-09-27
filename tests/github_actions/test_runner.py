@@ -79,7 +79,7 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         # then
-        assert len(report.passed_checks) > 0
+        assert len(report.passed_checks) + len(report.failed_checks) == 0
 
     def test_runner_on_shell_injection(self):
         # given
@@ -165,7 +165,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_on_list_typed_workflow_dispatch(self):
         # given
-        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yaml"
+        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yml"
         file_dir = [str(file_path)]
 
         checks = ["CKV_GHA_7"]

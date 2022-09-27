@@ -12,7 +12,7 @@ FLAG_VALUES = [
 class GoogleCloudPostgreSqlLogStatement(AbsGooglePostgresqlDatabaseFlags):
     def __init__(self):
         name = "Ensure GCP PostgreSQL logs SQL statements"
-        check_id = "CKV_GCP_107"
+        check_id = "CKV_GCP_111"
         supported_resources = ['google_sql_database_instance']
         categories = [CheckCategories.LOGGING]
         super().__init__(

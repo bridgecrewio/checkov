@@ -40,7 +40,7 @@ jobs:
           python-version: '3.10'
       - name: Setup python for CodeQL
         run: |
-          python -m pip install --no-cache-dir --upgrade pip pipenv==2022.8.5  # pinning as versios 2022.8.13,2022.8.14 are bads
+          python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
         uses: tj-actions/verify-changed-files@1d7ee9711b0a8f675208004e66bc25d593a1a0ae  # v11
@@ -53,11 +53,11 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@b398f525a5587552e573b247ac661067fafa920b  # v2
+        uses: github/codeql-action/init@904260d7d935dff982205cbdb42025ce30b7a34f  # v2
         with:
           languages: python
           setup-python-dependencies: false
       - name: Autobuild
-        uses: github/codeql-action/autobuild@b398f525a5587552e573b247ac661067fafa920b  # v2
+        uses: github/codeql-action/autobuild@904260d7d935dff982205cbdb42025ce30b7a34f  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@b398f525a5587552e573b247ac661067fafa920b  # v2
+        uses: github/codeql-action/analyze@904260d7d935dff982205cbdb42025ce30b7a34f  # v2

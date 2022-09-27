@@ -192,8 +192,8 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='secrets'))
-        self.assertEqual(7, len(report.failed_checks))
+                            runner_filter=RunnerFilter(framework=['secrets']))
+        self.assertEqual(9, len(report.failed_checks))
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(len(report.skipped_checks), 1)
@@ -275,7 +275,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
-        self.assertEqual(len(report.failed_checks), 11)
+        self.assertEqual(len(report.failed_checks), 13)
 
     def test_runner_requested_file_only_dockerfile(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -284,7 +284,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], black_list_secret_scan=['.py', '.tf', '.ts', '.yml'],
                                                        enable_secret_scan_all_files=True))
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 4)
 
     def test_runner_no_requested_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -292,7 +292,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets']))
-        self.assertEqual(len(report.failed_checks), 7)
+        self.assertEqual(len(report.failed_checks), 9)
 
 
 if __name__ == '__main__':

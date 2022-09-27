@@ -289,11 +289,19 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     assert len(report.parsing_errors) == 0
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_PRESENT_CACHED_RESULTS": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR": "True"})
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
 @responses.activate
-def test_run_with_present_cached_results_env():
+def test_run_with_image_cached_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
+    image_id_encoded = quote_plus(f"image:{image_name2}")
+
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+        json=cached_scan_result2,
+        status=200,
+    )
 
     image_runner = Runner()
     runner_filter = RunnerFilter(framework=['sca_image'])
@@ -301,7 +309,7 @@ def test_run_with_present_cached_results_env():
     report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
 
     assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 0
+    assert len(report.failed_checks) == 1
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
     assert len(report.image_cached_results) == 1
@@ -309,7 +317,7 @@ def test_run_with_present_cached_results_env():
 
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @responses.activate
-def test_run_without_present_cached_results_env(mock_bc_integration, image_name2, cached_scan_result2):
+def test_run_without_image_cached_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
     # given
     image_id_encoded = quote_plus(f"image:{image_name2}")
 
@@ -331,10 +339,36 @@ def test_run_without_present_cached_results_env(mock_bc_integration, image_name2
     assert len(report.parsing_errors) == 0
     assert len(report.image_cached_results) == 0
 
+@mock.patch.dict(os.environ, {"CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR": "False"})
+@mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
+@mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
+@responses.activate
+def test_run_with_image_cached_reports_and_without_sca_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
+    image_id_encoded = quote_plus(f"image:{image_name2}")
+
+    responses.add(
+        method=responses.GET,
+        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+        json=cached_scan_result2,
+        status=200,
+    )
+
+    image_runner = Runner()
+    runner_filter = RunnerFilter(framework=['sca_image'])
+    image_runner.image_referencers = [GHA_Runner()]
+    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
+
+    assert len(report.passed_checks) == 0
+    assert len(report.failed_checks) == 0
+    assert len(report.skipped_checks) == 0
+    assert len(report.parsing_errors) == 0
+    assert len(report.image_cached_results) == 1
+
 
 @responses.activate
 @mock.patch('checkov.github_actions.runner.Runner.get_images', mock_get_images)
-@mock.patch.dict(os.environ, {"CHECKOV_PRESENT_CACHED_RESULTS": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR": "True"})
 def test_run_with_error_from_scan_results(mock_bc_integration, image_name2, cached_scan_result3):
     image_id_encoded = quote_plus(f"image:{image_name2}")
 
