@@ -23,7 +23,7 @@ class TestCombinatorPlugin(unittest.TestCase):
         self.assertEqual(0, len(result))
 
     def test_popular_kubernetes_manifest_password(self):
-        result = self.plugin.analyze_line("mock.yaml", 'pwd: "correcthorsebatterystaple"', 5)
+        result = self.plugin.analyze_line("mock.yaml", 'pwd: "correcthorsebatterystaple"', 5)  # fails now
         self.assertEqual(1, len(result))
         secret = result.pop()
         self.assertEqual("Base64 High Entropy String", secret.type)
