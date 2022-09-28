@@ -60,7 +60,6 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-ENTROPY_KEYWORD_LIMIT = 4.5
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
@@ -96,8 +95,7 @@ class Runner(BaseRunner[None]):
                 {'name': 'TwilioKeyDetector'},
                 {
                     'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
-                    'limit': ENTROPY_KEYWORD_LIMIT
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
                 }
             ]
         custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")

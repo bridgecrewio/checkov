@@ -1,12 +1,11 @@
 import unittest
 
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
-from checkov.secrets.runner import ENTROPY_KEYWORD_LIMIT
 
 
 class TestCombinatorPlugin(unittest.TestCase):
     def setUp(self) -> None:
-        self.plugin = EntropyKeywordCombinator(ENTROPY_KEYWORD_LIMIT)
+        self.plugin = EntropyKeywordCombinator()
 
     def test_positive_value(self):
         result = self.plugin.analyze_line("mock.tf", 'api_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY"', 5)

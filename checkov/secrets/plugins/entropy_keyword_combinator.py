@@ -13,12 +13,13 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
+ENTROPY_KEYWORD_LIMIT = 4.5
 
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
-    def __init__(self, limit: float) -> None:
+    def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT) -> None:
         iac_limit = ENTROPY_KEYWORD_COMBINATOR_LIMIT
         self.high_entropy_scanners_iac = (Base64HighEntropyString(limit=iac_limit), HexHighEntropyString(limit=iac_limit))
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
