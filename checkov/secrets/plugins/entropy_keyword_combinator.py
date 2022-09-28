@@ -12,13 +12,15 @@ if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
 MAX_LINE_LENGTH = 10000
-ENTROPY_KEYWORD_COMBINATOR_LIMIT = 4.5
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
-    def __init__(self, limit: float = ENTROPY_KEYWORD_COMBINATOR_LIMIT) -> None:
+    def __init__(self, limit: float) -> None:
+        iac_limit = ENTROPY_KEYWORD_COMBINATOR_LIMIT
+        self.high_entropy_scanners_iac = (Base64HighEntropyString(limit=iac_limit), HexHighEntropyString(limit=iac_limit))
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
         self.keyword_scanner = KeywordDetector()
 
@@ -47,7 +49,7 @@ class EntropyKeywordCombinator(BasePlugin):
                 keyword_entropy = keyword_matches.union(entropy_matches)
                 return keyword_entropy
             if keyword_matches:
-                for entropy_scanner in self.high_entropy_scanners:
+                for entropy_scanner in self.high_entropy_scanners_iac:
                     matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
                     if matches:
                         return matches
