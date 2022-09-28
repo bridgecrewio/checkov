@@ -156,10 +156,13 @@ resource "google_sql_database_instance" "unknown" {
 }
 
 resource "google_sql_database_instance" "unknown_var" {
-  name             = "db"
-  database_version = "MYSQL_5_6"
+  database_version = "POSTGRES_12"
+  name             = "general-pos121"
+  project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
   settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
     database_flags = ["${var.test_var}"]
     tier = "db-custom-1-3840"
   }
