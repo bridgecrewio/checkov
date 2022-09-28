@@ -21,7 +21,6 @@ class TestCloudSQLServerCrossDBOwnershipChaining(unittest.TestCase):
             "google_sql_database_instance.pass",
             "google_sql_database_instance.pass2",
             "google_sql_database_instance.pass3",
-            "google_sql_database_instance.pass4",
         }
 
         failing_resources = {

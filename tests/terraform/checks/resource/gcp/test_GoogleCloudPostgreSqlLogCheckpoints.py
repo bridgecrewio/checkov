@@ -19,7 +19,6 @@ class TestGoogleCloudPostgreSqlLogCheckpoints(unittest.TestCase):
 
         passing_resources = {
             "google_sql_database_instance.pass",
-            "google_sql_database_instance.pass1",
         }
 
         failing_resources = {

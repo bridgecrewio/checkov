@@ -23,7 +23,6 @@ class TestGoogleCloudSqlServerContainedDBAuthentication(unittest.TestCase):
             "google_sql_database_instance.pass2",
             "google_sql_database_instance.pass3",
             "google_sql_database_instance.pass4",
-            "google_sql_database_instance.pass5",
         }
 
         failing_resources = {
