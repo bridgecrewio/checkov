@@ -13,15 +13,12 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
-ENTROPY_KEYWORD_LIMIT = 4.5
 
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
-    def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT) -> None:
-        iac_limit = ENTROPY_KEYWORD_COMBINATOR_LIMIT
-        self.high_entropy_scanners_iac = (Base64HighEntropyString(limit=iac_limit), HexHighEntropyString(limit=iac_limit))
+    def __init__(self, limit: float = ENTROPY_KEYWORD_COMBINATOR_LIMIT) -> None:
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
         self.keyword_scanner = KeywordDetector()
 
@@ -38,22 +35,14 @@ class EntropyKeywordCombinator(BasePlugin):
         one of the entropy scanners find a match (on a line which was already matched by keyword plugin) - it is returned.
         for source code files run and merge the two plugins.
         """
-        entropy_matches = set()
         if len(line) <= MAX_LINE_LENGTH:
-            keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
-            if f".{filename.split('.')[-1]}" in SOURCE_CODE_EXTENSION:
-                for entropy_scanner in self.high_entropy_scanners:
-                    matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-                    if matches:
-                        entropy_matches = matches
-                        break
-                keyword_entropy = keyword_matches.union(entropy_matches)
-                return keyword_entropy
-            if keyword_matches:
-                for entropy_scanner in self.high_entropy_scanners_iac:
-                    matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-                    if matches:
-                        return matches
+            if f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION:
+                keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
+                if keyword_matches:
+                    for entropy_scanner in self.high_entropy_scanners:
+                        matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
+                        if matches:
+                            return matches
         return set()
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
