@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, List, Optional, TYPE_CHECKING
 
-import argcomplete
+import argcomplete  # type:ignore[import]
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
