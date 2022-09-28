@@ -94,9 +94,6 @@ class Runner(BaseRunner[None]):
                 {'name': 'SquareOAuthDetector'},
                 {'name': 'StripeDetector'},
                 {'name': 'TwilioKeyDetector'},
-                {'name': 'HexHighEntropyString'},
-                {'name': 'Base64HighEntropyString'},
-                {'name': 'TwilioKeyDetector'},
                 {
                     'name': 'EntropyKeywordCombinator',
                     'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
