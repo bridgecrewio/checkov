@@ -25,13 +25,14 @@ class TestGoogleCloudPostgreSqlLogLockWaits(unittest.TestCase):
         failing_resources = {
             "google_sql_database_instance.fail",
             "google_sql_database_instance.fail2",
+            "google_sql_database_instance.unknown_var",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -36,7 +36,7 @@ class GoogleCloudSqlServerContainedDBAuthentication(BaseResourceCheck):
                         # [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
                         flags = [{key: flag[key][0] for key in flag} for flag in flags]
                     for flag in flags:
-                        if (flag['name'] == 'contained database authentication') and (flag['value'] == 'on'):
+                        if (isinstance(flag, dict) and flag['name'] == 'contained database authentication') and (flag['value'] == 'on'):
                             self.evaluated_keys = ['database_version/[0]/SQLSERVER',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/name',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']
