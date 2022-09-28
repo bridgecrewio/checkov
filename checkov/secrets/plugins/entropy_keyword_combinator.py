@@ -12,12 +12,13 @@ if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
 MAX_LINE_LENGTH = 10000
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = 4.5
 
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
-    def __init__(self, limit: float) -> None:
+    def __init__(self, limit: float = ENTROPY_KEYWORD_COMBINATOR_LIMIT) -> None:
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
         self.keyword_scanner = KeywordDetector()
 
