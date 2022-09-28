@@ -77,7 +77,9 @@ class Runner(ImageReferencerMixin, YamlRunner):
         return report
 
     def extract_images(
-        self, graph_connector: DiGraph | None = None, definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        self, graph_connector: DiGraph | None = None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         images: list[Image] = []
         if not definitions:

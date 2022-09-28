@@ -120,7 +120,8 @@ class ImageReferencerMixin:
         graph_connector: DiGraph | None,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
         from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -129,7 +130,8 @@ class ImageReferencerMixin:
         if not should_run_scan(runner_filter.checks):
             return None
 
-        images = self.extract_images(graph_connector=graph_connector, definitions=definitions)
+        images = self.extract_images(graph_connector=graph_connector, definitions=definitions,
+                                     definitions_raw=definitions_raw)
         if not images:
             return None
 
@@ -287,7 +289,9 @@ class ImageReferencerMixin:
 
     @abstractmethod
     def extract_images(
-        self, graph_connector: DiGraph | None = None, definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        self, graph_connector: DiGraph | None = None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         """Tries to find image references in the graph or supported resource"""
 

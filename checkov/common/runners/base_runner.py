@@ -48,6 +48,7 @@ ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 class BaseRunner(ABC, Generic[_GraphManager]):
     check_type = ""
     definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+    raw_definitions: dict[str, list[tuple[int, str]]] | None = None
     context: dict[str, dict[str, Any]] | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
