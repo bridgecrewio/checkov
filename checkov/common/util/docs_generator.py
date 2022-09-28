@@ -9,6 +9,7 @@ from tabulate import tabulate
 
 from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
+from checkov.azure_pipelines.checks.registry import registry as azure_pipelines_registry
 from checkov.bicep.checks.param.registry import registry as bicep_param_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_resource_registry
 from checkov.bitbucket.registry import registry as bitbucket_configuration_registry
@@ -123,6 +124,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(circleci_pipelines_registry, "circleci_pipelines", "circleci_pipelines")
     if any(x in framework_list for x in ("all", "argo_workflows")):
         add_from_repository(argo_workflows_registry, "argo_workflows", "Argo Workflows")
+    if any(x in framework_list for x in ("all", "azure_pipelines")):
+        add_from_repository(azure_pipelines_registry, "azure_pipelines", "Azure Pipelines")
     if any(x in framework_list for x in ("all", "arm")):
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
