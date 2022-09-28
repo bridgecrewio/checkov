@@ -41,17 +41,15 @@ class BaseKubernetesProvider:
 
             extract_images_func = self.supported_resource_types.get(resource_type)
             if extract_images_func:
-                image_names.extend(extract_images_func(resource))
-
-            for name in image_names:
-                images.append(
-                    Image(
-                        file_path=resource[CustomAttributes.FILE_PATH],
-                        name=name,
-                        start_line=resource[START_LINE],
-                        end_line=resource[END_LINE],
-                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
+                for name in extract_images_func(resource):
+                    images.append(
+                        Image(
+                            file_path=resource[CustomAttributes.FILE_PATH],
+                            name=name,
+                            start_line=resource[START_LINE],
+                            end_line=resource[END_LINE],
+                            related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
+                        )
                     )
-                )
 
         return images
