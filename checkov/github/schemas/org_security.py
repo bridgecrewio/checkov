@@ -2,7 +2,7 @@ from checkov.common.vcs.vcs_schema import VCSSchema
 
 
 class OrgSecuritySchema(VCSSchema):
-    def __init__(self):
+    def __init__(self) -> None:
         schema = {
             "type": "object",
             "properties": {

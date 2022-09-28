@@ -174,11 +174,12 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    if not strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                    if strtobool(os.getenv('CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR', "True")):
                         image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
                                                              runner_filter=runner_filter)
                         merge_reports(report, image_report)
-                    else:
+                    if strtobool(os.getenv('CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR', "False")) or strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                        # TODO: delete the old env var option (CHECKOV_PRESENT_CACHED_RESULTS) after full migration
                         image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
                         if image_cached_report:
                             report.image_cached_results.append(image_cached_report)
@@ -261,6 +262,9 @@ class Runner(PackageRunner):
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
             image_id = ImageReferencer.inspect(image.name)
+            if not image_id:
+                logging.info(f"Unable to extract image id from {image.name}")
+                return Report(self.check_type)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 return Report(self.check_type)

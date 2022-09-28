@@ -39,7 +39,7 @@ class TimeoutError(Exception):
     pass
 
 
-def handle_timeout():
+def handle_timeout(signum, frame):
     raise TimeoutError('command got timeout')
 
 
