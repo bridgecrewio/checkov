@@ -52,21 +52,6 @@ class EntropyKeywordCombinator(BasePlugin):
                     matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
                     if matches:
                         return matches
-
-            # keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
-            # if f".{filename.split('.')[-1]}" in SOURCE_CODE_EXTENSION:
-            #     for entropy_scanner in self.high_entropy_scanners:
-            #         matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-            #         if matches:
-            #             entropy_matches = matches
-            #             break
-            #     keyword_entropy = keyword_matches.union(entropy_matches)
-            #     return keyword_entropy
-            # if keyword_matches:
-            #     for entropy_scanner in self.high_entropy_scanners_iac:
-            #         matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
-            #         if matches:
-            #             return matches
         return set()
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
