@@ -19,7 +19,7 @@ class AccessControlGroupRuleDescription(BaseResourceCheck):
         :return: <CheckResult>
         """
         group_result = self.check_rule(rule_type='group_or_rule_description', conf=conf)
-        if 'type' not in conf.keys():   
+        if 'type' not in conf.keys():
             outbound_result = self.check_rule(rule_type='outbound', conf=conf)
             inbound_result = self.check_rule(rule_type='inbound', conf=conf)
             if group_result == CheckResult.PASSED and outbound_result == CheckResult.PASSED and inbound_result == CheckResult.PASSED:
