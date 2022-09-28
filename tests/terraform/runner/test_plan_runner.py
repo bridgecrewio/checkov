@@ -297,6 +297,29 @@ class TestRunnerValid(unittest.TestCase):
 
         assert failed_check_ids == expected_failed_check_ids
 
+    def test_runner_root_module_resources_no_values_route53(self):
+        #given
+        plan_file = Path(__file__).parent / "resources/plan_root_module_resources_no_values/tfplan_route53.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(plan_file)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_38", "CKV2_AWS_39"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+
+        passed_check_ids = set(c.check_id for c in report.passed_checks)
+        expected_passed_check_ids = {"CKV2_AWS_39"}
+
+        self.assertCountEqual(passed_check_ids, expected_passed_check_ids)
+
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
         # Often 'data' does not even appear in the *_modules[x].resouces field within planned_values and is not scanned as expected
