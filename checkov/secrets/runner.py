@@ -93,8 +93,6 @@ class Runner(BaseRunner[None]):
                 {'name': 'SquareOAuthDetector'},
                 {'name': 'StripeDetector'},
                 {'name': 'TwilioKeyDetector'},
-                {'name': 'Base64HighEntropyString'},  # default limit from secrets lib is 4.5
-                {'name': 'HexHighEntropyString'},  # default limit from secrets lib is 4.5
                 {
                     'name': 'EntropyKeywordCombinator',
                     'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
