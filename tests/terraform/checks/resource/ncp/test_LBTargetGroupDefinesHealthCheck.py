@@ -1,50 +1,40 @@
 import unittest
+from pathlib import Path
 
-import hcl2
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.ncp.LBTargetGroupDefinesHealthCheck import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestLBTargetGroupDefinesHealthCheck(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_LBTargetGroupDefinesHealthCheck"
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "ncloud_lb_target_group" "pass" {
-              vpc_no   = ncloud_vpc.main.vpc_no
-              protocol = "HTTP"
-              target_type = "VSVR"
-              port        = 8080
-              description = "for test"
-              health_check {
-                protocol = "HTTP"
-                http_method = "GET"
-                port           = 8080
-                url_path       = "/monitor/l7check"
-                cycle          = 30
-                up_threshold   = 2
-                down_threshold = 2
-              }
-              algorithm_type = "RR"
-            }
-        """)
-        resource_conf = hcl_res['resource'][0]['ncloud_lb_target_group']['pass']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "ncloud_lb_target_group" "fail" {
-              vpc_no   = ncloud_vpc.main.vpc_no
-              protocol = "HTTP"
-              target_type = "VSVR"
-              port        = 8080
-              description = "for test"
-              algorithm_type = "RR"
-            }
-        """)
-        resource_conf = hcl_res['resource'][0]['ncloud_lb_target_group']['fail']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-if __name__ == '__main__':
+        passing_resources = {
+            "ncloud_lb_target_group.pass",
+        }
+        failing_resources = {
+            "ncloud_lb_target_group.fail",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()
