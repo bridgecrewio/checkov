@@ -22,13 +22,14 @@ class AccessControlGroupRuleDescription(BaseResourceCheck):
         if 'type' not in conf.keys():
             outbound_result = self.check_rule(rule_type='outbound', conf=conf)
             inbound_result = self.check_rule(rule_type='inbound', conf=conf)
-            if group_result == CheckResult.PASSED and outbound_result == CheckResult.PASSED and inbound_result == CheckResult.PASSED:
+            if group_result == CheckResult.PASSED or (outbound_result == CheckResult.PASSED and inbound_result == CheckResult.PASSED):
                 return CheckResult.PASSED
             return CheckResult.FAILED
 
         return group_result
 
     def check_rule(self, rule_type, conf):
+
         if rule_type == 'group_or_rule_description':
             self.evaluated_keys = ['description']
             if conf.get('description'):
@@ -39,8 +40,8 @@ class AccessControlGroupRuleDescription(BaseResourceCheck):
             for rule in conf[rule_type]:
                 if isinstance(rule, dict) and rule.get('description'):
                     self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
-                    return CheckResult.FAILED
-        return CheckResult.PASSED
+                    return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = AccessControlGroupRuleDescription()
