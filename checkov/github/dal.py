@@ -11,7 +11,6 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 class Github(BaseVCSDAL):
     def __init__(self) -> None:
         super().__init__()
-
         self.github_conf_dir_path = ""
         self.github_org_security_file_path = ""
         self.github_branch_protection_rules_file_path = ""
