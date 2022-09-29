@@ -216,12 +216,13 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     if platform.system() == "Windows":
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context['definition_path'])
+                    resource = resource_id
                     module_dependency = entity.get("module_dependency_")
                     module_dependency_num = entity.get("module_dependency_num_")
                     if module_dependency and module_dependency_num:
                         referrer_id = self._find_id_for_referrer(f'{full_file_path}[{module_dependency}#{module_dependency_num}]')
                         if referrer_id:
-                            resource_id = f'{referrer_id}.{resource_id}'
+                            resource = f'{referrer_id}.{resource_id}'
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -231,7 +232,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
                         file_line_range=[entity_context.get('start_line'),
                                          entity_context.get('end_line')],
-                        resource=resource_id,
+                        resource=resource,
                         entity_tags=entity.get('tags', {}),
                         evaluations=entity_evaluations,
                         check_class=check.__class__.__module__,
@@ -243,7 +244,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         connected_node=connected_node_data
                     )
                     if self.breadcrumbs:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)
