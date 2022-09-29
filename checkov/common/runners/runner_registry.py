@@ -215,6 +215,14 @@ class RunnerRegistry:
         cyclonedx_reports = []
         csv_sbom_report = CSVSBOM()
 
+        try:
+            if config.skip_resources_without_violations:
+                for report in scan_reports:
+                    report.extra_resources = set()
+        except AttributeError:
+            # config attribute wasn't set, defaults to False and print extra resources to report
+            pass
+
         data_outputs: dict[str, str] = defaultdict(str)
         for report in scan_reports:
             if not report.is_empty():
@@ -353,6 +361,7 @@ class RunnerRegistry:
             'cyclonedx': 'results_cyclonedx.xml',
             'csv': 'results_iac.csv'
         }
+
 
         # create cyclonedx report
         if 'cyclonedx' in output_types:
