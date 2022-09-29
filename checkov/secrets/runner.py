@@ -152,17 +152,17 @@ class Runner(BaseRunner[None]):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                black_list_secret_scan = runner_filter.black_list_secret_scan or []
-                black_list_secret_scan_lower = [file_type.lower() for file_type in black_list_secret_scan]
+                block_list_secret_scan = runner_filter.block_list_secret_scan or []
+                block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if enable_secret_scan_all_files:
                             if is_docker_file(file):
-                                if 'dockerfile' not in black_list_secret_scan_lower:
+                                if 'dockerfile' not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
-                            elif f".{file.split('.')[-1]}" not in black_list_secret_scan_lower:
+                            elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                 files_to_scan.append(os.path.join(root, file))
                         elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))
