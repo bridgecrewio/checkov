@@ -89,6 +89,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -136,6 +138,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv

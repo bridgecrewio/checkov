@@ -66,7 +66,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

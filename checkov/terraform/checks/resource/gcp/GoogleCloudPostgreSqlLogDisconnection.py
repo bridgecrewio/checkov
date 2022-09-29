@@ -36,7 +36,7 @@ class GoogleCloudPostgreSqlLogDisconnection(BaseResourceCheck):
                         # [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
                         flags = [{key: flag[key][0] for key in flag} for flag in flags]
                     for flag in flags:
-                        if (flag['name'] == 'log_disconnections') and (flag['value'] == 'on'):  # Must be explicitly set for check to pass
+                        if (isinstance(flag, dict) and flag['name'] == 'log_disconnections') and (flag['value'] == 'on'):  # Must be explicitly set for check to pass
                             self.evaluated_keys = ['database_version/[0]/POSTGRES',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/name',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']

@@ -68,7 +68,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         pass
 
     def should_scan_file(self, filename: str) -> bool:
