@@ -60,7 +60,6 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
@@ -69,62 +68,34 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
-    def run(
-            self,
+    def run(self,
             root_folder: str | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
-    ) -> Report:
+            ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
         plugins_used = \
             [
-                {
-                    'name': 'AWSKeyDetector'
-                },
-                {
-                    'name': 'ArtifactoryDetector'
-                },
-                {
-                    'name': 'AzureStorageKeyDetector'
-                },
-                {
-                    'name': 'BasicAuthDetector'
-                },
-                {
-                    'name': 'CloudantDetector'
-                },
-                {
-                    'name': 'IbmCloudIamDetector'
-                },
-                {
-                    'name': 'MailchimpDetector'
-                },
-                {
-                    'name': 'PrivateKeyDetector'
-                },
-                {
-                    'name': 'SlackDetector'
-                },
-                {
-                    'name': 'SoftlayerDetector'
-                },
-                {
-                    'name': 'SquareOAuthDetector'
-                },
-                {
-                    'name': 'StripeDetector'
-                },
-                {
-                    'name': 'TwilioKeyDetector'
-                },
+                {'name': 'AWSKeyDetector'},
+                {'name': 'ArtifactoryDetector'},
+                {'name': 'AzureStorageKeyDetector'},
+                {'name': 'BasicAuthDetector'},
+                {'name': 'CloudantDetector'},
+                {'name': 'IbmCloudIamDetector'},
+                {'name': 'MailchimpDetector'},
+                {'name': 'PrivateKeyDetector'},
+                {'name': 'SlackDetector'},
+                {'name': 'SoftlayerDetector'},
+                {'name': 'SquareOAuthDetector'},
+                {'name': 'StripeDetector'},
+                {'name': 'TwilioKeyDetector'},
                 {
                     'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
-                    'limit': ENTROPY_KEYWORD_LIMIT
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
                 }
             ]
         custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
