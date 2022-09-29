@@ -9,13 +9,15 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 
 
 class Github(BaseVCSDAL):
+    github_conf_dir_path: str
+    github_org_security_file_path: str
+    github_branch_protection_rules_file_path: str
+    github_org_webhooks_file_path: str
+    github_repository_webhooks_file_path: str
+    github_repository_collaborators_file_path: str
+    org: str
+
     def __init__(self) -> None:
-        self.github_conf_dir_path = ""
-        self.github_org_security_file_path = ""
-        self.github_branch_protection_rules_file_path = ""
-        self.github_org_webhooks_file_path = ""
-        self.github_repository_webhooks_file_path = ""
-        self.github_repository_collaborators_file_path = ""
         super().__init__()
 
     def setup_conf_dir(self) -> None:
