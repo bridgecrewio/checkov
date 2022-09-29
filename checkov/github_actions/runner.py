@@ -7,7 +7,6 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
 import yaml
-from networkx import DiGraph
 
 from checkov.common.output.report import Report
 from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
@@ -26,6 +25,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from networkx import DiGraph
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
@@ -104,6 +104,8 @@ class Runner(ImageReferencerMixin, YamlRunner):
             )
 
             if image_report:
+                if isinstance(report, list):
+                    return [*report, image_report]
                 return [report, image_report]
 
         return report
@@ -118,7 +120,7 @@ class Runner(ImageReferencerMixin, YamlRunner):
             return images
 
         for file, config in definitions.items():
-            manager = GithubActionsImageReferencerManager(workflow_config=config, file_path=file,
+            manager = GithubActionsImageReferencerManager(workflow_config=force_dict(config), file_path=file,
                                                           workflow_line_numbers=definitions_raw[file])
             images.extend(manager.extract_images_from_workflow())
 
