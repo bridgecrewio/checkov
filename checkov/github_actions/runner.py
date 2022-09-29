@@ -128,21 +128,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
         return images
 
     @staticmethod
-    def generate_resource_key(definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        """
-        Generate resource key without the previous format of key (needed in get_resource)
-        """
-        jobs_dict: dict[str, Any] = definition.get("jobs", {})
-        for job_name, job in jobs_dict.items():
-            if not isinstance(job, dict):
-                continue
-
-            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
-                return f'jobs.{job_name}'
-
-        return ''
-
-    @staticmethod
     def get_start_and_end_lines(key: str) -> list[int]:
         check_name = key.split('.')[-1]
         try:
