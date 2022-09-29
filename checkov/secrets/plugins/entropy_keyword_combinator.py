@@ -38,7 +38,7 @@ class EntropyKeywordCombinator(BasePlugin):
         one of the entropy scanners find a match (on a line which was already matched by keyword plugin) - it is returned.
         for source code files run and merge the two plugins.
         """
-        is_iac = True if f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION else False
+        is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
         if len(line) <= MAX_LINE_LENGTH:
             if is_iac:
                 keyword_matches = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
