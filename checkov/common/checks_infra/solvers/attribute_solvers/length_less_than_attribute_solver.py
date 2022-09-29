@@ -8,7 +8,7 @@ from checkov.common.util.type_forcers import force_int
 class LengthLessThanAttributeSolver(BaseAttributeSolver):
     operator = Operators.LENGTH_LESS_THAN  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         if attr is None:
             return False

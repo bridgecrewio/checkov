@@ -7,5 +7,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver
 class ExistsAttributeSolver(BaseAttributeSolver):
     operator = Operators.EXISTS  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return vertex.get(attribute) is not None  # type:ignore[arg-type]  # due to attribute can be None

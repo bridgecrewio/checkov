@@ -67,8 +67,8 @@ setup(
         "prettytable>=3.0.0",
         "pycep-parser==0.3.9",
         "charset-normalizer",
-        "pyston-lite-autoload==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
-        "pyston-lite==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
         "schema",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup

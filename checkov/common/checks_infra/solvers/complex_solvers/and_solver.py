@@ -16,7 +16,7 @@ class AndSolver(BaseComplexSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(and_, args)
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:
         for solver in self.solvers:
             if not solver.get_operation(vertex):
                 return False
