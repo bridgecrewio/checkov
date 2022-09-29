@@ -16,5 +16,3 @@ definition:
       - aws_route53_hosted_zone_dnssec
       - aws_route53_key_signing_key
       operator: exists
-
-
