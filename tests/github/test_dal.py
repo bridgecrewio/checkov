@@ -14,7 +14,7 @@ def test_org_security(mocker: MockerFixture):
             "organization": {
                 "name": "Bridgecrew",
                 "login": "Bridgecrew-dev",
-                "description": "",
+                "description": None,
                 "ipAllowListEnabledSetting": "DISABLED",
                 "ipAllowListForInstalledAppsEnabledSetting": "DISABLED",
                 "requiresTwoFactorAuthentication": False,
@@ -23,8 +23,24 @@ def test_org_security(mocker: MockerFixture):
         }
     }
     mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data)
-    result = dal.get_organization_security()
-    assert result
+    result1 = dal.get_organization_security()
+
+    mock_data2 = {
+        "data": {
+            "organization": {
+                "name": "Bridgecrew",
+                "login": "Bridgecrew-dev",
+                "description": "",
+                "ipAllowListEnabledSetting": "DISABLED",
+                "ipAllowListForInstalledAppsEnabledSetting": "DISABLED",
+                "requiresTwoFactorAuthentication": False,
+                "samlIdentityProvider": None
+            }
+        }
+    }
+    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data2)
+    result2 = dal.get_organization_security()
+    assert result1 and result2
 
 
 def test_validate_github_conf_paths():
