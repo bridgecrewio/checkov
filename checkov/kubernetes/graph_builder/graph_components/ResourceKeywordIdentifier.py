@@ -1,5 +1,5 @@
 class ResourceKeywordIdentifier:
-    kinds_keywords_map = {
+    KINDS_KEYWORDS_MAP = {
         "PersistentVolumeClaim": ["claimName"],
         "ServiceAccount": ["serviceAccountName"],
         "ClusterRole": ["rules[].resources", "rules[].resourceNames"],
