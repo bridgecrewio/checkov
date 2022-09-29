@@ -362,7 +362,6 @@ class RunnerRegistry:
             'csv': 'results_iac.csv'
         }
 
-
         # create cyclonedx report
         if 'cyclonedx' in output_types:
             cyclonedx_output_path = output_files['cyclonedx']
