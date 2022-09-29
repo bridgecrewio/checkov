@@ -264,7 +264,7 @@ class CycloneDX:
     def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
         """Creates a vulnerability"""
 
-        if check_type == CheckType.SCA_PACKAGE:
+        if check_type in SCA_CHECKTYPES:
             vulnerability = self.create_cve_vulnerability(resource=resource, component=component)
         else:
             vulnerability = self.create_iac_vulnerability(resource=resource, component=component)

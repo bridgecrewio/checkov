@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
-<bom xmlns="http://cyclonedx.org/schema/bom/1.4" version="1" serialNumber="urn:uuid:e6e11b45-ab99-4b14-b01f-61835165706d">
+<bom serialNumber="urn:uuid:d4912465-39d5-4f9d-853b-ee60e3463a4d" version="1" xmlns="http://cyclonedx.org/schema/bom/1.4">
 	<metadata>
-		<timestamp>2022-09-03T19:50:22.454965+00:00</timestamp>
+		<timestamp>2022-09-29T11:09:18.873373+00:00</timestamp>
 		<tools>
 			<tool>
 				<vendor>CycloneDX</vendor>
@@ -37,7 +37,7 @@
 			<tool>
 				<vendor>bridgecrew</vendor>
 				<name>checkov</name>
-				<version>UNKNOWN</version>
+				<version>2.1.213</version>
 				<externalReferences>
 					<reference type="build-system">
 						<url>https://github.com/bridgecrewio/checkov/actions</url>
@@ -68,11 +68,11 @@
 		</tools>
 	</metadata>
 	<components>
-		<component type="container" bom-ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456">
+		<component bom-ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456" type="container">
 			<name>bridgecrewio/example//sha256:123456</name>
 			<purl>pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456</purl>
 		</component>
-		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1">
+		<component bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1" type="library">
 			<name>bzip2</name>
 			<version>1.0.8-5build1</version>
 			<licenses>
@@ -82,7 +82,7 @@
 			</licenses>
 			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/bzip2@1.0.8-5build1</purl>
 		</component>
-		<component type="library" bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1">
+		<component bom-ref="pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1" type="library">
 			<name>libidn2</name>
 			<version>2.3.2-2build1</version>
 			<licenses>
@@ -92,7 +92,7 @@
 			</licenses>
 			<purl>pkg:generic/bridgecrewio/example/path/to/Dockerfile/libidn2@2.3.2-2build1</purl>
 		</component>
-		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy">
+		<component bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy" type="library">
 			<name>pcre2</name>
 			<version>10.39-3build1</version>
 			<licenses>
@@ -102,7 +102,7 @@
 			</licenses>
 			<purl>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</purl>
 		</component>
-		<component type="library" bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy">
+		<component bom-ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy" type="library">
 			<name>perl</name>
 			<version>5.34.0-3ubuntu1</version>
 			<licenses>
@@ -121,34 +121,50 @@
 		<dependency ref="pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy"/>
 	</dependencies>
 	<vulnerabilities>
-		<vulnerability bom-ref="6bd56c92-c511-4ad0-baf1-27fac9e8a729">
-			<id>CKV_CVE_2022_1587</id>
+		<vulnerability bom-ref="76003c55-f10b-42a3-95bf-c6eae15d8006">
+			<id>CVE-2022-1587</id>
 			<source>
-				<name>checkov</name>
+				<url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</url>
 			</source>
 			<ratings>
 				<rating>
+					<source>
+						<url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</url>
+					</source>
+					<score>9.1</score>
 					<severity>low</severity>
+					<method>CVSSv3</method>
+					<vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H</vector>
 				</rating>
 			</ratings>
-			<description>Resource: path/to/Dockerfile (sha256:123456).pcre2. SCA package scan</description>
+			<description>An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.</description>
+			<recommendation>needed</recommendation>
+			<published>2022-05-17T00:15:00+03:00</published>
 			<affects>
 				<target>
 					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</ref>
 				</target>
 			</affects>
 		</vulnerability>
-		<vulnerability bom-ref="1c581339-32a1-4799-8570-4e89744a1df6">
-			<id>CKV_CVE_2020_16156</id>
+		<vulnerability bom-ref="7e2e6e05-54b2-4a97-b246-95d69c792bc3">
+			<id>CVE-2020-16156</id>
 			<source>
-				<name>checkov</name>
+				<url>https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156</url>
 			</source>
 			<ratings>
 				<rating>
+					<source>
+						<url>https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156</url>
+					</source>
+					<score>7.8</score>
 					<severity>medium</severity>
+					<method>CVSSv3</method>
+					<vector>AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H</vector>
 				</rating>
 			</ratings>
-			<description>Resource: path/to/Dockerfile (sha256:123456).perl. SCA package scan</description>
+			<description>CPAN 2.28 allows Signature Verification Bypass.</description>
+			<recommendation>needed</recommendation>
+			<published>2021-12-13T20:15:00+02:00</published>
 			<affects>
 				<target>
 					<ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</ref>
