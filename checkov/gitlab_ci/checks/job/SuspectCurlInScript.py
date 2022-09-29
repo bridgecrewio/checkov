@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from checkov.common.models.enums import CheckResult
 
 from checkov.gitlab_ci.checks.base_gitlab_ci_check import BaseGitlabCICheck
@@ -19,7 +17,7 @@ class SuspectCurlInScript(BaseGitlabCICheck):
             supported_entities=('*.script[]',)
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any]) -> CheckResult:
+    def scan_conf(self, conf: str) -> tuple[CheckResult, str]:  # type:ignore[override]
         if "curl" in conf:
             badstuff = ('curl', '$CI_')
             lines = conf.split("\n")

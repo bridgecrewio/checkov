@@ -60,7 +60,6 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-ENTROPY_KEYWORD_LIMIT = 3
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
@@ -69,62 +68,34 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
-    def run(
-            self,
+    def run(self,
             root_folder: str | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
-    ) -> Report:
+            ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
         plugins_used = \
             [
-                {
-                    'name': 'AWSKeyDetector'
-                },
-                {
-                    'name': 'ArtifactoryDetector'
-                },
-                {
-                    'name': 'AzureStorageKeyDetector'
-                },
-                {
-                    'name': 'BasicAuthDetector'
-                },
-                {
-                    'name': 'CloudantDetector'
-                },
-                {
-                    'name': 'IbmCloudIamDetector'
-                },
-                {
-                    'name': 'MailchimpDetector'
-                },
-                {
-                    'name': 'PrivateKeyDetector'
-                },
-                {
-                    'name': 'SlackDetector'
-                },
-                {
-                    'name': 'SoftlayerDetector'
-                },
-                {
-                    'name': 'SquareOAuthDetector'
-                },
-                {
-                    'name': 'StripeDetector'
-                },
-                {
-                    'name': 'TwilioKeyDetector'
-                },
+                {'name': 'AWSKeyDetector'},
+                {'name': 'ArtifactoryDetector'},
+                {'name': 'AzureStorageKeyDetector'},
+                {'name': 'BasicAuthDetector'},
+                {'name': 'CloudantDetector'},
+                {'name': 'IbmCloudIamDetector'},
+                {'name': 'MailchimpDetector'},
+                {'name': 'PrivateKeyDetector'},
+                {'name': 'SlackDetector'},
+                {'name': 'SoftlayerDetector'},
+                {'name': 'SquareOAuthDetector'},
+                {'name': 'StripeDetector'},
+                {'name': 'TwilioKeyDetector'},
                 {
                     'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
-                    'limit': ENTROPY_KEYWORD_LIMIT
+                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
                 }
             ]
         custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
@@ -152,17 +123,17 @@ class Runner(BaseRunner[None]):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
                 enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                black_list_secret_scan = runner_filter.black_list_secret_scan or []
-                black_list_secret_scan_lower = [file_type.lower() for file_type in black_list_secret_scan]
+                block_list_secret_scan = runner_filter.block_list_secret_scan or []
+                block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, excluded_paths)
                     filter_ignored_paths(root, f_names, excluded_paths)
                     for file in f_names:
                         if enable_secret_scan_all_files:
                             if is_docker_file(file):
-                                if 'dockerfile' not in black_list_secret_scan_lower:
+                                if 'dockerfile' not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
-                            elif f".{file.split('.')[-1]}" not in black_list_secret_scan_lower:
+                            elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                 files_to_scan.append(os.path.join(root, file))
                         elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
                             files_to_scan.append(os.path.join(root, file))

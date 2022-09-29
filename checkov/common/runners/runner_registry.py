@@ -72,15 +72,15 @@ class RunnerRegistry:
             files: Optional[List[str]] = None,
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
-    ) -> List[Report]:
+    ) -> list[Report]:
         integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
-            reports: Iterable[Report] = [
+            reports: Iterable[Report | list[Report]] = [
                 self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                     runner_filter=self.runner_filter,
                                     collect_skip_comments=collect_skip_comments)]
         else:
-            def _parallel_run(runner: _BaseRunner) -> Report:
+            def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
                 return runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,

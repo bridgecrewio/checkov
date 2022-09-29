@@ -1,19 +1,11 @@
 import os
-import subprocess
 import unittest
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.helm.runner import Runner
-
-
-def helm_exists() -> bool:
-    try:
-        subprocess.run([Runner.helm_command, "version"], check=True, stdout=subprocess.PIPE)
-    except Exception:
-        return False
-    return True
+from tests.helm.utils import helm_exists
 
 
 class TestRunnerValid(unittest.TestCase):

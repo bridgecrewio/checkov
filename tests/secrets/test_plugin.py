@@ -1,12 +1,12 @@
+import os
 import unittest
 
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
-from checkov.secrets.runner import ENTROPY_KEYWORD_LIMIT
 
 
 class TestCombinatorPlugin(unittest.TestCase):
     def setUp(self) -> None:
-        self.plugin = EntropyKeywordCombinator(ENTROPY_KEYWORD_LIMIT)
+        self.plugin = EntropyKeywordCombinator()
 
     def test_positive_value(self):
         result = self.plugin.analyze_line("mock.tf", 'api_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY"', 5)
@@ -30,9 +30,18 @@ class TestCombinatorPlugin(unittest.TestCase):
         self.assertEqual("Base64 High Entropy String", secret.type)
         self.assertEqual("bfd3617727eab0e800e62a776c76381defbc4145", secret.secret_hash)
 
-    def test_source_code_file_value(self):
+    def test_no_false_positive_py(self):
+        # combinator plugin should ignore source code files
         result = self.plugin.analyze_line("main.py", 'api_key = "7T)G#dl5}c=T>kf$G3Bon^!R?kzF00"', 1)
-        self.assertEqual(1, len(result))
-        secret = result.pop()
-        self.assertEqual("Secret Keyword", secret.type)
-        self.assertEqual("93beaa774e56483f19e4fe916ce87e62d4b3ea85", secret.secret_hash)
+        self.assertEqual(0, len(result))
+
+    def test_no_false_positive_yml_1(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file_name = "secret-no-false-positive.yml"
+        valid_file_path = current_dir + f"/resources/cfn/{file_name}"
+        with open(file=valid_file_path) as f:
+            for i, line in enumerate(f.readlines()):
+                result = self.plugin.analyze_line(file_name, line, i)
+                self.assertEqual(0, len(result))
+
+

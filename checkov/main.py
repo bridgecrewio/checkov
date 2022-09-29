@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, List, Optional, TYPE_CHECKING
 
-import argcomplete
+import argcomplete  # type:ignore[import]
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
@@ -165,7 +165,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  use_enforcement_rules=config.use_enforcement_rules,
                                  run_image_referencer=run_image_referencer,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
-                                 black_list_secret_scan=config.black_list_secret_scan)
+                                 block_list_secret_scan=config.block_list_secret_scan)
 
     if outer_registry:
         runner_registry = outer_registry
@@ -417,9 +417,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
-               help='Filter scan to skip specific infrastructure code frameworks. \n'
-                    'will be included automatically for some frameworks if system dependencies '
-                    'are missing.',
+               help='Filter scan to skip specific infrastructure as code frameworks.'
+                    'This will be included automatically for some frameworks if system dependencies '
+                    'are missing. Add multiple frameworks using spaces. For example, '
+                    '--skip-framework terraform sca_package.',
                choices=checkov_runners,
                default=None,
                nargs="+")
@@ -576,11 +577,11 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_SECRETS_SCAN_ENABLE_ALL',
                action='store_true',
                help='enable secret scan for all files')
-    parser.add('--black-list-secret-scan',
+    parser.add('--block-list-secret-scan',
                default=[],
-               env_var='CKV_SECRETS_SCAN_BLACK_LIST',
+               env_var='CKV_SECRETS_SCAN_BLOCK_LIST',
                action='append',
-               help='black file list to filter out from the secret scanner')
+               help='List of files to filter out from the secret scanner')
     parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
                help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
                     '(after check results), default is on top.')

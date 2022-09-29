@@ -121,3 +121,17 @@ resource "google_sql_database_instance" "pass4" {
     tier              = "db-n1-standard-1"
   }
 }
+
+resource "google_sql_database_instance" "pass5" {
+  database_version = "MYSQL_8_0"
+  name             = "general-mysql81"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+    database_flags = ["${var.test_var}"]
+    pricing_plan = "PER_USE"
+    tier         = "db-n1-standard-1"
+  }
+}
