@@ -587,9 +587,9 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     '(after check results), default is on top.')
     parser.add('--skip-resources-without-violations',
                help="exclude extra resources (resources without violations) from report output",
-               default=os.environ.get('SKIP_RESOURCES_WITHOUT_VIOLATIONS', False),
+               default=os.environ.get('CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS', False),
                action='store_true',
-               env_var='SKIP_RESOURCES_WITHOUT_VIOLATIONS')
+               env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
 
 
 def get_external_checks_dir(config: Any) -> Any:

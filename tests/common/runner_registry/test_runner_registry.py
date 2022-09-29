@@ -323,7 +323,7 @@ def test_extra_resources_in_report(capsys):
 
     # then
     for report in reports:
-        assert report.extra_resources
+        assert len(report.extra_resources) > 0
 
 
 def test_extra_resources_removed_from_report(capsys):
@@ -353,7 +353,7 @@ def test_extra_resources_removed_from_report(capsys):
 
     # then
     for report in reports:
-        assert not report.extra_resources
+        assert len(report.extra_resources) == 0
 
 
 if __name__ == "__main__":
