@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from update_checker import UpdateChecker
+from update_checker import UpdateChecker  # type:ignore[import]
 
 
 def check_for_update(package: str, version: str) -> str | None:

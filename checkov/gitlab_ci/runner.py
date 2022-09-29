@@ -22,9 +22,6 @@ if TYPE_CHECKING:
 class Runner(ImageReferencerMixin, YamlRunner):
     check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def require_external_checks(self) -> bool:
         return False
 
@@ -72,7 +69,7 @@ class Runner(ImageReferencerMixin, YamlRunner):
             )
 
             if image_report:
-                return [report, image_report]
+                return [report, image_report]  # type:ignore[list-item]  # report can only be of type Report, not a list
 
         return report
 
@@ -84,6 +81,9 @@ class Runner(ImageReferencerMixin, YamlRunner):
             return images
 
         for file, config in definitions.items():
+            if isinstance(config, list):
+                continue
+
             manager = GitlabCiImageReferencerManager(workflow_config=config, file_path=file)
             images.extend(manager.extract_images_from_workflow())
 

@@ -1,0 +1,23 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "test_fail",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "example",
+        "summary": "example",
+        "schemes": [
+          "http"
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      }
+    }
+  }
+}

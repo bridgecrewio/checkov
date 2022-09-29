@@ -15,5 +15,3 @@ definition:
       connected_resource_types:
       - aws_route53_query_log
       operator: exists
-
-
