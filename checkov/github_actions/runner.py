@@ -120,7 +120,8 @@ class Runner(ImageReferencerMixin, YamlRunner):
             return images
 
         for file, config in definitions.items():
-            manager = GithubActionsImageReferencerManager(workflow_config=force_dict(config), file_path=file,
+            _config = force_dict(config) or {}
+            manager = GithubActionsImageReferencerManager(workflow_config=_config, file_path=file,
                                                           workflow_line_numbers=definitions_raw[file])
             images.extend(manager.extract_images_from_workflow())
 
