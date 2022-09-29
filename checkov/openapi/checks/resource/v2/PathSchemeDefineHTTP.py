@@ -28,6 +28,8 @@ class PathSchemeDefineHTTP(BaseOpenapiCheckV2):
             for op_name, op_val in http_method.items():
                 if self.is_start_end_line(op_name):
                     continue
+                if not isinstance(op_val, dict):
+                    continue
                 schemes = op_val.get('schemes')
                 if schemes and 'http' in schemes:
                     return CheckResult.FAILED, conf
