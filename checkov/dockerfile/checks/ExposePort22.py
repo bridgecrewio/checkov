@@ -13,7 +13,7 @@ class ExposePort22(BaseDockerfileCheck):
     def scan_entity_conf(self, conf):
         i = 0
         for expose_term in conf:
-            if "22" in expose_term['value'].split(' '):
+            if "22" | "22/tcp" in expose_term['value'].split(' '):
                 return CheckResult.FAILED, conf[i]
             i += 1
         return CheckResult.PASSED , None
