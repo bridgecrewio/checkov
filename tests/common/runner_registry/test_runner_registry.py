@@ -4,7 +4,11 @@ import unittest
 
 import os
 import io
+from pathlib import Path
 from unittest.mock import patch
+
+from _pytest.capture import CaptureFixture
+
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
@@ -294,6 +298,44 @@ def test_non_compact_json_output(capsys):
     captured = capsys.readouterr()
 
     assert 'code_block' in captured.out
+
+
+def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFixture[str]):
+    # given
+    test_files_dir = Path(__file__).parent / "example_s3_tf"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
+    )
+    reports = runner_registry.run(root_folder=str(test_files_dir))
+
+    json_file_path = tmp_path / "result.json"
+    xml_file_path = tmp_path / "sub_folder/result.xml"
+    config = argparse.Namespace(
+        file=['./example_s3_tf/main.tf'],
+        compact=False,
+        output=["json", "cli", "junitxml"],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=f"{json_file_path},console,{xml_file_path}",
+        use_enforcement_rules=None,
+        output_bc_ids=False,
+        summary_position="top"
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    # then
+    assert 'By bridgecrew.io' in capsys.readouterr().out
+
+    assert json_file_path.exists()
+    assert '"check_type": "terraform"' in json_file_path.read_text()
+
+    assert xml_file_path.exists()
+    assert "<testcase " in xml_file_path.read_text()
 
 
 if __name__ == "__main__":
