@@ -1,14 +1,13 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: ElasticsearchDomain resource
 
-Metadata:
-  cfn-lint:
-    config:
-      ignore_checks:
-      - E3002
-
 Resources:
   AutoScalingConfig:
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3030
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: ami-0ff8a91507f77f867
