@@ -307,7 +307,7 @@ def test_extra_resources_in_report(capsys):
     reports = runner_registry.run(root_folder=test_files_dir)
 
     config = argparse.Namespace(
-        file=['./example_bicep_with_empty_resources/playground.bicep.tf'],
+        file=['./example_bicep_with_empty_resources/playground.bicep'],
         compact=False,
         output=['json'],
         quiet=False,
@@ -336,7 +336,7 @@ def test_extra_resources_removed_from_report(capsys):
     reports = runner_registry.run(root_folder=test_files_dir)
 
     config = argparse.Namespace(
-        file=['./example_bicep_with_empty_resources/playground.bicep.tf'],
+        file=['./example_bicep_with_empty_resources/playground.bicep'],
         compact=False,
         output=['json'],
         quiet=False,
