@@ -7,7 +7,7 @@ from checkov.github.dal import Github
 
 
 @mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg"}, clear=True)
-def test_org_security(mocker: MockerFixture):
+def test_org_security_null_description(mocker: MockerFixture):
     dal = Github()
     mock_data = {
         "data": {
@@ -23,8 +23,12 @@ def test_org_security(mocker: MockerFixture):
         }
     }
     mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data)
-    result1 = dal.get_organization_security()
+    result = dal.get_organization_security()
+    assert result
 
+@mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg"}, clear=True)
+def test_org_security_str_description(mocker: MockerFixture):
+    dal = Github()
     mock_data2 = {
         "data": {
             "organization": {
@@ -39,8 +43,8 @@ def test_org_security(mocker: MockerFixture):
         }
     }
     mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data2)
-    result2 = dal.get_organization_security()
-    assert result1 and result2
+    result = dal.get_organization_security()
+    assert result
 
 
 def test_validate_github_conf_paths():
