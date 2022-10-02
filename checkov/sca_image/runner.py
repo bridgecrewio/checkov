@@ -215,13 +215,14 @@ class Runner(PackageRunner):
             # TODO: do we want to trigger a scan in this case?
             logging.info(f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
             return {}
-        payload: dict[str, Any] = docker_image_scanning_integration.create_report(twistcli_scan_result=cached_results,
-                                                                                  bc_platform_integration=bc_integration,
-                                                                                  file_path=dockerfile_path,
-                                                                                  file_content=f'image: {image.name}',
-                                                                                  docker_image_name=image.name,
-                                                                                  related_resource_id=image.related_resource_id,
-                                                                                  root_folder=root_folder)
+        payload: dict[str, Any] = docker_image_scanning_integration.create_report(
+            twistcli_scan_result=cached_results,
+            bc_platform_integration=bc_integration,
+            file_path=dockerfile_path,
+            file_content=f'image: {image.name}',
+            docker_image_name=image.name,
+            related_resource_id=image.related_resource_id,
+            root_folder=root_folder)
         return payload
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
