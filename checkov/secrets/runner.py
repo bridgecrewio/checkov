@@ -5,24 +5,24 @@ import linecache
 import logging
 import os
 import re
-from pathlib import Path
 from os.path import exists
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
-from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
@@ -68,36 +68,33 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
-    def run(self,
+    def run(
+            self,
             root_folder: str | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
-            ) -> Report:
+    ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
-        plugins_used = \
-            [
-                {'name': 'AWSKeyDetector'},
-                {'name': 'ArtifactoryDetector'},
-                {'name': 'AzureStorageKeyDetector'},
-                {'name': 'BasicAuthDetector'},
-                {'name': 'CloudantDetector'},
-                {'name': 'IbmCloudIamDetector'},
-                {'name': 'MailchimpDetector'},
-                {'name': 'PrivateKeyDetector'},
-                {'name': 'SlackDetector'},
-                {'name': 'SoftlayerDetector'},
-                {'name': 'SquareOAuthDetector'},
-                {'name': 'StripeDetector'},
-                {'name': 'TwilioKeyDetector'},
-                {
-                    'name': 'EntropyKeywordCombinator',
-                    'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'
-                }
-            ]
+        plugins_used = [
+            {'name': 'AWSKeyDetector'},
+            {'name': 'ArtifactoryDetector'},
+            {'name': 'AzureStorageKeyDetector'},
+            {'name': 'BasicAuthDetector'},
+            {'name': 'CloudantDetector'},
+            {'name': 'IbmCloudIamDetector'},
+            {'name': 'MailchimpDetector'},
+            {'name': 'PrivateKeyDetector'},
+            {'name': 'SlackDetector'},
+            {'name': 'SoftlayerDetector'},
+            {'name': 'SquareOAuthDetector'},
+            {'name': 'StripeDetector'},
+            {'name': 'TwilioKeyDetector'},
+            {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
+        ]
         custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
         logging.info(f"Custom detector flag set to {custom_plugins}")
         if custom_plugins:
@@ -147,7 +144,7 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
                 if hasattr(secret, 'check_id'):
-                    check_id = secret.check_id      # type: ignore
+                    check_id = secret.check_id  # type: ignore
                 else:
                     check_id = SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
@@ -162,7 +159,13 @@ class Runner(BaseRunner[None]):
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
-                line_text = linecache.getline(secret.filename, secret.line_number)
+                try:
+                    line_text = linecache.getline(secret.filename, secret.line_number)
+                except SyntaxError as e:
+                    # If encoding is a problem, this is probably not human-readable source code
+                    # hence there's no need in flagging this secret
+                    logging.info(f'Failed to log secret {secret.type} for file {secret.filename} because of {e}')
+                    continue
                 if line_text and line_text.startswith('git_commit'):
                     continue
                 result = self.search_for_suppression(

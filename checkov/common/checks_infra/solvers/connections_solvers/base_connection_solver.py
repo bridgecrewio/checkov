@@ -80,7 +80,7 @@ class BaseConnectionSolver(BaseSolver):
 
         return graph_connector.subgraph(resource_nodes)
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:  # type:ignore[override]
+    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:

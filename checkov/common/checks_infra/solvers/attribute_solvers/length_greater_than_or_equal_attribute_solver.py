@@ -8,7 +8,7 @@ from checkov.common.graph.checks_infra.enums import Operators
 class LengthGreaterThanOrEqualAttributeSolver(LengthLessThanAttributeSolver):
     operator = Operators.LENGTH_GREATER_THAN_OR_EQUAL  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         if attr is None:
             return False
