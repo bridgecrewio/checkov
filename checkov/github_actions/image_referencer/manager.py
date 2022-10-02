@@ -14,8 +14,8 @@ class GithubActionsImageReferencerManager:
         self.workflow_line_numbers = workflow_line_numbers
 
     def extract_images_from_workflow(self) -> list[Image]:
-        gitlab_provider = GithubActionProvider(workflow_config=self.workflow_config, file_path=self.file_path,
-                                               workflow_line_numbers=self.workflow_line_numbers)
-        images: list[Image] = gitlab_provider.extract_images_from_workflow()
+        provider = GithubActionProvider(workflow_config=self.workflow_config, file_path=self.file_path,
+                                        workflow_line_numbers=self.workflow_line_numbers)
+        images: list[Image] = provider.extract_images_from_workflow()
 
         return images

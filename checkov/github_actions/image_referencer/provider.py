@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
+from checkov.common.util.consts import START_LINE, END_LINE
 
 
 class GithubActionProvider:
@@ -12,10 +13,6 @@ class GithubActionProvider:
         self.file_path = file_path
         self.workflow_line_numbers = workflow_line_numbers
 
-    @staticmethod
-    def _get_start_end_lines(entity: dict[str, Any]) -> tuple[int, int]:
-        return entity.get('__startline__', 0), entity.get('__endline__', 0)
-
     def generate_resource_key(self, start_line: int, end_line: int) -> str:
         """
         Generate resource key without the previous format of key (needed in get_resource)
@@ -25,7 +22,7 @@ class GithubActionProvider:
             if not isinstance(job, dict):
                 continue
 
-            if job['__startline__'] <= start_line <= end_line <= job['__endline__']:
+            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
                 return f'jobs.{job_name}'
 
         return ''
@@ -47,7 +44,7 @@ class GithubActionProvider:
 
                 if isinstance(container, dict):
                     image = container.get("image", "")
-                    start_line, end_line = GithubActionProvider._get_start_end_lines(container)
+                    start_line, end_line = container.get(START_LINE, 0), container.get(END_LINE, 0)
 
                 elif isinstance(container, str):
                     image = container

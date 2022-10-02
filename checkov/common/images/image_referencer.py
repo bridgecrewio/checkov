@@ -289,9 +289,10 @@ class ImageReferencerMixin:
 
     @abstractmethod
     def extract_images(
-        self, graph_connector: DiGraph | None = None,
-            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
-            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         """Tries to find image references in the graph or supported resource"""
 
