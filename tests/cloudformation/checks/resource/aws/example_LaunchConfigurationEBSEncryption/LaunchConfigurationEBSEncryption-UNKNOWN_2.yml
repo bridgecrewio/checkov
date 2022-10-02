@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElasticsearchDomain resource
+
+Resources:
+  AutoScalingConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-0ff8a91507f77f867
+      SecurityGroups:
+      - myExistingEC2SecurityGroup
+      InstanceType: m1.small
+      BlockDeviceMappings: null
