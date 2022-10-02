@@ -161,9 +161,10 @@ class Runner(PackageRunner):
                     self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
         return report
 
-    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter, root_folder: Optional[str, Path] = None) -> None:
+    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter, root_folder: Union[str, Path, None] = None) -> None:
         """
         Get workflow file, and get the list of images from every relevant imagereferencer, and create a unified vulnrability report
+        :param root_folder: for CLI scans - the directory in which checkov runs
         :param abs_fname: file path to inspect
         :param report: unified report object
         :param runner_filter: filter for report
@@ -204,8 +205,9 @@ class Runner(PackageRunner):
         )
         return report
 
-    def get_image_cached_results(self, dockerfile_path: str, image: Image, root_folder: Optional[str, Path] = None) -> dict[str, Any]:
+    def get_image_cached_results(self, dockerfile_path: str, image: Image, root_folder: Union[str, Path, None] = None) -> dict[str, Any]:
         """
+            :param root_folder: for CLI scans - the directory in which checkov runs
             :param dockerfile_path: path of a file that might contain a container image
             :param image: Image object
             :return: cached_results report
