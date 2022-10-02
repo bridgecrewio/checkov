@@ -15,6 +15,7 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.bicep.runner import Runner as bicep_runner
 import re
 
 
@@ -294,6 +295,65 @@ def test_non_compact_json_output(capsys):
     captured = capsys.readouterr()
 
     assert 'code_block' in captured.out
+
+
+def test_extra_resources_in_report(capsys):
+    # given
+    test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_bicep_with_empty_resources"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, bicep_runner()
+    )
+    reports = runner_registry.run(root_folder=test_files_dir)
+
+    config = argparse.Namespace(
+        file=['./example_bicep_with_empty_resources/playground.bicep'],
+        compact=False,
+        output=['json'],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=None,
+        use_enforcement_rules=None
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    # then
+    for report in reports:
+        assert len(report.extra_resources) > 0
+
+
+def test_extra_resources_removed_from_report(capsys):
+    # given
+    test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/example_bicep_with_empty_resources"
+    runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+    runner_registry = RunnerRegistry(
+        banner, runner_filter, bicep_runner()
+    )
+    reports = runner_registry.run(root_folder=test_files_dir)
+
+    config = argparse.Namespace(
+        file=['./example_bicep_with_empty_resources/playground.bicep'],
+        compact=False,
+        output=['json'],
+        quiet=False,
+        soft_fail=False,
+        soft_fail_on=None,
+        hard_fail_on=None,
+        output_file_path=None,
+        use_enforcement_rules=None,
+        skip_resources_without_violations=True
+    )
+
+    # when
+    runner_registry.print_reports(scan_reports=reports, config=config)
+
+    # then
+    for report in reports:
+        assert len(report.extra_resources) == 0
 
 
 if __name__ == "__main__":
