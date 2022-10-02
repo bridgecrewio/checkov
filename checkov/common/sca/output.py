@@ -12,7 +12,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 )
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.sca.commons import (
@@ -81,6 +81,34 @@ def create_report_license_record(
     return record
 
 
+def _update_details_by_scan_data_format(
+    details: dict[str, Any],
+    vulnerability_details: dict[str, Any],
+    image_details: ImageDetails | None = None,
+    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
+) -> None:
+    if scan_data_format == ScanDataFormat.FromTwistcli:
+        lowest_fixed_version = UNFIXABLE_VERSION
+        package_version = vulnerability_details["packageVersion"]
+        fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
+        status = vulnerability_details.get("status") or "open"
+        if status != "open":
+            parsed_current_version = packaging_version.parse(package_version)
+            for version in status.replace("fixed in", "").split(","):
+                parsed_version = packaging_version.parse(version.strip())
+                if parsed_version > parsed_current_version:
+                    fixed_versions.append(parsed_version)
+
+            if fixed_versions:
+                lowest_fixed_version = str(min(fixed_versions))
+        details.update({"status": status, "lowest_fixed_version": lowest_fixed_version,
+                        "fixed_versions": fixed_versions, "image_details": image_details})
+    elif scan_data_format == ScanDataFormat.FromPlatform:
+        status = vulnerability_details["status"]
+        fix_version = vulnerability_details.get("cveStatus")
+        details.update({"status": status, "fix_version": fix_version})
+
+
 def create_report_cve_record(
     rootless_file_path: str,
     file_abs_path: str,
@@ -89,6 +117,7 @@ def create_report_cve_record(
     licenses: str,
     runner_filter: RunnerFilter | None = None,
     image_details: ImageDetails | None = None,
+    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -118,27 +147,12 @@ def create_report_cve_record(
 
     code_block = [(0, f"{package_name}: {package_version}")]
 
-    lowest_fixed_version = UNFIXABLE_VERSION
-    fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
-    status = vulnerability_details.get("status") or "open"
-    if status != "open":
-        parsed_current_version = packaging_version.parse(package_version)
-        for version in status.replace("fixed in", "").split(","):
-            parsed_version = packaging_version.parse(version.strip())
-            if parsed_version > parsed_current_version:
-                fixed_versions.append(parsed_version)
-
-        if fixed_versions:
-            lowest_fixed_version = str(min(fixed_versions))
-
     details = {
         "id": cve_id,
-        "status": status,
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
         "package_type": package_type,
-        "image_details": image_details,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
@@ -146,10 +160,9 @@ def create_report_cve_record(
         "risk_factors": vulnerability_details.get("riskFactors"),
         "published_date": vulnerability_details.get("publishedDate")
         or (datetime.now() - timedelta(days=vulnerability_details.get("publishedDays", 0))).isoformat(),
-        "lowest_fixed_version": lowest_fixed_version,
-        "fixed_versions": fixed_versions,
         "licenses": licenses,
     }
+    _update_details_by_scan_data_format(details, vulnerability_details, image_details, scan_data_format)
 
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
@@ -171,18 +184,16 @@ def create_report_cve_record(
     return record
 
 
-def parse_vulns_to_records(
+def _add_licenses_records_to_report(
     report: Report,
     check_class: str | None,
     scanned_file_path: str,
     rootless_file_path: str,
     runner_filter: RunnerFilter,
-    vulnerabilities: list[dict[str, Any]],
-    packages: list[dict[str, Any]],
     license_statuses: list[_LicenseStatus],
     image_details: ImageDetails | None = None,
     report_type: str | None = None,
-) -> None:
+) -> dict[str, list[str]]:
     licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
     for license_status in license_statuses:
@@ -222,6 +233,22 @@ def parse_vulns_to_records(
         report.add_resource(license_record.resource)
         report.add_record(license_record)
 
+    return licenses_per_package_map
+
+
+def add_cves_and_packages_to_reports(
+    report: Report,
+    check_class: str | None,
+    scanned_file_path: str,
+    rootless_file_path: str,
+    runner_filter: RunnerFilter,
+    vulnerabilities: list[dict[str, Any]],
+    packages: list[dict[str, Any]],
+    licenses_per_package_map: dict[str, list[str]],
+    image_details: ImageDetails | None = None,
+    report_type: str | None = None,
+    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli,
+) -> None:
     vulnerable_packages = []
 
     for vulnerability in vulnerabilities:
@@ -234,6 +261,7 @@ def parse_vulns_to_records(
             licenses=", ".join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or "Unknown",
             runner_filter=runner_filter,
             image_details=image_details,
+            scan_data_format=scan_data_format,
         )
         if not runner_filter.should_run_check(
             check_id=cve_record.check_id,
@@ -272,6 +300,28 @@ def parse_vulns_to_records(
                     },
                 )
             )
+
+
+def parse_vulns_to_records(
+    report: Report,
+    check_class: str | None,
+    scanned_file_path: str,
+    rootless_file_path: str,
+    runner_filter: RunnerFilter,
+    vulnerabilities: list[dict[str, Any]],
+    packages: list[dict[str, Any]],
+    license_statuses: list[_LicenseStatus],
+    image_details: ImageDetails | None = None,
+    report_type: str | None = None,
+    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
+) -> None:
+    licenses_per_package_map: dict[str, list[str]] = _add_licenses_records_to_report(
+         report, check_class, scanned_file_path, rootless_file_path, runner_filter, license_statuses, image_details,
+         report_type)
+
+    add_cves_and_packages_to_reports(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
+                                     vulnerabilities, packages, licenses_per_package_map, image_details, report_type,
+                                     scan_data_format)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:

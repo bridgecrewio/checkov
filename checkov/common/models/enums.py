@@ -41,3 +41,8 @@ class ContextCategories(Enum):
     RESOURCE = 6
     VARIABLE = 7
     OUTPUT = 8
+
+
+class ScanDataFormat(Enum):
+    FromTwistcli = 1
+    FromPlatform = 2
