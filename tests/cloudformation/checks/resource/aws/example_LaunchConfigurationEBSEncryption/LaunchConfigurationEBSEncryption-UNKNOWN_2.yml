@@ -7,7 +7,7 @@ Resources:
       cfn-lint:
         config:
           ignore_checks:
-            - E3030
+            - E3002
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       ImageId: ami-0ff8a91507f77f867
