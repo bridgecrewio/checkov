@@ -22,6 +22,7 @@ class TestNetworkACLUnrestrictedIngress22(unittest.TestCase):
             "aws_network_acl.pass2",
             "aws_network_acl_rule.pass",
             "aws_network_acl_rule.pass2",
+            "aws_network_acl_rule.pass3"
         }
         failing_resources = {
             "aws_network_acl.fail",
