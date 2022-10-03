@@ -48,9 +48,17 @@ def test_org_security_str_description(mocker: MockerFixture):
 
 
 def test_validate_github_conf_paths():
+    # check that all the files in github_conf folder that should be updated with new data from GitHub api reply,
+    # are empty.In case of no reply-no old data should be left causing confusion with new retrieved data.
     dal = Github()
-    all_github_conf_files_conf_declared = dal.github_conf_dir_path \
-        and dal.github_org_security_file_path and dal.github_branch_protection_rules_file_path \
-        and dal.github_org_webhooks_file_path and dal.github_repository_webhooks_file_path \
-        and dal.github_repository_collaborators_file_path
-    assert all_github_conf_files_conf_declared
+    all_github_conf_files_conf_declared = \
+        {"org_security", "branch_protection_rules", "org_webhooks", "repository_webhooks", "repository_collaborators"} \
+        - dal.github_conf_file_paths.keys()
+
+    assert all_github_conf_files_conf_declared == set()
+
+    all_files_are_empty = True
+    for github_conf_type, file_path in dal.github_conf_file_paths.items():
+        all_files_are_empty = not os.path.isfile(file_path) or os.path.getsize(file_path) == 0
+
+    assert all_files_are_empty

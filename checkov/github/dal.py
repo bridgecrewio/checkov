@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import Any
+from pathlib import Path
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
@@ -13,25 +14,21 @@ class Github(BaseVCSDAL):
     def __init__(self) -> None:
         super().__init__()
         self.github_conf_dir_path: str
-        self.github_org_security_file_path: str
-        self.github_branch_protection_rules_file_path: str
-        self.github_org_webhooks_file_path: str
-        self.github_repository_webhooks_file_path: str
-        self.github_repository_collaborators_file_path: str
+        self.github_conf_file_paths: dict
 
     def setup_conf_dir(self) -> None:
-        # files downloaded from github will be persistent in this directory
         github_conf_dir_name = os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
         self.github_conf_dir_path = os.path.join(os.getcwd(), github_conf_dir_name)
-        self.github_org_security_file_path = os.path.join(self.github_conf_dir_path, "org_security.json")
-        self.github_branch_protection_rules_file_path = os.path.join(self.github_conf_dir_path,
-                                                                     "branch_protection_rules.json")
-        self.github_org_webhooks_file_path = os.path.join(self.github_conf_dir_path,
-                                                          "org_webhooks.json")
-        self.github_repository_webhooks_file_path = os.path.join(self.github_conf_dir_path,
-                                                                 "repository_webhooks.json")
-        self.github_repository_collaborators_file_path = os.path.join(self.github_conf_dir_path,
-                                                                      "repository_collaborators.json")
+        self.github_conf_file_paths: dict[str, Path] = {
+            "org_security": Path(self.github_conf_dir_path) / "org_security.json",
+            "branch_protection_rules": Path(self.github_conf_dir_path) / "branch_protection_rules.json",
+            "org_webhooks": Path(self.github_conf_dir_path) / "org_webhooks.json",
+            "repository_webhooks": Path(self.github_conf_dir_path) / "repository_webhooks.json",
+            "repository_collaborators": Path(self.github_conf_dir_path) / "repository_collaborators.json"
+        }
+        for github_conf_type, file_path in self.github_conf_file_paths.items():
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
     def discover(self) -> None:
         self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com")
@@ -66,17 +63,17 @@ class Github(BaseVCSDAL):
     def persist_branch_protection_rules(self) -> None:
         data = self.get_branch_protection_rules()
         if data:
-            BaseVCSDAL.persist(path=self.github_branch_protection_rules_file_path, conf=data)
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["branch_protection_rules"], conf=data)
 
     def persist_organization_security(self) -> None:
         organization_security = self.get_organization_security()
         if organization_security:
-            BaseVCSDAL.persist(path=self.github_org_security_file_path, conf=organization_security)
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["org_security"], conf=organization_security)
 
     def persist_organization_webhooks(self) -> None:
         organization_webhooks = self.get_organization_webhooks()
         if organization_webhooks:
-            BaseVCSDAL.persist(path=self.github_org_webhooks_file_path, conf=organization_webhooks)
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["org_webhooks"], conf=organization_webhooks)
 
     def get_organization_webhooks(self) -> dict[str, Any] | None:
         data = self._request(endpoint="orgs/{}/hooks".format(self.org), allowed_status_codes=[200])
@@ -85,8 +82,11 @@ class Github(BaseVCSDAL):
         return data
 
     def get_repository_collaborators(self) -> dict[str, Any] | None:
-        data = self._request(endpoint="repos/{}/{}/collaborators".format(self.org, self.current_repository),
-                             allowed_status_codes=[200])
+        if self.org:
+            endpoint = "repos/{}/{}/collaborators".format(self.org, self.current_repository)
+        else:
+            endpoint = "repos/{}/{}/collaborators".format(self.repo_owner, self.current_repository)
+        data = self._request(endpoint=endpoint, allowed_status_codes=[200])
         if not data:
             return None
         return data
@@ -94,11 +94,14 @@ class Github(BaseVCSDAL):
     def persist_repository_collaborators(self) -> None:
         repository_collaborators = self.get_repository_collaborators()
         if repository_collaborators:
-            BaseVCSDAL.persist(path=self.github_repository_collaborators_file_path, conf=repository_collaborators)
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["repository_collaborators"], conf=repository_collaborators)
 
     def get_repository_webhooks(self) -> dict[str, Any] | None:
-        data = self._request(endpoint="repos/{}/{}/hooks".format(self.org, self.current_repository),
-                             allowed_status_codes=[200])
+        if self.org:
+            endpoint = "repos/{}/{}/hooks".format(self.org, self.current_repository)
+        else:
+            endpoint = "repos/{}/{}/hooks".format(self.repo_owner, self.current_repository)
+        data = self._request(endpoint=endpoint, allowed_status_codes=[200])
         if not data:
             return None
         return data
@@ -106,7 +109,7 @@ class Github(BaseVCSDAL):
     def persist_repository_webhooks(self) -> None:
         repository_webhooks = self.get_repository_webhooks()
         if repository_webhooks:
-            BaseVCSDAL.persist(path=self.github_repository_webhooks_file_path, conf=repository_webhooks)
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["repository_webhooks"], conf=repository_webhooks)
 
     def get_organization_security(self) -> dict[str, str] | None:
         if not self._organization_security:
