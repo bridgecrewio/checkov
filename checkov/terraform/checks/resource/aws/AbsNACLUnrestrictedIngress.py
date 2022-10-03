@@ -50,7 +50,7 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
         try:
             from_port = int(rule.get('from_port', [None])[0])
             to_port = int(rule.get('to_port', [None])[0])
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, AttributeError):
             from_port = None
             to_port = None
 
