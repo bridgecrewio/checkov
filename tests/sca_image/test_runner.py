@@ -316,26 +316,6 @@ def test_run_with_image_cached_reports_env(mock_bc_integration, image_name2, cac
     assert len(sca_image_report.image_cached_results) == 1
 
 
-@mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
-@responses.activate
-def test_run_without_image_cached_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
-    # given
-    image_id_encoded = quote_plus(f"image:{image_name2}")
-
-    responses.add(
-        method=responses.GET,
-        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
-        json=cached_scan_result2,
-        status=200,
-    )
-
-    filter = RunnerFilter(run_image_referencer=False)  # Creating explicitly for readability
-    report = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=filter)
-
-    assert isinstance(report, Report)
-    assert report.check_type != CheckType.SCA_IMAGE
-
-
 @mock.patch.dict(os.environ, {"CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR": "False"})
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
