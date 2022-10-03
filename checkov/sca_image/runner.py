@@ -147,6 +147,9 @@ class Runner(PackageRunner):
             return report
         if files:
             self.pbar.initiate(len(files))
+            # 'root_folder' should contain the common prefix so the absolute full path can be shortened later
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+
             for file in files:
                 self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
