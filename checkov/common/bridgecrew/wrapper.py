@@ -61,7 +61,10 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
                         for check in report.failed_checks],
                     "skipped_checks": [
                         {k: getattr(check, k) for k in check_reduced_keys}
-                        for check in report.skipped_checks]}}
+                        for check in report.skipped_checks]
+                },
+                "image_cached_results": report.image_cached_results
+        }
     return reduced_scan_reports
 
 
