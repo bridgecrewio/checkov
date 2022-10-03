@@ -19,7 +19,10 @@ class OrgSecuritySchema(VCSSchema):
                                     "type": "string"
                                 },
                                 "description": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {"type": "string"},
+                                        {"type": "null"}
+                                    ]
                                 },
                                 "ipAllowListEnabledSetting": {
                                     "type": "string"

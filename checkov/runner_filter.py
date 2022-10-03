@@ -41,7 +41,7 @@ class RunnerFilter(object):
             show_progress_bar: Optional[bool] = True,
             run_image_referencer: bool = False,
             enable_secret_scan_all_files: bool = False,
-            black_list_secret_scan: Optional[List[str]] = None
+            block_list_secret_scan: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -98,7 +98,7 @@ class RunnerFilter(object):
         self.filtered_policy_ids = filtered_policy_ids or []
         self.run_image_referencer = run_image_referencer
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
-        self.black_list_secret_scan = black_list_secret_scan
+        self.block_list_secret_scan = block_list_secret_scan
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
@@ -247,10 +247,10 @@ class RunnerFilter(object):
         if run_image_referencer is None:
             run_image_referencer = False
         enable_secret_scan_all_files = bool(obj.get('enable_secret_scan_all_files'))
-        black_list_secret_scan = obj.get('black_list_secret_scan')
+        block_list_secret_scan = obj.get('block_list_secret_scan')
         runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
                                      download_external_modules, external_modules_download_path, evaluate_variables,
                                      runners, skip_framework, excluded_paths, all_external, var_files,
                                      skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
-                                     run_image_referencer, enable_secret_scan_all_files, black_list_secret_scan)
+                                     run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
         return runner_filter

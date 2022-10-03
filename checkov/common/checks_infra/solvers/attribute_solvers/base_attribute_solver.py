@@ -53,7 +53,7 @@ class BaseAttributeSolver(BaseSolver):
         concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
 
@@ -67,7 +67,7 @@ class BaseAttributeSolver(BaseSolver):
             vertex=vertex, attribute=self.attribute
         )
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
 
     def _process_node(
