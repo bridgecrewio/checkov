@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 from typing import TYPE_CHECKING, Callable, Any
 
@@ -28,32 +27,29 @@ class DockerfileProvider:
             if not isinstance(instructions, list):
                 continue
 
-            for instruction in instructions:
-                name = instruction["value"]
+            # just scan the last one
+            instruction = instructions[-1]
 
-                if " AS " in name:
-                    # indicates a multi-stage build, therefore remove everything starting from AS
-                    # ex. FROM maven:3.8-openjdk-17-slim AS build
-                    name = name.split(" AS ")[0]
+            name = instruction["value"]
 
-                if name.startswith("--platform"):
-                    # indicates a multi-platform build, therefore remove the platform flag and its value
-                    # ex. FROM --platform=$BUILDPLATFORM golang:alpine AS build
-                    multi_platform = name.split(" ", maxsplit=1)
-                    if len(multi_platform) != 2:
-                        logging.info(f"Invalid FROM statement {instruction['value']}")
-                        continue
+            if name.startswith("--platform"):
+                # indicates a multi-platform build, therefore skip it
+                # ex. FROM --platform=$BUILDPLATFORM golang:alpine AS build
+                continue
 
-                    name = multi_platform[1]
+            if " AS " in name:
+                # indicates a multi-stage build, therefore remove everything starting from AS
+                # ex. FROM amazonlinux:2 as run
+                name = name.split(" AS ")[0]
 
-                images.append(
-                    Image(
-                        file_path=file_path,
-                        name=name,
-                        start_line=instruction[DOCKERFILE_STARTLINE] + 1,  # starts with 0
-                        end_line=instruction[DOCKERFILE_ENDLINE] + 1,
-                        related_resource_id=f'{removeprefix(file_path, os.getenv("BC_ROOT_DIR", ""))}.FROM'
-                    )
+            images.append(
+                Image(
+                    file_path=file_path,
+                    name=name,
+                    start_line=instruction[DOCKERFILE_STARTLINE] + 1,  # starts with 0
+                    end_line=instruction[DOCKERFILE_ENDLINE] + 1,
+                    related_resource_id=f'{removeprefix(file_path, os.getenv("BC_ROOT_DIR", ""))}.FROM',
                 )
+            )
 
         return images

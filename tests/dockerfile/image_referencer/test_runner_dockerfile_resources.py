@@ -97,13 +97,12 @@ def test_multi_stage_dockerfile(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
-    assert len(sca_image_report.resources) == 2
+    assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
         f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
@@ -141,12 +140,11 @@ def test_multi_platform_dockerfile(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
-    assert len(sca_image_report.resources) == 2
+    assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
         f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0

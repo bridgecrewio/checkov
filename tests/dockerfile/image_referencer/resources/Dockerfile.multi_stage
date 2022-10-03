@@ -7,7 +7,7 @@ COPY src /app/src
 RUN mvn -f /app/pom.xml clean package
 
 # Run stage
-FROM amazonlinux:2
+FROM amazonlinux:2 AS run
 
 RUN yum install -y java-17-amazon-corretto-headless
 

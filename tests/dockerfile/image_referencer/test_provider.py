@@ -18,9 +18,9 @@ def test_extract_images_from_resources():
                     "instruction": "FROM",
                     "startline": 4,
                     "endline": 4,
-                    "content": "FROM amazonlinux:2\n",
+                    "content": "FROM amazonlinux:2 AS run\n",
                     "value": "amazonlinux:2",
-                }
+                },
             ],
             "RUN": [
                 {
@@ -40,13 +40,6 @@ def test_extract_images_from_resources():
 
     # then
     assert images == [
-        Image(
-            file_path="/Dockerfile",
-            name="maven:3.8-openjdk-17-slim",
-            start_line=1,
-            end_line=1,
-            related_resource_id="/Dockerfile.FROM",
-        ),
         Image(
             file_path="/Dockerfile",
             name="amazonlinux:2",
