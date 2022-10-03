@@ -182,6 +182,10 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_custom, 0)
         self.assertEqual(failed_custom, 3)
+
+        graph_record = next(record for record in report.failed_checks if record.check_id == "CKV2_CUSTOM_1")
+        self.assertEqual(graph_record.guideline, "https://docs.bridgecrew.io/docs/ckv2_custom_1")
+
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
