@@ -13,7 +13,9 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 logger = logging.getLogger(__name__)
-spec = util.spec_from_file_location("checkov.version", os.path.join("checkov", "version.py"))
+spec = util.spec_from_file_location(
+    "checkov.version", os.path.join("checkov", "version.py")
+)
 # noinspection PyUnresolvedReferences
 mod = util.module_from_spec(spec)
 spec.loader.exec_module(mod)  # type: ignore
@@ -32,14 +34,13 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "bc-detect-secrets==1.3.3",
-        "cloudsplaining>=0.4.3",
+        "bc-detect-secrets==1.3.9",
         "deep-merge",
         "tabulate",
         "colorama",
         "termcolor",
         "junit-xml>=1.9",
-        "dpath>=1.5.0,<2",
+        "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
         "gitpython",
@@ -48,6 +49,7 @@ setup(
         "update-checker",
         "semantic-version",
         "packaging",
+        "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "dockerfile-parse",
         "docker",
@@ -63,12 +65,12 @@ setup(
         "aiodns",
         "aiomultiprocess",
         "jsonpath-ng",
-        "jsonschema>=3.0.2,<4.0.0",
+        "jsonschema<4.0.0,>=3.0.2",
         "prettytable>=3.0.0",
         "pycep-parser==0.3.9",
         "charset-normalizer",
-        "pyston-lite-autoload==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
-        "pyston-lite==2.3.4.2; python_version == '3.8' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
+        "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'",
         "schema",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
@@ -110,7 +112,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        'Programming Language :: Python :: 3.11',
+        "Programming Language :: Python :: 3.11",
         "Topic :: Security",
         "Topic :: Software Development :: Build Tools",
         "Typing :: Typed",

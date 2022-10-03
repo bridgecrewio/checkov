@@ -7,5 +7,5 @@ from .regex_match_attribute_solver import RegexMatchAttributeSolver
 class NotRegexMatchAttributeSolver(RegexMatchAttributeSolver):
     operator = Operators.NOT_REGEX_MATCH  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return not super()._get_operation(vertex, attribute)

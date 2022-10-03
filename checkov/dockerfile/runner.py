@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable
 
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -78,17 +79,31 @@ class Runner(BaseRunner):
 
             results = registry.scan(docker_file_path, instructions, skipped_checks, runner_filter)
 
-            for check, check_result in results.items():
-                result_configuration = check_result['results_configuration']
-                startline = 0
-                endline = len(definitions_raw[docker_file_path]) - 1
-                result_instruction = ""
-                if result_configuration:
-                    if isinstance(result_configuration, list):
-                        for res in result_configuration:
-                            startline = res['startline']
-                            endline = res['endline']
-                            result_instruction = res["instruction"]
+            if results:
+                for check, check_result in results.items():
+                    result_configuration = check_result['results_configuration']
+                    startline = 0
+                    endline = len(definitions_raw[docker_file_path]) - 1
+                    result_instruction = ""
+                    if result_configuration:
+                        if isinstance(result_configuration, list):
+                            for res in result_configuration:
+                                startline = res['startline']
+                                endline = res['endline']
+                                result_instruction = res["instruction"]
+                                self.build_record(report,
+                                                  definitions_raw,
+                                                  docker_file_path,
+                                                  file_abs_path,
+                                                  check,
+                                                  check_result,
+                                                  startline,
+                                                  endline,
+                                                  result_instruction)
+                        else:
+                            startline = result_configuration['startline']
+                            endline = result_configuration['endline']
+                            result_instruction = result_configuration["instruction"]
                             self.build_record(report,
                                               definitions_raw,
                                               docker_file_path,
@@ -99,9 +114,6 @@ class Runner(BaseRunner):
                                               endline,
                                               result_instruction)
                     else:
-                        startline = result_configuration['startline']
-                        endline = result_configuration['endline']
-                        result_instruction = result_configuration["instruction"]
                         self.build_record(report,
                                           definitions_raw,
                                           docker_file_path,
@@ -111,16 +123,15 @@ class Runner(BaseRunner):
                                           startline,
                                           endline,
                                           result_instruction)
-                else:
-                    self.build_record(report,
-                                      definitions_raw,
-                                      docker_file_path,
-                                      file_abs_path,
-                                      check,
-                                      check_result,
-                                      startline,
-                                      endline,
-                                      result_instruction)
+            else:
+                report.extra_resources.add(
+                    ExtraResource(
+                        file_abs_path=file_abs_path,
+                        file_path=docker_file_path,
+                        resource=docker_file_path,
+                    )
+                )
+
             self.pbar.update()
         self.pbar.close()
         return report

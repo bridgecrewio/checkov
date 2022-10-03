@@ -589,6 +589,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
                help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
                     '(after check results), default is on top.')
+    parser.add('--skip-resources-without-violations',
+               help="exclude extra resources (resources without violations) from report output",
+               action='store_true',
+               env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
 
 
 def get_external_checks_dir(config: Any) -> Any:
