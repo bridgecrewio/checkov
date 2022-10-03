@@ -82,10 +82,7 @@ class Github(BaseVCSDAL):
         return data
 
     def get_repository_collaborators(self) -> dict[str, Any] | None:
-        if self.org:
-            endpoint = "repos/{}/{}/collaborators".format(self.org, self.current_repository)
-        else:
-            endpoint = "repos/{}/{}/collaborators".format(self.repo_owner, self.current_repository)
+        endpoint = "repos/{}/{}/collaborators".format(self.repo_owner, self.current_repository)
         data = self._request(endpoint=endpoint, allowed_status_codes=[200])
         if not data:
             return None
@@ -97,10 +94,7 @@ class Github(BaseVCSDAL):
             BaseVCSDAL.persist(path=self.github_conf_file_paths["repository_collaborators"], conf=repository_collaborators)
 
     def get_repository_webhooks(self) -> dict[str, Any] | None:
-        if self.org:
-            endpoint = "repos/{}/{}/hooks".format(self.org, self.current_repository)
-        else:
-            endpoint = "repos/{}/{}/hooks".format(self.repo_owner, self.current_repository)
+        endpoint = "repos/{}/{}/hooks".format(self.repo_owner, self.current_repository)
         data = self._request(endpoint=endpoint, allowed_status_codes=[200])
         if not data:
             return None
