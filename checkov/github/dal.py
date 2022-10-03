@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 from typing import Any
 from pathlib import Path
 
@@ -10,15 +11,21 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 
 
 class Github(BaseVCSDAL):
+    github_conf_dir_path: str # noqa: CCE003  # a static attribute
+    github_conf_file_paths: dict[str, Path]  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
-        self.github_conf_dir_path: str
-        self.github_conf_file_paths: dict[str, Path]
 
     def setup_conf_dir(self) -> None:
         github_conf_dir_name = os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
         self.github_conf_dir_path = os.path.join(os.getcwd(), github_conf_dir_name)
+        os.environ["CKV_GITHUB_CONF_DIR_PATH"] = self.github_conf_dir_path
+
+        # if any file was left from previous run-remove it.
+        if os.path.isdir(self.github_conf_dir_path):
+            shutil.rmtree(self.github_conf_dir_path)
+
         self.github_conf_file_paths = {
             "org_security": Path(self.github_conf_dir_path) / "org_security.json",
             "branch_protection_rules": Path(self.github_conf_dir_path) / "branch_protection_rules.json",
@@ -26,9 +33,6 @@ class Github(BaseVCSDAL):
             "repository_webhooks": Path(self.github_conf_dir_path) / "repository_webhooks.json",
             "repository_collaborators": Path(self.github_conf_dir_path) / "repository_collaborators.json"
         }
-        for _github_conf_type, file_path in self.github_conf_file_paths.items():
-            if os.path.isfile(file_path):
-                os.remove(file_path)
 
     def discover(self) -> None:
         self.api_url = os.getenv('GITHUB_API_URL', "https://api.github.com")
