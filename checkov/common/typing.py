@@ -41,6 +41,7 @@ class _BaselineFailedChecks(TypedDict):
 
 class _ReducedScanReport(TypedDict):
     checks: _ReducedScanReportCheck
+    image_cached_results: list[dict[str, Any]]
 
 
 class _ReducedScanReportCheck(TypedDict):

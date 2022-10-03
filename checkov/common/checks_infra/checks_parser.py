@@ -134,6 +134,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        check.guideline = raw_check.get("metadata", {}).get("guideline")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
