@@ -178,7 +178,8 @@ class ImageReferencerMixin:
                 file_path=dockerfile_path,
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
-                related_resource_id=image.related_resource_id)
+                related_resource_id=image.related_resource_id,
+                root_folder=root_path)
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
