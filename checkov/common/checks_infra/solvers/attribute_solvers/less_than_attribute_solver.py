@@ -7,7 +7,7 @@ from .greater_than_or_equal_attribute_solver import GreaterThanOrEqualAttributeS
 class LessThanAttributeSolver(GreaterThanOrEqualAttributeSolver):
     operator = Operators.LESS_THAN  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
             return False
 
