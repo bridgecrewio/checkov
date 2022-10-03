@@ -41,13 +41,13 @@ class _BaselineFailedChecks(TypedDict):
 
 class _ReducedScanReport(TypedDict):
     checks: _ReducedScanReportCheck
+    image_cached_results: list[dict[str, Any]]
 
 
 class _ReducedScanReportCheck(TypedDict):
     failed_checks: list[dict[str, Any]]
     passed_checks: list[dict[str, Any]]
     skipped_checks: list[dict[str, Any]]
-    image_cached_results: list[dict[str, Any]]
 
 
 class _CicdDetails(TypedDict, total=False):
