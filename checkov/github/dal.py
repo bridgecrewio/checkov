@@ -11,7 +11,7 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 
 
 class Github(BaseVCSDAL):
-    github_conf_dir_path: str # noqa: CCE003  # a static attribute
+    github_conf_dir_path: str  # noqa: CCE003  # a static attribute
     github_conf_file_paths: dict[str, Path]  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
