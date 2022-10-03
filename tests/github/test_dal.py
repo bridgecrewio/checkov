@@ -48,8 +48,7 @@ def test_org_security_str_description(mocker: MockerFixture):
     assert result
 
 
-@mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg", "GITHUB_REPO_OWNER": "bridgecrew",
-                              "GITHUB_REPOSITORY": "main"}, clear=True)
+@mock.patch.dict(os.environ, {"GITHUB_REPO_OWNER": "bridgecrew", "GITHUB_REPOSITORY": "main"}, clear=True)
 def test_org_webhooks(mocker: MockerFixture):
     dal = Github()
     mock_data = [
@@ -79,8 +78,7 @@ def test_org_webhooks(mocker: MockerFixture):
     assert result
 
 
-@mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg", "GITHUB_REPO_OWNER": "bridgecrew",
-                              "GITHUB_REPOSITORY": "main"}, clear=True)
+@mock.patch.dict(os.environ, {"GITHUB_REPO_OWNER": "bridgecrew", "GITHUB_REPOSITORY": "main"}, clear=True)
 def test_repository_webhooks(mocker: MockerFixture):
     dal = Github()
     mock_data = [
