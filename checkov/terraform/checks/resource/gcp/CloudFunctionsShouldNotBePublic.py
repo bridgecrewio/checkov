@@ -6,7 +6,12 @@ class CloudFunctionsShouldNotBePublic(BaseResourceCheck):
     def __init__(self):
         name = "Cloud functions should not be public"
         id = "CKV_GCP_107"
-        supported_resources = ["google_cloudfunctions_function_iam_member", "google_cloudfunctions_function_iam_binding"]
+        supported_resources = [
+            "google_cloudfunctions_function_iam_member",
+            "google_cloudfunctions_function_iam_binding",
+            "google_cloudfunctions2_function_iam_member",
+            "google_cloudfunctions2_function_iam_binding"
+        ]
         categories = [CheckCategories.APPLICATION_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
