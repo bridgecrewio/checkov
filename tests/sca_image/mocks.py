@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
@@ -51,7 +51,7 @@ def mock_scan(self: Runner, image_id: str, dockerfile_path: str, runner_filter: 
                           'vulnerabilityScanPassed': True}])
 
 
-def mock_get_images(self: Runner, file_path: str) -> Dict[str, Any]:
+def mock_get_images(self: Runner, file_path: str) -> list[Image]:
     return [Image(
                 file_path='fake_path',
                 name='fake_image',
