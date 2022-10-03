@@ -7,10 +7,15 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
 import yaml
+
+from checkov.common.output.report import Report
+from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
+
+from checkov.runner_filter import RunnerFilter
 from jsonschema import validate, ValidationError
 
 import checkov.common.parsers.yaml.loader as loader
-from checkov.common.images.image_referencer import ImageReferencer, Image
+from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_dict
@@ -20,11 +25,12 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from networkx import DiGraph
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
 
-class Runner(YamlRunner, ImageReferencer):
+class Runner(ImageReferencerMixin, YamlRunner):
     check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
@@ -73,84 +79,51 @@ class Runner(YamlRunner, ImageReferencer):
             new_key = f'jobs.{job_name}.steps.{step_name}'
         return new_key
 
-    @staticmethod
-    def generate_resource_key(definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        """
-        Generate resource key without the previous format of key (needed in get_resource)
-        """
-        jobs_dict: dict[str, Any] = definition.get("jobs", {})
-        for job_name, job in jobs_dict.items():
-            if not isinstance(job, dict):
-                continue
+    def run(
+            self,
+            root_folder: str | None = None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True,
+    ) -> Report | list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
+        report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
+                             files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
 
-            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
-                return f'jobs.{job_name}'
+            image_report = self.check_container_image_references(
+                graph_connector=None,
+                root_path=root_folder,
+                runner_filter=runner_filter,
+                definitions=self.definitions,
+                definitions_raw=self.definitions_raw
+            )
 
-        return ''
+            if image_report:
+                if isinstance(report, list):
+                    return [*report, image_report]
+                return [report, image_report]
 
-    def get_images(self, file_path: str) -> set[Image]:
-        """
-        Get container images mentioned in a file
-        :param file_path: File to be inspected
-        GitHub actions workflow file can have a job run within a container.
+        return report
 
-        in the following sample file we can see a node:14.16 image:
-
-        # jobs:
-        #   my_job:
-        #     container:
-        #       image: node:14.16
-        #       env:
-        #         NODE_ENV: development
-        #       ports:
-        #         - 80
-        #       volumes:
-        #         - my_docker_volume:/volume_mount
-        #       options: --cpus 1
-        Source: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-defining-credentials-for-a-container-registry
-
-        :return: List of container image classes ids mentioned in the file.
-        """
-
-        images: set[Image] = set()
-        parsed_file = self._parse_file(file_path)
-
-        if not parsed_file:
+    def extract_images(
+        self, graph_connector: DiGraph | None = None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        images: list[Image] = []
+        if not definitions or not definitions_raw:
             return images
 
-        workflow, workflow_line_numbers = parsed_file
-
-        if not isinstance(workflow, dict):
-            # make type checking happy
-            return images
-
-        jobs = workflow.get("jobs", {})
-        for job_object in jobs.values():
-            if isinstance(job_object, dict):
-                container = job_object.get("container", {})
-                image = None
-                start_line = 0
-                end_line = 0
-
-                if isinstance(container, dict):
-                    image = container.get("image", "")
-                    start_line = container.get('__startline__', 0)
-                    end_line = container.get('__endline__', 0)
-
-                elif isinstance(container, str):
-                    image = container
-                    start_line = [line_number for line_number, line in workflow_line_numbers if image in line][0]
-                    end_line = start_line + 1
-
-                if image:
-                    image_obj = Image(
-                        file_path=file_path,
-                        name=image,
-                        start_line=start_line,
-                        end_line=end_line,
-                        related_resource_id=Runner.generate_resource_key(workflow, start_line, end_line)
-                    )
-                    images.add(image_obj)
+        for file, config in definitions.items():
+            _config = force_dict(config) or {}
+            manager = GithubActionsImageReferencerManager(workflow_config=_config, file_path=file,
+                                                          workflow_line_numbers=definitions_raw[file])
+            images.extend(manager.extract_images_from_workflow())
 
         return images
 

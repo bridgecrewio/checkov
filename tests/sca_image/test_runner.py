@@ -6,6 +6,8 @@ from urllib.parse import quote_plus
 import responses
 from unittest import mock
 
+from checkov.common.output.report import Report
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
@@ -57,9 +59,10 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     )
 
     # when
-    image_runner = Runner()
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR)
+    reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR),
+                              runner_filter=RunnerFilter(run_image_referencer=True))
+
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     # then
     assert len(responses.calls) == 2
@@ -70,8 +73,8 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
         mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations", 1
     )
 
-    assert len(report.failed_checks) == 4
-    assert len(report.passed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 4
+    assert len(sca_image_report.passed_checks) == 1
 
 
 @responses.activate
@@ -112,15 +115,16 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
     )
 
     # when
-    image_runner = Runner()
-    filter = RunnerFilter(framework=['sca_image'], use_enforcement_rules=True)
+    filter = RunnerFilter(use_enforcement_rules=True, run_image_referencer=True)
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
+    filter.enforcement_rule_configs = {CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF],
+                                       CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
 
-    summary = report.get_summary()
+    reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR), runner_filter=filter)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
+
+    summary = sca_image_report.get_summary()
     # then
     assert summary["passed"] == 0
     assert summary["failed"] == 0
@@ -234,13 +238,12 @@ def test_run_license_policy(mock_bc_integration, image_name, cached_scan_result)
     )
 
     # when
-    image_runner = Runner()
-    filter = RunnerFilter(framework=['sca_image'], checks=['BC_LIC_1'])
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_EXAMPLES_DIR, runner_filter=filter)
-
+    filter = RunnerFilter(checks=['BC_LIC_1'], run_image_referencer=True)
+    reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR), runner_filter=filter)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
     # then
-    assert not [c for c in report.passed_checks + report.failed_checks if c.check_id.startswith('CKV_CVE')]
+    assert not [c for c in sca_image_report.passed_checks + sca_image_report.failed_checks
+                if c.check_id.startswith('CKV_CVE')]
 
 
 @mock.patch('checkov.sca_image.runner.Runner.scan', mock_scan_empty)
@@ -303,16 +306,15 @@ def test_run_with_image_cached_reports_env(mock_bc_integration, image_name2, cac
         status=200,
     )
 
-    image_runner = Runner()
-    runner_filter = RunnerFilter(framework=['sca_image'])
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
+    runner_filter = RunnerFilter(run_image_referencer=True)
+    reports = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=runner_filter)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 1
-    assert len(report.skipped_checks) == 0
-    assert len(report.parsing_errors) == 0
-    assert len(report.image_cached_results) == 1
+    assert len(sca_image_report.passed_checks) == 0
+    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.skipped_checks) == 0
+    assert len(sca_image_report.parsing_errors) == 0
+    assert len(sca_image_report.image_cached_results) == 1
 
 
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
@@ -328,21 +330,13 @@ def test_run_without_image_cached_reports_env(mock_bc_integration, image_name2, 
         status=200,
     )
 
-    image_runner = Runner()
-    runner_filter = RunnerFilter(framework=['sca_image'])
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
+    filter = RunnerFilter(run_image_referencer=False)  # Creating explicitly for readability
+    report = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=filter)
 
-    assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 1
-    assert len(report.skipped_checks) == 0
-    assert len(report.parsing_errors) == 0
-    assert len(report.image_cached_results) == 0
+    assert isinstance(report, Report)
+    assert report.check_type != CheckType.SCA_IMAGE
 
-@mock.patch.dict(os.environ, {"CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR": "False"})
-@mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
-@mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
+
 @responses.activate
 def test_run_with_image_cached_reports_and_without_sca_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
     image_id_encoded = quote_plus(f"image:{image_name2}")
@@ -354,20 +348,18 @@ def test_run_with_image_cached_reports_and_without_sca_reports_env(mock_bc_integ
         status=200,
     )
 
-    image_runner = Runner()
-    runner_filter = RunnerFilter(framework=['sca_image'])
-    image_runner.image_referencers = [GHA_Runner()]
-    report = image_runner.run(root_folder=WORKFLOW_IMAGE_EXAMPLES_DIR, runner_filter=runner_filter)
+    runner_filter = RunnerFilter(run_image_referencer=True)
+    reports = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=runner_filter)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(report.passed_checks) == 0
-    assert len(report.failed_checks) == 0
-    assert len(report.skipped_checks) == 0
-    assert len(report.parsing_errors) == 0
-    assert len(report.image_cached_results) == 1
+    assert len(sca_image_report.passed_checks) == 0
+    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.skipped_checks) == 0
+    assert len(sca_image_report.parsing_errors) == 0
+    assert len(sca_image_report.image_cached_results) == 1
 
 
 @responses.activate
-@mock.patch('checkov.github_actions.runner.Runner.get_images', mock_get_images)
 @mock.patch.dict(os.environ, {"CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR": "True"})
 def test_run_with_error_from_scan_results(mock_bc_integration, image_name2, cached_scan_result3):
     image_id_encoded = quote_plus(f"image:{image_name2}")
@@ -380,7 +372,6 @@ def test_run_with_error_from_scan_results(mock_bc_integration, image_name2, cach
     )
 
     runner = Runner()
-    runner.image_referencers = [GHA_Runner()]
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2022_1586"])
     # when
     image_id = "sha256:123456"
