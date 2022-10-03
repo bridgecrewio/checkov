@@ -59,6 +59,6 @@ def test_validate_github_conf_paths():
 
     all_files_are_empty = True
     for github_conf_type, file_path in dal.github_conf_file_paths.items():
-        all_files_are_empty = not os.path.isfile(file_path) or os.path.getsize(file_path) == 0
+        all_files_are_empty &= not os.path.isfile(file_path) or os.path.getsize(file_path) == 0
 
     assert all_files_are_empty
