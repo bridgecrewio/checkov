@@ -313,7 +313,6 @@ def parse_vulns_to_records(
     license_statuses: list[_LicenseStatus],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
 ) -> None:
     licenses_per_package_map: dict[str, list[str]] = \
         _add_licenses_records_to_report(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
@@ -321,7 +320,7 @@ def parse_vulns_to_records(
 
     add_cves_and_packages_to_reports(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                      vulnerabilities, packages, licenses_per_package_map, sca_details, report_type,
-                                     scan_data_format)
+                                     ScanDataFormat.FROM_TWISTCLI)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
