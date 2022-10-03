@@ -283,7 +283,7 @@ class ImageReferencerMixin:
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=report_type,
         )
 

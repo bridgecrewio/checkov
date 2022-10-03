@@ -85,9 +85,9 @@ def _update_details_by_scan_data_format(
     details: dict[str, Any],
     vulnerability_details: dict[str, Any],
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
+    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
 ) -> None:
-    if scan_data_format == ScanDataFormat.FromTwistcli:
+    if scan_data_format == ScanDataFormat.FROM_TWISTCLI:
         lowest_fixed_version = UNFIXABLE_VERSION
         package_version = vulnerability_details["packageVersion"]
         fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
@@ -103,7 +103,7 @@ def _update_details_by_scan_data_format(
                 lowest_fixed_version = str(min(fixed_versions))
         details.update({"status": status, "lowest_fixed_version": lowest_fixed_version,
                         "fixed_versions": fixed_versions, "image_details": sca_details})
-    elif scan_data_format == ScanDataFormat.FromPlatform:
+    elif scan_data_format == ScanDataFormat.FROM_PLATFORM:
         status = vulnerability_details["status"]
         fix_version = vulnerability_details.get("cveStatus")
         details.update({"status": status, "fix_version": fix_version})
@@ -117,7 +117,7 @@ def create_report_cve_record(
     licenses: str,
     runner_filter: RunnerFilter | None = None,
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
+    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -247,7 +247,7 @@ def add_cves_and_packages_to_reports(
     licenses_per_package_map: dict[str, list[str]],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli,
+    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI,
 ) -> None:
     vulnerable_packages = []
 
@@ -313,11 +313,11 @@ def parse_vulns_to_records(
     license_statuses: list[_LicenseStatus],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FromTwistcli
+    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
 ) -> None:
-    licenses_per_package_map: dict[str, list[str]] = _add_licenses_records_to_report(
-         report, check_class, scanned_file_path, rootless_file_path, runner_filter, license_statuses, sca_details,
-         report_type)
+    licenses_per_package_map: dict[str, list[str]] = \
+        _add_licenses_records_to_report(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
+                                        license_statuses, sca_details, report_type)
 
     add_cves_and_packages_to_reports(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                      vulnerabilities, packages, licenses_per_package_map, sca_details, report_type,
