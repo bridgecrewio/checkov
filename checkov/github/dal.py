@@ -14,19 +14,19 @@ class Github(BaseVCSDAL):
     def __init__(self) -> None:
         super().__init__()
         self.github_conf_dir_path: str
-        self.github_conf_file_paths: dict
+        self.github_conf_file_paths: dict[str, Path]
 
     def setup_conf_dir(self) -> None:
         github_conf_dir_name = os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
         self.github_conf_dir_path = os.path.join(os.getcwd(), github_conf_dir_name)
-        self.github_conf_file_paths: dict[str, Path] = {
+        self.github_conf_file_paths = {
             "org_security": Path(self.github_conf_dir_path) / "org_security.json",
             "branch_protection_rules": Path(self.github_conf_dir_path) / "branch_protection_rules.json",
             "org_webhooks": Path(self.github_conf_dir_path) / "org_webhooks.json",
             "repository_webhooks": Path(self.github_conf_dir_path) / "repository_webhooks.json",
             "repository_collaborators": Path(self.github_conf_dir_path) / "repository_collaborators.json"
         }
-        for github_conf_type, file_path in self.github_conf_file_paths.items():
+        for _github_conf_type, file_path in self.github_conf_file_paths.items():
             if os.path.isfile(file_path):
                 os.remove(file_path)
 
