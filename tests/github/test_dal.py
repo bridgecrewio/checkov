@@ -26,10 +26,11 @@ def test_org_security_null_description(mocker: MockerFixture):
     result = dal.get_organization_security()
     assert result
 
+
 @mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg"}, clear=True)
 def test_org_security_str_description(mocker: MockerFixture):
     dal = Github()
-    mock_data2 = {
+    mock_data = {
         "data": {
             "organization": {
                 "name": "Bridgecrew",
@@ -42,8 +43,70 @@ def test_org_security_str_description(mocker: MockerFixture):
             }
         }
     }
-    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data2)
+    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request_graphql", return_value=mock_data)
     result = dal.get_organization_security()
+    assert result
+
+
+@mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg", "GITHUB_REPO_OWNER": "bridgecrew",
+                              "GITHUB_REPOSITORY": "main"}, clear=True)
+def test_org_webhooks(mocker: MockerFixture):
+    dal = Github()
+    mock_data = [
+        {
+            "type": "Organization",
+            "id": 0,
+            "name": "web",
+            "active": True,
+            "events": [
+                "*"
+            ],
+            "config": {
+                "content_type": "form",
+                "insecure_ssl": "0",
+                "url": "http://test-repo-webhook.com"
+            },
+            "updated_at": "2022-10-02T12:39:12Z",
+            "created_at": "2022-09-29T09:01:36Z",
+            "url": "",
+            "test_url": "",
+            "ping_url": "",
+            "deliveries_url": ""
+        }
+    ]
+    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request", return_value=mock_data)
+    result = dal.get_repository_webhooks()
+    assert result
+
+
+@mock.patch.dict(os.environ, {"GITHUB_ORG": "simpleOrg", "GITHUB_REPO_OWNER": "bridgecrew",
+                              "GITHUB_REPOSITORY": "main"}, clear=True)
+def test_repository_webhooks(mocker: MockerFixture):
+    dal = Github()
+    mock_data = [
+        {
+            "type": "Repository",
+            "id": 0,
+            "name": "web",
+            "active": True,
+            "events": [
+                "*"
+            ],
+            "config": {
+                "content_type": "form",
+                "insecure_ssl": "0",
+                "url": "http://test-repo-webhook.com"
+            },
+            "updated_at": "2022-10-02T12:39:12Z",
+            "created_at": "2022-09-29T09:01:36Z",
+            "url": "",
+            "test_url": "",
+            "ping_url": "",
+            "deliveries_url": ""
+        }
+    ]
+    mocker.patch("checkov.common.vcs.base_vcs_dal.BaseVCSDAL._request", return_value=mock_data)
+    result = dal.get_repository_webhooks()
     assert result
 
 
