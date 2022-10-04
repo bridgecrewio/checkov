@@ -26,7 +26,6 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
         self.platform_policy_parser = NXGraphCheckParser()
-        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     def is_valid(self) -> bool:
@@ -84,6 +83,13 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'category': policy['category'],
             'frameworks': policy.get('frameworks', [])
         }
+
+        provider = policy.get('provider')
+        if provider:
+            metadata['scope'] = {
+                'provider': provider.lower()
+            }
+
         check = {
             'metadata': metadata,
             'definition': json.loads(policy['code'])
