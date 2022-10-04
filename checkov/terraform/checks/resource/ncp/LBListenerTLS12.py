@@ -3,11 +3,11 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class NCP_LBListenerTLS12(BaseResourceCheck):
+class LBListenerTLS12(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure that Load Balancer Listener is using at least TLS v1.2"
-        id = "CKV_AWS_3"
+        id = "CKV_NCP_3"
         supported_resources = ['ncloud_lb_listener']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -25,4 +25,4 @@ class NCP_LBListenerTLS12(BaseResourceCheck):
             else:
                 return CheckResult.UNKNOWN
 
-check = NCP_LBListenerTLS12()
+check = LBListenerTLS12()

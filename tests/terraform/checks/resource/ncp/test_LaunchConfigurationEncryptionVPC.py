@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.ncp.LBListenerTLS12 import check
+from checkov.terraform.checks.resource.ncp.LaunchConfigurationEncryptionVPC import check
 from checkov.terraform.runner import Runner
 
 
-class TestServerEncryptionVPC(unittest.TestCase):
+class TestLaunchConfigurationCheck(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_LBListenerTLS12"
+        test_files_dir = Path(__file__).parent / "example_LaunchConfigurationEncryptionVPC"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,18 +18,17 @@ class TestServerEncryptionVPC(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "ncloud_lb_listener.pass",
+            "ncloud_launch_configuration.pass",
         }
         failing_resources = {
-            "ncloud_lb_listener.fail",
-            "ncloud_lb_listener.fail2"
+            "ncloud_launch_configuration.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
