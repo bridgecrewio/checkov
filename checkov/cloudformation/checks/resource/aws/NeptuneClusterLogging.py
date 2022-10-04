@@ -15,10 +15,8 @@ class NeptuneClusterLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        log_types = ("audit")
-
         logs_exports = conf.get("Properties", {}).get("EnableCloudwatchLogsExports", [])
-        if all(elem in logs_exports for elem in log_types):
+        if "audit" in logs_exports:
             return CheckResult.PASSED
 
         return CheckResult.FAILED
