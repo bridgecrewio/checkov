@@ -14,7 +14,7 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 
 
 class DockerfileProvider:
-    __slots__ = ("definitions", "supported_resource_types")
+    __slots__ = ("definitions",)
 
     def __init__(self, definitions: dict[str, Any]) -> None:
         self.definitions = definitions
