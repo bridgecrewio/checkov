@@ -147,6 +147,9 @@ class Runner(PackageRunner):
             return report
         if files:
             self.pbar.initiate(len(files))
+            # 'root_folder' should contain the common prefix so the absolute full path can be shortened later
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+
             for file in files:
                 self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
@@ -158,12 +161,14 @@ class Runner(PackageRunner):
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
-                    self.iterate_image_files(abs_fname, report, runner_filter)
+                    self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
         return report
 
-    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
+    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter,
+                            root_folder: Union[str, Path, None] = None) -> None:
         """
         Get workflow file, and get the list of images from every relevant imagereferencer, and create a unified vulnrability report
+        :param root_folder: for CLI scans - the directory in which checkov runs
         :param abs_fname: file path to inspect
         :param report: unified report object
         :param runner_filter: filter for report
@@ -174,15 +179,21 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
+                    image_cached_result: Dict[str, Any] = image_scanner.get_scan_results_from_cache(
+                        f"image:{image.name}")
+
+                    image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname,
+                                                                                        image=image,
+                                                                                        image_cached_result=image_cached_result,
+                                                                                        root_folder=root_folder)
+                    if image_cached_report:
+                        report.image_cached_results.append(image_cached_report)
+
                     if strtobool(os.getenv('CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR', "True")):
                         image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
-                                                             runner_filter=runner_filter)
+                                                             runner_filter=runner_filter,
+                                                             image_cached_result=image_cached_result)
                         merge_reports(report, image_report)
-                    if strtobool(os.getenv('CHECKOV_CREATE_IMAGE_CACHED_REPORTS_FOR_IR', "False")) or strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
-                        # TODO: delete the old env var option (CHECKOV_PRESENT_CACHED_RESULTS) after full migration
-                        image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
-                        if image_cached_report:
-                            report.image_cached_results.append(image_cached_report)
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
@@ -205,27 +216,32 @@ class Runner(PackageRunner):
         )
         return report
 
-    def get_image_cached_results(self, dockerfile_path: str, image: Image) -> dict[str, Any]:
+    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any],
+                                 root_folder: Union[str, Path, None] = None) -> dict[str, Any]:
         """
+            :param image_cached_result: twistcli result for image as saved in cache
+            :param root_folder: for CLI scans - the directory in which checkov runs
             :param dockerfile_path: path of a file that might contain a container image
             :param image: Image object
             :return: cached_results report
         """
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
-        if not cached_results:
+
+        if not image_cached_result:
             # TODO: do we want to trigger a scan in this case?
-            logging.info(f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
+            logging.info(
+                f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
             return {}
         payload: dict[str, Any] = docker_image_scanning_integration.create_report(
-            twistcli_scan_result=cached_results,
+            twistcli_scan_result=image_cached_result,
             bc_platform_integration=bc_integration,
             file_path=dockerfile_path,
             file_content=f'image: {image.name}',
             docker_image_name=image.name,
-            related_resource_id=image.related_resource_id)
+            related_resource_id=image.related_resource_id,
+            root_folder=root_folder)
         return payload
 
-    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
+    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter, image_cached_result: Dict[str, Any]) -> Report:
         """
 
         :param dockerfile_path: path of a file that might contain a container image
@@ -237,12 +253,10 @@ class Runner(PackageRunner):
         if not should_run_scan(runner_filter.checks):
             return Report(self.check_type)
 
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
-
-        if cached_results:
+        if image_cached_result:
             logging.info(f"Found cached scan results of image {image.name}")
-            self.raw_report = cached_results
-            result = cached_results.get('results', [{}])[0]
+            self.raw_report = image_cached_result
+            result = image_cached_result.get('results', [{}])[0]
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id,
                                                                         image_name=image.name,

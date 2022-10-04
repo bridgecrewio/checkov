@@ -20,6 +20,7 @@ The Metadata includes:
 * Policy Name
 * ID - `CKV2_<provider>_<number>`
 * Category
+* Guideline (optional)
 
 The possible values for category are:
 
@@ -32,6 +33,17 @@ The possible values for category are:
 * CONVENTION
 * SECRETS
 * KUBERNETES
+* APPLICATION_SECURITY
+* SUPPLY_CHAIN
+* API_SECURITY
+
+```yaml
+metadata:
+  id: "CKV2_CUSTOM_1"
+  name: "Ensure bucket has versioning and owner tag"
+  category: "BACKUP_AND_RECOVERY"
+  guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
+```
 
 ## Policy Definition
 
@@ -39,7 +51,7 @@ The policy definition consists of:
 
 * **Definition Block(s)** - either *Attribute Block(s)* or *Connection State Block(s)* or both
 * **Logical Operator(s)** (optional)
-* **Filter**(optional)
+* **Filter** (optional)
 
 The top level object under `definition` must be a single object (not a list). It can be an attribute block, a connection block, or a logical operator (`and`, `or`, `not`).
 

@@ -119,8 +119,9 @@ class ImageReferencerMixin:
         self,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
         graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
         from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -129,7 +130,8 @@ class ImageReferencerMixin:
         if not should_run_scan(runner_filter.checks):
             return None
 
-        images = self.extract_images(graph_connector=graph_connector, definitions=definitions)
+        images = self.extract_images(graph_connector=graph_connector, definitions=definitions,
+                                     definitions_raw=definitions_raw)
         if not images:
             return None
 
@@ -176,7 +178,8 @@ class ImageReferencerMixin:
                 file_path=dockerfile_path,
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
-                related_resource_id=image.related_resource_id)
+                related_resource_id=image.related_resource_id,
+                root_folder=root_path)
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
@@ -287,7 +290,10 @@ class ImageReferencerMixin:
 
     @abstractmethod
     def extract_images(
-        self, graph_connector: DiGraph | None = None, definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         """Tries to find image references in the graph or supported resource"""
 
