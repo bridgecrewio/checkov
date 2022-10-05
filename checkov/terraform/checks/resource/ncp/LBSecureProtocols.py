@@ -17,8 +17,8 @@ class LBSecureProtocols(BaseResourceCheck):
         if protocol == 'HTTPS' or protocol == 'TLS':
             if 'tls_min_version_type' in conf.keys():
                 TLSVersion = conf['tls_min_version_type'][0]
-            if TLSVersion == 'TLSV12':
-                return CheckResult.PASSED
+                if TLSVersion == 'TLSV12':
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 
