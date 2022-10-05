@@ -2,14 +2,14 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class NACLIngressCheck(BaseResourceCheck):
+class NACLInboundCheck(BaseResourceCheck):
     def __init__(self, check_id, port):
-        name = "Ensure no NACL allow ingress from 0.0.0.0:0 to port %d" % port
+        name = "Ensure no NACL allow inbound from 0.0.0.0:0 to port %d" % port
         id = check_id
         supported_resources = ['ncloud_network_acl_rule']
 
         categories = [CheckCategories.NETWORKING]
-        guideline = "You should Ensure no NACL allow ingress from 0.0.0.0:0 to port %d" % port
+        guideline = "You should Ensure no NACL allow inbound from 0.0.0.0:0 to port %d" % port
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
         self.port = port
 

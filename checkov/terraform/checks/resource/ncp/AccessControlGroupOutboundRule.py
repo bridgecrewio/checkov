@@ -2,9 +2,9 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class ACGEgressCheck(BaseResourceCheck):
+class AccessControlGroupOutboundRule(BaseResourceCheck):
     def __init__(self):
-        name = "An Egress security group rule allows traffic to /0"
+        name = "An outbound security group rule allows traffic to /0"
         id = "CKV_NCP_3"
         supported_resources = ['ncloud_access_control_group_rule']
 
@@ -21,4 +21,4 @@ class ACGEgressCheck(BaseResourceCheck):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
-check = ACGEgressCheck()
+check = AccessControlGroupOutboundRule()
