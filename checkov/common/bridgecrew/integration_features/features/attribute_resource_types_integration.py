@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Optional, List
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -17,7 +17,7 @@ ALL_TYPES = '__all__'
 class AttributeResourceTypesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
-        self.attribute_resources: Dict[str, Dict[str, List[str]]] = {}
+        self.attribute_resources: Dict[str, Dict[str, Set[str]]] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -33,30 +33,13 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            logging.debug(f'Start time of processing API output: {datetime.datetime.now().timestamp()}')
+            if 'resourceDefinitions' not in self.bc_integration.customer_run_config_response:
+                # TODO remove - this makes it easier to make sure that platform scans will also work
+                logging.debug('resourceDefinitions is not in the run config response - might not be deployed to the platform yet')
+                return
 
-            resourceDefinitions = self.bc_integration.customer_run_config_response.get('resourceDefinitions')
-            filterAttributes: Dict[str, List[str]] = resourceDefinitions.get('filterAttributes')
-            resourceTypes: Dict[str, Dict[str, Any]] = resourceDefinitions.get('resourceTypes')
-
-            for attribute, providers in filterAttributes.items():
-                self.attribute_resources[attribute] = {p: [] for p in providers}
-                self.attribute_resources[attribute][ALL_TYPES] = []
-
-            for resource, properties in resourceTypes.items():
-                provider = properties['provider'].lower()
-                if provider == 'ali':
-                    # 'alibabacloud' is the actual provider value in the custom policy, but the resource provider is just 'ali'
-                    provider = 'alibabacloud'
-                for attribute in properties['arguments']:
-                    if '.' in attribute:
-                        attribute = attribute[:attribute.index('.')]
-                    if attribute not in filterAttributes or provider not in filterAttributes[attribute]:
-                        continue
-                    self.attribute_resources[attribute][provider].append(resource)
-                    self.attribute_resources[attribute][ALL_TYPES].append(resource)
-
-            logging.debug(f'End time of processing API output: {datetime.datetime.now().timestamp()}')
+            resource_definitions = self.bc_integration.customer_run_config_response.get('resourceDefinitions')
+            self._build_attribute_resource_map(resource_definitions)
 
         except Exception:
             self.integration_feature_failures = True
@@ -74,6 +57,31 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             return None
 
         return resource_types.get(provider or '__all__')
+
+    def _build_attribute_resource_map(self, resource_definitions):
+        logging.debug(f'Start time of processing API output: {datetime.datetime.now().timestamp()}')
+
+        filter_attributes: Dict[str, List[str]] = resource_definitions.get('filterAttributes')
+        resource_types: Dict[str, Dict[str, Any]] = resource_definitions.get('resourceTypes')
+
+        for attribute, providers in filter_attributes.items():
+            self.attribute_resources[attribute] = {p: set() for p in providers}
+            self.attribute_resources[attribute][ALL_TYPES] = set()
+
+        for resource, properties in resource_types.items():
+            provider = properties['provider'].lower()
+            if provider == 'ali':
+                # 'alibabacloud' is the actual provider value in the custom policy, but the resource provider is just 'ali'
+                provider = 'alibabacloud'
+            for attribute in properties['arguments']:
+                if '.' in attribute:
+                    attribute = attribute[:attribute.index('.')]
+                if attribute not in filter_attributes or provider not in filter_attributes[attribute]:
+                    continue
+                self.attribute_resources[attribute][provider].add(resource)
+                self.attribute_resources[attribute][ALL_TYPES].add(resource)
+
+        logging.debug(f'End time of processing API output: {datetime.datetime.now().timestamp()}')
 
 
 integration = AttributeResourceTypesIntegration(bc_integration)

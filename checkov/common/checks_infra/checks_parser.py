@@ -51,7 +51,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.util.type_forcers import force_list
+from checkov.common.util.type_forcers import force_list, force_list_or_set
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
@@ -160,12 +160,21 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             if isinstance(sub_solvers, dict):
                 sub_solvers = [sub_solvers]
 
+            # we handle resource types as a list (in the case where the types are enumerated) or as a set (when we
+            # replace a value of 'all' from the platform). sets are convenient because these lists are large, so
+            # faster lookups are nice, and because then we don't need to worry about duplicate (e.g., CFN Tags.Key and Tags.Value)
+
             for sub_solver in sub_solvers:
                 check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types, provider))
             resources_types_of_sub_solvers = [
-                force_list(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
+                force_list_or_set(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
-            check.resource_types = list(set(sum(resources_types_of_sub_solvers, [])))
+            if resources_types_of_sub_solvers and isinstance(resources_types_of_sub_solvers[0], list):
+                check.resource_types = list(set(sum(resources_types_of_sub_solvers, [])))
+            elif resources_types_of_sub_solvers and isinstance(resources_types_of_sub_solvers[0], set):
+                check.resource_types = list(set().union(*resources_types_of_sub_solvers))
+            else:
+                check.resource_types = []
             if any(q.type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION] for q in check.sub_checks):
                 check.type = SolverType.COMPLEX_CONNECTION
 

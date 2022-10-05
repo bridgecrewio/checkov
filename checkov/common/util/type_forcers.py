@@ -26,6 +26,12 @@ def force_list(var: T | list[T]) -> list[T]:
     return var
 
 
+def force_list_or_set(var: T | list[T] | set[T]) -> list[T] | set[T]:
+    if isinstance(var, list) or isinstance(var, set):
+        return var
+    return [var]
+
+
 def force_int(var: Any) -> int | None:
     try:
         if not isinstance(var, int):

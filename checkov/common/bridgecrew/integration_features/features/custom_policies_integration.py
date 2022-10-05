@@ -24,7 +24,7 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
+        super().__init__(bc_integration=bc_integration, order=2)  # must be after resource types
         self.platform_policy_parser = NXGraphCheckParser()
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
