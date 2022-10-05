@@ -7,7 +7,7 @@ class ServerEncryptionVPC(BaseResourceCheck):
     def __init__(self):
         name = "You can set whether to encrypt basic block storage if server image is RHV. Default false." \
                " Only support VPC environment."
-        id = "CKV_NCP_5"
+        id = "CKV_NCP_14"
         supported_resources = ['ncloud_server']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

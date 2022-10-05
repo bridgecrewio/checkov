@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 class LBSecureProtocols(BaseResourceCheck):
     def __init__(self):
         name = "Ensure ELB Policy uses only secure protocols"
-        id = "CKV_NCP_213"
+        id = "CKV_NCP_9"
         supported_resources = ['ncloud_lb_listener']
 
         categories = [CheckCategories.NETWORKING]

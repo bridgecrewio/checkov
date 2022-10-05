@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.ncp.ACGEgressCheck import check
+from checkov.terraform.checks.resource.ncp.AccessControlGroupEgressCheck import check
 from checkov.terraform.runner import Runner
 
 
-class TestACGEgressCheck(unittest.TestCase):
+class TestAccessControlGroupEgressCheck(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_ACGEgressCheck"
+        test_files_dir = Path(__file__).parent / "example_AccessControlGroupEgressCheck"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))

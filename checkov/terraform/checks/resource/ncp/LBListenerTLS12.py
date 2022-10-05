@@ -7,7 +7,7 @@ class LBListenerTLS12(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure that Load Balancer Listener is using at least TLS v1.2"
-        id = "CKV_NCP_3"
+        id = "CKV_NCP_8"
         supported_resources = ['ncloud_lb_listener']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
