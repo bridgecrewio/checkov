@@ -21,7 +21,7 @@ class GKEBinaryAuthorization(BaseResourceCheck):
                 elif binary_authorization.get("evaluation_mode") == [True]:
                     return CheckResult.PASSED
         # Google provider version <= v4.28.0
-        if conf.get("enable_binary_authorization") and conf.get("enable_binary_authorization") == [True]:
+        if conf.get("enable_binary_authorization") == [True]:
             return CheckResult.PASSED
         return CheckResult.FAILED
 
