@@ -27,17 +27,17 @@ def force_list(var: T | list[T]) -> list[T]:
 
 
 @overload
-def force_list_or_set(var: T) -> list[T]:
+def force_list_or_set(var: list[T]) -> list[T] | set[T]:
     ...
 
 
 @overload
-def force_list_or_set(var: list[T]) -> list[T]:
+def force_list_or_set(var: set[T]) -> list[T] | set[T]:
     ...
 
 
 @overload
-def force_list_or_set(var: set[T]) -> set[T]:
+def force_list_or_set(var: T) -> list[T] | set[T]:
     ...
 
 

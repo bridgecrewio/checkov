@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.typing import _ResourceDefinitions, _ResourceTypes
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -57,9 +58,9 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
 
         return resource_types.get(provider or '__all__')
 
-    def _build_attribute_resource_map(self, resource_definitions) -> None:
-        filter_attributes: Dict[str, List[str]] = resource_definitions.get('filterAttributes')
-        resource_types: Dict[str, Dict[str, Any]] = resource_definitions.get('resourceTypes')
+    def _build_attribute_resource_map(self, resource_definitions: _ResourceDefinitions) -> None:
+        filter_attributes: Dict[str, List[str]] = resource_definitions['filterAttributes']
+        resource_types: Dict[str, _ResourceTypes] = resource_definitions['resourceTypes']
 
         for attribute, providers in filter_attributes.items():
             self.attribute_resources[attribute] = {p: set() for p in providers}
