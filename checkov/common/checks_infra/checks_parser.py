@@ -51,7 +51,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.util.type_forcers import force_list, force_list_or_set
+from checkov.common.util.type_forcers import force_list_or_set
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver

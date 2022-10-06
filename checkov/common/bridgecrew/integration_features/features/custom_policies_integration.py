@@ -11,7 +11,7 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
