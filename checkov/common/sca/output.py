@@ -184,7 +184,7 @@ def create_report_cve_record(
     return record
 
 
-def _add_licenses_records_to_report(
+def _add_to_report_licenses_statuses(
     report: Report,
     check_class: str | None,
     scanned_file_path: str,
@@ -236,7 +236,7 @@ def _add_licenses_records_to_report(
     return licenses_per_package_map
 
 
-def add_cves_and_packages_to_reports(
+def add_to_reports_cves_and_packages(
     report: Report,
     check_class: str | None,
     scanned_file_path: str,
@@ -302,7 +302,7 @@ def add_cves_and_packages_to_reports(
             )
 
 
-def parse_vulns_to_records(
+def add_to_report_sca_data(
     report: Report,
     check_class: str | None,
     scanned_file_path: str,
@@ -315,10 +315,10 @@ def parse_vulns_to_records(
     report_type: str | None = None,
 ) -> None:
     licenses_per_package_map: dict[str, list[str]] = \
-        _add_licenses_records_to_report(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
-                                        license_statuses, sca_details, report_type)
+        _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
+                                         license_statuses, sca_details, report_type)
 
-    add_cves_and_packages_to_reports(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
+    add_to_reports_cves_and_packages(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                      vulnerabilities, packages, licenses_per_package_map, sca_details, report_type,
                                      ScanDataFormat.FROM_TWISTCLI)
 

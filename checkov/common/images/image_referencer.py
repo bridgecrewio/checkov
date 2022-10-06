@@ -16,7 +16,7 @@ from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -274,7 +274,7 @@ class ImageReferencerMixin:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
