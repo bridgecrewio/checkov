@@ -9,6 +9,7 @@ from pathlib import Path
 # do not remove; prevents circular import error
 from typing import Dict, Any
 from unittest import mock
+import checkov.common.bridgecrew.integration_features.features
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities

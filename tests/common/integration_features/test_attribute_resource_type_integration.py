@@ -20,7 +20,6 @@ from pathlib import Path
 
 class TestAttributeResourceTypeIntegration(unittest.TestCase):
     def tearDown(self) -> None:
-        get_graph_checks_registry("cloudformation").checks = []
         get_graph_checks_registry("terraform").checks = []
 
     def test_integration_valid(self):
@@ -45,7 +44,7 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
         self.assertFalse(attr_res_integration.is_valid())
 
     def test_get_attribute_resource_types(self):
-        attr_res_integration = AttributeResourceTypesIntegration(None)
+        attr_res_integration = AttributeResourceTypesIntegration(bc_integration)
         attr_res_integration.attribute_resources = mock_attribute_resource_definitions()
         # resource
         self.assertIsNone(attr_res_integration.get_attribute_resource_types({}))
@@ -82,7 +81,7 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
                                                                                provider='alibabacloud')))
 
     def test_build_resource_definitions(self):
-        attr_res_integration = AttributeResourceTypesIntegration(None)
+        attr_res_integration = AttributeResourceTypesIntegration(bc_integration)
         attr_res_integration._build_attribute_resource_map(mock_resource_definition_response())
         expected = {
             'tags': {
@@ -126,7 +125,7 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
         test_files_dir = current_dir + "/resources"
 
         report = tf_runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=['policy_id_1']))
-        
+
         # we only expect the aws_s3_bucket to fail, because the mock response does not include aws_subnet as a taggable resource
         self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(len(report.passed_checks), 0)
@@ -134,6 +133,7 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
         self.assertEqual(report.failed_checks[0].resource, 'aws_s3_bucket.b')
 
         attribute_resource_types_integration.bc_integration = bc_integration
+        attribute_resource_types_integration.attribute_resources = {}
 
 
 def mock_attribute_resource_definitions():
