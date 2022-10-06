@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
-
+from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING, Set
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -18,7 +17,7 @@ class BaseGraphCheck:
         self.bc_id = None
         self.name = ""
         self.category = ""
-        self.resource_types: List[str] = []
+        self.resource_types: Set[str] | List[str] = []  # when `all` is replaced by a long list of resources, a set is better
         self.connected_resources_types: List[str] = []
         self.operator = ""
         self.attribute: Optional[str] = None

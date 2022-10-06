@@ -80,4 +80,4 @@ class _ResourceDefinitions(TypedDict):
 class _ResourceTypes(TypedDict):
     provider: str
     text: str
-    argument: list[str]
+    arguments: list[str]
