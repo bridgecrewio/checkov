@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import re
-from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING, Set
 
 from jsonpath_ng.ext import parse
 
@@ -31,7 +31,7 @@ OPERATION_TO_FUNC = {
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
 
-    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+    def __init__(self, resource_types: Set[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
                  ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types

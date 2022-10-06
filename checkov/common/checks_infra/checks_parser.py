@@ -51,7 +51,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
-from checkov.common.util.type_forcers import force_list_or_set
+from checkov.common.util.type_forcers import force_set
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
@@ -168,12 +168,12 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             # actual list of resource for the attribute (e.g. tags) will have them as a set, because that logic works best with sets
             # here, they will end up as a list in the policy resource types
             resources_types_of_sub_solvers = [
-                force_list_or_set(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
+                force_set(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
             if resources_types_of_sub_solvers:
                 check.resource_types = list(set().union(*resources_types_of_sub_solvers))
             else:
-                check.resource_types = []
+                check.resource_types = {}
             if any(q.type in [SolverType.CONNECTION, SolverType.COMPLEX_CONNECTION] for q in check.sub_checks):
                 check.type = SolverType.COMPLEX_CONNECTION
 

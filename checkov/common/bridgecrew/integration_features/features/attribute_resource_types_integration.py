@@ -45,7 +45,7 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug("Scanning without handling 'all' resource type policies.", exc_info=True)
 
-    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[List[str]]:
+    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[Set[str]]:
         attr = solver.get('attribute')
         if not attr:
             return None

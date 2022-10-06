@@ -17,7 +17,7 @@ class BaseGraphCheck:
         self.bc_id = None
         self.name = ""
         self.category = ""
-        self.resource_types: Set[str] | List[str] = []  # when `all` is replaced by a long list of resources, a set is better
+        self.resource_types: Set[str] = set()  # when `all` is replaced by a long list of resources, a set is better
         self.connected_resources_types: List[str] = []
         self.operator = ""
         self.attribute: Optional[str] = None

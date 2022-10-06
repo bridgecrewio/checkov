@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Tuple, List, Dict, Any, TYPE_CHECKING
+from typing import Tuple, List, Dict, Any, TYPE_CHECKING, Set
 
 from checkov.common.graph.checks_infra.enums import SolverType
 
@@ -28,5 +28,5 @@ class BaseSolver:
         raise NotImplementedError()
 
     @staticmethod
-    def resource_type_pred(v: Dict[str, Any], resource_types: List[str]) -> bool:
+    def resource_type_pred(v: Dict[str, Any], resource_types: Set[str]) -> bool:
         return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types)
