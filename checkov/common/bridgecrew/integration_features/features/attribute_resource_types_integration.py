@@ -59,8 +59,6 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
         return resource_types.get(provider or '__all__')
 
     def _build_attribute_resource_map(self, resource_definitions):
-        logging.debug(f'Start time of processing API output: {datetime.datetime.now().timestamp()}')
-
         filter_attributes: Dict[str, List[str]] = resource_definitions.get('filterAttributes')
         resource_types: Dict[str, Dict[str, Any]] = resource_definitions.get('resourceTypes')
 
@@ -80,8 +78,6 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
                     continue
                 self.attribute_resources[attribute][provider].add(resource)
                 self.attribute_resources[attribute][ALL_TYPES].add(resource)
-
-        logging.debug(f'End time of processing API output: {datetime.datetime.now().timestamp()}')
 
 
 integration = AttributeResourceTypesIntegration(bc_integration)

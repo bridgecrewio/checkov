@@ -134,7 +134,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         metadata = raw_check.get("metadata", {})
         provider = metadata.get("scope", {}).get("provider")
 
-        check = self._parse_raw_check(policy_definition, [], provider)
+        check = self._parse_raw_check(policy_definition, provider)
 
         check.id = metadata.get("id", "")
         check.name = metadata.get("name", "")
@@ -148,7 +148,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
 
         return check
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], provider: Optional[str]) -> BaseGraphCheck:
+    def _parse_raw_check(self, raw_check: Dict[str, Any], provider: Optional[str]) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
@@ -161,18 +161,16 @@ class NXGraphCheckParser(BaseGraphCheckParser):
             if isinstance(sub_solvers, dict):
                 sub_solvers = [sub_solvers]
 
-            # we handle resource types as a list (in the case where the types are enumerated) or as a set (when we
-            # replace a value of 'all' from the platform). sets are convenient because these lists are large, so
-            # faster lookups are nice, and because then we don't need to worry about duplicate (e.g., CFN Tags.Key and Tags.Value)
-
             for sub_solver in sub_solvers:
-                check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types, provider))
+                check.sub_checks.append(self._parse_raw_check(sub_solver, provider))
+
+            # conditions with enumerated resource types will have them as a list. conditions where `all` is replaced with the
+            # actual list of resource for the attribute (e.g. tags) will have them as a set, because that logic works best with sets
+            # here, they will end up as a list in the policy resource types
             resources_types_of_sub_solvers = [
                 force_list_or_set(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
-            if resources_types_of_sub_solvers and isinstance(resources_types_of_sub_solvers[0], list):
-                check.resource_types = list(set(sum(resources_types_of_sub_solvers, [])))
-            elif resources_types_of_sub_solvers and isinstance(resources_types_of_sub_solvers[0], set):
+            if resources_types_of_sub_solvers:
                 check.resource_types = list(set().union(*resources_types_of_sub_solvers))
             else:
                 check.resource_types = []
@@ -187,13 +185,16 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 resource_types_for_attribute = attribute_resource_type_integration.get_attribute_resource_types(raw_check, provider)
-                check.resource_types = resource_types_for_attribute or resources_types or []
+                check.resource_types = resource_types_for_attribute or []
             else:
                 check.resource_types = resource_type
 
             connected_resources_type = raw_check.get("connected_resource_types", [])
+
+            # TODO this code has a capital 'All', so I am pretty sure this rarely gets used. need to validate the use case
+            # and make it work with the resource types from the platform if needed
             if connected_resources_type == ["All"] or connected_resources_type == "all":
-                check.connected_resources_types = resources_types or []
+                check.connected_resources_types = []
             else:
                 check.connected_resources_types = connected_resources_type
 
