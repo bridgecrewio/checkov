@@ -134,7 +134,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         metadata = raw_check.get("metadata", {})
         provider = metadata.get("scope", {}).get("provider")
 
-        check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"), provider)
+        check = self._parse_raw_check(policy_definition, [], provider)
 
         check.id = metadata.get("id", "")
         check.name = metadata.get("name", "")

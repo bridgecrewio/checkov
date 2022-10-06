@@ -12,7 +12,6 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.runner_filter import RunnerFilter
-from checkov.common.checks_infra.resources_types import resources_types
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -48,9 +47,7 @@ class Registry(BaseRegistry):
                         if not isinstance(check_json, dict):
                             self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
                             continue
-                        check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json)
-                        )
+                        check = self.parser.parse_raw_check(check_json)
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
                                 # Note the external check; used in the should_run_check logic
@@ -59,11 +56,6 @@ class Registry(BaseRegistry):
 
     def load_external_checks(self, dir: str) -> None:
         self._load_checks_from_dir(dir, True)
-
-    @staticmethod
-    def _get_resource_types(check_json: dict[str, dict[str, Any]]) -> list[str] | None:
-        provider = check_json.get("scope", {}).get("provider", "").lower()
-        return resources_types.get(provider)
 
 
 _registry_instances: dict[str, Registry] = {}
