@@ -10,15 +10,13 @@ class IAMUserNotUsedForAccess(BaseResourceNegativeValueCheck):
         name = "Ensure IAM users are not defined " \
                "AWS Access should be controlled by roles via an SSO, inline with AWS security best practices " \
                "Require human users to use federation with an identity provider to access AWS using temporary credentials "
-        id = "CKV_AWS_272"
-        supported_resources = ('aws_iam_user', 'aws_iam_policy_attachment')
+        id = "CKV_AWS_273"
+        supported_resources = ('aws_iam_user')
         categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        if self.entity_type == "aws_iam_policy_attachment":
-            return "users"
-        elif self.entity_type == "aws_iam_user":
+        if self.entity_type == "aws_iam_user":
             return "name"
 
         return ""
