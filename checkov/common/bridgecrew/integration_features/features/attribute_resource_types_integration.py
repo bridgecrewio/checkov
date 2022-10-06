@@ -44,7 +44,7 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug("Scanning without handling 'all' resource type policies.", exc_info=True)
 
-    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[List[str]]:
+    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[Set[str]]:
         attr = solver.get('attribute')
         if not attr:
             return None
@@ -57,7 +57,7 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
 
         return resource_types.get(provider or '__all__')
 
-    def _build_attribute_resource_map(self, resource_definitions):
+    def _build_attribute_resource_map(self, resource_definitions) -> None:
         filter_attributes: Dict[str, List[str]] = resource_definitions.get('filterAttributes')
         resource_types: Dict[str, Dict[str, Any]] = resource_definitions.get('resourceTypes')
 

@@ -26,8 +26,23 @@ def force_list(var: T | list[T]) -> list[T]:
     return var
 
 
+@overload
+def force_list_or_set(var: T) -> list[T]:
+    ...
+
+
+@overload
+def force_list_or_set(var: list[T]) -> list[T]:
+    ...
+
+
+@overload
+def force_list_or_set(var: set[T]) -> set[T]:
+    ...
+
+
 def force_list_or_set(var: T | list[T] | set[T]) -> list[T] | set[T]:
-    if isinstance(var, list) or isinstance(var, set):
+    if isinstance(var, (list, set)):
         return var
     return [var]
 
