@@ -17,7 +17,7 @@ ALL_TYPES = '__all__'
 class AttributeResourceTypesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
-        self.attribute_resources: Dict[str, Dict[str, Set[str]]] = {}
+        self.attribute_resources: Dict[str, Dict[str, List[str]]] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -45,7 +45,7 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug("Scanning without handling 'all' resource type policies.", exc_info=True)
 
-    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[Set[str]]:
+    def get_attribute_resource_types(self, solver: Dict[str, Any], provider: Optional[str] = None) -> Optional[List[str]]:
         attr = solver.get('attribute')
         if not attr:
             return None
@@ -62,9 +62,11 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
         filter_attributes: Dict[str, List[str]] = resource_definitions['filterAttributes']
         resource_types: Dict[str, _ResourceTypes] = resource_definitions['resourceTypes']
 
+        attribute_resources: Dict[str, Dict[str, Set[str]]] = {}
+
         for attribute, providers in filter_attributes.items():
-            self.attribute_resources[attribute] = {p: set() for p in providers}
-            self.attribute_resources[attribute][ALL_TYPES] = set()
+            attribute_resources[attribute] = {p: set() for p in providers}
+            attribute_resources[attribute][ALL_TYPES] = set()
 
         for resource, properties in resource_types.items():
             provider = properties['provider'].lower()
@@ -76,8 +78,17 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
                     attribute = attribute[:attribute.index('.')]
                 if attribute not in filter_attributes or provider not in filter_attributes[attribute]:
                     continue
-                self.attribute_resources[attribute][provider].add(resource)
-                self.attribute_resources[attribute][ALL_TYPES].add(resource)
+                attribute_resources[attribute][provider].add(resource)
+                attribute_resources[attribute][ALL_TYPES].add(resource)
+
+        # convert to list
+        self.attribute_resources = {
+            attribute: {
+                provider: list(resources) for provider, resources in provider_map.items()
+            } for attribute, provider_map in attribute_resources.items()
+        }
+
+        print(1)
 
 
 integration = AttributeResourceTypesIntegration(bc_integration)

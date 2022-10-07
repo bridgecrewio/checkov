@@ -83,6 +83,14 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
     def test_build_resource_definitions(self):
         attr_res_integration = AttributeResourceTypesIntegration(bc_integration)
         attr_res_integration._build_attribute_resource_map(mock_resource_definition_response())
+
+        # do equality check as set
+        attribute_resources = {
+            attribute: {
+                provider: set(resources) for provider, resources in provider_map.items()
+            } for attribute, provider_map in attr_res_integration.attribute_resources.items()
+        }
+
         expected = {
             'tags': {
                 'aws': {'aws_s3_bucket'},
@@ -99,7 +107,7 @@ class TestAttributeResourceTypeIntegration(unittest.TestCase):
                 '__all__': {'google_bigquery_dataset'}
             }
         }
-        self.assertEqual(attr_res_integration.attribute_resources, expected)
+        self.assertEqual(attribute_resources, expected)
 
     def test_scan_with_attribute(self):
         temp_integration = BcPlatformIntegration()

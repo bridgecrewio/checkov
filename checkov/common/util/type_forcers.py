@@ -26,29 +26,6 @@ def force_list(var: T | list[T]) -> list[T]:
     return var
 
 
-@overload
-def force_set(var: set[T]) -> set[T]:
-    ...
-
-
-@overload
-def force_set(var: list[T]) -> set[T]:
-    ...
-
-
-@overload
-def force_set(var: T) -> set[T]:
-    ...
-
-
-def force_set(var: T | list[T] | set[T]) -> set[T]:
-    if isinstance(var, set):
-        return var
-    if isinstance(var, list):
-        return set(var)
-    return {var}
-
-
 def force_int(var: Any) -> int | None:
     try:
         if not isinstance(var, int):
