@@ -4,8 +4,8 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class NACLPortCheck(BaseResourceCheck):
     def __init__(self):
-        name = "An ingress Network ACL rule should not allow ALL ports."
-        id = "CKV_NCP_77"
+        name = "An inbound Network ACL rule should not allow ALL ports."
+        id = "CKV_NCP_14"
         supported_resources = ['ncloud_network_acl_rule']
 
         categories = [CheckCategories.NETWORKING]
