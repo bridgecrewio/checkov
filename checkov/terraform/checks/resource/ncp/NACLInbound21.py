@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.ncp.NACLInboundCheck import NACLInboundCh
 
 class NACLInbound21(NACLInboundCheck):
     def __init__(self):
-        super().__init__(check_id="CKV_NCP_11", port=21)
+        super().__init__(check_id="CKV_NCP_9", port=21)
 
 
 check = NACLInbound21()
