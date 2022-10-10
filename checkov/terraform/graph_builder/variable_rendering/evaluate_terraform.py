@@ -85,13 +85,6 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
         return original_str if keep_origin else str_to_replace
 
     string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
-    if (
-        isinstance(replaced_value, str)
-        and "${" in string_without_interpolation
-        and string_without_interpolation.index("${") < string_without_interpolation.find(str_to_replace) < string_without_interpolation.rfind("}")
-    ):
-        replaced_value = f"'{replaced_value}'"
-
     return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
