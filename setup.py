@@ -60,6 +60,7 @@ setup(
         "importlib-metadata>=0.12",
         "cachetools",
         "cyclonedx-python-lib>=2.4.0,<4.0.0",
+        "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",

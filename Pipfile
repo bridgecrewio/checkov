@@ -70,6 +70,7 @@ typing-extensions = ">=4.1.0"
 importlib-metadata = ">=0.12"
 cachetools = "*"
 cyclonedx-python-lib = ">=2.4.0,<4.0.0"
+packageurl-python = "*"
 click = ">=8.0.0"
 aiohttp = "*"
 aiodns = "*"
@@ -82,7 +83,6 @@ charset-normalizer = "*"
 pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'", index="pypi"}
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'", index="pypi"}
 schema = "*"
-packageurl-python = "*"
 
 [requires]
 python_version = "3.7"
