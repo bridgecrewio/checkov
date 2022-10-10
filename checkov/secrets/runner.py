@@ -143,10 +143,7 @@ class Runner(BaseRunner[None]):
             self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
             for _, secret in secrets:
-                if hasattr(secret, 'check_id'):
-                    check_id = secret.check_id  # type: ignore
-                else:
-                    check_id = SECRET_TYPE_TO_ID.get(secret.type)
+                check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'

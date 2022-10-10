@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import jmespath
 
@@ -9,24 +9,31 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
 
 class Runner(YamlRunner, ImageReferencer):
     check_type = CheckType.BITBUCKET_PIPELINES  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
-    def require_external_checks(self):
+    def require_external_checks(self) -> bool:
         return False
 
-    def import_registry(self):
+    def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(self, f):
+    def _parse_file(
+        self, f: str, file_content: str | None = None
+    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
             return super()._parse_file(f)
 
-    def is_workflow_file(self, file_path):
+        return None
+
+    def is_workflow_file(self, file_path: str) -> bool:
         """
         :return: True if the file mentioned is named bitbucket-pipelines.yml. Otherwise: False
         """
@@ -77,8 +84,17 @@ class Runner(YamlRunner, ImageReferencer):
         """
 
         images: set[Image] = set()
+        parsed_file = self._parse_file(file_path)
 
-        workflow, workflow_line_numbers = self._parse_file(file_path)
+        if not parsed_file:
+            return images
+
+        workflow, workflow_line_numbers = parsed_file
+
+        if not isinstance(workflow, dict):
+            # make type checking happy
+            return images
+
         self.add_default_and_pipelines_images(workflow, images, file_path)
         self.add_root_image(file_path, images, workflow_line_numbers, workflow)
 
@@ -92,8 +108,9 @@ class Runner(YamlRunner, ImageReferencer):
         :param file_path: path of analyzed workflow
         """
         keywords = [
-            'pipelines.default[].step.{image: image, __startline__: __startline__, __endline__:__endline__}',
-            'pipelines.*.[*][][][].step.{image: image, __startline__: __startline__, __endline__:__endline__}']
+            "pipelines.default[].step.{image: image, __startline__: __startline__, __endline__:__endline__}",
+            "pipelines.*.[*][][][].step.{image: image, __startline__: __startline__, __endline__:__endline__}",
+        ]
         for keyword in keywords:
             results = jmespath.search(keyword, workflow)
             for result in results:
@@ -114,7 +131,7 @@ class Runner(YamlRunner, ImageReferencer):
 
         if root_image:
             for line_number, line_txt in workflow_line_numbers:
-                if "image" in line_txt and not line_txt.startswith(' '):
+                if "image" in line_txt and not line_txt.startswith(" "):
                     image_obj = Image(
                         file_path=file_path,
                         name=root_image,

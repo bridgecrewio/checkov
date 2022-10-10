@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import time
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Sequence, Collection
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -26,16 +26,17 @@ MAX_SLEEP_DURATION = 60
 
 
 class Scanner:
-    def __init__(self, pbar: ProgressBar = None, root_folder: str | Path | None = None) -> None:
+    def __init__(self, pbar: ProgressBar | None = None, root_folder: str | Path | None = None) -> None:
         self._base_url = bc_integration.api_url
-        self.pbar = pbar
-        if not self.pbar:
+        if pbar:
+            self.pbar = pbar
+        else:
             self.pbar = ProgressBar('')
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
-    def scan(self, input_paths: Iterable[Path]) -> Sequence[dict[str, Any]]:
-        self.pbar.initiate(len(input_paths))  # type: ignore
+    def scan(self, input_paths: Collection[Path]) -> Sequence[dict[str, Any]]:
+        self.pbar.initiate(len(input_paths))
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
         )
@@ -51,11 +52,11 @@ class Scanner:
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
-            scan_results = []
+            scan_results: list[dict[str, Any]] = []
             for input_path in input_paths:
                 scan_results.append(await self.run_scan(input_path))
         else:
-            scan_results: List[Dict[str, Any]] = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
+            scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         if any(scan_result.get("packages") is None for scan_result in scan_results):
             image_scanner.setup_twistcli()

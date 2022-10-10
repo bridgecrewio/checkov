@@ -59,7 +59,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<3.0.0",
+        "cyclonedx-python-lib>=2.4.0,<4.0.0",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
