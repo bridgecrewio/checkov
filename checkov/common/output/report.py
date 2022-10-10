@@ -542,6 +542,7 @@ class Report:
     def handle_skipped_checks(
             report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
+        module_address_len = len("module.")
         skip_records = []
         for record in report.failed_checks:
             resource_skips = enriched_resources.get(record.resource, {}).get(
@@ -557,7 +558,7 @@ class Report:
                     report.add_record(record)
 
             if record.resource_address and record.resource_address.startswith("module."):
-                module_path = record.resource_address[0:record.resource_address.index('.', len("module.") + 1)]
+                module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:
