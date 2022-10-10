@@ -67,7 +67,7 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv install --dev
+          pipenv install --dev -v
       - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
       - name: Unit tests
         env:
