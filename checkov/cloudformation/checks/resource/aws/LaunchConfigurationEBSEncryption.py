@@ -17,7 +17,10 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
-        block_device_mappings = conf.get('Properties', {}).get('BlockDeviceMappings')
+        properties = conf.get('Properties', {})
+        if properties is None:
+            return CheckResult.UNKNOWN
+        block_device_mappings = properties.get('BlockDeviceMappings')
         if block_device_mappings is None:
             return CheckResult.UNKNOWN
         if not isinstance(block_device_mappings, list):
