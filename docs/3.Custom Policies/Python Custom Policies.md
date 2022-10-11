@@ -264,7 +264,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-scanner = S3PCIPrivateACL()
+check = S3PCIPrivateACL()
 ```
 
 2. With the new custom check in place, run Checkov:
