@@ -22,4 +22,5 @@ class ServerEncryptionVPC(BaseResourceCheck):
         else:
             return CheckResult.FAILED
 
+
 check = ServerEncryptionVPC()
