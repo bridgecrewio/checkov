@@ -7,9 +7,7 @@ from checkov.terraform.checks.resource.base_resource_negative_value_check import
 
 class IAMUserNotUsedForAccess(BaseResourceNegativeValueCheck):
     def __init__(self) -> None:
-        name = "Ensure IAM users are not defined " \
-               "AWS Access should be controlled by roles via an SSO, inline with AWS security best practices " \
-               "Require human users to use federation with an identity provider to access AWS using temporary credentials "
+        name = "Ensure access is controlled through SSO and not AWS IAM defined users"
         id = "CKV_AWS_273"
         supported_resources = ('aws_iam_user')
         categories = (CheckCategories.IAM,)
