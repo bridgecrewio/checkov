@@ -21,4 +21,5 @@ class AccessControlGroupOutboundRule(BaseResourceCheck):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = AccessControlGroupOutboundRule()
