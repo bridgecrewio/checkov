@@ -16,7 +16,7 @@ class Secrets(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["env", "envFrom"]
         if conf.get("env"):
             for idx, e in enumerate(conf["env"]):
-                if "valueFrom" in e:
+                if "valueFrom" in e and e["valueFrom"] is not None:
                     if "secretKeyRef" in e["valueFrom"]:
                         self.evaluated_container_keys = [f"env/[{idx}]/valueFrom/secretKeyRef"]
                         return CheckResult.FAILED
