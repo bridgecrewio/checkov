@@ -18,7 +18,7 @@ class DBInstanceLogging(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         logs_exports = conf.get('enabled_cloudwatch_logs_exports', [[]])
-        if len(logs_exports) == 0:
+        if not logs_exports:
             return CheckResult.FAILED
         return CheckResult.PASSED if logs_exports[0] else CheckResult.FAILED
 
