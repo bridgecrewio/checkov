@@ -1,15 +1,36 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.models.enums import CheckResult
 
+if TYPE_CHECKING:
+    from dockerfile_parse.parser import _Instruction  # only in extra_stubs
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.typing import _SkippedCheck, _CheckResult
+    from checkov.runner_filter import RunnerFilter
+
 
 class Registry(BaseCheckRegistry):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(CheckType.DOCKERFILE)
 
-    def scan(self, scanned_file, entity, skipped_checks, runner_filter):
+    def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
+        # not needed
+        pass
 
-        results = {}
+    def scan(
+        self,
+        scanned_file: str,
+        entity: dict[str, list[_Instruction]],
+        skipped_checks: list[_SkippedCheck],
+        runner_filter: RunnerFilter,
+        report_type: str | None = None,
+    ) -> dict[BaseCheck, _CheckResult]:
+
+        results: "dict[BaseCheck, _CheckResult]" = {}
         if not entity:
             return results
         for instruction, checks in self.checks.items():
