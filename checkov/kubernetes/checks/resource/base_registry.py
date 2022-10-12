@@ -6,7 +6,7 @@ class Registry(BaseCheckRegistry):
         super().__init__(report_type)
 
     def extract_entity_details(self, entity):
-        kind = entity["kind"]
+        kind = entity.get("kind")
         conf = entity
         return kind, conf
 
