@@ -10,7 +10,7 @@ class AccessControlGroupOutboundRule(BaseResourceCheck):
 
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories,
-                         supported_resources=supported_resources, guideline=guideline)
+                         supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'outbound' in conf.keys():
