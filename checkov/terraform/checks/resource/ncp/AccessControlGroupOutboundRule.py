@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class AccessControlGroupOutboundRule(BaseResourceCheck):
     def __init__(self):
-        name = "An outbound security group rule allows traffic to /0"
+        name = "Ensure no security group rules allow outbound traffic to 0.0.0.0/0"
         id = "CKV_NCP_3"
         supported_resources = ['ncloud_access_control_group_rule']
 
