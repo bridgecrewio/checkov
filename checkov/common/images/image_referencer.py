@@ -16,7 +16,7 @@ from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -117,11 +117,11 @@ class ImageReferencerMixin:
 
     def check_container_image_references(
         self,
-        graph_connector: DiGraph | None,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
+        graph_connector: DiGraph | None = None,
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
-        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
         from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -178,7 +178,8 @@ class ImageReferencerMixin:
                 file_path=dockerfile_path,
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
-                related_resource_id=image.related_resource_id)
+                related_resource_id=image.related_resource_id,
+                root_folder=root_path)
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
@@ -274,7 +275,7 @@ class ImageReferencerMixin:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -283,7 +284,7 @@ class ImageReferencerMixin:
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=report_type,
         )
 

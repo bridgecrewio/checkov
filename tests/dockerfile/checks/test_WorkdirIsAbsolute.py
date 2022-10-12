@@ -19,7 +19,8 @@ class TestWorkdirIsAbsolute(unittest.TestCase):
 
         passing_resources = {"/success/Dockerfile."}
         failing_resources = [
-            "/failure/Dockerfile.WORKDIR",  # needs to be twice
+            "/failure/Dockerfile.WORKDIR",  # filenames appear once for each check violation in the file
+            "/failure/Dockerfile.WORKDIR",
             "/failure/Dockerfile.WORKDIR",
             "/failure/Dockerfile.simple.WORKDIR",
         ]

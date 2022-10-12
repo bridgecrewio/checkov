@@ -53,11 +53,11 @@ class GithubActionProvider:
 
                 if image:
                     image_obj = Image(
-                        file_path=self.file_path,
+                        file_path=self.file_path[self.file_path.index('/.github'):],
                         name=image,
                         start_line=start_line,
                         end_line=end_line,
-                        related_resource_id=f'{self.file_path}/{self.generate_resource_key(start_line, end_line)}'
+                        related_resource_id=self.generate_resource_key(start_line, end_line)
                     )
                     images.append(image_obj)
 
