@@ -210,6 +210,31 @@ class TestRunnerRegistry(unittest.TestCase):
         for runner in checkov_runners:
             self.assertIn(runner, CodeCategoryMapping)
 
+    def test_get_enriched_resources(self):
+        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/plan_with_tf_modules_for_enrichment"
+        runner_filter = RunnerFilter(download_external_modules=True)
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, tf_runner()
+        )
+        reports = runner_registry.run(root_folder=test_files_dir)
+
+        config = argparse.Namespace(
+            file=['./plan_with_tf_modules_for_enrichment/tfplan.json'],
+            compact=True,
+            output=['json'],
+            quiet=True,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=None,
+            use_enforcement_rules=None
+        )
+
+        with patch('sys.stdout', new=io.StringIO()) as captured_output:
+            runner_registry.print_reports(scan_reports=reports, config=config)
+
+        output = captured_output.getvalue()
+
     def test_extract_git_info_from_account_id(self):
         account_id = "owner/name"
         expected_git_org = "owner"
