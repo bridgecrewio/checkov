@@ -67,7 +67,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser or Parser()
-        self.definitions = None
+        self.definitions: "dict[str, dict[str, Any]] | None" = None
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
@@ -143,7 +143,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
-        self.pbar.initiate(len(self.definitions))  # type: ignore
+        self.pbar.initiate(len(self.definitions))
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         report.add_parsing_errors(parsing_errors.keys())

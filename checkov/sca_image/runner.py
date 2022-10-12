@@ -6,7 +6,7 @@ import logging
 import os.path
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, List, Union, Dict, Any
+from typing import Optional, Union, Dict, Any
 
 import requests
 
@@ -124,13 +124,13 @@ class Runner(PackageRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
+            root_folder: str | Path | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

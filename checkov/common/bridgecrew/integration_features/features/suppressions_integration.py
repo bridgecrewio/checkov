@@ -158,8 +158,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Cves':
             if 'accountIds' not in suppression:
                 return False
-            if self.bc_integration.repo_id in suppression['accountIds']:
-                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]  # type: ignore
+            if self.bc_integration.repo_id and self.bc_integration.repo_id in suppression['accountIds']:
+                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]
                 suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
                 file_abs_path = record.file_abs_path.replace('\\', '/')
                 if file_abs_path == suppression_path[1:] or \
