@@ -9,7 +9,6 @@ class AccessControlGroupOutboundRule(BaseResourceCheck):
         supported_resources = ['ncloud_access_control_group_rule']
 
         categories = [CheckCategories.NETWORKING]
-        guideline = "You should restrict access to IP addresses or ranges that are explicitly required where possible."
         super().__init__(name=name, id=id, categories=categories,
                          supported_resources=supported_resources, guideline=guideline)
 
