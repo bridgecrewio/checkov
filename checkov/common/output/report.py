@@ -377,7 +377,6 @@ class Report:
                 showindex=True,
             )
             output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
-            print(output_data)
             return output_data
         else:
             return "\n\n---\n\n"

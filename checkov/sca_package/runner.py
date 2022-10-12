@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Sequence, Any
 
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records
+from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
@@ -109,7 +109,7 @@ class Runner(BaseRunner):
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            parse_vulns_to_records(
+            add_to_report_sca_data(
                 report=report,
                 check_class=self._check_class,
                 scanned_file_path=str(package_file_path),

@@ -19,6 +19,7 @@ import checkov.logging_init  # noqa  # should be imported before the others to e
 
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
+from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -99,6 +100,7 @@ DEFAULT_RUNNERS = (
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
+    azure_pipelines_runner(),
 )
 
 
@@ -395,7 +397,11 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=None,
                help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
     parser.add('--output-file-path', default=None,
-               help='Name for output file. The first selected output via output flag will be saved to the file (default output is cli)')
+               help='Name of the output folder to save the chosen output formats. '
+                    'Advanced usage: '
+                    'By using -o cli -o junitxml --output-file-path console,results.xml the CLI output will be printed '
+                    'to the console and the JunitXML output to the file results.xml.'
+               )
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--include-all-checkov-policies', action='store_true',

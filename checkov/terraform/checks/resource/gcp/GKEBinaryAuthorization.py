@@ -25,4 +25,5 @@ class GKEBinaryAuthorization(BaseResourceCheck):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
+
 check = GKEBinaryAuthorization()
