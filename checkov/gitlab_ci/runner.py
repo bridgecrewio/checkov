@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from networkx import DiGraph
 
 
-class Runner(ImageReferencerMixin, YamlRunner):
+class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
     check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:
