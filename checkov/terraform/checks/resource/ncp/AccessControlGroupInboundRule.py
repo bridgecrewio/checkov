@@ -35,21 +35,22 @@ class AccessControlGroupInboundRule(BaseResourceCheck):
         return CheckResult.PASSED
 
     def contains_violation(self, conf: dict[str, list[Any]]) -> bool:
-        port_range = (conf.get('port_range', [{-1}])[0]).split("-")
+        if 'port_range' in conf:
+            port_range = (conf.get('port_range', [{-1}])[0]).split("-")
 
-        from_port = int(port_range[0])
-        to_port = int(port_range[1]) if len(port_range) > 1 else from_port
+            from_port = int(port_range[0])
+            to_port = int(port_range[1]) if len(port_range) > 1 else from_port
 
-        if to_port == 0 and from_port == 0:
-            to_port = 65535
+            if to_port == 0 and from_port == 0:
+                to_port = 65535
 
-        if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
-            conf_cidr_blocks = conf.get('ip_block', [[]])
-            if conf_cidr_blocks and len(conf_cidr_blocks) > 0:
-                conf_cidr_blocks = conf_cidr_blocks[0]
-            cidr_blocks = force_list(conf_cidr_blocks)
+            if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
+                conf_cidr_blocks = conf.get('ip_block', [[]])
+                if conf_cidr_blocks:
+                    conf_cidr_blocks = conf_cidr_blocks[0]
+                cidr_blocks = force_list(conf_cidr_blocks)
 
-            if '0.0.0.0/0' in cidr_blocks:
-                return True
+                if '0.0.0.0/0' in cidr_blocks:
+                    return True
 
         return False

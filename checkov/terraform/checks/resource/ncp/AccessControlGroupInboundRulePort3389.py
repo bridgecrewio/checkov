@@ -1,9 +1,9 @@
 from checkov.terraform.checks.resource.ncp.AccessControlGroupInboundRule import AccessControlGroupInboundRule
 
 
-class AccessControlGroupGRuleInboundPort3389(AccessControlGroupInboundRule):
+class AccessControlGroupRuleInboundPort3389(AccessControlGroupInboundRule):
     def __init__(self):
-        super().__init__(check_id="CUSTOM_NCP_ACG_005", port=3389)
+        super().__init__(check_id="CKV_NCP_5", port=3389)
 
 
-check = AccessControlGroupGRuleInboundPort3389()
+check = AccessControlGroupRuleInboundPort3389()
