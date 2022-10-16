@@ -10,6 +10,7 @@ import yaml
 
 from checkov.common.output.report import Report
 from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
+from checkov.github_actions.graph_builder.local_graph import GitHubActionsLocalGraph
 
 from checkov.runner_filter import RunnerFilter
 from jsonschema import validate, ValidationError
@@ -25,6 +26,9 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
+    from checkov.common.runners.graph_manager import ObjectGraphManager
     from networkx import DiGraph
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
@@ -33,8 +37,19 @@ WORKFLOW_DIRECTORY = ".github/workflows/"
 class Runner(ImageReferencerMixin, YamlRunner):
     check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        db_connector: NetworkxConnector | None = None,
+        source: str = "GitHubActions",
+        graph_class: type[ObjectLocalGraph] = GitHubActionsLocalGraph,
+        graph_manager: ObjectGraphManager | None = None,
+    ) -> None:
+        super().__init__(
+            db_connector=db_connector,
+            source=source,
+            graph_class=graph_class,
+            graph_manager=graph_manager,
+        )
 
     def require_external_checks(self) -> bool:
         return False
