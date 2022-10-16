@@ -8,13 +8,27 @@ from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
+    from checkov.common.runners.graph_manager import ObjectGraphManager
 
 
 class Runner(ObjectRunner):
     check_type = CheckType.YAML  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+        self,
+        db_connector: NetworkxConnector | None = None,
+        source: str | None = None,
+        graph_class: type[ObjectLocalGraph] | None = None,
+        graph_manager: ObjectGraphManager | None = None,
+    ) -> None:
+        super().__init__(
+            db_connector=db_connector,
+            source=source,
+            graph_class=graph_class,
+            graph_manager=graph_manager,
+        )
         self.file_extensions = ['.yaml', '.yml']
 
     def import_registry(self) -> BaseCheckRegistry:
