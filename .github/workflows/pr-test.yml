@@ -99,7 +99,6 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
