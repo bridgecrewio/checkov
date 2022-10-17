@@ -86,7 +86,7 @@ def test_valid_cyclonedx_image_bom():
         check_class=check_class,
         vulnerability_details=vulnerability,
         licenses="BSD-3-Clause",
-        image_details=image_details,
+        sca_details=image_details,
     )
     report = Report(check_type='sca_image')
     report.add_record(record)
