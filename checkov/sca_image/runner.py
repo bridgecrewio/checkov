@@ -21,7 +21,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
@@ -147,6 +147,9 @@ class Runner(PackageRunner):
             return report
         if files:
             self.pbar.initiate(len(files))
+            # 'root_folder' should contain the common prefix so the absolute full path can be shortened later
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+
             for file in files:
                 self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
@@ -199,7 +202,7 @@ class Runner(PackageRunner):
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
 
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=self._check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -208,7 +211,7 @@ class Runner(PackageRunner):
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=self.report_type,
         )
         return report

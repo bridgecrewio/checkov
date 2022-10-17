@@ -11,7 +11,8 @@ class RepositoryWebhookSchema(VCSSchema):
                 "type": "object",
                 "properties": {
                     "type": {
-                        "type": "string"
+                        "type": "string",
+                        "const": "Repository"
                     },
                     "id": {
                         "description": "Unique identifier of the webhook.",
