@@ -225,7 +225,7 @@ class Runner(BaseRunner):
 
         if shutil.which(self.kubectl_command) is not None:
             try:
-                proc = subprocess.Popen([self.kubectl_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                proc = subprocess.Popen([self.kubectl_command, 'version', '--client=true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 oString = str(o, 'utf-8')
 

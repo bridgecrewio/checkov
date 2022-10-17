@@ -6,9 +6,9 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
 from colorama import init
-from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
@@ -354,8 +354,8 @@ class Report:
             print(f"More details: \n {e}")
 
     @staticmethod
-    def get_junit_xml_string(ts: List[TestSuite]) -> str:
-        return cast(str, to_xml_report_string(ts))
+    def get_junit_xml_string(ts: list[TestSuite]) -> str:
+        return to_xml_report_string(ts)
 
     def print_failed_github_md(self, use_bc_ids: bool = False) -> str:
         result = []
