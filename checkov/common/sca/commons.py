@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from checkov.common.output.common import ImageDetails
+from checkov.common.output.common import SCADetails
 
 UNFIXABLE_VERSION = "N/A"
 
@@ -23,9 +23,9 @@ def get_package_alias(package_name: str, package_version: str) -> str:
     return f"{package_name}@{package_version}"
 
 
-def get_package_type(package_name: str, package_version: str, image_details: ImageDetails | None = None) -> str:
-    if image_details:
-        return str(image_details.package_types.get(f"{package_name}@{package_version}", ""))
+def get_package_type(package_name: str, package_version: str, sca_details: SCADetails | None = None) -> str:
+    if sca_details:
+        return str(sca_details.package_types.get(f"{package_name}@{package_version}", ""))
     else:
         return ""
 
