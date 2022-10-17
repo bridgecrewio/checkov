@@ -5,7 +5,7 @@ import re
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
-ISABSOLUTE = re.compile("(^/[A-Za-z0-9-_+]*)|(^[A-Za-z0-9-_+]:\\\\.*)|(^\\$[{}A-Za-z0-9-_+].*)")
+ISABSOLUTE = re.compile("^\"?((/[A-Za-z0-9-_+]*)|([A-Za-z0-9-_+]:\\\\.*)|(\\$[{}A-Za-z0-9-_+].*))")
 
 
 class WorkdirIsAbsolute(BaseDockerfileCheck):

@@ -34,10 +34,8 @@ class WebhookHttpsOrg(BaseGithubCheck):
                     secret = item_config.get('secret', '')
                     if re.match("^http://", url) or insecure_ssl != '0' and secret != '********':  # nosec
                         return CheckResult.FAILED, item_config
-        if org_webhooks_schema.validate(conf):
             return CheckResult.PASSED, conf
-
-        return None
+        return CheckResult.UNKNOWN, conf
 
 
 check = WebhookHttpsOrg()

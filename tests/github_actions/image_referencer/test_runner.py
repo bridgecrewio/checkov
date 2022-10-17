@@ -47,7 +47,7 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, lice
 
     assert len(sca_image_report.resources) == 3
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} ({image_id})).{postfix}"
+        f".github/workflows/{file_name} ({image_name} lines:{code_lines} ({image_id})).{postfix}"
         for postfix in image_resource_postfixes
     }
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == "node:14.16"
