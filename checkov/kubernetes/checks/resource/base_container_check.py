@@ -95,12 +95,14 @@ class BaseK8sContainerCheck(BaseK8Check):
             spec.get("initContainers", []) if "initContainers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
 
+        results = set()
         result = self._check_containers(
             evaluated_key_prefix=evaluated_key_prefix,
             container_type="containers",
             metadata=metadata,
             containers=containers,
         )
+        results.add(result)
         if result == CheckResult.FAILED:
             return CheckResult.FAILED
 
@@ -110,10 +112,11 @@ class BaseK8sContainerCheck(BaseK8Check):
             metadata=metadata,
             containers=init_containers,
         )
+        results.add(result)
         if result == CheckResult.FAILED:
             return CheckResult.FAILED
 
-        return CheckResult.PASSED
+        return CheckResult.PASSED if CheckResult.PASSED in results else CheckResult.UNKNOWN
 
     def _check_containers(
         self, evaluated_key_prefix: str, container_type: str, metadata: Dict[str, Any], containers: List[Dict[str, Any]]
