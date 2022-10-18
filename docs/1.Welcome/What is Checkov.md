@@ -31,7 +31,7 @@ In addition, Checkov scans for compliance with common industry standards such as
 
 ## Integrates seamlessly with Bridgecrew
 
-Checkov integrates with advanced features in the [Bridgecew platform](https://bridgecrew.io/platform). You can sign up for a free Bridgecrew account by running Checkov with no arguments and following the CLI prompts, or directly via the [Bridgecrew website](https://www.bridgecrew.cloud/login/signUp). Bridgecrew extends Checkov's capabilities to provide runtime scanning and visibility, native VCS integrations, compliance benchmarking, and more.
+Checkov integrates with advanced features in the [Bridgecrew platform](https://bridgecrew.io/platform). You can sign up for a free Bridgecrew account by running Checkov with no arguments and following the CLI prompts, or directly via the [Bridgecrew website](https://www.bridgecrew.cloud/login/signUp). Bridgecrew extends Checkov's capabilities to provide runtime scanning and visibility, native VCS integrations, compliance benchmarking, and more.
 
 ### Runtime Scanning
 
