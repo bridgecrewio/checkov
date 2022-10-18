@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: 3.7
-      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v1
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
