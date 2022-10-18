@@ -121,8 +121,10 @@ class BaseK8sContainerCheck(BaseK8Check):
         """Check containers for possible violations."""
         if not isinstance(containers, list):
             return CheckResult.UNKNOWN
+        results = set()
         for idx, container in enumerate(containers):
             result = self.scan_container_conf(metadata, container)
+            results.add(result)
 
             # fail with the first occurrence
             if result == CheckResult.FAILED:
@@ -135,7 +137,7 @@ class BaseK8sContainerCheck(BaseK8Check):
                     self.evaluated_keys = [f"{evaluated_key_prefix}/initContainers/[{idx}]"]
                 return CheckResult.FAILED
 
-        return CheckResult.PASSED
+        return CheckResult.PASSED if CheckResult.PASSED in results else CheckResult.UNKNOWN
 
     @abstractmethod
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
