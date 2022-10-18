@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Sequence, Any
 
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records
+from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
@@ -16,10 +16,10 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.scanner import Scanner
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
-    def __init__(self, report_type=check_type) -> None:
+    def __init__(self, report_type: str = check_type) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: str | None = None
         self._code_repo_path: Path | None = None
@@ -74,12 +74,12 @@ class Runner(BaseRunner):
 
     def run(
             self,
-            root_folder: str | Path,
+            root_folder: str | Path | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -109,7 +109,7 @@ class Runner(BaseRunner):
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            parse_vulns_to_records(
+            add_to_report_sca_data(
                 report=report,
                 check_class=self._check_class,
                 scanned_file_path=str(package_file_path),

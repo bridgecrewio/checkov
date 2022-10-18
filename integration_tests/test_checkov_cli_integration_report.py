@@ -8,7 +8,6 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestCheckovJsonReport(unittest.TestCase):
-
     def test_terragoat_report_dir_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_azuredir_api_key_terragoat.txt')
         self.validate_report(os.path.abspath(report_path))
@@ -62,6 +61,7 @@ class TestCheckovJsonReport(unittest.TestCase):
                         self.assertGreaterEqual(report['summary']['failed'], 1)
                 self.assertTrue(sca_image)
                 self.assertTrue(bitbucket_pipelines_actions_report_exists)
+
 
 if __name__ == '__main__':
     unittest.main()

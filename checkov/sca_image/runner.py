@@ -6,7 +6,7 @@ import logging
 import os.path
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, List, Union, Dict, Any
+from typing import Optional, Union, Dict, Any
 
 import requests
 
@@ -21,7 +21,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.runner_filter import RunnerFilter
@@ -124,13 +124,13 @@ class Runner(PackageRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
+            root_folder: str | Path | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -202,7 +202,7 @@ class Runner(PackageRunner):
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
 
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=self._check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -211,7 +211,7 @@ class Runner(PackageRunner):
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=self.report_type,
         )
         return report
