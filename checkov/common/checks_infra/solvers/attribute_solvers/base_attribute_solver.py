@@ -53,7 +53,13 @@ class BaseAttributeSolver(BaseSolver):
         concurrent.futures.wait(jobs)
         return passed_vertices, failed_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+        attr_val = vertex.get(self.attribute)
+        # if this value contains an underendered variable, then we cannot evaluate the check,
+        # and will return None (for UNKNOWN)
+        if self._is_variable_dependant(attr_val, vertex['source_']):
+            return
+
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
 
@@ -75,7 +81,11 @@ class BaseAttributeSolver(BaseSolver):
     ) -> None:
         if not self.resource_type_pred(data, self.resource_types):
             return
-        if self.get_operation(vertex=data):
+        result = self.get_operation(vertex=data)
+        # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+        if result is None:
+            return
+        if result:
             passed_vartices.append(data)
         else:
             failed_vertices.append(data)
