@@ -87,7 +87,7 @@ jobs:
       - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@969bd2663942d722d85b6a8626225850c2f7be4b  # v3
+      - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -135,7 +135,7 @@ jobs:
       - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@969bd2663942d722d85b6a8626225850c2f7be4b  # v3
+      - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
