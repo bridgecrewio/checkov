@@ -125,4 +125,4 @@ Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
 
 ```
 
-To add more GitHub policies and configuration to be inspected take a look at [Github policy contribution guide](/docs/6.Contribution/Contribute%20New%20GitHub%20Policies.md)
+To add more GitHub policies and configuration to be inspected take a look at the [GitHub policy contribution guide](https://www.checkov.io/6.Contribution/Contribute%20New%20GitHub%20Policies.html)

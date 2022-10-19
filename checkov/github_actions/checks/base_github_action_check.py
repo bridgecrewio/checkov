@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.checks.base_check import BaseCheck
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories
 from checkov.github_actions.checks.registry import registry
+
+if TYPE_CHECKING:
+    from checkov.common.models.enums import CheckResult
 
 
 class BaseGithubActionsCheck(BaseCheck):

@@ -19,6 +19,7 @@ from checkov.runner_filter import RunnerFilter
             {
                 "argo_workflows",
                 "arm",
+                "azure_pipelines",
                 "bicep",
                 "cloudformation",
                 "dockerfile",
