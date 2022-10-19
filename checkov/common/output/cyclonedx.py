@@ -30,7 +30,7 @@ from cyclonedx.model.vulnerability import (
     VulnerabilitySeverity,
 )
 from cyclonedx.output import get_instance
-from packageurl import PackageURL  # type:ignore[import]
+from packageurl import PackageURL
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import CheckType
@@ -105,7 +105,7 @@ class CycloneDX:
                 if bom.has_component(component=component):
                     component = (
                         bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl
+                            purl=component.purl  # type:ignore[arg-type]  # fix https://github.com/CycloneDX/cyclonedx-python-lib/pull/310
                         )
                     )
 
