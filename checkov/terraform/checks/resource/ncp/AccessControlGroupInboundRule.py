@@ -11,9 +11,8 @@ class AccessControlGroupInboundRule(BaseResourceCheck):
     def __init__(self, check_id: str, port: int) -> None:
         name = f"Ensure no access control groups allow inbound from 0.0.0.0:0 to port {port}"
         id = check_id
-        supported_resource = [
-            'ncloud_access_control_group_rule',
-        ]
+        supported_resource = ('ncloud_access_control_group_rule',)
+
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)
         self.port = port
