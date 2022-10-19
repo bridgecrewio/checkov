@@ -30,6 +30,7 @@ OPERATION_TO_FUNC = {
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
+    is_value_attribute_check = True    # noqa: CCE003  # a static attribute
 
     def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
                  ) -> None:
@@ -55,9 +56,10 @@ class BaseAttributeSolver(BaseSolver):
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
-        # if this value contains an underendered variable, then we cannot evaluate the check,
+        # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
-        if self._is_variable_dependant(attr_val, vertex['source_']):
+        if self.is_value_attribute_check and self._is_variable_dependant(attr_val, vertex['source_']) \
+                and self.value != '':
             return None
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
