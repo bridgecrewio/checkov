@@ -6,9 +6,8 @@ class NACLPortCheck(BaseResourceCheck):
     def __init__(self):
         name = "An inbound Network ACL rule should not allow ALL ports."
         id = "CKV_NCP_12"
-        supported_resources = ['ncloud_network_acl_rule']
-
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('ncloud_network_acl_rule',)
+        categories = (CheckCategories.NETWORKING,)
         guideline = "You should Ensure Network ACL rule doesn't open All ports."
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
 
@@ -21,5 +20,6 @@ class NACLPortCheck(BaseResourceCheck):
                             return CheckResult.FAILED
                     return CheckResult.PASSED
         return CheckResult.FAILED
+
 
 check = NACLPortCheck()
