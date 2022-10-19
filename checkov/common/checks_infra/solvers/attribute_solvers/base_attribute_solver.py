@@ -54,11 +54,11 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
-        attr_val = vertex.get(self.attribute)
+        attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate the check,
         # and will return None (for UNKNOWN)
         if self._is_variable_dependant(attr_val, vertex['source_']):
-            return
+            return None
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
