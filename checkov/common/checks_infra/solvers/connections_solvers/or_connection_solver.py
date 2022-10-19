@@ -45,9 +45,11 @@ class OrConnectionSolver(ComplexConnectionSolver):
     @staticmethod
     def _filter_failed(failed: List[Dict[str, Any]], passed: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         filterd_failed = []
+        passed_ids = [p[CustomAttributes.ID] for p in passed]
+        passed_paths = [p[CustomAttributes.FILE_PATH] for p in passed]
         for fail in failed:
-            if fail[CustomAttributes.ID] not in [p[CustomAttributes.ID] for p in passed]:
+            if fail[CustomAttributes.ID] not in passed_ids:
                 filterd_failed.append(fail)
-            elif fail[CustomAttributes.FILE_PATH] not in [p[CustomAttributes.FILE_PATH] for p in passed]:
+            elif fail[CustomAttributes.FILE_PATH] not in passed_paths:
                 filterd_failed.append(fail)
         return filterd_failed

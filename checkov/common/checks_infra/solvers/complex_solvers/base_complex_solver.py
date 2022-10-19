@@ -33,7 +33,7 @@ class BaseComplexSolver(BaseSolver):
                 result = self.get_operation(data)
                 if result is None:
                     continue
-                if self.get_operation(data):
+                if result:
                     passed_vertices.append(data)
                 else:
                     failed_vertices.append(data)
