@@ -6,9 +6,8 @@ class NACLInboundCheck(BaseResourceCheck):
     def __init__(self, check_id, port):
         name = "Ensure no NACL allow inbound from 0.0.0.0:0 to port %d" % port
         id = check_id
-        supported_resources = ['ncloud_network_acl_rule']
-
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('ncloud_network_acl_rule',)
+        categories = (CheckCategories.NETWORKING,)
         guideline = "You should Ensure no NACL allow inbound from 0.0.0.0:0 to port %d" % port
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
         self.port = port
