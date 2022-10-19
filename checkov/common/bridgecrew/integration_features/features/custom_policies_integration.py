@@ -100,6 +100,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         bc_check_ids = [record.bc_check_id for record in records]
         for idx, bc_check_id in enumerate(bc_check_ids):
             cloned_policies = self.bc_cloned_checks.get(bc_check_id, [])  # type:ignore[arg-type]  # bc_check_id can be None
+            logging.debug('Cloned policies to be deep copied:')
+            logging.debug(cloned_policies)
+            logging.debug('From origin policy:')
+            logging.debug(records[idx].get_unique_string())
             for cloned_policy in cloned_policies:
                 new_record = deepcopy(records[idx])
                 new_record.check_id = cloned_policy['id']

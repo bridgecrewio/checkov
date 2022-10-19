@@ -60,6 +60,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+            logging.debug(f'The found suppressions are:')
+            logging.debug(self.suppressions)
         except Exception:
             self.integration_feature_failures = True
             logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
@@ -84,6 +86,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
+                logging.debug('Applying suppresion to the following check:')
+                logging.debug(check.check_id)
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
                     'suppress_comment': applied_suppression['comment']
