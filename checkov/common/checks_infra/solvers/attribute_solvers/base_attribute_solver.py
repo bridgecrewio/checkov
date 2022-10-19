@@ -58,6 +58,7 @@ class BaseAttributeSolver(BaseSolver):
         attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
+        # handle edge cases in some policies that explicitly look for blank values
         if self.is_value_attribute_check and self._is_variable_dependant(attr_val, vertex['source_']) \
                 and self.value != '':
             return None
