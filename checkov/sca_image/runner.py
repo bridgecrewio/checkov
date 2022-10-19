@@ -89,7 +89,12 @@ class Runner(PackageRunner):
         stdout, stderr = await process.communicate()
 
         # log output for debugging
-        logging.debug(stdout.decode())
+        try:
+            logging.debug(stdout.decode())
+        except UnicodeDecodeError:
+            logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
+                          f"file content is:\n{image_scanner.dockerfile_content}.\n"
+                          f"twistcli command is \'{command}\'", exc_info=True)
 
         exit_code = await process.wait()
 
