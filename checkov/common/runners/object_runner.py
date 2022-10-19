@@ -100,6 +100,9 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
         for file_path in self.definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
+
+            if registry.report_type == CheckType.GITLAB_CI:
+                registry.set_definitions_raw(self.definitions_raw[file_path])
             results = registry.scan(file_path, self.definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]

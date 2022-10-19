@@ -44,10 +44,13 @@ class Registry(BaseCheckRegistry):
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
+                    item_dict = item
+                    if isinstance(item, str):
+                        item_dict = self.set_lines_for_item(item)
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
                             check,
-                            item,
+                            item_dict,
                             entity_type,
                             entity_type,
                             results,
@@ -253,3 +256,29 @@ class Registry(BaseCheckRegistry):
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
         pass
+
+    def set_lines_for_item(self, item: str) -> dict[str, Any]:
+        item_lines = item.rstrip().split("\n")
+        first_line, last_line = item_lines[0], item_lines[-1]
+
+        is_single_line = True if len(item_lines) == 1 else False
+
+        first_item_componenets = first_line.split()
+        item_dict = {
+            first_item_componenets[0]: ' '.join(first_item_componenets[1:])
+        }
+
+        for idx, line in self.definitions_raw:
+            if first_line in line:
+                item_dict[STARTLINE_MARK] = idx
+                if is_single_line:
+                    item_dict[ENDLINE_MARK] = idx
+                    break
+
+            if last_line in line:
+                item_dict[ENDLINE_MARK] = idx
+                break
+
+        return item_dict
+
+

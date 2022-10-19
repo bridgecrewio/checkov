@@ -34,6 +34,7 @@ class BaseCheckRegistry:
         self.wildcard_checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         self.check_id_allowlist: Optional[List[str]] = None
         self.report_type = report_type
+        self.definitions_raw: list[tuple[int, str]] | None = None
 
     def register(self, check: BaseCheck) -> None:
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
@@ -196,3 +197,6 @@ class BaseCheckRegistry:
                                 self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
                             finally:
                                 BaseCheckRegistry.__loading_external_checks = False
+
+    def set_definitions_raw(self, definitions_raw: list[tuple[int, str]]) -> None:
+        self.definitions_raw = definitions_raw
