@@ -42,7 +42,9 @@ from checkov.common.checks_infra.solvers import (
     IsTrueAttributeSolver,
     IsFalseAttributeSolver,
     IntersectsAttributeSolver,
-    NotIntersectsAttributeSolver
+    NotIntersectsAttributeSolver,
+    EqualIgnoreCaseAttributeSolver,
+    NotEqualIgnoreCaseAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -92,7 +94,9 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "is_true": IsTrueAttributeSolver,
     "is_false": IsFalseAttributeSolver,
     "intersects": IntersectsAttributeSolver,
-    "not_intersects": NotIntersectsAttributeSolver
+    "not_intersects": NotIntersectsAttributeSolver,
+    "equal_ignore_case": EqualIgnoreCaseAttributeSolver,
+    "not_equal_ignore_case": NotEqualIgnoreCaseAttributeSolver
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
