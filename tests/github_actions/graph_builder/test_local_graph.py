@@ -20,15 +20,17 @@ def test_build_graph():
     local_graph.build_graph(render_variables=False)
 
     # then
-    assert len(local_graph.vertices) == 4
+    assert len(local_graph.vertices) == 5
     assert len(local_graph.edges) == 2
 
-    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 5
 
     job_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.JOBS]
     step_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.STEPS]
+    permission_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.PERMISSIONS]
     assert job_ids == ["jobs.bridgecrew", "jobs.bridgecrew2"]
     assert step_ids == ["jobs.bridgecrew.steps.0", "jobs.bridgecrew2.steps.0"]
+    assert permission_ids == ["permissions"]
 
     out_edge_counts = Counter([e.origin for e in local_graph.edges])
     in_edge_counts = Counter([e.dest for e in local_graph.edges])

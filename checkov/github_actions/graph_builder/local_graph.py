@@ -31,6 +31,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
 
             self._create_jobs_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
             self._create_steps_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
+            self._create_permissions_vertices(file_path=file_path, permissions=definition.get(ResourceType.PERMISSIONS))
 
     def _create_jobs_vertices(self, file_path: str, jobs: Any) -> None:
         """Creates jobs vertices"""
@@ -95,6 +96,30 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                 )
                 self.vertices.append(block)
                 self.job_steps_map[(file_path, f"{ResourceType.JOBS}.{name}")].append((file_path, block_name))
+
+    def _create_permissions_vertices(self, file_path: str, permissions: Any) -> None:
+        """Creates root-level permissions vertices"""
+
+        if not permissions or not isinstance(permissions, (str, dict)):
+            return
+
+        config = {"self": permissions} if isinstance(permissions, str) else permissions
+
+        attributes = deepcopy(config)
+        attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
+
+        block_name = ResourceType.PERMISSIONS
+
+        block = Block(
+            name=block_name,
+            config=config,
+            path=file_path,
+            block_type=BlockType.RESOURCE,
+            attributes=attributes,
+            id=block_name,
+            source=self.source,
+        )
+        self.vertices.append(block)
 
     def _create_edges(self) -> None:
         self._create_jobs_to_steps_edges()
