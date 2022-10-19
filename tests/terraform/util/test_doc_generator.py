@@ -29,6 +29,7 @@ def test_get_checks_returned_check_number():
             {
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",
@@ -51,6 +52,7 @@ def test_get_checks_returned_check_number():
             {
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",

@@ -157,10 +157,10 @@ class Registry(BaseCheckRegistry):
             )
 
         if self.wildcard_checks:
-            for wildcard_pattern in self.wildcard_checks:
+            for wildcard_pattern, checks in self.wildcard_checks.items():
                 self._scan_yaml(
                     scanned_file=scanned_file,
-                    checks=self.wildcard_checks[wildcard_pattern],
+                    checks=checks,
                     skipped_checks=skipped_checks,
                     runner_filter=runner_filter,
                     entity=entity,

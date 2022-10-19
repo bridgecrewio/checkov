@@ -19,6 +19,7 @@ import checkov.logging_init  # noqa  # should be imported before the others to e
 
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
+from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -99,6 +100,7 @@ DEFAULT_RUNNERS = (
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
+    azure_pipelines_runner(),
 )
 
 
@@ -327,16 +329,26 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
-        result = runner.run(root_folder='', image_id=config.docker_image,
-                            dockerfile_path=config.dockerfile_path, runner_filter=runner_filter)
-        integration_feature_registry.run_post_runner(result)
+        result = runner.run(
+            root_folder='',
+            image_id=config.docker_image,
+            dockerfile_path=config.dockerfile_path,
+            runner_filter=runner_filter,
+        )
+
+        results = result if isinstance(result, list) else [result]
+        if len(results) > 1:
+            # this shouldn't happen, but if it happens, then it is intended or something is broke
+            logger.error(f"SCA image runner returned {len(results)} reports; expected 1")
+
+        integration_feature_registry.run_post_runner(results[0])
         bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), files=files)
-        bc_integration.persist_scan_results([result])
+        bc_integration.persist_scan_results(results)
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
         bc_integration.persist_run_metadata(run_metadata)
         url = bc_integration.commit_repository(config.branch)
-        exit_code = runner_registry.print_reports([result], config, url=url)
+        exit_code = runner_registry.print_reports(results, config, url=url)
         return exit_code
     elif config.file:
         runner_registry.filter_runners_for_files(config.file)
