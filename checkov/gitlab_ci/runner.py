@@ -48,7 +48,8 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         start_line, end_line = Runner.get_start_and_end_lines(key)
-        resource_id: str = generate_resource_key_recursive(self.definitions[file_path], '', start_line, end_line)
+        file_config: dict[str, Any] = self.definitions[file_path]
+        resource_id: str = generate_resource_key_recursive(file_config, '', start_line, end_line)
         return resource_id
 
     def run(
