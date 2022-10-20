@@ -3,7 +3,6 @@ from typing import Any
 import jmespath
 
 from checkov.common.images.image_referencer import Image
-from checkov.common.util.consts import START_LINE, END_LINE
 
 
 class CircleCIProvider:
@@ -37,4 +36,3 @@ class CircleCIProvider:
                     )
                     images.append(image_obj)
         return images
-

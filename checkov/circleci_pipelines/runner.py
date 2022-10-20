@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import jmespath
 import os
-from typing import TYPE_CHECKING, Any, Iterable
-
-from networkx import DiGraph
+from typing import TYPE_CHECKING, Any
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 from checkov.circleci_pipelines.image_referencer.manager import CircleCIImageReferencerManager
-from checkov.common.images.image_referencer import ImageReferencer, Image, ImageReferencerMixin
+from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.output.report import CheckType, Report
 from checkov.circleci_pipelines.registry import registry
 from checkov.common.util.type_forcers import force_dict
