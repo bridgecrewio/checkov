@@ -4,7 +4,7 @@ import os
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.output.report import Report
-from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.gitlab_ci.common.resource_id_utils import generate_resource_key_recursive
 
 from checkov.runner_filter import RunnerFilter
 
@@ -47,10 +47,9 @@ class Runner(ImageReferencerMixin, YamlRunner):
         return (".gitlab-ci.yml", ".gitlab-ci.yaml")
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
-        key_components = key.split('.')
-        key_without_check_id = '.'.join(key_components[: len(key_components) - 1])
         start_line, end_line = Runner.get_start_and_end_lines(key)
-        return self.generate_resource_key_recursive(self.definitions[file_path], '', start_line, end_line)
+        resource_id: str = generate_resource_key_recursive(self.definitions[file_path], '', start_line, end_line)
+        return resource_id
 
     def run(
             self,
@@ -104,20 +103,9 @@ class Runner(ImageReferencerMixin, YamlRunner):
         check_name = key.split('.')[-1]
         try:
             start_end_line_bracket_index = check_name.index('[')
+            closing_bracket_index = check_name.index(']')
+            if closing_bracket_index - start_end_line_bracket_index == 1:
+                return [-1, -1]
         except ValueError:
             return [-1, -1]
         return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
-
-    def generate_resource_key_recursive(self, conf: dict[str, Any] | list[str] | str, key: str, start_line: int, end_line: int) -> str:
-        if not isinstance(conf, dict):
-            return key
-
-        for k, value in conf.items():
-            if k == START_LINE or k == END_LINE:
-                continue
-            if not isinstance(value, dict):
-                return f'{key}.{k}' if key else k
-            if value[START_LINE] <= start_line <= end_line <= value[END_LINE]:
-                return self.generate_resource_key_recursive(value, f'{key}.{k}' if key else k, start_line, end_line)
-
-        return key

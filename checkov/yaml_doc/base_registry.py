@@ -257,15 +257,17 @@ class Registry(BaseCheckRegistry):
         # not used, but is an abstractmethod
         pass
 
-    def set_lines_for_item(self, item: str) -> dict[str, Any]:
+    def set_lines_for_item(self, item: str) -> dict[int | str, str | int] | str:
+        if not self.definitions_raw:
+            return item
+
         item_lines = item.rstrip().split("\n")
         first_line, last_line = item_lines[0], item_lines[-1]
 
         is_single_line = True if len(item_lines) == 1 else False
 
-        first_item_componenets = first_line.split()
-        item_dict = {
-            first_item_componenets[0]: ' '.join(first_item_componenets[1:])
+        item_dict: dict[int | str, str | int] = {
+            idx: line for idx, line in enumerate(item_lines)
         }
 
         for idx, line in self.definitions_raw:

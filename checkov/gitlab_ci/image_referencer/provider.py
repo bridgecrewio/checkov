@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
+from checkov.gitlab_ci.common.resource_id_utils import generate_resource_key_recursive
 
 
 class GitlabCiProvider:
@@ -43,6 +44,8 @@ class GitlabCiProvider:
                                         name=image_name,
                                         start_line=start_line,
                                         end_line=end_line,
+                                        related_resource_id=generate_resource_key_recursive(self.workflow_config, '',
+                                                                                            start_line, end_line)
                                     )
                                     images.append(image_obj)
                                     image_name = ""
@@ -52,6 +55,8 @@ class GitlabCiProvider:
                                 name=image_name,
                                 start_line=start_line,
                                 end_line=end_line,
+                                related_resource_id=generate_resource_key_recursive(self.workflow_config, '',
+                                                                                    start_line, end_line)
                             )
                             images.append(image_obj)
         return images
