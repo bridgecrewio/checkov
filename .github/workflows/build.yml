@@ -194,7 +194,7 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          echo "::set-output name=version::$new_tag"
+          echo "version=$new_tag" >> $GITHUB_OUTPUT
         id: version
       - name: create python package
         run: |
@@ -219,8 +219,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
@@ -239,8 +239,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
@@ -263,8 +263,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
         id: docker_publish
@@ -300,8 +300,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
         with:
