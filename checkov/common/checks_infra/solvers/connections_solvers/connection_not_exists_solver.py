@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import Operators

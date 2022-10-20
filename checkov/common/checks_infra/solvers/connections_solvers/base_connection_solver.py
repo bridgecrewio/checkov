@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 

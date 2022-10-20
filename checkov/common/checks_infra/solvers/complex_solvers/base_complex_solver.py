@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import List, Any, Tuple, Dict, TYPE_CHECKING, Optional
 
 from checkov.common.graph.checks_infra.enums import SolverType

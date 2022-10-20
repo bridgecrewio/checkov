@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import concurrent.futures
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
