@@ -8,8 +8,6 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Optional, Union, Dict, Any
 
-import requests
-
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
@@ -24,6 +22,7 @@ from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -115,7 +114,7 @@ class Runner(PackageRunner):
             "compressionMethod": "gzip",
             "id": image_id_sha
         }
-        response = requests.request(
+        response = request_wrapper(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
             headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
         )
