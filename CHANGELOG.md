@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.277...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.282...HEAD)
+
+## [2.1.282](https://github.com/bridgecrewio/checkov/compare/2.1.277...2.1.282) - 2022-10-20
+
+### Bug Fix
+
+- **general:** Custom Policies integration must run before Suppresion integration - [#3701](https://github.com/bridgecrewio/checkov/pull/3701)
+- **terraform:** Add or condition for TLS 1.3 policy, supporting CKV_AWS_103 - [#3700](https://github.com/bridgecrewio/checkov/pull/3700)
+- **terraform:** Fix TF AbsGoogleComputeFirewallUnrestrictedIngress check - [#3704](https://github.com/bridgecrewio/checkov/pull/3704)
 
 ## [2.1.277](https://github.com/bridgecrewio/checkov/compare/2.1.273...2.1.277) - 2022-10-19
 
