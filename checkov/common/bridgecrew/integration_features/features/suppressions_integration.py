@@ -86,11 +86,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
-                logging.debug('Applying suppresion to the following check:')
-                logging.debug(check.check_id)
+                suppress_comment = applied_suppression['comment']
+                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
-                    'suppress_comment': applied_suppression['comment']
+                    'suppress_comment': suppress_comment
                 }
                 scan_report.skipped_checks.append(check)
             elif check.check_result['result'] == CheckResult.FAILED:
