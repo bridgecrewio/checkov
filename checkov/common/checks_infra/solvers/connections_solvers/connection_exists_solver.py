@@ -25,7 +25,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> \
+            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed = []
         failed = []
         for u, v in edge_dfs(graph_connector):
@@ -69,4 +70,4 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 if v not in passed
             ]
         )
-        return passed, failed
+        return passed, failed, []

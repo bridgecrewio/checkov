@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import List, Optional, Dict, Any, Tuple, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import Operators
@@ -26,6 +24,7 @@ class ConnectionNotExistsSolver(ConnectionExistsSolver):
             vertices_under_connected_resources_types,
         )
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        passed, failed = super().get_operation(graph_connector)
-        return failed, passed
+    def get_operation(self, graph_connector: DiGraph) -> \
+            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+        passed, failed, unknown = super().get_operation(graph_connector)
+        return failed, passed, unknown

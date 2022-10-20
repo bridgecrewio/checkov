@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import itertools
 from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
@@ -30,13 +28,13 @@ class BaseGraphCheck:
         self.benchmarks: Dict[str, List[str]] = {}
         self.severity: Optional[Severity] = None
         self.bc_category: Optional[str] = None
-        self.frameworks: list[str] = []
+        self.frameworks: List[str] = []
         self.is_jsonpath_check: bool = False
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         if not self.solver:
             raise AttributeError("solver attribute was not set")
 

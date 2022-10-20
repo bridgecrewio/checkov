@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import itertools
 from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
@@ -31,7 +29,7 @@ class BaseConnectionSolver(BaseSolver):
         self.vertices_under_connected_resources_types = vertices_under_connected_resources_types or []
         self.excluded_vertices: List[Dict[str, Any]] = []
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         self.set_vertices(graph_connector, [])
 
         subgraph = self.reduce_graph_by_target_types(graph_connector)
@@ -80,7 +78,8 @@ class BaseConnectionSolver(BaseSolver):
 
         return graph_connector.subgraph(resource_nodes)
 
-    def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def get_operation(self, graph_connector: DiGraph) -> \
+            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> Any:

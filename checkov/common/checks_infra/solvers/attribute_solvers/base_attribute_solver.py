@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import concurrent.futures
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
@@ -41,18 +39,20 @@ class BaseAttributeSolver(BaseSolver):
         self.is_jsonpath_check = is_jsonpath_check
         self.parsed_attributes: Dict[Optional[str], Any] = {}
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices: List[Dict[str, Any]] = []
         failed_vertices: List[Dict[str, Any]] = []
+        unknown_vertices: List[Dict[str, Any]] = []
         for _, data in graph_connector.nodes(data=True):
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
                     and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
-                jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
+                jobs.append(executer.submit(
+                    self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
         concurrent.futures.wait(jobs)
-        return passed_vertices, failed_vertices
+        return passed_vertices, failed_vertices, unknown_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
@@ -80,15 +80,16 @@ class BaseAttributeSolver(BaseSolver):
         raise NotImplementedError
 
     def _process_node(
-        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]]
+        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]],
+            unknown_vertices: List[Dict[str, Any]]
     ) -> None:
         if not self.resource_type_pred(data, self.resource_types):
             return
         result = self.get_operation(vertex=data)
         # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
         if result is None:
-            return
-        if result:
+            unknown_vertices.append(data)
+        elif result:
             passed_vartices.append(data)
         else:
             failed_vertices.append(data)
