@@ -11,7 +11,7 @@ class DropCapabilities(BaseResourceCheck):
         name = "Minimize the admission of containers with the NET_RAW capability"
         id = "CKV_K8S_28"
 
-        supported_resources = ('kubernetes_pod',)
+        supported_resources = ('kubernetes_pod', 'kubernetes_pod_v1')
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

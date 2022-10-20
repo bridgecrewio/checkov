@@ -6,7 +6,7 @@ class MemoryRequests(BaseResourceCheck):
     def __init__(self):
         name = "Memory requests should be set"
         id = "CKV_K8S_13"
-        supported_resources = ["kubernetes_pod"]
+        supported_resources = ["kubernetes_pod", "kubernetes_pod_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
