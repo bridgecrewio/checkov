@@ -10,7 +10,9 @@ class PodSecurityContext(BaseResourceCheck):
         # Security context can be set at pod or container level.
         id = "CKV_K8S_29"
 
-        supported_resources = ('kubernetes_pod', 'kubernetes_deployment', 'kubernetes_daemonset')
+        supported_resources = ('kubernetes_pod', 'kubernetes_pod_v1',
+                               'kubernetes_deployment', 'kubernetes_deployment_v1',
+                               'kubernetes_daemonset', 'kubernetes_daemon_set_v1')
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

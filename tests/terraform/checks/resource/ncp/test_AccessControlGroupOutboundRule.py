@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.kubernetes.ReadinessProbe import check
+from checkov.terraform.checks.resource.ncp.AccessControlGroupOutboundRule import check
 from checkov.terraform.runner import Runner
 
 
-class TestReadinessProbe(unittest.TestCase):
+class TestAccessControlGroupOutboundRule(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_ReadinessProbe"
+        test_files_dir = Path(__file__).parent / "example_AccessControlGroupOutboundRule"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,20 +18,18 @@ class TestReadinessProbe(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "kubernetes_pod.pass",
-            "kubernetes_pod_v1.pass",
+            "ncloud_access_control_group_rule.pass"
         }
-
         failing_resources = {
-            "kubernetes_pod.fail",
-            "kubernetes_pod_v1.fail",
+            "ncloud_access_control_group_rule.fail",
+            "ncloud_access_control_group_rule.fail1"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1 * 2)
-        self.assertEqual(summary["failed"], 1 * 2)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
@@ -39,5 +37,5 @@ class TestReadinessProbe(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

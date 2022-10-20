@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after the policy metadata
+        super().__init__(bc_integration=bc_integration, order=2)  # must be after the custom policies integration
         self.suppressions: dict[str, list[dict[str, Any]]] = {}
         self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
@@ -60,6 +60,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+            logging.debug('The found suppression rules are:')
+            logging.debug(self.suppressions)
         except Exception:
             self.integration_feature_failures = True
             logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
@@ -84,9 +86,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
+                suppress_comment = applied_suppression['comment']
+                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
-                    'suppress_comment': applied_suppression['comment']
+                    'suppress_comment': suppress_comment
                 }
                 scan_report.skipped_checks.append(check)
             elif check.check_result['result'] == CheckResult.FAILED:
