@@ -60,7 +60,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
-            logging.debug(f'The found suppressions are:')
+            logging.debug('The found suppression rules are:')
             logging.debug(self.suppressions)
         except Exception:
             self.integration_feature_failures = True
