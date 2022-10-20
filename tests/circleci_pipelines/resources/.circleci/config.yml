@@ -1,7 +1,29 @@
 --- 
 orbs: 
-  neworb: "whtever/orbname@goodorb"
-  someorb: "orbns/orbname@dev:blah"
+  new-orb: "whatever/orbname@goodorb"
+  some-orb: "orbs/orbname@dev:blah"
+executors:
+  default-executor:
+    machine:
+      image: windows-server-2022
+
+  server-2019:
+    machine:
+      image: windows-server-2019
+
+  server-2019-cuda:
+    machine:
+      image: windows-server-2019-cuda
+
+  docker-executor:
+    docker:
+      - image: postgres:14.2
+
+  mac-executor:
+    macos:
+      xcode: 13.4.1
+
+
 jobs: 
   test-docker-hash-img: 
     docker: 
@@ -84,6 +106,37 @@ jobs:
           command: |
               echo ${CIRCLE_PR_REPONAME}
           name: "Echo the PR Reponame"
+
+  test-linux-image:
+    machine:
+      image: ubuntu-1604:202007-01
+    steps:
+      - some-step
+
+  test-macos-image:
+    macos:
+      xcode: 9.4.1
+    steps:
+      - some-step
+
+  test-machine-default:
+    executor:
+      name: win/default-executor
+    steps:
+      - some-step
+
+  test-executor-machine-server-2019:
+    executor:
+      name: win/server-2019
+    steps:
+      - some-step
+
+  test-executor-machine-server-2019-cuda:
+    executor:
+      name: win/windows-server-2019-cuda
+    steps:
+      - some-step
+
 version: 2.1
 workflows: 
   say-hello-workflow: 
