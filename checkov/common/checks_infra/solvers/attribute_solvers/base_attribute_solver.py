@@ -1,6 +1,6 @@
 import concurrent.futures
 import re
-from typing import List, Tuple, Dict, Any, Optional, Pattern
+from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
 from jsonpath_ng.ext import parse
 
@@ -14,7 +14,8 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
-from networkx import DiGraph
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
