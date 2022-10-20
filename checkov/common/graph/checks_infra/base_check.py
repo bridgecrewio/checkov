@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import itertools
-from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
+from typing import Optional, Tuple, List, Dict, Any
 
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
-if TYPE_CHECKING:
-    from checkov.common.bridgecrew.severities import Severity
-    from networkx import DiGraph
+from checkov.common.bridgecrew.severities import Severity
+from networkx import DiGraph
 
 
 class BaseGraphCheck:
