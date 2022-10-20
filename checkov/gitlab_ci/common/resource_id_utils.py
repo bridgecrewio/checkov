@@ -10,11 +10,13 @@ def generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key:
         return key
 
     for k, value in conf.items():
-        if k == START_LINE or k == END_LINE or isinstance(value, str):
-            continue
-        elif isinstance(value, list):
-            return f'{key}.{k}' if key else k
-        elif value[START_LINE] <= start_line <= end_line <= value[END_LINE]:
+        if isinstance(value, dict) and value[START_LINE] <= start_line <= end_line <= value[END_LINE]:
             return generate_resource_key_recursive(value, f'{key}.{k}' if key else k, start_line, end_line)
+        # if k == START_LINE or k == END_LINE or isinstance(value, str):
+        #     continue
+        if isinstance(value, list):
+            return f'{key}.{k}' if key else k
+        if isinstance(value, str):
+            return key
 
     return key
