@@ -4,6 +4,7 @@ import os
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.output.report import Report
+from checkov.common.util.type_forcers import force_dict
 from checkov.gitlab_ci.common.resource_id_utils import generate_resource_key_recursive
 
 from checkov.runner_filter import RunnerFilter
@@ -48,7 +49,9 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         start_line, end_line = Runner.get_start_and_end_lines(key)
-        file_config: dict[str, Any] = self.definitions[file_path]
+        file_config: dict[str, Any] = force_dict(self.definitions[file_path])
+        if not file_config:
+            return key
         resource_id: str = generate_resource_key_recursive(file_config, '', start_line, end_line)
         return resource_id
 
