@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AccessControlGroupRuleDescription(BaseResourceCheck):
     def __init__(self):
         name = "Ensure every access control groups rule has a description"
-        id = "CKV_NCP_002"
+        id = "CKV_NCP_2"
         supported_resource = [
             'ncloud_access_control_group',
             'ncloud_access_control_group_rule',
