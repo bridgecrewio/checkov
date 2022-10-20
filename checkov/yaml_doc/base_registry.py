@@ -282,5 +282,3 @@ class Registry(BaseCheckRegistry):
                 break
 
         return item_dict
-
-
