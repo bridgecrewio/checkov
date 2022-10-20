@@ -75,7 +75,7 @@ class Runner(ImageReferencerMixin, YamlRunner):
             )
 
             if image_report:
-                return [report, image_report]
+                return [report, image_report]  # type:ignore[list-item]  # report can only be of type Report, not a list
 
         return report
 
