@@ -81,13 +81,19 @@ class RunnerRegistry:
                                     collect_skip_comments=collect_skip_comments)]
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
-                return runner.run(
+                report =  runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
                     files=files,
                     runner_filter=self.runner_filter,
                     collect_skip_comments=collect_skip_comments,
                 )
+                if report is None:
+                    # this only happens, when an uncaught exception inside the runner occurs
+                    logging.error(f"Failed to create report for {runner.check_type} framework")
+                    report = Report(check_type=runner.check_type)
+
+                return report
 
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
@@ -103,6 +109,10 @@ class RunnerRegistry:
         merged_reports = []
 
         for report in reports:
+            if report is None:
+                # this only happens, when an uncaught exception occurs
+                continue
+
             sub_reports: list[Report] = force_list(report)
             for sub_report in sub_reports:
                 if sub_report.check_type in self._check_type_to_report_map:

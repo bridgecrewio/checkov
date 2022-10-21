@@ -42,7 +42,12 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
-        for file, result in results:
+        for file_result_pair in results:
+            if file_result_pair is None:
+                # this only happens, when an uncaught exception occurs
+                continue
+
+            file, result = file_result_pair
             if result:
                 (self.definitions[file], self.definitions_raw[file]) = result
                 definition = result[0]
