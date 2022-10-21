@@ -116,7 +116,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                     root_folder = os.path.split(file_path)[0]
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
-                    record = GithubActionsRecord(
+                    record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
@@ -135,7 +135,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
                 else:
-                    record = Record(  # type: ignore
+                    record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,

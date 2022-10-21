@@ -85,7 +85,11 @@ class BaseAttributeSolver(BaseSolver):
         if self.is_jsonpath_check:
             parsed_attr = self.parsed_attributes.get(self.attribute)
             if parsed_attr is None:
-                parsed_attr = parse(self.attribute)
+                try:
+                    parsed_attr = parse(self.attribute)
+                except Exception as e:
+                    print(e)
+                    raise e
                 self.parsed_attributes[self.attribute] = parsed_attr
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)

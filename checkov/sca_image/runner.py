@@ -6,9 +6,7 @@ import logging
 import os.path
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, List, Union, Dict, Any
-
-import requests
+from typing import Optional, Union, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
@@ -24,6 +22,7 @@ from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -89,7 +88,12 @@ class Runner(PackageRunner):
         stdout, stderr = await process.communicate()
 
         # log output for debugging
-        logging.debug(stdout.decode())
+        try:
+            logging.debug(stdout.decode())
+        except UnicodeDecodeError:
+            logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
+                          f"file content is:\n{image_scanner.dockerfile_content}.\n"
+                          f"twistcli command is \'{command}\'", exc_info=True)
 
         exit_code = await process.wait()
 
@@ -110,7 +114,7 @@ class Runner(PackageRunner):
             "compressionMethod": "gzip",
             "id": image_id_sha
         }
-        response = requests.request(
+        response = request_wrapper(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
             headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
         )
@@ -124,13 +128,13 @@ class Runner(PackageRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
+            root_folder: str | Path | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

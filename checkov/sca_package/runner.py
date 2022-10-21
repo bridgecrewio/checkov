@@ -16,10 +16,10 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.scanner import Scanner
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
-    def __init__(self, report_type=check_type) -> None:
+    def __init__(self, report_type: str = check_type) -> None:
         super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
         self._check_class: str | None = None
         self._code_repo_path: Path | None = None
@@ -74,12 +74,12 @@ class Runner(BaseRunner):
 
     def run(
             self,
-            root_folder: str | Path,
+            root_folder: str | Path | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
