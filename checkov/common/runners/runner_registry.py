@@ -81,7 +81,7 @@ class RunnerRegistry:
                                     collect_skip_comments=collect_skip_comments)]
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
-                report =  runner.run(
+                report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
                     files=files,
