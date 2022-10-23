@@ -13,7 +13,7 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
         return False
 
     @staticmethod
-    def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[KubernetesBlock]:
+    def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
         """
         connection is defined when all vertex's match_labels are matched to another vertex's labels.
 
@@ -28,15 +28,15 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
         C and D are not connected since Not all C's match_labels appear in D's labels
         """
 
-        connections: list[KubernetesBlock] = []
+        connections: list[int] = []
         labels = vertex.metadata.labels
-        for potential_vertex in vertices:
+        for potential_vertex_index, potential_vertex in enumerate(vertices):
             match_labels = potential_vertex.metadata.selector.match_labels
             if match_labels and potential_vertex.id != vertex.id:
                 # find shared label between the inspected vertex and the iterated potential vertex
                 shared_labels = {k: match_labels[k] for k in match_labels if k in labels and match_labels[k] == labels[k]}
                 if len(shared_labels) == len(match_labels):
                     # if all potential vertex's selector labels appear in vertex's labels - it's connected
-                    connections.append(potential_vertex)
+                    connections.append(potential_vertex_index)
 
         return connections

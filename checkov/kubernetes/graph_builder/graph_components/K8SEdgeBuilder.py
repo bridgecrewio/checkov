@@ -18,10 +18,11 @@ class K8SEdgeBuilder:
 
     @staticmethod
     @abstractmethod
-    def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[KubernetesBlock]:
+    def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
         """
         implementation should search in each of the vertices for a possible connection
         to the vertex param according to the concrete class's rule(s).
+        returns a list of the connected vertices' indices
         e.g: find vertices with a label attribute that match current vertex's selector attribute
         """
         raise NotImplementedError

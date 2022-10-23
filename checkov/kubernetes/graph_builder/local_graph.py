@@ -5,10 +5,12 @@ from copy import deepcopy
 from typing import Any, List, Dict
 from collections import defaultdict
 
+from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
 from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+
 
 
 EDGE_BUILDERS = (LabelSelectorEdgeBuilder,)
@@ -72,15 +74,24 @@ class KubernetesLocalGraph(LocalGraph):
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
 
         self._create_edges()
+        print(self.edges)
 
     def _create_edges(self) -> None:
         edges_to_create = defaultdict(list)
-        for vertex in self.vertices:
+        for vertex_index, vertex in enumerate(self.vertices):
             for edge_builder in EDGE_BUILDERS:
                 if edge_builder.should_search_for_edges(vertex):
                     current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
                     if current_vertex_connections:
                         edges_to_create[vertex.name].extend(current_vertex_connections)
+            for destination_vertex_index in edges_to_create[vertex.name]:
+                self._create_edge(vertex_index, destination_vertex_index, vertex.name)
+
+    def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:
+        edge = Edge(origin_vertex_index, dest_vertex_index, label)
+        self.edges.append(edge)
+        self.out_edges[origin_vertex_index].append(edge)
+        self.in_edges[dest_vertex_index].append(edge)
 
     @staticmethod
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
