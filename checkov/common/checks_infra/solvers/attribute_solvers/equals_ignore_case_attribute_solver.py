@@ -4,8 +4,8 @@ from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
 
-class EqualIgnoreCaseAttributeSolver(BaseAttributeSolver):
-    operator = Operators.EQUAL_IGNORE_CASE  # noqa: CCE003  # a static attribute
+class EqualsIgnoreCaseAttributeSolver(BaseAttributeSolver):
+    operator = Operators.EQUALS_IGNORE_CASE  # noqa: CCE003  # a static attribute
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr_val = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None

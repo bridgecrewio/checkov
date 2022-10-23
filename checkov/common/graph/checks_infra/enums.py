@@ -62,5 +62,5 @@ class Operators:
     IS_FALSE = 'is_false'
     INTERSECTS = 'intersects'
     NOT_INTERSECTS = 'not_intersects'
-    EQUAL_IGNORE_CASE = 'equal_ignore_case'
-    NOT_EQUAL_IGNORE_CASE = 'not_equal_ignore_case'
+    EQUALS_IGNORE_CASE = 'equals_ignore_case'
+    NOT_EQUALS_IGNORE_CASE = 'not_equals_ignore_case'

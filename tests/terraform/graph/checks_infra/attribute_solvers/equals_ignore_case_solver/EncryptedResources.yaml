@@ -9,6 +9,6 @@ definition:
     - "aws_neptune_cluster"
     - "aws_s3_bucket"
   attribute: "encryption_"
-  operator: "equal_ignore_case"
+  operator: "equals_ignore_case"
   value: "encrypted"
 

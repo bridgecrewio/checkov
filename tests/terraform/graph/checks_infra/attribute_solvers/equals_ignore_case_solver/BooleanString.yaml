@@ -7,6 +7,6 @@ definition:
   resource_types:
     - "azurerm_storage_account"
   attribute: "allow_blob_public_access"
-  operator: "not_equal_ignore_case"
-  value: "FALSE"
+  operator: "equals_ignore_case"
+  value: "TRUE"
 
