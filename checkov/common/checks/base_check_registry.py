@@ -197,6 +197,3 @@ class BaseCheckRegistry:
                                 self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
                             finally:
                                 BaseCheckRegistry.__loading_external_checks = False
-
-    def set_definitions_raw(self, definitions_raw: list[tuple[int, str]]) -> None:
-        self.definitions_raw = definitions_raw

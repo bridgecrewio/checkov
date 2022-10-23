@@ -44,8 +44,10 @@ class GitlabCiProvider:
                                         name=image_name,
                                         start_line=start_line,
                                         end_line=end_line,
-                                        related_resource_id=generate_resource_key_recursive(self.workflow_config, '',
-                                                                                            start_line, end_line)
+                                        related_resource_id=generate_resource_key_recursive(conf=self.workflow_config,
+                                                                                            key='',
+                                                                                            start_line=start_line,
+                                                                                            end_line=end_line)
                                     )
                                     images.append(image_obj)
                                     image_name = ""
@@ -55,8 +57,9 @@ class GitlabCiProvider:
                                 name=image_name,
                                 start_line=start_line,
                                 end_line=end_line,
-                                related_resource_id=generate_resource_key_recursive(self.workflow_config, '',
-                                                                                    start_line, end_line)
+                                related_resource_id=generate_resource_key_recursive(conf=self.workflow_config,
+                                                                                    key='', start_line=start_line,
+                                                                                    end_line=end_line)
                             )
                             images.append(image_obj)
         return images

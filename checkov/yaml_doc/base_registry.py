@@ -44,13 +44,12 @@ class Registry(BaseCheckRegistry):
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
-                    item_dict = item
                     if isinstance(item, str):
-                        item_dict = self.set_lines_for_item(item)
+                        item = self.set_lines_for_item(item)
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
                             check,
-                            item_dict,
+                            item,
                             entity_type,
                             entity_type,
                             results,
@@ -262,20 +261,22 @@ class Registry(BaseCheckRegistry):
             return item
 
         item_lines = item.rstrip().split("\n")
-        first_line, last_line = item_lines[0], item_lines[-1]
-
-        is_single_line = True if len(item_lines) == 1 else False
-
         item_dict: dict[int | str, str | int] = {
             idx: line for idx, line in enumerate(item_lines)
         }
 
+        if len(item_lines) == 1:
+            item_line = item_lines[0]
+            for idx, line in self.definitions_raw:
+                if item_line in line:
+                    item_dict[STARTLINE_MARK] = idx
+                    item_dict[ENDLINE_MARK] = idx
+
+        first_line, last_line = item_lines[0], item_lines[-1]
         for idx, line in self.definitions_raw:
             if first_line in line:
                 item_dict[STARTLINE_MARK] = idx
-                if is_single_line:
-                    item_dict[ENDLINE_MARK] = idx
-                    break
+                continue
 
             if last_line in line:
                 item_dict[ENDLINE_MARK] = idx

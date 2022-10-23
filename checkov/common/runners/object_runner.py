@@ -102,7 +102,7 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
 
             if registry.report_type == CheckType.GITLAB_CI:
-                registry.set_definitions_raw(self.definitions_raw[file_path])
+                registry.definitions_raw = self.definitions_raw[file_path]
             results = registry.scan(file_path, self.definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
