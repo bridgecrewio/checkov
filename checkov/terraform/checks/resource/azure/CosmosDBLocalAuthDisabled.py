@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class CosmosDBLocalAuthDisabled(BaseResourceCheck):
+class CosmosDBLocalAuthDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         # This is the full description of your check
         description = "Ensure that Local Authentication is disabled on CosmosDB"
@@ -17,14 +21,16 @@ class CosmosDBLocalAuthDisabled(BaseResourceCheck):
         categories = (CheckCategories.IAM,)
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if isinstance(conf['kind'], list) and conf['kind'] == ["GlobalDocumentDB"]:
-            if 'local_authentication_disabled' in conf:
-                if isinstance(conf['local_authentication_disabled'], list) and conf['local_authentication_disabled'] == [True]:
-                    return CheckResult.PASSED
-            self.evaluated_keys = ['local_authentication_disabled']
-            return CheckResult.FAILED
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        if conf.get("kind") == ["GlobalDocumentDB"]:
+            return super().scan_resource_conf(conf)
         return CheckResult.UNKNOWN
+
+    def get_inspected_key(self) -> str:
+        return "local_authentication_disabled"
+
+    def get_expected_value(self) -> Any:
+        return True
 
 
 check = CosmosDBLocalAuthDisabled()
