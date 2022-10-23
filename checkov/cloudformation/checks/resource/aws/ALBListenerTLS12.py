@@ -38,7 +38,7 @@ class ALBListenerTLS12(BaseResourceCheck):
                 protocol = conf['Properties']['Protocol']
                 if protocol in ('HTTPS', 'TLS'):
                     if 'SslPolicy' in conf['Properties'].keys():
-                        if conf['Properties']['SslPolicy'].startswith(supported_policy_prefixes[protocol]):
+                        if isinstance(conf['Properties']['SslPolicy'], str) and conf['Properties']['SslPolicy'].startswith(supported_policy_prefixes[protocol]):
                             return CheckResult.PASSED
                     return CheckResult.FAILED
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):

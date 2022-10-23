@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Callable, Any
+from typing import TYPE_CHECKING, Callable
 
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.record import Record
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
 
 
-class Runner(ImageReferencerMixin, BaseRunner[None]):
+class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], BaseRunner[None]):
     check_type = CheckType.DOCKERFILE  # noqa: CCE003  # a static attribute
 
     def should_scan_file(self, filename: str) -> bool:
@@ -203,7 +203,7 @@ class Runner(ImageReferencerMixin, BaseRunner[None]):
     def extract_images(
         self,
         graph_connector: DiGraph | None = None,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions: dict[str, dict[str, list[_Instruction]]] | None = None,
         definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         if not definitions:

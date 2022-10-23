@@ -15,7 +15,9 @@ class DockerSocketVolume(BaseResourceCheck):
         # Location: *.spec.template.spec.volumes[].hostPath.path
         id = "CKV_K8S_27"
         name = "Do not expose the docker daemon socket to containers"
-        supported_resources = ("kubernetes_pod", "kubernetes_deployment", "kubernetes_daemonset")
+        supported_resources = ("kubernetes_pod", "kubernetes_pod_v1",
+                               "kubernetes_deployment", "kubernetes_deployment_v1",
+                               "kubernetes_daemonset", "kubernetes_daemon_set_v1")
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
