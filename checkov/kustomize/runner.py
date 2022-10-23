@@ -421,10 +421,6 @@ class Runner(BaseRunner):
         self, root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> None:
         kustomize_dirs = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)
-        if not kustomize_dirs:
-            # nothing to process
-            return
-
         for kustomize_dir in kustomize_dirs:
             self.kustomizeProcessedFolderAndMeta[kustomize_dir] = self._parseKustomization(kustomize_dir)
         self.target_folder_path = tempfile.mkdtemp()
@@ -478,11 +474,6 @@ class Runner(BaseRunner):
 
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
         report = Report(self.check_type)
-
-        if not self.kustomizeProcessedFolderAndMeta:
-            # nothing to process
-            return report
-
         target_dir = ""
         try:
             k8s_runner = K8sKustomizeRunner()

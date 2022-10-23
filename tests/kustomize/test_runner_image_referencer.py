@@ -108,7 +108,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(kustomize_report.resources) == 2
-    assert len(kustomize_report.passed_checks) == 68
+    assert len(kustomize_report.passed_checks) == 70
     assert len(kustomize_report.failed_checks) == 20
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0

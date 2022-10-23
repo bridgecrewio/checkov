@@ -35,7 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python
-        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -43,7 +43,7 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@a3391b5a01114c49c3a8d55181a9ff4c99bf0db7  # v12
+        uses: tj-actions/verify-changed-files@1d7ee9711b0a8f675208004e66bc25d593a1a0ae  # v11
         id: changed_files
         with:
           files: Pipfile.lock

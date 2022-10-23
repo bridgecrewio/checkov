@@ -40,7 +40,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 68
+    assert len(k8s_report.passed_checks) == 70
     assert len(k8s_report.failed_checks) == 19
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -97,7 +97,7 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result, license_
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 68
+    assert len(k8s_report.passed_checks) == 70
     assert len(k8s_report.failed_checks) == 17
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -142,7 +142,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, licens
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 65
+    assert len(k8s_report.passed_checks) == 67
     assert len(k8s_report.failed_checks) == 22
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -187,7 +187,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 67
+    assert len(k8s_report.passed_checks) == 69
     assert len(k8s_report.failed_checks) == 20
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -232,7 +232,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result,
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 64
+    assert len(k8s_report.passed_checks) == 66
     assert len(k8s_report.failed_checks) == 13
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -277,7 +277,7 @@ def test_job_resources(mocker: MockerFixture, image_cached_result, license_statu
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 68
+    assert len(k8s_report.passed_checks) == 70
     assert len(k8s_report.failed_checks) == 17
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -322,7 +322,7 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result, lice
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 64
+    assert len(k8s_report.passed_checks) == 66
     assert len(k8s_report.failed_checks) == 13
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -367,7 +367,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result, licen
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 68
+    assert len(k8s_report.passed_checks) == 70
     assert len(k8s_report.failed_checks) == 19
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -414,7 +414,7 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 66
+    assert len(k8s_report.passed_checks) == 68
     assert len(k8s_report.failed_checks) == 21
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
@@ -462,7 +462,7 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, lice
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(k8s_report.resources) == 1
-    assert len(k8s_report.passed_checks) == 68
+    assert len(k8s_report.passed_checks) == 70
     assert len(k8s_report.failed_checks) == 19
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0

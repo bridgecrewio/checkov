@@ -71,7 +71,7 @@ def is_checked_sls_template(template):
     if template.__contains__('provider'):
         # Case provider is a dictionary
         if isinstance(template['provider'], DictNode):
-            if template['provider'].get('name', '').lower() not in SUPPORTED_PROVIDERS:
+            if template['provider'].get('name').lower() not in SUPPORTED_PROVIDERS:
                 return False
         # Case provider is direct provider name
         if isinstance(template['provider'], StrNode):

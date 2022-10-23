@@ -577,7 +577,6 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
-    base_report.image_cached_results.extend(report_to_merge.image_cached_results)
     base_report.resources.update(report_to_merge.resources)
     base_report.extra_resources.update(report_to_merge.extra_resources)
 

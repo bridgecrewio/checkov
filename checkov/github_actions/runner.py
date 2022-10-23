@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
+class Runner(ImageReferencerMixin, YamlRunner):
     check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:

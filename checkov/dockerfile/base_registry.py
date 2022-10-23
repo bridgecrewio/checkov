@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -34,7 +34,7 @@ class Registry(BaseCheckRegistry):
         if not entity:
             return results
         for instruction, checks in self.checks.items():
-            skip_info: _SkippedCheck = {}
+            skip_info = {}
             if instruction in entity:
 
                 for check in checks:
@@ -42,15 +42,11 @@ class Registry(BaseCheckRegistry):
                         skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
 
                     if runner_filter.should_run_check(check, report_type=CheckType.DOCKERFILE):
-                        self.update_result(
-                            check=check,
-                            entity_configuration=entity[instruction],
-                            entity_name=instruction,
-                            entity_type=instruction,
-                            results=results,
-                            scanned_file=scanned_file,
-                            skip_info=skip_info,
-                        )
+                        entity_name = instruction
+                        entity_type = instruction
+                        entity_configuration = entity[instruction]
+                        self.update_result(check, entity_configuration, entity_name, entity_type, results, scanned_file,
+                                           skip_info)
 
         for check in self.wildcard_checks["*"]:
             skip_info = {}
@@ -59,40 +55,21 @@ class Registry(BaseCheckRegistry):
                     skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
 
             if runner_filter.should_run_check(check, report_type=CheckType.DOCKERFILE):
-                self.update_result(
-                    check=check,
-                    entity_configuration=entity,
-                    entity_name=scanned_file,
-                    entity_type="*",
-                    results=results,
-                    scanned_file=scanned_file,
-                    skip_info=skip_info,
-                )
+                entity_name = scanned_file
+                entity_type = "*"
+                entity_configuration = entity
+                self.update_result(check, entity_configuration, entity_name, entity_type, results, scanned_file,
+                                   skip_info)
         return results
 
-    def update_result(
-        self,
-        check: BaseCheck,
-        entity_configuration: list[_Instruction] | dict[str, list[_Instruction]],
-        entity_name: str,
-        entity_type: str,
-        results: dict[BaseCheck, _CheckResult],
-        scanned_file: str,
-        skip_info: _SkippedCheck
-    ) -> None:
-        result = self.run_check(
-            check=check,
-            entity_configuration=entity_configuration,  # type:ignore[arg-type]  # special Dockerfile runner behaviour
-            entity_name=entity_name,
-            entity_type=entity_type,
-            scanned_file=scanned_file,
-            skip_info=skip_info,
-        )
+    def update_result(self, check, entity_configuration, entity_name, entity_type, results, scanned_file, skip_info):
+        result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file,
+                                skip_info)
         results[check] = {}
         if result['result'] == CheckResult.SKIPPED:
             results[check]['result'] = result['result']
             results[check]['suppress_comment'] = result['suppress_comment']
             results[check]['results_configuration'] = None
         else:
-            results[check]['result'] = cast("CheckResult", result['result'][0])
-            results[check]['results_configuration'] = cast("dict[str, Any]", result['result'][1])
+            results[check]['result'] = result['result'][0]
+            results[check]['results_configuration'] = result['result'][1]

@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 
-if TYPE_CHECKING:
-    from dockerfile_parse.parser import _Instruction
-
-ISABSOLUTE = re.compile('^"?((/[A-Za-z0-9-_+]*)|([A-Za-z0-9-_+]:\\\\.*)|(\\$[{}A-Za-z0-9-_+].*))')
+ISABSOLUTE = re.compile("^\"?((/[A-Za-z0-9-_+]*)|([A-Za-z0-9-_+]:\\\\.*)|(\\$[{}A-Za-z0-9-_+].*))")
 
 
 class WorkdirIsAbsolute(BaseDockerfileCheck):
@@ -23,11 +19,11 @@ class WorkdirIsAbsolute(BaseDockerfileCheck):
         categories = (CheckCategories.CONVENTION,)
         super().__init__(name=name, id=id, categories=categories, supported_instructions=supported_instructions)
 
-    def scan_resource_conf(self, conf: list[_Instruction]) -> tuple[CheckResult, list[_Instruction] | None]:
+    def scan_entity_conf(self, conf: list[dict[str, int | str]]) -> tuple[CheckResult, list[dict[str, int | str]] | None]:
         workdirs = []
         for workdir in conf:
             path = workdir["value"]
-            if isinstance(path, str) and not re.match(ISABSOLUTE, path):
+            if not re.match(ISABSOLUTE, path):
                 workdirs.append(workdir)
 
         if workdirs:

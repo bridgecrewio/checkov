@@ -8,7 +8,6 @@ from checkov.common.util.str_utils import removeprefix
 from checkov.dockerfile.utils import DOCKERFILE_STARTLINE, DOCKERFILE_ENDLINE
 
 if TYPE_CHECKING:
-    from dockerfile_parse.parser import _Instruction
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
@@ -17,7 +16,7 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 class DockerfileProvider:
     __slots__ = ("definitions",)
 
-    def __init__(self, definitions: dict[str, dict[str, list[_Instruction]]]) -> None:
+    def __init__(self, definitions: dict[str, Any]) -> None:
         self.definitions = definitions
 
     def extract_images_from_resources(self) -> list[Image]:

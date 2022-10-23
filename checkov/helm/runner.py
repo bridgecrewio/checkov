@@ -336,6 +336,7 @@ class Runner(BaseRunner):
 def fix_report_paths(report: Report, tmp_dir: str) -> None:
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
+        check.file_abs_path = check.file_abs_path.replace(tmp_dir, '', 1)
     report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
 
 
