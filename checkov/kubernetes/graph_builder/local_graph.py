@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
 from typing import Any, List, Dict
@@ -5,7 +7,10 @@ from typing import Any, List, Dict
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
+from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 
+
+EDGE_BUILDERS = (LabelSelectorEdgeBuilder,)
 
 class KubernetesLocalGraph(LocalGraph):
     def __init__(self, definitions: Dict[str, List]):
@@ -65,6 +70,15 @@ class KubernetesLocalGraph(LocalGraph):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
 
+        self._create_edges()
+
+    def _create_edges(self) -> None:
+        edges_to_create = {}
+        for vertex in self.vertices:
+            for edge_builder in EDGE_BUILDERS:
+                if edge_builder.should_search_for_edges(vertex):
+                    edges_to_create[vertex.name] = edge_builder.find_connections(vertex, self.vertices)
+
     @staticmethod
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
         name = resource.get('metadata', {}).get('name')
@@ -80,9 +94,17 @@ class KubernetesLocalGraph(LocalGraph):
             match_labels = spec.get('selector', {}).get('matchLabels')
         else:
             match_labels = None
+        KubernetesLocalGraph.remove_metadata_from_attribute(match_labels)
         selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')
+        KubernetesLocalGraph.remove_metadata_from_attribute(labels)
         return KubernetesBlockMetadata(selector, labels, name)
+
+    @staticmethod
+    def remove_metadata_from_attribute(attribute: dict | None) -> None:
+        if isinstance(attribute, dict):
+            attribute.pop("__startline__", None)
+            attribute.pop("__endline__", None)
 
     @staticmethod
     def _extract_nested_resources(file_conf: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
