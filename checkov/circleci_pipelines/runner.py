@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import os
 from typing import TYPE_CHECKING, Any
-if TYPE_CHECKING:
-    from networkx import DiGraph
 
 from checkov.circleci_pipelines.image_referencer.manager import CircleCIImageReferencerManager
 from checkov.common.images.image_referencer import Image, ImageReferencerMixin
@@ -15,11 +13,12 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from networkx import DiGraph
 
 WORKFLOW_DIRECTORY = "circleci"
 
 
-class Runner(ImageReferencerMixin, YamlRunner):
+class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
     check_type = CheckType.CIRCLECI_PIPELINES  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:
@@ -63,7 +62,6 @@ class Runner(ImageReferencerMixin, YamlRunner):
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
 
             image_report = self.check_container_image_references(
-                graph_connector=None,
                 root_path=root_folder,
                 runner_filter=runner_filter,
                 definitions=self.definitions
@@ -86,6 +84,8 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
         for file_path, config in definitions.items():
             _config = force_dict(config) or {}
+            if not config:
+                continue
             manager = CircleCIImageReferencerManager(workflow_config=_config, file_path=file_path)
             images.extend(manager.extract_images_from_workflow())
 

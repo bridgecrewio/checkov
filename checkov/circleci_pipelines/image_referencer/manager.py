@@ -8,7 +8,7 @@ from checkov.circleci_pipelines.image_referencer.provider import CircleCIProvide
 class CircleCIImageReferencerManager:
     __slots__ = ("workflow_config", "file_path")
 
-    def __init__(self, workflow_config: dict[str, Any], file_path: str):
+    def __init__(self, workflow_config: dict[str, Any], file_path: str) -> None:
         self.workflow_config = workflow_config
         self.file_path = file_path
 
