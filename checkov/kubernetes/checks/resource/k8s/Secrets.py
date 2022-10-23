@@ -16,6 +16,8 @@ class Secrets(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["env", "envFrom"]
         if conf.get("env"):
             for idx, e in enumerate(conf["env"]):
+                if not isinstance(e, dict):
+                    return CheckResult.UNKNOWN
                 value_from = e.get("valueFrom")
                 if value_from and "secretKeyRef" in value_from:
                     self.evaluated_container_keys = [f"env/[{idx}]/valueFrom/secretKeyRef"]
