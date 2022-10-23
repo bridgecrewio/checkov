@@ -32,9 +32,9 @@ jobs:
             create_release=false
           fi
 
-          echo "::set-output name=create_release::$create_release"
-          echo "::set-output name=latest_release_version::$latest_gh_release"
-          echo "::set-output name=version::$latest_tag"
+          echo "create_release=$create_release" >> $GITHUB_OUTPUT
+          echo "latest_release_version=$latest_gh_release" >> $GITHUB_OUTPUT
+          echo "version=$latest_tag" >> $GITHUB_OUTPUT
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
@@ -60,7 +60,7 @@ jobs:
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/git-auto-commit-action@6c32682a4040e023c054b2fc60a7cf65cc77f7ad  # v4
+        uses: stefanzweifel/git-auto-commit-action@fd157da78fa13d9383e5580d1fd1184d89554b51  # v4
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md
