@@ -271,6 +271,7 @@ class Registry(BaseCheckRegistry):
                 if item_line in line:
                     item_dict[STARTLINE_MARK] = idx
                     item_dict[ENDLINE_MARK] = idx
+            return item_dict
 
         first_line, last_line = item_lines[0], item_lines[-1]
         for idx, line in self.definitions_raw:
