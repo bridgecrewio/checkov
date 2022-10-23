@@ -14,7 +14,7 @@ class VCSSchema():
     def validate(self, data: dict[str, Any] | list[dict[str, Any]]) -> bool:
         try:
             validate(instance=data, schema=self.schema)
-        except jsonschema.exceptions.ValidationError as e:
+        except jsonschema.exceptions.ValidationError:
             logging.debug("validation error", exc_info=True)
             return False
         return True
