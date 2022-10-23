@@ -18,11 +18,7 @@ class CircleCIProvider:
 
         keywords = (
             "jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}",
-            "jobs.*.machine[].{image: image, __startline__: __startline__, __endline__:__endline__}",
-            "jobs.*.macos[].{image: xcode, __startline__: __startline__, __endline__:__endline__}",
             "executors.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}",
-            "executors.*.machine[].{image: image, __startline__: __startline__, __endline__:__endline__}",
-            "executors.*.macos[].{xcode: xcode, __startline__: __startline__, __endline__:__endline__}"
         )
         for keyword in keywords:
             results = jmespath.search(keyword, self.workflow_config)
