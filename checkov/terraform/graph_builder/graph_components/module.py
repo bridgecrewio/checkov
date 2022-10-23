@@ -151,7 +151,7 @@ class Module:
                     attributes = self.clean_bad_characters(resource_conf)
                     if not isinstance(attributes, dict):
                         continue
-                    handle_dynamic_values(attributes)
+                    has_dynamic_block = handle_dynamic_values(attributes)
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
@@ -164,6 +164,7 @@ class Module:
                         attributes=attributes,
                         id=f"{resource_type}.{name}",
                         source=self.source,
+                        has_dynamic_block=has_dynamic_block,
                     )
                     self._add_to_blocks(resource_block)
 

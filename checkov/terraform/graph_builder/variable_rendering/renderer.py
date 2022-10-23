@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ast import literal_eval
 import logging
 import os
@@ -276,7 +277,57 @@ class TerraformVariableRenderer(VariableRenderer):
         return new_val
 
     def _render_variables_from_vertices(self) -> None:
-        pass
+        self._render_dynamic_blocks()
+
+    def _render_dynamic_blocks(self) -> None:
+        vertex_indices = self.local_graph.vertices_by_block_type[BlockType.RESOURCE]
+
+        for idx in vertex_indices:
+            vertex = self.local_graph.vertices[idx]
+            if vertex.has_dynamic_block:
+                # only check dynamic blocks on the root level for now
+                dynamic_blocks = vertex.attributes.get("dynamic")
+                if dynamic_blocks:
+                    rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    changed_attributes = []
+
+                    for block_name, block_confs in rendered_blocks.items():
+                        vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
+                        changed_attributes.append(block_name)
+
+                    self.local_graph.update_vertex_config(vertex, changed_attributes)
+
+    def _process_dynamic_blocks(self, dynamic_blocks: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+        rendered_blocks: dict[str, list[dict[str, Any]]] = {}
+
+        if not isinstance(dynamic_blocks, list):
+            logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
+            return rendered_blocks
+
+        for block in dynamic_blocks:
+            block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
+            block_content = block_values.get("content")
+            dynamic_values = block_values.get("for_each")
+            if not block_content or not dynamic_values:
+                return rendered_blocks
+
+            dynamic_value_ref = f"{block_name}.value"
+            dynamic_arguments = [
+                argument
+                for argument, value in block_content.items()
+                if value == dynamic_value_ref
+            ]
+            if dynamic_arguments:
+                block_confs = []
+                for dynamic_value in dynamic_values:
+                    block_conf = deepcopy(block_content)
+                    for dynamic_argument in dynamic_arguments:
+                        block_conf[dynamic_argument] = dynamic_value
+
+                    block_confs.append(block_conf)
+                rendered_blocks[block_name] = block_confs
+
+        return rendered_blocks
 
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
