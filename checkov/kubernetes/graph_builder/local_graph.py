@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from typing import Any, List, Dict
+from collections import defaultdict
 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
@@ -73,11 +74,13 @@ class KubernetesLocalGraph(LocalGraph):
         self._create_edges()
 
     def _create_edges(self) -> None:
-        edges_to_create = {}
+        edges_to_create = defaultdict(list)
         for vertex in self.vertices:
             for edge_builder in EDGE_BUILDERS:
                 if edge_builder.should_search_for_edges(vertex):
-                    edges_to_create[vertex.name] = edge_builder.find_connections(vertex, self.vertices)
+                    current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
+                    if current_vertex_connections:
+                        edges_to_create[vertex.name].extend(current_vertex_connections)
 
     @staticmethod
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
