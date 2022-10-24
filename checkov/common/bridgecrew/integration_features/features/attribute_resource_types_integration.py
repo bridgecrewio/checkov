@@ -88,7 +88,5 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             } for attribute, provider_map in attribute_resources.items()
         }
 
-        print(1)
-
 
 integration = AttributeResourceTypesIntegration(bc_integration)

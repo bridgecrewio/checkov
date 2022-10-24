@@ -132,7 +132,15 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         policy_definition = raw_check.get("definition", {})
 
         metadata = raw_check.get("metadata", {})
-        provider = metadata.get("scope", {}).get("provider")
+
+        # the first approach comes from the custom policy integration
+        provider = metadata.get("scope", {}).get("provider")\
+
+        # but the platform injects check metadata in a different way
+        if not provider and "scope" in raw_check:
+            raw_provider = raw_check["scope"].get("provider")  # will be a None, an empty list, or a list with the provider
+            if raw_provider:
+                provider = raw_provider[0].lower()
 
         check = self._parse_raw_check(policy_definition, provider)
 
