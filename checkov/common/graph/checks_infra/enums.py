@@ -60,3 +60,7 @@ class Operators:
     LENGTH_LESS_THAN_OR_EQUAL = 'length_less_than_or_equal'
     IS_TRUE = 'is_true'
     IS_FALSE = 'is_false'
+    INTERSECTS = 'intersects'
+    NOT_INTERSECTS = 'not_intersects'
+    EQUALS_IGNORE_CASE = 'equals_ignore_case'
+    NOT_EQUALS_IGNORE_CASE = 'not_equals_ignore_case'

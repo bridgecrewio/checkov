@@ -28,3 +28,22 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
         self.assertEqual(4, len(local_graph.vertices))
+        
+        
+    def test_build_graph_with_nested_resources(self):
+        file = os.path.join(TEST_DIRNAME, 'resources', 'nested_resource.yaml')
+        definitions = {}
+        (definitions[file], definitions_raw) = parse(file)
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False, create_complex_vertices=True)
+        self.assertEqual(2, len(local_graph.vertices))
+        assert local_graph.vertices[0].id == 'Deployment.default.myapp'
+        assert local_graph.vertices[0].attributes.get('spec').get('template') is None
+        assert local_graph.vertices[0].metadata.name == 'myapp'
+        assert local_graph.vertices[0].metadata.selector.match_labels.get('app') == 'myapp'
+        assert local_graph.vertices[0].metadata.labels is None
+        assert local_graph.vertices[1].id == "Pod.default.{'app': 'myapp'}"
+        assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1
+        assert local_graph.vertices[1].metadata.name is None
+        assert local_graph.vertices[1].metadata.selector.match_labels is None
+        assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'

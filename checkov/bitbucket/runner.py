@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.output.report import Report
 
+
 class Runner(JsonRunner):
     check_type = CheckType.BITBUCKET_CONFIGURATION  # noqa: CCE003  # a static attribute
 
@@ -25,7 +26,7 @@ class Runner(JsonRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

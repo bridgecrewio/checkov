@@ -41,6 +41,10 @@ from checkov.common.checks_infra.solvers import (
     LengthGreaterThanOrEqualAttributeSolver,
     IsTrueAttributeSolver,
     IsFalseAttributeSolver,
+    IntersectsAttributeSolver,
+    NotIntersectsAttributeSolver,
+    EqualsIgnoreCaseAttributeSolver,
+    NotEqualsIgnoreCaseAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -89,6 +93,10 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "length_less_than_or_equal": LengthLessThanOrEqualAttributeSolver,
     "is_true": IsTrueAttributeSolver,
     "is_false": IsFalseAttributeSolver,
+    "intersects": IntersectsAttributeSolver,
+    "not_intersects": NotIntersectsAttributeSolver,
+    "equals_ignore_case": EqualsIgnoreCaseAttributeSolver,
+    "not_equals_ignore_case": NotEqualsIgnoreCaseAttributeSolver
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
@@ -130,6 +138,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        check.guideline = raw_check.get("metadata", {}).get("guideline")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 

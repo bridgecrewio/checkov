@@ -5,6 +5,7 @@ from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
+
 class EC2PublicIP(BaseResourceCheck):
     def __init__(self) -> None:
         name = "EC2 instance should not have public IP."

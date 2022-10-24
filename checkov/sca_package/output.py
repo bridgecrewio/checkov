@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import logging
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
@@ -8,7 +9,7 @@ from typing import List, Union, Dict, Any
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.sca.commons import UNFIXABLE_VERSION
@@ -81,6 +82,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
     group_by_file_path_package_map: dict[str, dict[str, list[Record]]] = defaultdict(dict)
 
     for record in itertools.chain(*cve_records):
+        if not record.vulnerability_details:
+            #  this shouldn't happen
+            logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+            continue
+
         group_by_file_path_package_map[record.file_path].setdefault(
             record.vulnerability_details["package_name"], []
         ).append(record)
@@ -95,6 +101,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             fix_versions_lists = []
 
             for record in records:
+                if not record.vulnerability_details:
+                    #  this shouldn't happen
+                    logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+                    continue
+
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 
@@ -104,9 +115,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     else:
                         cve_count.to_fix += 1
 
-                    # best way to dynamically access an class instance attribute.
+                    # best way to dynamically access a class instance attribute.
                     # (we can't just do cve_count.severity_str to access the correct severity)
-                    severity_str = record.severity.name.lower()
+                    severity_str = record.severity.name.lower() if record.severity else BcSeverities.NONE.lower()
                     setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
                     if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
@@ -124,6 +135,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
+                    if record.check_result["result"] == CheckResult.SKIPPED:
+                        continue
                     should_print_licenses_table = True
                     package_licenses_details_map[package_name].append(
                         _LicenseStatus(package_name=package_name,
@@ -166,7 +179,6 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
-    package_table.header_align = "l"
     package_table.field_names = [
         "Package name",
         "Package version",
@@ -299,7 +311,6 @@ def create_package_overview_table_part(
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
-    package_table.header_align = "l"
     package_table.field_names = [
         "Package",
         "CVE ID",

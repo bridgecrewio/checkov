@@ -18,5 +18,5 @@ class NotSolver(BaseComplexSolver):
             raise Exception('The "not" operator must have exactly one child')
         return not args[0]
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
+    def get_operation(self, vertex: Dict[str, Any]) -> bool:
         return not self.solvers[0].get_operation(vertex)

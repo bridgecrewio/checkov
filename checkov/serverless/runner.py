@@ -24,6 +24,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.serverless.parsers.parser import parse
 from checkov.common.parsers.node import DictNode
 from checkov.serverless.parsers.parser import CFN_RESOURCES_TOKEN
@@ -138,18 +139,27 @@ class Runner(BaseRunner):
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
-                            for check, check_result in results.items():
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    entity_code_lines,
-                                                                                    resource)
-                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=censored_code_lines, file_path=sls_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=cf_resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                entity_tags=tags, severity=check.severity)
-                                record.set_guideline(check.guideline)
-                                report.add_record(record=record)
+                            if results:
+                                for check, check_result in results.items():
+                                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                        entity_code_lines,
+                                                                                        resource)
+                                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                                                    code_block=censored_code_lines, file_path=sls_file,
+                                                    file_line_range=entity_lines_range,
+                                                    resource=cf_resource_id, evaluations=variable_evaluations,
+                                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                                    entity_tags=tags, severity=check.severity)
+                                    record.set_guideline(check.guideline)
+                                    report.add_record(record=record)
+                            else:
+                                report.extra_resources.add(
+                                    ExtraResource(
+                                        file_abs_path=file_abs_path,
+                                        file_path=sls_file,
+                                        resource=cf_resource_id,
+                                    )
+                                )
 
             sls_context_parser = SlsContextParser(sls_file, sls_file_data, definitions_raw[sls_file])
 
@@ -173,18 +183,27 @@ class Runner(BaseRunner):
                         entity = EntityDetails(sls_context_parser.provider_type, item_content)
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                         tags = cfn_utils.get_resource_tags(entity, registry)
-                        for check, check_result in results.items():
-                            censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                entity_code_lines,
-                                                                                item_content)
-                            record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                            code_block=censored_code_lines, file_path=sls_file,
-                                            file_line_range=entity_lines_range,
-                                            resource=item_name, evaluations=variable_evaluations,
-                                            check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                            entity_tags=tags, severity=check.severity)
-                            record.set_guideline(check.guideline)
-                            report.add_record(record=record)
+                        if results:
+                            for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    item_content)
+                                record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                                code_block=censored_code_lines, file_path=sls_file,
+                                                file_line_range=entity_lines_range,
+                                                resource=item_name, evaluations=variable_evaluations,
+                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                                entity_tags=tags, severity=check.severity)
+                                record.set_guideline(check.guideline)
+                                report.add_record(record=record)
+                        else:
+                            report.extra_resources.add(
+                                ExtraResource(
+                                    file_abs_path=file_abs_path,
+                                    file_path=sls_file,
+                                    resource=item_name,
+                                )
+                            )
             # Sub-sections that are a single item
             for token, registry in SINGLE_ITEM_SECTIONS:
                 item_content = sls_file_data.get(token)
@@ -199,18 +218,27 @@ class Runner(BaseRunner):
                 entity = EntityDetails(sls_context_parser.provider_type, item_content)
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, registry)
-                for check, check_result in results.items():
-                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                        entity_code_lines,
-                                                                        item_content)
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=censored_code_lines, file_path=sls_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=token, evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags, severity=check.severity)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
+                if results:
+                    for check, check_result in results.items():
+                        censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                            entity_code_lines,
+                                                                            item_content)
+                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                        code_block=censored_code_lines, file_path=sls_file,
+                                        file_line_range=entity_lines_range,
+                                        resource=token, evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                        entity_tags=tags, severity=check.severity)
+                        record.set_guideline(check.guideline)
+                        report.add_record(record=record)
+                else:
+                    report.extra_resources.add(
+                        ExtraResource(
+                            file_abs_path=file_abs_path,
+                            file_path=sls_file,
+                            resource=token,
+                        )
+                    )
 
             # "Complete" checks
             # NOTE: Ignore code content, no point in showing (could be long)
@@ -221,17 +249,26 @@ class Runner(BaseRunner):
                 entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
                 results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
                 tags = cfn_utils.get_resource_tags(entity, complete_registry)
-                for check, check_result in results.items():
-                    record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                    code_block=[],              # Don't show, could be large
-                                    file_path=sls_file,
-                                    file_line_range=entity_lines_range,
-                                    resource="complete",        # Weird, not sure what to put where
-                                    evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                    entity_tags=tags, severity=check.severity)
-                    record.set_guideline(check.guideline)
-                    report.add_record(record=record)
+                if results:
+                    for check, check_result in results.items():
+                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
+                                        code_block=[],              # Don't show, could be large
+                                        file_path=sls_file,
+                                        file_line_range=entity_lines_range,
+                                        resource="complete",        # Weird, not sure what to put where
+                                        evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                        entity_tags=tags, severity=check.severity)
+                        record.set_guideline(check.guideline)
+                        report.add_record(record=record)
+                else:
+                    report.extra_resources.add(
+                        ExtraResource(
+                            file_abs_path=file_abs_path,
+                            file_path=sls_file,
+                            resource="complete",
+                        )
+                    )
             self.pbar.update()
         self.pbar.close()
         return report

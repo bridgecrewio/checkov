@@ -22,14 +22,14 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         runner.github.github_conf_dir_path = valid_dir_path
 
-        checks = ["CKV_GITHUB_6","CKV_GITHUB_7"]
+        checks = ["CKV_GITHUB_6", "CKV_GITHUB_7"]
         report = runner.run(
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.skipped_checks, [])
 
     @mock.patch.dict(os.environ, {"CKV_GITHUB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1",

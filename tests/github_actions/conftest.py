@@ -70,4 +70,4 @@ def definition():
 
 @pytest.fixture()
 def bad_schema_files():
-    return {'bad_format.yaml', 'empty_jobs.yaml'}
+    return {'bad_format.yaml', 'empty_jobs.yaml', 'nested_jobs.yaml'}

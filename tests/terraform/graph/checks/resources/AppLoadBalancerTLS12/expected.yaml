@@ -3,6 +3,7 @@ pass:
   - "aws_lb_listener.tcp"
   - "aws_lb_listener.udp"
   - "aws_lb_listener.tcp_udp"
+  - "aws_lb_listener.tls_1_3"
   - "aws_lb_listener.tls_fs_1_2"
   - "aws_lb_listener.https_fs_1_2"
   - "aws_alb_listener.https_fs_1_2"

@@ -39,7 +39,7 @@ class GoogleCloudPostgreSqlLogMinMessage(BaseResourceCheck):
                     logmin_list = ['fatal', 'panic', 'log', 'error', 'warning', 'notice',
                                    'info', 'debug1', 'debug2', 'debug3', 'debug4', 'debug5']
                     for flag in flags:
-                        if flag['name'] == 'log_min_messages' and flag['value'] not in logmin_list:
+                        if isinstance(flag, dict) and flag['name'] == 'log_min_messages' and flag['value'] not in logmin_list:
                             self.evaluated_keys = ['database_version/[0]/POSTGRES',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/name',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']

@@ -6,9 +6,9 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
 from colorama import init
-from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
@@ -178,6 +178,7 @@ class Report:
         created_baseline_path: str | None = None,
         baseline: Baseline | None = None,
         use_bc_ids: bool = False,
+        summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -193,7 +194,8 @@ class Report:
                 message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
-        output_data += colored(message, "cyan")
+        if summary_position == 'top':
+            output_data += colored(message, "cyan")
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
@@ -222,6 +224,8 @@ class Report:
                 f"Baseline analysis report using {baseline.path} - only new failed checks with respect to the baseline are reported",
                 "blue",
             )
+        if summary_position == 'bottom':
+            output_data += colored(message, "cyan")
         return output_data
 
     @staticmethod
@@ -241,6 +245,12 @@ class Report:
         for record in self.failed_checks + self.skipped_checks:
             if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                 continue
+
+            help_uri = record.guideline
+            if record.vulnerability_details:
+                # use the CVE link, if it is a SCA record
+                help_uri = record.vulnerability_details.get("link")
+
             rule = {
                 "id": record.check_id,
                 "name": record.check_name,
@@ -251,10 +261,13 @@ class Report:
                     "text": record.description if record.description else record.check_name,
                 },
                 "help": {
-                    "text": f'"{record.check_name}\nResource: {record.resource}\nGuideline: {record.guideline}"',
+                    "text": f'"{record.check_name}\nResource: {record.resource}"',
                 },
                 "defaultConfiguration": {"level": "error"},
             }
+            if help_uri:
+                rule["helpUri"] = help_uri
+
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)
@@ -341,8 +354,8 @@ class Report:
             print(f"More details: \n {e}")
 
     @staticmethod
-    def get_junit_xml_string(ts: List[TestSuite]) -> str:
-        return cast(str, to_xml_report_string(ts))
+    def get_junit_xml_string(ts: list[TestSuite]) -> str:
+        return to_xml_report_string(ts)
 
     def print_failed_github_md(self, use_bc_ids: bool = False) -> str:
         result = []
@@ -364,7 +377,6 @@ class Report:
                 showindex=True,
             )
             output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
-            print(output_data)
             return output_data
         else:
             return "\n\n---\n\n"
@@ -565,6 +577,7 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
+    base_report.image_cached_results.extend(report_to_merge.image_cached_results)
     base_report.resources.update(report_to_merge.resources)
     base_report.extra_resources.update(report_to_merge.extra_resources)
 

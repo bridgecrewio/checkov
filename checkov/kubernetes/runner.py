@@ -10,9 +10,8 @@ from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
-from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
@@ -20,6 +19,7 @@ from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
+from checkov.kubernetes.image_referencer.manager import KubernetesImageReferencerManager
 from checkov.kubernetes.kubernetes_utils import (
     create_definitions,
     build_definitions_context,
@@ -30,18 +30,28 @@ from checkov.kubernetes.kubernetes_utils import (
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
+    from networkx import DiGraph
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+    from checkov.common.images.image_referencer import Image
 
 
-class Runner(BaseRunner):
+class TimeoutError(Exception):
+    pass
+
+
+def handle_timeout(signum, frame):
+    raise TimeoutError('command got timeout')
+
+
+class Runner(ImageReferencerMixin, BaseRunner[KubernetesGraphManager]):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 
     def __init__(
         self,
-        graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+        graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
         source: str = "Kubernetes",
-        graph_manager: GraphManager | None = None,
+        graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
         report_type: str = check_type
     ) -> None:
@@ -65,7 +75,7 @@ class Runner(BaseRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -101,6 +111,21 @@ class Runner(BaseRunner):
         if CHECKOV_CREATE_GRAPH:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
+
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
 
         return report
 
@@ -207,9 +232,25 @@ class Runner(BaseRunner):
                 report.add_record(record=record)
         return report
 
+    def extract_images(
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = KubernetesImageReferencerManager(graph_connector=graph_connector)
+        images = manager.extract_images_from_resources()
+
+        return images
+
 
 def get_relative_file_path(file_abs_path: str, root_folder: str) -> str:
     return f"/{os.path.relpath(file_abs_path, root_folder)}"
+
 
 def _get_entity_abs_path(root_folder: str | None, entity_file_path: str) -> str:
     if entity_file_path[0] == '/' and (root_folder and not entity_file_path.startswith(root_folder)):
