@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.integration_feature_enum import IntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 
 class RepoConfigIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=0)
+        super().__init__(bc_integration=bc_integration, integration_name=IntegrationFeature.REPO_CONFIG)
         self.skip_paths: set[str] = set()
         self.enforcement_rule: dict[str, Any] = {}
         self.code_category_configs: dict[str, CodeCategoryConfiguration] = {}

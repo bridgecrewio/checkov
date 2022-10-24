@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from checkov.common.bridgecrew.integration_features.integration_feature_enum import IntegrationFeature
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 
 if TYPE_CHECKING:
@@ -11,9 +12,10 @@ if TYPE_CHECKING:
 
 
 class BaseIntegrationFeature(ABC):
-    def __init__(self, bc_integration: BcPlatformIntegration, order: int) -> None:
+
+    def __init__(self, bc_integration: BcPlatformIntegration, integration_name: IntegrationFeature) -> None:
         self.bc_integration = bc_integration
-        self.order = order
+        self.integration_name = integration_name
         integration_feature_registry.register(self)
         self.integration_feature_failures = False
 

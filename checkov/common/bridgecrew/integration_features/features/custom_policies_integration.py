@@ -8,6 +8,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.integration_feature_enum import IntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
@@ -24,7 +25,7 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
+        super().__init__(bc_integration=bc_integration, integration_name=IntegrationFeature.CUSTOM_POLICIES)
         self.platform_policy_parser = NXGraphCheckParser()
         self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)

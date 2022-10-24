@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Pattern, Any
 from checkov.common.bridgecrew.check_type import CheckType
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.integration_feature_enum import IntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 
 class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=2)  # must be after the custom policies integration
+        super().__init__(bc_integration=bc_integration, integration_name=IntegrationFeature.SUPPRESSIONS)
         self.suppressions: dict[str, list[dict[str, Any]]] = {}
         self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 

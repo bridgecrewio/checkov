@@ -1,0 +1,9 @@
+from enum import Enum
+
+
+class IntegrationFeature(Enum):
+    CUSTOM_POLICIES = "CUSTOM_POLICIES"
+    FIXES = "FIXES"
+    POLICY_METADATA = "POLICY_METADATA"
+    REPO_CONFIG = "REPO_CONFIG"
+    SUPPRESSIONS = "SUPPRESSIONS"

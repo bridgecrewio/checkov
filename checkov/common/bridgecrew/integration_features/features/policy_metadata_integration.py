@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
+from checkov.common.bridgecrew.integration_features.integration_feature_enum import IntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, get_severity
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=0)
+        super().__init__(bc_integration=bc_integration, integration_name=IntegrationFeature.POLICY_METADATA)
         self.check_metadata: dict[str, Any] = {}
         self.bc_to_ckv_id_mapping: dict[str, str] = {}
         self.pc_to_ckv_id_mapping: dict[str, str] = {}
