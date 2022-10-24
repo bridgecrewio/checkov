@@ -4,7 +4,7 @@ import logging
 from copy import deepcopy
 from typing import Any, List, Dict
 
-from checkov.common.graph.graph_builder.local_graph import LocalGraph, _Block
+from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition

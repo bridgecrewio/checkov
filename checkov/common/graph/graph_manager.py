@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from pathlib import Path
 from typing import Type, Any, TYPE_CHECKING, TypeVar, Generic
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector

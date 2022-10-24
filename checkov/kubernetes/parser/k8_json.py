@@ -19,7 +19,7 @@ def loads(content: str) -> list[dict[str, Any]]:
     content = content.replace('}{', '},{')
     content = content.replace('}\n{', '},\n{')
 
-    template: list[dict[str, Any]] = yaml.load(content, Loader=SafeLineLoader)
+    template: list[dict[str, Any]] = yaml.load(content, Loader=SafeLineLoader)  # nosec  # custom safe loader
 
     # Convert an empty file to an empty dict
     if template is None:
