@@ -1,26 +1,18 @@
 
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class LaunchConfigurationEncryptionVPC(BaseResourceCheck):
+class LaunchConfigurationEncryptionVPC(BaseResourceValueCheck):
     def __init__(self):
-        name = "You can set whether to encrypt basic block storage if server image is RHV. Default false." \
-               " Only support VPC environment."
+        name = "Ensure Basic Block storage is encrypted."
         id = "CKV_NCP_7"
         supported_resources = ('ncloud_launch_configuration',)
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if 'is_encrypted_volume' in conf.keys():
-            is_encrypted_volume = conf['is_encrypted_volume']
-            if is_encrypted_volume == [True]:
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.FAILED
+    def get_inspected_key(self):
+        return "is_encrypted_volume"
 
 
 check = LaunchConfigurationEncryptionVPC()
