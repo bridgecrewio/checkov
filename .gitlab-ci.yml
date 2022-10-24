@@ -15,10 +15,10 @@ integration-tests:
   image: ubuntu-latest
   stage: integration-tests
   variables:
-    python_ver: 3.7
+    pythonver: "3.7"
   script:
     - python -m pip install --no-cache-dir --upgrade pipenv
-    - pipenv --python $python_ver
+    - pipenv --python $pythonver
     - pipenv run pip install --upgrade pip
     - pipenv run pip install pytest pytest-xdist
     - pipenv run python setup.py sdist bdist_wheel
@@ -27,5 +27,5 @@ integration-tests:
     - git clone https://github.com/bridgecrewio/cfngoat
     - git clone https://github.com/madhuakula/kubernetes-goat
     - git clone https://github.com/bridgecrewio/kustomizegoat
-    - bash -c './integration_tests/prepare_data.sh "$python_ver" "$python_ver"'
+    - bash -c './integration_tests/prepare_data.sh "$pythonver" "$pythonver"'
     - pipenv run pytest integration_tests
