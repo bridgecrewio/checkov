@@ -58,7 +58,7 @@ Below is a simple example integration with Jenkins using the Checkov container i
 
    ```groovy
    sh "pipenv run pip install checkov"
-   sh "checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master"
+   sh "pipenv run checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master"
    ```
 
 
