@@ -3,7 +3,7 @@ stages:
 
 
 integration-tests:
-  image: ubuntu-latest
+  image: ubuntu
   stage: integration-tests
   variables:
     pythonver: "3.7"
