@@ -73,8 +73,8 @@ class KubernetesLocalGraph(LocalGraph):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
 
-        self._create_edges()
-        print(self.edges)
+        if create_complex_vertices:
+            self._create_edges()
 
     def _create_edges(self) -> None:
         edges_to_create = defaultdict(list)

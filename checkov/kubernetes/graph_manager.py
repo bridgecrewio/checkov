@@ -19,15 +19,16 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph]):
         render_variables: bool = True,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None
+        excluded_paths: list[str] | None = None,
+        create_complex_vertices: bool = False
     ) -> tuple[KubernetesLocalGraph, dict[str, Any]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)
-        local_graph = self.build_graph_from_definitions(definitions, False)
+        local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False, create_complex_vertices=False)
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, Any], render_variables: bool = True
+        self, definitions: dict[str, Any], render_variables: bool = True, create_complex_vertices: bool = False
     ) -> KubernetesLocalGraph:
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.build_graph(False)
+        local_graph.build_graph(render_variables=False, create_complex_vertices=False)
         return local_graph
