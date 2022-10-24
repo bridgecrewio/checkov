@@ -15,6 +15,8 @@ class CPURequests(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["resources/requests/cpu"]
         res = conf.get("resources")
         if res:
+            if not isinstance(res, dict):
+                return CheckResult.UNKNOWN
             requests = res.get("requests")
             if requests and requests.get("cpu"):
                 return CheckResult.PASSED
