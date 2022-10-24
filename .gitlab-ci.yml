@@ -1,0 +1,31 @@
+stages:
+  - integration-tests
+
+
+tag:
+  image: python:3.8
+  stage: tag
+  script:
+    - sh tag.sh
+  rules:
+    - if: '$CI_COMMIT_TAG =~ "/^$/" && $CI_COMMIT_REF_NAME != "develop" && $CI_COMMIT_MESSAGE=~/^[^bump]/'
+
+
+integration-tests:
+  image: ubuntu-latest
+  stage: integration-tests
+  variables:
+    python_ver: 3.7
+  script:
+    - python -m pip install --no-cache-dir --upgrade pipenv
+    - pipenv --python $python_ver
+    - pipenv run pip install --upgrade pip
+    - pipenv run pip install pytest pytest-xdist
+    - pipenv run python setup.py sdist bdist_wheel
+    - bash -c 'pipenv run pip install dist/checkov-*.whl'
+    - git clone https://github.com/bridgecrewio/terragoat
+    - git clone https://github.com/bridgecrewio/cfngoat
+    - git clone https://github.com/madhuakula/kubernetes-goat
+    - git clone https://github.com/bridgecrewio/kustomizegoat
+    - bash -c './integration_tests/prepare_data.sh "$python_ver" "$python_ver"'
+    - pipenv run pytest integration_tests
