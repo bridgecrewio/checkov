@@ -18,6 +18,7 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
         self.attribute_resources: Dict[str, Dict[str, List[str]]] = {}
+        self.provider_resources: Dict[str: List[str]] = {}
 
     def is_valid(self) -> bool:
         return (
@@ -73,6 +74,12 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
             if provider == 'ali':
                 # 'alibabacloud' is the actual provider value in the custom policy, but the resource provider is just 'ali'
                 provider = 'alibabacloud'
+
+            if provider in self.provider_resources:
+                self.provider_resources[provider].append(resource)
+            else:
+                self.provider_resources[provider] = [resource]
+
             for attribute in properties['arguments']:
                 if '.' in attribute:
                     attribute = attribute[:attribute.index('.')]
