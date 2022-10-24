@@ -12,8 +12,8 @@ from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is
 from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 
 
-
 EDGE_BUILDERS = (LabelSelectorEdgeBuilder,)
+
 
 class KubernetesLocalGraph(LocalGraph):
     def __init__(self, definitions: Dict[str, List]):
