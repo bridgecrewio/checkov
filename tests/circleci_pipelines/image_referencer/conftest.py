@@ -29,29 +29,38 @@ def circleci_config_with_images_definitions(file_path) -> dict:
                   "__startline__": 11,
                   "__endline__": 14
                 },
+                "image-executor": {
+                  "docker": {
+                    "image": "mongo:2.6.8",
+                    "__startline__": 16,
+                    "__endline__": 18
+                  },
+                  "__startline__": 15,
+                  "__endline__": 18
+                },
                 "__startline__": 10,
-                "__endline__": 14
+                "__endline__": 18
               },
               "jobs": {
                 "test-docker-versioned-img": {
                   "docker": [
                     {
-                      "image": "postgres:14.2",
-                      "__startline__": 17,
-                      "__endline__": 18
+                      "image": "mongo:2.6.8",
+                      "__startline__": 21,
+                      "__endline__": 22
                     }
                   ],
                   "steps": [
                     "some-step"
                   ],
-                  "__startline__": 16,
-                  "__endline__": 21
+                  "__startline__": 20,
+                  "__endline__": 25
                 },
-                "__startline__": 15,
-                "__endline__": 21
+                "__startline__": 19,
+                "__endline__": 25
               },
               "__startline__": 5,
-              "__endline__": 21
+              "__endline__": 25
             }
           }
 
@@ -125,11 +134,22 @@ def circle_ci_filepath_workflow_no_images_config(circleci_config_no_images_defin
 
 
 @pytest.fixture
-def circle_ci_image(file_path) -> Image:
+def circle_ci_image1(file_path) -> Image:
     image = Image(
           end_line=18,
-          start_line=17,
-          name='postgres:14.2',
+          start_line=16,
+          name='mongo:2.6.8',
+          file_path=file_path,
+        )
+    return image
+
+
+@pytest.fixture
+def circle_ci_image2(file_path) -> Image:
+    image = Image(
+          end_line=22,
+          start_line=21,
+          name='mongo:2.6.8',
           file_path=file_path,
         )
     return image
