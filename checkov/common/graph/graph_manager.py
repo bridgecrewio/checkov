@@ -12,9 +12,10 @@ if TYPE_CHECKING:
     from checkov.terraform.parser import Parser
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
+_Definitions = TypeVar("_Definitions")
 
 
-class GraphManager(Generic[_LocalGraph]):
+class GraphManager(Generic[_LocalGraph, _Definitions]):
     def __init__(self, db_connector: DBConnector[nx.DiGraph], parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
@@ -29,12 +30,12 @@ class GraphManager(Generic[_LocalGraph]):
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-    ) -> tuple[_LocalGraph, dict[str, dict[str, Any]]]:
+    ) -> tuple[_LocalGraph, _Definitions]:
         pass
 
     @abstractmethod
     def build_graph_from_definitions(
-        self, definitions: dict[str | Path, dict[str, Any]], render_variables: bool = True
+        self, definitions: _Definitions, render_variables: bool = True
     ) -> _LocalGraph:
         pass
 
