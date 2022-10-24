@@ -8,15 +8,16 @@ from operator import or_
 
 
 class OrSolver(BaseComplexSolver):
-    operator = Operators.OR
+    operator = Operators.OR  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)
 
-    def _get_operation(self, *args: Any) -> Any:
+    def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(or_, args)
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
-        if any(solver.get_operation(vertex) for solver in self.solvers):
-            return True
+        for solver in self.solvers:
+            if solver.get_operation(vertex):
+                return True
         return False

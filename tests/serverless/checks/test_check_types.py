@@ -70,7 +70,7 @@ class ATestCompleteCheck(BaseCompleteCheck):
         super().__init__(name="test", id=id, categories=CATS, supported_entities=['serverless_aws'])
 
     def scan_complete_conf(self, conf):
-        if conf["service"]["awsKmsKeyArn"] != "arn:aws:kms:us-east-1:XXXXXX:key/some-hash":
+        if isinstance(conf["service"], dict) and conf["service"].get("awsKmsKeyArn") != "arn:aws:kms:us-east-1:XXXXXX:key/some-hash":
             return CheckResult.FAILED
         if conf["provider"]["runtime"] != "nodejs12.x":
             return CheckResult.FAILED
@@ -179,7 +179,7 @@ class ATestServiceCheck(BaseServiceCheck):
         super().__init__(name="test", id=id, categories=CATS, supported_entities=['serverless_aws'])
 
     def scan_service_conf(self, conf):
-        if conf.get("awsKmsKeyArn") == "arn:aws:kms:us-east-1:XXXXXX:key/some-hash":
+        if isinstance(conf, dict) and conf.get("awsKmsKeyArn") == "arn:aws:kms:us-east-1:XXXXXX:key/some-hash":
             return CheckResult.PASSED
         else:
             return CheckResult.FAILED

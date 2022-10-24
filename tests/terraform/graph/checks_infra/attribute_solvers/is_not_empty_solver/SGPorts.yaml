@@ -1,0 +1,11 @@
+metadata:
+  id: "SGPorts"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_security_group"
+  attribute: "ingress.protocol"
+  operator: "is_not_empty"
+

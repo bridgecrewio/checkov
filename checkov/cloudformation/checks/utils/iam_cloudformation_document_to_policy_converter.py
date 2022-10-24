@@ -1,16 +1,16 @@
 import copy
 
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import DictNode
 
 
-def convert_cloudformation_conf_to_iam_policy(conf: dict_node) -> dict_node:
+def convert_cloudformation_conf_to_iam_policy(conf: DictNode) -> DictNode:
     """
         converts terraform parsed configuration to iam policy document
     """
     result = copy.deepcopy(conf)
     if "Statement" in result.keys():
         result["Statement"] = result.pop("Statement")
-        for statement in result["Statement"]:
+        for statement in map(dict, result["Statement"]):
             if "Action" in statement:
                 statement["Action"] = str(statement.pop("Action")[0])
             if "Resource" in statement:
@@ -31,5 +31,4 @@ def convert_cloudformation_conf_to_iam_policy(conf: dict_node) -> dict_node:
                 statement["Effect"] = str(statement.pop("Effect"))
             if "Effect" not in statement:
                 statement["Effect"] = "Allow"
-            statement = dict(statement)
     return result

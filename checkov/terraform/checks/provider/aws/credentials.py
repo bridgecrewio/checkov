@@ -18,17 +18,18 @@ class AWSCredentials(BaseProviderCheck):
         """
         see: https://www.terraform.io/docs/providers/aws/index.html#static-credentials
         """
+        result = CheckResult.PASSED
         if self.secret_found(conf, "access_key", access_key_pattern):
-            return CheckResult.FAILED
+            result = CheckResult.FAILED
         if self.secret_found(conf, "secret_key", secret_key_pattern):
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+            result = CheckResult.FAILED
+        return result
 
-    @staticmethod
-    def secret_found(conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
+    def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: str) -> bool:
         if field in conf.keys():
             value = conf[field][0]
-            if re.match(pattern, value) is not None:
+            if isinstance(value, str) and re.match(pattern, value) is not None:
+                conf[f'{self.id}_secret_{field}'] = value
                 return True
         return False
 

@@ -27,14 +27,6 @@ resource "aws_backup_selection" "ok_backup" {
   ]
 }
 
-resource "aws_efs_file_system" "ok_efs" {
-  creation_token = "my-product"
-
-  tags = {
-    Name = "MyProduct"
-  }
-}
-
 resource "aws_backup_selection" "not_ok_backup" {
   iam_role_arn = aws_iam_role.example.arn
   name         = "tf_example_backup_selection"

@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class MSKClusterEncryption(BaseResourceCheck):
@@ -14,8 +15,6 @@ class MSKClusterEncryption(BaseResourceCheck):
         # Note: As long as the 'encryption_info' block is specified, the cluster
         # will be encrypted at rest even if 'encryption_at_rest_kms_key_arn' is not specified
         # See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/msk_cluster#encryption_at_rest_kms_key_arn
-        self.evaluated_keys = ['encryption_info/[0]/encryption_in_transit/[0]/client_broker',
-                               'encryption_info/[0]/encryption_in_transit/[0]/in_cluster']
         if 'encryption_info' in conf.keys():
             encryption = conf['encryption_info'][0]
             if 'encryption_in_transit' in encryption:
@@ -25,6 +24,10 @@ class MSKClusterEncryption(BaseResourceCheck):
                     return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['encryption_info/[0]/encryption_in_transit/[0]/client_broker',
+                'encryption_info/[0]/encryption_in_transit/[0]/in_cluster']
 
 
 check = MSKClusterEncryption()

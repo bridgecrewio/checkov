@@ -1,6 +1,6 @@
 resource "aws_kms_key" "pass_0" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -19,7 +19,7 @@ POLICY
 
 resource "aws_kms_key" "pass_1" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -38,7 +38,7 @@ POLICY
 
 resource "aws_kms_key" "pass_2" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -55,7 +55,7 @@ POLICY
 
 resource "aws_kms_key" "pass_3" {
   description = "description"
-  policy = <<POLICY
+  policy      = <<POLICY
 {
   "Version": "2012-10-17",
   "Statement": [

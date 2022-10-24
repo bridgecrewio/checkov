@@ -1,7 +1,8 @@
 import os
-from unittest import TestCase
+from unittest import TestCase, mock
+from datetime import datetime
 
-from checkov.terraform.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
     remove_interpolation
 
 
@@ -53,7 +54,7 @@ class TestTerraformEvaluation(TestCase):
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = 'regex("^(?:(?P<scheme>[^:/?#]+):)?(?://(?P<authority>[^/?#]*))?", "https://terraform.io/docs/")'
-        expected = {"authority":"terraform.io", "scheme" : "https"}
+        expected = {"authority":"terraform.io", "scheme": "https"}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = 'regex(r"(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)", "2019-02-01")'
@@ -213,6 +214,12 @@ class TestTerraformEvaluation(TestCase):
         expected = {'Tag1': 'one', 'Tag2': 'multiline_tag2', 'Tag4': 'four'}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_merge_interpolation(self):
+        input_str = '${merge({\'environment\':\'${var.environment}\',\'name\':\'${local.cluster_name}\',\'role\':\'${var.role}\',\'team\':\'${var.team}\'})}'
+        expected = {'environment': 'var.environment', 'name': 'local.cluster_name', 'role': 'var.role', 'team': 'var.team'}
+        actual = evaluate_terraform(input_str, keep_interpolations=False)
+        self.assertEqual(expected, actual)
+
 
     def test_reverse(self):
         input_str = 'reverse([1, 2, 3])'
@@ -231,22 +238,20 @@ class TestTerraformEvaluation(TestCase):
 
     def test_complex_merge(self):
         cases = [
-            ("merge(local.one, local.two)",
-             "merge(local.one, local.two)"),
-            ("merge({\"Tag4\" = \"four\"}, {\"Tag5\" = \"five\"})",
-             {"Tag4" : "four", "Tag5" : "five"}),
-            ("merge({\"a\"=\"b\"}, {\"b\"=[1,2], \"c\"=\"z\"}, {\"d\"=3})",
-             {"a":"b", "b":[1,2], "c":"z", "d":3}),
-            ('merge({\'a\': \'}, evil\'})',
-             {"a": '}, evil'}),
-            ('merge(local.common_tags,,{\'Tag4\': \'four\'},,{\'Tag2\': \'Dev\'},)',
-             'merge(local.common_tags,{\'Tag4\': \'four\'},{\'Tag2\': \'Dev\'},)')
+            ("merge(local.one, local.two)", "merge(local.one, local.two)"),
+            ('merge({"Tag4" = "four"}, {"Tag5" = "five"})', {"Tag4": "four", "Tag5": "five"}),
+            ('merge({"a"="b"}, {"b"=[1,2], "c"="z"}, {"d"=3})', {"a": "b", "b": [1, 2], "c": "z", "d": 3}),
+            ("merge({'a': '}, evil'})", {"a": "}, evil"}),
+            (
+                "merge(local.common_tags,,{'Tag4': 'four'},,{'Tag2': 'Dev'},)",
+                "merge(local.common_tags,{'Tag4': 'four'},{'Tag2': 'Dev'},)",
+            ),
         ]
         for case in cases:
             input_str = case[0]
             expected = input_str if case[1] is None else case[1]
             actual = evaluate_terraform(input_str)
-            assert actual == expected, f"Case \"{input_str}\" failed. Expected: {expected}  Actual: {actual}"
+            assert actual == expected, f'Case "{input_str}" failed. Expected: {expected}  Actual: {actual}'
 
     def test_map_access(self):
         input_str = '{\'module-input-bucket\':\'mapped-bucket-name\'}[module-input-bucket]-works-yay'
@@ -337,3 +342,108 @@ class TestTerraformEvaluation(TestCase):
 """
         evaluated = evaluate_terraform(input_str)
         self.assertEqual(input_str.replace("\n", ""), evaluated)
+
+    def test_evaluate_(self):
+        input_str = '"10\\.0\\.\\0.\\0/8"'
+        expected = '10\\.0\\.\\0.\\0/8'
+        evaluated = evaluate_terraform(input_str)
+        self.assertEqual(expected, evaluated)
+
+    # Date Function
+    @mock.patch('checkov.terraform.graph_builder.variable_rendering.safe_eval_functions.datetime')
+    def test_timestamp(self,mock_dt):
+        testdt = datetime(2018, 5, 13, 7, 44, 12, 0)
+        mock_dt.utcnow = mock.Mock(return_value=testdt)
+        input_str = 'timestamp()'
+        expected = "2018-05-13T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","24h")'
+        expected = "2018-05-14T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_negative_hours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","-24h")'
+        expected = "2018-05-12T07:44:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_partialhours(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1.5h")'
+        expected = "2018-05-13T09:14:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_minutes(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","16m")'
+        expected = "2018-05-13T08:00:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m")'
+        expected = "2018-05-13T09:00:12Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s")'
+        expected = "2018-05-13T09:01:01Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds_milliseconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s1001ms")'
+        expected = "2018-05-13T09:01:02Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_timeadd_hours_and_minutes_and_seconds_milliseconds_microseconds(self):
+        input_str = 'timeadd("2018-05-13T07:44:12Z","1h16m49s1001ms1000001us")'
+        expected = "2018-05-13T09:01:03Z"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdatesimple(self):
+        input_str = 'formatdate("HH:mm", "2018-01-02T23:12:01Z")'
+        expected = '11:12'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_simple_and_am(self):
+        input_str = 'formatdate("HH:mmaa", "2018-01-02T23:12:01Z")'
+        expected = '11:12pm'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_more_complex(self):
+        input_str = 'formatdate("DD MMM YYYY hh:mm", "2018-01-02T23:12:01Z")'
+        expected = '02 Jan 2018 23:12'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_with_day(self):
+        input_str = 'formatdate("EEE, DD MMM YYYY hh:mm:ss ZZZZZ", "2018-01-02T23:12:01-08:00")'
+        expected = 'Tue, 02 Jan 2018 23:12:01 -08:00'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_utc_and_zzz(self):
+        input_str = 'formatdate("DD MMM YYYY hh:mm ZZZ", "2018-01-02T23:12:01Z")'
+        expected = '02 Jan 2018 23:12 UTC'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_utc_and_z(self):
+        input_str = 'formatdate("DD MMM YYYY hh:mm Z", "2018-01-02T23:12:01Z")'
+        expected = '02 Jan 2018 23:12 Z'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_with_day_utc(self):
+        input_str = 'formatdate("EEE, DD MMM YYYY hh:mm:ss ZZZ", "2018-01-02T23:12:01-00:00")'
+        expected = 'Tue, 02 Jan 2018 23:12:01 UTC'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_everything(self):
+        input_str = 'formatdate("YYYY YY MMMM MMM MM M DD EEEE EEE hh h HH H AA aa mm m ss s ZZZZZ ZZZZ ZZZ Z", "2018-01-02T23:12:01-00:00")'
+        expected = '2018 18 January Jan 01 1 02 Tuesday Tue 23 23 11 11 PM pm 12 12 01 1 +00:00 +0000 UTC Z'
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_simple_and_quotes(self):
+        input_str = 'formatdate("HH \'o\'\'clock\'", "2018-01-02T23:12:01Z")'
+        expected = "11 o'clock"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_formatdate_simple_and_more_quotes(self):
+        input_str = 'formatdate("HH \'Hours and \'M \'Minute(s)\'", "2018-01-02T23:12:01Z")'
+        expected = "11 Hours and 1 Minute(s)"
+        self.assertEqual(expected, evaluate_terraform(input_str))

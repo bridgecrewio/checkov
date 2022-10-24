@@ -1,0 +1,63 @@
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+name: "CodeQL"
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ master ]
+  schedule:
+    - cron: '17 4 * * 2'
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - name: Set up Python
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        with:
+          python-version: '3.10'
+      - name: Setup python for CodeQL
+        run: |
+          python -m pip install --no-cache-dir --upgrade pip pipenv
+          echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
+      - name: Check Pipfile.lock changed
+        uses: tj-actions/verify-changed-files@a3391b5a01114c49c3a8d55181a9ff4c99bf0db7  # v12
+        id: changed_files
+        with:
+          files: Pipfile.lock
+      - name: Setup dependencies if they changed
+        if: steps.changed_files.outputs.files_changed == 'true'
+        run: |
+          pipenv lock -r > requirements.txt
+          pip install -r requirements.txt
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@807578363a7869ca324a79039e6db9c843e0e100  # v2
+        with:
+          languages: python
+          setup-python-dependencies: false
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@807578363a7869ca324a79039e6db9c843e0e100  # v2
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@807578363a7869ca324a79039e6db9c843e0e100  # v2

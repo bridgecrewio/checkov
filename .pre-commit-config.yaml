@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: debug-statements
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        language_version: python3.9
+        additional_dependencies:
+          - dlint
+          - flake8-bugbear
+          - flake8-type-checking
+  - repo: https://github.com/isidentical/teyit  # unit test formatter
+    rev: 0.4.3
+    hooks:
+      - id: teyit
+        language_version: python3.9
+  - repo: https://github.com/Madoshakalaka/pipenv-setup  # Pipfile to setup.py sync checker
+    rev: v3.2.0
+    hooks:
+      - id: pipenv-setup
+        language_version: python3.9
+        entry: pipenv-setup check
+        args: []
+        additional_dependencies:
+          - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out

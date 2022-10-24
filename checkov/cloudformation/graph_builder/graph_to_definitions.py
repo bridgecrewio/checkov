@@ -12,16 +12,21 @@ def convert_graph_vertices_to_definitions(
     definitions: Dict[str, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
     for vertex in vertices:
-        if vertex.block_type != BlockType.RESOURCE and vertex.block_type != BlockType.PARAMETER:
+        if (vertex.block_type != BlockType.RESOURCE and vertex.block_type != BlockType.PARAMETERS) or \
+                (vertex.block_type == BlockType.RESOURCE and not vertex.condition):
             continue
         block_path = vertex.path
         block_type = TemplateSections.RESOURCES.value if vertex.block_type == 'resource' else TemplateSections.PARAMETERS.value
         block_name = vertex.name.split('.')[-1]  # vertex.name is "type.name" so type.name -> [type, name]
 
         definition = {
-            'Type': vertex.attributes['resource_type'] if vertex.block_type == BlockType.RESOURCE else vertex.block_type,
-            'Properties': vertex.config
+            "Type": vertex.attributes["resource_type"] if vertex.block_type == BlockType.RESOURCE else vertex.block_type,
+            "Properties": vertex.config or {},
         }
+
+        if vertex.metadata:
+            definition["Metadata"] = vertex.metadata
+
         definitions.setdefault(block_path, {}).setdefault(block_type, {}).setdefault(block_name, definition)
 
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"

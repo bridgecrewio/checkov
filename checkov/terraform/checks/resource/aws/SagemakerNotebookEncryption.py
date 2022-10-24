@@ -1,5 +1,5 @@
 from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 

@@ -1,17 +1,15 @@
-from checkov.common.models.enums import (
-    CheckCategories,
-    CheckResult,
-)
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List, Any
+
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
-class EC2PublicIP(BaseResourceCheck):
-
-    def __init__(self):
+class EC2PublicIP(BaseResourceNegativeValueCheck):
+    def __init__(self) -> None:
         name = "EC2 instance should not have public IP."
         id = "CKV_AWS_88"
         categories = [CheckCategories.NETWORKING]
-        supported_resources = ['aws_instance', 'aws_launch_template']
+        supported_resources = ["aws_instance", "aws_launch_template"]
         super().__init__(
             name=name,
             id=id,
@@ -19,31 +17,16 @@ class EC2PublicIP(BaseResourceCheck):
             supported_resources=supported_resources,
         )
 
-    def scan_resource_conf(self, conf):
-        """
-        Looks for if associate_public_ip_address is set
-            https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance#associate_public_ip_address
-            or
-            https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#associate_public_ip_address
+    def get_inspected_key(self) -> str:
+        if self.entity_type == "aws_instance":
+            return "associate_public_ip_address"
+        elif self.entity_type == "aws_launch_template":
+            return "network_interfaces/[0]/associate_public_ip_address"
 
-        :param conf: dict of supported resource configuration
-        :return: <CheckResult>
-        """
-        # For aws_instance
-        if 'associate_public_ip_address' in conf.keys():
-            self.evaluated_keys = 'associate_public_ip_address'
-            if conf['associate_public_ip_address'] == [True]:
-                return CheckResult.FAILED
+        return ""
 
-        # For aws_launch_template
-        if 'network_interfaces' in conf and isinstance(conf['network_interfaces'][0], dict):
-            self.evaluated_keys = 'network_interfaces/[0]/associate_public_ip_address'
-            if 'associate_public_ip_address' in conf['network_interfaces'][0]:
-                if conf['network_interfaces'][0]['associate_public_ip_address'] == [True]:
-                    return CheckResult.FAILED
+    def get_forbidden_values(self) -> List[Any]:
+        return [True]
 
-        # Note: checkov does not know, so we default to PASSED
-        # There is no default value for associate_public_ip_address, it depends on the subnet
-        return CheckResult.PASSED
 
 check = EC2PublicIP()

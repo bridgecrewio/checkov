@@ -1,8 +1,11 @@
 import unittest
 
-from checkov.terraform.checks.resource.registry import resource_registry as registry
+# do not remove this - prevents circular import dependency
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration  # noqa
+
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
+from checkov.terraform.checks.resource.registry import resource_registry as registry
 from pathlib import Path
 
 class TestScannerRegistry(unittest.TestCase):

@@ -1,56 +1,41 @@
 import unittest
+from pathlib import Path
 
-import hcl2
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.WAFEnabled import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestS3MFADelete(unittest.TestCase):
+class TestWAFEnabled(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_WAFEnabled"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-        resource "aws_cloudfront_distribution" "example" {
-            origin {
-                domain_name = aws_s3_bucket.website.bucket_regional_domain_name
-				origin_id   = "${aws_s3_bucket.website.id}-origin"
-                s3_origin_config {
-                    origin_access_identity = aws_cloudfront_origin_access_identity.website.cloudfront_access_identity_path
-					}
-		   		}
-                enabled         = true
-                is_ipv6_enabled = true
-                default_root_object = "index.html"
-                price_class = var.price_class
-                tags = var.common_tags
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_cloudfront_distribution.pass",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_cloudfront_distribution']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-        resource "aws_cloudfront_distribution" "example" {
-            web_acl_id = "IsSetToAValue"
-            origin {
-                domain_name = aws_s3_bucket.website.bucket_regional_domain_name
-				origin_id   = "${aws_s3_bucket.website.id}-origin"
-                
-                s3_origin_config {
-                    origin_access_identity = aws_cloudfront_origin_access_identity.website.cloudfront_access_identity_path
-				}
-            }
-						
-  			enabled         = true
-  			is_ipv6_enabled = true
- 			default_root_object = "index.html"
-            price_class = var.price_class
-            tags = var.common_tags
+        failing_resources = {
+            "aws_cloudfront_distribution.fail",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['aws_cloudfront_distribution']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
 
-if __name__ == '__main__':
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()

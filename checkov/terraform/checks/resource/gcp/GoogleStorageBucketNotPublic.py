@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class GoogleStorageBucketNotPublic(BaseResourceCheck):
@@ -17,6 +18,9 @@ class GoogleStorageBucketNotPublic(BaseResourceCheck):
         if not any(member in member_conf for member in ['allUsers', 'allAuthenticatedUsers']):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['members', 'member']
 
 
 check = GoogleStorageBucketNotPublic()

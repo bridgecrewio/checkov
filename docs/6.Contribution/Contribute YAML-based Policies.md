@@ -8,8 +8,8 @@ nav_order: 3
 # Contributing YAML-based Custom Policies
 
 1. Define a policy as described [here](https://www.checkov.io/3.Custom%20Policies/YAML%20Custom%20Policies.html).
-2. Create a branch under the `checkov2` fork (will be changed + the URLs after merge) - `https://github.com/nimrodkor/checkov`
-3. Add `<policy_name>.yaml` file to `https://github.com/nimrodkor/checkov/tree/master/checkov/graph/terraform/checks` inside the relevant provider folder that matches your current policy.
+2. Create a branch under the `checkov2` fork (will be changed + the URLs after merge) - `https://github.com/bridgecrewio/checkov`
+3. Add `<policy_name>.yaml` file to `https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/graph/checks` inside the relevant provider folder that matches your current policy.
 
 ## Example
 `checkov/terraform/checks/graph_checks/aws/EBSAddedBackup.yaml`
@@ -35,10 +35,10 @@ definition:
 ```
 
 ## YAML Format Testing
-1 - Add the test resources directory to: `https://github.com/nimrodkor/checkov/tree/master/tests/graph/terraform/checks/resources` and create a folder with the same name as your Custom Policy. In this folder, add the Terraform file(s) which are resources for testing the policy, and `expected.yaml` - all the resources that should pass and the resources that should fail.
+1 - Add the test resources directory to: `https://github.com/bridgecrewio/checkov/tree/master/tests/terraform/graph/checks/resources` and create a folder with the same name as your Custom Policy. In this folder, add the Terraform file(s) which are resources for testing the policy, and `expected.yaml` - all the resources that should pass and the resources that should fail.
 
 ### Terraform Files Example 
-`tests/graph/terraform/checks/resources/EBSAddedBackup/main.tf`
+`tests//terraform/graph/checks/resources/EBSAddedBackup/main.tf`
 
 ```yaml
 resource "aws_ebs_volume" "ebs_good" {
@@ -82,7 +82,7 @@ resource "aws_backup_selection" "backup_bad" {
 
 ## 'expected.yaml' File Example
  
-`tests/graph/terraform/checks/resources/EBSAddedBackup/expected.yaml`
+`tests/terraform/graph/checks/resources/EBSAddedBackup/expected.yaml`
 
 ```yaml
 pass:
@@ -92,7 +92,7 @@ fail:
 ```
  
 2 - Add the test call into tests file - 
-`tests/graph/terraform/checks/test_yaml_policies.py`
+`tests/terraform/graph/checks/test_yaml_policies.py`
 ### Example
 
 ```yaml

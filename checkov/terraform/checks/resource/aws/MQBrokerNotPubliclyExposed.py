@@ -1,16 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 
 
 class MQBrokerNotPubliclyExposed(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure MQ Broker is not publicly exposed"
         id = "CKV_AWS_69"
-        supported_resources = ['aws_mq_broker']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ("aws_mq_broker",)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         """
         Looks for public accessibility:
             https://www.terraform.io/docs/providers/aws/r/mq_broker.html#publicly_accessible
@@ -18,9 +22,9 @@ class MQBrokerNotPubliclyExposed(BaseResourceNegativeValueCheck):
         :param conf: aws_launch_configuration configuration
         :return: <CheckResult>
         """
-        return 'publicly_accessible'
+        return "publicly_accessible"
 
-    def get_forbidden_values(self):
+    def get_forbidden_values(self) -> list[Any]:
         return [True]
 
 

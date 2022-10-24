@@ -1,0 +1,15 @@
+pass:
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerPASSED1'
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerPASSED2'
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerPASSED3'
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerPASSED4'
+fail:
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerFAILED1'
+  - 'AWS::ElasticLoadBalancingV2::LoadBalancer.LoadBalancerFAILED2'
+evaluated_keys:
+  - 'resource_type'
+  - 'DefaultActions/RedirectConfig/Protocol'
+  - 'Port'
+  - 'DefaultActions/RedirectConfig/Port'
+  - 'DefaultActions/Type'
+  - 'Protocol'

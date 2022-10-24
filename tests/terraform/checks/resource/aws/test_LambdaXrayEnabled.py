@@ -1,90 +1,41 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.LambdaXrayEnabled import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestLambdaXrayEnabled(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_LambdaXrayEnabled"
 
-    def test_failure(self):
-        resource_conf = {
-              "description": "${var.description}",
-              "environment": [
-                {
-                  "variables": "${var.envvar}"
-                }
-              ],
-              "filename": "${var.filename}",
-              "function_name": "${var.name}",
-              "handler": "${var.handler}",
-              "layers": "${var.layers}",
-              "lifecycle": [
-                {
-                  "ignore_changes": [
-                    "last_modified",
-                    "tags"
-                  ]
-                }
-              ],
-              "memory_size": "${var.memory_size}",
-              "role": "${var.role_arn}",
-              "runtime": "${var.runtime}",
-              "s3_bucket": "${var.s3_bucket}",
-              "s3_key": "${var.s3_key}",
-              "tags": "${var.common_tags}",
-              "timeout": "${var.timeout}",
-              "vpc_config": [
-                {
-                  "security_group_ids": "${var.security_group_ids}",
-                  "subnet_ids": "${var.subnet_ids}"
-                }
-              ]
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_lambda_function.active",
+            "aws_lambda_function.pass_through",
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        failing_resources = {
+            "aws_lambda_function.default",
+        }
 
-    def test_success(self):
-        resource_conf = {
-              "description": "${var.description}",
-              "environment": [
-                {
-                  "variables": "${var.envvar}"
-                }
-              ],
-              "filename": "${var.filename}",
-              "function_name": "${var.name}",
-              "handler": "${var.handler}",
-              "layers": "${var.layers}",
-              "lifecycle": [
-                {
-                  "ignore_changes": [
-                    "last_modified",
-                    "tags"
-                  ]
-                }
-              ],
-              "memory_size": "${var.memory_size}",
-              "role": "${var.role_arn}",
-              "runtime": "${var.runtime}",
-              "s3_bucket": "${var.s3_bucket}",
-              "s3_key": "${var.s3_key}",
-              "tags": "${var.common_tags}",
-              "timeout": "${var.timeout}",
-              "tracing_config": [
-                {
-                  "mode": "PassThrough"
-                }
-              ],
-              "vpc_config": [
-                {
-                  "security_group_ids": "${var.security_group_ids}",
-                  "subnet_ids": "${var.subnet_ids}"
-                }
-              ]
-            }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

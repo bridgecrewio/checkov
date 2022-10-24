@@ -1,30 +1,45 @@
+from __future__ import annotations
+
 import logging
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Dict, Any, Callable, Optional
 
-from checkov.common.typing import _SkippedCheck
+from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
 
 class BaseCheck(metaclass=MultiSignatureMeta):
-    id = ""
-    name = ""
-    categories: List[CheckCategories] = []
-    supported_entities: List[str] = []
-
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_entities: List[str], block_type: str, bc_id: Optional[str] = None
+        self,
+        name: str,
+        id: str,
+        categories: Iterable[CheckCategories],
+        supported_entities: Iterable[str],
+        block_type: str,
+        bc_id: Optional[str] = None,
+        guideline: Optional[str] = None,
     ) -> None:
         self.name = name
         self.id = id
         self.bc_id = bc_id
         self.categories = categories
         self.block_type = block_type
+        self.path: str | None = None
         self.supported_entities = supported_entities
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
+        self.entity_path = ""
+        self.entity_type = ""
+        self.guideline = guideline
+        self.benchmarks: dict[str, list[str]] = {}
+        self.severity = None
+        self.bc_category = None
+        if self.guideline:
+            logging.debug(f'Found custom guideline for check {id}')
+        self.details: List[str] = []
 
     def run(
         self,
@@ -33,8 +48,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_name: str,
         entity_type: str,
         skip_info: _SkippedCheck,
-    ) -> Dict[str, Any]:
-        check_result: Dict[str, Any] = {}
+    ) -> _CheckResult:
+        check_result: _CheckResult = {}
         if skip_info:
             check_result["result"] = CheckResult.SKIPPED
             check_result["suppress_comment"] = skip_info["suppress_comment"]
@@ -51,6 +66,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         else:
             try:
                 self.evaluated_keys = []
+                self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
                 message = 'File {}, {}  "{}.{}" check "{}" Result: {} '.format(
@@ -58,24 +74,26 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 )
                 self.logger.debug(message)
 
-            except Exception as e:
+            except Exception:
                 self.logger.error(
-                    "Failed to run check: {} for configuration: {} at file: {}".format(
-                        self.name, str(entity_configuration), scanned_file
-                    )
+                    f"Failed to run check: {self.name} for configuration: {entity_configuration} at file: {scanned_file}"
                 )
-                raise e
+                raise
         return check_result
 
     @multi_signature()
     @abstractmethod
-    def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | tuple[CheckResult, dict[str, Any]]:
         raise NotImplementedError()
 
     @classmethod
     @scan_entity_conf.add_signature(args=["self", "conf"])
-    def _scan_entity_conf_self_conf(cls, wrapped: Callable[..., CheckResult]) -> Callable[..., CheckResult]:
-        def wrapper(self: "BaseCheck", conf: Dict[str, Any], entity_type: Optional[str] = None) -> CheckResult:
+    def _scan_entity_conf_self_conf(
+        cls, wrapped: Callable[..., CheckResult | tuple[CheckResult, dict[str, Any]]]
+    ) -> Callable[..., CheckResult | tuple[CheckResult, dict[str, Any]]]:
+        def wrapper(
+            self: "BaseCheck", conf: Dict[str, Any], entity_type: Optional[str] = None
+        ) -> CheckResult | tuple[CheckResult, dict[str, Any]]:
             # keep default argument for entity_type so old code, that doesn't set it, will work.
             return wrapped(self, conf)
 

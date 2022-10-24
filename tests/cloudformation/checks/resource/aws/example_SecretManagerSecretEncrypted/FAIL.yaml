@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  NoKMS:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Name: test
+  AWSKMS0:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Name: test
+      KmsKeyId: aws/secretsmanager
+  AWSKMS1:
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Name: test
+      KmsKeyId: alias/aws/secretsmanager

@@ -14,10 +14,15 @@ class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        for setting in force_list(conf.get('fabric_settings')):
+        self.evaluated_keys = ['fabric_settings']
+        settings_conf = force_list(conf.get('fabric_settings'))
+        for setting in settings_conf:
             if setting and setting.get('name') == ['Security']:
                 params = setting.get('parameters', [{}])[0]
                 if params.get('name') == 'ClusterProtectionLevel' and params.get('value') == 'EncryptAndSign':
+                    index = settings_conf.index(setting)
+                    self.evaluated_keys = [f'fabric_settings/[{index}]/parameters/[0]/name',
+                                           f'fabric_settings/[{index}]/parameters/[0]/value']
                     return CheckResult.PASSED
         return CheckResult.FAILED
 

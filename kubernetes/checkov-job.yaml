@@ -185,10 +185,10 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "500m"
             limits:
-              memory: "128Mi"
+              memory: "256Mi"
               cpu: "500m"
           securityContext:
             allowPrivilegeEscalation: false

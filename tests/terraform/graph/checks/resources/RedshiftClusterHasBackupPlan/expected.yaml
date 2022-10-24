@@ -1,4 +1,0 @@
-pass:
-  - "aws_redshift_cluster.redshift_good"
-fail:
-  - "aws_redshift_cluster.redshift_bad"

@@ -1,176 +1,46 @@
+
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleCloudMySqlLocalInfileOff import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestCloudMySqlLocalInfileOff(unittest.TestCase):
+class TestGoogleCloudMySqlLocalInfileOff(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_CloudMySqlLocalInfileOff"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                  database_version = "MYSQL_8_0"
-                  name             = "mysql81"
-                  project          = "gcp-bridgecrew-deployment"
-                  region           = "us-central1"
-                  settings {
-                    activation_policy = "ALWAYS"
-                    database_flags {
-                        name  = "night"
-                        value = "on"
-                    }   
-                    database_flags {
-                        name  = "local_infile"
-                        value = "on"
-                    }    
-                    availability_type = "ZONAL"      
-                  }
-                }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                          database_version = "MYSQL_8_0"
-                          name             = "general-mysql81"
-                          project          = "gcp-bridgecrew-deployment"
-                          region           = "us-central1"
-                          settings {
-                            activation_policy = "ALWAYS"
-                            availability_type = "ZONAL"
-                            database_flags = [
-                                {
-                                name = "max_allowed_packet",
-                                value = "536870912"
-                                },
-                                {
-                                name  = "local_infile"
-                                value = "off"
-                                }]
-                            pricing_plan     = "PER_USE"
-                            replication_type = "SYNCHRONOUS"
-                            tier             = "db-n1-standard-1"
-                          }
-                        }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_2(self):
-        hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                          database_version = "MYSQL_5_6"
-                          name             = "general-mysql81"
-                          project          = "gcp-bridgecrew-deployment"
-                          region           = "us-central1"
+        passing_resources = {
+            "google_sql_database_instance.pass",
+            "google_sql_database_instance.pass2",
+            "google_sql_database_instance.pass3",
+            "google_sql_database_instance.pass4",
+            "google_sql_database_instance.pass5",
+        }
 
-                          settings {
-                            activation_policy = "ALWAYS"
-                            availability_type = "ZONAL"
+        failing_resources = {
+            "google_sql_database_instance.fail",
+        }
 
-                            database_flags {
-                              name  = "local_infile"
-                              value = "off"
-                            }
-                            pricing_plan     = "PER_USE"
-                            replication_type = "SYNCHRONOUS"
-                            tier             = "db-n1-standard-1"
-                          }
-                        }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-    def test_success_3(self):
-        hcl_res = hcl2.loads("""
-                        resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                          database_version = "POSTGRES_12"
-                          name             = "general-mysql81"
-                          project          = "gcp-bridgecrew-deployment"
-                          region           = "us-central1"
+        self.assertEqual(summary["passed"], 5)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-                          settings {
-                            activation_policy = "ALWAYS"
-                            availability_type = "ZONAL"
-                            database_flags {
-                              name  = "local_infilrerege1"
-                              value = "off"
-                            }
-                            database_flags {
-                              name  = "local_infile"
-                              value = "on"
-                            }
-                            pricing_plan     = "PER_USE"
-                            replication_type = "SYNCHRONOUS"
-                            tier             = "db-n1-standard-1"
-                          }
-                        }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_4(self):
-        hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                              database_version = "MYSQL_8_0"
-                              name             = "general-mysql81"
-                              project          = "gcp-bridgecrew-deployment"
-                              region           = "us-central1"
-
-                              settings {
-                                activation_policy = "ALWAYS"
-                                availability_type = "ZONAL"
-                                pricing_plan     = "PER_USE"
-                                replication_type = "SYNCHRONOUS"
-                                tier             = "db-n1-standard-1"
-                              }
-                            }
-                            """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_5(self):
-        hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                              database_version = "POSTGRES_12"
-                              name             = "general-mysql81"
-                              project          = "gcp-bridgecrew-deployment"
-                              region           = "us-central1"
-                            }
-                            """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_6(self):
-        hcl_res = hcl2.loads("""
-                            resource "google_sql_database_instance" "tfer--general-002D-mysql81" {
-                              name             = "general-mysql81"
-                              project          = "gcp-bridgecrew-deployment"
-                              region           = "us-central1"
-
-                              settings {
-                                activation_policy = "ALWAYS"
-                                availability_type = "ZONAL"
-                                pricing_plan     = "PER_USE"
-                                replication_type = "SYNCHRONOUS"
-                                tier             = "db-n1-standard-1"
-                              }
-                            }
-                            """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-mysql81']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

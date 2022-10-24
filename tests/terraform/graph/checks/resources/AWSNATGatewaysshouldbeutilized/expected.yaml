@@ -1,0 +1,10 @@
+pass:
+  - "aws_route_table.example"
+  - "aws_route_table.aws_route_table_ok_1"
+  - "aws_route_table.aws_route_table_ok_2"
+  - "aws_route.aws_route_ok_1"
+  - "aws_route.aws_route_ok_2"
+  - "aws_route.aws_route_ok_blank_instance"
+fail:
+  - "aws_route_table.aws_route_table_not_ok"
+  - "aws_route.aws_route_not_ok"

@@ -1,0 +1,101 @@
+Parameters:
+  Parameter1:
+    Type: String
+    Default: parameter1name
+  Parameter2:
+    Type: String
+    Default: parameter2name
+Conditions:
+  FnEqualsTrue: !Equals
+    - !Ref Parameter1
+    - parameter1name
+  FnEqualsFalse: !Equals
+    - !Ref Parameter1
+    - wrongname
+  FnNotTrue: !Not
+    - !Equals
+      - !Ref Parameter1
+      - wrongname
+  FnNotFalse: !Not
+    - !Equals
+      - !Ref Parameter1
+      - parameter1name
+  FnNotTrueThroughCondition: !Not
+    - !Condition FnEqualsFalse
+  FnNotFalseThroughCondition: !Not
+    - !Condition FnEqualsTrue
+  FnAndTrue: !And
+    - !Equals
+      - !Ref Parameter1
+      - parameter1name
+    - !Equals
+      - !Ref Parameter2
+      - parameter2name
+  FnAndFalse: !And
+    - !Equals
+      - !Ref Parameter1
+      - parameter1name
+    - !Equals
+      - !Ref Parameter2
+      - wrongname
+  FnAndTrueWithCondition: !And
+    - !Condition FnEqualsTrue
+    - !Equals
+      - !Ref Parameter2
+      - parameter2name
+  FnOrTrue: !Or
+    - !Equals
+      - !Ref Parameter1
+      - parameter1name
+    - !Equals
+      - !Ref Parameter2
+      - wrongname
+  FnOrFalse: !Or
+    - !Equals
+      - !Ref Parameter1
+      - wrongname
+    - !Equals
+      - !Ref Parameter2
+      - wrongname
+  FnOrTrueWithCondition: !Or
+    - !Condition FnEqualsTrue
+    - !Equals
+      - !Ref Parameter2
+      - wrongname
+Resources:
+  BucketFnEqualsTrue:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnEqualsTrue
+  BucketFnEqualsFalse:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnEqualsFalse
+  BucketFnNotTrue:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnNotTrue
+  BucketFnNotFalse:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnNotFalse
+  BucketFnNotTrueThroughCondition:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnNotTrueThroughCondition
+  BucketFnNotFalseThroughCondition:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnNotFalseThroughCondition
+  BucketFnAndTrue:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnAndTrue
+  BucketFnAndFalse:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnAndFalse
+  BucketFnAndTrueWithCondition:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnAndTrueWithCondition
+  BucketFnOrTrue:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnOrTrue
+  BucketFnOrFalse:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnOrFalse
+  BucketFnOrTrueWithCondition:
+    Type: 'AWS::S3::Bucket'
+    Condition: FnOrTrueWithCondition

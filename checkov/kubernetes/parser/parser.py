@@ -41,10 +41,10 @@ def parse(filename):
             logger.error('Permission denied when accessing template file: %s',
                          filename)
             return
-    except UnicodeDecodeError as err:
+    except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return
-    except YAMLError as err:
+    except YAMLError:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
             logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
         return

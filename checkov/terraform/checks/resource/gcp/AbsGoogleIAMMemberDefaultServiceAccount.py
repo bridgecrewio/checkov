@@ -9,10 +9,8 @@ DEFAULT_SA = re.compile(r".*-compute@developer\.gserviceaccount\.com|.*@appspot\
 
 
 class AbsGoogleIAMMemberDefaultServiceAccount(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources):
-        super().__init__(name, id, categories, supported_resources)
-
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['members'] if 'members' in conf else ['member']
         members_conf = conf['members'][0] if 'members' in conf else conf.get('member', [])
         if any(re.match(DEFAULT_SA, str(member)) for member in members_conf):
             return CheckResult.FAILED

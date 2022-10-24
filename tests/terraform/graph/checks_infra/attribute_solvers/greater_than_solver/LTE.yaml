@@ -1,0 +1,9 @@
+metadata:
+  id: "LTE"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_s3_bucket
+  attribute: bucket
+  operator: less_than_or_equal
+  value: ccc

@@ -1,0 +1,45 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "CidrBlock": {
+            "Description": "CIDR Block",
+            "Type": "String",
+            "Default": "172.16.0.0/16"
+        }
+    },
+    "Resources": {
+        "WebVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "CidrBlock"
+                },
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true
+            }
+        },
+        "MySG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "sg_group_name",
+                "GroupDescription": "sg_group_description",
+                "VpcId": {
+                    "Ref": "WebVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 3306,
+                        "ToPort": 3306,
+                        "CidrIp": {
+                            "Fn::GetAtt": [
+                                "WebVPC",
+                                "CidrBlock"
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

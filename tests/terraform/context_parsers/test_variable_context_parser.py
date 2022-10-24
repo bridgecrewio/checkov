@@ -5,7 +5,6 @@ import os
 
 
 class TestVariableContextParser(unittest.TestCase):
-
     def setUp(self):
         test_root_dir = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/'
         tf_definitions = {}
@@ -25,11 +24,12 @@ class TestVariableContextParser(unittest.TestCase):
                 'assignments'))
 
     def test_assignment_value(self):
-        self.assertIs(
+        self.assertFalse(
             self.definitions_context[os.path.dirname(
                 os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][
                 'variable'].get(
-                'assignments').get('user_exists'), False)
+                'assignments').get('user_exists')
+        )
         self.assertEqual(
             self.definitions_context[os.path.dirname(
                 os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/variables.tf'][

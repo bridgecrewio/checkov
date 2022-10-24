@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  CompanyName:
+    Description: Company Name
+    Type: String
+    Default: acme
+  Environment:
+    Description: Environment
+    Type: String
+Resources:
+  WebVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  DefaultDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Sub "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+      DBInstanceClass: "db.m4.large"
+Outputs:
+  DBEndpoint:
+    Description: DB Endpoint
+    Value: !Sub ${DefaultDB.Endpoint.Address}:${DefaultDB.Endpoint.Port}
+  WebVPCCidrBlock:
+    Description: WebVPC Cidr Block
+    Value: !Sub ${WebVPC.CidrBlock}
+  CidrBlockAssociations:
+    Description: WebVPC Cidr Block Associations
+    Value: !Sub ${WebVPC.CidrBlockAssociations}
+  DefaultDBName:
+    Description: DefaultDB Name
+    Value: !Sub "rds-${AWS::AccountId}-${CompanyName}-${Environment}"
+

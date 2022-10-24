@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  This template deploys an Application Load Balancer 
+Parameters:
+  Subnets:
+    Description: Choose a minimum of 2 subnets the ALB should be deployed to
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Type: application
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - sg-1234567
+
+  ListenerHTTPSFAILED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-2016-08
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerHTTPSFAILED2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: test-cert
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: CheckovTest
+      Type: network
+      Subnets: !Ref Subnets
+
+  ListenerTLSFAILED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      SslPolicy: ELBSecurityPolicy-2016-08
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSFAILED2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      SslPolicy: ELBSecurityPolicy-TLS13-1-1-2021-06
+      Certificates:
+        - CertificateArn: test-cert
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group
+
+  ListenerTLSFAILED3:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: TLS
+      Certificates:
+        - CertificateArn: test-cert
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: default-target-group

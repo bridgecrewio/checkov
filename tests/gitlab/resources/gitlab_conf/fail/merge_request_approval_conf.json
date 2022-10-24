@@ -1,0 +1,8 @@
+{
+  "approvals_before_merge": 1,
+  "reset_approvals_on_push": true,
+  "disable_overriding_approvers_per_merge_request": false,
+  "merge_requests_author_approval": true,
+  "merge_requests_disable_committers_approval": false,
+  "require_password_to_approve": true
+}

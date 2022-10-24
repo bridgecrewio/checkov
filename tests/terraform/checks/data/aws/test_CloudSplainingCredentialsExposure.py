@@ -1,109 +1,44 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.aws.IAMCredentialsExposure import check
+from checkov.terraform.runner import Runner
 
 
 class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
+    def setUp(self):
+        from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            data "aws_iam_policy_document" "example" {
-              statement {
-                sid = "1"
-                effect = "Allow"
+        # needs to be reset, because the cache belongs to the class not instance
+        BaseCloudsplainingIAMCheck.policy_document_cache = {}
 
-                actions = [
-                        "s3:GetObject",
-                        "iam:CreateAccessKey"
-                ]
-            
-                resources = [
-                  "*",
-                ]
-              }
-            }
-        """)
-        resource_conf = hcl_res['data'][0]['aws_iam_policy_document']['example']
-        scan_result = check.scan_data_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+    def test(self):
+        test_files_dir = Path(__file__).parent / "example_CloudSplainingCredentialsExposure"
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            data "aws_iam_policy_document" "example" {
-              statement {
-                sid = "1"
-                effect = "Allow"
+        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-                actions = [
-                    "lambda:CreateFunction",
-                    "lambda:CreateEventSourceMapping",
-                    "dynamodb:CreateTable",
-                ]
-            
-                resources = [
-                  "*",
-                ]
-              }
-            }
-        """)
-        resource_conf = hcl_res['data'][0]['aws_iam_policy_document']['example']
-        scan_result = check.scan_data_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "aws_iam_policy_document.allowed_action",
+            "aws_iam_policy_document.deny",
+            "aws_iam_policy_document.pass",
+        }
+        failing_resources = {
+            "aws_iam_policy_document.fail",
+        }
 
-    def test_allowed_credential_actions(self):
-        hcl_res = hcl2.loads("""
-            data "aws_iam_policy_document" "example" {
-              statement {
-                sid = "1"
-                effect = "Allow"
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-                actions = [
-                    "ecr:GetAuthorizationToken",
-                ]
-            
-                resources = [
-                  "*",
-                ]
-              }
-            }
-        """)
-        resource_conf = hcl_res['data'][0]['aws_iam_policy_document']['example']
-        scan_result = check.scan_data_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_deny(self):
-        hcl_res = hcl2.loads("""
-             data "aws_iam_policy_document" "DenyOutsideCallers" {
-               statement {
-                 sid       = "DenyOutsideCallers"
-                 effect    = "Deny"
-                 actions   = ["*"]
-                 resources = ["*"]
-             
-                 condition {
-                   test     = "NotIpAddress"
-                   variable = "aws:SourceIp"
-                   values = [
-                     "1.2.3.4/16"
-                   ]
-                 }
-             
-                 condition {
-                   test     = "Bool"
-                   variable = "aws:ViaAWSService"
-                   values   = ["false"]
-                 }
-               }
-             }
-        """)
-
-        resource_conf = hcl_res['data'][0]['aws_iam_policy_document']['DenyOutsideCallers']
-        scan_result = check.scan_data_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

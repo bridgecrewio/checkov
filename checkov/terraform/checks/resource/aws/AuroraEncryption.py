@@ -13,7 +13,7 @@ class AuroraEncryption(BaseResourceValueCheck):
     def scan_resource_conf(self, conf):
         # https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.snapshots
         # If aurora serverless is used it is always encrypted
-        key='engine_mode'
+        key = 'engine_mode'
         if key in conf.keys():
             if conf[key] == ['serverless']:
                 return CheckResult.PASSED

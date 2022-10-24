@@ -1,0 +1,43 @@
+metadata:
+  name: "AWS NAT Gateways should be utilized for the default route"
+  id: "CKV2_AWS_35"
+  guidelines: "This policy identifies Route Tables which have NAT instances for the default route instead of NAT gateways. It is recommended to use NAT gateways as the AWS managed NAT Gateway provides a scalable and resilient method for allowing outbound internet traffic from your private VPC subnets."
+  category: "networking"
+scope:
+  provider: "aws"
+definition:
+    or:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
+          attribute: "route.*.instance_id"
+          operator: "not_exists"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
+          attribute: "route.*.instance_id"
+          operator: "equals"
+          value: ""
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
+          attribute: "route.*.cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0/0"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "instance_id"
+          operator: "not_exists"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "instance_id"
+          operator: "equals"
+          value: ""
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "destination_cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0/0"

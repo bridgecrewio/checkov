@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  CondAllPass:
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: "test-repository"
+      RepositoryPolicyText: 
+        Version: "2012-10-17"
+        Statement: 
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal: "*"
+            Action: 
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+            Condition:
+              ForAllValues:StringEquals:
+                aws:PrincipalOrgID: "o-12345678"
+
+  CondAnyPass:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "test-repository"
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+            Condition:
+              ForAnyValue:StringEquals:
+                aws:PrincipalOrgID: "o-12345678"
+
+  CondEqualsPass:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "test-repository"
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowPushPull
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:PutImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: "o-12345678"

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from checkov.kubernetes.checks.CPULimits import check
+from checkov.kubernetes.checks.resource.k8s.CPULimits import check
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
@@ -18,7 +18,7 @@ class TestCPULimits(unittest.TestCase):
 
         self.assertEqual(summary['passed'], 0)
         self.assertEqual(summary['failed'], 1)
-        self.assertEqual(summary['skipped'], 10)
+        self.assertEqual(summary['skipped'], 8)
         self.assertEqual(summary['parsing_errors'], 0)
 
 

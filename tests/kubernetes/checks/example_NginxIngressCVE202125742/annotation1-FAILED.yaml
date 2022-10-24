@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  annotations:  
+    nginx.ingress.kubernetes.io/server-snippet: |    
+      location ^~ "/test" {
+        default_type 'text/plain';
+        content_by_lua_block {
+          ngx.say("hello");
+        }
+      }    
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - http:    
+    paths:      
+      - path: /exp        
+        pathType: Prefix        
+        backend:          
+          service:            
+            name: some-service            
+            port:              
+              number: 1234

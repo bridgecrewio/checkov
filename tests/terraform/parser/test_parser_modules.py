@@ -1,14 +1,29 @@
 import os
 import shutil
 import unittest
+from pathlib import Path
+
+import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.parser import Parser
 
 
+@pytest.fixture
+def tmp_path(request, tmp_path: Path):
+    # https://pytest.org/en/latest/how-to/unittest.html#mixing-pytest-fixtures-into-unittest-testcase-subclasses-using-marks
+    request.cls.tmp_path = tmp_path
+
+
+@pytest.mark.usefixtures("tmp_path")
 class TestParserInternals(unittest.TestCase):
 
     def setUp(self) -> None:
+        from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
+
+        # needs to be reset, because the cache belongs to the class not instance
+        ModuleLoaderRegistry.module_content_cache = {}
+
         self.resources_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                                            "./resources"))
         self.external_module_path = ''
@@ -27,21 +42,20 @@ class TestParserInternals(unittest.TestCase):
                                download_external_modules=True,
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
 
-        external_aws_modules_path = os.path.join(self.external_module_path, 'terraform-aws-modules')
+        external_aws_modules_path = os.path.join(self.external_module_path, 'github.com/terraform-aws-modules/terraform-aws-security-group/v3.18.0')
         assert os.path.exists(external_aws_modules_path)
-        assert os.path.exists(os.path.join(external_aws_modules_path, 'security-group'))
 
     def test_load_inner_registry_module(self):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
-        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = {}
         parser.parse_directory(directory=directory, out_definitions=out_definitions,
                                out_evaluations_context={},
                                download_external_modules=True,
-                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+                               external_modules_download_path=self.external_module_path)
         self.assertEqual(11, len(list(out_definitions.keys())))
-        expected_remote_module_path = f'{DEFAULT_EXTERNAL_MODULES_DIR}/terraform-aws-modules/security-group/aws'
+        expected_remote_module_path = f'{self.external_module_path}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
         expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
         expected_main_file = os.path.join(directory, 'main.tf')
         expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
@@ -87,3 +101,18 @@ class TestParserInternals(unittest.TestCase):
                                external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
         file_path, entity_definitions = next(iter(out_definitions.items()))
         self.assertEqual(2, len(list(out_definitions[file_path]['output'])))
+
+    def test_load_local_module(self):
+        # given
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "local_module")
+        out_definitions = {}
+
+        # when
+        parser.parse_directory(
+            directory=directory, out_definitions=out_definitions, out_evaluations_context={}
+        )
+
+        # then
+        self.assertEqual(len(out_definitions), 3)  # root file + 2x module file
+        self.assertEqual(len(parser.loaded_files_map), 2)  # root file + 1x module file

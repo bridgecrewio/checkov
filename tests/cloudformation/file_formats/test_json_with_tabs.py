@@ -2,7 +2,6 @@ import os
 import unittest
 
 from checkov.cloudformation.runner import Runner
-from checkov.runner_filter import RunnerFilter
 
 
 class TestJsonFileFormat(unittest.TestCase):

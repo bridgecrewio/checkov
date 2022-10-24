@@ -1,13 +1,16 @@
-from abc import abstractmethod
-from typing import Tuple, List, Dict, Any
+from __future__ import annotations
 
-from networkx import DiGraph
+from abc import abstractmethod
+from typing import Tuple, List, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+
 
 class BaseSolver:
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, solver_type: SolverType) -> None:
         self.solver_type = solver_type
@@ -26,4 +29,4 @@ class BaseSolver:
 
     @staticmethod
     def resource_type_pred(v: Dict[str, Any], resource_types: List[str]) -> bool:
-        return len(resource_types) == 0 or v.get("resource_type") in resource_types
+        return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types)

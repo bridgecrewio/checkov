@@ -1,42 +1,43 @@
 import unittest
+from pathlib import Path
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.AKSApiServerAuthorizedIpRanges import check
+from checkov.terraform.runner import Runner
 
 
 class TestAKSApiServerAuthorizedIpRanges(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_AKSApiServerAuthorizedIpRanges"
 
-    def test_failure(self):
-        resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
-                         'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
-                         'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
-                         'identity': [{'type': ['SystemAssigned']}], 'agent_pool_profile': [{}], 'service_principal': [{}],
-                         'role_based_access_control': [{'enabled': [False]}], 'tags': [{'Environment': 'Production'}]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
-                         'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
-                         'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
-                         'identity': [{'type': ['SystemAssigned']}], 'agent_pool_profile': [{}], 'service_principal': [{}],
-                         'api_server_authorized_ip_ranges': [['192.168.0.0/16']], 'tags': [{'Environment': 'Production'}],
-                         'addon_profile': [{'oms_agent': [{'enabled': [True], 'log_analytics_workspace_id': ['']}]}]}
+        # then
+        summary = report.get_summary()
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "azurerm_kubernetes_cluster.enabled",
+            "azurerm_kubernetes_cluster.private"
+        }
 
-    def test_success2(self):
-        resource_conf = {'name': ['example-aks1'], 'location': ['${azurerm_resource_group.example.location}'],
-                         'resource_group_name': ['${azurerm_resource_group.example.name}'], 'dns_prefix': ['exampleaks1'],
-                         'default_node_pool': [{'name': ['default'], 'node_count': [1], 'vm_size': ['Standard_D2_v2']}],
-                         'identity': [{'type': ['SystemAssigned']}], 'agent_pool_profile': [{}], 'service_principal': [{}],
-                         'api_server_authorized_ip_ranges': [[]], 'role_based_access_control': [{'enabled': [True]}],
-                         'tags': [{'Environment': 'Production'}]}
+        failing_resources = {
+            "azurerm_kubernetes_cluster.default",
+            "azurerm_kubernetes_cluster.empty",
+        }
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

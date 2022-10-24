@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import logging
 from json import JSONDecodeError
-from typing import TypeVar, List, overload, Union, Optional, Any, Dict
+from typing import TypeVar, overload, Any, Dict
 
 import yaml
 
@@ -9,22 +11,22 @@ T = TypeVar("T")
 
 
 @overload
-def force_list(var: List[T]) -> List[T]:
+def force_list(var: list[T]) -> list[T]:
     ...
 
 
 @overload
-def force_list(var: T) -> List[T]:
+def force_list(var: T) -> list[T]:
     ...
 
 
-def force_list(var: Union[T, List[T]]) -> List[T]:
+def force_list(var: T | list[T]) -> list[T]:
     if not isinstance(var, list):
         return [var]
     return var
 
 
-def force_int(var: Any) -> Optional[int]:
+def force_int(var: Any) -> int | None:
     try:
         if not isinstance(var, int):
             return int(var)
@@ -33,7 +35,7 @@ def force_int(var: Any) -> Optional[int]:
         return None
 
 
-def force_float(var: Any) -> Optional[float]:
+def force_float(var: Any) -> float | None:
     try:
         if not isinstance(var, float):
             return float(var)
@@ -42,7 +44,7 @@ def force_float(var: Any) -> Optional[float]:
         return None
 
 
-def convert_str_to_bool(bool_str: Union[bool, str]) -> Union[bool, str]:
+def convert_str_to_bool(bool_str: bool | str) -> bool | str:
     if bool_str in ["true", '"true"', "True", '"True"']:
         return True
     elif bool_str in ["false", '"false"', "False", '"False"']:
@@ -51,17 +53,17 @@ def convert_str_to_bool(bool_str: Union[bool, str]) -> Union[bool, str]:
         return bool_str
 
 
-def force_dict(obj: Any) -> Optional[Dict[str, Any]]:
+def force_dict(obj: Any) -> dict[str, Any] | None:
     """
-    If the specified object is a dict, returns the object. If the object is a list of length 1 or more, and the first
-    element is a dict, returns the first element. Else returns None.
+    If the specified object is a dict, returns the object. If the specified object is a list or a tuple
+    of length 1 or more, force_dict is called recursively on the first element. Else returns None.
     :param obj:
     :return:
     """
     if isinstance(obj, dict):
         return obj
-    if isinstance(obj, list) and len(obj) > 0 and isinstance(obj[0], dict):
-        return obj[0]
+    if (isinstance(obj, list) or isinstance(obj, tuple)) and len(obj) > 0:
+        return force_dict(obj[0])
     return None
 
 
@@ -83,12 +85,12 @@ def is_yaml(data: str) -> bool:
         return False
 
 
-def extract_policy_dict(policy: Union[dict, str]) -> Optional[dict]:
+def extract_policy_dict(policy: Any) -> dict[str, Any] | None:
     if isinstance(policy, dict):
         return policy
     if isinstance(policy, str):
         try:
-            policy_dict = json.loads(policy)
+            policy_dict: dict[str, Any] = json.loads(policy)
             return policy_dict
         except JSONDecodeError:
             return None
@@ -96,7 +98,16 @@ def extract_policy_dict(policy: Union[dict, str]) -> Optional[dict]:
     return None
 
 
-def convert_csv_string_arg_to_list(csv_string_arg: Union[List[str], str, None]) -> list:
+def extract_json(json_str: Any) -> dict[str, Any] | list[dict[str, Any]] | None:
+    """Tries to return a json object from a possible string value"""
+
+    if isinstance(json_str, list):
+        return json_str
+
+    return extract_policy_dict(json_str)
+
+
+def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> list[str]:
     """
     Converts list type arguments that also support comma delimited strings into a list.
     For instance the --check flag in the CLI:
@@ -114,3 +125,22 @@ def convert_csv_string_arg_to_list(csv_string_arg: Union[List[str], str, None]) 
     else:
         return csv_string_arg
 
+
+def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
+    """
+    Converts the filter string to a dict. For example:
+    'policy.label=label,cloud.type=aws' becomes -->
+    {'policy.label': 'label1', 'cloud.type': 'aws'}
+    Note that the API does not accept lists https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policies-v2
+    This is not allowed: policy.label=label1,label2
+    """
+    filter_params = {}
+    if isinstance(filter_string, str) and filter_string:
+        filter_string = "".join(filter_string.split())
+        try:
+            for f in filter_string.split(','):
+                f_name, f_value = f.split('=')
+                filter_params[f_name] = f_value
+        except (IndexError, ValueError) as e:
+            logging.debug(f"Invalid filter format: {e}")
+    return filter_params

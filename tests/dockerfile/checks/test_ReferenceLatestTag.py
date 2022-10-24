@@ -15,7 +15,14 @@ class TestReferenceLatestTag(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        passing_resources = {"/success/Dockerfile.", "/success_multi_stage/Dockerfile."}
+        passing_resources = {
+            "/success/Dockerfile.",
+            "/success_multi_stage/Dockerfile.",
+            "/success_multi_stage_capital/Dockerfile.",
+            "/success_scratch/Dockerfile.",
+            "/success_multi_stage_scratch/Dockerfile."
+        }
+        
         failing_resources = {
             "/failure_default_version_tag/Dockerfile.FROM",
             "/failure_latest_version_tag/Dockerfile.FROM",
@@ -24,7 +31,7 @@ class TestReferenceLatestTag(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["passed"], 5)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

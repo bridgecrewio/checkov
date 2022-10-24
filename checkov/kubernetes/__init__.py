@@ -1,1 +1,1 @@
-from checkov.kubernetes.checks import *
+from checkov.kubernetes.checks import *  # noqa

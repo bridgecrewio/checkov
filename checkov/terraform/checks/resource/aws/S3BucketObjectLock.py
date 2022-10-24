@@ -22,5 +22,8 @@ class S3BucketObjectLock(BaseResourceCheck):
 
         return CheckResult.UNKNOWN
 
+    def get_evaluated_keys(self) -> List[str]:
+        return ["object_lock_configuration/[0]/object_lock_enabled"]
+
 
 check = S3BucketObjectLock()

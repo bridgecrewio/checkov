@@ -1,0 +1,35 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Insecure Inline policy on Group",
+  "Resources": {
+    "mygroup": {
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "Path": "/myapplication/",
+        "Policies": [
+          {
+            "PolicyName": "fails",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "s3:HeadBucket",
+                    "*"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:s3:::b1",
+                    "arn:aws:s3:::b1/*",
+                    "*"
+                  ],
+                  "Sid": ""
+                }
+              ],
+              "Version": "2012-10-17"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

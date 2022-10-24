@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
@@ -12,5 +12,6 @@ class ElasticacheReplicationGroupEncryptionAtRest(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return 'Properties/AtRestEncryptionEnabled'
+
 
 check = ElasticacheReplicationGroupEncryptionAtRest()

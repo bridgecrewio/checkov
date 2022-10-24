@@ -13,7 +13,7 @@ class TestIAMWriteAccess(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         test_files_dir = current_dir + "/Cloudsplaining_IAMWriteAccess"
-        report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         self.assertEqual(report.failed_checks[0].check_id, check.id)
         self.assertEqual(summary['passed'], 4)

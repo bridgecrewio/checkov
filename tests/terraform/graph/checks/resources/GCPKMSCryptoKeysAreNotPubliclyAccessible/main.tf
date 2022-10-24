@@ -52,16 +52,6 @@ resource "google_kms_crypto_key_iam_member" "crypto_key_bad_2" {
   member        = "allAuthenticatedUsers"
 }
 
-resource "google_kms_crypto_key" "key_bad_2" {
-  name = "crypto-key-example"
-  key_ring = google_kms_key_ring.keyring.id
-  rotation_period = "100000s"
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 resource "google_kms_crypto_key" "key_good_2" {
   name = "crypto-key-example"
   key_ring = google_kms_key_ring.keyring.id

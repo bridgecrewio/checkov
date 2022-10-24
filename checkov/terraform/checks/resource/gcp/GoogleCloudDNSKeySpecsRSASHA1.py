@@ -19,14 +19,17 @@ class GoogleCloudDNSKeySpecsRSASHA1(BaseResourceCheck):
         """
         if "dnssec_config" in conf.keys():
             dnssec_config = conf["dnssec_config"][0]
-
+            self.evaluated_keys = ['dnssec_config']
             # default algo RSASHA256 as per the documentation:
             # https://cloud.google.com/dns/docs/dnssec-advanced#advanced-signing-options
             if "default_key_specs" in dnssec_config:
                 for default_key_specs in dnssec_config["default_key_specs"]:
                     if "algorithm" in default_key_specs and default_key_specs["algorithm"] == ["rsasha1"]:
+                        self.evaluated_keys = [f'dnssec_config/[0]/default_key_specs/'
+                                               f'[{dnssec_config["default_key_specs"].index(default_key_specs)}]/'
+                                               f'algorithm']
                         return CheckResult.FAILED
-
+                self.evaluated_keys = ['dnssec_config/[0]/default_key_specs']
         return CheckResult.PASSED
 
 

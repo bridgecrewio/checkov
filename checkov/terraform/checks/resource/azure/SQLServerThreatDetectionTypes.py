@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class SQLServerThreatDetectionTypes(BaseResourceCheck):
@@ -14,6 +15,9 @@ class SQLServerThreatDetectionTypes(BaseResourceCheck):
         if 'disabled_alerts' in conf and any(conf['disabled_alerts'][0]):
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['disabled_alerts']
 
 
 check = SQLServerThreatDetectionTypes()

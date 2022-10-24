@@ -1,35 +1,44 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.IAMPolicyAttachedToGroupOrRoles import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestIAMPolicyAttachedToGroupOrRoles(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_IAMPolicyAttachedToGroupOrRoles"
 
-    def test_failure(self):
-        resource_conf = {'user': ['${aws_iam_user.user.name}'], 'policy_arn': ['${aws_iam_policy.policy.arn}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_2(self):
-        resource_conf = {'name': ['test'], 'user': ['${aws_iam_user.lb.name}'], 'policy': [
-            '{\n  "Version": "2012-10-17",\n  "Statement": [\n    {\n      "Action": [\n        "ec2:Describe*"\n      ],\n      "Effect": "Allow",'
-            '\n      "Resource": "*"\n    }\n  ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_failure_3(self):
-        conf = {'name': ['test-attachment'], 'users': [['${aws_iam_user.user.name}']], 'roles': [['${aws_iam_role.role.name}']],
-                'groups': [['${aws_iam_group.group.name}']], 'policy_arn': ['${aws_iam_policy.policy.arn}']}
-        scan_result = check.scan_resource_conf(conf=conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "aws_iam_policy_attachment.pass",
+            "aws_iam_policy_attachment.null",
+            "aws_iam_policy_attachment.empty",
+        }
+        failing_resources = {
+            "aws_iam_policy_attachment.fail",
+            "aws_iam_user_policy.fail",
+            "aws_iam_user_policy_attachment.fail",
+        }
 
-    def test_success(self):
-        conf = {'name': ['test-attachment'], 'users': [[]], 'roles': [['${aws_iam_role.role.name}']],
-                'groups': [['${aws_iam_group.group.name}']], 'policy_arn': ['${aws_iam_policy.policy.arn}']}
-        scan_result = check.scan_resource_conf(conf=conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

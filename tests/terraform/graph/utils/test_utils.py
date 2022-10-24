@@ -1,39 +1,40 @@
-import os
 import pprint
 from typing import List, Tuple
 from unittest import TestCase
 
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.utils import VertexReference, get_referenced_vertices_in_value, \
-    replace_map_attribute_access_with_dot, update_dictionary_attribute, generate_possible_strings_from_wildcards, \
+from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value, \
+    replace_map_attribute_access_with_dot, generate_possible_strings_from_wildcards, \
     attribute_has_nested_attributes
+from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
+from checkov.terraform.graph_builder.local_graph import update_dictionary_attribute
 
 
 class TestUtils(TestCase):
     def test_find_non_literal_values(self):
         aliases = {'aws': {CustomAttributes.BLOCK_TYPE: BlockType.PROVIDER}}
         str_value = 'aws.east1'
-        expected = [VertexReference(BlockType.PROVIDER, ['aws', 'east1'], 'aws.east1')]
+        expected = [TerraformVertexReference(BlockType.PROVIDER, ['aws', 'east1'], 'aws.east1')]
         self.assertEqual(expected, get_referenced_vertices_in_value(str_value, aliases, []))
 
         str_values = [
-                    'var.x',
-                      'format("-%s", var.x)',
-                      '../child',
-                      'aws_instance.example.id',
-                      'bc_c_${var.customer_name}',
-                      'aws iam delete-role --role-name ${local.role_name} --profile ${var.profile} --region ${var.region}',
-                      'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}',
-                    ]
-        expected =   [
-                    [VertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
-                      [VertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
-                      [],
-                      [VertexReference(BlockType.RESOURCE, ['aws_instance.example', 'id'], 'aws_instance.example.id')],
-                      [VertexReference(BlockType.VARIABLE, ['customer_name'], 'var.customer_name')],
-                      [VertexReference(BlockType.LOCALS, ['role_name'], 'local.role_name'), VertexReference(BlockType.VARIABLE, ['profile'], 'var.profile'), VertexReference(BlockType.VARIABLE, ['region'], 'var.region')],
-                      [VertexReference(BlockType.RESOURCE, ['aws_vpc.main'], 'aws_vpc.main'), VertexReference(BlockType.RESOURCE, ['aws_vpc.main', 'cidr_block'], 'aws_vpc.main.cidr_block'), VertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
+            'var.x',
+            'format("-%s", var.x)',
+            '../child',
+            'aws_instance.example.id',
+            'bc_c_${var.customer_name}',
+            'aws iam delete-role --role-name ${local.role_name} --profile ${var.profile} --region ${var.region}',
+            'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}',
+        ]
+        expected = [
+            [TerraformVertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
+            [TerraformVertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
+            [],
+            [TerraformVertexReference(BlockType.RESOURCE, ['aws_instance.example', 'id'], 'aws_instance.example.id')],
+            [TerraformVertexReference(BlockType.VARIABLE, ['customer_name'], 'var.customer_name')],
+            [TerraformVertexReference(BlockType.LOCALS, ['role_name'], 'local.role_name'), TerraformVertexReference(BlockType.VARIABLE, ['profile'], 'var.profile'), TerraformVertexReference(BlockType.VARIABLE, ['region'], 'var.region')],
+            [TerraformVertexReference(BlockType.RESOURCE, ['aws_vpc.main'], 'aws_vpc.main'), TerraformVertexReference(BlockType.RESOURCE, ['aws_vpc.main', 'cidr_block'], 'aws_vpc.main.cidr_block'), TerraformVertexReference(BlockType.VARIABLE, ['x'], 'var.x')],
         ]
 
         for i in range(0, len(str_values)):
@@ -91,71 +92,71 @@ class TestUtils(TestCase):
         self.assertEqual(expected_results, results)
 
     def test_find_var_blocks(self):
-        cases: List[Tuple[str, List[VertexReference]]] = [
+        cases: List[Tuple[str, List[TerraformVertexReference]]] = [
             (
                 "${local.one}",
                 [
-                    VertexReference(BlockType.LOCALS, sub_parts=["one"], origin_value="local.one")
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["one"], origin_value="local.one")
                 ]
             ),
             (
                 "${local.NAME[foo]}-${local.TAIL}${var.gratuitous_var_default}",
                 [
-                    VertexReference(BlockType.LOCALS, sub_parts=["NAME"], origin_value="local.NAME"),
-                    VertexReference(BlockType.LOCALS, sub_parts=["TAIL"], origin_value="local.TAIL"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"], origin_value="var.gratuitous_var_default"),
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["NAME"], origin_value="local.NAME"),
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["TAIL"], origin_value="local.TAIL"),
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"], origin_value="var.gratuitous_var_default"),
                 ]
             ),
             # Ordered returning of sub-vars and then outer var.
             (
                 "${merge(local.common_tags,local.common_data_tags,{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
                 [
-                    VertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
-                    VertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"], origin_value="local.common_data_tags"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"], origin_value="local.common_data_tags"),
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
                                     origin_value="var.ENVIRONMENT"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
                                     origin_value="var.REGION"),
                 ],
             ),
             (
                 "${merge(${local.common_tags},${local.common_data_tags},{'Name': 'my-thing-${var.ENVIRONMENT}-${var.REGION}'})}",
                 [
-                    VertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
-                    VertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"],
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["common_tags"], origin_value="local.common_tags"),
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["common_data_tags"],
                                     origin_value="local.common_data_tags"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["ENVIRONMENT"],
                                     origin_value="var.ENVIRONMENT"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["REGION"],
                                     origin_value="var.REGION"),
                 ],
             ),
             (
                 '${merge(var.tags, map("Name", "${var.name}", "data_classification", "none"))}',
                 [
-                    VertexReference(BlockType.VARIABLE, sub_parts=["tags"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["tags"],
                                     origin_value="var.tags"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["name"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["name"],
                                     origin_value="var.name"),
                 ]
             ),
             (
                 '${var.metadata_http_tokens_required ? "required" : "optional"}',
                 [
-                    VertexReference(BlockType.VARIABLE, sub_parts=["metadata_http_tokens_required"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["metadata_http_tokens_required"],
                                     origin_value="var.metadata_http_tokens_required"),
                 ]
             ),
             (
                 '${local.NAME[${module.bucket.bucket_name}]}-${local.TAIL}${var.gratuitous_var_default}',
                 [
-                    VertexReference(BlockType.LOCALS, sub_parts=["NAME"],
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["NAME"],
                                     origin_value="local.NAME"),
-                    VertexReference(BlockType.MODULE, sub_parts=["bucket", "bucket_name"],
+                    TerraformVertexReference(BlockType.MODULE, sub_parts=["bucket", "bucket_name"],
                                     origin_value="module.bucket.bucket_name"),
-                    VertexReference(BlockType.LOCALS, sub_parts=["TAIL"],
+                    TerraformVertexReference(BlockType.LOCALS, sub_parts=["TAIL"],
                                     origin_value="local.TAIL"),
-                    VertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"],
+                    TerraformVertexReference(BlockType.VARIABLE, sub_parts=["gratuitous_var_default"],
                                     origin_value="var.gratuitous_var_default"),
                 ]
             ),
@@ -179,4 +180,3 @@ class TestUtils(TestCase):
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter', attributes=attributes))
         self.assertTrue(attribute_has_nested_attributes(attribute_key='filter.1.values', attributes=attributes))
         self.assertFalse(attribute_has_nested_attributes(attribute_key='filter.1.values.0', attributes=attributes))
-

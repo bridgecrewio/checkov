@@ -1,0 +1,3 @@
+Resources:
+  NoPropertiesYaml:
+    Type: 'AWS::Serverless::Function'

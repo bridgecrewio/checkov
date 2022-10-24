@@ -11,9 +11,11 @@ class ELBUsesSSL(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
+        self.evaluated_keys = ['listener']
         if 'listener' in conf:
-            for listener in conf['listener']:
+            for idx, listener in enumerate(conf['listener']):
                 if 'ssl_certificate_id' not in listener:
+                    self.evaluated_keys = [f'listener/{idx}']
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

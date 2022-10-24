@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  Enabled:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      AccessLogSetting:
+        DestinationArn: 'arn:aws:logs:us-east-1:123456789:log-group:my-log-group'
+
+  Default:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod

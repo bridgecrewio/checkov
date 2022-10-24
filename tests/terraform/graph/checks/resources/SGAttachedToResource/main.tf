@@ -58,6 +58,30 @@ resource "aws_codebuild_project" "pass_codebuild" {
   }
 }
 
+# Codestar
+
+resource "aws_security_group" "pass_codestar" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_codestarconnections_host" "pass_codestar" {
+  name              = "star"
+  provider_endpoint = "https://github.com/bridgecrewio/checkov"
+  provider_type     = "GitHubEnterpriseServer"
+  vpc_configuration {
+    vpc_id             = "aws_vpc.vpc.id"
+    security_group_ids = [aws_security_group.pass_codestar.id]
+    subnet_ids         = ["aws_subnet.public_a.id"]
+  }
+  provider = aws.primary
+}
+
 # DMS
 
 resource "aws_security_group" "pass_dms" {
@@ -262,6 +286,43 @@ resource "aws_elasticache_cluster" "pass_elasticache" {
   security_group_ids = [aws_security_group.pass_elasticache.id]
 }
 
+resource "aws_security_group" "pass_elasticache_replication_group" {
+  description = "elasticache redis security group"
+  name        = "test_elasticache_replication_group"
+  vpc_id      = var.vpc_id
+
+}
+
+resource "aws_security_group_rule" "elasticache_ingress" {
+  description              = "elasticache ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_security_group_rule" "elasticache_egress" {
+  description       = "elasticache egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_elasticache_replication_group.id
+}
+
+resource "aws_elasticache_replication_group" "pass_elasticache_replication_group" {
+  replication_group_id          = "repl"
+  replication_group_description = "Replication group for Elasticache"
+  node_type                     = "cache.m3.large"
+  number_cache_clusters         = 5
+  engine                        = "redis"
+  port                          = 1234
+  subnet_group_name             = "subnet_group_name"
+  security_group_ids            = [aws_security_group.pass_elasticache_replication_group.id]
+}
+
 # ELB
 
 resource "aws_security_group" "pass_alb" {
@@ -350,6 +411,25 @@ resource "aws_elasticsearch_domain" "pass_es" {
   vpc_options {
     security_group_ids = [aws_security_group.pass_es.id]
   }
+}
+
+# Glue
+
+resource "aws_security_group" "pass_glue" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_glue_dev_endpoint" "pass_glue" {
+  name     = "example"
+  role_arn = "aws_iam_role.example.arn"
+
+  security_group_ids = [aws_security_group.pass_glue.id]
 }
 
 # Lambda
@@ -634,4 +714,122 @@ resource "aws_security_group" "pass_cloudwatch_event" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group" "pass_mq_broker" {
+  description = "Managed by Terraform"
+  egress {
+    #tfsec:ignore:AWS009
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Outbound"
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+  }
+
+  ingress {
+    cidr_blocks = var.ingress
+    description = "MQ port"
+    from_port   = 61616
+    protocol    = "tcp"
+    self        = false
+    to_port     = 61616
+  }
+
+
+  name   = var.security_group_name
+  vpc_id = var.vpc_id
+  tags   = var.common_tags
+}
+
+resource "aws_mq_broker" "broker" {
+  broker_name = var.mq_broker["name"]
+
+  configuration {
+    id       = aws_mq_configuration.broker.id
+    revision = aws_mq_configuration.broker.latest_revision
+  }
+
+  engine_type         = var.mq_broker["engine_type"]
+  engine_version      = var.mq_broker["engine_version"]
+  host_instance_type  = var.mq_broker["host_instance_type"]
+  deployment_mode     = var.mq_broker["deployment_mode"]
+  publicly_accessible = var.mq_broker["publicly_accessible"]
+  security_groups     = [aws_security_group.pass_mq_broker.id]
+
+  user {
+    username = var.username
+    password = var.password
+  }
+
+  maintenance_window_start_time {
+    day_of_week = var.maintenance_window_start_time["day_of_week"]
+    time_of_day = var.maintenance_window_start_time["time_of_day"]
+    time_zone   = var.maintenance_window_start_time["time_zone"]
+  }
+
+  encryption_options {
+    kms_key_id        = ""
+    use_aws_owned_key = false
+  }
+
+  logs {
+    general = true
+    audit   = var.audit
+  }
+
+  subnet_ids = var.subnet_ids
+  tags       = var.common_tags
+}
+
+# DAX
+
+resource "aws_dax_cluster" "pass_aws_dax_cluster" {
+  cluster_name       = "dax_cluster"
+  node_type          = "dax.r4.large"
+  subnet_group_name  = var.subnet_group
+  security_group_ids = [aws_security_group.pass_dax_cluster.id]
+  replication_factor = 5
+  iam_role_arn       = "12345"
+}
+
+resource "aws_security_group" "pass_dax_cluster" {
+  description = "Test Dax cluster"
+  name        = "test_dax_cluster"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_security_group_rule" "dax_cluster_ingress" {
+  description              = "dax ingress rule"
+  type                     = "ingress"
+  from_port                = 1234
+  to_port                  = 1234
+  protocol                 = "TCP"
+  security_group_id        = aws_security_group.pass_dax_cluster.id
+}
+
+resource "aws_security_group_rule" "dax_cluster_egress" {
+  description       = "dax egress rule"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.pass_dax_cluster.id
+}
+
+# Memory DB 
+
+resource "aws_security_group" "pass_memorydb_cluster" {
+  name        = "redis-secgrp"
+  description = "Redis Security Group"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_memorydb_cluster" "pass_memorydb_cluster" {
+  acl_name                 = "open-access"
+  name                     = "test-memorydb"
+  node_type                = "db.t4g.small"
+  security_group_ids       = [aws_security_group.pass_memorydb_cluster.id]
+  depends_on               = [ aws_security_group.pass_memorydb_cluster ]
 }

@@ -13,13 +13,15 @@ class EMRClusterKerberosAttributes(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        if "kerberos_attributes" in conf:
-            kerberos_attributes = conf["kerberos_attributes"][0]
-            if kerberos_attributes and "realm" in kerberos_attributes:
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        return CheckResult.UNKNOWN
+        if "kerberos_attributes" not in conf:
+            return CheckResult.UNKNOWN
+        kerberos_attributes = conf["kerberos_attributes"][0]
+        if kerberos_attributes and "realm" in kerberos_attributes:
+            return CheckResult.PASSED
+        return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["kerberos_attributes/[0]/realm"]
 
 
 check = EMRClusterKerberosAttributes()

@@ -26,7 +26,11 @@ class PasswordPolicyReuse(BaseResourceValueCheck):
         """
         key = 'password_reuse_prevention'
         if key in conf.keys():
-            if not (force_int(conf[key][0]) and force_int(conf[key][0]) < 24):
+            reuse = conf[key][0]
+            if self._is_variable_dependant(reuse):
+                return CheckResult.UNKNOWN
+            reuse = force_int(reuse)
+            if not (reuse and reuse < 24):
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

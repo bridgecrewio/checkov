@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
+from typing import Tuple, Optional, List
 
 import jmespath
 import logging
@@ -11,20 +14,21 @@ from yaml import YAMLError
 
 from checkov.cloudformation.parser import cfn_yaml
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser.node import dict_node, str_node
+from checkov.cloudformation.parser.cfn_yaml import CfnParseError
+from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
+from checkov.common.parsers.node import DictNode, StrNode
 
 logger = logging.getLogger(__name__)
 
-IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements' #nosec
-CFN_RESOURCES_TOKEN = 'resources' #nosec
-PROVIDER_TOKEN = 'provider' #nosec
-FUNCTIONS_TOKEN = 'functions' #nosec
-ENVIRONMENT_TOKEN = 'environment' #nosec
-STACK_TAGS_TOKEN = 'stackTags' #nosec
-TAGS_TOKEN = 'tags' #nosec
+IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec
+CFN_RESOURCES_TOKEN = 'resources'  # nosec
+PROVIDER_TOKEN = 'provider'  # nosec
+FUNCTIONS_TOKEN = 'functions'  # nosec
+ENVIRONMENT_TOKEN = 'environment'  # nosec
+STACK_TAGS_TOKEN = 'stackTags'  # nosec
+TAGS_TOKEN = 'tags'  # nosec
 SUPPORTED_PROVIDERS = ['aws']
 
-DEFAULT_VAR_PATTERN = r"\${([^{}]+?)}"
 QUOTED_WORD_SYNTAX = re.compile(r"(?:('|\").*?\1)")
 FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 
@@ -33,7 +37,7 @@ def parse(filename):
     template = None
     template_lines = None
     try:
-        (template, template_lines) = cfn_yaml.load(filename)
+        (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.SLS)
         if not template or not is_checked_sls_template(template):
             return
     except IOError as e:
@@ -51,8 +55,11 @@ def parse(filename):
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
         return
-    except YAMLError as e:
-        print(e)
+    except CfnParseError:
+        logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
+        return
+    except YAMLError:
+        logger.warning(f"Failed to parse file {filename} as a yaml")
         return
 
     process_variables(template, filename)
@@ -63,11 +70,11 @@ def parse(filename):
 def is_checked_sls_template(template):
     if template.__contains__('provider'):
         # Case provider is a dictionary
-        if isinstance(template['provider'], dict_node):
-            if template['provider'].get('name').lower() not in SUPPORTED_PROVIDERS:
+        if isinstance(template['provider'], DictNode):
+            if template['provider'].get('name', '').lower() not in SUPPORTED_PROVIDERS:
                 return False
         # Case provider is direct provider name
-        if isinstance(template['provider'], str_node):
+        if isinstance(template['provider'], StrNode):
             if template['provider'] not in SUPPORTED_PROVIDERS:
                 return False
         return True
@@ -75,7 +82,7 @@ def is_checked_sls_template(template):
 
 
 def template_contains_cfn_resources(template):
-    if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], dict_node):
+    if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], DictNode):
         if template[CFN_RESOURCES_TOKEN].get('Resources'):
             return True
     return False
@@ -100,7 +107,7 @@ Modifies the template data in-place to resolve variables.
         # Remove to prevent self-matching during processing
         del template["provider"]["variableSyntax"]
     else:
-        var_pattern = DEFAULT_VAR_PATTERN
+        var_pattern = SLS_DEFAULT_VAR_PATTERN
     compiled_var_pattern = re.compile(var_pattern)
 
     # Processing is done in a loop to deal with chained references and the like.
@@ -109,7 +116,7 @@ Modifies the template data in-place to resolve variables.
     # More than a couple loops isn't normally expected.
     # NOTE: If this approach proves to be a performance liability, a DAG will be needed.
     loop_count = 0
-    for i in range(0, 25):
+    for _ in range(0, 25):
         loop_count += 1
         made_change = False
 
@@ -146,7 +153,7 @@ Generic processing loop for variables.
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
     def process_items_helper(key_value_iterator, data_map):
         made_change = False
-        for key, value in key_value_iterator():
+        for key, value in key_value_iterator:
             if isinstance(value, str):
                 altered_value = value
                 for match in var_pattern.finditer(value):
@@ -171,11 +178,11 @@ Generic processing loop for variables.
                 if process_variables_loop(value, var_pattern, param_lookup_function):
                     made_change = True
             elif isinstance(value, list):
-                if process_items_helper(lambda: enumerate(value), value):
+                if process_items_helper(enumerate(value), value):
                     made_change = True
         return made_change
 
-    return process_items_helper(template.items, template)
+    return process_items_helper(template.items(), template)
 
 
 def _load_var_data(
@@ -255,26 +262,25 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
                     data = json.load(f)
                 elif file_location.endswith(".yml") or file_location.endswith(".yaml"):
                     data = yaml.safe_load(f)
-        except:
+        except Exception:
             data = {}
         file_data_cache[file_location] = data
     return data
 
 
-def _token_to_type_and_loc(token):
+def _token_to_type_and_loc(token: str) -> Tuple[Optional[str], Optional[str]]:
     file_match = FILE_LOCATION_PATTERN.match(token)
     if file_match is not None:
         if ":" not in token:
             return file_match[0], None
 
-        return file_match[0].strip(), \
-               token[len(file_match[0])+1:].strip()       # +1 for colon
+        return file_match[0].strip(), token[len(file_match[0]) + 1 :].strip()  # +1 for colon
 
     if ":" not in token:
         return None, token
 
     index = token.index(":")
-    return token[:index].strip(), token[index+1:].strip()
+    return token[:index].strip(), token[index + 1 :].strip()
 
 
 def _parse_var(var_str):
@@ -297,20 +303,20 @@ param_lookup_function parameter of process_variables_loop for more info.
     return var_type, var_loc, fallback_type, fallback_loc
 
 
-def _tokenize_by_commas(string: str):
+def _tokenize_by_commas(string: str) -> Optional[List[str]]:
     """
-Tokenize the given value by commas, respecting quoted blocks.
+    Tokenize the given value by commas, respecting quoted blocks.
     """
     if not string:
         return None
 
     quoted_comma_ranges = [range(m.start(0), m.end(0)) for m in QUOTED_WORD_SYNTAX.finditer(string)]
 
-    def clean(s):
-        s = s.strip()                               # whitespace
-        if len(s) > 0 and s[0] == '"' and s[len(s)-1] == '"':      # surrounding quotes
+    def clean(s: str) -> str:
+        s = s.strip()  # whitespace
+        if len(s) > 0 and s[0] == '"' and s[len(s) - 1] == '"':  # surrounding quotes
             s = s[1:-1]
-        if len(s) > 0 and s[0] == "'" and s[len(s)-1] == "'":
+        if len(s) > 0 and s[0] == "'" and s[len(s) - 1] == "'":
             s = s[1:-1]
         return s
 
@@ -327,7 +333,7 @@ Tokenize the given value by commas, respecting quoted blocks.
         if is_quoted:
             search_start_index = index + 1
         else:
-            tokens.append(clean(string[block_start_index: index]))
+            tokens.append(clean(string[block_start_index:index]))
             block_start_index = index + 1
             search_start_index = block_start_index
         index = string.find(",", search_start_index)

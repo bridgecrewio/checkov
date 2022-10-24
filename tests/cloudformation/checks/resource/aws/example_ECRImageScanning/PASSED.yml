@@ -6,3 +6,9 @@ Resources:
       RepositoryName: "test"
       ImageScanningConfiguration:
         ScanOnPush: true
+  ImageScanTrueString:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: "test"
+      ImageScanningConfiguration:
+        ScanOnPush: "true"

@@ -22,7 +22,7 @@ class TestGKELegacyInstanceMetadataDisabled(unittest.TestCase):
         }
         failing_resources = {
             'google_container_cluster.fail1',
-            'google_container_cluster.fail2' 
+            'google_container_cluster.fail2'
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

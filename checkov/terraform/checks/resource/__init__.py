@@ -1,5 +1,14 @@
-from checkov.terraform.checks.resource.aws import *
-from checkov.terraform.checks.resource.gcp import *
-from checkov.terraform.checks.resource.azure import *
-from checkov.terraform.checks.resource.github import *
-from checkov.terraform.checks.resource.linode import *
+from checkov.terraform.checks.resource.aws import *  # noqa
+from checkov.terraform.checks.resource.gcp import *  # noqa
+from checkov.terraform.checks.resource.azure import *  # noqa
+from checkov.terraform.checks.resource.github import *  # noqa
+from checkov.terraform.checks.resource.gitlab import *  # noqa
+from checkov.terraform.checks.resource.linode import *  # noqa
+from checkov.terraform.checks.resource.oci import *  # noqa
+from checkov.terraform.checks.resource.openstack import *  # noqa
+from checkov.terraform.checks.resource.panos import *  # noqa
+from checkov.terraform.checks.resource.digitalocean import *  # noqa
+from checkov.terraform.checks.resource.alicloud import *  # noqa
+from checkov.terraform.checks.resource.kubernetes import *  # noqa
+from checkov.terraform.checks.resource.yandexcloud import *  # noqa
+from checkov.terraform.checks.resource.ncp import *  # noqa

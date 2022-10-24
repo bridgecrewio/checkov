@@ -1,0 +1,641 @@
+{
+  "format_version": "0.2",
+  "terraform_version": "1.0.7",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_autoscaling_group.example",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "capacity_rebalance": null,
+            "enabled_metrics": null,
+            "force_delete": false,
+            "force_delete_warm_pool": false,
+            "health_check_grace_period": 300,
+            "health_check_type": "ELB",
+            "initial_lifecycle_hook": [],
+            "instance_refresh": [],
+            "launch_configuration": "test",
+            "launch_template": [],
+            "load_balancers": null,
+            "max_instance_lifetime": null,
+            "max_size": 1,
+            "metrics_granularity": "1Minute",
+            "min_elb_capacity": null,
+            "min_size": 1,
+            "mixed_instances_policy": [],
+            "placement_group": null,
+            "protect_from_scale_in": false,
+            "suspended_processes": null,
+            "tag": [],
+            "tags": [
+              {
+                "key": "tag1",
+                "propagate_at_launch": "true",
+                "value": "test"
+              },
+              {
+                "key": "tag2",
+                "propagate_at_launch": "true",
+                "value": "test"
+              }
+            ],
+            "target_group_arns": null,
+            "termination_policies": null,
+            "timeouts": null,
+            "vpc_zone_identifier": [
+              "arn:aws:vpc:some_vpc"
+            ],
+            "wait_for_capacity_timeout": "10m",
+            "wait_for_elb_capacity": null,
+            "warm_pool": []
+          },
+          "sensitive_values": {
+            "availability_zones": [],
+            "initial_lifecycle_hook": [],
+            "instance_refresh": [],
+            "launch_template": [],
+            "mixed_instances_policy": [],
+            "tag": [],
+            "tags": [
+              {},
+              {}
+            ],
+            "vpc_zone_identifier": [
+              false
+            ],
+            "warm_pool": []
+          }
+        },
+        {
+          "address": "aws_autoscaling_group.example2",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "example2",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "capacity_rebalance": null,
+            "enabled_metrics": null,
+            "force_delete": false,
+            "force_delete_warm_pool": false,
+            "health_check_grace_period": 300,
+            "initial_lifecycle_hook": [],
+            "instance_refresh": [],
+            "launch_configuration": "test",
+            "launch_template": [],
+            "load_balancers": null,
+            "max_instance_lifetime": null,
+            "max_size": 1,
+            "metrics_granularity": "1Minute",
+            "min_elb_capacity": null,
+            "min_size": 1,
+            "mixed_instances_policy": [],
+            "placement_group": null,
+            "protect_from_scale_in": false,
+            "suspended_processes": null,
+            "tag": [
+              {
+                "key": "tag1",
+                "propagate_at_launch": true,
+                "value": "test"
+              },
+              {
+                "key": "tag2",
+                "propagate_at_launch": true,
+                "value": "test"
+              }
+            ],
+            "tags": null,
+            "target_group_arns": null,
+            "termination_policies": null,
+            "timeouts": null,
+            "wait_for_capacity_timeout": "10m",
+            "wait_for_elb_capacity": null,
+            "warm_pool": []
+          },
+          "sensitive_values": {
+            "availability_zones": [],
+            "initial_lifecycle_hook": [],
+            "instance_refresh": [],
+            "launch_template": [],
+            "mixed_instances_policy": [],
+            "tag": [
+              {},
+              {}
+            ],
+            "vpc_zone_identifier": [],
+            "warm_pool": []
+          }
+        },
+        {
+          "address": "aws_dynamodb_table.basic-dynamodb-table",
+          "mode": "managed",
+          "type": "aws_dynamodb_table",
+          "name": "basic-dynamodb-table",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "attribute": [
+              {
+                "name": "test",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PROVISIONED",
+            "global_secondary_index": [],
+            "hash_key": "test",
+            "local_secondary_index": [],
+            "name": "test",
+            "point_in_time_recovery": [
+              {
+                "enabled": true
+              }
+            ],
+            "range_key": "test",
+            "read_capacity": 20,
+            "replica": [],
+            "server_side_encryption": [
+              {
+                "enabled": true,
+                "kms_key_arn": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+              }
+            ],
+            "stream_enabled": null,
+            "tags": {
+              "tag1": "test",
+              "tag2": "test"
+            },
+            "tags_all": {
+              "tag1": "test",
+              "tag2": "test"
+            },
+            "timeouts": null,
+            "ttl": [],
+            "write_capacity": 20
+          },
+          "sensitive_values": {
+            "attribute": [
+              {}
+            ],
+            "global_secondary_index": [],
+            "local_secondary_index": [],
+            "point_in_time_recovery": [
+              {}
+            ],
+            "replica": [],
+            "server_side_encryption": [
+              {}
+            ],
+            "tags": {},
+            "tags_all": {},
+            "ttl": []
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_autoscaling_group.example",
+      "mode": "managed",
+      "type": "aws_autoscaling_group",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "capacity_rebalance": null,
+          "enabled_metrics": null,
+          "force_delete": false,
+          "force_delete_warm_pool": false,
+          "health_check_grace_period": 300,
+          "health_check_type": "ELB",
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_configuration": "test",
+          "launch_template": [],
+          "load_balancers": null,
+          "max_instance_lifetime": null,
+          "max_size": 1,
+          "metrics_granularity": "1Minute",
+          "min_elb_capacity": null,
+          "min_size": 1,
+          "mixed_instances_policy": [],
+          "placement_group": null,
+          "protect_from_scale_in": false,
+          "suspended_processes": null,
+          "tag": [],
+          "tags": [
+            {
+              "key": "tag1",
+              "propagate_at_launch": "true",
+              "value": "test"
+            },
+            {
+              "key": "tag2",
+              "propagate_at_launch": "true",
+              "value": "test"
+            }
+          ],
+          "target_group_arns": null,
+          "termination_policies": null,
+          "timeouts": null,
+          "vpc_zone_identifier": [
+            "arn:aws:vpc:some_vpc"
+          ],
+          "wait_for_capacity_timeout": "10m",
+          "wait_for_elb_capacity": null,
+          "warm_pool": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zones": true,
+          "default_cooldown": true,
+          "desired_capacity": true,
+          "id": true,
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_template": [],
+          "mixed_instances_policy": [],
+          "name": true,
+          "name_prefix": true,
+          "service_linked_role_arn": true,
+          "tag": [],
+          "tags": [
+            {},
+            {}
+          ],
+          "vpc_zone_identifier": [
+            false
+          ],
+          "warm_pool": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "availability_zones": [],
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_template": [],
+          "mixed_instances_policy": [],
+          "tag": [],
+          "tags": [
+            {},
+            {}
+          ],
+          "vpc_zone_identifier": [
+            false
+          ],
+          "warm_pool": []
+        }
+      }
+    },
+    {
+      "address": "aws_autoscaling_group.example2",
+      "mode": "managed",
+      "type": "aws_autoscaling_group",
+      "name": "example2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "capacity_rebalance": null,
+          "enabled_metrics": null,
+          "force_delete": false,
+          "force_delete_warm_pool": false,
+          "health_check_grace_period": 300,
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_configuration": "test",
+          "launch_template": [],
+          "load_balancers": null,
+          "max_instance_lifetime": null,
+          "max_size": 1,
+          "metrics_granularity": "1Minute",
+          "min_elb_capacity": null,
+          "min_size": 1,
+          "mixed_instances_policy": [],
+          "placement_group": null,
+          "protect_from_scale_in": false,
+          "suspended_processes": null,
+          "tag": [
+            {
+              "key": "tag1",
+              "propagate_at_launch": true,
+              "value": "test"
+            },
+            {
+              "key": "tag2",
+              "propagate_at_launch": true,
+              "value": "test"
+            }
+          ],
+          "tags": null,
+          "target_group_arns": null,
+          "termination_policies": null,
+          "timeouts": null,
+          "wait_for_capacity_timeout": "10m",
+          "wait_for_elb_capacity": null,
+          "warm_pool": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zones": true,
+          "default_cooldown": true,
+          "desired_capacity": true,
+          "health_check_type": true,
+          "id": true,
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_template": [],
+          "mixed_instances_policy": [],
+          "name": true,
+          "name_prefix": true,
+          "service_linked_role_arn": true,
+          "tag": [
+            {},
+            {}
+          ],
+          "vpc_zone_identifier": true,
+          "warm_pool": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "availability_zones": [],
+          "initial_lifecycle_hook": [],
+          "instance_refresh": [],
+          "launch_template": [],
+          "mixed_instances_policy": [],
+          "tag": [
+            {},
+            {}
+          ],
+          "vpc_zone_identifier": [],
+          "warm_pool": []
+        }
+      }
+    },
+    {
+      "address": "aws_dynamodb_table.basic-dynamodb-table",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "basic-dynamodb-table",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "attribute": [
+            {
+              "name": "test",
+              "type": "S"
+            }
+          ],
+          "billing_mode": "PROVISIONED",
+          "global_secondary_index": [],
+          "hash_key": "test",
+          "local_secondary_index": [],
+          "name": "test",
+          "point_in_time_recovery": [
+            {
+              "enabled": true
+            }
+          ],
+          "range_key": "test",
+          "read_capacity": 20,
+          "replica": [],
+          "server_side_encryption": [
+            {
+              "enabled": true,
+              "kms_key_arn": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+            }
+          ],
+          "stream_enabled": null,
+          "tags": {
+            "tag1": "test",
+            "tag2": "test"
+          },
+          "tags_all": {
+            "tag1": "test",
+            "tag2": "test"
+          },
+          "timeouts": null,
+          "ttl": [],
+          "write_capacity": 20
+        },
+        "after_unknown": {
+          "arn": true,
+          "attribute": [
+            {}
+          ],
+          "global_secondary_index": [],
+          "id": true,
+          "local_secondary_index": [],
+          "point_in_time_recovery": [
+            {}
+          ],
+          "replica": [],
+          "server_side_encryption": [
+            {}
+          ],
+          "stream_arn": true,
+          "stream_label": true,
+          "stream_view_type": true,
+          "tags": {},
+          "tags_all": {},
+          "ttl": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "attribute": [
+            {}
+          ],
+          "global_secondary_index": [],
+          "local_secondary_index": [],
+          "point_in_time_recovery": [
+            {}
+          ],
+          "replica": [],
+          "server_side_encryption": [
+            {}
+          ],
+          "tags": {},
+          "tags_all": {},
+          "ttl": []
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_autoscaling_group.example",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "health_check_type": {
+              "constant_value": "ELB"
+            },
+            "launch_configuration": {
+              "constant_value": "test"
+            },
+            "max_size": {
+              "constant_value": 1
+            },
+            "min_size": {
+              "constant_value": 1
+            },
+            "tags": {
+              "constant_value": [
+                {
+                  "key": "tag1",
+                  "propagate_at_launch": true,
+                  "value": "test"
+                },
+                {
+                  "key": "tag2",
+                  "propagate_at_launch": true,
+                  "value": "test"
+                }
+              ]
+            },
+            "vpc_zone_identifier": {
+              "constant_value": [
+                "arn:aws:vpc:some_vpc"
+              ]
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_autoscaling_group.example2",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "example2",
+          "provider_config_key": "aws",
+          "expressions": {
+            "launch_configuration": {
+              "constant_value": "test"
+            },
+            "max_size": {
+              "constant_value": 1
+            },
+            "min_size": {
+              "constant_value": 1
+            },
+            "tag": [
+              {
+                "key": {
+                  "constant_value": "tag1"
+                },
+                "propagate_at_launch": {
+                  "constant_value": true
+                },
+                "value": {
+                  "constant_value": "test"
+                }
+              },
+              {
+                "key": {
+                  "constant_value": "tag2"
+                },
+                "propagate_at_launch": {
+                  "constant_value": true
+                },
+                "value": {
+                  "constant_value": "test"
+                }
+              }
+            ]
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_dynamodb_table.basic-dynamodb-table",
+          "mode": "managed",
+          "type": "aws_dynamodb_table",
+          "name": "basic-dynamodb-table",
+          "provider_config_key": "aws",
+          "expressions": {
+            "attribute": [
+              {
+                "name": {
+                  "constant_value": "test"
+                },
+                "type": {
+                  "constant_value": "S"
+                }
+              },
+              {
+                "name": {
+                  "constant_value": "test"
+                },
+                "type": {
+                  "constant_value": "S"
+                }
+              }
+            ],
+            "billing_mode": {
+              "constant_value": "PROVISIONED"
+            },
+            "hash_key": {
+              "constant_value": "test"
+            },
+            "name": {
+              "constant_value": "test"
+            },
+            "point_in_time_recovery": [
+              {
+                "enabled": {
+                  "constant_value": true
+                }
+              }
+            ],
+            "range_key": {
+              "constant_value": "test"
+            },
+            "read_capacity": {
+              "constant_value": 20
+            },
+            "server_side_encryption": [
+              {
+                "enabled": {
+                  "constant_value": true
+                },
+                "kms_key_arn": {
+                  "constant_value": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "tag1": "test",
+                "tag2": "test"
+              }
+            },
+            "write_capacity": {
+              "constant_value": 20
+            }
+          },
+          "schema_version": 1
+        }
+      ]
+    }
+  }
+}

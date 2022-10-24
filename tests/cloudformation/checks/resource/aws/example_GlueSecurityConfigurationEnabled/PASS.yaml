@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  CrawlerEnabled:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: example
+      Role: arn:aws:iam::123456789012:role/role
+      Targets:
+        S3Targets:
+          - Path: s3-bucket
+      CrawlerSecurityConfiguration: security-conf
+  DevEndpointEnabled:
+    Type: AWS::Glue::DevEndpoint
+    Properties:
+      EndpointName: example
+      RoleArn: arn:aws:iam::123456789012:role/role
+      SecurityConfiguration: security-conf
+  JobEnabled:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: s3://aws-glue-scripts//prod-job
+      Name: example
+      Role: arn:aws:iam::123456789012:role/role
+      SecurityConfiguration: security-conf

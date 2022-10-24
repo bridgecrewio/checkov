@@ -1,0 +1,9 @@
+metadata:
+  id: "LT"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_s3_bucket
+  attribute: bucket
+  operator: less_than
+  value: ccc

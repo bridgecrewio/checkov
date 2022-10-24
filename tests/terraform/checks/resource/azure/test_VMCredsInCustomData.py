@@ -1,68 +1,43 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.VMCredsInCustomData import check
-
-resources = """
-resource "azurerm_virtual_machine" "secret" {
-  name                  = "${var.prefix}-vm"
-  
-  os_profile {
-    computer_name  = "hostname"
-    custom_data = <<EOF
-0000-0000-0000-0000-000000000000
-EOF
-  }
-}
-
-resource "azurerm_virtual_machine" "no_secret" {
-  name                  = "${var.prefix}-vm"
-  
-  os_profile {
-    computer_name  = "hostname"
-    custom_data = <<EOF
-hello
-EOF
-  }
-}
-
-resource "azurerm_virtual_machine" "no_custom_data" {
-  name                  = "${var.prefix}-vm"
-  
-  os_profile {
-    computer_name  = "hostname"
-  }
-}
-
-resource "azurerm_virtual_machine" "no_os_profile" {
-  name                  = "${var.prefix}-vm"
-}
-"""
+from checkov.terraform.runner import Runner
 
 
 class TestVMCredsInCustomData(unittest.TestCase):
-
     def test(self):
-        hcl_res = hcl2.loads(resources)
+        # given
+        test_files_dir = Path(__file__).parent / "example_VMCredsInCustomData"
 
-        resource_conf = hcl_res['resource'][0]['azurerm_virtual_machine']['secret']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-        resource_conf = hcl_res['resource'][1]['azurerm_virtual_machine']['no_secret']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # then
+        summary = report.get_summary()
 
-        resource_conf = hcl_res['resource'][2]['azurerm_virtual_machine']['no_custom_data']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "azurerm_virtual_machine.no_secret",
+            "azurerm_virtual_machine.no_custom_data",
+            "azurerm_virtual_machine.empty_os_profile",
+            "azurerm_virtual_machine.no_os_profile",
+        }
+        failing_resources = {
+            "azurerm_virtual_machine.secret",
+        }
 
-        resource_conf = hcl_res['resource'][3]['azurerm_virtual_machine']['no_os_profile']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

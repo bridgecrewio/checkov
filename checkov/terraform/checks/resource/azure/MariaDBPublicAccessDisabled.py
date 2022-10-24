@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class MariaDBPublicAccessDisabled(BaseResourceCheck):
@@ -11,13 +12,13 @@ class MariaDBPublicAccessDisabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        #Whether or not public network access is allowed for this server. Defaults to true. Which is not optimal
-        if 'public_network_access_enabled' not in conf: 
+        # Whether or not public network access is allowed for this server. Defaults to true. Which is not optimal
+        if 'public_network_access_enabled' not in conf or conf['public_network_access_enabled'][0]:
             return CheckResult.FAILED
-        else:
-            if  conf['public_network_access_enabled'][0]:
-                return CheckResult.FAILED
-            else:
-                return CheckResult.PASSED
+        return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['public_network_access_enabled']
+
 
 check = MariaDBPublicAccessDisabled()

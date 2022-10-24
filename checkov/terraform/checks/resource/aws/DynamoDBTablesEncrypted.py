@@ -15,11 +15,15 @@ class DynamoDBTablesEncrypted(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if 'server_side_encryption' in conf.keys():
             sse = conf['server_side_encryption'][0]
-            enabled = sse.get("enabled")
-            kms_key_arn = sse.get("kms_key_arn")
-            if enabled == [True] and kms_key_arn is not None:
-                return CheckResult.PASSED
+            if isinstance(sse, dict):
+                enabled = sse.get("enabled", None)
+                kms_key_arn = sse.get("kms_key_arn", None)
+                if enabled == [True] and kms_key_arn is not None:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['server_side_encryption/[0]/enabled', 'server_side_encryption/[0]/kms_key_arn']
 
 
 check = DynamoDBTablesEncrypted()

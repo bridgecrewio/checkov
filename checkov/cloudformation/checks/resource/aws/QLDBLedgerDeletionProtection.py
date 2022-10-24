@@ -1,6 +1,6 @@
 from typing import Dict
 
-from checkov.cloudformation.parser.node import str_node, dict_node
+from checkov.common.parsers.node import StrNode, DictNode
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -13,7 +13,7 @@ class QLDBLedgerDeletionProtection(BaseResourceValueCheck):
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: Dict[str_node, dict_node]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[StrNode, DictNode]) -> CheckResult:
         # deletion protection is enabled on default
         if "DeletionProtection" not in conf.get("Properties", {}):
             return CheckResult.PASSED

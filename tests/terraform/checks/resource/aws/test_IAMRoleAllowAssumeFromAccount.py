@@ -1,70 +1,43 @@
-import unittest
 
+import unittest
+from pathlib import Path
+
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.IAMRoleAllowAssumeFromAccount import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestIAMRoleAllowAssumeFromAccount(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_IAMRoleAllowAssumeFromAccount"
 
-    def test_failure_1(self):
-        resource_conf = {
-            'name': ['${var.name}-default'],
-            'assume_role_policy': ['{\n  "Version": "2012-10-17",\n  '
-                                     '"Statement": [\n    '
-                                   '{\n      '
-                                     '"Action": "sts:AssumeRole",'
-                                     '\n      "Principal": {\n        '
-                                     '"AWS": '
-                                     '"123123123123"\n      },'
-                                     '\n      "Effect": "Allow",'
-                                     '\n      "Sid": ""\n    }\n  ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_2(self):
-        resource_conf = {
-            'name': ['${var.name}-default'],
-            'assume_role_policy': ['{\n  "Version": "2012-10-17",\n  '
-                                     '"Statement": [\n    '
-                                   '{\n      '
-                                     '"Action": "sts:AssumeRole",'
-                                     '\n      "Principal": {\n        '
-                                     '"AWS": '
-                                     '"arn:aws:iam::123123123123:root"\n      },'
-                                     '\n      "Effect": "Allow",'
-                                     '\n      "Sid": ""\n    }\n  ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-
-    def test_success(self):
-        resource_conf = {
-            'name': ['${var.name}-default'],
-            'assume_role_policy': ['{\n  "Version": "2012-10-17",\n  '
-                                     '"Statement": [\n    '
-                                   '{\n      '
-                                     '"Action": "sts:AssumeRole",'
-                                     '\n      "Principal": {\n        '
-                                     '"Service": '
-                                     '"ecs-tasks.amazonaws.com"\n      },'
-                                     '\n      "Effect": "Allow",'
-                                     '\n      "Sid": ""\n    }\n  ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_empty_iam_role(self):
-        resource_conf = {
-            'name': ['${var.name}-default'],
-            'assume_role_policy': ""}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_empty_iam_role_2(self):
-        resource_conf = {
-            'name': ['${var.name}-default'],
+        passing_resources = {
+            "aws_iam_role.pass",
+            "aws_iam_role.pass2",
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "aws_iam_role.fail",
+            "aws_iam_role.fail2",
+        }
 
-if __name__ == '__main__':
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()

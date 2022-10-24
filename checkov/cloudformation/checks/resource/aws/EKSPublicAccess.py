@@ -1,4 +1,7 @@
-##########################################################################################################
-### CloudFormation Currently (Feb 2020) doesn't support EKS Public access settings or CIDR restrictions ##
-### https://github.com/aws-cloudformation/aws-cloudformation-coverage-roadmap/issues/118
-##########################################################################################################
+# CloudFormation does not currently support.
+#
+# September 2021
+#
+# https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/EKSPublicAccess.py
+#
+# https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/118

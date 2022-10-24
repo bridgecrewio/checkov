@@ -73,7 +73,7 @@ class TestKeyVaultEnablesFirewallRulesSettings(unittest.TestCase):
                     ]
                   }
                   network_acls {
-                    default_action = "Deny" 
+                    default_action = "Deny"
                   }
                 }
                 """)
@@ -111,7 +111,7 @@ class TestKeyVaultEnablesFirewallRulesSettings(unittest.TestCase):
                     ]
                   }
                   network_acls {
-                    default_action = "Allow" 
+                    default_action = "Allow"
                   }
                 }
                 """)

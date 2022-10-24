@@ -1,0 +1,69 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "RootRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "root",
+                        "PolicyDocument": {
+                            "Statement": [
+                              {
+                                "Action": [
+                                  "s3:ListBucket*",
+                                  "s3:HeadBucket",
+                                  "s3:Get*"
+                                ],
+                                "Effect": "Allow",
+                                "Resource": [
+                                  "arn:aws:s3:::b1",
+                                  "arn:aws:s3:::b1/*",
+                                  "arn:aws:s3:::b2",
+                                  "arn:aws:s3:::b2/*"
+                                ],
+                                "Sid": ""
+                              },
+                              {
+                                "Action": "s3:PutObject*",
+                                "Effect": "Allow",
+                                "Resource": "arn:aws:s3:::b1/*",
+                                "Sid": ""
+                              }
+                            ],
+                            "Version": "2012-10-17"
+                          }
+                    }
+                ]
+            }
+        },
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "RootRole"
+                    }
+                ]
+            }
+        }
+    }
+}

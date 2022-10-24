@@ -1,13 +1,13 @@
+import itertools
 import logging
 import operator
-import re
 from functools import reduce
 from typing import List, Tuple, Optional, Union, Generator
 
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.cloudformation.parser.node import dict_node, str_node, list_node
-from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
+from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.typing import _SkippedCheck
+from checkov.common.util.suppression import collect_suppressions_for_context
 
 ENDLINE = "__endline__"
 STARTLINE = "__startline__"
@@ -18,7 +18,7 @@ class ContextParser(object):
     CloudFormation template context parser
     """
 
-    def __init__(self, cf_file: str, cf_template: dict_node, cf_template_lines: List[Tuple[int, str]]) -> None:
+    def __init__(self, cf_file: str, cf_template: DictNode, cf_template_lines: List[Tuple[int, str]]) -> None:
         self.cf_file = cf_file
         self.cf_template = cf_template
         self.cf_template_lines = cf_template_lines
@@ -41,12 +41,12 @@ class ContextParser(object):
                 )
                 self._set_in_dict(self.cf_template, ref, default_value)
 
-                ## TODO - Add Variable Eval Message for Output
+                # TODO - Add Variable Eval Message for Output
                 # Output in Checkov looks like this:
                 # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
     @staticmethod
-    def extract_cf_resource_id(cf_resource: dict_node, cf_resource_name: str_node) -> Optional[str]:
+    def extract_cf_resource_id(cf_resource: DictNode, cf_resource_name: StrNode) -> Optional[str]:
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
             return None
         if "Type" not in cf_resource:
@@ -55,7 +55,7 @@ class ContextParser(object):
         return f"{cf_resource['Type']}.{cf_resource_name}"
 
     def extract_cf_resource_code_lines(
-        self, cf_resource: dict_node
+        self, cf_resource: DictNode
     ) -> Tuple[Optional[List[int]], Optional[List[Tuple[int, str]]]]:
         find_lines_result_set = set(self.find_lines(cf_resource, STARTLINE))
         if len(find_lines_result_set) >= 1:
@@ -92,7 +92,7 @@ class ContextParser(object):
         return code_lines[start:end]
 
     @staticmethod
-    def find_lines(node: Union[list_node, dict_node], kv: str) -> Generator[int, None, None]:
+    def find_lines(node: Union[ListNode, DictNode], kv: str) -> Generator[int, None, None]:
         # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker
@@ -109,35 +109,39 @@ class ContextParser(object):
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
-            for j in node.values():
-                for x in ContextParser.find_lines(j, kv):
-                    yield x
 
     @staticmethod
-    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]]) -> List[_SkippedCheck]:
-        skipped_checks = []
-        bc_id_mapping = bc_integration.get_id_mapping()
-        ckv_to_bc_id_mapping = bc_integration.get_ckv_to_bc_id_mapping()
-        for line in entity_code_lines:
-            skip_search = re.search(COMMENT_REGEX, str(line))
-            if skip_search:
-                skipped_check: _SkippedCheck = {
-                    "id": skip_search.group(2),
-                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided",
-                }
-                # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
-                    skipped_check["bc_id"] = skipped_check["id"]
-                    skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
-                elif ckv_to_bc_id_mapping:
-                    skipped_check["bc_id"] = ckv_to_bc_id_mapping.get(skipped_check["id"])
+    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
+        skipped_checks = collect_suppressions_for_context(code_lines=entity_code_lines)
 
-                skipped_checks.append(skipped_check)
+        bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
+        if resource_config:
+            metadata = resource_config.get("Metadata")
+            if metadata:
+                ckv_skip = metadata.get("checkov", {}).get("skip", [])
+                bc_skip = metadata.get("bridgecrew", {}).get("skip", [])
+                if ckv_skip or bc_skip:
+                    for skip in itertools.chain(ckv_skip, bc_skip):
+                        skip_id = skip.get("id")
+                        skip_comment = skip.get("comment", "No comment provided")
+                        if skip_id is None:
+                            logging.warning("Check suppression is missing key 'id'")
+                            continue
+
+                        skipped_check = {"id": skip_id, "suppress_comment": skip_comment}
+                        if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
+                            skipped_check["bc_id"] = skipped_check["id"]
+                            skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
+                        elif metadata_integration.check_metadata:
+                            skipped_check["bc_id"] = metadata_integration.get_bc_id(skipped_check["id"])
+
+                        skipped_checks.append(skipped_check)
+
         return skipped_checks
 
     @staticmethod
     def search_deep_keys(
-        search_text: str, cfn_dict: Union[str_node, list_node, dict_node], path: List[str]
+        search_text: str, cfn_dict: Union[StrNode, ListNode, DictNode], path: List[str]
     ) -> List[List[Union[int, str]]]:
         """Search deep for keys and get their values"""
         keys: List[List[Union[int, str]]] = []
@@ -166,7 +170,7 @@ class ContextParser(object):
 
         return keys
 
-    def _set_in_dict(self, data_dict: dict_node, map_list: List[Union[int, str]], value: str_node) -> None:
+    def _set_in_dict(self, data_dict: DictNode, map_list: List[Union[int, str]], value: StrNode) -> None:
         v = self._get_from_dict(data_dict, map_list[:-1])
         # save the original marks so that we do not copy in the line numbers of the parameter element
         # but not all ref types will have these attributes
@@ -183,5 +187,5 @@ class ContextParser(object):
             v[map_list[-1]].end_mark = end
 
     @staticmethod
-    def _get_from_dict(data_dict: dict_node, map_list: List[Union[int, str]]) -> Union[list_node, dict_node]:
+    def _get_from_dict(data_dict: DictNode, map_list: List[Union[int, str]]) -> Union[ListNode, DictNode]:
         return reduce(operator.getitem, map_list, data_dict)

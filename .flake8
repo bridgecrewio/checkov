@@ -1,0 +1,14 @@
+# can be moved to pyproject.toml some day
+# https://github.com/PyCQA/flake8/issues/234
+[flake8]
+max-line-length = 120
+# E203,E501 don't work with black together
+ignore = E203,E501,E731,W292,W293,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B950,TC001,TC003,TC006
+select = C,E,F,W,B,B9,A,TC
+extend-exclude = .github, .pytest_cache, docs/*, venv/*, tests/*, flake8_plugins/*
+
+[flake8:local-plugins]
+extension =
+  CCE = flake8_plugins.flake8_class_attributes_plugin.flake8_class_attributes.checker:ClassAttributesChecker
+paths =
+  . flake8_plugins/flake8_class_attributes_plugin/flake8_class_attributes

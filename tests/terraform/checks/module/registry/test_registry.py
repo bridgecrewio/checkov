@@ -2,8 +2,6 @@ import os
 import unittest
 from unittest.mock import patch
 
-from checkov.runner_filter import RunnerFilter
-
 
 class TestRegistry(unittest.TestCase):
 

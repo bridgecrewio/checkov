@@ -3,7 +3,11 @@ Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
 import logging
-import six
+import platform
+from enum import Enum
+from pathlib import Path
+from typing import List, Tuple
+
 from yaml import MappingNode
 from yaml import ScalarNode
 from yaml import SequenceNode
@@ -13,8 +17,9 @@ from yaml.constructor import SafeConstructor
 from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
+from charset_normalizer import from_path
 
-from checkov.cloudformation.parser.node import str_node, dict_node, list_node
+from checkov.common.parsers.node import StrNode, DictNode, ListNode
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
@@ -29,6 +34,12 @@ UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
 FN_PREFIX = 'Fn::'
 
 LOGGER = logging.getLogger(__name__)
+
+
+class ContentType(str, Enum):
+    CFN = "CFN"
+    SLS = "SLS"
+    TFPLAN = "TFPLAN"
 
 
 class CfnParseError(ConstructorError):
@@ -52,10 +63,24 @@ class NodeConstructor(SafeConstructor):
     Node Constructors for loading different types in Yaml
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, content_type: ContentType = None):
         # Call the base class constructor
         super(NodeConstructor, self).__init__()
+        self.add_constructor(
+            u'tag:yaml.org,2002:map',
+            NodeConstructor.construct_yaml_map)
 
+        self.add_constructor(
+            u'tag:yaml.org,2002:str',
+            NodeConstructor.construct_yaml_str)
+
+        self.add_constructor(
+            u'tag:yaml.org,2002:seq',
+            NodeConstructor.construct_yaml_seq)
+        if content_type != ContentType.TFPLAN:
+            NodeConstructor.add_constructor(
+                u'tag:yaml.org,2002:null',
+                NodeConstructor.construct_yaml_null_error)
         self.filename = filename
 
     # To support lazy loading, the original constructors first yield
@@ -73,27 +98,35 @@ class NodeConstructor(SafeConstructor):
         for key_node, value_node in node.value:
             key = self.construct_object(key_node, False)
             value = self.construct_object(value_node, False)
-
+            try:
+                if isinstance(key, dict):
+                    key = frozenset(key.keys()), frozenset(key.values())
+                if isinstance(key, list):
+                    key = frozenset(key)
+            except TypeError:
+                raise CfnParseError(
+                    self.filename,
+                    f'Unable to construct key {key} (line {key_node.start_mark.line + 1})',
+                    key_node.start_mark.line, key_node.start_mark.column, key) from None
             if key in mapping:
                 raise CfnParseError(
                     self.filename,
-                    'Duplicate resource found "{}" (line {})'.format(
-                        key, key_node.start_mark.line + 1),
+                    f'Duplicate resource found "{key}" (line {key_node.start_mark.line + 1})',
                     key_node.start_mark.line, key_node.start_mark.column, key)
             mapping[key] = value
 
         obj, = SafeConstructor.construct_yaml_map(self, node)
-        return dict_node(obj, node.start_mark, node.end_mark)
+        return DictNode(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_str(self, node):
         obj = SafeConstructor.construct_yaml_str(self, node)
-        assert isinstance(obj, (six.string_types))  # nosec
-        return str_node(obj, node.start_mark, node.end_mark)
+        assert isinstance(obj, str)  # nosec
+        return StrNode(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
         obj, = SafeConstructor.construct_yaml_seq(self, node)
-        assert isinstance(obj, list) # nosec
-        return list_node(obj, node.start_mark, node.end_mark) # nosec
+        assert isinstance(obj, list)  # nosec
+        return ListNode(obj, node.start_mark, node.end_mark)  # nosec
 
     def construct_yaml_null_error(self, node):
         """Throw a null error"""
@@ -104,23 +137,6 @@ class NodeConstructor(SafeConstructor):
             node.start_mark.line, node.start_mark.column, ' ')
 
 
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:map',
-    NodeConstructor.construct_yaml_map)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:str',
-    NodeConstructor.construct_yaml_str)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:seq',
-    NodeConstructor.construct_yaml_seq)
-
-NodeConstructor.add_constructor(
-    u'tag:yaml.org,2002:null',
-    NodeConstructor.construct_yaml_null_error)
-
-
 class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver):
     """
     Class for marked loading YAML
@@ -128,7 +144,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
 
     # pylint: disable=non-parent-init-called,super-init-not-called
 
-    def __init__(self, stream, filename):
+    def __init__(self, stream, filename, content_type: ContentType = None):
         Reader.__init__(self, stream)
         Scanner.__init__(self)
         if cyaml:
@@ -138,7 +154,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         Composer.__init__(self)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)
-        NodeConstructor.__init__(self, filename)
+        NodeConstructor.__init__(self, filename, content_type)
 
     def construct_mapping(self, node, deep=False):
         mapping = super(MarkedLoader, self).construct_mapping(node, deep=deep)
@@ -157,9 +173,14 @@ def multi_constructor(loader, tag_suffix, node):
     if tag_suffix not in UNCONVERTED_SUFFIXES:
         tag_suffix = '{}{}'.format(FN_PREFIX, tag_suffix)
 
-    constructor = None
     if tag_suffix == 'Fn::GetAtt':
         constructor = construct_getatt
+    elif tag_suffix == "Ref" and (isinstance(node.value, list) or isinstance(node.value, dict)):
+        raise CfnParseError(
+            filename="",
+            message='Invalid !Ref: {}'.format(node.value),
+            line_number=0,
+            column_number=0)
     elif isinstance(node, ScalarNode):
         constructor = loader.construct_scalar
     elif isinstance(node, SequenceNode):
@@ -169,7 +190,7 @@ def multi_constructor(loader, tag_suffix, node):
     else:
         raise 'Bad tag: !{}'.format(tag_suffix)
 
-    return dict_node({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
+    return DictNode({tag_suffix: constructor(node)}, node.start_mark, node.end_mark)
 
 
 def construct_getatt(node):
@@ -177,19 +198,19 @@ def construct_getatt(node):
     Reconstruct !GetAtt into a list
     """
 
-    if isinstance(node.value, (six.string_types)):
-        return list_node(node.value.split('.'), node.start_mark, node.end_mark)
+    if isinstance(node.value, str):
+        return ListNode(node.value.split('.'), node.start_mark, node.end_mark)
     if isinstance(node.value, list):
-        return list_node([s.value for s in node.value], node.start_mark, node.end_mark)
+        return ListNode([s.value for s in node.value], node.start_mark, node.end_mark)
 
     raise ValueError('Unexpected node type: {}'.format(type(node.value)))
 
 
-def loads(yaml_string, fname=None):
+def loads(yaml_string, fname=None, content_type: ContentType = None):
     """
     Load the given YAML string
     """
-    loader = MarkedLoader(yaml_string, fname)
+    loader = MarkedLoader(yaml_string, fname, content_type)
     loader.add_multi_constructor('!', multi_constructor)
 
     template = loader.get_single_data()
@@ -200,17 +221,34 @@ def loads(yaml_string, fname=None):
     return template
 
 
-def load(filename):
+def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tuple[int, str]]]:
     """
     Load the given YAML file
     """
+    if platform.system() == "Windows":
+        try:
+            content = str(from_path(filename).best())
+        except UnicodeDecodeError as e:
+            LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
+            raise e
+    else:
+        file_path = filename if isinstance(filename, Path) else Path(filename)
+        try:
+            content = file_path.read_text()
+        except UnicodeDecodeError:
+            LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
+            content = str(from_path(filename).best())
 
-    content = ''
+    if content_type == ContentType.CFN and "Resources" not in content:
+        logging.debug(f'File {filename} is expected to be a CFN template but has no Resources attribute')
+        return {}, []
+    elif content_type == ContentType.SLS and "provider" not in content:
+        logging.debug(f'File {filename} is expected to be an SLS template but has no provider attribute')
+        return {}, []
+    elif content_type == ContentType.TFPLAN and "planned_values" not in content:
+        logging.debug(f'File {filename} is expected to be a TFPLAN file but has no planned_values attribute')
+        return {}, []
 
-    with open(filename) as fp:
-        content = fp.read()
-        fp.seek(0)
-        file_lines = [(ind + 1, line) for (ind, line) in
-                      list(enumerate(fp.readlines()))]
+    file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
-    return (loads(content, filename), file_lines)
+    return loads(content, filename, content_type), file_lines

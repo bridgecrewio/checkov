@@ -32,7 +32,7 @@ class TestCheckTypeNotInSignature(BaseCheck):
 class TestBaseCheck(unittest.TestCase):
 
     def test_entity_type_is_not_required_in_signature(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry(report_type='')
         check = TestCheckTypeNotInSignature()
         registry.register(check)
 

@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceCheck
+from typing import List
 
 
 class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
@@ -14,6 +15,9 @@ class PostgreSQLServerConnectionThrottlingEnabled(BaseResourceCheck):
         if conf['name'][0] == 'connection_throttling' and conf['value'][0] == 'off':
             return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['name', 'value']
 
 
 check = PostgreSQLServerConnectionThrottlingEnabled()

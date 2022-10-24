@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class GKEBasicAuth(BaseResourceCheck):
@@ -23,11 +24,15 @@ class GKEBasicAuth(BaseResourceCheck):
             if username or password:
                 # only if both are set to the empty string it is fine
                 # https://www.terraform.io/docs/providers/google/r/container_cluster.html
-                if len(username) == 1 and len(password) == 1 and username[0] == '' and password[0] == '':
-                    return CheckResult.PASSED
+                if username and password:
+                    if username[0] == '' and password[0] == '':
+                        return CheckResult.PASSED
                 return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['master_auth/[0]/username', 'master_auth/[0]/password']
 
 
 check = GKEBasicAuth()

@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyStage:
+  Default:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: Prod

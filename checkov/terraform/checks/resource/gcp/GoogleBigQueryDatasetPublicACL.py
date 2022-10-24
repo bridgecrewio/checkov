@@ -21,13 +21,14 @@ class GoogleBigQueryDatasetPublicACL(BaseResourceCheck):
             for access in conf["access"]:
                 if "special_group" in access:
                     if access["special_group"] in [["allAuthenticatedUsers"], ["allUsers"]]:
+                        self.evaluated_keys = [f'access/[{conf["access"].index(access)}]/special_group']
                         return CheckResult.FAILED
-
                 # access block with only the role key found in the statefile
                 # when manually adding "allUsers" to the dataset
                 elif not any(key in access for key in ["user_by_email", "group_by_email", "domain", "view"]):
+                    self.evaluated_keys = [f'access/[{conf["access"].index(access)}]']
                     return CheckResult.FAILED
-
+            self.evaluated_keys = ['access']
         return CheckResult.PASSED
 
 

@@ -4,10 +4,19 @@ Parameters:
   VPC:
     Type: AWS::EC2::VPC::Id
     Description: Choose which VPC the Application Load Balancer should be deployed to
+  UseHttps:
+    Description: If HTTPS is used
+    Type: String
 
   Subnets:
     Description: Choose a minimum of 2 subnets the ALB should be deployed to
     Type: List<AWS::EC2::Subnet::Id>
+
+Conditions:
+  IsHttps:
+    Fn::Equals:
+      - !Ref UseHttps
+      - 'true'
 
 Resources:
   LoadBalancer:
@@ -40,8 +49,8 @@ Resources:
 
   ListenerCert:
     Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-    Properties: 
-      Certificates: 
+    Properties:
+      Certificates:
         - CertificateArn: !Ref Certificate
       ListenerArn: !Ref ListenerHTTPS
 
@@ -55,6 +64,26 @@ Resources:
       VpcId: !Ref VPC
       Port: 22
       Protocol: TCP
+
+  ListenerHTTPUnknown:
+     Type: AWS::ElasticLoadBalancingV2::Listener
+     Properties:
+       DefaultActions: !If
+        - IsHttps
+        -
+          - Type: "redirect"
+            RedirectConfig:
+              Protocol: "HTTPS"
+              Port: 443
+              Path: "/"
+              StatusCode: "HTTP_301"
+        -
+          - TargetGroupArn: default-target-group
+            Type: forward
+       LoadBalancerArn: !Ref LoadBalancer
+       Port: 80
+       Protocol: HTTP
+
 
 Outputs:
   LoadBalancer:

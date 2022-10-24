@@ -1,4 +1,4 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.consts import ANY_VALUE
 
@@ -16,5 +16,6 @@ class CloudfrontDistributionLogging(BaseResourceValueCheck):
 
     def get_expected_value(self):
         return ANY_VALUE
+
 
 check = CloudfrontDistributionLogging()

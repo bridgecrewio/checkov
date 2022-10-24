@@ -1,56 +1,47 @@
-import logging
-from checkov.arm.parser.node import dict_node
+from __future__ import annotations
 
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
-from yaml.parser import ParserError, ScannerError
+import logging
+from typing import Any
+
+from yaml.parser import ScannerError
 from yaml import YAMLError
-from checkov.arm.parser import cfn_yaml, cfn_json
+
+from checkov.arm.parser import cfn_yaml
+from checkov.common.parsers.json import parse as json_parse
+from checkov.common.parsers.node import DictNode
+
 
 LOGGER = logging.getLogger(__name__)
 
 
-def parse(filename):
-    """
-        Decode filename into an object
-    """
+def parse(filename: str) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None, None]:
+    """ Decode filename into an object """
+
     template = None
     template_lines = None
     try:
         (template, template_lines) = cfn_yaml.load(filename)
     except IOError as e:
         if e.errno == 2:
-            LOGGER.error('Template file not found: %s', filename)
+            LOGGER.error(f"Template file not found: {filename}")
         elif e.errno == 21:
-            LOGGER.error('Template references a directory, not a file: %s',
-                         filename)
+            LOGGER.error(f"Template references a directory, not a file: {filename}")
         elif e.errno == 13:
-            LOGGER.error('Permission denied when accessing template file: %s',
-                         filename)
-    except UnicodeDecodeError as err:
-        LOGGER.error('Cannot read file contents: %s', filename)
-    except cfn_yaml.CfnParseError as err:
+            LOGGER.error(f"Permission denied when accessing template file: {filename}")
+    except UnicodeDecodeError:
+        LOGGER.error(f"Cannot read file contents: {filename}")
+    except cfn_yaml.CfnParseError:
         pass
     except ScannerError as err:
-        if err.problem in [
-            'found character \'\\t\' that cannot start any token',
-            'found unknown escape character']:
+        if err.problem in ("found character '\\t' that cannot start any token", "found unknown escape character"):
             try:
-                (template, template_lines) = cfn_json.load(filename)
-            except cfn_json.JSONDecodeError:
-                pass
-            except JSONDecodeError:
-                pass
-            except Exception as json_err:  # pylint: disable=W0703
-                LOGGER.error(
-                    'Template %s is malformed: %s', filename, err.problem)
-                LOGGER.error('Tried to parse %s as JSON but got error: %s',
-                             filename, str(json_err))
-    except YAMLError as err:
+                (template, template_lines) = json_parse(filename, allow_nulls=False)
+            except Exception:
+                LOGGER.error(f"Template {filename} is malformed: {err.problem}")
+                LOGGER.error(f"Tried to parse {filename} as JSON", exc_info=True)
+    except YAMLError:
         pass
 
-    if template is not None and isinstance(template, dict_node) and '$schema' in template and 'resources' in template:
+    if template is not None and isinstance(template, DictNode) and "$schema" in template and "resources" in template:
         return template, template_lines
     return None, None

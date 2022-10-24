@@ -1,8 +1,9 @@
+import json
 import logging
 from typing import Dict, List, Union, Any
 
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
 
 #
 # Functions defined in this file implement terraform functions.
@@ -167,3 +168,28 @@ def _check_map_type_consistency(value: Dict) -> Dict:
     if had_string and had_something_else:
         value = {k: to_string(v) for k, v in value.items()}
     return value
+
+
+def handle_dynamic_values(conf: Dict[str, List[Any]]) -> None:
+    # recursively search for blocks that are dynamic
+    for block_name in conf.keys():
+        if isinstance(conf[block_name], dict):
+            handle_dynamic_values(conf[block_name])
+
+        # if the configuration is a block element, search down again.
+        if isinstance(conf[block_name], list) and conf[block_name] and isinstance(conf[block_name][0], dict):
+            handle_dynamic_values(conf[block_name][0])
+
+    process_dynamic_values(conf)
+
+
+def process_dynamic_values(conf: Dict[str, List[Any]]) -> None:
+    for dynamic_element in conf.get("dynamic", {}):
+        if isinstance(dynamic_element, str):
+            try:
+                dynamic_element = json.loads(dynamic_element)
+            except Exception:
+                dynamic_element = {}
+
+        for element_name in dynamic_element.keys():
+            conf[element_name] = dynamic_element[element_name].get("content", [])

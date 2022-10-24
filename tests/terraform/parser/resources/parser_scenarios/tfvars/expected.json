@@ -2,13 +2,22 @@
   "main.tf": {
     "variable": [
       {
-        "foo": {}
+        "foo": {
+          "__start_line__": 1,
+          "__end_line__": 1
+        }
       },
       {
-        "list_data": {}
+        "list_data": {
+          "__start_line__": 2,
+          "__end_line__": 2
+        }
       },
       {
-        "map_data": {}
+        "map_data": {
+          "__start_line__": 3,
+          "__end_line__": 3
+        }
       }
     ],
     "resource": [
@@ -16,8 +25,10 @@
         "aws_s3_bucket": {
           "my_bucket": {
             "bucket": [
-              "fü-one-dev"
-            ]
+              "hello-nimrodIsCöoler-${nine}-${dev}-abc-xyz-qwerty"
+            ],
+            "__start_line__": 17,
+            "__end_line__": 19
           }
         }
       }

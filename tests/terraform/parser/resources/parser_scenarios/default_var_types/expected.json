@@ -7,29 +7,41 @@
             "metadata": [{
               "x": "123",
               "block-project-ssh-keys": true
-            }]
+            }],
+            "__start_line__": 29,
+            "__end_line__": 31
           },
           "b": {
             "metadata": [{
               "block-project-ssh-keys": true
-            }]
+            }],
+            "__start_line__": 33,
+            "__end_line__": 35
           },
           "c": {
             "metadata": [{
               "x": "123",
               "block-project-ssh-keys": true
-            }]
+            }],
+            "__start_line__": 37,
+            "__end_line__": 39
           },
           "d": {
             "metadata": [{
               "block-project-ssh-keys": true
-            }]
+            }],
+            "__start_line__": 41,
+            "__end_line__": 43
           },
           "e": {
-            "metadata": [["123", "xyz"]]
+            "metadata": [["123", "xyz"]],
+            "__start_line__": 45,
+            "__end_line__": 47
           },
           "f": {
-            "metadata": [["xyz"]]
+            "metadata": [["xyz"]],
+            "__start_line__": 49,
+            "__end_line__": 51
           }
         }
       }

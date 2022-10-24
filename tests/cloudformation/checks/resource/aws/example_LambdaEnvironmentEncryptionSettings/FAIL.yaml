@@ -1,0 +1,12 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  EnvAndNoKey:
+    Type: AWS::Lambda::Function
+    Properties:
+      Role: arn:aws:iam::123456789012:role/lambda-role
+      Code:
+        ZipFile: |
+          print('test')
+      Environment:
+        Variables:
+          key: value

@@ -1,0 +1,5 @@
+bin/
+checkov/
+docs/
+integration_tests/
+tests/

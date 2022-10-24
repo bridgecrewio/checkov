@@ -1,0 +1,22 @@
+metadata:
+  id: "CKV2_AWS_26"
+  name: "X-ray tracing is enabled for Lambda"
+  category: "LOGGING"
+definition:
+  or:
+    - cond_type: attribute
+      attribute: Tracing_config.Mode
+      value:
+        - "PassThrough"
+        - "Active"
+      operator: within
+      resource_types:
+        - AWS::Lambda::Function
+    - cond_type: attribute
+      attribute: Tracing
+      value:
+        - "PassThrough"
+        - "Active"
+      operator: within
+      resource_types:
+        - AWS::Serverless::Function

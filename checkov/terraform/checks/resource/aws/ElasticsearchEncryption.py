@@ -3,14 +3,14 @@ from checkov.common.models.enums import CheckCategories
 
 
 class ElasticsearchEncryption(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure all data stored in the Elasticsearch is securely encrypted at rest"
         id = "CKV_AWS_5"
-        supported_resources = ['aws_elasticsearch_domain']
-        categories = [CheckCategories.ENCRYPTION]
+        supported_resources = ('aws_elasticsearch_domain', 'aws_opensearch_domain')
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "encrypt_at_rest/[0]/enabled"
 
 

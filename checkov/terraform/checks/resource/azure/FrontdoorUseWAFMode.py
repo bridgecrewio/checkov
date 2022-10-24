@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -16,6 +18,9 @@ class FrontdoorUseWAFMode(BaseResourceCheck):
             if 'enabled' in policy_settings and not policy_settings['enabled'][0]:
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["policy_settings/[0]/enable"]
 
 
 check = FrontdoorUseWAFMode()

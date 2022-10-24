@@ -1,0 +1,14 @@
+pass:
+  - "google_container_registry.pass1"
+  - "google_container_registry.pass2"
+  - "google_container_registry.pass3"
+  - "google_container_registry.pass4"
+fail:
+  - "google_container_registry.fail1"
+  - "google_container_registry.fail2"
+  - "google_container_registry.fail3"
+  - "google_container_registry.fail4"
+  - "google_container_registry.fail5"
+  - "google_container_registry.fail6"
+  - "google_container_registry.fail7"
+  - "google_container_registry.fail8"

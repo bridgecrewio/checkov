@@ -5,7 +5,6 @@ from checkov.common.models.enums import CheckResult
 
 
 class TestEKSSecretsEncryption(unittest.TestCase):
-
     def test_failure(self):
         resource_conf = {'name': ['bad-eks'], 'role_arn': ['${var.role_arn}'], 'vpc_config': [{'subnet_ids': [[]], 'endpoint_public_access': [True]}], 'encryption_config': [{'provider': [{'key_arn': ['${var.key_arn}']}], 'resources': [[]]}]}
 
@@ -27,5 +26,3 @@ class TestEKSSecretsEncryption(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

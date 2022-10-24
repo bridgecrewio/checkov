@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+
+Conditions:
+  CreateExecPolicy: !Equals [0, 0]
+
+Resources:
+  ExecRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies: !If
+        - CreateExecPolicy
+        - - PolicyName: root
+            PolicyDocument: !Sub |
+              { "Version": "2012-10-17", "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "*",
+                  "Resource": "*"
+                }
+              ]}
+        - !Ref AWS::NoValue
+
+  CFNUserGroup:
+    Type: AWS::IAM::Group

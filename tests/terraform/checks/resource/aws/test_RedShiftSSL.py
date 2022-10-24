@@ -18,7 +18,7 @@ class TestRedShiftSSL(unittest.TestCase):
 
         passing_resources = {
             "aws_redshift_parameter_group.pass",
-            "aws_redshift_parameter_group.passbutbool",  
+            "aws_redshift_parameter_group.passbutbool",
         }
         failing_resources = {
             "aws_redshift_parameter_group.fail",

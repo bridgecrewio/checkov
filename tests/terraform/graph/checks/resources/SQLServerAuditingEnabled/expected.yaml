@@ -1,0 +1,7 @@
+pass:
+  - "azurerm_sql_server.success"
+  - "azurerm_mssql_server.success"
+  - "azurerm_mssql_server.inline_success"
+fail:
+  - "azurerm_sql_server.failure"
+  - "azurerm_mssql_server.failure"

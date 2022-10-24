@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV_AZURE_119"
+  name: "Ensure that Network Interfaces don't use public IPs"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: connection
+      operator:  not_exists
+      resource_types:
+        - azurerm_network_interface
+      connected_resource_types:
+        - azurerm_public_ip
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_network_interface
+      operator: within
+

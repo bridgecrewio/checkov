@@ -1,21 +1,46 @@
 import inspect
-import json
 import os
+import shutil
 import unittest
 import dis
+from collections import defaultdict
 from pathlib import Path
 
+# do not remove; prevents circular import error
+from typing import Dict, Any
+from unittest import mock
+
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.module.registry import module_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.data.registry import data_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
+EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(provider_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(module_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(data_registry.report_type, CheckType.TERRAFORM)
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -23,11 +48,11 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["all"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
 
@@ -37,13 +62,13 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_denylist = ['CKV_AWS_41', 'CKV_AZURE_1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all', skip_checks=checks_denylist))
+                            runner_filter=RunnerFilter(framework=["all"], skip_checks=checks_denylist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         for record in report.failed_checks:
             self.assertNotIn(record.check_id, checks_denylist)
 
@@ -55,9 +80,9 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertGreaterEqual(summary['failed'], 1)
@@ -66,7 +91,6 @@ class TestRunnerValid(unittest.TestCase):
         report.print_console()
         report.print_console(is_quiet=True)
         report.print_console(is_quiet=True, is_compact=True)
-        report.print_junit_xml()
         report.print_failed_github_md()
 
     def test_runner_passing_valid_tf(self):
@@ -80,16 +104,28 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(False), 1)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
+    def test_runner_passing_multi_line_ternary_tf(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/mutli_line_ternary"
+
+        print("testing dir" + tf_dir_path)
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=None)
+        self.assertListEqual(report.parsing_errors, [])
+
     def test_runner_extra_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        # should load checks recursively
 
         tf_dir_path = current_dir + "/resources/extra_check_test"
         extra_checks_dir_path = [current_dir + "/extra_checks"]
@@ -99,23 +135,23 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CUSTOM_AWS_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
 
         passing_custom = 0
         failed_custom = 0
         for record in report.passed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 passing_custom = passing_custom + 1
         for record in report.failed_checks:
-            if record.check_id == "CUSTOM_AWS_1":
+            if record.check_id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 failed_custom = failed_custom + 1
 
-        self.assertEqual(1, passing_custom)
-        self.assertEqual(2, failed_custom)
+        self.assertEqual(2, passing_custom)
+        self.assertEqual(4, failed_custom)
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
@@ -129,11 +165,11 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
         for check in resource_registry.checks["aws_s3_bucket"]:
-            if check.id == "CKV2_CUSTOM_1":
+            if check.id in ("CUSTOM_AWS_1", "CUSTOM_AWS_2"):
                 resource_registry.checks["aws_s3_bucket"].remove(check)
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
 
         passing_custom = 0
         failed_custom = 0
@@ -146,6 +182,10 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_custom, 0)
         self.assertEqual(failed_custom, 3)
+
+        graph_record = next(record for record in report.failed_checks if record.check_id == "CKV2_CUSTOM_1")
+        self.assertEqual(graph_record.guideline, "https://docs.bridgecrew.io/docs/ckv2_custom_1")
+
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
@@ -159,7 +199,7 @@ class TestRunnerValid(unittest.TestCase):
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
+        self.assertIsNotNone(report.get_test_suite())
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
@@ -184,47 +224,84 @@ class TestRunnerValid(unittest.TestCase):
     def test_no_missing_ids(self):
         runner = Runner()
         unique_checks = set()
+        graph_checks = []
+
+        # python checks
         for registry in list(runner.block_type_registries.values()):
             checks = [check for entity_type in list(registry.checks.values()) for check in entity_type]
             for check in checks:
                 unique_checks.add(check.id)
-        aws_checks = sorted(list(filter(lambda check_id: '_AWS_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(aws_checks) + 4):
+
+        # graph checks
+        graph_registry = get_graph_checks_registry("terraform")
+        graph_registry.load_checks()
+        for check in graph_registry.checks:
+            if check.id.startswith("CKV_"):
+                unique_checks.add(check.id)
+            else:
+                graph_checks.append(check)
+
+        aws_checks = sorted(
+            list(filter(lambda check_id: check_id.startswith("CKV_AWS_"), unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(aws_checks) + 7):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
-            if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125'):
+            if f'CKV_AWS_{i}' in ('CKV_AWS_132', 'CKV_AWS_125', 'CKV_AWS_151'):
                 # These checks were removed because they were duplicates
                 continue
             if f'CKV_AWS_{i}' in 'CKV_AWS_95':
-                # CKV_AWS_95 is currently implemented just on cfn
+                # CKV_AWS_95 is currently implemented just on cfn - actually is CKV_AWS_76
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
-        gcp_checks = sorted(list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(gcp_checks) + 1):
+        gcp_checks = sorted(
+            list(filter(lambda check_id: '_GCP_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(gcp_checks) + 2):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
                 continue
 
             self.assertIn(f'CKV_GCP_{i}', gcp_checks, msg=f'The new GCP violation should have the ID "CKV_GCP_{i}"')
 
-        azure_checks = sorted(list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)), reverse=True, key=lambda s: int(s.split('_')[-1]))
-        for i in range(1, len(azure_checks) + 1):
-            if f'CKV_AZURE_{i}' == 'CKV_AZURE_43':
-                continue  # Pending merge; blocked by another issue https://github.com/bridgecrewio/checkov/pull/429
+        azure_checks = sorted(
+            list(filter(lambda check_id: '_AZURE_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(azure_checks) + 4):
+            if f'CKV_AZURE_{i}' == 'CKV_AZURE_46':
+                continue  # this rule has been merged into a v2 graph implementation -> CKV_AZURE_24
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
+                continue  # duplicate of CKV_AZURE_53
 
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
 
-        graph_registry = get_graph_checks_registry("terraform")
-        graph_registry.load_checks()
-        graph_checks = list(filter(lambda check: 'CKV2_' in check.id, graph_registry.checks))
+        alicloud_checks = sorted(
+            list(filter(lambda check_id: '_ALI_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(alicloud_checks) + 1):
+            if f"CKV_ALI_{i}" == "CKV_ALI_34":
+                continue  # duplicate of CKV_ALI_30
+            if f"CKV_ALI_{i}" in ("CKV_ALI_39", "CKV_ALI_40"):
+                continue  # can't find a reference for it
+
+            self.assertIn(f"CKV_ALI_{i}", alicloud_checks,
+                          msg=f'The new Alibaba Cloud violation should have the ID "CKV_ALI_{i}"')
 
         # add cloudformation checks to graph checks
         graph_registry = get_graph_checks_registry("cloudformation")
@@ -247,6 +324,18 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_13':
+                # CKV2_AWS_13 is not supported by AWS
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_24':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_25':
+                # Was a test policy
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
+                # Was a test policy
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
@@ -262,8 +351,13 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         result = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(checks='CKV_AWS_41'))
-        self.assertEqual(len(result.passed_checks), 16)
+        self.assertEqual(len(result.passed_checks), 17)
         self.assertIn('aws.default', map(lambda record: record.resource, result.passed_checks))
+
+        # check if a one line provider is correctly processed
+        provider = next(check for check in result.passed_checks if check.resource == "aws.one-line")
+        self.assertIsNotNone(provider.file_line_range)
+
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"
@@ -331,6 +425,49 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+
+    def test_terraform_multiple_module_versions(self):
+        # given
+        root_dir = Path(__file__).parent / "resources/multiple_module_versions"
+
+        # when
+        result = Runner().run(
+            root_folder=str(root_dir),
+            runner_filter=RunnerFilter(
+                checks=["CKV_AWS_88"],
+                framework="terraform",
+                download_external_modules=True
+            )
+        )
+
+        # then
+        summary = result.get_summary()
+        passed_resources = [check.resource for check in result.passed_checks]
+        failed_resources = [check.resource for check in result.failed_checks]
+
+        self.assertEqual(4, summary["passed"])
+        self.assertEqual(4, summary["failed"])
+        self.assertEqual(0, summary['skipped'])
+        self.assertEqual(0, summary['parsing_errors'])
+
+        expected_passed_resources = [
+            "module.ec2_private_latest.aws_instance.this",
+            "module.ec2_private_latest_2.aws_instance.this",
+            "module.ec2_private_old.aws_instance.this",
+            "module.ec2_private_old_2.aws_instance.this",
+        ]
+        expected_failed_resources = [
+            "module.ec2_public_latest.aws_instance.this",
+            "module.ec2_public_latest_2.aws_instance.this",
+            "module.ec2_public_old.aws_instance.this",
+            "module.ec2_public_old_2.aws_instance.this",
+        ]
+        self.assertCountEqual(expected_passed_resources, passed_resources)
+        self.assertCountEqual(expected_failed_resources, failed_resources)
+
+        # cleanup
+        if (root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH).exists():
+            shutil.rmtree(root_dir / EXTERNAL_MODULES_DOWNLOAD_PATH)
 
     def test_parser_error_handled_for_directory_target(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -411,81 +548,299 @@ class TestRunnerValid(unittest.TestCase):
 
         tf_dir_path = current_dir + "/resources/valid_tf_only_passed_checks"
         external_definitions_context = {
-            f'{current_dir}/resources/valid_tf_only_passed_checks/example.tf': {
-                'resource': {'aws_s3_bucket': {'foo-bucket': {'start_line': 1, 'end_line': 34, 'code_lines': [
-                    (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'), (2, '  region        = var.region\n'),
-                    (3, '  bucket        = local.bucket_name\n'), (4, '  force_destroy = true\n'), (5, '  tags = {\n'),
-                    (6, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'), (7, '  }\n'),
-                    (8, '  versioning {\n'), (9, '    enabled = true\n'), (10, '    mfa_delete = true\n'),
-                    (11, '  }\n'), (12, '  logging {\n'),
-                    (13, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
-                    (14, '    target_prefix = "log/"\n'), (15, '  }\n'),
-                    (16, '  server_side_encryption_configuration {\n'), (17, '    rule {\n'),
-                    (18, '      apply_server_side_encryption_by_default {\n'),
-                    (19, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
-                    (20, '        sse_algorithm     = "aws:kms"\n'), (21, '      }\n'), (22, '    }\n'), (23, '  }\n'),
-                    (24, '  acl           = "private"\n'), (25, '  tags = "${merge\n'), (26, '    (\n'),
-                    (27, '      var.common_tags,\n'), (28, '      map(\n'),
-                    (29, '        "name", "VM Virtual Machine",\n'), (30, '        "group", "foo"\n'),
-                    (31, '      )\n'), (32, '    )\n'), (33, '  }"\n'), (34, '}\n')], 'skipped_checks': []}},
-                             'null_resource': {'example': {'start_line': 36, 'end_line': 46, 'code_lines': [
-                                 (36, 'resource "null_resource" "example" {\n'), (37, '  tags = "${merge\n'),
-                                 (38, '(\n'), (39, 'var.common_tags,\n'), (40, 'map(\n'),
-                                 (41, '"name", "VM Base Post Provisioning Library",\n'), (42, '"group", "aut",\n'),
-                                 (43, '"dependency", "${var.input_dependency_value}")\n'), (44, ')\n'), (45, '}"\n'),
-                                 (46, '}\n')], 'skipped_checks': []}}}, 'data': {'aws_caller_identity': {
-                    'current': {'start_line': 47, 'end_line': 0, 'code_lines': [], 'skipped_checks': []}}},
-                'provider': {'kubernetes': {'default': {'start_line': 49, 'end_line': 55,
-                                                        'code_lines': [(49, 'provider "kubernetes" {\n'),
-                                                                       (50, '  version                = "1.10.0"\n'), (
-                                                                           51,
-                                                                           '  host                   = module.aks_cluster.kube_config.0.host\n'),
-                                                                       (52,
-                                                                        '  client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n'),
-                                                                       (53,
-                                                                        'client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n'),
-                                                                       (54,
-                                                                        'cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n'),
-                                                                       (55, '}\n')], 'skipped_checks': []}}},
-                'module': {'module': {'new_relic': {'start_line': 57, 'end_line': 67,
-                                                    'code_lines': [(57, 'module "new_relic" {\n'), (58,
-                                                                                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n'),
-                                                                   (59,
-                                                                    'kubernetes_host                   = module.aks_cluster.kube_config.0.host\n'),
-                                                                   (60,
-                                                                    'kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n'),
-                                                                   (61,
-                                                                    'kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n'),
-                                                                   (62,
-                                                                    'kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n'),
-                                                                   (63,
-                                                                    'cluster_name                      = module.naming_conventions.aks_name\n'),
-                                                                   (64,
-                                                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n'),
-                                                                   (65,
-                                                                    'cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n'),
-                                                                   (66,
-                                                                    'module_depends_on                 = [null_resource.delay_aks_deployments]\n'),
-                                                                   (67, '}')], 'skipped_checks': []}}}},
-            f'{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf': {
-                'resource': {'aws_s3_bucket': {'foo-bucket': {'start_line': 1, 'end_line': 26, 'code_lines': [
-                    (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'), (2, '  region        = var.region\n'),
-                    (3, '  bucket        = local.bucket_name\n'), (4, '  force_destroy = true\n'),
-                    (5, '  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n'),
-                    (6, '  #bridgecrew:skip=CKV_AWS_52: foo\n'), (7, '  tags = {\n'),
-                    (8, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'), (9, '  }\n'),
-                    (10, '  versioning {\n'), (11, '    enabled = true\n'), (12, '  }\n'), (13, '  logging {\n'),
-                    (14, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
-                    (15, '    target_prefix = "log/"\n'), (16, '  }\n'),
-                    (17, '  server_side_encryption_configuration {\n'), (18, '    rule {\n'),
-                    (19, '      apply_server_side_encryption_by_default {\n'),
-                    (20, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
-                    (21, '        sse_algorithm     = "aws:kms"\n'), (22, '      }\n'), (23, '    }\n'), (24, '  }\n'),
-                    (25, '  acl           = "public-read"\n'), (26, '}\n')], 'skipped_checks': [
-                    {'id': 'CKV_AWS_20', 'suppress_comment': 'The bucket is a public static content host'},
-                    {'id': 'CKV_AWS_52', 'suppress_comment': ' foo'}]}}}, 'data': {'aws_caller_identity': {
-                    'current': {'start_line': 27, 'end_line': 0, 'code_lines': [], 'skipped_checks': []}}}}}
-        tf_definitions = {'/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf': {'resource': [{'aws_s3_bucket': {'foo-bucket': {'region': ['${var.region}'], 'bucket': ['${local.bucket_name}'], 'force_destroy': [True], 'versioning': [{'enabled': [True], 'mfa_delete': [True]}], 'logging': [{'target_bucket': ['${aws_s3_bucket.log_bucket.id}'], 'target_prefix': ['log/']}], 'server_side_encryption_configuration': [{'rule': [{'apply_server_side_encryption_by_default': [{'kms_master_key_id': ['${aws_kms_key.mykey.arn}'], 'sse_algorithm': ['aws:kms']}]}]}], 'acl': ['private'], 'tags': ['${merge\n    (\n      var.common_tags,\n      map(\n        "name", "VM Virtual Machine",\n        "group", "foo"\n      )\n    )\n  }']}}}], 'data': [{'aws_caller_identity': {'current': {}}}], 'provider': [{'kubernetes': {'version': ['1.10.0'], 'host': ['${module.aks_cluster.kube_config[0].host}'], 'client_certificate': ['${base64decode(module.aks_cluster.kube_config[0].client_certificate)}'], 'client_key': ['${base64decode(module.aks_cluster.kube_config[0].client_key)}'], 'cluster_ca_certificate': ['${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}']}}], 'module': [{'new_relic': {'source': ['s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip'], 'kubernetes_host': ['${module.aks_cluster.kube_config[0].host}'], 'kubernetes_client_certificate': ['${base64decode(module.aks_cluster.kube_config[0].client_certificate)}'], 'kubernetes_client_key': ['${base64decode(module.aks_cluster.kube_config[0].client_key)}'], 'kubernetes_cluster_ca_certificate': ['${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}'], 'cluster_name': ['${module.naming_conventions.aks_name}'], 'new_relic_license': ['${data.vault_generic_secret.new_relic_license.data["license"]}'], 'cluster_ca_bundle_b64': ['${module.aks_cluster.kube_config[0].cluster_ca_certificate}'], 'module_depends_on': [['${null_resource.delay_aks_deployments}']]}}]}, '/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf': {'resource': [{'aws_s3_bucket': {'foo-bucket': {'region': ['${var.region}'], 'bucket': ['${local.bucket_name}'], 'force_destroy': [True], 'tags': [{'Name': 'foo-${data.aws_caller_identity.current.account_id}'}], 'versioning': [{'enabled': [True]}], 'logging': [{'target_bucket': ['${aws_s3_bucket.log_bucket.id}'], 'target_prefix': ['log/']}], 'server_side_encryption_configuration': [{'rule': [{'apply_server_side_encryption_by_default': [{'kms_master_key_id': ['${aws_kms_key.mykey.arn}'], 'sse_algorithm': ['aws:kms']}]}]}], 'acl': ['public-read']}}}], 'data': [{'aws_caller_identity': {'current': {}}}]}}
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example.tf": {
+                "resource": {
+                    "aws_s3_bucket": {
+                        "foo-bucket": {
+                            "start_line": 1,
+                            "end_line": 34,
+                            "code_lines": [
+                                (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'),
+                                (2, "  region        = var.region\n"),
+                                (3, "  bucket        = local.bucket_name\n"),
+                                (4, "  force_destroy = true\n"),
+                                (5, "  tags = {\n"),
+                                (6, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'),
+                                (7, "  }\n"),
+                                (8, "  versioning {\n"),
+                                (9, "    enabled = true\n"),
+                                (10, "    mfa_delete = true\n"),
+                                (11, "  }\n"),
+                                (12, "  logging {\n"),
+                                (13, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
+                                (14, '    target_prefix = "log/"\n'),
+                                (15, "  }\n"),
+                                (16, "  server_side_encryption_configuration {\n"),
+                                (17, "    rule {\n"),
+                                (18, "      apply_server_side_encryption_by_default {\n"),
+                                (19, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
+                                (20, '        sse_algorithm     = "aws:kms"\n'),
+                                (21, "      }\n"),
+                                (22, "    }\n"),
+                                (23, "  }\n"),
+                                (24, '  acl           = "private"\n'),
+                                (25, '  tags = "${merge\n'),
+                                (26, "    (\n"),
+                                (27, "      var.common_tags,\n"),
+                                (28, "      map(\n"),
+                                (29, '        "name", "VM Virtual Machine",\n'),
+                                (30, '        "group", "foo"\n'),
+                                (31, "      )\n"),
+                                (32, "    )\n"),
+                                (33, '  }"\n'),
+                                (34, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    },
+                    "null_resource": {
+                        "example": {
+                            "start_line": 36,
+                            "end_line": 46,
+                            "code_lines": [
+                                (36, 'resource "null_resource" "example" {\n'),
+                                (37, '  tags = "${merge\n'),
+                                (38, "(\n"),
+                                (39, "var.common_tags,\n"),
+                                (40, "map(\n"),
+                                (41, '"name", "VM Base Post Provisioning Library",\n'),
+                                (42, '"group", "aut",\n'),
+                                (43, '"dependency", "${var.input_dependency_value}")\n'),
+                                (44, ")\n"),
+                                (45, '}"\n'),
+                                (46, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    },
+                },
+                "data": {
+                    "aws_caller_identity": {
+                        "current": {"start_line": 47, "end_line": 0, "code_lines": [], "skipped_checks": []}
+                    }
+                },
+                "provider": {
+                    "kubernetes": {
+                        "default": {
+                            "start_line": 49,
+                            "end_line": 55,
+                            "code_lines": [
+                                (49, 'provider "kubernetes" {\n'),
+                                (50, '  version                = "1.10.0"\n'),
+                                (51, "  host                   = module.aks_cluster.kube_config.0.host\n"),
+                                (
+                                    52,
+                                    "  client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                                ),
+                                (
+                                    53,
+                                    "client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                                ),
+                                (
+                                    54,
+                                    "cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                                ),
+                                (55, "}\n"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    }
+                },
+                "module": {
+                    "module": {
+                        "new_relic": {
+                            "start_line": 57,
+                            "end_line": 67,
+                            "code_lines": [
+                                (57, 'module "new_relic" {\n'),
+                                (
+                                    58,
+                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
+                                ),
+                                (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
+                                (
+                                    60,
+                                    "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                                ),
+                                (
+                                    61,
+                                    "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                                ),
+                                (
+                                    62,
+                                    "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                                ),
+                                (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
+                                (
+                                    64,
+                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
+                                ),
+                                (
+                                    65,
+                                    "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
+                                ),
+                                (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
+                                (67, "}"),
+                            ],
+                            "skipped_checks": [],
+                        }
+                    }
+                },
+            },
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+                "resource": {
+                    "aws_s3_bucket": {
+                        "foo-bucket": {
+                            "start_line": 1,
+                            "end_line": 26,
+                            "code_lines": [
+                                (1, 'resource "aws_s3_bucket" "foo-bucket" {\n'),
+                                (2, "  region        = var.region\n"),
+                                (3, "  bucket        = local.bucket_name\n"),
+                                (4, "  force_destroy = true\n"),
+                                (5, "  #checkov:skip=CKV_AWS_20:The bucket is a public static content host\n"),
+                                (6, "  #bridgecrew:skip=CKV_AWS_52: foo\n"),
+                                (7, "  tags = {\n"),
+                                (8, '    Name = "foo-${data.aws_caller_identity.current.account_id}"\n'),
+                                (9, "  }\n"),
+                                (10, "  versioning {\n"),
+                                (11, "    enabled = true\n"),
+                                (12, "  }\n"),
+                                (13, "  logging {\n"),
+                                (14, '    target_bucket = "${aws_s3_bucket.log_bucket.id}"\n'),
+                                (15, '    target_prefix = "log/"\n'),
+                                (16, "  }\n"),
+                                (17, "  server_side_encryption_configuration {\n"),
+                                (18, "    rule {\n"),
+                                (19, "      apply_server_side_encryption_by_default {\n"),
+                                (20, '        kms_master_key_id = "${aws_kms_key.mykey.arn}"\n'),
+                                (21, '        sse_algorithm     = "aws:kms"\n'),
+                                (22, "      }\n"),
+                                (23, "    }\n"),
+                                (24, "  }\n"),
+                                (25, '  acl           = "public-read"\n'),
+                                (26, "}\n"),
+                            ],
+                            "skipped_checks": [
+                                {"id": "CKV_AWS_20", "suppress_comment": "The bucket is a public static content host"},
+                                {"id": "CKV_AWS_52", "suppress_comment": " foo"},
+                            ],
+                        }
+                    }
+                },
+                "data": {
+                    "aws_caller_identity": {
+                        "current": {"start_line": 27, "end_line": 0, "code_lines": [], "skipped_checks": []}
+                    }
+                },
+            },
+        }
+        tf_definitions = {
+            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf": {
+                "resource": [
+                    {
+                        "aws_s3_bucket": {
+                            "foo-bucket": {
+                                "region": ["${var.region}"],
+                                "bucket": ["${local.bucket_name}"],
+                                "force_destroy": [True],
+                                "versioning": [{"enabled": [True], "mfa_delete": [True]}],
+                                "logging": [
+                                    {"target_bucket": ["${aws_s3_bucket.log_bucket.id}"], "target_prefix": ["log/"]}
+                                ],
+                                "server_side_encryption_configuration": [
+                                    {
+                                        "rule": [
+                                            {
+                                                "apply_server_side_encryption_by_default": [
+                                                    {
+                                                        "kms_master_key_id": ["${aws_kms_key.mykey.arn}"],
+                                                        "sse_algorithm": ["aws:kms"],
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "acl": ["private"],
+                                "tags": [
+                                    '${merge\n    (\n      var.common_tags,\n      map(\n        "name", "VM Virtual Machine",\n        "group", "foo"\n      )\n    )\n  }'
+                                ],
+                            }
+                        }
+                    }
+                ],
+                "data": [{"aws_caller_identity": {"current": {}}}],
+                "provider": [
+                    {
+                        "kubernetes": {
+                            "version": ["1.10.0"],
+                            "host": ["${module.aks_cluster.kube_config[0].host}"],
+                            "client_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].client_certificate)}"
+                            ],
+                            "client_key": ["${base64decode(module.aks_cluster.kube_config[0].client_key)}"],
+                            "cluster_ca_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}"
+                            ],
+                        }
+                    }
+                ],
+                "module": [
+                    {
+                        "new_relic": {
+                            "source": ["s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"],
+                            "kubernetes_host": ["${module.aks_cluster.kube_config[0].host}"],
+                            "kubernetes_client_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].client_certificate)}"
+                            ],
+                            "kubernetes_client_key": ["${base64decode(module.aks_cluster.kube_config[0].client_key)}"],
+                            "kubernetes_cluster_ca_certificate": [
+                                "${base64decode(module.aks_cluster.kube_config[0].cluster_ca_certificate)}"
+                            ],
+                            "cluster_name": ["${module.naming_conventions.aks_name}"],
+                            "new_relic_license": ['${data.vault_generic_secret.new_relic_license.data["license"]}'],
+                            "cluster_ca_bundle_b64": ["${module.aks_cluster.kube_config[0].cluster_ca_certificate}"],
+                            "module_depends_on": [["${null_resource.delay_aks_deployments}"]],
+                        }
+                    }
+                ],
+            },
+            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+                "resource": [
+                    {
+                        "aws_s3_bucket": {
+                            "foo-bucket": {
+                                "region": ["${var.region}"],
+                                "bucket": ["${local.bucket_name}"],
+                                "force_destroy": [True],
+                                "tags": [{"Name": "foo-${data.aws_caller_identity.current.account_id}"}],
+                                "versioning": [{"enabled": [True]}],
+                                "logging": [
+                                    {"target_bucket": ["${aws_s3_bucket.log_bucket.id}"], "target_prefix": ["log/"]}
+                                ],
+                                "server_side_encryption_configuration": [
+                                    {
+                                        "rule": [
+                                            {
+                                                "apply_server_side_encryption_by_default": [
+                                                    {
+                                                        "kms_master_key_id": ["${aws_kms_key.mykey.arn}"],
+                                                        "sse_algorithm": ["aws:kms"],
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "acl": ["public-read"],
+                            }
+                        }
+                    }
+                ],
+                "data": [{"aws_caller_identity": {"current": {}}}],
+            },
+        }
         runner = Runner()
         parser = Parser()
         runner.definitions = tf_definitions
@@ -502,13 +857,13 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
         self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
@@ -516,6 +871,23 @@ class TestRunnerValid(unittest.TestCase):
 
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -526,12 +898,12 @@ class TestRunnerValid(unittest.TestCase):
         scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -549,13 +921,13 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
         dir_abs_path = os.path.abspath(scan_dir_path)
 
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -571,7 +943,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         # this is the relative path to the file to scan (what would actually get passed to the -f arg)
         file_rel_path = os.path.relpath(scan_file_path)
@@ -579,7 +951,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -595,7 +967,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "nested", "example.tf")
+        scan_file_path = os.path.join(current_dir, "resources", "nested_dir", "dir1", "example.tf")
 
         file_rel_path = os.path.relpath(scan_file_path)
         file_abs_path = os.path.abspath(scan_file_path)
@@ -603,7 +975,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
-                            runner_filter=RunnerFilter(framework='terraform', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
 
@@ -622,12 +994,59 @@ class TestRunnerValid(unittest.TestCase):
         runner.run(root_folder=None, external_checks_dir=None, files=[passing_tf_file_path])
         # If we get here all is well. :-)  Failure would throw an exception.
 
+    def test_runner_empty_locals(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        passing_tf_file_path = current_dir + "/resources/empty_locals"
+
+        runner = Runner()
+        r = runner.run(root_folder=passing_tf_file_path, external_checks_dir=None)
+
+        assert len(r.parsing_errors) == 0
+
+    def test_module_skip(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        report = Runner().run(root_folder=f"{current_dir}/resources/module_skip",
+                              external_checks_dir=None,
+                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+
+        self.assertEqual(len(report.skipped_checks), 5)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+
+        found_inside = False
+        found_outside = False
+
+        for record in report.failed_checks:
+            if "inside" in record.resource:
+                found_inside = True
+                print(record)
+                self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
+                assert record.file_path == "/module/module.tf"
+                self.assertEqual(record.file_line_range, [7, 9])
+                assert record.caller_file_path == "/main.tf"
+                # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
+                #             A bug might have been fixed.
+                self.assertEqual(record.caller_file_line_range, [6, 8])
+
+            if "outside" in record.resource:
+                found_outside = True
+                self.assertEqual(record.resource, "aws_s3_bucket.outside")
+                assert record.file_path == "/main.tf"
+                self.assertEqual(record.file_line_range, [12, 16])
+                self.assertIsNone(record.caller_file_path)
+                self.assertIsNone(record.caller_file_line_range)
+
+        self.assertFalse(found_inside)
+        self.assertFalse(found_outside)
+
     def test_module_failure_reporting_772(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         report = Runner().run(root_folder=f"{current_dir}/resources/module_failure_reporting_772",
                               external_checks_dir=None,
-                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+                              runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
 
         self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 0)
@@ -641,7 +1060,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_outside = True
                 self.assertEqual(record.resource, "aws_s3_bucket.outside")
                 assert record.file_path == "/main.tf"
-                self.assertEqual(record.file_line_range, [11, 13])
+                self.assertEqual(record.file_line_range, [11, 17])
                 self.assertIsNone(record.caller_file_path)
                 self.assertIsNone(record.caller_file_line_range)
 
@@ -649,7 +1068,7 @@ class TestRunnerValid(unittest.TestCase):
                 found_inside = True
                 self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
                 assert record.file_path == "/module/module.tf"
-                self.assertEqual(record.file_line_range, [7, 9])
+                self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
                 # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
                 #             A bug might have been fixed.
@@ -657,6 +1076,7 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertTrue(found_inside)
         self.assertTrue(found_outside)
+
 
     def test_loading_external_checks_yaml(self):
         runner = Runner()
@@ -728,7 +1148,7 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_wrong_check_imports(self):
-        wrong_imports = ["arm", "cloudformation", "dockerfile", "helm", "kubernetes", "serverless"]
+        wrong_imports = ("checkov.arm", "checkov.cloudformation", "checkov.dockerfile", "checkov.helm", "checkov.kubernetes", "checkov.serverless")
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
@@ -738,9 +1158,8 @@ class TestRunnerValid(unittest.TestCase):
                 import_names = [instr.argval for instr in instructions if "IMPORT_NAME" == instr.opname]
 
                 for import_name in import_names:
-                    wrong_import = next((import_name for x in wrong_imports if x in import_name), None)
-                    if wrong_import:
-                        check_imports.append({file.name: wrong_import})
+                    if import_name.startswith(wrong_imports):
+                        check_imports.append({file.name: import_name})
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
@@ -751,13 +1170,13 @@ class TestRunnerValid(unittest.TestCase):
         entity_context, entity_evaluations = runner.get_entity_context_and_evaluations(entity_with_non_found_path)
 
         assert entity_context is not None
-        assert entity_context['start_line'] == 1 and entity_context['end_line']==7
+        assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
         entity_with_found_path = {'block_name_': 'aws_vpc.main', 'block_type_': 'resource', 'file_path_': '/mock/os/terraform-aws-vpc/aws_vpc.main.tf[/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf#0]', 'config_': {'aws_vpc': {'main': {'cidr_block': ['10.0.0.0/21'], 'enable_dns_hostnames': [True], 'enable_dns_support': [True], 'tags': ["merge([],tomap({'Name':'upper(test)'}))"]}}}, 'label_': 'BlockType.RESOURCE: aws_vpc.main', 'id_': 'aws_vpc.main', 'source_': 'Terraform', 'cidr_block': '10.0.0.0/21', 'enable_dns_hostnames': True, 'enable_dns_support': True, 'tags': "merge([],tomap({'Name':'upper(test)'}))", 'resource_type': 'aws_vpc', 'rendering_breadcrumbs_': {'cidr_block': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf', 'module_connection': False}, {'type': 'variable', 'name': 'cidr', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'public_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'public_cidrs', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'output', 'name': 'private_cidrs', 'path': '/mock/os/terraform-aws-vpc/outputs.tf', 'module_connection': False}], 'source_module_': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf'}], 'tags': [{'type': 'module', 'name': 'vpc', 'path': '/mock/os/terraform-aws-vpc/example/examplea/module.vpc.tf', 'module_connection': False}, {'type': 'variable', 'name': 'account_name', 'path': '/mock/os/terraform-aws-vpc/variables.tf', 'module_connection': False}, {'type': 'locals', 'name': 'tags', 'path': '/mock/os/terraform-aws-vpc/aws_vpc.main.tf', 'module_connection': False}]}, 'hash': 'bac3bb7d21610be9ad786c1e9b5a2b3f6f13e60699fa935b32bb1f9f10a792e4'}
         entity_context, entity_evaluations = runner.get_entity_context_and_evaluations(entity_with_found_path)
 
         assert entity_context is not None
-        assert entity_context['start_line'] == 1 and entity_context['end_line']==7
+        assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
@@ -769,10 +1188,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_do_exist(self):
@@ -785,10 +1204,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_resource_negative_values_dont_exist(self):
@@ -804,7 +1223,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 7)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
@@ -817,10 +1236,10 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None,
                             files=list(map(lambda f: f'{resources_path}/{f}', source_files)),
-                            runner_filter=RunnerFilter(framework='terraform',
+                            runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_no_duplicate_results(self):
@@ -828,7 +1247,7 @@ class TestRunnerValid(unittest.TestCase):
             os.path.dirname(os.path.realpath(__file__)), "resources", "duplicate_violations")
         runner = Runner()
         report = runner.run(root_folder=resources_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform'))
+                            runner_filter=RunnerFilter(framework=["terraform"]))
 
         unique_checks = []
         for record in report.passed_checks:
@@ -837,8 +1256,249 @@ class TestRunnerValid(unittest.TestCase):
                 self.fail(f"found duplicate results in report: {record.to_string()}")
             unique_checks.append(check_unique)
 
+    def test_malformed_file_in_parsing_error(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unbalanced_eval_brackets")
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework='terraform'))
+        file_path = os.path.join(resources_path, 'main.tf')
+        self.assertEqual(report.parsing_errors[0], file_path)
+
+    def test_runner_scan_hcl(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
+        runner = Runner()
+        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
+        self.assertEqual(len(report.resources), 2)
+
+    def test_runner_scan_hcl_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
+
+        runner = Runner()
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
+        self.assertEqual(len(report.resources), 1)
+
+    def test_runner_exclude_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir', 'dir1')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['example.tf']))
+        self.assertEqual(0, len(report.resources))
+
+    def test_runner_exclude_dir(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['dir1']))
+        self.assertEqual(1, len(report.resources))
+
+    def test_runner_merge_operator(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/merge_operator"
+        extra_checks_dir_path = [current_dir + "/resources/merge_operator/query"]
+
+        runner = Runner()
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=["CKV2_AWS_200"]))
+
+        self.assertEqual(1, len(report.passed_checks))
+
+    def test_record_includes_severity(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_severity_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    def test_runner_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=True (default)"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 1)
+
+    @mock.patch("checkov.common.runners.base_runner.ignored_directories", ['dir1'])
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs_and_ignore_dirs(self):
+        """CKV_IGNORED_DIRECTORIES='dir1' and CKV_IGNORE_HIDDEN_DIRECTORIES=False"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 3)
+
+    def test_runner_scan_default_env_vars(self):
+        """CKV_IGNORED_DIRECTORIES and CKV_IGNORE_HIDDEN_DIRECTORIES are equal to default"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 2)
+
+    @mock.patch("checkov.common.runners.base_runner.IGNORE_HIDDEN_DIRECTORY_ENV", 0)
+    def test_runner_scan_hidden_dirs(self):
+        """CKV_IGNORE_HIDDEN_DIRECTORIES=False and CKV_IGNORED_DIRECTORIES equals to default value"""
+        report = self.scan_hidden_dir()
+        self.assertEqual(len(report.resources), 5)
+
+    def scan_hidden_dir(self):
+        """ scan resources/hidden_dir directory."""
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'hidden_dir')
+        runner = Runner()
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"]))
+        return report
+
+    def test_severity_check_filter(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.MEDIUM]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_include(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_s3_bucket"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['terraform'], skip_checks=['MEDIUM'])
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
     def tearDown(self):
         parser_registry.context = {}
+        resource_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ This area can be used to verify that certain checks are robust in catching issue
 
 ## eks_node_group_remote_access
 ### Description
-`remote_access` is ommitted in HCL. But is represented as `remote_access: [ ]` in the Plan.
+`remote_access` is omitted in HCL. But is represented as `remote_access: [ ]` in the Plan.
 
 This needs to be taken in to account when writing the check.
 ### HCL Input

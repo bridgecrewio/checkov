@@ -17,7 +17,7 @@ class TestCfnYaml(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 2)
+        self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 1)
         self.assertEqual(summary['parsing_errors'], 0)
 
@@ -130,6 +130,17 @@ class TestCfnYaml(unittest.TestCase):
         self.assertEqual(entity_lines_range[0], 10)
         self.assertEqual(entity_lines_range[1], 20)
 
+    def test_parsing_error(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files = ["cfn_bad_name.yaml", "cfn_with_ref_bad.yaml", "cfn_bad_iam.yaml"]
+        report = Runner().run(None, files=[f'{current_dir}/{f}' for f in test_files], runner_filter=RunnerFilter())
+        summary = report.get_summary()
+
+        self.assertEqual(summary['passed'], 6)
+        self.assertEqual(summary['failed'], 0)
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 2)
 
 
 if __name__ == '__main__':

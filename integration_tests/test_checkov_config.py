@@ -12,7 +12,7 @@ class TestCheckovConfig(unittest.TestCase):
         # checkov -d path/to/terragoat --config-file \
         # path/to/checkov/integration_tests/example_config_files/config.yaml \
         # > path/to/checkov/checkov_config_report_terragoat.json
-        report_path = current_dir + "/../checkov_config_report_terragoat.json"
+        report_path = os.path.join(os.path.dirname(current_dir), "checkov_config_report_terragoat.json")
         with open(report_path) as json_file:
             data = json.load(json_file)
             self.assertEqual(data["summary"]["parsing_errors"], 0,
@@ -21,8 +21,8 @@ class TestCheckovConfig(unittest.TestCase):
                                f"expecting more than 1 failed checks, got: {data['summary']['failed']}")
             self.assertEqual(data['check_type'], 'terraform',
                              f"expecting 'terraform' but got: {data['check_type']}")
-            self.assertNotIn('guideline', data['results']['failed_checks'][0].keys(),
-                             "expecting no guideline for checks.")
+            self.assertIsNone(data['results']['failed_checks'][0]['guideline'],
+                              "expecting no guideline for checks.")
 
 
 if __name__ == '__main__':

@@ -40,7 +40,7 @@ The table below details the arguments used when executing the API token:
 
 | Argument | Description |
 | -------- | ----------- |
-| `<key>` | Bridgecrew issued API key |
+| `<key>` | Bridgecrew issued API key or Prisma cloud API key in the following format `ACCESS_KEY::SECRET_KEY` |
 | `<repo_id>` | Identifying string of the scanned repository, following the standard Git repository naming scheme: `<owner>/<name>` |
 | `<branch>` | Branch name to be persisted on platform. Defaults to the master branch. **NOTE:** Ensure the scanned directory (supplied in the `-d` flag) is currently checked out from the given branch name. |
 
@@ -62,6 +62,9 @@ To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend th
 | BC_RUN_URL | Link to the run in the CI system | https://github.com/bridgecrewio/checkov/actions/runs/525220526 |
 | BC_REPOSITORY_URL | Link to the GitHub repository | https://github.com/bridgecrewio/checkov/ |
 | BC_SOURCE | Name of CI system being integrated | githubActions |
+| BC_API_URL | URL of BC app for platform integration | https://www.bridgecrew.cloud |
+| PRISMA_API_URL | URL of Prisma app for platform integration | https://app3.prismacloud.io |
+| SLS_FILE_MASK | File names mask for all serverless files | serverless.yaml,serverless.yml |
 
 ## Bridgecrew platform view
 

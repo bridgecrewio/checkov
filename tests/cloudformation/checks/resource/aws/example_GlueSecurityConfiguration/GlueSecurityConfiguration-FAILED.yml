@@ -12,7 +12,7 @@ Resources:
           JobBookmarksEncryptionMode: CSE-KMS
           KmsKeyArn: KmsKeyArn
         S3Encryptions: 
-          KmsKeyArn: KmsKeyArn
+        - KmsKeyArn: KmsKeyArn
           S3EncryptionMode: SSE-KMS
   Resource1:
     Type: AWS::Glue::SecurityConfiguration
@@ -26,7 +26,7 @@ Resources:
           JobBookmarksEncryptionMode: DISABLED
           KmsKeyArn: KmsKeyArn
         S3Encryptions: 
-          KmsKeyArn: KmsKeyArn
+        - KmsKeyArn: KmsKeyArn
           S3EncryptionMode: DISABLED
   Resource2:
     Type: AWS::Glue::SecurityConfiguration
@@ -45,5 +45,5 @@ Resources:
       Name: Name
       EncryptionConfiguration:
         S3Encryptions: 
-          KmsKeyArn: DISABLED
+        - KmsKeyArn: DISABLED
           S3EncryptionMode: SSE-KMS

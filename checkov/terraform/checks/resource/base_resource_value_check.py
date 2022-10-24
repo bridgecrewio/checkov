@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Dict, Any
 
 import dpath.util
@@ -8,8 +9,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
-from checkov.terraform.parser_utils import find_var_blocks
-
+from checkov.terraform.parser_functions import handle_dynamic_values
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -17,8 +17,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
-        supported_resources: List[str],
+        categories: "Iterable[CheckCategories]",
+        supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
     ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -31,18 +31,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(r"^\[?\d+]?$", x)]
-
-    @staticmethod
-    def _is_variable_dependant(value: Any) -> bool:
-        if not isinstance(value, str):
-            return False
-        if "${" not in value:
-            return False
-
-        if find_var_blocks(value):
-            return True
-        return False
+        return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+]?$"), x)]
 
     @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: List[str]) -> bool:
@@ -52,10 +41,10 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param key: JSONPath key of an attribute
         :return: True/False
         """
-        return any([x in key for x in inspected_attributes])
+        return any(x in key for x in inspected_attributes)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        self.handle_dynamic_values(conf)
+        handle_dynamic_values(conf)
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         if dpath.search(conf, inspected_key) != {}:
@@ -63,7 +52,9 @@ class BaseResourceValueCheck(BaseResourceCheck):
             value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
-            if ANY_VALUE in expected_values and value is not None:
+            if value is None or (isinstance(value, list) and not value):
+                return self.missing_block_result
+            if ANY_VALUE in expected_values and value is not None and (not isinstance(value, str) or value):
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
             if self._is_variable_dependant(value):

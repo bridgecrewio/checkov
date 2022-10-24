@@ -12,6 +12,7 @@ resource "aws_subnet" "acme_subnet" {
 
   tags = {
     acme = "true"
+    Name = "notacme-subnet"
   }
 }
 

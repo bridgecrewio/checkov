@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class GoogleCloudSqlServerNoPublicIP(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure SQL database do not have public IP"
+        name = "Ensure Cloud SQL database does not have public IP"
         check_id = "CKV_GCP_60"
         supported_resources = ['google_sql_database_instance']
         categories = [CheckCategories.NETWORKING]
@@ -18,14 +18,16 @@ class GoogleCloudSqlServerNoPublicIP(BaseResourceCheck):
             configuration
             :return: < CheckResult >
         """
-        if 'database_version' in conf.keys():
-            key = conf['database_version'][0]
-            if 'SQLSERVER' in key:
-                if 'settings' in conf.keys():
-                    if 'ip_configuration' in conf['settings'][0]:
-                        if 'ipv4_enabled' in conf['settings'][0]['ip_configuration'][0]:
-                            if conf['settings'][0]['ip_configuration'][0]['ipv4_enabled'][0] != 'false':
-                                return CheckResult.FAILED
+
+        if 'settings' in conf.keys() and 'ip_configuration' in conf['settings'][0] and \
+                'ipv4_enabled' in conf['settings'][0]['ip_configuration'][0]:
+            ipconfiguration = conf['settings'][0]['ip_configuration'][0]
+            ipv4_enabled = ipconfiguration['ipv4_enabled']
+            ipv4_enabled = ipv4_enabled[0] if isinstance(ipv4_enabled, list) else ipv4_enabled
+            if ipv4_enabled:
+                self.evaluated_keys = ['database_version/[0]/SQLSERVER',
+                                       'settings/[0]/ip_configuration/[0]/ipv4_enabled']
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 

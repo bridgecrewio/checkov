@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class AutoScalingTagging(BaseResourceCheck):
@@ -14,9 +15,12 @@ class AutoScalingTagging(BaseResourceCheck):
         """
             Looks for tag or tags
         """
-
         if "tag" in conf.keys() or "tags" in conf.keys():
             return CheckResult.PASSED
-        return  CheckResult.FAILED
+        return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['tag', 'tags']
+
 
 check = AutoScalingTagging()

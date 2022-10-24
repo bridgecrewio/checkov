@@ -2,13 +2,47 @@ import dis
 import inspect
 import os
 import unittest
+from collections import defaultdict
 from pathlib import Path
+from typing import Dict, Any
 
+from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
+from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = arm_resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(arm_resource_registry.report_type, CheckType.ARM)
+        self.assertEqual(arm_parameter_registry.report_type, CheckType.ARM)
+
+    def test_runner_honors_enforcement_rules(self):
+        # this is just constructing the scan dir as normal
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['arm'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.ARM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None, runner_filter=filter)
+
+        # then
+        summary = report.get_summary()
+
+        assert summary["passed"] == 0
+        assert summary["failed"] == 0
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -19,7 +53,7 @@ class TestRunnerValid(unittest.TestCase):
         scan_dir_path = os.path.join(current_dir, "resources")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
         checks_allowlist = ['CKV_AZURE_18']
@@ -40,7 +74,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "resources")
 
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
@@ -116,8 +150,162 @@ class TestRunnerValid(unittest.TestCase):
 
         assert len(check_imports) == 0, f"Wrong imports were added: {check_imports}"
 
+    def test_record_includes_severity(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        arm_resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["Microsoft.Web/sites"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['arm'], checks=[custom_check_id])
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_severity_check_filter_omit(self):
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        arm_resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["Microsoft.Web/sites"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        checks_allowlist = ['MEDIUM']
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['arm'], checks=checks_allowlist)
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_check_filter_include(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        arm_resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["Microsoft.Web/sites"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        checks_allowlist = ['MEDIUM']
+        check.severity = Severities[BcSeverities.HIGH]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['arm'], checks=checks_allowlist)
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_omit(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+        arm_resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["Microsoft.Web/sites"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        checks_denylist = ['MEDIUM']
+        check.severity = Severities[BcSeverities.LOW]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['arm'], skip_checks=checks_denylist)
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_severity_skip_check_filter_include(self):
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+        arm_resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["Microsoft.Web/sites"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        checks_denylist = ['MEDIUM']
+        check.severity = Severities[BcSeverities.HIGH]
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "example.json")
+
+        report = Runner().run(
+            None,
+            files=[scan_file_path],
+            runner_filter=RunnerFilter(framework=['arm'], skip_checks=checks_denylist)
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
     def tearDown(self):
-        pass
+        arm_resource_registry.checks = self.orig_checks
 
 
 if __name__ == '__main__':

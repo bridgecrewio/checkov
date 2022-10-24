@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  EnvAndKey:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          key: value
+      KmsKeyArn: arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab
+
+  NoEnvAndNoKey:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+
+  EnvAndNoKey:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          key: value

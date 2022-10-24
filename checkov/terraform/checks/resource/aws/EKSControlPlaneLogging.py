@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class EKSControlPlaneLogging(BaseResourceCheck):
@@ -17,14 +18,14 @@ class EKSControlPlaneLogging(BaseResourceCheck):
         :param conf: aws_eks_cluster configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = 'enabled_cluster_log_types'
-        if "enabled_cluster_log_types" in conf.keys():
-            log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-            if conf["enabled_cluster_log_types"][0] == None:
-                return CheckResult.FAILED
-            if all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
-                return CheckResult.PASSED
+        log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+        if "enabled_cluster_log_types" in conf.keys() and conf["enabled_cluster_log_types"][0] is not None \
+                and all(elem in conf["enabled_cluster_log_types"][0] for elem in log_types):
+            return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['enabled_cluster_log_types']
 
 
 check = EKSControlPlaneLogging()

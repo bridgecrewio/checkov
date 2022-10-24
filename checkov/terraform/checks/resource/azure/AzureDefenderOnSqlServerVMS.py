@@ -1,18 +1,27 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List, Dict, Any
 
 
 class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Azure Defender is set to On for SQL servers on machines"
         id = "CKV_AZURE_79"
-        supported_resources = ['azurerm_security_center_subscription_pricing']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ("azurerm_security_center_subscription_pricing",)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        return CheckResult.PASSED if conf.get('resource_type', [None])[0] != 'SqlServerVirtualMachines' \
-                                     or conf.get('tier', [None])[0] == 'Standard' else CheckResult.FAILED
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if (
+            conf.get("resource_type", [None])[0] != "SqlServerVirtualMachines"
+            or conf.get("tier", [None])[0] == "Standard"
+        ):
+            return CheckResult.PASSED
+
+        return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["resource_type", "tier"]
 
 
 check = AzureDefenderOnSqlServersVMS()

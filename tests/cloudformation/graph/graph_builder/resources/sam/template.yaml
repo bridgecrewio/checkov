@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Mappings:
+  ServiceDiscovery:
+    self:
+      "name": 'amecard-cancel-api'
+
+Parameters:
+  EnvironmentType:
+    Type: String
+    AllowedValues:
+      - dev
+      - stage
+
+Globals:
+  Function:
+    Timeout: 5
+    CodeUri: src/
+    Runtime: python3.8
+    Tracing: Active
+    Environment:
+      Variables:
+        QUEUE_URL: !If [ IsStageEnvironment, !Ref SomeQueue, unkown ]
+        STAGE: Production
+        TABLE_NAME: global-table
+    VpcConfig:
+      SecurityGroupIds:
+        - sg-123
+        - sg-456
+      SubnetIds:
+        - subnet-123
+        - subnet-456
+
+Conditions:
+  IsStageEnvironment: !Equals [ !Ref EnvironmentType, stage ]
+
+Resources:
+  SomeQueue:
+    Type: AWS::SQS::Queue
+
+  Function1:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.9
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt SomeQueue.Arn
+            BatchSize: 10
+            Enabled: true
+      Environment:
+        Variables:
+          TABLE_NAME: resource-table
+          NEW_VAR: hello
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-first
+
+  Function2:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+
+Outputs:
+  RawSqsUrl:
+    Description: URL of the SQS Queue
+    Value: !Ref SomeQueue

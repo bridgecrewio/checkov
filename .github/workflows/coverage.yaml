@@ -1,0 +1,43 @@
+name: Coverage
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  update-coverage:
+    runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      contents: write
+    environment: release
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+      - name: Set up Python 3.7
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        with:
+          python-version: 3.7
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install dependencies
+        run: |
+          pipenv --python 3.7
+          pipenv install --dev
+          pipenv run pip install pytest
+      - name: Test with pytest
+        run: |
+          pipenv run pytest --cov-report term --cov=checkov tests
+          pipenv run python -m coverage_badge -o coverage.svg -f
+          git commit -m "Update coverage" coverage.svg || echo "No changes to commit"

@@ -5,10 +5,10 @@ from checkov.serverless.checks.plugin.registry import plugin_registry
 
 
 class BasePluginCheck(BaseCheck):
-    def __init__(self, name, id, categories, supported_entities):
+    def __init__(self, name, id, categories, supported_entities, guideline=None):
         super().__init__(name=name, id=id, categories=categories,
                          supported_entities=supported_entities,
-                         block_type="serverless")
+                         block_type="serverless", guideline=guideline)
         plugin_registry.register(self)
 
     def scan_entity_conf(self, conf, entity_type):

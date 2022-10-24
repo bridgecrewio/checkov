@@ -47,3 +47,4 @@ class TemplateSections(str, Enum):
     CONDITIONS = "Conditions"
     TRANSFORM = "Transform"
     OUTPUTS = "Outputs"
+    GLOBALS = "Globals"

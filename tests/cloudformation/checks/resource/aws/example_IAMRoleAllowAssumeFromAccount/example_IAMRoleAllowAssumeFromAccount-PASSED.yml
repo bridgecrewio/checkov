@@ -13,3 +13,36 @@ Resources:
               - ec2.amazonaws.com
             Action:
               - 'sts:AssumeRole'
+  ClusterAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      RoleName: ClusterAccessRole
+      AssumeRolePolicyDocument:
+        Fn::Sub:
+          - |
+            {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ec2.amazonaws.com"
+                  }
+                },
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/oidc.eks.${AWS::Region}.amazonaws.com/id/123456"
+                    },
+                    "Action": "sts:AssumeRoleWithWebIdentity",
+                    "Condition": {
+                      "StringEquals": {
+                        "${clusterid}": "1234"
+                      }
+                    }
+                  }
+              ]    
+            }
+          -
+            clusterid: clusterID

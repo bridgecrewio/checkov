@@ -11,7 +11,7 @@ spec:
   containers:
   - command:
     - kubelet
-    - --root-ca-file=test.pem
+    - --client-ca-file=/path/to/file
     image: gcr.io/google_containers/kubelet-amd64:v1.6.0
     livenessProbe:
       failureThreshold: 8

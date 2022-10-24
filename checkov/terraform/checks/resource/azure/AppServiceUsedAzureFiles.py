@@ -11,7 +11,7 @@ class AppServiceUsedAzureFiles(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
-        return "storage_account/type"
+        return "storage_account/[0]/type"
 
     def get_expected_value(self):
         return 'AzureFiles'

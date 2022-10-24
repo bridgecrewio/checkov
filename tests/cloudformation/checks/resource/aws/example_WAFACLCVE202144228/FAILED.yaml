@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  NoRule:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+  WrongRule:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+      Rules:
+        - Name: rule-1
+          Priority: 1
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesAnonymousIpList
+          OverrideAction:
+            None: { }
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: false
+            MetricName: AWSManagedRulesKnownBadInputsRuleSet
+            SampledRequestsEnabled: false
+  RuleCount:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+      Rules:
+        - Name: rule-1
+          Priority: 1
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+              ExcludedRules:
+                - Name: Log4JRCE
+          OverrideAction:
+            None: { }
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: false
+            MetricName: AWSManagedRulesKnownBadInputsRuleSet
+            SampledRequestsEnabled: false
+  RuleGroupCount:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: 'example-webacl'
+      DefaultAction:
+        Allow: { }
+      Scope: REGIONAL
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        MetricName: ExampleWebACLMetric
+        CloudWatchMetricsEnabled: false
+      Rules:
+        - Name: rule-1
+          Priority: 1
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          OverrideAction:
+            Count: { }
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: false
+            MetricName: AWSManagedRulesKnownBadInputsRuleSet
+            SampledRequestsEnabled: false

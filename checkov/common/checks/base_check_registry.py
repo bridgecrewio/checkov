@@ -1,27 +1,30 @@
+from __future__ import annotations
+
 import fnmatch
 import importlib
+import importlib.util
 import logging
 import os
 import sys
 from abc import abstractmethod
-from itertools import chain
-from typing import Generator, Tuple, Dict, List, Optional, Any
-
-from checkov.common.checks.base_check import BaseCheck
-
 from collections import defaultdict
+from itertools import chain
+from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
-from checkov.common.typing import _SkippedCheck
+from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
+if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
 
-class BaseCheckRegistry(object):
+
+class BaseCheckRegistry:
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
-    __loading_external_checks = False
-    __all_registered_checks: List[BaseCheck] = []
+    __loading_external_checks = False  # noqa: CCE003
+    __all_registered_checks: list[BaseCheck] = []  # noqa: CCE003
 
-    def __init__(self) -> None:
+    def __init__(self, report_type: str) -> None:
         self.logger = logging.getLogger(__name__)
         # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
         self.checks: Dict[str, List[BaseCheck]] = defaultdict(list)
@@ -30,6 +33,7 @@ class BaseCheckRegistry(object):
         #                      reason to use a dict for this too.
         self.wildcard_checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         self.check_id_allowlist: Optional[List[str]] = None
+        self.report_type = report_type
 
     def register(self, check: BaseCheck) -> None:
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
@@ -101,11 +105,12 @@ class BaseCheckRegistry(object):
         entity: Dict[str, Any],
         skipped_checks: List[_SkippedCheck],
         runner_filter: RunnerFilter,
-    ) -> Dict[BaseCheck, Dict[str, Any]]:
+        report_type: Optional[str] = None  # allow runners like TF plan to override the type while using the same registry
+    ) -> Dict[BaseCheck, _CheckResult]:
 
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
 
-        results: Dict[BaseCheck, Dict[str, Any]] = {}
+        results: Dict[BaseCheck, _CheckResult] = {}
 
         if not isinstance(entity_configuration, dict):
             return results
@@ -117,7 +122,7 @@ class BaseCheckRegistry(object):
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check.id, check.bc_id):
+            if runner_filter.should_run_check(check, report_type=report_type or self.report_type):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -130,7 +135,7 @@ class BaseCheckRegistry(object):
         entity_type: str,
         scanned_file: str,
         skip_info: _SkippedCheck,
-    ) -> Dict[str, Any]:
+    ) -> _CheckResult:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
         result = check.run(
             scanned_file=scanned_file,
@@ -148,10 +153,10 @@ class BaseCheckRegistry(object):
         __init__.py is needed to ensure the directory is a Python module, thus
         can be imported.
         """
-        return os.path.exists(f"{directory}/__init__.py")
+        return os.path.exists(os.path.join(directory, "__init__.py"))
 
     @staticmethod
-    def _file_can_be_imported(entry: os.DirEntry) -> bool:
+    def _file_can_be_imported(entry: "os.DirEntry[str]") -> bool:
         """ Verify if a directory entry is a non-magic Python file."""
         return entry.is_file() and not entry.name.startswith("__") and entry.name.endswith(".py")
 
@@ -162,33 +167,32 @@ class BaseCheckRegistry(object):
         when a .py file has syntax error
         """
         directory = os.path.expanduser(directory)
-        self.logger.debug("Loading external checks from {}".format(directory))
-        sys.path.insert(1, directory)
+        self.logger.debug(f"Loading external checks from {directory}")
+        for root, _, _ in os.walk(directory):
+            sys.path.insert(1, root)
+            with os.scandir(root) as directory_content:
+                if not self._directory_has_init_py(root):
+                    self.logger.info(f"No __init__.py found in {root}. Cannot load any check here.")
+                else:
+                    for entry in directory_content:
+                        if self._file_can_be_imported(entry):
+                            check_name = entry.name.replace(".py", "")
+                            check_full_path = entry.path
 
-        with os.scandir(directory) as directory_content:
-            if not self._directory_has_init_py(directory):
-                self.logger.info("No __init__.py found in {}. Cannot load any check here.".format(directory))
-            else:
-                for entry in directory_content:
-                    if self._file_can_be_imported(entry):
-                        check_name = entry.name.replace(".py", "")
+                            # Filter is set while loading external checks so the filter can be informed
+                            # of the checks, which need to be handled specially.
+                            try:
+                                BaseCheckRegistry.__loading_external_checks = True
+                                self.logger.debug(f"Importing external check '{check_name}'")
 
-                        # Filter is set while loading external checks so the filter can be informed
-                        # of the checks, which need to be handled specially.
-                        try:
-                            BaseCheckRegistry.__loading_external_checks = True
-                            self.logger.debug("Importing external check '{}'".format(check_name))
-                            importlib.import_module(check_name)
-                        except SyntaxError as e:
-                            self.logger.error(
-                                "Cannot load external check '{check_name}' from {check_full_path} : {error_message} ("
-                                "{error_line}:{error_column}) ".format(
-                                    check_name=check_name,
-                                    check_full_path=e.args[1][0],
-                                    error_message=e.args[0],
-                                    error_line=e.args[1][1],
-                                    error_column=e.args[1][2],
-                                )
-                            )
-                        finally:
-                            BaseCheckRegistry.__loading_external_checks = False
+                                spec = importlib.util.spec_from_file_location(check_name, check_full_path)
+                                if spec:
+                                    module = importlib.util.module_from_spec(spec)
+                                    sys.modules[check_name] = module
+                                    spec.loader.exec_module(module)  # type: ignore[union-attr] # loader can't be None here
+                                else:
+                                    self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}")
+                            except Exception:
+                                self.logger.error(f"Cannot load external check '{check_name}' from {check_full_path}", exc_info=True)
+                            finally:
+                                BaseCheckRegistry.__loading_external_checks = False

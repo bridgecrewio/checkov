@@ -1,202 +1,43 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleCloudPostgreSqlLogCheckpoints import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestCloudPostgreSQLLogCheckpoints(unittest.TestCase):
+class TestGoogleCloudPostgreSqlLogCheckpoints(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_GoogleCloudPostgreSqlLogCheckpoints"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""    
-            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
-              database_version = "POSTGRES_12"
-              name             = "general-pos121"
-              project          = "gcp-bridgecrew-deployment"
-              region           = "us-central1"
-              settings {
-                activation_policy = "ALWAYS"
-                availability_type = "ZONAL"
-                
-                database_flags =[{
-                  name  = "log_checkpoints"
-                  value = "off"
-                },
-                {
-                  name  = "log_connections"
-                  value = "off"
-                },
-                {
-                  name  = "log_disconnections"
-                  value = "on"
-                },
-                {
-                  name  = "log_min_messages"
-                  value = "debug6"
-                },
-                {
-                  name  = "log_lock_waits"
-                  value = "on"
-                },
-                {
-                  name  = "log_temp_files"
-                  value = "10"
-                },
-                {
-                  name  = "log_min_duration_statement"
-                  value = "1"
-                }]
-                pricing_plan     = "PER_USE"
-                replication_type = "SYNCHRONOUS"
-                tier             = "db-custom-1-3840"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
-            database_version = "POSTGRES_12"
-            name             = "general-pos121"
-            project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"
-            settings {
-                activation_policy = "ALWAYS"
-                availability_type = "ZONAL"
-                database_flags {
-                  name  = "log_checkpoints"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_connections"
-                  value = "off"
-                }
-                database_flags {
-                  name  = "log_disconnections"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_min_messages"
-                  value = "debug6"
-                }
-                database_flags {
-                  name  = "log_lock_waits"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_temp_files"
-                  value = "10"
-                }
-                database_flags {
-                  name  = "log_min_duration_statement"
-                  value = "1"
-                }
-                pricing_plan     = "PER_USE"
-                replication_type = "SYNCHRONOUS"
-                tier             = "db-custom-1-3840"
-              }
-            }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_2(self):
-        hcl_res = hcl2.loads("""
-            resource "google_sql_database_instance" "tfer--general-002D-pos121" {
-            database_version = "POSTGRES_14"
-            name             = "general-pos121"
-            project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"
-            settings {
-                activation_policy = "ALWAYS"
-                availability_type = "ZONAL"
-                database_flags {
-                  name  = "log_checkpoints"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_connections"
-                  value = "off"
-                }
-                database_flags {
-                  name  = "log_disconnections"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_min_messages"
-                  value = "debug6"
-                }
-                database_flags {
-                  name  = "log_lock_waits"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_temp_files"
-                  value = "10"
-                }
-                database_flags {
-                  name  = "log_min_duration_statement"
-                  value = "1"
-                }
-                pricing_plan     = "PER_USE"
-                replication_type = "SYNCHRONOUS"
-                tier             = "db-custom-1-3840"
-              }
-            }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "google_sql_database_instance.pass",
+        }
 
-    def test_success_3(self):
-        hcl_res = hcl2.loads("""
-                                    resource "google_sql_database_instance" "tfer--general-002D-pos121" {
-            database_version = "POSTGRES_12"
-            name             = "general-pos121"
-            project          = "gcp-bridgecrew-deployment"
-            region           = "us-central1"
-            settings {
-                activation_policy = "ALWAYS"
-                availability_type = "ZONAL"
-                database_flags {
-                  name  = "log_connections"
-                  value = "off"
-                }
-                database_flags {
-                  name  = "log_disconnections"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_min_messages"
-                  value = "debug6"
-                }
-                database_flags {
-                  name  = "log_lock_waits"
-                  value = "on"
-                }
-                database_flags {
-                  name  = "log_temp_files"
-                  value = "10"
-                }
-                database_flags {
-                  name  = "log_min_duration_statement"
-                  value = "1"
-                }
-                pricing_plan     = "PER_USE"
-                replication_type = "SYNCHRONOUS"
-                tier             = "db-custom-1-3840"
-              }
-            }
-                        """)
-        resource_conf = hcl_res['resource'][0]['google_sql_database_instance']['tfer--general-002D-pos121']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "google_sql_database_instance.fail",
+            "google_sql_database_instance.fail2",
+            "google_sql_database_instance.unknown_var",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

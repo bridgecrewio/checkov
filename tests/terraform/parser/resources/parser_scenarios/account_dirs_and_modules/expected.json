@@ -10,7 +10,9 @@
           "__resolved__": [
             "modules/db/db.tf[envs/myaccount/us-east-1/main.tf#0]",
             "modules/db/variables.tf[envs/myaccount/us-east-1/main.tf#0]"
-          ]
+          ],
+          "__start_line__": 1,
+          "__end_line__": 6
         }
       }
     ]
@@ -18,13 +20,22 @@
   "envs/myaccount/us-east-1/variables.tf": {
     "variable": [
       {
-        "ENGINE_VERSION": {}
+        "ENGINE_VERSION": {
+          "__start_line__": 1,
+          "__end_line__": 1
+        }
       },
       {
-        "DB_INSTANCE_TYPE": {}
+        "DB_INSTANCE_TYPE": {
+          "__start_line__": 2,
+          "__end_line__": 2
+        }
       },
       {
-        "ENCRYPTED": {}
+        "ENCRYPTED": {
+          "__start_line__": 3,
+          "__end_line__": 3
+        }
       }
     ]
   },
@@ -32,21 +43,30 @@
     "variable": [
       {
         "DB_DELETION_PROTECTION": {
-          "default": [true]
+          "default": [true],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       },
       {
         "ENGINE_VERSION": {
-          "default": [11]
+          "default": [11],
+          "__start_line__": 5,
+          "__end_line__": 7
         }
       },
       {
         "DB_INSTANCE_TYPE": {
-          "default": ["db.t3.small"]
+          "default": ["db.t3.small"],
+          "__start_line__": 9,
+          "__end_line__": 11
         }
       },
       {
-        "ENCRYPTED": {}
+        "ENCRYPTED": {
+          "__start_line__": 13,
+          "__end_line__": 13
+        }
       }
     ]
   },
@@ -61,7 +81,9 @@
             "engine_version": [11],
             "storage_type": ["gp2"],
             "deletion_protection": [true],
-            "storage_encrypted": [true]
+            "storage_encrypted": [true],
+            "__start_line__": 1,
+            "__end_line__": 9
           }
         }
       }
@@ -78,7 +100,9 @@
           "__resolved__": [
             "modules/db/db.tf[envs/myotheraccount/us-east-1/main.tf#0]",
             "modules/db/variables.tf[envs/myotheraccount/us-east-1/main.tf#0]"
-          ]
+          ],
+          "__start_line__": 1,
+          "__end_line__": 6
         }
       }
     ]
@@ -86,13 +110,22 @@
   "envs/myotheraccount/us-east-1/variables.tf": {
     "variable": [
       {
-        "ENGINE_VERSION": {}
+        "ENGINE_VERSION": {
+          "__start_line__": 1,
+          "__end_line__": 1
+        }
       },
       {
-        "DB_INSTANCE_TYPE": {}
+        "DB_INSTANCE_TYPE": {
+          "__start_line__": 2,
+          "__end_line__": 2
+        }
       },
       {
-        "ENCRYPTED": {}
+        "ENCRYPTED": {
+          "__start_line__": 3,
+          "__end_line__": 3
+        }
       }
     ]
   },
@@ -100,21 +133,30 @@
     "variable": [
       {
         "DB_DELETION_PROTECTION": {
-          "default": [true]
+          "default": [true],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       },
       {
         "ENGINE_VERSION": {
-          "default": [11]
+          "default": [11],
+          "__start_line__": 5,
+          "__end_line__": 7
         }
       },
       {
         "DB_INSTANCE_TYPE": {
-          "default": ["db.t9.mega"]
+          "default": ["db.t9.mega"],
+          "__start_line__": 9,
+          "__end_line__": 11
         }
       },
       {
-        "ENCRYPTED": {}
+        "ENCRYPTED": {
+          "__start_line__": 13,
+          "__end_line__": 13
+        }
       }
     ]
   },
@@ -129,7 +171,9 @@
             "engine_version": [11],
             "storage_type": ["gp2"],
             "deletion_protection": [true],
-            "storage_encrypted": [true]
+            "storage_encrypted": [true],
+            "__start_line__": 1,
+            "__end_line__": 9
           }
         }
       }

@@ -1,0 +1,77 @@
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: nginx-ingress-controller
+  namespace: example-ns
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/part-of: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingress-nginx
+        app.kubernetes.io/part-of: ingress-nginx
+      annotations:
+        prometheus.io/port: "10254"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: nginx-ingress-serviceaccount
+      imagePullSecrets:
+      - name: private-repo
+      containers:
+        - name: nginx-ingress-controller
+          image: private_repo/private_image
+          args:
+            - /nginx-ingress-controller
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
+            - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+            - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+            - --publish-service=$(POD_NAMESPACE)/ingress-nginx
+            - --annotations-prefix=nginx.ingress.kubernetes.io
+            - --default-ssl-certificate=$(POD_NAMESPACE)/tls-cert
+          securityContext:
+            allowPrivilegeEscalation: true
+---
+kind: DaemonSet
+apiVersion: extensions/v1beta1
+metadata:
+  name: nginx-ingress-controller-2
+  namespace: example-ns
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/part-of: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ingress-nginx
+        app.kubernetes.io/part-of: ingress-nginx
+      annotations:
+        prometheus.io/port: "10254"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: nginx-ingress-serviceaccount
+      imagePullSecrets:
+      - name: private-repo
+      containers:
+        - name: nginx-ingress-controller
+          image: private_repo/private_image
+          args:
+            - /nginx-ingress-controller
+            - --configmap=$(POD_NAMESPACE)/nginx-configuration
+            - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+            - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+            - --publish-service=$(POD_NAMESPACE)/ingress-nginx
+            - --annotations-prefix=nginx.ingress.kubernetes.io
+            - --default-ssl-certificate=$(POD_NAMESPACE)/tls-cert
+          securityContext:
+            allowPrivilegeEscalation: false

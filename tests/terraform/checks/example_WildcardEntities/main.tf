@@ -1,7 +1,7 @@
 locals {
-  dummy_with_dash      = format("-%s", var.dummy_1)
-  dummy_with_comma     = format(":%s", var.dummy_1)
-  bucket_name          = var.bucket_name
+  dummy_with_dash  = format("-%s", var.dummy_1)
+  dummy_with_comma = format(":%s", var.dummy_1)
+  bucket_name      = var.bucket_name
 }
 
 variable "user_exists" {

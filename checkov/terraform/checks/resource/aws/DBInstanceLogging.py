@@ -1,8 +1,11 @@
+from typing import Any, Dict, List
+
+from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class DBInstanceLogging(BaseResourceCheck):
+class DBInstanceLogging(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that respective logs of Amazon Relational Database Service (Amazon RDS) are enabled"
         id = "CKV_AWS_129"
@@ -10,13 +13,17 @@ class DBInstanceLogging(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        # which log types are chooseable depends on the engine and engine version and even region,
-        # therefore it is only checked, if something is enabled.
-        if conf.get("enabled_cloudwatch_logs_exports", [[]])[0]:
-            return CheckResult.PASSED
+    def get_inspected_key(self) -> str:
+        return "enabled_cloudwatch_logs_exports/[0]"
 
-        return CheckResult.FAILED
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        logs_exports = conf.get('enabled_cloudwatch_logs_exports', [[]])
+        if not logs_exports:
+            return CheckResult.FAILED
+        return CheckResult.PASSED if logs_exports[0] else CheckResult.FAILED
+
+    def get_expected_value(self) -> Any:
+        return ANY_VALUE
 
 
 check = DBInstanceLogging()

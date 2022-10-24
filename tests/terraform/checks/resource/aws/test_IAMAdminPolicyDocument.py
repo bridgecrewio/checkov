@@ -18,20 +18,22 @@ class TestIAMAdminPolicyDocument(unittest.TestCase):
 
         passing_resources = {
             'aws_iam_policy.pass1',
-            'aws_iam_policy.pass2'
+            'aws_iam_policy.pass2',
+            'aws_ssoadmin_permission_set_inline_policy.pass1'
         }
         failing_resources = {
             'aws_iam_policy.fail1',
             'aws_iam_policy.fail2',
             'aws_iam_policy.fail3',
-            'aws_iam_policy.fail4'
+            'aws_iam_policy.fail4',
+            'aws_ssoadmin_permission_set_inline_policy.fail1'
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary['passed'], 2)
-        self.assertEqual(summary['failed'], 4)
+        self.assertEqual(summary['passed'], 3)
+        self.assertEqual(summary['failed'], 5)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 

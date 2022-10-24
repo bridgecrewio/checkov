@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_cognitive_account.cognitive_account_good"
+fail:
+  - "azurerm_cognitive_account.cognitive_account_bad"

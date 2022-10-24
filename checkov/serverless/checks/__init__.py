@@ -1,7 +1,7 @@
-from checkov.serverless.checks.complete import *
-from checkov.serverless.checks.custom import *
-from checkov.serverless.checks.function import *
-from checkov.serverless.checks.layer import *
-from checkov.serverless.checks.package import *
-from checkov.serverless.checks.provider import *
-from checkov.serverless.checks.service import *
+from checkov.serverless.checks.complete import *  # noqa
+from checkov.serverless.checks.custom import *  # noqa
+from checkov.serverless.checks.function import *  # noqa
+from checkov.serverless.checks.layer import *  # noqa
+from checkov.serverless.checks.package import *  # noqa
+from checkov.serverless.checks.provider import *  # noqa
+from checkov.serverless.checks.service import *  # noqa

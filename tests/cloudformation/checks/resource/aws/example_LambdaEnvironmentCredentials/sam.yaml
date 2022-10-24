@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Handler: app.lambdaHandler
+    Runtime: python3.8
+
+Resources:
+  NoSecret:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          key: value
+
+  NoEnv:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+
+  NoProperties:
+    Type: AWS::Serverless::Function
+
+  Secret:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambdaHandler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          key: value
+          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE

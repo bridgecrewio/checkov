@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This template deploys CloudFront Distribution"
+Resources:
+  cloudfrontdistributionFAILED1:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          AcmCertificateArn: "cert-test"
+          MinimumProtocolVersion: SSLv3
+          SslSupportMethod: sni-only
+
+  cloudfrontdistributionFAILED2:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "http-only"
+            DomainName: "testing"
+            Id: "id"
+
+  cloudfrontdistributionFAILED3:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        CacheBehaviors:
+          - LambdaFunctionAssociations:
+              - EventType: origin-request
+                LambdaFunctionARN: string-value
+            PathPattern: "*"
+            TargetOriginId: "id"
+            ViewerProtocolPolicy: "https-only"
+        DefaultCacheBehavior:
+          LambdaFunctionAssociations:
+            - EventType: origin-request
+              LambdaFunctionARN: string-value
+          TargetOriginId: "id"
+          ViewerProtocolPolicy: "https-only"
+        IPV6Enabled: false
+        Origins:
+          - CustomOriginConfig:
+              OriginKeepaliveTimeout: 60
+              OriginReadTimeout: 60
+              OriginProtocolPolicy: "https-only"
+            DomainName: "testing"
+            Id: "id"
+        ViewerCertificate:
+          CloudFrontDefaultCertificate : true

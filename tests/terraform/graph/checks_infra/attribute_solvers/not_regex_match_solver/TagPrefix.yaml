@@ -1,0 +1,13 @@
+metadata:
+  id: "TagPrefix"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_instance"
+    - "aws_subnet"
+  attribute: "tags.Name"
+  operator: "not_regex_match"
+  value: "acme\\-.+"
+

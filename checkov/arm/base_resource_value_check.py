@@ -1,83 +1,63 @@
-from abc import abstractmethod
-import dpath.util
 import re
-from checkov.arm.base_resource_check import BaseResourceCheck
-from checkov.common.models.enums import CheckResult
-from checkov.common.models.consts import ANY_VALUE
+from abc import abstractmethod
+from collections.abc import Iterable
+from typing import Dict, Any, List, Optional
 
-VARIABLE_DEPENDANT_REGEX = r'(?:local|var)\.[^\s]+'
+from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.consts import ANY_VALUE
+from checkov.common.util.data_structures_utils import find_in_dict
+
+VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:local|var|module)\.[^\s]+")
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
-    def __init__(self, name, id, categories, supported_resources, missing_block_result=CheckResult.FAILED):
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+    def __init__(
+        self,
+        name: str,
+        id: str,
+        categories: List[CheckCategories],
+        supported_resources: "Iterable[str]",
+        missing_block_result: CheckResult = CheckResult.FAILED,
+        guideline: Optional[str] = None,
+    ) -> None:
+        super().__init__(
+            name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline
+        )
         self.missing_block_result = missing_block_result
 
     @staticmethod
-    def _filter_key_path(path):
-        """
-        Filter an attribute path to contain only named attributes by dropping array indices from the path)
-        :param path: valid JSONPath of an attribute
-        :return: List of named attributes with respect to the input JSONPath order
-        """
-        return [x for x in path.split("/") if not re.search(r'^\[?\d+\]?$', x)]
-
-    @staticmethod
-    def _is_variable_dependant(value):
+    def _is_variable_dependant(value: Any) -> bool:
         if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
             return True
         return False
 
-    @staticmethod
-    def _is_nesting_key(inspected_attributes, key):
-        """
-        Resolves whether a key is a subset of the inspected nesting attributes
-        :param inspected_attributes: list of nesting attributes
-        :param key: JSONPath key of an attribute
-        :return: True/False
-        """
-        return any([x in key for x in inspected_attributes])
-
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
-        if dpath.search(conf, inspected_key) != {}:
+        value = find_in_dict(conf, inspected_key)
+        if value:
             if ANY_VALUE in expected_values:
-                # Key is found on the configuration - if it accepts any value, the check is PASSED
+                # Key is found in the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
-            value = dpath.get(conf, inspected_key)
             if isinstance(value, list) and len(value) == 1:
                 value = value[0]
+            if value in expected_values:
+                return CheckResult.PASSED
             if self._is_variable_dependant(value):
                 # If the tested attribute is variable-dependant, then result is PASSED
                 return CheckResult.PASSED
-            if value in expected_values:
-                return CheckResult.PASSED
-        else:
-            # Look for the configuration in a bottom-up fashion
-            inspected_attributes = self._filter_key_path(inspected_key)
-            for attribute in reversed(inspected_attributes):
-                for sub_key, sub_conf in dpath.search(conf, f'**/{attribute}', yielded=True):
-                    filtered_sub_key = self._filter_key_path(sub_key)
-                    if self._is_nesting_key(inspected_attributes, filtered_sub_key):
-                        if isinstance(sub_conf, list) and len(sub_conf) == 1:
-                            sub_conf = sub_conf[0]
-                        if sub_conf in self.get_expected_values():
-                            return CheckResult.PASSED
-                        if self._is_variable_dependant(sub_conf):
-                            # If the tested attribute is variable-dependant, then result is PASSED
-                            return CheckResult.PASSED
 
         return self.missing_block_result
 
     @abstractmethod
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         """
         :return: JSONPath syntax path of the checked attribute
         """
         raise NotImplementedError()
 
-    def get_expected_values(self):
+    def get_expected_values(self) -> List[Any]:
         """
         Override the method with the list of acceptable values if the check has more than one possible expected value, given
         the inspected key
@@ -85,7 +65,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         """
         return [self.get_expected_value()]
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         """
         Returns the default expected value, governed by provider best practices
         """

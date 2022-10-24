@@ -7,7 +7,9 @@
             "region": ["us-west-2"],
             "bucket": ["local.bucket_name"],
             "acl": ["public-read"],
-            "force_destroy": [true]
+            "force_destroy": [true],
+            "__start_line__": 1,
+            "__end_line__": 6
           }
         }
       }
@@ -19,19 +21,25 @@
         "bucket_name": {
           "default": [
             "MyBucket"
-          ]
+          ],
+          "__start_line__": 1,
+          "__end_line__": 3
         }
       },
       {
         "acl": {
           "default": [
             "public-read"
-          ]
+          ],
+          "__start_line__": 5,
+          "__end_line__": 7
         }
       },
       {
         "region": {
-          "default": ["us-west-2"]
+          "default": ["us-west-2"],
+          "__start_line__": 9,
+          "__end_line__": 11
         }
       }
     ]

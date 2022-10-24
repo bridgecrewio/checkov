@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElasticsearchDomain resource
+
+Conditions:
+  Storage: !Not [!Equals [0, 0]]
+
+Mappings:
+  Test:
+    Entry1:
+      AMI: ami-0128839b21d19300e
+    Entry2:
+      AMI: ami-0583ca2f3ce809fcb
+
+Resources:
+  AutoScalingConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: ami-0ff8a91507f77f867
+      SecurityGroups:
+      - myExistingEC2SecurityGroup
+      InstanceType: m1.small
+      BlockDeviceMappings: !If
+        - Storage
+        - - DeviceName: !FindInMap
+              - Test
+              - "Entry1"
+              - "Entry2"
+            Ebs:
+              VolumeSize: VolumeSize"
+              DeleteOnTermination: "True"
+          - DeviceName: "/dev/sdk"
+            Ebs:
+              VolumeSize: 50
+              Encrypted: true
+        - - DeviceName: "/dev/sdf"
+            Ebs:
+              Encrypted: true

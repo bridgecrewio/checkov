@@ -68,7 +68,7 @@ resource "aws_lb" "application" {
 }
 
 resource "aws_lb" "default_type" {
-  internal           = false
-  name               = "alb"
-  subnets            = var.public_subnet_ids
+  internal = false
+  name     = "alb"
+  subnets  = var.public_subnet_ids
 }

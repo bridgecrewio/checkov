@@ -19,15 +19,13 @@ resource "aws_s3_bucket" "foo-bucket" {
     }
   }
   acl = "private"
-  tags = "${merge
-    (
+  tags = merge(
       var.common_tags,
-      map(
-        "name", "VM Virtual Machine",
-        "group", "foo"
-      )
-    )
-  }"
+  {
+    name = "VM Virtual Machine"
+    group = "foo"
+  }
+  )
 }
 
 data "aws_caller_identity" "current" {}

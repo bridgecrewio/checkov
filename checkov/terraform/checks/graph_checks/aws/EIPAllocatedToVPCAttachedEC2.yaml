@@ -65,6 +65,24 @@ definition:
         operator: equals
         value: true
     - and:
+      - resource_types:
+          - aws_eip
+        connected_resource_types:
+          - aws_transfer_server
+        operator: exists
+        cond_type: connection
+      - cond_type: filter
+        attribute: resource_type
+        value:
+          - aws_eip
+        operator: within
+      - cond_type: attribute
+        resource_types:
+          - aws_eip
+        attribute: vpc
+        operator: equals
+        value: true
+    - and:
       - or:
         - cond_type: attribute
           resource_types:

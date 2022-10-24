@@ -30,7 +30,7 @@ class TestRemoteDebuggingNotEnabled(unittest.TestCase):
                     type  = "SQLServer"
                     value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
                   }
-                  remote_debugging_enabled = true                  
+                  remote_debugging_enabled = true
                 }
         """)
         resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']

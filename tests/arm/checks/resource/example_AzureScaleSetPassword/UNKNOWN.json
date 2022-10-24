@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachineScaleSets",
+      "name": "windows",
+      "location": "East US 2",
+      "apiVersion": "2021-07-01",
+      "zones": [
+        "1"
+      ],
+      "sku": {
+        "name": "Standard_A1",
+        "capacity": "2"
+      },
+      "properties": {
+        "virtualMachineProfile": {
+          "storageProfile": {
+            "osDisk": {
+              "caching": "ReadWrite",
+              "createOption": "FromImage"
+            },
+            "imageReference": {
+              "publisher": "MicrosoftWindowsServer",
+              "offer": "WindowsServer",
+              "sku": "2019-Datacenter",
+              "version": "latest"
+            }
+          },
+          "osProfile": {
+            "computerNamePrefix": "myvmss",
+            "adminUsername": "azureuser",
+            "adminPassword": "P@ssw0rd!"
+          }
+        }
+      }
+    }
+  ]
+}

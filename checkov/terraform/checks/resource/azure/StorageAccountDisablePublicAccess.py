@@ -1,5 +1,4 @@
-from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
@@ -16,5 +15,6 @@ class StorageAccountDisablePublicAccess(BaseResourceNegativeValueCheck):
 
     def get_forbidden_values(self):
         return [True]
+
 
 check = StorageAccountDisablePublicAccess()

@@ -1,0 +1,8 @@
+pass:
+  - "aws_db_instance.pass"
+  - "aws_db_instance.pass2"
+fail:
+  - "aws_db_instance.fail"
+  - "aws_db_instance.fail3"
+  - "aws_db_instance.fail4"
+

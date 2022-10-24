@@ -23,23 +23,31 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
         :param conf: aws_security_group configuration
         :return: <CheckResult>
         """
-        if 'description' in conf.keys():
-            if conf['description']:
-                self.evaluated_keys = 'description'
+        group_result = self.check_rule(rule_type='group_or_rule_description', conf=conf)
+        if 'type' not in conf.keys():
+            # 'type' attribute only exists and is required for aws_security_group_rule resources.
+            # Therefore, only if 'type' is not present, ingress and egress blocks must be checked in the resource.
+            egress_result = self.check_rule(rule_type='egress', conf=conf)
+            ingress_result = self.check_rule(rule_type='ingress', conf=conf)
+            if group_result == CheckResult.PASSED and egress_result == CheckResult.PASSED and ingress_result == CheckResult.PASSED:
                 return CheckResult.PASSED
-        egress_result = self.check_rule(rule_type='egress', conf=conf)
-        ingress_result = self.check_rule(rule_type='ingress', conf=conf)
-        if egress_result == CheckResult.PASSED and ingress_result == CheckResult.PASSED:
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+            return CheckResult.FAILED
+
+        return group_result
 
     def check_rule(self, rule_type, conf):
+        if rule_type == 'group_or_rule_description':
+            if 'description' in conf.keys():
+                self.evaluated_keys = ['description']
+                if conf['description']:
+                    return CheckResult.PASSED
+            return CheckResult.FAILED
+
         if rule_type in conf.keys():
             for rule in conf[rule_type]:
-                if isinstance(rule, dict):
-                    if 'description' not in rule.keys() or not rule['description']:
-                        self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
-                        return CheckResult.FAILED
+                if isinstance(rule, dict) and ('description' not in rule.keys() or not rule['description']):
+                    self.evaluated_keys.append(f'{rule_type}/[{conf[rule_type].index(rule)}]')
+                    return CheckResult.FAILED
         return CheckResult.PASSED
 
 

@@ -1,13 +1,16 @@
-from typing import List, Any, Tuple, Dict
+from __future__ import annotations
 
-from networkx import DiGraph
+from typing import List, Any, Tuple, Dict, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+
 
 class BaseComplexSolver(BaseSolver):
-    operator = ""
+    operator = ""  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         if solvers is None:
@@ -23,9 +26,12 @@ class BaseComplexSolver(BaseSolver):
         return not self._get_operation(args)
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        all_vertices_resource_types = [
-            data for _, data in graph_connector.nodes(data=True) if self.resource_type_pred(data, self.resource_types)
-        ]
-        passed_vertices = [data for data in all_vertices_resource_types if self.get_operation(data)]
-        failed_vertices = [resource for resource in all_vertices_resource_types if resource not in passed_vertices]
+        passed_vertices = []
+        failed_vertices = []
+        for _, data in graph_connector.nodes(data=True):
+            if self.resource_type_pred(data, self.resource_types):
+                if self.get_operation(data):
+                    passed_vertices.append(data)
+                else:
+                    failed_vertices.append(data)
         return passed_vertices, failed_vertices

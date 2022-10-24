@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType as CommonBlockType
 
@@ -7,9 +6,10 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 @dataclass
 class BlockType(CommonBlockType):
     METADATA = "metadata"
-    PARAMETER = "parameters"
-    RULE = "rules"
-    MAPPING = "mappings"
-    CONDITION = "conditions"
+    PARAMETERS = "parameters"
+    RULES = "rules"
+    MAPPINGS = "mappings"
+    CONDITIONS = "conditions"
     TRANSFORM = "transform"
-    OUTPUT = "outputs"
+    OUTPUTS = "outputs"
+    GLOBALS = "globals"

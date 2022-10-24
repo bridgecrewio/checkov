@@ -1,13 +1,21 @@
-import itertools
-from typing import Any, List, Dict, Optional, Tuple
+from __future__ import annotations
 
-from networkx import DiGraph
+import itertools
+from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 
 class BaseConnectionSolver(BaseSolver):
+    # resource is automatically supported
+    SUPPORTED_CONNECTION_BLOCK_TYPES = (BlockType.OUTPUT,)
+
     def __init__(
         self,
         resource_types: List[str],
@@ -18,13 +26,17 @@ class BaseConnectionSolver(BaseSolver):
         super().__init__(SolverType.CONNECTION)
         self.resource_types = resource_types
         self.connected_resources_types = connected_resources_types
+        self.targeted_resources_types = set(itertools.chain(resource_types, connected_resources_types))
         self.vertices_under_resource_types = vertices_under_resource_types or []
         self.vertices_under_connected_resources_types = vertices_under_connected_resources_types or []
         self.excluded_vertices: List[Dict[str, Any]] = []
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         self.set_vertices(graph_connector, [])
-        return self.get_operation(graph_connector)
+
+        subgraph = self.reduce_graph_by_target_types(graph_connector)
+
+        return self.get_operation(subgraph)
 
     def is_associated_edge(self, origin_type: str, destination_type: str) -> bool:
         return (origin_type in self.resource_types and destination_type in self.connected_resources_types) or (
@@ -43,12 +55,33 @@ class BaseConnectionSolver(BaseSolver):
         ]
         self.excluded_vertices = [
             v
-            for v in self.vertices_under_resource_types + self.vertices_under_connected_resources_types
+            for v in itertools.chain(self.vertices_under_resource_types, self.vertices_under_connected_resources_types)
             if v in exclude_vertices
         ]
+
+    def reduce_graph_by_target_types(self, graph_connector: DiGraph) -> DiGraph:
+        # no need to create a subgraph, if there are no vertices to be checked
+        if not self.vertices_under_resource_types:
+            return graph_connector
+
+        resource_nodes = {
+            node
+            for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
+            if resource_type in self.targeted_resources_types
+        }
+
+        # tuple needs to be adjusted, if more connection block types are supported
+        connection_nodes = {
+            node
+            for node, block_type in graph_connector.nodes(data=CustomAttributes.BLOCK_TYPE)
+            if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
+        }
+        resource_nodes.update(connection_nodes)
+
+        return graph_connector.subgraph(resource_nodes)
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError
 
-    def _get_operation(self, *args: Any, **kwargs: Any):
+    def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError

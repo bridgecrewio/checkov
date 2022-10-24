@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from typing import List
 
 
 class RDSClusterEncrypted(BaseResourceCheck):
@@ -17,7 +18,6 @@ class RDSClusterEncrypted(BaseResourceCheck):
         :param conf: aws_rds_global_cluster configuration
         :return: <CheckResult>
         """
-        self.evaluated_keys = 'aws_rds_global_cluster'
         if "source_db_cluster_identifier" in conf.keys():
             return CheckResult.UNKNOWN
         if "storage_encrypted" in conf.keys():
@@ -25,6 +25,9 @@ class RDSClusterEncrypted(BaseResourceCheck):
                 return CheckResult.PASSED
             return CheckResult.FAILED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['aws_rds_global_cluster']
 
 
 check = RDSClusterEncrypted()

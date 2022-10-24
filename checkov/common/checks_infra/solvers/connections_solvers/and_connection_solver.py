@@ -1,27 +1,33 @@
-from typing import Optional, List, Tuple, Dict, Any
+from __future__ import annotations
 
-from networkx.classes.digraph import DiGraph
+from typing import Optional, List, Tuple, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 
 class AndConnectionSolver(ComplexConnectionSolver):
-    operator = Operators.AND
+    operator = Operators.AND  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)
 
     def get_operation(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        passed, failed = self.run_attribute_solvers(graph_connector)
+        if not self.vertices_under_resource_types:
+            return [], []
+        subgraph = graph_connector.subgraph(graph_connector)
+        passed, failed = self.run_attribute_solvers(subgraph)
         failed_ids = [f[CustomAttributes.ID] for f in failed]
         passed = [p for p in passed if p[CustomAttributes.ID] not in failed_ids]
 
         for connection_solver in self.get_sorted_connection_solvers():
-            connection_solver.set_vertices(graph_connector, failed)
-            passed_solver, failed_solver = connection_solver.get_operation(graph_connector)
+            connection_solver.set_vertices(subgraph, failed)
+            passed_solver, failed_solver = connection_solver.get_operation(subgraph)
             passed.extend(passed_solver)
             failed.extend(failed_solver)
             failed_ids.extend([f[CustomAttributes.ID] for f in failed_solver])

@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -22,6 +24,9 @@ class EKSSecretsEncryption(BaseResourceCheck):
         if isinstance(encryption_config_resources, list) and any('secrets' in r for r in encryption_config_resources):
             return CheckResult.PASSED
         return CheckResult.FAILED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ["Properties/EncryptionConfig/Resources"]
 
 
 check = EKSSecretsEncryption()

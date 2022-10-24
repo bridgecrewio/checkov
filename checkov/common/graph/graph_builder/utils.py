@@ -1,31 +1,22 @@
+from __future__ import annotations
+
 import concurrent
 import hashlib
-import json
-from typing import Union, List, Dict, Any, Callable, Optional
+from typing import Any, Callable
+import concurrent.futures
 
 
-def stringify_value(value: Union[bool, int, float, str, List[str], Dict[str, Any]]) -> str:
-    if isinstance(value, bool):
-        value = str(value).lower()
-    elif isinstance(value, (float, int)):
-        value = str(value)
-    return json.dumps(value, indent=4, default=str)
-
-
-def calculate_hash(data: Union[bool, int, float, str, Dict[str, Any]]) -> str:
-    encoded_attributes = stringify_value(data)
-    sha256 = hashlib.sha256()
-    sha256.update(repr(encoded_attributes).encode("utf-8"))
-
+def calculate_hash(data: Any) -> str:
+    sha256 = hashlib.sha256(str(data).encode("utf-8"))
     return sha256.hexdigest()
 
 
-def join_trimmed_strings(char_to_join: str, str_lst: List[str], num_to_trim: int) -> str:
+def join_trimmed_strings(char_to_join: str, str_lst: list[str], num_to_trim: int) -> str:
     return char_to_join.join(str_lst[: len(str_lst) - num_to_trim])
 
 
 def run_function_multithreaded(
-    func: Callable[..., Any], data: List[List[Any]], max_group_size: int, num_of_workers: Optional[int] = None
+    func: Callable[..., Any], data: list[list[Any]], max_group_size: int, num_of_workers: int | None = None
 ) -> None:
     groups_of_data = [data[i : i + max_group_size] for i in range(0, len(data), max_group_size)]
     if not num_of_workers:
@@ -39,5 +30,13 @@ def run_function_multithreaded(
             for future in futures:
                 try:
                     future.result()
-                except Exception as e:
-                    raise e
+                except Exception:
+                    raise
+
+
+def filter_sub_keys(key_list: list[str]) -> list[str]:
+    filtered_key_list = []
+    for key in key_list:
+        if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
+            filtered_key_list.append(key)
+    return filtered_key_list

@@ -1,1 +1,1 @@
-from checkov.cloudformation.checks.resource.aws import *
+from checkov.cloudformation.checks.resource.aws import *  # noqa

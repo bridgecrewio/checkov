@@ -363,3 +363,4 @@ items:
                 path: /var/run/docker.sock
       updateStrategy:
         type: RollingUpdate
+  - null  # shouldn't crash

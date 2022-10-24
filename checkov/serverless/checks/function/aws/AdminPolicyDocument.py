@@ -2,12 +2,13 @@ from checkov.serverless.checks.function.base_function_check import BaseFunctionC
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.serverless.parsers.parser import IAM_ROLE_STATEMENTS_TOKEN
 
+
 class AdminPolicyDocument(BaseFunctionCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure IAM policies that allow full \"*-*\" administrative privileges are not created"
         id = "CKV_AWS_1"
-        supported_entities = ['serverless_aws']
-        categories = [CheckCategories.IAM]
+        supported_entities = ('serverless_aws',)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
 
     def scan_function_conf(self, conf):
@@ -17,9 +18,9 @@ class AdminPolicyDocument(BaseFunctionCheck):
         :param conf: aws_kms_key configuration
         :return: <CheckResult>
         """
-        key = IAM_ROLE_STATEMENTS_TOKEN
-        if key in conf.keys():
-            for statement in conf[key]:
+        statements = conf.get(IAM_ROLE_STATEMENTS_TOKEN)
+        if statements and isinstance(statements, list):
+            for statement in statements:
                 if 'Action' in statement and statement.get('Effect') == 'Allow' and '*' in statement['Action'] \
                         and '*' in statement['Resource']:
                     return CheckResult.FAILED

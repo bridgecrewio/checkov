@@ -22,8 +22,8 @@ resource "google_container_cluster" "fail2" {
   initial_node_count = 1
   project            = data.google_project.project.name
 
-  network    = var.network
-  subnetwork = var.subnetwork
+  network            = var.network
+  subnetwork         = var.subnetwork
   min_master_version = "1.11"
 
   ip_allocation_policy {
@@ -47,8 +47,8 @@ resource "google_container_cluster" "success1" {
   initial_node_count = 1
   project            = data.google_project.project.name
 
-  network    = var.network
-  subnetwork = var.subnetwork
+  network            = var.network
+  subnetwork         = var.subnetwork
   min_master_version = 1.12
 
   ip_allocation_policy {
@@ -72,8 +72,8 @@ resource "google_container_cluster" "success2" {
   initial_node_count = 1
   project            = data.google_project.project.name
 
-  network    = var.network
-  subnetwork = var.subnetwork
+  network            = var.network
+  subnetwork         = var.subnetwork
   min_master_version = 1.13
 
   ip_allocation_policy {

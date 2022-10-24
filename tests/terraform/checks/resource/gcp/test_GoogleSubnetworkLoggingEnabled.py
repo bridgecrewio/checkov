@@ -1,44 +1,42 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleSubnetworkLoggingEnabled import check
+from checkov.terraform.runner import Runner
 
 
 class TestGoogleSubnetworkLoggingEnabled(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_GoogleSubnetworkLoggingEnabled"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-        resource "google_compute_subnetwork" "without logging" {
-          name          = "log-test-subnetwork"
-          ip_cidr_range = "10.2.0.0/16"
-          region        = "us-central1"
-          network       = google_compute_network.custom-test.id
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "google_compute_subnetwork.enabled",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['google_compute_subnetwork']['without logging']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-        resource "google_compute_subnetwork" "with logging" {
-          name          = "log-test-subnetwork"
-          ip_cidr_range = "10.2.0.0/16"
-          region        = "us-central1"
-          network       = google_compute_network.custom-test.id
-        
-          log_config {
-            aggregation_interval = "INTERVAL_10_MIN"
-            flow_sampling        = 0.5
-            metadata             = "INCLUDE_ALL_METADATA"
-          }
+        failing_resources = {
+            "google_compute_subnetwork.default",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['google_compute_subnetwork']['with logging']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
 
-if __name__ == '__main__':
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 3)  # 1 unknown
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()

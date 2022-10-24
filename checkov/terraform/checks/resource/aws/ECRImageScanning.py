@@ -13,4 +13,5 @@ class ECRImageScanning(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "image_scanning_configuration/[0]/scan_on_push"
 
+
 check = ECRImageScanning()

@@ -1,0 +1,14 @@
+openapi: 3.0.0
+info:
+  title: test
+  version: 1.0.0
+components:
+  securitySchemes:
+    unencryptedScheme:
+      type: http
+      scheme: basic
+paths:
+  "/":
+    get:
+      security:
+        - unencryptedScheme: []

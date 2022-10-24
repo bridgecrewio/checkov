@@ -3,9 +3,13 @@ from unittest.case import TestCase
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
-from checkov.terraform.graph_manager import GraphManager
-from checkov.terraform.variable_rendering.renderer import VariableRenderer
-from tests.terraform.graph.variable_rendering.expected_data import *
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from tests.terraform.graph.variable_rendering.expected_data import (
+    expected_terragoat_local_resource_prefix,
+    expected_terragoat_db_instance,
+    expected_eks,
+    expected_provider,
+)
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -35,6 +39,15 @@ class TestRenderer(TestCase):
         expected_resource = {'region': "us-west-2", 'bucket': "test_bucket_name", "acl": "acl", "force_destroy": True}
 
         self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.template_bucket')
+
+    def test_render_variable(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_variable')
+        graph_manager = TerraformGraphManager('acme', ['acme'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        expected_resource = {'region': "us-west-2", 'bucket': "Storage bucket", "acl": "acl", "force_destroy": True}
+
+        self.compare_vertex_attributes(local_graph, expected_resource, BlockType.RESOURCE, 'aws_s3_bucket.storage_bucket')
 
     def test_render_local_from_variable(self):
         resources_dir = os.path.join(TEST_DIRNAME,
@@ -75,7 +88,7 @@ class TestRenderer(TestCase):
         expected_aws_instance = {"instance_type": "bar"}
         self.compare_vertex_attributes(local_graph, expected_aws_instance, BlockType.RESOURCE, "aws_instance.example")
         expected_output_bucket_acl = {"value": "z"}
-        self.compare_vertex_attributes(local_graph, expected_output_bucket_acl, BlockType.OUTPUT,  "bucket_acl")
+        self.compare_vertex_attributes(local_graph, expected_output_bucket_acl, BlockType.OUTPUT, "bucket_acl")
 
     def compare_vertex_attributes(self, local_graph, expected_attributes, block_type, block_name):
         vertex = local_graph.vertices[local_graph.vertices_block_name_map[block_type][block_name][0]]
@@ -90,19 +103,19 @@ class TestRenderer(TestCase):
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
-        s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
+        s3_vertex = list(filter(lambda vertex: vertex.block_type == BlockType.RESOURCE, vertices))[0]
         changed_attributes = list(s3_vertex.changed_attributes.keys())
-        self.assertListEqual(changed_attributes, ['versioning.enabled', 'acl'])
+        self.assertCountEqual(changed_attributes, ['versioning.enabled', 'acl'])
 
         for breadcrumbs in s3_vertex.changed_attributes.values():
             self.assertEqual(1, len(breadcrumbs))
 
         acl_origin_vertex = s3_vertex.changed_attributes.get('acl')[0]
-        matching_acl_vertex = vertices[acl_origin_vertex]
+        matching_acl_vertex = vertices[acl_origin_vertex.vertex_id]
         self.assertEqual('acl', matching_acl_vertex.name)
 
         versioning_origin_vertex = s3_vertex.changed_attributes.get('versioning.enabled')[0]
-        matching_versioning_vertex = vertices[versioning_origin_vertex]
+        matching_versioning_vertex = vertices[versioning_origin_vertex.vertex_id]
         self.assertEqual('is_enabled', matching_versioning_vertex.name)
 
     def test_multiple_breadcrumbs(self):
@@ -110,20 +123,22 @@ class TestRenderer(TestCase):
         graph_manager = TerraformGraphManager('acme', ['acme'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         vertices = local_graph.vertices
-        s3_vertex = list(filter(lambda vertex:  vertex.block_type == BlockType.RESOURCE, vertices))[0]
+        s3_vertex = list(filter(lambda vertex: vertex.block_type == BlockType.RESOURCE, vertices))[0]
         changed_attributes = list(s3_vertex.changed_attributes.keys())
         self.assertListEqual(changed_attributes, ['region', 'bucket'])
 
         bucket_vertices_ids_list = s3_vertex.changed_attributes.get('bucket')
         self.assertEqual(2, len(bucket_vertices_ids_list))
 
-        self.assertEqual(BlockType.VARIABLE, vertices[bucket_vertices_ids_list[0]].block_type)
-        self.assertEqual('bucket_name', vertices[bucket_vertices_ids_list[0]].name)
-        self.assertEqual(vertices[bucket_vertices_ids_list[0]].name, s3_vertex.breadcrumbs['bucket'][0]['name'])
+        first_vertex = vertices[bucket_vertices_ids_list[0].vertex_id]
+        self.assertEqual(BlockType.VARIABLE, first_vertex.block_type)
+        self.assertEqual('bucket_name', first_vertex.name)
+        self.assertEqual(first_vertex.name, s3_vertex.breadcrumbs['bucket'][0]['name'])
 
-        self.assertEqual(BlockType.LOCALS, vertices[bucket_vertices_ids_list[1]].block_type)
-        self.assertEqual('bucket_name', vertices[bucket_vertices_ids_list[1]].name)
-        self.assertEqual(vertices[bucket_vertices_ids_list[1]].name, s3_vertex.breadcrumbs['bucket'][1]['name'])
+        second_vertex = vertices[bucket_vertices_ids_list[1].vertex_id]
+        self.assertEqual(BlockType.LOCALS, second_vertex.block_type)
+        self.assertEqual('bucket_name', second_vertex.name)
+        self.assertEqual(second_vertex.name, s3_vertex.breadcrumbs['bucket'][1]['name'])
 
     def test_render_lambda(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_lambda')
@@ -183,15 +198,22 @@ class TestRenderer(TestCase):
         self.assertEqual(found, count, f"Expected all instances to have the same value, found {found} instances but only {count} correct values")
 
     def test_type_default_values(self):
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('map'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${map}'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('map(string)'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${map(string)}'), {})
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('list'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('list(string)'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${list}'), [])
-        self.assertEqual(VariableRenderer.get_default_placeholder_value('${list(string)}'), [])
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value('number'))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value('${number}'))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value(None))
-        self.assertIsNone(VariableRenderer.get_default_placeholder_value(123))
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('map'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${map}'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('map(string)'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${map(string)}'), {})
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('list'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('list(string)'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${list}'), [])
+        self.assertEqual(TerraformVariableRenderer.get_default_placeholder_value('${list(string)}'), [])
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('number'))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('${number}'))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(None))
+        self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(123))
+
+    def test_tfvar_rendering_module_vars(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "tfvar_module_variables")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('name') == ['airpods']

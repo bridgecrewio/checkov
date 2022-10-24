@@ -15,6 +15,16 @@ Resources:
     Properties:
       KmsMasterKeyId: !Ref KmsMasterKeyId
   MyDB:
+    # Test case for check skip via 'Metadata'
+    Metadata:
+      checkov:
+        skip:
+          - id: CKV_AWS_17
+            comment: Ensure all data stored in RDS is not publicly accessible
+      bridgecrew:
+        skip:
+          - id: CKV_AWS_157
+            comment: Ensure that RDS instances have Multi-AZ enabled
     Type: 'AWS::RDS::DBInstance'
     # Test case for check skip via comment
     # checkov:skip=CKV_AWS_16:Ensure all data stored in the RDS is securely encrypted at rest
@@ -24,6 +34,8 @@ Resources:
       Engine: 'mysql'
       MasterUsername: 'master'
       MasterUserPassword: 'password'
+      PubliclyAccessible: True
+
 Outputs:
   DBAppPublicDNS:
     Description: DB App Public DNS Name

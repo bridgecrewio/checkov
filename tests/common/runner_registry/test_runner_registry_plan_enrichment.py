@@ -13,13 +13,13 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_enrichment_of_plan_report(self):
         allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
         runner_registry = RunnerRegistry(
-            banner, RunnerFilter(checks=allowed_checks, framework="terraform_plan"), tf_plan_runner()
+            banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
         )
 
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=repo_root, files=[valid_plan_path])[0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
@@ -111,7 +111,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_with_tf_modules_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=repo_root, files=[valid_plan_path])[0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[valid_plan_path])[0]
 
         failed_check_ids = [c.check_id for c in report.failed_checks]
         passed_check_ids = [c.check_id for c in report.passed_checks]
@@ -149,11 +149,30 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=repo_root, files=[valid_plan_path])[0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[valid_plan_path])[0]
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
         expected_skipped_check_ids = {"CKV_AWS_20", "CKV_AWS_28"}
+
+        self.assertEqual(len(failed_check_ids), 0)
+        self.assertEqual(len(skipped_check_ids), 2)
+        self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
+
+    def test_skip_check_in_module(self):
+        allowed_checks = ["CKV_AWS_19", "CKV2_AWS_6"]
+        runner_registry = RunnerRegistry(
+            banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
+        )
+
+        repo_root = Path(__file__).parent / "plan_module_skip_for_enrichment" / "tf"
+        valid_plan_path = repo_root / "tfplan.json"
+
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[valid_plan_path])[0]
+
+        failed_check_ids = {c.check_id for c in report.failed_checks}
+        skipped_check_ids = {c.check_id for c in report.skipped_checks}
+        expected_skipped_check_ids = set(allowed_checks)
 
         self.assertEqual(len(failed_check_ids), 0)
         self.assertEqual(len(skipped_check_ids), 2)

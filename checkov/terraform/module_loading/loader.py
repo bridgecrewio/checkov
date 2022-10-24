@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from checkov.terraform.module_loading.content import ModuleContent
+from checkov.terraform.module_loading.module_params import ModuleParams
 from checkov.terraform.module_loading.registry import module_loader_registry
 
 
@@ -16,14 +17,23 @@ class ModuleLoader(ABC):
     def __init__(self) -> None:
         module_loader_registry.register(self)
         self.logger = logging.getLogger(__name__)
-        self.module_source = None
-        self.current_dir = None
-        self.dest_dir = None
-        self.version = 'latest'
+        self.module_source: str = ""
+        self.current_dir: str = ""
+        self.dest_dir: str = ""
+        self.external_modules_folder_name: str = ""
+        self.version = "latest"
         self.is_external = True
-        self.inner_module = ''
+        self.inner_module: Optional[str] = None
+        self.root_dir = ""  # root dir for storing external modules
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str], dest_dir, inner_module=Optional[str]) -> ModuleContent:
+    @abstractmethod
+    def discover(self, module_params: ModuleParams):
+        """
+            discover parameters from execution context of checkov. usually from env variable
+        """
+        pass
+
+    def load(self, module_params: ModuleParams) -> ModuleContent:
         """
 This function provides an opportunity for the loader to load a module's content if it chooses to do so.
 There are three resulting states that can occur when calling this function:
@@ -34,31 +44,31 @@ There are three resulting states that can occur when calling this function:
     the module files
  3) the loader tried to load the module content but and error occurred, in which case an exception
     is raised.
-        :param current_dir: Directory containing the reference to the module.
-        :param source: the raw source string from the module's `source` attribute (e.g.,
-                       "hashicorp/consul/aws" or "git::https://example.com/vpc.git?ref=v1.2.0")
-        :param source_version: contains content from the module's `version` attribute, if provided
-        :param dest_dir: where to save the downloaded module
+        :param module_params: dataclass object that contains all the parameters of the module to load.
+                              the data of this object can be changed according to the loader logic
         :return: A ModuleContent object which may or may not being loaded.
         """
-        self.module_source = source
-        self.current_dir = current_dir
-        self.version = str(source_version)
-
-        self.dest_dir = dest_dir
-        self.inner_module = inner_module
-        if os.path.exists(self.dest_dir):
-            return ModuleContent(dir=self.dest_dir)
-
-        if not self._is_matching_loader():
+        self.discover(module_params)
+        if not self._is_matching_loader(module_params):
             return ModuleContent(dir=None)
-        self.logger.debug(f'getting module {self.module_source} version: {self.version}')
-        return self._load_module()
+
+        module_path = self._find_module_path(module_params)
+        if os.path.exists(module_path):
+            return ModuleContent(dir=module_path)
+
+        self.logger.debug(f"Using {self.__class__.__name__} attempting to get module "
+                          f"{module_params.module_source if '@' not in module_params.module_source else module_params.module_source.split('@')[1]} "
+                          f"version: {module_params.version}")
+        return self._load_module(module_params)
 
     @abstractmethod
-    def _is_matching_loader(self) -> bool:
+    def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
-    def _load_module(self) -> ModuleContent:
+    def _load_module(self, module_params: ModuleParams) -> ModuleContent:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _find_module_path(self, module_params: ModuleParams) -> str:
         raise NotImplementedError()

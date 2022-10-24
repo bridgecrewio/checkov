@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  BucketName:
+    Type: String
+    Default: "my_bucket_name"
+Resources:
+  S3Bucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+       BucketName: !Join [ ":", [ a, b, c ] ]
+  S3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - '_'
+        - - !Ref BucketName
+          - 'test'

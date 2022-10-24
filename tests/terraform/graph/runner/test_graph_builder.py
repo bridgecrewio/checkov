@@ -8,7 +8,6 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestGraphBuilder(TestCase):
-
     def test_build_graph(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         source_files = ["pass_s3.tf", "variables.tf"]
@@ -43,8 +42,9 @@ class TestGraphBuilder(TestCase):
             definitions_context = data["definitions_context"]
         runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
         report = runner.run(root_folder=resources_path)
-        self.assertGreaterEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 6)
+        # note that we dont count graph violations in this case
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_module_and_variables(self):
@@ -67,6 +67,6 @@ class TestGraphBuilder(TestCase):
                 bc = bc[0]
                 self.assertEqual(bc.get('type'), 'module')
                 self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'examples/complete/main.tf')
+                self.assertEqual(record.resource, 'module.s3_bucket.aws_s3_bucket.default')
 
         self.assertTrue(found_versioning_failure)
-

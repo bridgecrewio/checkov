@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  WebVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 172.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+  MySG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: sg_group_name
+      GroupDescription: sg_group_description
+      VpcId: !Ref WebVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: !GetAtt
+            - WebVPC
+            - CidrBlock
+Outputs:
+  WebVPCDefaultSg:
+    Description: >-
+      The default security group ID that is associated with the VPC. For
+      example, sg-b178e0d3
+    Value: !GetAtt
+      - WebVPC
+      - DefaultSecurityGroup

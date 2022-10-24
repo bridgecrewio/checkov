@@ -1,78 +1,44 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.StorageAccountName import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestAzureStorageAccountNamingRule(unittest.TestCase):
+class TestStorageAccountName(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_StorageAccountName"
 
-    def test_failure_dash(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "this-is-wrong"
-              resource_group_name      = data.azurerm_resource_group.example.name
-              location                 = data.azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_length(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "thisiswayyyyyytoooloooong"
-              resource_group_name      = data.azurerm_resource_group.example.name
-              location                 = data.azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_failure_case(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "thisIsWrong"
-              resource_group_name      = data.azurerm_resource_group.example.name
-              location                 = data.azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "azurerm_storage_account.pass",
+            "azurerm_storage_account.pass_number",
+        }
+        failing_resources = {
+            "azurerm_storage_account.camel_case",
+            "azurerm_storage_account.kebab_case",
+            "azurerm_storage_account.too_long",
+        }
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-              name                     = "stomyexample"
-              resource_group_name      = data.azurerm_resource_group.example.name
-              location                 = data.azurerm_resource_group.example.location
-              account_tier             = "Standard"
-              account_replication_type = "GRS"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-    def test_failure_empty_configuration(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_storage_account" "example" {
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_storage_account']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 12)  # 7 unknown
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

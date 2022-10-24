@@ -8,7 +8,7 @@
           "message": 1
         },
         {
-          "regexp": "^\\WFAILED.*$",
+          "regexp": "^\\WFAILED.*$"
         },
         {
           "regexp": "^\\WFile: \/(.+):(\\d+)-(\\d+)$",
@@ -16,7 +16,7 @@
           "line": 2
         }
       ],
-      "severity": "warning"
+      "severity": "error"
     }
   ]
 }

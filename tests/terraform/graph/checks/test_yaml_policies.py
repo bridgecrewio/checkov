@@ -1,17 +1,20 @@
+from __future__ import annotations
+
 import json
 import os
 import unittest
 import warnings
+from pathlib import Path
+from typing import Any
 
 import yaml
-from checkov.terraform import checks
+
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
-from typing import List
-from pathlib import Path
-from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform import checks
+from checkov.terraform.runner import Runner
 
 
 class TestYamlPolicies(unittest.TestCase):
@@ -19,6 +22,15 @@ class TestYamlPolicies(unittest.TestCase):
         os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    def test_ADORepositoryHasMinTwoReviewers(self):
+        self.go("ADORepositoryHasMinTwoReviewers")
+
+    def test_CodecommitApprovalRulesAttached(self):
+        self.go("CodecommitApprovalRulesAttached")
+
+    def test_RepositoryHasBranchProtection(self):
+        self.go("RepositoryHasBranchProtection")
 
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
@@ -53,6 +65,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VAsetPeriodicScansOnSQL(self):
         self.go("VAsetPeriodicScansOnSQL")
 
+    def test_CloudFrontHasResponseHeadersPolicy(self):
+        self.go("CloudFrontHasResponseHeadersPolicy")
+
     def test_CloudtrailHasCloudwatch(self):
         self.go("CloudtrailHasCloudwatch")
 
@@ -77,6 +92,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureUnattachedDisksAreEncrypted(self):
         self.go("AzureUnattachedDisksAreEncrypted")
 
+    def test_AzureNetworkInterfacePublicIPAddressId(self):
+        self.go("AzureNetworkInterfacePublicIPAddressId")
+
     def test_AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs(self):
         self.go("AzureAntimalwareIsConfiguredWithAutoUpdatesForVMs")
 
@@ -97,9 +115,6 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_RDSClusterHasBackupPlan(self):
         self.go("RDSClusterHasBackupPlan")
-
-    def test_RedshiftClusterHasBackupPlan(self):
-        self.go("RedshiftClusterHasBackupPlan")
 
     def test_EBSAddedBackup(self):
         self.go("EBSAddedBackup")
@@ -176,11 +191,71 @@ class TestYamlPolicies(unittest.TestCase):
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
+    def test_HTTPNotSendingPasswords(self):
+        self.go("HTTPNotSendingPasswords")
+
+    def test_PostgresDBHasQueryLoggingEnabled(self):
+        self.go("PostgresDBHasQueryLoggingEnabled")
+
     def test_ALBProtectedByWAF(self):
         self.go("ALBProtectedByWAF")
 
     def test_APIProtectedByWAF(self):
         self.go("APIProtectedByWAF")
+
+    def test_SQLServerAuditingEnabled(self):
+        self.go("SQLServerAuditingEnabled")
+
+    def test_WAF2HasLogs(self):
+        self.go("WAF2HasLogs")
+
+    def test_AppSyncProtectedByWAF(self):
+        self.go("AppSyncProtectedByWAF")
+
+    def test_SQLServerAuditingRetention90Days(self):
+        self.go("SQLServerAuditingRetention90Days")
+
+    def test_AWSSSMParameterShouldBeEncrypted(self):
+        self.go("AWSSSMParametershouldbeEncrypted", "AWSSSMParameterShouldBeEncrypted")
+
+    def test_AWSNATGatewaysshouldbeutilized(self):
+        self.go("AWSNATGatewaysshouldbeutilized")
+
+    def test_GCPKMSKeyRingsAreNotPubliclyAccessible(self):
+        self.go("GCPKMSKeyRingsAreNotPubliclyAccessible")
+
+    def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
+        self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
+
+    def test_S3BucketVersioning(self):
+        self.go("S3BucketVersioning")
+
+    def test_S3PublicACLRead(self):
+        self.go("S3PublicACLRead")
+
+    def test_S3PublicACLWrite(self):
+        self.go("S3PublicACLWrite")
+
+    def test_S3BucketEncryption(self):
+        self.go("S3BucketEncryption")
+
+    def test_S3BucketLogging(self):
+        self.go("S3BucketLogging")
+
+    def test_AdministratorUserNotAssociatedWithAPIKey(self):
+        self.go("AdministratorUserNotAssociatedWithAPIKey")
+
+    def test_ApplicationGatewayEnablesWAF(self):
+        self.go("ApplicationGatewayEnablesWAF")
+
+    def test_S3KMSEncryptedByDefault(self):
+        self.go("S3KMSEncryptedByDefault")
+
+    def test_S3BucketReplicationConfiguration(self):
+        self.go("S3BucketReplicationConfiguration")
+
+    def test_AppLoadBalancerTLS12(self):
+        self.go("AppLoadBalancerTLS12")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
@@ -188,7 +263,7 @@ class TestYamlPolicies(unittest.TestCase):
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 
-    def go(self, dir_name, check_name=None):
+    def go(self, dir_name: str , check_name: str | None = None) -> None:
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
@@ -217,7 +292,7 @@ class TestYamlPolicies(unittest.TestCase):
 
         assert found
 
-    def assert_entities(self, expected_entities: List[str], results: List[CheckResult], assertion: bool):
+    def assert_entities(self, expected_entities: list[str], results: list[CheckResult], assertion: bool) -> None:
         self.assertEqual(len(expected_entities), len(results),
                          f"mismatch in number of results in {'passed' if assertion else 'failed'}, "
                          f"expected: {len(expected_entities)}, got: {len(results)}")
@@ -243,7 +318,7 @@ def wrap_policy(policy):
     del policy['definition']
 
 
-def load_yaml_data(source_file_name, dir_path):
+def load_yaml_data(source_file_name: str, dir_path: str) -> dict[str, Any] | None:
     expected_path = os.path.join(dir_path, source_file_name)
     if not os.path.exists(expected_path):
         return None
@@ -252,3 +327,9 @@ def load_yaml_data(source_file_name, dir_path):
         expected_data = yaml.safe_load(f)
 
     return json.loads(json.dumps(expected_data))
+
+    def test_Route53ZoneEnableDNSSECSigning(self):
+        self.go("Route53ZoneEnableDNSSECSigning")
+
+    def test_Route53ZoneHasMatchingQueryLog(self):
+        self.go("Route53ZoneHasMatchingQueryLog")

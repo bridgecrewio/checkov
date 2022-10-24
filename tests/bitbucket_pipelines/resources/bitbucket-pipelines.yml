@@ -1,0 +1,34 @@
+image: node:10.15.0
+
+pipelines:
+  default:
+    - step:
+        name: Build and test
+        image: node:10.0.0
+        script:
+          - npm install
+          - npm test
+          - npm run build
+        artifacts:
+          - dist/**
+    - step:
+        name: Deploy
+        image: python:3.7.2
+        trigger: manual
+        script:
+          - python deploy.py
+  custom:
+    sonar:
+      - step:
+          image: python:latest
+          script:
+            - echo "Manual triggers for Sonar are awesome!"
+    deployment-to-prod:
+      - step:
+          script:
+            - echo "Manual triggers for deployments are awesome!"
+  branches:
+    staging:
+      - step:
+          script:
+            - echo "Auto pipelines are cool too."

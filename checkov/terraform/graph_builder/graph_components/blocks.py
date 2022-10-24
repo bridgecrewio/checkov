@@ -3,12 +3,13 @@ from typing import Union, Dict, Any, List, Optional, Set
 
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
-from checkov.terraform.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 
 
 class TerraformBlock(Block):
+    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module")
+
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
                  id: str = "", source: str = "") -> None:
         """
@@ -38,7 +39,7 @@ class TerraformBlock(Block):
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
-        :param attribute: key to search in self.attribute
+        :param attribute: key to search in self.attributes
         The function searches for  attribute in self.attribute. It might not exist if the block is variable or output,
         or its search path might be different if its a resource.
         :return: the actual attribute key or None
@@ -62,4 +63,17 @@ class TerraformBlock(Block):
 
         return None
 
+    @classmethod
+    def get_inner_attributes(
+        cls,
+        attribute_key: str,
+        attribute_value: Union[str, List[str], Dict[str, Any]],
+        strip_list: bool = True
+    ) -> Dict[str, Any]:
+        if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
+            attribute_value = attribute_value[0]
 
+        return super().get_inner_attributes(
+            attribute_key=attribute_key,
+            attribute_value=attribute_value,
+        )

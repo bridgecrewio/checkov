@@ -1,9 +1,10 @@
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.cloudformation.parser.node import dict_node
-from checkov.common.models.enums import CheckResult, CheckCategories
+from typing import Any
+
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class DocDBAuditLogs(BaseResourceCheck):
+class DocDBAuditLogs(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure DocDB has audit logs enabled"
         id = "CKV_AWS_104"
@@ -11,13 +12,11 @@ class DocDBAuditLogs(BaseResourceCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict_node) -> CheckResult:
-        params = conf.get("Properties", {}).get("Parameters", {})
+    def get_inspected_key(self) -> str:
+        return "Properties/Parameters/audit_logs"
 
-        if params.get("audit_logs") == "enabled":
-            return CheckResult.PASSED
-
-        return CheckResult.FAILED
+    def get_expected_value(self) -> Any:
+        return "enabled"
 
 
 check = DocDBAuditLogs()

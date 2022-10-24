@@ -14,21 +14,24 @@ class ALBDropHttpHeaders(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         # ALB is default loadbalancer type if not explicitly set
         alb = True
-        
+
         properties = conf.get("Properties")
         lb_type = properties.get("Type")
-        if lb_type != None and lb_type != 'application':
+        if lb_type and lb_type != 'application':
             alb = False
 
-        # If lb is alb then drop headers must be present and true 
+        # If lb is alb then drop headers must be present and true
         if alb:
             lb_attributes = properties.get('LoadBalancerAttributes', {})
             if isinstance(lb_attributes, list):
                 for item in lb_attributes:
                     key = item.get('Key')
-                    value = item.get('Value')
-                    if key == 'routing.http.drop_invalid_header_fields.enabled' and value == "true":
-                        return CheckResult.PASSED
+                    if key == 'routing.http.drop_invalid_header_fields.enabled':
+                        value = item.get('Value')
+                        if isinstance(value, bool):
+                            value = str(value).lower()
+                        if value == "true":
+                            return CheckResult.PASSED
             return CheckResult.FAILED
 
         # If lb is not alb then check is not valid

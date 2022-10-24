@@ -14,7 +14,7 @@ class ModuleTest(unittest.TestCase):
         definitions = {
             '/mock/path/to.tf': clean_bad_definitions(non_malformed_definitions)
         }
-        module, _, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
+        module, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])
@@ -36,7 +36,7 @@ resource "helm_release" "test" {
         definitions = {
             '/mock/path/to.tf': clean_bad_definitions(non_malformed_definitions)
         }
-        module, _, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
+        module, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])

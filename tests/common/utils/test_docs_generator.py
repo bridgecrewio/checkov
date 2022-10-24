@@ -51,6 +51,20 @@ class TestOutputSorting(unittest.TestCase):
             ['CKV2_K8S_2', '', '', '', ''],
         ])
 
+    def test_sorting_by_resource_id(self):
+        checks_list = [
+            ['CKV_AWS_1', '', 'aws_ebs_volume', '', ''],
+            ['CKV_AWS_1', '', 'AWS::EBS::Volume', '', ''],
+            ['CKV_AWS_1', '', 'AWS::S3::Bucket', '', ''],
+            ['CKV_AWS_1', '', 'aws_s3_bucket', '', '']
+        ]
+
+        sorted_list = sorted(checks_list, key=get_compare_key)
+
+        self.assertEqual(sorted_list[0], ['CKV_AWS_1', '', 'AWS::EBS::Volume', '', ''])
+        self.assertEqual(sorted_list[1], ['CKV_AWS_1', '', 'AWS::S3::Bucket', '', ''])
+        self.assertEqual(sorted_list[2], ['CKV_AWS_1', '', 'aws_ebs_volume', '', ''])
+        self.assertEqual(sorted_list[3], ['CKV_AWS_1', '', 'aws_s3_bucket', '', ''])
 
 if __name__ == '__main__':
     unittest.main()

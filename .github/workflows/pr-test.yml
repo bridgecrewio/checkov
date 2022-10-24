@@ -2,80 +2,165 @@ name: PR Test
 
 on: pull_request
 
+permissions: read-all
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        with:
+          python-version: 3.9
+      - name: pre-commit
+        uses: pre-commit/action@646c83fcd040023954eafda54b4db0192ce70507  # v3
+
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
         run: |
-          pip install cfn-lint==0.53.0
+          pip install -U cfn-lint
       - name: Lint Cloudformation templates
         run: |
           cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+    - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+      with:
+        python-version: 3.7
+    - name: Install pipenv
+      run: |
+        python -m pip install --no-cache-dir --upgrade pipenv
+    - name: Install dependencies
+      run: |
+        pipenv --python 3.7
+        pipenv install --dev
+        pipenv run pip install typed-ast  # for some reason this has an old version
+    - name: Run Mypy
+      run: |
+        pipenv run mypy
 
   unit-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: [3.7, 3.8, 3.9]
-    runs-on: [self-hosted, public, linux, x64]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: dschep/install-pipenv-action@v1
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv install --dev
+          pipenv install --dev -v
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pipenv run python -m coverage run -m pytest tests
-          pipenv run python -m coverage report
-          pipenv run python -m coverage html
+          pipenv run python -m pytest tests
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: [3.7, 3.8, 3.9]
-    runs-on: ubuntu-latest
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@v2
-      - uses: azure/setup-helm@v1
-      - uses: dschep/install-pipenv-action@v1
+      - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        if: ${{ runner.os != 'windows' }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip==21.1.1
-          pipenv run pip install pytest
+          pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install dist/checkov-*.whl
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
         run: git clone https://github.com/bridgecrewio/cfngoat
       - name: Clone Kubernetes-goat - vulnerable kubernetes
         run: git clone https://github.com/madhuakula/kubernetes-goat
+      - name: Clone kustomize-goat - vulnerable kustomize
+        run: git clone https://github.com/bridgecrewio/kustomizegoat
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
         run: |
-          sleep $((RANDOM % 11))
-          ./integration_tests/prepare_data.sh 3.8  # Just making sure the API key tests don't run on PRs
+          # Just making sure the API key tests don't run on PRs
+          bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
+
+  performance-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        os: [ubuntu-latest]
+    env:
+      working-directory: ./performance_tests
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
+      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        if: ${{ runner.os != 'windows' }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install --upgrade pip
+          pipenv run pip install pytest pytest-benchmark
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone terraform-aws-components
+        run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
+        working-directory: ${{ env.working-directory }}
+      - name: Clone aws-cloudformation-templates
+        run: git clone --branch 0.0.1 https://github.com/awslabs/aws-cloudformation-templates.git
+        working-directory: ${{ env.working-directory }}
+      - name: Clone kubernetes-yaml-templates
+        run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
+        working-directory: ${{ env.working-directory }}
+      - name: Run performance tests
+        run: |
+          pipenv run pytest
+        working-directory: ${{ env.working-directory }}

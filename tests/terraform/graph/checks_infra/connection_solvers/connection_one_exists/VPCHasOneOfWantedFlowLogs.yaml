@@ -1,0 +1,36 @@
+metadata:
+  name: "Ensure a specific VPC flow log exists in VPC's flow logs"
+  category: "LOGGING"
+  id: "VPCHasOneOfWantedFlowLogs"
+definition:
+   and:
+      - resource_types:
+          - aws_vpc
+        connected_resource_types:
+          - aws_flow_log
+        operator: one_exists
+        attribute: networking
+        cond_type: connection
+
+      - resource_types:
+          - aws_flow_log
+        cond_type: attribute
+        operator: equals
+        attribute: log_destination_type
+        value: "s3"
+
+      - resource_types:
+          - aws_flow_log
+        cond_type: attribute
+        operator: equals
+        attribute: log_destination
+        value: "arn:aws:s3:::test-bucket"
+
+      - cond_type: filter
+        attribute: resource_type
+        value:
+           - aws_vpc
+        operator: within
+
+
+

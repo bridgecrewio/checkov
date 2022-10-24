@@ -1,0 +1,29 @@
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.data.base_check import BaseDataCheck
+
+
+class {{title}}(BaseDataCheck):
+    def __init__(self):
+        # This is the full description of your check
+        description = "{{desc}}"
+
+        # This is the Unique ID for your check
+        id = "CKV_{{provider}}_{{index}}"
+
+        # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
+        supported_data = ['{{supported_resource}}']
+
+        # Valid CheckCategories checkov/common/models/enums.py
+        categories = [CheckCategories.{{category}}]
+        super().__init__(name=description, id=id, categories=categories, supported_data=supported_data)
+
+    def scan_data_conf(self, conf):
+        # Replace this with the custom logic for your test
+        key = 'statement'
+        if key in conf.keys():
+            for statement in conf[key]:
+                return CheckResult.FAILED
+        return CheckResult.PASSED
+
+
+check = {{title}}()

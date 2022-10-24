@@ -14,9 +14,14 @@ class VMStorageOsDisk(BaseResourceCheck):
         storage_os_disk = conf.get('storage_os_disk')
         storage_data_disk = conf.get('storage_data_disk')
         if storage_os_disk and 'vhd_uri' in storage_os_disk[0]:
+            self.evaluated_keys = ['storage_os_disk']
             return CheckResult.FAILED
         if storage_data_disk and 'vhd_uri' in storage_data_disk[0]:
+            self.evaluated_keys = ['storage_data_disk']
             return CheckResult.FAILED
+        self.evaluated_keys = ['storage_os_disk'] if storage_os_disk else []
+        if storage_data_disk:
+            self.evaluated_keys.append('storage_data_disk')
         return CheckResult.PASSED
 
 

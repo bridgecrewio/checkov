@@ -37,6 +37,32 @@ definition:
         operator:  exists
         cond_type: connection
     - and:
+      - or:
+        - cond_type: attribute
+          resource_types:
+          - aws_api_gateway_rest_api
+          attribute: endpoint_configuration.types
+          operator: contains
+          value: REGIONAL
+        - cond_type: attribute
+          resource_types:
+          - aws_api_gateway_rest_api
+          attribute: endpoint_configuration.types
+          operator: contains
+          value: EDGE
+      - resource_types:
+        - aws_api_gateway_rest_api
+        connected_resource_types:
+        - aws_api_gateway_stage
+        operator:  exists
+        cond_type: connection
+      - resource_types:
+        - aws_api_gateway_stage
+        connected_resource_types:
+        - aws_wafv2_web_acl_association
+        operator:  exists
+        cond_type: connection
+    - and:
       - resource_types:
         - aws_api_gateway_rest_api
         connected_resource_types:

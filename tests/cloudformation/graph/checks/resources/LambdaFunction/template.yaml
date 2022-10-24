@@ -1,4 +1,13 @@
 Description: X-ray tracing is enabled for Lambda.
+Parameters:
+  ActiveTracingConfig:
+    Description: Active tracing config
+    Type: String
+    Default: "Active"
+  WrongValueTracingConfig:
+    Description: Active tracing config
+    Type: String
+    Default: "Wrong Value"
 Resources:
   GoodLambdaFunction:
     Type: "AWS::Lambda::Function"
@@ -21,6 +30,27 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
       Tracing_config:
         Mode: "Active"
+  GoodLambdaFunctionWithRef:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+      Runtime: nodejs12.x
+      Role: !GetAtt IAM4Lambda.Arn
+      Handler: exports.test
+      Code:
+        ZipFile: |
+          console.log("Hello World");
+      Environment:
+        Variables:
+          access_key: "AKIAIOSFODNN7EXAMPLE"
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+      Tracing_config:
+        Mode: !Ref ActiveTracingConfig
   WrongTracingConfigValueLambdaFunction:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -42,6 +72,27 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
       Tracing_config:
         Mode: "Wrong value"
+  WrongTracingConfigValueLambdaFunctionWithRef:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+      Runtime: nodejs12.x
+      Role: !GetAtt IAM4Lambda.Arn
+      Handler: exports.test
+      Code:
+        ZipFile: |
+          console.log("Hello World");
+      Environment:
+        Variables:
+          access_key: "AKIAIOSFODNN7EXAMPLE"
+          secret_key: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
+        - Key: Environment
+          Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+      Tracing_config:
+        Mode: !Ref WrongValueTracingConfig
   WithoutTracingConfigLambdaFunction:
     Type: "AWS::Lambda::Function"
     Properties:
@@ -61,3 +112,22 @@ Resources:
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}-analysis"
         - Key: Environment
           Value: !Sub "${AWS::AccountId}-${CompanyName}-${Environment}"
+
+# SAM
+  ServerlessFunctionEnabled:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.6
+      InlineCode: |
+        def handler(event, context):
+            print("Hello, world!")
+      Tracing: Active
+  ServerlessFunctionDefault:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.6
+      InlineCode: |
+        def handler(event, context):
+            print("Hello, world!")

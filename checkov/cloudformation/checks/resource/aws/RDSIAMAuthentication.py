@@ -1,4 +1,4 @@
-from checkov.cloudformation.parser.node import dict_node
+from checkov.common.parsers.node import DictNode
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -14,7 +14,7 @@ class RDSIAMAuthentication(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "Properties/EnableIAMDatabaseAuthentication"
 
-    def scan_resource_conf(self, conf: dict_node) -> CheckResult:
+    def scan_resource_conf(self, conf: DictNode) -> CheckResult:
         # IAM authentication is only supported for MySQL and PostgreSQL
         engine = conf.get("Properties", {}).get("Engine", {})
         if engine not in ("mysql", "postgres"):

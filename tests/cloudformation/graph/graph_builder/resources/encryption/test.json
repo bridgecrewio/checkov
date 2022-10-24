@@ -1,0 +1,323 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation Template to deploy insecure infrastructure",
+    "Resources": {
+        "EncryptedECRRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "EncryptionConfiguration": {
+                    "EncryptionType": "AES256"
+                }
+            }
+        },
+        "UnencryptedECRRepository": {
+            "Type": "AWS::ECR::Repository"
+        },
+        "EncryptedNeptunDBCluster": {
+            "Type": "AWS::Neptune::DBCluster",
+            "Properties": {
+                "StorageEncrypted": true
+            }
+        },
+        "UnencryptedNeptunDBCluster": {
+            "Type": "AWS::Neptune::DBCluster",
+            "Properties": {
+                "StorageEncrypted": false
+            }
+        },
+        "EncryptedEFSFileSystem": {
+            "Type": "AWS::EFS::FileSystem",
+            "Properties": {
+                "Encrypted": true
+            }
+        },
+        "UnencryptedEFSFileSystem": {
+            "Type": "AWS::EFS::FileSystem",
+            "Properties": {}
+        },
+        "EncryptedEC2Volume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Encrypted": true
+            }
+        },
+        "UnencryptedEC2Volume": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {
+                "Encrypted": false
+            }
+        },
+        "UnencryptedEC2Volume2": {
+            "Type": "AWS::EC2::Volume",
+            "Properties": {}
+        },
+        "EncryptedElastiCacheReplicationGroup": {
+            "Type": "AWS::ElastiCache::ReplicationGroup",
+            "Properties": {
+                "AtRestEncryptionEnabled": true
+            }
+        },
+        "UnencryptedElastiCacheReplicationGroup": {
+            "Type": "AWS::ElastiCache::ReplicationGroup",
+            "Properties": {}
+        },
+        "EncryptedElasticsearchDomain": {
+            "Type": "AWS::Elasticsearch::Domain",
+            "Properties": {
+                "EncryptionAtRestOptions": {
+                    "Enabled": true
+                },
+                "NodeToNodeEncryptionOptions": {
+                    "Enabled": true
+                }
+            }
+        },
+        "UnencryptedElasticsearchDomain": {
+            "Type": "AWS::Elasticsearch::Domain",
+            "Properties": {
+                "NodeToNodeEncryptionOptions": {
+                    "Enabled": false
+                }
+            }
+        },
+        "EncryptedMSKCluster": {
+            "Type": "AWS::MSK::Cluster",
+            "Properties": {
+                "EncryptionInfo": {
+                    "EncryptionAtRest": {
+                        "DataVolumeKMSKeyId": "KMS"
+                    },
+                    "EncryptionInTransit": {
+                        "ClientBroker": "TLS",
+                        "InCluster": true
+                    }
+                }
+            }
+        },
+        "EncryptedKinesisStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {
+                "StreamEncryption": {
+                    "EncryptionType": "KMS",
+                    "KeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+                }
+            }
+        },
+        "UnencryptedKinesisStream": {
+            "Type": "AWS::Kinesis::Stream",
+            "Properties": {}
+        },
+        "UnencryptedS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {}
+        },
+        "EncryptedS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": {
+                        "ServerSideEncryptionByDefault": {
+                            "SSEAlgorithm": "aws:kms"
+                        }
+                    }
+                }
+            }
+        },
+        "EncryptedS3Bucket2": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": {
+                        "ServerSideEncryptionByDefault": {
+                            "SSEAlgorithm": "AES256"
+                        }
+                    }
+                }
+            }
+        },
+        "EncryptedSNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "KmsMasterKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "UnencryptedSNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {}
+        },
+        "EncryptedSQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "KmsMasterKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "UnencryptedSQSQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {}
+        },
+        "EncryptedLogsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {}
+        },
+        "EncryptedLogsLogGroup2": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "KmsKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "EncryptedCloudTrailTrail": {
+            "Type": "AWS::CloudTrail::Trail",
+            "Properties": {
+                "KMSKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "UnencryptedCloudTrailTrail": {
+            "Type": "AWS::CloudTrail::Trail",
+            "Properties": {}
+        },
+        "EncryptedDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "SSESpecification": {
+                    "SSEEnabled": true
+                }
+            }
+        },
+        "EncryptedDynamoDBTable2": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {}
+        },
+        "EncryptedDocDBDBCluster": {
+            "Type": "AWS::DocDB::DBCluster",
+            "Properties": {
+                "StorageEncrypted": true,
+                "KmsKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "UnencryptedDocDBDBCluster": {
+            "Type": "AWS::DocDB::DBCluster",
+            "Properties": {
+                "StorageEncrypted": false
+            }
+        },
+        "EncryptedCodeBuildProject": {
+            "Type": "AWS::CodeBuild::Project",
+            "Properties": {
+                "EncryptionKey": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+            }
+        },
+        "UnencryptedCodeBuildProject": {
+            "Type": "AWS::CodeBuild::Project",
+            "Properties": {}
+        },
+        "EncryptedCodeBuildReportGroup": {
+            "Type": "AWS::CodeBuild::ReportGroup",
+            "Properties": {
+                "ExportConfig": {
+                    "S3Destination": {
+                        "EncryptionDisabled": false,
+                        "EncryptionKey": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+                    }
+                }
+            }
+        },
+        "UnencryptedCodeBuildReportGroup": {
+            "Type": "AWS::CodeBuild::ReportGroup",
+            "Properties": {
+                "ExportConfig": {
+                    "S3Destination": {
+                        "EncryptionDisabled": true
+                    }
+                }
+            }
+        },
+        "EncryptedAthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {
+                "WorkGroupConfiguration": {
+                    "ResultConfiguration": {
+                        "EncryptionConfiguration": {
+                            "EncryptionOption": "SSE_KMS",
+                            "KmsKey": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+                        }
+                    }
+                }
+            }
+        },
+        "UnencryptedAthenaWorkGroup": {
+            "Type": "AWS::Athena::WorkGroup",
+            "Properties": {},
+            "EncryptedEKSCluster": {
+                "Type": "AWS::EKS::Cluster",
+                "Properties": {
+                    "EncryptionConfig": {
+                        "Provider": {
+                            "KeyArn": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+                        }
+                    }
+                }
+            },
+            "EncryptedRDSDBCluster": {
+                "Type": "AWS::RDS::DBCluster",
+                "Properties": {
+                    "StorageEncrypted": true,
+                    "KmsKeyId": "arn:aws:kms:us-east-1:000000000000:key/some-key-uuid"
+                }
+            },
+            "UnencryptedRDSDBCluster": {
+                "Type": "AWS::RDS::DBCluster",
+                "Properties": {}
+            },
+            "EncryptedRDSGlobalCluster": {
+                "Type": "AWS::RDS::GlobalCluster",
+                "Properties": {
+                    "StorageEncrypted": true
+                }
+            },
+            "UnencryptedRDSGlobalCluster": {
+                "Type": "AWS::RDS::GlobalCluster",
+                "Properties": {
+                    "StorageEncrypted": false
+                }
+            },
+            "EncryptedRDSDBInstance": {
+                "Type": "AWS::RDS::DBInstance",
+                "Properties": {
+                    "StorageEncrypted": true
+                }
+            },
+            "UnencryptedRDSDBInstance": {
+                "Type": "AWS::RDS::DBInstance",
+                "Properties": {
+                    "StorageEncrypted": false
+                }
+            },
+            "EncryptedDAXCluster": {
+                "Type": "AWS::DAX::Cluster",
+                "Properties": {
+                    "SSESpecification": {
+                        "SSEEnabled": true
+                    }
+                }
+            },
+            "UnencryptedDAXCluster": {
+                "Type": "AWS::DAX::Cluster",
+                "Properties": {
+                    "SSESpecification": {
+                        "SSEEnabled": false
+                    }
+                }
+            },
+            "EncryptedRedshift::Cluster": {
+                "Type": "AWS::Redshift::Cluster",
+                "Properties": {
+                    "Encrypted": true
+                }
+            },
+            "UnencryptedRedshift::Cluster": {
+                "Type": "AWS::Redshift::Cluster",
+                "Properties": {}
+            }
+        }
+    }
+}

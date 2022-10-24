@@ -19,12 +19,15 @@ class GKEUseCosImage(BaseResourceCheck):
         """
         if 'node_config' in conf:
             node_config = conf.get('node_config', [{}])[0]
+            self.evaluated_keys = ['node_config']
             if not isinstance(node_config, dict):
                 return CheckResult.UNKNOWN
 
             if conf.get('node_config', [{}])[0].get('image_type', [''])[0].lower().startswith('cos'):
+                self.evaluated_keys = ['node_config/[0]/image_type']
                 return CheckResult.PASSED
             if conf.get('remove_default_node_pool', [{}])[0]:
+                self.evaluated_keys.append('remove_default_node_pool')
                 return CheckResult.PASSED
         return CheckResult.FAILED
 

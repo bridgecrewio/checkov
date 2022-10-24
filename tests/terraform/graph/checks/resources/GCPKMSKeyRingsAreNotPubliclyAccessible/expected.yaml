@@ -1,0 +1,8 @@
+pass:
+  - "google_kms_key_ring.key_ring_good_1"
+  - "google_kms_key_ring.key_ring_good_2"
+fail:
+  - "google_kms_key_ring.key_ring_bad_1"
+  - "google_kms_key_ring.key_ring_bad_2"
+  - "google_kms_key_ring.key_ring_bad_3"
+  - "google_kms_key_ring.key_ring_bad_4"

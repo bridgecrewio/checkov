@@ -1,0 +1,31 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Mappings": {
+        "RegionMap": {
+            "us-east-1": {
+                "AMI": "ami-0ff8a91507f77f867"
+            },
+            "us-west-1": {
+                "AMI": "ami-0bdb828fd58c52235"
+            },
+            "us-west-2": {
+                "AMI": "ami-a0cfeed8"
+            }
+        }
+    },
+    "Resources": {
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        "us-east-1",
+                        "AMI"
+                    ]
+                },
+                "InstanceType": "c1.xlarge"
+            }
+        }
+    }
+}

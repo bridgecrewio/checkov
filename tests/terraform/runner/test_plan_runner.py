@@ -1,11 +1,24 @@
 import os
 import unittest
+from collections import defaultdict
+from pathlib import Path
 
+
+from typing import Dict, Any
+# do not remove - prevents circular import
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.plan_runner import Runner
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.plan_runner import Runner, resource_registry
 
 
 class TestRunnerValid(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.orig_checks = resource_registry.checks
+
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan/tfplan.json"
@@ -15,19 +28,188 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["all"], checks=checks_allowlist),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 3)
+
+    def test_runner_record_severity(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        checks_allowlist = [custom_check_id]
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        self.assertEqual(report.failed_checks[0].severity, Severities[BcSeverities.LOW])
+
+    def test_runner_check_severity_filter_omit(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        checks_allowlist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_severity_filter_include(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+        checks_allowlist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_skip_filter_omit(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.LOW]
+        checks_denylist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], skip_checks=checks_denylist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_runner_check_skip_filter(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+
+        custom_check_id = "MY_CUSTOM_CHECK"
+
+        resource_registry.checks = defaultdict(list)
+
+        class AnyFailingCheck(BaseResourceCheck):
+            def __init__(self, *_, **__) -> None:
+                super().__init__(
+                    "this should fail",
+                    custom_check_id,
+                    [CheckCategories.ENCRYPTION],
+                    ["aws_db_instance"]
+                )
+
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+                return CheckResult.FAILED
+
+        check = AnyFailingCheck()
+        check.severity = Severities[BcSeverities.HIGH]
+        checks_denylist = ['MEDIUM']
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], skip_checks=checks_denylist),
+        )
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -37,14 +219,14 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 4)
@@ -58,16 +240,16 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=[current_dir + "/extra_yaml_checks"],
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 18)
+        self.assertEqual(report.get_summary()["failed"], 15)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -76,7 +258,6 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
             "CUSTOM_GRAPH_AWS_1"
         }
 
@@ -91,19 +272,19 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         # 4 checks fail on test data for single eks resource as of present
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
-        self.assertEqual(report.get_summary()["failed"], 5)
+        self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -112,10 +293,32 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+    def test_runner_root_module_resources_no_values_route53(self):
+        #given
+        plan_file = Path(__file__).parent / "resources/plan_root_module_resources_no_values/tfplan_route53.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(plan_file)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_38", "CKV2_AWS_39"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+
+        passed_check_ids = set(c.check_id for c in report.passed_checks)
+        expected_passed_check_ids = {"CKV2_AWS_39"}
+
+        self.assertCountEqual(passed_check_ids, expected_passed_check_ids)
 
     def test_runner_data_resource_partial_values(self):
         # In rare circumstances a data resource with partial values in the plan could cause false negatives
@@ -136,16 +339,16 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 5)
+        self.assertEqual(report.get_summary()["failed"], 4)
         self.assertEqual(report.get_summary()["passed"], 0)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
@@ -154,7 +357,6 @@ class TestRunnerValid(unittest.TestCase):
             "CKV_AWS_38",
             "CKV_AWS_39",
             "CKV_AWS_58",
-            "CKV_AWS_151",
         }
 
         assert failed_check_ids == expected_failed_check_ids
@@ -164,20 +366,35 @@ class TestRunnerValid(unittest.TestCase):
         root_dir = current_dir + "/resources"
         runner = Runner()
         report = runner.run(
-            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=RunnerFilter(framework="all")
+            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=RunnerFilter(framework=["all"])
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertGreaterEqual(report.get_summary()["failed"], 88)
-        self.assertGreaterEqual(report.get_summary()["passed"], 76)
+        self.assertGreaterEqual(report.get_summary()["failed"], 71)
+        self.assertGreaterEqual(report.get_summary()["passed"], 65)
 
         files_scanned = list(set(map(lambda rec: rec.file_path, report.failed_checks)))
         self.assertGreaterEqual(len(files_scanned), 6)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        root_dir = current_dir + "/resources"
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform_plan'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM_PLAN: Severities[BcSeverities.OFF]}
+        report = runner.run(
+            root_folder=root_dir, files=None, external_checks_dir=None, runner_filter=filter
+        )
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -188,20 +405,20 @@ class TestRunnerValid(unittest.TestCase):
         scan_dir_path = os.path.join(current_dir, "resources", "plan")
 
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
-        dir_rel_path = os.path.relpath(scan_dir_path)
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_20"]
+        checks_allowlist = ["CKV_AWS_6"]
         report = runner.run(
             root_folder=dir_rel_path,
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_abs_dir(self):
 
@@ -214,17 +431,17 @@ class TestRunnerValid(unittest.TestCase):
         dir_abs_path = os.path.abspath(scan_dir_path)
 
         runner = Runner()
-        checks_allowlist = ["CKV_AWS_20"]
+        checks_allowlist = ["CKV_AWS_6"]
         report = runner.run(
             root_folder=dir_abs_path,
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_relative_file(self):
 
@@ -243,13 +460,13 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             external_checks_dir=None,
             files=[file_rel_path],
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_record_relative_path_with_abs_file(self):
 
@@ -267,13 +484,13 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             external_checks_dir=None,
             files=[file_abs_path],
-            runner_filter=RunnerFilter(framework="terraform", checks=checks_allowlist),
+            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
         )
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path)
+            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
 
     def test_runner_unexpected_eks_node_group_remote_access(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -283,14 +500,14 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all"),
+            runner_filter=RunnerFilter(framework=["all"]),
         )
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 0)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)
@@ -304,18 +521,163 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[valid_plan_path],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework="all", checks=allowed_checks),
+            runner_filter=RunnerFilter(framework=["all"], checks=allowed_checks),
         )
 
         report_json = report.get_json()
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suites())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 0)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 0)
         self.assertEqual(report.get_summary()["passed"], 1)
+
+    def test_runner_with_resource_reference_graph_check(self):
+        # given
+        valid_plan_path = Path(__file__).parent / "resources/plan_with_resource_reference/tfplan_graph.json"
+        allowed_checks = ["CKV2_AWS_6"]
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(valid_plan_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=allowed_checks),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["passed"], 1)
+
+    def test_runner_skip_graph_when_no_plan_exists(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resource/example/example.tf"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 0)
+
+    def test_runner_utf_16_encoded(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_utf_16_encoding/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertGreater(summary["failed"], 0)
+        self.assertGreater(summary["passed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+    def test_runner_line_numbers(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_resource_reference/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        failed_check = report.failed_checks[0]
+        self.assertEqual(failed_check.file_line_range, [13, 19])
+
+    def test_runner_ignore_lifecycle_checks(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_lifecycle_check/tfplan.json"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+
+    def test_runner_extra_check(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_dir_path = str(current_dir / "resources/plan_with_deleted_resources")
+        extra_checks_dir_path = [str(current_dir / "extra_tf_plan_checks")]
+
+        # when
+        report = Runner().run(
+            root_folder=tf_dir_path,
+            external_checks_dir=extra_checks_dir_path,
+            runner_filter=RunnerFilter(checks=["CUSTOM_DELETE_1", "CUSTOM_DELETE_2"])
+        )
+
+        # then
+        summary = report.get_summary()
+        self.assertEqual(summary["failed"], 2)
+
+        resource_ids = [check.resource for check in report.failed_checks]
+        self.assertCountEqual(resource_ids,["aws_secretsmanager_secret.default", "aws_secretsmanager_secret.default"])
+
+    def test_runner_nested_child_modules_with_connections(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"
+
+        passing_resources = {
+            "aws_s3_bucket.submodule_bucket",
+            "aws_s3_bucket.module_bucket",
+            "aws_s3_bucket.root_bucket",
+        }
+        failing_resources = {
+            "aws_s3_bucket.this",
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"]),
+        )
+
+        # then
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 1)
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    def tearDown(self) -> None:
+        resource_registry.checks = self.orig_checks
 
 
 if __name__ == "__main__":

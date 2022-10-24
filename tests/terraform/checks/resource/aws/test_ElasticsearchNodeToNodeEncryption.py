@@ -20,18 +20,25 @@ class TestElasticsearchNodeToNodeEncryption(unittest.TestCase):
             "aws_elasticsearch_domain.without_instance_count",
             "aws_elasticsearch_domain.instance_count_not_bigger_than_1",
             "aws_elasticsearch_domain.node_to_node_encryption_enabled",
-            "aws_elasticsearch_domain.old_hcl"
+            "aws_elasticsearch_domain.old_hcl",
+            "aws_opensearch_domain.without_cluster_config",
+            "aws_opensearch_domain.without_instance_count",
+            "aws_opensearch_domain.instance_count_not_bigger_than_1",
+            "aws_opensearch_domain.node_to_node_encryption_enabled",
+            "aws_opensearch_domain.old_hcl"
         }
         failing_resources = {
             "aws_elasticsearch_domain.node_to_node_encryption_disabled",
             "aws_elasticsearch_domain.node_to_node_encryption_doesnt_exist",
+            "aws_opensearch_domain.node_to_node_encryption_disabled",
+            "aws_opensearch_domain.node_to_node_encryption_doesnt_exist",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 10)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -1,41 +1,44 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.ECRPolicy import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestECRPolicy(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_ECRPolicy"
 
-    def test_failure(self):
-        resource_conf = {'repository': ['public_repo'], 'policy': [
-            '{\n    "Version": "2008-10-17",\n    "Statement": [\n        {\n            "Sid": "new policy",'
-            '\n            "Effect": "Allow",\n            "Principal": "*",\n            "Action": [\n               '
-            ' "ecr:GetDownloadUrlForLayer",\n                "ecr:BatchGetImage",\n                '
-            '"ecr:BatchCheckLayerAvailability",\n                "ecr:PutImage",\n                '
-            '"ecr:InitiateLayerUpload",\n                "ecr:UploadLayerPart",\n                '
-            '"ecr:CompleteLayerUpload",\n                "ecr:DescribeRepositories",\n                '
-            '"ecr:GetRepositoryPolicy",\n                "ecr:ListImages",\n                "ecr:DeleteRepository",'
-            '\n                "ecr:BatchDeleteImage",\n                "ecr:SetRepositoryPolicy",\n                '
-            '"ecr:DeleteRepositoryPolicy"\n            ]\n        }\n    ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_success(self):
-        resource_conf = {'repository': ['private_repo'], 'policy': [
-            '{\n    "Version": "2008-10-17",\n    "Statement": [\n        {\n            "Sid": "new policy",'
-            '\n            "Effect": "Allow",\n            "Principal": {\n                "AWS": [\n                 '
-            '   "arn:aws:iam::123456789012:user/pull-user-1",\n                    '
-            '"arn:aws:iam::123456789012:user/pull-user-2"\n                ]\n            },\n            "Action": ['
-            '\n                "ecr:GetDownloadUrlForLayer",\n                "ecr:BatchGetImage",\n                '
-            '"ecr:BatchCheckLayerAvailability",\n                "ecr:PutImage",\n                '
-            '"ecr:InitiateLayerUpload",\n                "ecr:UploadLayerPart",\n                '
-            '"ecr:CompleteLayerUpload",\n                "ecr:DescribeRepositories",\n                '
-            '"ecr:GetRepositoryPolicy",\n                "ecr:ListImages",\n                "ecr:DeleteRepository",'
-            '\n                "ecr:BatchDeleteImage",\n                "ecr:SetRepositoryPolicy",\n                '
-            '"ecr:DeleteRepositoryPolicy"\n            ]\n        }\n    ]\n}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        # then
+        summary = report.get_summary()
 
+        passing_resources = {
+            "aws_ecr_repository_policy.pass",
+            "aws_ecr_repository_policy.empty",
+            "aws_ecr_repository_policy.pass_conditional",
+            "aws_ecr_repository_policy.cond_any_pass",
+            "aws_ecr_repository_policy.cond_equals_pass",
+        }
+        failing_resources = {
+            "aws_ecr_repository_policy.fail",
+            "aws_ecr_repository_policy.fail_conditional",
+        }
 
-if __name__ == '__main__':
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+if __name__ == "__main__":
     unittest.main()

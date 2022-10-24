@@ -2,12 +2,14 @@
 layout: default
 published: true
 title: Reviewing Scan Results
-nav_order: 5
+nav_order: 6
 ---
 
 # Reviewing Scan Results
 
-The results of Checkov scans can be viewed in CLI, JSON, or JUnit
+The results of Checkov scans can be viewed in CLI, JSON, JUnit XML, SARIF, or Markdown
+
+> Note: For Markdown output, you need to use `github_failed_only` as the `--output` type
 
 ## Scan Result Sample (CLI)
 

@@ -6,7 +6,7 @@ metadata:
   labels:
     component: kube-apiserver
     tier: control-plane
-  name: kube-apiserver
+  name: kube-apiserver-extra-enabled
   namespace: kube-system
 spec:
   containers:

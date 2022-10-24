@@ -1,0 +1,9 @@
+pass:
+  - "azurerm_sql_server.deprecated"
+  - "azurerm_mssql_server.deprecated"
+  - "azurerm_mssql_server.long"
+fail:
+  - "azurerm_sql_server.default"
+  - "azurerm_mssql_server.default"
+  - "azurerm_mssql_server.deprecated_too_short"
+  - "azurerm_mssql_server.too_short"

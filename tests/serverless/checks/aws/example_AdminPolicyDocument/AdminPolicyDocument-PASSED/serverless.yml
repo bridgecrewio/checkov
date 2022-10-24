@@ -29,3 +29,14 @@ functions:
     handler: Handler.handle
     timeout: 600
     memorySize: 320
+  myFunc2:
+    name: myFunc
+    tags:
+      RESOURCE: lambda
+      PUBLIC: false
+    iamRoleStatementsName: ${self:custom.moduleName}-people-api-role-${self:provider.tag}
+    iamRoleStatements:
+      # add here the exact roles the lambda needs
+    handler: Handler.handle
+    timeout: 600
+    memorySize: 320

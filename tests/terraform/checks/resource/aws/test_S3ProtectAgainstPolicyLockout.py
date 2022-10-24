@@ -33,7 +33,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         ]
         }
         POLICY
-        }        
+        }
         """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -61,7 +61,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             }]
         }
         POLICY
-        }        
+        }
                 """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -84,7 +84,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
         ]
         }
         POLICY
-        }        
+        }
                 """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -113,7 +113,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
+        }
         """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -143,7 +143,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
+        }
         """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -173,7 +173,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
             ]
         }
         POLICY
-        }        
+        }
         """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)
@@ -201,7 +201,7 @@ class TestS3ProtectAgainstPolicyLockout(unittest.TestCase):
                 }
         }
         POLICY
-        }        
+        }
         """)
         resource_conf = hcl_res['resource'][0]['aws_s3_bucket_policy']['s3']
         scan_result = check.scan_resource_conf(conf=resource_conf)

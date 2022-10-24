@@ -6,4 +6,7 @@ pass:
 fail:
   - "AWS::MSK::Cluster.ClusterBadNoLoggingInfo"
   - "AWS::MSK::Cluster.ClusterBadNoLoggingDisabled"
-
+evaluated_keys:
+  - 'LoggingInfo/BrokerLogs/CloudWatchLogs/Enabled'
+  - 'LoggingInfo/BrokerLogs/Firehose/Enabled'
+  - 'LoggingInfo/BrokerLogs/S3/Enabled'

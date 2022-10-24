@@ -76,7 +76,7 @@ resource "aws_ecs_task_definition" "test" {
         """)
         resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)           
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 
     def test_failure_explicit(self):
@@ -103,7 +103,7 @@ resource "aws_ecs_task_definition" "test" {
         """)
         resource_conf = hcl_res['resource'][0]['aws_ecs_task_definition']['test']
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result) 
+        self.assertEqual(CheckResult.FAILED, scan_result)
 
 if __name__ == '__main__':
     unittest.main()

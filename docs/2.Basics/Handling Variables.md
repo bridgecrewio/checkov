@@ -2,7 +2,7 @@
 layout: default
 published: true
 title: Handling Variables
-nav_order: 7
+nav_order: 8
 ---
 
 # Handling Variables

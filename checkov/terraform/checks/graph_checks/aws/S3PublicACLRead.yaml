@@ -1,0 +1,114 @@
+metadata:
+  name: "S3 Bucket has an ACL defined which allows public READ access."
+  category: "GENERAL_SECURITY"
+  id: "CKV_AWS_20"
+definition:
+  or:
+    - and:
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket
+          attribute: acl
+          operator: exists
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket
+          attribute: acl
+          operator: not_equals
+          value: public-read
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket
+          attribute: acl
+          operator: not_equals
+          value: public-read-write
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket
+          attribute: acl
+          operator: not_equals
+          value: website
+        - cond_type: attribute
+          resource_types:
+            - aws_s3_bucket
+          attribute: acl
+          operator: not_equals
+          value: authenticated-read
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          operator: within
+          value:
+            - aws_s3_bucket
+        - cond_type: connection
+          resource_types:
+            - aws_s3_bucket
+          connected_resource_types:
+            - aws_s3_bucket_acl
+          operator: exists
+        - or:
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: acl
+                  operator: exists
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: acl
+                  operator: not_equals
+                  value: public-read
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: acl
+                  operator: not_equals
+                  value: public-read-write
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: acl
+                  operator: not_equals
+                  value: website
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: acl
+                  operator: not_equals
+                  value: authenticated-read
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - aws_s3_bucket_acl
+                  attribute: access_control_policy
+                  operator: exists
+                - or:
+                    - cond_type: attribute
+                      resource_types:
+                        - aws_s3_bucket_acl
+                      attribute: access_control_policy.grant
+                      operator: not_exists
+                    - cond_type: attribute
+                      resource_types:
+                        - aws_s3_bucket_acl
+                      attribute: access_control_policy.grant.*.grantee.uri
+                      operator: not_equals
+                      value: "http://acs.amazonaws.com/groups/global/AllUsers"
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        operator: within
+        value:
+          - aws_s3_bucket
+      - cond_type: attribute
+        resource_types:
+          - aws_s3_bucket
+        attribute: acl
+        operator: not_exists
+      - cond_type: connection
+        resource_types:
+          - aws_s3_bucket
+        connected_resource_types:
+          - aws_s3_bucket_acl
+        operator: not_exists

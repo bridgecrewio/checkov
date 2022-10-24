@@ -1,0 +1,23 @@
+metadata:
+  id: "CKV2_AZURE_22"
+  name: "Ensure that Cognitive Services enables customer-managed key for encryption"
+  category: "ENCRYPTION"
+definition:
+  and:
+    - resource_types:
+        - azurerm_cognitive_account
+      connected_resource_types:
+        - azurerm_cognitive_account_customer_managed_key
+      operator:  exists
+      cond_type: connection
+    - resource_types:
+        - azurerm_cognitive_account_customer_managed_key
+      connected_resource_types:
+        - azurerm_key_vault_key
+      operator:  exists
+      cond_type: connection
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_cognitive_account
+      operator: within

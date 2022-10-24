@@ -1,97 +1,48 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.NSGRuleRDPAccessRestricted import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestNSGRuleRDPAccessRestricted(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_NSGRuleRDPAccessRestricted"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-              name                        = "test123"
-              priority                    = 100
-              direction                   = "Inbound"
-              access                      = "Allow"
-              protocol                    = "TCP"
-              source_port_range           = "*"
-              destination_port_range      = ["3380-3390", "22"]
-              source_address_prefix       = "*"
-              destination_address_prefix  = "*"
-              resource_group_name         = azurerm_resource_group.example.name
-              network_security_group_name = azurerm_network_security_group.example.name
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_case_insensitive(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-              name                        = "test123"
-              priority                    = 100
-              direction                   = "inbound"
-              access                      = "allow"
-              protocol                    = "Tcp"
-              source_port_range           = "*"
-              destination_port_range      = ["3380-3390", "22"]
-              source_address_prefix       = "Internet"
-              destination_address_prefix  = "*"
-              resource_group_name         = azurerm_resource_group.example.name
-              network_security_group_name = azurerm_network_security_group.example.name
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-                    resource "azurerm_network_security_rule" "example" {
-                      name                        = "test123"
-                      priority                    = 100
-                      direction                   = "Inbound"
-                      access                      = "Deny"
-                      protocol                    = "TCP"
-                      source_port_range           = "*"
-                      destination_port_range      = ["3389"]
-                      source_address_prefix       = "*"
-                      destination_address_prefix  = "*"
-                      resource_group_name         = azurerm_resource_group.example.name
-                      network_security_group_name = azurerm_network_security_group.example.name
-                    }
-                        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_group" "tfer--Second-002D-nsg" {
-          location            = "eastus"
-          name                = "Second-nsg"
-          resource_group_name = "Ariel"
-        
-          security_rule {
-            access                     = "Allow"
-            destination_address_prefix = "*"
-            destination_port_range     = "3389"
-            direction                  = "Inbound"
-            name                       = "RDP"
-            priority                   = "300"
-            protocol                   = "*"
-            source_address_prefix      = "*"
-            source_port_range          = "*"
-          }
+        passing_resources = {
+            "azurerm_network_security_rule.https",
+            "azurerm_network_security_rule.rdp_restricted_prefixes",
+            "azurerm_network_security_group.rdp_restricted",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['tfer--Second-002D-nsg']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        failing_resources = {
+            "azurerm_network_security_rule.all",
+            "azurerm_network_security_rule.range",
+            "azurerm_network_security_rule.ranges_prefixes",
+            "azurerm_network_security_rule.rdp",
+            "azurerm_network_security_group.ranges",
+            "azurerm_network_security_rule.ranges_prefixes_lower_case",
+            "azurerm_network_security_rule.range_prefix_lower_case",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 7)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -8,15 +8,16 @@ from operator import and_
 
 
 class AndSolver(BaseComplexSolver):
-    operator = Operators.AND
+    operator = Operators.AND  # noqa: CCE003  # a static attribute
 
     def __init__(self, solvers: List[BaseSolver], resource_types: List[str]) -> None:
         super().__init__(solvers, resource_types)
 
-    def _get_operation(self, *args: Any) -> Any:
+    def _get_operation(self, *args: Any, **kwargs: Any) -> Any:
         return reduce(and_, args)
 
     def get_operation(self, vertex: Dict[str, Any]) -> bool:
-        if any(not solver.get_operation(vertex) for solver in self.solvers):
-            return False
+        for solver in self.solvers:
+            if not solver.get_operation(vertex):
+                return False
         return True

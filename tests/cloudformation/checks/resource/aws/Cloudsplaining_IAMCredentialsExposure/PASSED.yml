@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: IAM policy
+Resources:
+  ECRGetAuthTokenPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: ECRGetAuthTokenPolicy
+      PolicyDocument:
+        Statement:
+          - Action: 'ecr:GetAuthorizationToken'
+            Effect: Allow
+            Resource: '*'
+      Roles:
+        - example_role

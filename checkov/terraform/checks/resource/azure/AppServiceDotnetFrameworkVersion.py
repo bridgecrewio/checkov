@@ -14,7 +14,7 @@ class AppServiceDotnetFrameworkVersion(BaseResourceValueCheck):
         return "site_config/0/dotnet_framework_version"
 
     def get_expected_value(self):
-        return "v5.0"
+        return "v6.0"
 
 
 check = AppServiceDotnetFrameworkVersion()

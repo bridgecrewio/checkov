@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyStage0:
+  Disabled:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: Prod
@@ -27,7 +27,7 @@ Resources:
           MetricsEnabled: true
           DataTraceEnabled: false
           ThrottlingBurstLimit: 555
-  MyStage1:
+  Default:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: Prod

@@ -81,7 +81,7 @@ resource "aws_alb" "disabled" {
 # unknown
 
 resource "aws_lb" "gateway" {
-  name = "glb"
+  name               = "glb"
   load_balancer_type = "gateway"
 
   subnet_mapping {

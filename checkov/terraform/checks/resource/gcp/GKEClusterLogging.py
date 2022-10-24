@@ -1,5 +1,6 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from typing import List
 
 
 class GKEClusterLogging(BaseResourceCheck):
@@ -21,6 +22,9 @@ class GKEClusterLogging(BaseResourceCheck):
             if conf['logging_service'][0] == "none":
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    def get_evaluated_keys(self) -> List[str]:
+        return ['logging_service']
 
 
 check = GKEClusterLogging()

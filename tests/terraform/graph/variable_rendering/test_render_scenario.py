@@ -55,6 +55,7 @@ class TestRendererScenarios(TestCase):
         self.go("tolist_function")
 
     def test_tomap_function(self):
+        self.skipTest("not reliable")
         self.go("tomap_function")
 
     def test_map_function(self):
@@ -78,13 +79,25 @@ class TestRendererScenarios(TestCase):
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
-    def test_list_default_622(self):            # see https://github.com/bridgecrewio/checkov/issues/622
-        self.go("list_default_622", {"log_types_enabled": {'default': [['api',
-              'audit',
-              'authenticator',
-              'controllerManager',
-              'scheduler']],
- 'type': ['list(string)']}})
+    def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
+        different_expected = {
+            "log_types_enabled": {
+                'default':
+                    [
+                        [
+                            'api',
+                            'audit',
+                            'authenticator',
+                            'controllerManager',
+                            'scheduler'
+                        ]
+                    ],
+                'type': ['list(string)'],
+                "__start_line__": 11,
+                "__end_line__": 14
+            }
+        }
+        self.go("list_default_622", different_expected)
 
     def test_module_reference(self):
         self.go("module_reference")
@@ -117,7 +130,35 @@ class TestRendererScenarios(TestCase):
         self.go("ternary_793")
 
     def test_tfvars(self):
-        self.go("tfvars")
+        # variable evaluation order (later values overwrite earlier values):
+        # 1. default values in variable definition
+        # 2. terraform.tfvars
+        # 3. *.auto.tfvars files (in alphanetical order)
+        # 4. Files specified with --var-file
+        # So we expect the following variable values:
+        # foo = "nimrodIsCöol" (from other2.tfvars - overwrites y.auto.tfvars, x.auto.tfvars, terraform.tfvars)
+        # list_data = ["nine", "ten"] from y.auto.tfvars (overwrites x.auto.tfvars, terraform.tfvars)
+        # map_data = {<value from terraform.tfvars}
+        # only_here = "hello" (from var definition default)
+        # other_var_1 = "abc" (from var definition default - other1.tfvars is not loaded)
+        # other_var_2 = "xyz" (from other2.tfvars - overwrites var default)
+
+        test_dir = 'tfvars'
+
+        self.go(test_dir, vars_files=['other2.tfvars', 'other3.tfvars'])
+
+        # test that the file order is preserved (we expect the os.scandir to return entries in the same order for both
+        # of these tests so one of these tests will fail if the tfvars file precedence is not properly applied)
+        different_expected = {
+            "my_bucket": {
+                "bucket": [
+                    "hello-nimrodIsCöol-${nine}-${dev}-abc-xyz-qwerty"
+                ],
+                "__start_line__": 17,
+                "__end_line__": 19
+            }
+        }
+        self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
 
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
@@ -129,14 +170,17 @@ class TestRendererScenarios(TestCase):
     def test_default_var_types(self):
         self.go("default_var_types")
 
-    def go(self, dir_name, different_expected=None, replace_expected=False):
+    def go(self, dir_name, different_expected=None, replace_expected=False, vars_files=None):
         os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
         os.environ['LOG_LEVEL'] = 'INFO'
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+        if vars_files:
+            vars_files = [os.path.join(resources_dir, f) for f in vars_files]
         graph_manager = TerraformGraphManager(dir_name, [dir_name])
-        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True,
+                                                                         vars_files=vars_files)
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         expected = load_expected(replace_expected, dir_name, resources_dir)
 

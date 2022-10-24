@@ -15,12 +15,13 @@ def convert_graph_vertices_to_tf_definitions(
         if not os.path.isfile(block_path):
             print(f"tried to convert vertex to tf_definitions but its path doesnt exist: {vertex}")
             continue
-        tf_path = block_path
-        if vertex.module_dependency:
-            tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
         block_type = vertex.block_type
         if block_type == BlockType.TF_VARIABLE:
             continue
+
+        tf_path = block_path
+        if vertex.module_dependency:
+            tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
