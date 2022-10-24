@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestKubernetesLocalGraph(TestGraph):
-    def test_build_graph_with_single_resource(self):
+    def test_build_graph_with_single_resource(self) -> None:
         relative_file_path = "../checks/example_AllowedCapabilities/cronjob-PASSED.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -20,7 +20,7 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)
 
-    def test_build_graph_with_multi_resources(self):
+    def test_build_graph_with_multi_resources(self) -> None:
         relative_file_path = "../checks/example_DefaultNamespace/default-k8s-service-and-sa-PASSED2.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -28,14 +28,14 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False)
         self.assertEqual(4, len(local_graph.vertices))
-        
-        
-    def test_build_graph_with_nested_resources(self):
+
+    def test_build_graph_with_nested_resources(self) -> None:
         file = os.path.join(TEST_DIRNAME, 'resources', 'nested_resource.yaml')
         definitions = {}
+        graph_flags = {"create_complex_vertices": True, "create_edges": False}
         (definitions[file], definitions_raw) = parse(file)
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.build_graph(render_variables=False, create_complex_vertices=True)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         assert local_graph.vertices[0].id == 'Deployment.default.myapp'
         assert local_graph.vertices[0].attributes.get('spec').get('template') is None

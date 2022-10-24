@@ -13,7 +13,8 @@ class TestKubernetesGraphManager(TestGraph):
     def test_build_graph_from_source_directory_no_rendering(self):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "../runner/resources"))
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
+        graph_flags = {"create_complex_vertices": False, "create_edges": False}
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False, graph_flags=graph_flags)
 
         expected_resources_by_file = {
             os.path.join(root_dir, "example.yaml"): [
@@ -34,11 +35,12 @@ class TestKubernetesGraphManager(TestGraph):
     def test_build_graph_from_definitions(self):
         relative_file_path = "../checks/example_AllowedCapabilities/cronjob-PASSED.yaml"
         definitions = {}
+        graph_flags = {"create_complex_vertices": False, "create_edges": False}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
         resource = definitions[relative_file_path][0]
 
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        local_graph = graph_manager.build_graph_from_definitions(definitions)
+        local_graph = graph_manager.build_graph_from_definitions(definitions, graph_flags=graph_flags)
         self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)

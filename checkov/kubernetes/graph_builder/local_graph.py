@@ -20,10 +20,17 @@ class KubernetesLocalGraph(LocalGraph):
         self.definitions = definitions
         super().__init__()
 
-    def build_graph(self, render_variables: bool, create_complex_vertices: bool = False):
-        self._create_vertices(create_complex_vertices)
+    def build_graph(self, render_variables: bool, graph_flags: Dict[str, bool] | None = None) -> None:
+        if not graph_flags:
+            graph_flags = {}
+        create_complex_vertices = graph_flags.get("create_complex_vertices", False)
+        create_edges = graph_flags.get("create_edges", False)
 
-    def _create_vertices(self, create_complex_vertices: bool):
+        self._create_vertices(create_complex_vertices)
+        if create_edges:
+            self._create_edges()
+
+    def _create_vertices(self, create_complex_vertices: bool) -> None:
         for file_path, file_conf in self.definitions.items():
             for resource in file_conf:
                 if resource.get('kind') == "List":
@@ -72,9 +79,6 @@ class KubernetesLocalGraph(LocalGraph):
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
-
-        if create_complex_vertices:
-            self._create_edges()
 
     def _create_edges(self) -> None:
         edges_to_create = defaultdict(list)
