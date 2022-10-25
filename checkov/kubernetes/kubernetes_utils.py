@@ -220,8 +220,9 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
 
 @dataclass()
 class K8sGraphFlags:
-    def __init__(self, create_complex_vertices=False, create_edges=False) -> None:
-        self.create_complex_vertices = create_complex_vertices or False
-        self.create_edges = create_edges or False
     create_complex_vertices: bool
     create_edges: bool
+
+    def __init__(self, create_complex_vertices: bool = False, create_edges: bool = False) -> None:
+        self.create_complex_vertices = create_complex_vertices or False
+        self.create_edges = create_edges or False
