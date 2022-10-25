@@ -30,9 +30,10 @@ class BaseConnectionSolver(BaseSolver):
         self.vertices_under_resource_types = vertices_under_resource_types or []
         self.vertices_under_connected_resources_types = vertices_under_connected_resources_types or []
         self.excluded_vertices: List[Dict[str, Any]] = []
+        self.unknown_vertices: List[Dict[str, Any]] = []
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-        self.set_vertices(graph_connector, [])
+        self.set_vertices(graph_connector, [], [])
 
         subgraph = self.reduce_graph_by_target_types(graph_connector)
 
@@ -46,7 +47,7 @@ class BaseConnectionSolver(BaseSolver):
     def is_associated_vertex(self, vertex_type: str) -> bool:
         return vertex_type in itertools.chain(self.resource_types, self.connected_resources_types)
 
-    def set_vertices(self, graph_connector: DiGraph, exclude_vertices: List[Dict[str, Any]]) -> None:
+    def set_vertices(self, graph_connector: DiGraph, exclude_vertices: List[Dict[str, Any]], unknown_vertices: List[Dict[str, Any]]) -> None:
         self.vertices_under_resource_types = [
             v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
         ]
@@ -57,6 +58,11 @@ class BaseConnectionSolver(BaseSolver):
             v
             for v in itertools.chain(self.vertices_under_resource_types, self.vertices_under_connected_resources_types)
             if v in exclude_vertices
+        ]
+        self.unknown_vertices = [
+            v
+            for v in itertools.chain(self.vertices_under_resource_types, self.vertices_under_connected_resources_types)
+            if v in unknown_vertices
         ]
 
     def reduce_graph_by_target_types(self, graph_connector: DiGraph) -> DiGraph:

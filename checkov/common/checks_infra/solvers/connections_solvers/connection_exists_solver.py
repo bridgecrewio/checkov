@@ -29,6 +29,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed = []
         failed = []
+        unknown = []
         for u, v in edge_dfs(graph_connector):
             origin_attributes = graph_connector.nodes(data=True)[u]
             opposite_vertices = None
@@ -43,6 +44,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             if destination_attributes in opposite_vertices:
                 if origin_attributes in self.excluded_vertices or destination_attributes in self.excluded_vertices:
                     failed.extend([origin_attributes, destination_attributes])
+                elif origin_attributes in self.unknown_vertices or destination_attributes in self.unknown_vertices:
+                    unknown.extend([origin_attributes, destination_attributes])
                 else:
                     passed.extend([origin_attributes, destination_attributes])
                 destination_attributes['connected_node'] = origin_attributes
@@ -67,7 +70,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 for v in itertools.chain(
                     self.vertices_under_resource_types, self.vertices_under_connected_resources_types
                 )
-                if v not in passed
+                if v not in itertools.chain(passed, unknown)
             ]
         )
-        return passed, failed, []
+        return passed, failed, unknown

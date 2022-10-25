@@ -29,4 +29,5 @@ class ConnectionOneExistsSolver(ConnectionExistsSolver):
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed, failed, unknown = super().get_operation(graph_connector)
         failed = [f for f in failed if f not in passed]
+        unknown = [u for u in unknown if u not in passed]
         return passed, failed, unknown

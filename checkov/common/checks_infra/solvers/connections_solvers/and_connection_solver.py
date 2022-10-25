@@ -24,10 +24,16 @@ class AndConnectionSolver(ComplexConnectionSolver):
             return [], [], []
         subgraph = graph_connector.subgraph(graph_connector)
         passed, failed, unknown = self.run_attribute_solvers(subgraph)
-        passed_connections, failed_connections, unknown_connections = self.run_connection_solvers(subgraph)
-        passed.extend(passed_connections)
-        failed.extend(failed_connections)
-        unknown.extend(unknown_connections)
+        failed_or_unknown_ids = [f[CustomAttributes.ID] for f in itertools.chain(failed, unknown)]
+        passed = [p for p in passed if p[CustomAttributes.ID] not in failed_or_unknown_ids]
+
+        for connection_solver in self.get_sorted_connection_solvers():
+            connection_solver.set_vertices(subgraph, failed, unknown)
+            passed_solver, failed_solver, unknown_solver = connection_solver.get_operation(subgraph)
+            passed.extend(passed_solver)
+            failed.extend(failed_solver)
+            unknown.extend(unknown_solver)
+            failed_or_unknown_ids.extend([f[CustomAttributes.ID] for f in itertools.chain(failed_solver, unknown_solver)])
 
         failed_ids = [f[CustomAttributes.ID] for f in failed]
         unknown_ids = [u[CustomAttributes.ID] for u in unknown]

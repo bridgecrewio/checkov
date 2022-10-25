@@ -88,17 +88,3 @@ class ComplexConnectionSolver(BaseConnectionSolver):
             unknown_attributes.extend(unknown_solver)
 
         return passed_attributes, failed_attributes, unknown_attributes
-
-    def run_connection_solvers(self, graph_connector: DiGraph) -> \
-            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-        passed: List[Dict[str, Any]] = []
-        failed: List[Dict[str, Any]] = []
-        unknown: List[Dict[str, Any]] = []
-        for connection_solver in self.get_sorted_connection_solvers():
-            connection_solver.set_vertices(graph_connector, failed)
-            passed_solver, failed_solver, unknown_solver = connection_solver.get_operation(graph_connector)
-            passed.extend(passed_solver)
-            failed.extend(failed_solver)
-            unknown.extend(unknown_solver)
-
-        return passed, failed, unknown
