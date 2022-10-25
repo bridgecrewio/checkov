@@ -14,7 +14,9 @@ class CPULimits(BaseK8sContainerCheck):
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["resources/limits/cpu"]
         res = conf.get("resources")
-        if res and isinstance(res, dict):
+        if res:
+            if not isinstance(res, dict):
+                return CheckResult.UNKNOWN
             limits = res.get("limits")
             if limits and limits.get("cpu"):
                 return CheckResult.PASSED

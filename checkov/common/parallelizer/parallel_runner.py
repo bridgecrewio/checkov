@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import logging
 import multiprocessing
 import os
 import platform
@@ -34,7 +35,15 @@ class ParallelRunner:
 
         def func_wrapper(original_func: Callable[[Any], Any], items_group: List[Any], connection: Connection) -> None:
             for item in items_group:
-                result = original_func(item)
+                try:
+                    result = original_func(item)
+                except Exception:
+                    logging.error(
+                        f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}"
+                        , exc_info=True
+                    )
+                    result = None
+
                 connection.send(result)
             connection.close()
 

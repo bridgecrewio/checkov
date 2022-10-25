@@ -91,6 +91,7 @@ jobs:
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -139,6 +140,7 @@ jobs:
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -148,7 +150,8 @@ jobs:
         run: |
           pipenv --python ${{ matrix.python }}
           pipenv run pip install --upgrade pip
-          pipenv run pip install pytest pytest-benchmark
+          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
+          pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components

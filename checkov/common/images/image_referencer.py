@@ -5,7 +5,7 @@ import os
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
-from typing import cast, Any, TYPE_CHECKING
+from typing import cast, Any, TYPE_CHECKING, Generic, TypeVar
 
 import docker
 
@@ -22,6 +22,8 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.runner_filter import RunnerFilter
     from networkx import DiGraph
+
+_Definitions = TypeVar("_Definitions")
 
 
 def enable_image_referencer(
@@ -112,7 +114,7 @@ class ImageReferencer:
             return ""
 
 
-class ImageReferencerMixin:
+class ImageReferencerMixin(Generic[_Definitions]):
     """Mixin class to simplify image reference search"""
 
     def check_container_image_references(
@@ -120,7 +122,7 @@ class ImageReferencerMixin:
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
         graph_connector: DiGraph | None = None,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions: _Definitions | None = None,
         definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
@@ -292,7 +294,7 @@ class ImageReferencerMixin:
     def extract_images(
         self,
         graph_connector: DiGraph | None = None,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions: _Definitions | None = None,
         definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         """Tries to find image references in the graph or supported resource"""
