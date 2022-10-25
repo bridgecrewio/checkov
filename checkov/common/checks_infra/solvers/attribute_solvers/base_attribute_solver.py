@@ -22,11 +22,6 @@ if TYPE_CHECKING:
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
-OPERATION_TO_FUNC = {
-    'all': all,
-    'any': any
-}
-
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
@@ -67,12 +62,21 @@ class BaseAttributeSolver(BaseSolver):
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
+            filtered_attribute_matches = [a for a in attribute_matches if
+                                          not self._is_variable_dependant(vertex.get(a), vertex['source_'])] \
+                if self.is_value_attribute_check and self.value != '' else attribute_matches
 
-            operator = OPERATION_TO_FUNC['all'] if self.is_jsonpath_check else OPERATION_TO_FUNC['any']
             if attribute_matches:
-                return self.resource_type_pred(vertex, self.resource_types) and operator(
-                    self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
-                )
+                if self.is_jsonpath_check:
+                    if self.resource_type_pred(vertex, self.resource_types) and all(
+                            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
+                        return True if len(attribute_matches) == len(filtered_attribute_matches) else None
+                    return False
+
+                if self.resource_type_pred(vertex, self.resource_types) and any(
+                        self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
+                    return True
+                return False if len(attribute_matches) == len(filtered_attribute_matches) else None
 
         return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
