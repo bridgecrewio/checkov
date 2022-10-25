@@ -3,11 +3,17 @@ from __future__ import annotations
 import logging
 from copy import deepcopy
 from typing import Any, List, Dict
+from collections import defaultdict
 
+from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags
+from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+
+
+EDGE_BUILDERS = (LabelSelectorEdgeBuilder,)
 
 
 class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
@@ -15,8 +21,10 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         self.definitions = definitions
         super().__init__()
 
-    def build_graph(self, render_variables: bool, create_complex_vertices: bool = False) -> None:
-        self._create_vertices(create_complex_vertices)
+    def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
+        self._create_vertices(create_complex_vertices=graph_flags.create_complex_vertices)
+        if graph_flags.create_edges:
+            self._create_edges()
 
     def _create_vertices(self, create_complex_vertices: bool) -> None:
         for file_path, file_conf in self.definitions.items():
@@ -72,6 +80,23 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
 
+    def _create_edges(self) -> None:
+        edges_to_create = defaultdict(list)
+        for vertex_index, vertex in enumerate(self.vertices):
+            for edge_builder in EDGE_BUILDERS:
+                if edge_builder.should_search_for_edges(vertex):
+                    current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
+                    if current_vertex_connections:
+                        edges_to_create[vertex.name].extend(current_vertex_connections)
+            for destination_vertex_index in edges_to_create[vertex.name]:
+                self._create_edge(vertex_index, destination_vertex_index, vertex.name)
+
+    def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:
+        edge = Edge(origin_vertex_index, dest_vertex_index, label)
+        self.edges.append(edge)
+        self.out_edges[origin_vertex_index].append(edge)
+        self.in_edges[dest_vertex_index].append(edge)
+
     @staticmethod
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
         name = resource.get('metadata', {}).get('name')
@@ -87,9 +112,17 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
             match_labels = spec.get('selector', {}).get('matchLabels')
         else:
             match_labels = None
+        KubernetesLocalGraph.remove_metadata_from_attribute(match_labels)
         selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')
+        KubernetesLocalGraph.remove_metadata_from_attribute(labels)
         return KubernetesBlockMetadata(selector, labels, name)
+
+    @staticmethod
+    def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
+        if isinstance(attribute, dict):
+            attribute.pop("__startline__", None)
+            attribute.pop("__endline__", None)
 
     @staticmethod
     def _extract_nested_resources(file_conf: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
