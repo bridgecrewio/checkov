@@ -132,7 +132,7 @@ jobs:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
@@ -194,7 +194,7 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          echo "::set-output name=version::$new_tag"
+          echo "version=$new_tag" >> $GITHUB_OUTPUT
         id: version
       - name: create python package
         run: |
@@ -219,10 +219,10 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -239,11 +239,11 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -263,12 +263,12 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -300,10 +300,10 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}

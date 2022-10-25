@@ -68,6 +68,7 @@ class SafeLineLoaderGhaSchema(SafeLoader):
 
     bool_values = {  # noqa: CCE003  # used to override the SafeLoader default behaviour
         'on': 'on',
+        'off': 'off',
         'yes': 'true',
         'no': 'false',
         'true': 'true',
