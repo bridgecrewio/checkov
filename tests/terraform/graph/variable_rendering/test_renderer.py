@@ -217,3 +217,17 @@ class TestRenderer(TestCase):
         local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('name') == ['airpods']
+
+    def test_dynamic_blocks_with_list(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_tfvars"),
+
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('ingress')) == 2
+            assert len(resources_vertex[0].attributes.get('egress')) == 2
