@@ -13,4 +13,4 @@ integration-tests:
     - pip install pytest pytest-xdist
     - python setup.py sdist bdist_wheel
     - bash -c 'pip install dist/checkov-*.whl'
-    - sh run_integration_tests.sh
+    - sh integration_tests/run_integration_tests.sh
