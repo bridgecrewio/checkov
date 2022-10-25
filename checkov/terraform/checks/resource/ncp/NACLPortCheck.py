@@ -8,8 +8,7 @@ class NACLPortCheck(BaseResourceCheck):
         id = "CKV_NCP_12"
         supported_resources = ('ncloud_network_acl_rule',)
         categories = (CheckCategories.NETWORKING,)
-        guideline = "You should Ensure Network ACL rule doesn't open All ports."
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'inbound' in conf.keys():
