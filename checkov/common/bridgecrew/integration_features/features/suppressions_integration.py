@@ -208,5 +208,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def _init_repo_regex(self) -> None:
         self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
 
+    def pre_runner(self) -> None:
+        # not used
+        pass
+
 
 integration = SuppressionsIntegration(bc_integration)

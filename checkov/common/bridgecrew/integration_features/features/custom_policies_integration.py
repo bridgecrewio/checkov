@@ -114,5 +114,9 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 records.append(new_record)
         return records
 
+    def pre_runner(self) -> None:
+        # not used
+        pass
+
 
 integration = CustomPoliciesIntegration(bc_integration)

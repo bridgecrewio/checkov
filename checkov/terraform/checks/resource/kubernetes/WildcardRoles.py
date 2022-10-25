@@ -8,7 +8,8 @@ class WildcardRoles(BaseResourceCheck):
     def __init__(self):
         name = "Minimize wildcard use in Roles and ClusterRoles"
         id = "CKV_K8S_49"
-        supported_resources = ["kubernetes_role", "kubernetes_cluster_role"]
+        supported_resources = ["kubernetes_role", "kubernetes_role_v1",
+                               "kubernetes_cluster_role", "kubernetes_cluster_role_v1"]
 
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
