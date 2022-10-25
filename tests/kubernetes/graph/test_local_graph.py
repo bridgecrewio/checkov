@@ -47,3 +47,39 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[1].metadata.name is None
         assert local_graph.vertices[1].metadata.selector.match_labels is None
         assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'
+
+    def test_graph_data_on_template_with_matched_label_and_selector(self) -> None:
+        relative_file_path = "resources/LabelSelector/label_selector_match.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.edges))
+
+    def test_graph_data_on_template_with_non_matched_label_and_selector(self) -> None:
+        relative_file_path = "resources/LabelSelector/label_selector_non_match.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(0, len(local_graph.edges))
+
+    def test_graph_data_on_template_with_matched_and_non_matched_label_and_selector(self) -> None:
+        relative_file_path = "resources/LabelSelector/label_selector_multiple_resources.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(3, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.edges))
