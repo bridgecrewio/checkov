@@ -17,7 +17,7 @@ class TestKubernetesLocalGraph(TestGraph):
         resource = definitions[relative_file_path][0]
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.build_graph(render_variables=False)
+        local_graph.build_graph(render_variables=False, graph_flags=K8sGraphFlags())
         self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)
 
@@ -27,7 +27,7 @@ class TestKubernetesLocalGraph(TestGraph):
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.build_graph(render_variables=False)
+        local_graph.build_graph(render_variables=False, graph_flags=K8sGraphFlags())
         self.assertEqual(4, len(local_graph.vertices))
 
     def test_build_graph_with_nested_resources(self) -> None:

@@ -21,13 +21,8 @@ class KubernetesLocalGraph(LocalGraph):
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
-        if not graph_flags:
-            graph_flags = {}
-        create_complex_vertices = graph_flags.get("create_complex_vertices", False)
-        create_edges = graph_flags.get("create_edges", False)
-
-        self._create_vertices(create_complex_vertices)
-        if create_edges:
+        self._create_vertices(create_complex_vertices=graph_flags.create_complex_vertices)
+        if graph_flags.create_edges:
             self._create_edges()
 
     def _create_vertices(self, create_complex_vertices: bool) -> None:

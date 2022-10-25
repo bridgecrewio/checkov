@@ -5,7 +5,7 @@ import os
 from copy import deepcopy
 from typing import Tuple, Dict, Optional, List, Any
 import dpath
-from typing_extensions import TypedDict
+from dataclasses import dataclass
 
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
@@ -211,6 +211,10 @@ def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-class K8sGraphFlags(TypedDict):
+@dataclass()
+class K8sGraphFlags:
+    def __init__(self, create_complex_vertices=False, create_edges=False) -> None:
+        self.create_complex_vertices = create_complex_vertices or False
+        self.create_edges = create_edges or False
     create_complex_vertices: bool
     create_edges: bool
