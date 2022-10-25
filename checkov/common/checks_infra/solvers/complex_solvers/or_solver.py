@@ -19,9 +19,9 @@ class OrSolver(BaseComplexSolver):
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         has_unrendered_attribute = False
         for solver in self.solvers:
-            result = solver.get_operation(vertex)
-            if result:
+            operation = solver.get_operation(vertex)
+            if operation:
                 return True
-            if result is None:
+            if operation is None:
                 has_unrendered_attribute = True
         return None if has_unrendered_attribute else False
