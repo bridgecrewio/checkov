@@ -231,3 +231,9 @@ class TestRenderer(TestCase):
             resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
             assert len(resources_vertex[0].attributes.get('ingress')) == 2
             assert len(resources_vertex[0].attributes.get('egress')) == 2
+            assert resources_vertex[0].attributes.get('ingress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 80, 'protocol': 'tcp', 'to_port': 80},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443}]
+            assert resources_vertex[0].attributes.get('egress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 1433, 'protocol': 'tcp', 'to_port': 1433}]
