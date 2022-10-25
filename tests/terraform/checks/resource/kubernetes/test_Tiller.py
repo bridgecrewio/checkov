@@ -19,19 +19,23 @@ class TestTiller(unittest.TestCase):
 
         passing_resources = {
             "kubernetes_pod.pass",
+            "kubernetes_pod_v1.pass",
         }
 
         failing_resources = {
             "kubernetes_pod.fail",
             "kubernetes_pod.fail2",
             "kubernetes_pod.fail3",
+            "kubernetes_pod_v1.fail",
+            "kubernetes_pod_v1.fail2",
+            "kubernetes_pod_v1.fail3",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], 1 * 2)
+        self.assertEqual(summary["failed"], 3 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

@@ -121,5 +121,13 @@ class FixesIntegration(BaseIntegrationFeature):
             return None
         return fixes[0]
 
+    def pre_scan(self) -> None:
+        # not used
+        pass
+
+    def pre_runner(self) -> None:
+        # not used
+        pass
+
 
 integration = FixesIntegration(bc_integration)

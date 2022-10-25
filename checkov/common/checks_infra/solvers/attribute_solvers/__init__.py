@@ -30,3 +30,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.is_true_attribute_sol
 from checkov.common.checks_infra.solvers.attribute_solvers.is_false_attribute_solver import IsFalseAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.intersects_attribute_solver import IntersectsAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.not_intersects_attribute_solver import NotIntersectsAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.equals_ignore_case_attribute_solver import EqualsIgnoreCaseAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.not_equals_ignore_case_attribute_solver import NotEqualsIgnoreCaseAttributeSolver  # noqa
