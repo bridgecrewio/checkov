@@ -485,3 +485,7 @@ class CloudformationVariableRenderer(VariableRenderer):
             changed_origin_id = edge.dest
 
         return evaluated_value, changed_origin_id, attribute_at_dest
+
+    def evaluate_non_rendered_values(self) -> None:
+        # not used
+        pass
