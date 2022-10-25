@@ -8,10 +8,9 @@ integration-tests:
   variables:
     pythonver: "3.7"
   script:
-    - python -m pip install --no-cache-dir --upgrade pipenv
-    - pipenv --python $pythonver
-    - pipenv run pip install --upgrade pip
-    - pipenv run pip install pytest pytest-xdist
-    - pipenv run python setup.py sdist bdist_wheel
-    - bash -c 'pipenv run pip install dist/checkov-*.whl'
+    - pip install --no-cache-dir --upgrade pipenv
+    - pip install --upgrade pip
+    - pip install pytest pytest-xdist
+    - python setup.py sdist bdist_wheel
+    - bash -c 'pip install dist/checkov-*.whl'
     - sh run_integration_tests.sh
