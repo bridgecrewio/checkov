@@ -14,9 +14,4 @@ integration-tests:
     - pipenv run pip install pytest pytest-xdist
     - pipenv run python setup.py sdist bdist_wheel
     - bash -c 'pipenv run pip install dist/checkov-*.whl'
-    - git clone https://github.com/bridgecrewio/terragoat
-    - git clone https://github.com/bridgecrewio/cfngoat
-    - git clone https://github.com/madhuakula/kubernetes-goat
-    - git clone https://github.com/bridgecrewio/kustomizegoat
-    - bash -c './integration_tests/prepare_data.sh "$pythonver" "$pythonver"'
-    - pipenv run pytest integration_tests
+    - sh run_integration_tests.sh

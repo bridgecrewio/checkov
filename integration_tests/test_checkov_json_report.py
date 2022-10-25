@@ -27,10 +27,10 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kubernetes-goat.json')
         self.validate_report(os.path.abspath(report_path))
 
-    def test_k8goat_report_not_win(self):
-        if not sys.platform.startswith('win'):
-            report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kubernetes-goat-helm.json')
-            self.validate_report(os.path.abspath(report_path))
+    # def test_k8goat_report_not_win(self):
+    #     if not sys.platform.startswith('win'):
+    #         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kubernetes-goat-helm.json')
+    #         self.validate_report(os.path.abspath(report_path))
 
     def test_checkov_report_terragoat_with_skip(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat_with_skip.json')
