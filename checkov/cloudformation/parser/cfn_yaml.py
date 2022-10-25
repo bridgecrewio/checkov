@@ -240,10 +240,13 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
             content = str(from_path(filename).best())
 
     if content_type == ContentType.CFN and "Resources" not in content:
+        logging.debug(f'File {filename} is expected to be a CFN template but has no Resources attribute')
         return {}, []
     elif content_type == ContentType.SLS and "provider" not in content:
+        logging.debug(f'File {filename} is expected to be an SLS template but has no provider attribute')
         return {}, []
     elif content_type == ContentType.TFPLAN and "planned_values" not in content:
+        logging.debug(f'File {filename} is expected to be a TFPLAN file but has no planned_values attribute')
         return {}, []
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
