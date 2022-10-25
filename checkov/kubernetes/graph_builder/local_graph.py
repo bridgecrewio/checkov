@@ -119,7 +119,7 @@ class KubernetesLocalGraph(LocalGraph):
         return KubernetesBlockMetadata(selector, labels, name)
 
     @staticmethod
-    def remove_metadata_from_attribute(attribute: dict | None) -> None:
+    def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
         if isinstance(attribute, dict):
             attribute.pop("__startline__", None)
             attribute.pop("__endline__", None)

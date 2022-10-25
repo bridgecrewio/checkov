@@ -31,8 +31,12 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
         connections: list[int] = []
         labels = vertex.metadata.labels
         for potential_vertex_index, potential_vertex in enumerate(vertices):
+            if potential_vertex.id == vertex.id:
+                continue
             match_labels = potential_vertex.metadata.selector.match_labels
-            if match_labels and potential_vertex.id != vertex.id:
+            if match_labels:
+                if len(match_labels) > len(labels):
+                    continue
                 # find shared label between the inspected vertex and the iterated potential vertex
                 shared_labels = {k: match_labels[k] for k in match_labels if k in labels and match_labels[k] == labels[k]}
                 if len(shared_labels) == len(match_labels):
