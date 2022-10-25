@@ -13,6 +13,7 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.bridgecrew.severities import Severity
+    from checkov.common.output.report import Report
 
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
@@ -152,6 +153,14 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     ckv_id = self.get_ckv_id_from_pc_id(pc_id)
                     if ckv_id:
                         self.filtered_policy_ids.append(ckv_id)
+
+    def pre_runner(self) -> None:
+        # not used
+        pass
+
+    def post_runner(self, scan_reports: Report) -> None:
+        # not used
+        pass
 
 
 integration = PolicyMetadataIntegration(bc_integration)
