@@ -8,7 +8,7 @@ from collections import defaultdict
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 
 
@@ -20,7 +20,7 @@ class KubernetesLocalGraph(LocalGraph):
         self.definitions = definitions
         super().__init__()
 
-    def build_graph(self, render_variables: bool, graph_flags: Dict[str, bool] | None = None) -> None:
+    def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
         if not graph_flags:
             graph_flags = {}
         create_complex_vertices = graph_flags.get("create_complex_vertices", False)

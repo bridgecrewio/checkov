@@ -3,6 +3,7 @@ import os
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
+from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -32,7 +33,7 @@ class TestKubernetesLocalGraph(TestGraph):
     def test_build_graph_with_nested_resources(self) -> None:
         file = os.path.join(TEST_DIRNAME, 'resources', 'nested_resource.yaml')
         definitions = {}
-        graph_flags = {"create_complex_vertices": True, "create_edges": False}
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=False)
         (definitions[file], definitions_raw) = parse(file)
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
@@ -53,7 +54,7 @@ class TestKubernetesLocalGraph(TestGraph):
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
-        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
@@ -65,7 +66,7 @@ class TestKubernetesLocalGraph(TestGraph):
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
-        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
@@ -77,7 +78,7 @@ class TestKubernetesLocalGraph(TestGraph):
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
-        graph_flags = {"create_complex_vertices": True, "create_edges": True}
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)

@@ -4,10 +4,10 @@ import logging
 import os
 from copy import deepcopy
 from typing import Tuple, Dict, Optional, List, Any
-
 import dpath
-from checkov.runner_filter import RunnerFilter
+from typing_extensions import TypedDict
 
+from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -209,3 +209,8 @@ def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
         labels.pop('__endline__', None)
         return f'{resource_type}.{namespace}.{str(labels)}'
     return None
+
+
+class K8sGraphFlags(TypedDict):
+    create_complex_vertices: bool
+    create_edges: bool

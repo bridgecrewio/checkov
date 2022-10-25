@@ -38,7 +38,7 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
                 if len(match_labels) > len(labels):
                     continue
                 # find shared label between the inspected vertex and the iterated potential vertex
-                shared_labels = {k: match_labels[k] for k in match_labels if k in labels and match_labels[k] == labels[k]}
+                shared_labels = [k for k in match_labels if k in labels and match_labels[k] == labels[k]]
                 if len(shared_labels) == len(match_labels):
                     # if all potential vertex's selector labels appear in vertex's labels - it's connected
                     connections.append(potential_vertex_index)

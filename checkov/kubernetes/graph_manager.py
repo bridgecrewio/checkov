@@ -5,7 +5,7 @@ from typing import Type, Any
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-from checkov.kubernetes.kubernetes_utils import get_folder_definitions
+from checkov.kubernetes.kubernetes_utils import get_folder_definitions, K8sGraphFlags
 
 
 class KubernetesGraphManager(GraphManager[KubernetesLocalGraph]):
@@ -20,14 +20,14 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph]):
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-        graph_flags: dict[str, bool] | None = None
+        graph_flags: K8sGraphFlags | None = None
     ) -> tuple[KubernetesLocalGraph, dict[str, Any]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)
         local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False, graph_flags=graph_flags)
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, Any], render_variables: bool = True, graph_flags: dict[str, bool] | None = None
+        self, definitions: dict[str, Any], render_variables: bool = True, graph_flags: K8sGraphFlags | None = None
     ) -> KubernetesLocalGraph:
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
