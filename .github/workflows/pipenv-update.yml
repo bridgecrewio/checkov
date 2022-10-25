@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@671dc9c9e0c2d73f07fa45a3eb0220e1622f0c5f  # v4
+        uses: peter-evans/create-pull-request@b4d51739f96fca8047ad065eccef63442d8e99f7  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

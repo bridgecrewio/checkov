@@ -4,6 +4,8 @@ import os
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.output.report import Report
+from checkov.common.util.type_forcers import force_dict
+from checkov.gitlab_ci.common.resource_id_utils import generate_resource_key_recursive
 
 from checkov.runner_filter import RunnerFilter
 
@@ -19,7 +21,7 @@ if TYPE_CHECKING:
     from networkx import DiGraph
 
 
-class Runner(ImageReferencerMixin, YamlRunner):
+class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
     check_type = CheckType.GITLAB_CI  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:
@@ -44,6 +46,15 @@ class Runner(ImageReferencerMixin, YamlRunner):
 
     def included_paths(self) -> Iterable[str]:
         return (".gitlab-ci.yml", ".gitlab-ci.yaml")
+
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+        start_line, end_line = Runner.get_start_and_end_lines(key)
+        file_config = force_dict(self.definitions[file_path])
+        if not file_config:
+            return key
+        resource_id: str = generate_resource_key_recursive(conf=file_config, key='', start_line=start_line,
+                                                           end_line=end_line)
+        return resource_id
 
     def run(
             self,
@@ -91,3 +102,13 @@ class Runner(ImageReferencerMixin, YamlRunner):
             images.extend(manager.extract_images_from_workflow())
 
         return images
+
+    @staticmethod
+    def get_start_and_end_lines(key: str) -> list[int]:
+        check_name = key.split('.')[-1]
+        if "[" not in check_name or "[]" in check_name:
+            return [-1, -1]
+
+        start_end_line_bracket_index = check_name.index('[')
+
+        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
