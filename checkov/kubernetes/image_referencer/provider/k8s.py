@@ -7,6 +7,7 @@ from checkov.kubernetes.image_referencer.base_provider import BaseKubernetesProv
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from checkov.kubernetes.image_referencer.base_provider import _ExtractImagesCallableAlias
 
 
 class KubernetesProvider(BaseKubernetesProvider):
@@ -90,7 +91,7 @@ def extract_images_from_containers(containers: Any) -> list[str]:
 
 
 # needs to be at the bottom to add the defined functions
-SUPPORTED_K8S_IMAGE_RESOURCE_TYPES = {
+SUPPORTED_K8S_IMAGE_RESOURCE_TYPES: "dict[str, _ExtractImagesCallableAlias]" = {
     "CronJob": extract_images_from_cron_job,
     "Deployment": extract_images_from_template,
     "DeploymentConfig": extract_images_from_template,

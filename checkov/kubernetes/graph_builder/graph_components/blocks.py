@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Dict, Any
 
@@ -25,7 +27,7 @@ class KubernetesBlock(Block):
             config: Dict[str, Any],
             path: str,
             attributes: Dict[str, Any],
-            metadata: KubernetesBlockMetadata
+            metadata: KubernetesBlockMetadata | None
     ) -> None:
         super().__init__(block_name, config, path, BlockType.RESOURCE, attributes, block_name, 'Kubernetes')
         self.metadata = metadata

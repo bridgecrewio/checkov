@@ -391,7 +391,7 @@ class RunnerRegistry:
 
         # Save output to file
         file_names = {'cli': 'results_cli.txt',
-                      'github_failed_only': 'results_github_failed_only.txt',
+                      'github_failed_only': 'results_github_failed_only.md',
                       'sarif': 'results_sarif.sarif',
                       'json': 'results_json.json',
                       'junitxml': 'results_junitxml.xml',

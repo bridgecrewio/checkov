@@ -10,7 +10,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
 
 
-class TerraformGraphManager(GraphManager[TerraformLocalGraph]):
+class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: DBConnector, source: str = "") -> None:
         super().__init__(db_connector=db_connector, parser=Parser(), source=source)
 

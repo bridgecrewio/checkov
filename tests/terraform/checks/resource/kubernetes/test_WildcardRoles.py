@@ -21,6 +21,9 @@ class TestWildcardRoles(unittest.TestCase):
             "kubernetes_cluster_role.pass",
             "kubernetes_role.pass",
             "kubernetes_role.pass2",
+            "kubernetes_cluster_role_v1.pass",
+            "kubernetes_role_v1.pass",
+            "kubernetes_role_v1.pass2",
         }
 
         failing_resources = {
@@ -28,13 +31,17 @@ class TestWildcardRoles(unittest.TestCase):
             "kubernetes_role.fail",
             "kubernetes_role.fail2",
             "kubernetes_role.fail3",
+            "kubernetes_cluster_role_v1.fail",
+            "kubernetes_role_v1.fail",
+            "kubernetes_role_v1.fail2",
+            "kubernetes_role_v1.fail3",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["passed"], 3 * 2)
+        self.assertEqual(summary["failed"], 4 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

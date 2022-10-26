@@ -33,10 +33,13 @@ class Runner(JsonRunner):
 
         self.prepare_data()
 
-        report = super().run(root_folder=self.bitbucket.bitbucket_conf_dir_path, external_checks_dir=external_checks_dir,
-                             files=files,
-                             runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        # JsonRunner._change_files_path_to_relative(report)
+        report = super().run(
+            root_folder=self.bitbucket.bitbucket_conf_dir_path,
+            external_checks_dir=external_checks_dir,
+            files=None,  # ignore file scans
+            runner_filter=runner_filter,
+            collect_skip_comments=collect_skip_comments,
+        )
 
         return report
 
