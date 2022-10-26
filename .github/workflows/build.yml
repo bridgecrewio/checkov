@@ -209,9 +209,10 @@ jobs:
           
           git config --global user.name 'schosterbarak'
           git config --global user.email 'schosterbarak@users.noreply.github.com'
-        
-          ## update python version
+          
           new_tag=${{ steps.calculateVersion.outputs.version }}
+          echo "new tag: $new_tag"
+          ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
           echo "checkov==$new_tag" > 'admissioncontroller/checkov-requirements.txt'
