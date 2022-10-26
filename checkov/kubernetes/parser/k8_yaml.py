@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, TYPE_CHECKING
 
 import yaml
 from yaml.loader import SafeLoader
+
+if TYPE_CHECKING:
+    from yaml import MappingNode
 
 
 def loads(content: str) -> List[Dict[str, Any]]:
@@ -41,8 +46,8 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
 
 class SafeLineLoader(SafeLoader):
-    def construct_mapping(self, node, deep=False):
-        mapping = super(SafeLineLoader, self).construct_mapping(node, deep=deep)
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
+        mapping: "dict[str, Any]" = super().construct_mapping(node, deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
