@@ -25,6 +25,7 @@ class BaseComplexSolver(BaseSolver):
     def _get_negative_op(self, *args: Any) -> Any:
         return not self._get_operation(args)
 
+    @abstractmethod
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         raise NotImplementedError()
 

@@ -33,7 +33,7 @@ class AndConnectionSolver(ComplexConnectionSolver):
             passed.extend(passed_solver)
             failed.extend(failed_solver)
             unknown.extend(unknown_solver)
-            failed_or_unknown_ids.extend([f[CustomAttributes.ID] for f in itertools.chain(failed_solver, unknown_solver)])
+            failed_or_unknown_ids.extend(f[CustomAttributes.ID] for f in itertools.chain(failed_solver, unknown_solver))
 
         failed_ids = [f[CustomAttributes.ID] for f in failed]
         unknown_ids = [u[CustomAttributes.ID] for u in unknown]
