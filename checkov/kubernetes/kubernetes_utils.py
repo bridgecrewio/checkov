@@ -3,15 +3,16 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
-from typing import Tuple, Dict, Optional, List, Any
-import dpath
 from dataclasses import dataclass
+from typing import Dict, Any
 
+import dpath
+
+from checkov.common.typing import _SkippedCheck
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.parsers.node import DictNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
@@ -21,8 +22,8 @@ DEFAULT_NESTED_RESOURCE_TYPE = 'Pod'
 
 
 def get_folder_definitions(
-        root_folder: str, excluded_paths: Optional[List[str]]
-) -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
+        root_folder: str, excluded_paths: list[str] | None
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     files_list = []
     for root, d_names, f_names in os.walk(root_folder):
         filter_ignored_paths(root, d_names, excluded_paths)
@@ -38,26 +39,28 @@ def get_folder_definitions(
     return get_files_definitions(files_list)
 
 
-def get_files_definitions(files: List[str]) \
-        -> Tuple[Dict[str, List], Dict[str, List[Tuple[int, str]]]]:
-    def _parse_file(filename: str):
-        try:
-            return filename, parse(filename)
-        except (TypeError, ValueError):
-            logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
-
+def get_files_definitions(files: list[str]) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     definitions = {}
     definitions_raw = {}
     results = parallel_runner.run_function(_parse_file, files)
     for result in results:
         if result:
-            (path, parse_result) = result
+            path, parse_result = result
             if parse_result:
-                (definitions[path], definitions_raw[path]) = parse_result
+                definitions[path], definitions_raw[path] = parse_result
     return definitions, definitions_raw
 
 
-def get_skipped_checks(entity_conf):
+def _parse_file(filename: str) -> tuple[str, tuple[list[dict[str, Any]], list[tuple[int, str]]] | None] | None:
+    try:
+        return filename, parse(filename)
+    except (TypeError, ValueError):
+        logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
+
+    return None
+
+
+def get_skipped_checks(entity_conf: dict[str, Any]) -> list[_SkippedCheck]:
     skipped = []
     metadata = {}
     bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
@@ -73,7 +76,7 @@ def get_skipped_checks(entity_conf):
                 logging.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                 continue
             for key in annotation:
-                skipped_item = {}
+                skipped_item: "_SkippedCheck" = {}
                 if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
                     if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key] or "CKV2_K8S" in annotation[key]:
                         if "=" in annotation[key]:
@@ -99,9 +102,9 @@ def create_definitions(
     root_folder: str | None,
     files: list[str] | None = None,
     runner_filter: RunnerFilter | None = None,
-) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[tuple[int, str]]]]:
     runner_filter = runner_filter or RunnerFilter()
-    definitions: dict[str, DictNode] = {}
+    definitions: dict[str, list[dict[str, Any]]] = {}
     definitions_raw: dict[str, list[tuple[int, str]]] = {}
     if files:
         definitions, definitions_raw = get_files_definitions(files)
@@ -112,8 +115,9 @@ def create_definitions(
     return definitions, definitions_raw
 
 
-def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
-        Dict[str, Dict[str, Any]]:
+def build_definitions_context(
+    definitions: dict[str, list[dict[str, Any]]], definitions_raw: dict[str, list[tuple[int, str]]]
+) -> dict[str, dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
     definitions = deepcopy(definitions)
     # iterate on the files
@@ -196,7 +200,10 @@ def is_invalid_k8_pod_definition(definition: Dict[str, Any]) -> bool:
     return False
 
 
-def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
+def get_resource_id(resource: dict[str, Any] | None) -> str | None:
+    if not resource:
+        return None
+
     resource_type = resource.get("kind", DEFAULT_NESTED_RESOURCE_TYPE)
     metadata = resource.get("metadata") or {}
     namespace = metadata.get("namespace", "default")
@@ -213,8 +220,9 @@ def get_resource_id(resource: Dict[str, Any]) -> Optional[str]:
 
 @dataclass()
 class K8sGraphFlags:
-    def __init__(self, create_complex_vertices=False, create_edges=False) -> None:
-        self.create_complex_vertices = create_complex_vertices or False
-        self.create_edges = create_edges or False
     create_complex_vertices: bool
     create_edges: bool
+
+    def __init__(self, create_complex_vertices: bool = False, create_edges: bool = False) -> None:
+        self.create_complex_vertices = create_complex_vertices or False
+        self.create_edges = create_edges or False
