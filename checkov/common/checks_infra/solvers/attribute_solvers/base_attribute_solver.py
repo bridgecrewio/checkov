@@ -62,9 +62,12 @@ class BaseAttributeSolver(BaseSolver):
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
-            filtered_attribute_matches = [a for a in attribute_matches if
-                                          not self._is_variable_dependant(vertex.get(a), vertex['source_'])] \
-                if self.is_value_attribute_check and self.value != '' else attribute_matches
+            filtered_attribute_matches = attribute_matches
+            if self.is_value_attribute_check and self.value != '':
+                filtered_attribute_matches = [
+                    a for a in attribute_matches
+                    if not self._is_variable_dependant(vertex.get(a), vertex['source_'])
+                ]
 
             if attribute_matches:
                 if self.is_jsonpath_check:
