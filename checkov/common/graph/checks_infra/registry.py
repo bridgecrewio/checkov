@@ -37,21 +37,22 @@ class BaseRegistry:
         return check_results
 
     def run_check_parallel(
-        self, check: BaseGraphCheck, check_results: dict[BaseGraphCheck, list[dict[str, Any]]], graph_connector: DiGraph
+        self, check: BaseGraphCheck, check_results: Dict[BaseGraphCheck, List[Dict[str, Any]]], graph_connector: DiGraph
     ) -> None:
         logging.debug(f'Running graph check: {check.id}')
-        passed, failed = check.run(graph_connector)
+        passed, failed, unknown = check.run(graph_connector)
         evaluated_keys = check.get_evaluated_keys()
         check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
         check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
+        check_result = self._process_check_result(unknown, check_result, CheckResult.UNKNOWN, evaluated_keys)
         check_results[check] = check_result
 
     @staticmethod
     def _process_check_result(
-        results: list[dict[str, Any]],
-        processed_results: list[dict[str, Any]],
-        result: CheckResult, evaluated_keys: list[str],
-    ) -> list[dict[str, Any]]:
+        results: List[Dict[str, Any]],
+        processed_results: List[Dict[str, Any]],
+        result: CheckResult, evaluated_keys: List[str],
+    ) -> List[Dict[str, Any]]:
         for vertex in results:
             processed_results.append({"result": result, "entity": vertex, "evaluated_keys": evaluated_keys})
         return processed_results
