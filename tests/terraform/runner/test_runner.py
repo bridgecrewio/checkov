@@ -197,8 +197,11 @@ class TestRunnerValid(unittest.TestCase):
         extra_checks_dir_path = current_dir / "extra_yaml_checks"
         runner = Runner()
 
+        # not needed for this test
+        runner_filter = RunnerFilter(checks=['CUSTOM_GRAPH_AWS_2'])
+
         # when
-        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)])
+        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)], runner_filter=runner_filter)
 
         # then
         summary = report.get_summary()
