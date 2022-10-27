@@ -1,7 +1,18 @@
 name: build
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      versionBump:
+        description: 'The part of the version to bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
   push:
     branches:
       - master
@@ -39,6 +50,7 @@ jobs:
       - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -132,7 +144,7 @@ jobs:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
@@ -147,6 +159,32 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install
+      - name: Calculate version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          if [[ -z "${{ inputs.versionBump }}" ]]
+          then
+            version="patch"
+          else
+            version="${{ inputs.versionBump }}"
+          fi
+          case $version in
+            minor)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
+              ;;
+            major)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
+              ;;
+            patch)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+              ;;
+          esac
+
+          echo "new tag: $new_tag"
+          echo "version=$new_tag" >> $GITHUB_OUTPUT
+        id: calculateVersion
       - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -177,13 +215,9 @@ jobs:
           
           git config --global user.name 'schosterbarak'
           git config --global user.email 'schosterbarak@users.noreply.github.com'
-
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-
-          echo "new tag: $new_tag"          
+          
+          new_tag=${{ steps.calculateVersion.outputs.version }}
+          echo "new tag: $new_tag"
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
@@ -194,7 +228,6 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          echo "::set-output name=version::$new_tag"
         id: version
       - name: create python package
         run: |
@@ -207,7 +240,7 @@ jobs:
         run: |
           sleep 2m
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.calculateVersion.outputs.version }}
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: bump-version
@@ -219,10 +252,10 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -239,11 +272,11 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -263,12 +296,12 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -300,10 +333,10 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@93655185f260b851ede78d9a57760a8bbda65f68  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}

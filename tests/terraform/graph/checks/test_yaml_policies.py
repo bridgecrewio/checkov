@@ -266,16 +266,16 @@ class TestYamlPolicies(unittest.TestCase):
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 
-    def go(self, dir_name: str , check_name: str | None = None) -> None:
+    def go(self, dir_name: str, check_name: str | None = None) -> None:
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/{dir_name}")
+        check_name = dir_name if check_name is None else check_name
         assert os.path.exists(dir_path)
         policy_dir_path = os.path.dirname(checks.__file__)
         assert os.path.exists(policy_dir_path)
         found = False
         for root, d_names, f_names in os.walk(policy_dir_path):
             for f_name in f_names:
-                check_name = dir_name if check_name is None else check_name
                 if f_name == f"{check_name}.yaml":
                     found = True
                     policy = load_yaml_data(f_name, root)

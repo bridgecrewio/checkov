@@ -35,7 +35,7 @@ class Runner(JsonRunner):
         report = super().run(
             root_folder=self.gitlab.gitlab_conf_dir_path,
             external_checks_dir=external_checks_dir,
-            files=files,
+            files=None,  # ignore file scans
             runner_filter=runner_filter,
             collect_skip_comments=collect_skip_comments,
         )

@@ -1,6 +1,67 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.1.282...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.0...HEAD)
+
+## [2.2.0](https://github.com/bridgecrewio/checkov/compare/2.1.294...2.2.0) - 2022-10-26
+
+### Breaking Change
+
+- **github:** Change github_failed_only output suffix to .md - [#3595](https://github.com/bridgecrewio/checkov/pull/3595)
+- **terraform:** adjust the check result return for dependant variables to unknown in  Python based checks - [#3743](https://github.com/bridgecrewio/checkov/pull/3743)
+- **terraform:** return UNKNOWN for unrendered values in graph checks - [#3689](https://github.com/bridgecrewio/checkov/pull/3689)
+
+### Feature
+
+- **terraform:** add CKV NCP rule about block storage encryption. - [#3628](https://github.com/bridgecrewio/checkov/pull/3628)
+- **terraform:** add CKV NCP rule about vpc volume encryption. - [#3629](https://github.com/bridgecrewio/checkov/pull/3629)
+- **terraform:** add CKV NCP rules about Network ACL. - [#3630](https://github.com/bridgecrewio/checkov/pull/3630)
+- **terraform:** Create checks for aws managed admin policy - [#3741](https://github.com/bridgecrewio/checkov/pull/3741)
+
+### Bug Fix
+
+- **terraform:** local_authentication_disabled - cosmodb check to look at SQL Api only CKV_AZURE_140 - [#3648](https://github.com/bridgecrewio/checkov/pull/3648)
+
+## [2.1.294](https://github.com/bridgecrewio/checkov/compare/2.1.290...2.1.294) - 2022-10-25
+
+### Feature
+
+- **kubernetes:** Create label selector edge builder - [#3715](https://github.com/bridgecrewio/checkov/pull/3715)
+- **terraform:** add CKV NCP rules about access control group Inbound rule. - [#3627](https://github.com/bridgecrewio/checkov/pull/3627)
+- **terraform:** add versioned kubernetes resources to terraform kubernetes checks (5/5) - [#3657](https://github.com/bridgecrewio/checkov/pull/3657)
+
+### Bug Fix
+
+- **general:** skip scanning VCS configuration if only files are passed in - [#3729](https://github.com/bridgecrewio/checkov/pull/3729)
+
+## [2.1.290](https://github.com/bridgecrewio/checkov/compare/2.1.288...2.1.290) - 2022-10-24
+
+### Feature
+
+- **circleci:** CircleCI Image Reference using Mixin class - [#3707](https://github.com/bridgecrewio/checkov/pull/3707)
+
+### Bug Fix
+
+- **kubernetes:** fix in CPURequests check - [#3727](https://github.com/bridgecrewio/checkov/pull/3727)
+
+## [2.1.288](https://github.com/bridgecrewio/checkov/compare/2.1.286...2.1.288) - 2022-10-24
+
+### Bug Fix
+
+- **github:** fix GITHUB_OUTPUT and GITHUB_ENV issues of checkov-action - [#3726](https://github.com/bridgecrewio/checkov/pull/3726)
+- **gitlab:** Modify gitlab ci resource id - [#3706](https://github.com/bridgecrewio/checkov/pull/3706)
+
+## [2.1.286](https://github.com/bridgecrewio/checkov/compare/2.1.282...2.1.286) - 2022-10-23
+
+### Feature
+
+- **graph:** equals/not_equals_ignore_case operators (solvers) - [#3698](https://github.com/bridgecrewio/checkov/pull/3698)
+
+### Bug Fix
+
+- **github:** Fix GHA off value error resulting in checkov hanging - [#3713](https://github.com/bridgecrewio/checkov/pull/3713)
+- **gitlab:** vcs gitlab groups retrieval - [#3716](https://github.com/bridgecrewio/checkov/pull/3716)
+- **kubernetes:** fix in ServiceAccountTokens check - [#3717](https://github.com/bridgecrewio/checkov/pull/3717)
+- **terraform:** Add debug logs to yaml parsing logic - [#3718](https://github.com/bridgecrewio/checkov/pull/3718)
 
 ## [2.1.282](https://github.com/bridgecrewio/checkov/compare/2.1.277...2.1.282) - 2022-10-20
 
