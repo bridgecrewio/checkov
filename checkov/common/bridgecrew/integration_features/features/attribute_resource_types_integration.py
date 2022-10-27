@@ -17,7 +17,7 @@ ALL_TYPES = '__all__'
 
 class AttributeResourceTypesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata
+        super().__init__(bc_integration=bc_integration, order=3)  # must be after policy metadata
         self.attribute_resources: Dict[str, Dict[str, List[str]]] = {}
         self.provider_resources: Dict[str, List[str]] = {}
 
