@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -12,8 +13,11 @@ class IntegrationFeatureRegistry:
         self.features: list[BaseIntegrationFeature] = []
 
     def register(self, integration_feature: BaseIntegrationFeature) -> None:
+        logging.debug(f"Adding the IntegrationFeatureRegistry {integration_feature} with order {integration_feature.order}")
         self.features.append(integration_feature)
         self.features.sort(key=lambda f: f.order)
+        logging.debug("self.features after the sort:")
+        logging.debug(self.features)
 
     def run_pre_scan(self) -> None:
         for integration in self.features:

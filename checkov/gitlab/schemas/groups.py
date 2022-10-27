@@ -47,19 +47,31 @@ class GroupsSchema(VCSSchema):
                             "type": "string"
                         },
                         "emails_disabled": {
-                            "type": "null"
+                            "oneOf": [
+                                {"type": "boolean"},
+                                {"type": "null"}
+                            ]
                         },
                         "mentions_disabled": {
-                            "type": "null"
+                            "oneOf": [
+                                {"type": "boolean"},
+                                {"type": "null"}
+                            ]
                         },
                         "lfs_enabled": {
-                            "type": "boolean"
+                            "oneOf": [
+                                {"type": "boolean"},
+                                {"type": "null"}
+                            ]
                         },
                         "default_branch_protection": {
                             "type": "integer"
                         },
                         "avatar_url": {
-                            "type": "null"
+                            "oneOf": [
+                                {"type": "string"},
+                                {"type": "null"}
+                            ]
                         },
                         "request_access_enabled": {
                             "type": "boolean"

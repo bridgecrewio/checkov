@@ -66,7 +66,12 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
-        for file, result in results:
+        for file_result_pair in results:
+            if file_result_pair is None:
+                # this only happens, when an uncaught exception occurs
+                continue
+
+            file, result = file_result_pair
             if result:
                 (self.definitions[file], self.definitions_raw[file]) = result
                 definition = result[0]
@@ -155,9 +160,10 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         for file_path in self.definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
             skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
-            results = registry.scan(
-                file_path, self.definitions[file_path], skipped_checks, runner_filter  # type:ignore[arg-type] # this is overridden in the subclass
-            )
+
+            if registry.report_type == CheckType.GITLAB_CI:
+                registry.definitions_raw = self.definitions_raw[file_path]
+            results = registry.scan(file_path, self.definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0

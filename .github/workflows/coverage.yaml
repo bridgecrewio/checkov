@@ -19,15 +19,15 @@ jobs:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
-      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv

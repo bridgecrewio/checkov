@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from collections import defaultdict
@@ -33,9 +35,10 @@ class Undetermined(TypedDict):
     variable_vertex_id: int
 
 
-class TerraformLocalGraph(LocalGraph):
+class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def __init__(self, module: Module) -> None:
         super().__init__()
+        self.vertices: list[TerraformBlock] = []
         self.module = module
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
