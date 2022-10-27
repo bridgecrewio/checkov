@@ -37,16 +37,18 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         return list({(check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH]): check for check in checks}.values())
 
     def filter_results(
-        self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]]
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         filter_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseFilterSolver)]
         for sub_solver in filter_solvers:
             filter_pred = sub_solver._get_operation()
             passed = list(filter(filter_pred, passed))
             failed = list(filter(filter_pred, failed))
+            unknown = list(filter(filter_pred, unknown))
         passed = self.filter_duplicates(passed)
         failed = self.filter_duplicates(failed)
-        return passed, failed
+        unknown = self.filter_duplicates(unknown)
+        return passed, failed, unknown
 
     def get_sorted_connection_solvers(self) -> List[BaseConnectionSolver]:
         connection_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseConnectionSolver)]
@@ -71,15 +73,18 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         sorted_connection_solvers.extend(connection_solvers_with_filtered_resource_types)
         return sorted_connection_solvers
 
-    def run_attribute_solvers(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run_attribute_solvers(self, graph_connector: DiGraph) -> \
+            Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         attribute_solvers = [
             sub_solver
             for sub_solver in self.solvers
             if isinstance(sub_solver, (BaseAttributeSolver, BaseComplexSolver))
         ]
-        passed_attributes, failed_attributes = [], []
+        passed_attributes, failed_attributes, unknown_attributes = [], [], []
         for attribute_solver in attribute_solvers:
-            passed_solver, failed_solver = attribute_solver.run(graph_connector)
+            passed_solver, failed_solver, unknown_solver = attribute_solver.run(graph_connector)
             passed_attributes.extend(passed_solver)
             failed_attributes.extend(failed_solver)
-        return passed_attributes, failed_attributes
+            unknown_attributes.extend(unknown_solver)
+
+        return passed_attributes, failed_attributes, unknown_attributes
