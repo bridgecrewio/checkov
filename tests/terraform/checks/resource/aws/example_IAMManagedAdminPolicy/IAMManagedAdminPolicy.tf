@@ -56,6 +56,10 @@ resource "aws_iam_group_policy_attachment" "pass5" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "pass6" {
+  role       = aws_iam_role.fail1.name
+#  policy_arn = ""  # not valid, just to simulate a TF plan behaviour
+}
 
 # Data
 
