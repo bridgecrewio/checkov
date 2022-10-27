@@ -20,7 +20,7 @@ class Runner(ObjectRunner):
     def __init__(
         self,
         db_connector: NetworkxConnector | None = None,
-        source: str | None = None,
+        source: str = "json",
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,
     ) -> None:
