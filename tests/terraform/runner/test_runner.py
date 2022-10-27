@@ -190,6 +190,36 @@ class TestRunnerValid(unittest.TestCase):
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
+    def test_runner_yaml_module_check(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_dir_path = current_dir / "resources/module_check"
+        extra_checks_dir_path = current_dir / "extra_yaml_checks"
+        runner = Runner()
+
+        # when
+        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)])
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {"pass"}
+        failing_resources = {"fail"}
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
+
     def test_runner_specific_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -392,7 +422,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
     def test_terraform_module_checks_are_performed_even_if_supported_resources_is_omitted(self):
         check_name = "TF_M_2"
@@ -425,7 +455,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
     def test_terraform_multiple_module_versions(self):
         # given
@@ -1071,8 +1101,6 @@ class TestRunnerValid(unittest.TestCase):
                 assert record.file_path == "/module/module.tf"
                 self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
-                # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
-                #             A bug might have been fixed.
                 self.assertEqual(record.caller_file_line_range, [6, 8])
 
         self.assertTrue(found_inside)
@@ -1087,7 +1115,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 2)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 3)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1096,11 +1124,14 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 2)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 2)
-        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in runner.graph_registry.checks])
-        self.assertIn('CKV2_CUSTOM_1', [x.id for x in runner.graph_registry.checks])
+        self.assertEqual(len(runner.graph_registry.checks), 3)
+
+        graph_checks = [x.id for x in runner.graph_registry.checks]
+        self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
+        self.assertIn('CUSTOM_GRAPH_AWS_2', graph_checks)
+        self.assertIn('CKV2_CUSTOM_1', graph_checks)
         runner.graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
@@ -1192,7 +1223,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_do_exist(self):
@@ -1208,7 +1239,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_resource_negative_values_dont_exist(self):
@@ -1224,7 +1255,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
@@ -1240,7 +1271,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_no_duplicate_results(self):

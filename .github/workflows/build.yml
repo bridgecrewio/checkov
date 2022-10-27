@@ -1,7 +1,18 @@
 name: build
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      versionBump:
+        description: 'The part of the version to bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
   push:
     branches:
       - master
@@ -148,6 +159,32 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install
+      - name: Calculate version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          if [[ -z "${{ inputs.versionBump }}" ]]
+          then
+            version="patch"
+          else
+            version="${{ inputs.versionBump }}"
+          fi
+          case $version in
+            minor)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
+              ;;
+            major)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
+              ;;
+            patch)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+              ;;
+          esac
+
+          echo "new tag: $new_tag"
+          echo "version=$new_tag" >> $GITHUB_OUTPUT
+        id: calculateVersion
       - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -178,13 +215,9 @@ jobs:
           
           git config --global user.name 'schosterbarak'
           git config --global user.email 'schosterbarak@users.noreply.github.com'
-
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-
-          echo "new tag: $new_tag"          
+          
+          new_tag=${{ steps.calculateVersion.outputs.version }}
+          echo "new tag: $new_tag"
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
@@ -195,7 +228,6 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          echo "version=$new_tag" >> $GITHUB_OUTPUT
         id: version
       - name: create python package
         run: |
@@ -208,7 +240,7 @@ jobs:
         run: |
           sleep 2m
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.calculateVersion.outputs.version }}
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: bump-version

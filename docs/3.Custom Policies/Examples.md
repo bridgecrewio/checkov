@@ -12,16 +12,33 @@ nav_order: 4
 ```yaml
 ---
 metadata:
- name: "Check that all resources are tagged with the key - env"
- id: "CKV2_AWS_1"
- category: "GENERAL_SECURITY"
+  name: "Check that all resources are tagged with the key - env"
+  id: "CKV2_AWS_1"
+  category: "GENERAL_SECURITY"
 scope:
- provider: aws
+  provider: aws
 definition:
-       cond_type: "attribute"
-       resource_types: "all"
-       attribute: "tags.env"
-       operator: "exists"
+  cond_type: "attribute"
+  resource_types: "all"
+  attribute: "tags.env"
+  operator: "exists"
+```
+
+## Basic Query - Module block example 
+
+```yaml
+---
+metadata:
+  name: "Ensure all modules are using the official AWS ones"
+  id: "CKV2_AWS_1"
+  category: "SUPPLY_CHAIN"
+definition:
+  cond_type: attribute
+  resource_types:
+    - module
+  attribute: source
+  operator: starting_with
+  value: terraform-aws-modules
 ```
 
 ## Basic Query - Terraform plan resource not deleted
