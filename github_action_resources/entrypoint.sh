@@ -140,8 +140,12 @@ fi
 
 CHECKOV_EXIT_CODE=$?
 
+# print to console
+echo "${CHECKOV_RESULTS}"
+
 CHECKOV_RESULTS="${CHECKOV_RESULTS//$'\\n'/''}"
 
+# save output to GitHub files for further usage
 { echo "CHECKOV_RESULTS<<EOF"; echo "${CHECKOV_RESULTS:0:65536}"; echo "EOF"; } >> $GITHUB_ENV
 { echo "results<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_OUTPUT
 
