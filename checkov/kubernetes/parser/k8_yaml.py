@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Hashable
 from pathlib import Path
 from typing import List, Dict, Any, Tuple, TYPE_CHECKING
 
@@ -46,8 +47,8 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
 
 class SafeLineLoader(SafeLoader):
-    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[str, Any]:
-        mapping: "dict[str, Any]" = super().construct_mapping(node, deep=deep)  # type:ignore[no-untyped-call]  # sadly it is untyped
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[Hashable, Any]:
+        mapping = super().construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1
