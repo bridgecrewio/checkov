@@ -23,6 +23,7 @@ class TestIAMManagedAdminPolicy(unittest.TestCase):
             "aws_iam_role_policy_attachment.pass3",
             "aws_iam_user_policy_attachment.pass4",
             "aws_iam_group_policy_attachment.pass5",
+            "aws_iam_role_policy_attachment.pass6",
         }
 
         failing_resources = {
@@ -36,8 +37,8 @@ class TestIAMManagedAdminPolicy(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 5)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
