@@ -19,7 +19,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 if TYPE_CHECKING:
     from networkx import DiGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
@@ -27,8 +27,9 @@ class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
     is_value_attribute_check = True    # noqa: CCE003  # a static attribute
 
-    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
-                 ) -> None:
+    def __init__(
+        self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+    ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
         self.attribute = attribute
