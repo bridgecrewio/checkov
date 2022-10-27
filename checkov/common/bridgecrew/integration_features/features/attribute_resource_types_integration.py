@@ -66,9 +66,58 @@ class AttributeResourceTypesIntegration(BaseIntegrationFeature):
         if not resource_types:
             return None
 
-        return resource_types.get(provider or '__all__')
+        return resource_types.get(provider or ALL_TYPES)
 
     def _build_attribute_resource_map(self, resource_definitions: _ResourceDefinitions) -> None:
+        """
+        Builds two internal maps to be referenced during policy evaluation.
+
+        1. self.attribute_resources - a mapping of attributes to providers to resource types in that provider
+        that have the attribute.
+
+        Example:
+        {
+          tags: {
+            aws: [
+              aws_s3_bucket,
+              aws_instance,
+              ...
+            ],
+            azure: [
+              azurerm_storage_account,
+              ...
+            ],
+            __all__: [
+              aws_s3_bucket,
+              aws_instance,
+              ...
+              azurerm_storage_account,
+              ...
+            ]
+          },
+          labels:
+            gcp: [
+              google_sql_database_instance,
+              ...
+            ],
+            __all__: [...]
+          },
+          freeform_tags: {
+            oci:
+            ...etc
+        }
+
+        Later, whenever we see a policy condition with "all" resource types and one of these attributes, we can
+        replace the resource list with the list from the given provider, or __all__ if we do not know the provider
+
+        2.  self.provider_resources - A mapping of providers to all resource types for that provider (irrespective of attributes)
+
+        :param resource_definitions: returned from the platform, contains a map of resource types to their metadata
+        (provider and attributes), and a map of attribute names to their providers that we should substitute whenever
+        we see "all" resource types in a yaml policy
+        :return:
+        """
+
         filter_attributes: Dict[str, List[str]] = resource_definitions['filterAttributes']
         resource_types: Dict[str, _ResourceTypes] = resource_definitions['resourceTypes']
 
