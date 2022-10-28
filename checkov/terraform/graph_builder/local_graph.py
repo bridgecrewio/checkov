@@ -81,6 +81,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
+        resources_types = self.get_resources_types_in_graph()
         for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
             module_vertex = self.vertices[module_vertex_id]
             for attribute_name, attribute_value in module_vertex.attributes.items():
@@ -92,7 +93,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
                     if module_vertex.path in self.module.module_dependency_map.get(variable_dir, []):
                         has_var_reference = get_referenced_vertices_in_value(
-                            value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                            value=attribute_value, aliases={}, resources_types=resources_types
                         )
                         if has_var_reference:
                             undetermined_values.append(
@@ -107,7 +108,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             not has_var_reference
                             or not var_default_value
                             or get_referenced_vertices_in_value(
-                                value=var_default_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                                value=var_default_value, aliases={}, resources_types=resources_types
                             )
                         ):
                             self.update_vertex_attribute(
@@ -168,16 +169,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info("Creating edges")
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
+        resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
-            for attribute_key in vertex.attributes:
+            for attribute_key, attribute_value in vertex.attributes.items():
                 if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
                     attribute_key, vertex.attributes
                 ):
                     continue
                 referenced_vertices = get_referenced_vertices_in_value(
-                    value=vertex.attributes[attribute_key],
+                    value=attribute_value,
                     aliases=aliases,
-                    resources_types=self.get_resources_types_in_graph(),
+                    resources_types=resources_types,
                 )
                 for vertex_reference in referenced_vertices:
                     # for certain blocks such as data and resource, the block name is composed from several parts.
