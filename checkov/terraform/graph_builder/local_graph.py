@@ -49,7 +49,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
+        logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
+        logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
+
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")

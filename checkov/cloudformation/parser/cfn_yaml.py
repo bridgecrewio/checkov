@@ -2,6 +2,9 @@
 Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
+from __future__ import annotations
+
+import json
 import logging
 import platform
 from enum import Enum
@@ -19,7 +22,9 @@ from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 from charset_normalizer import from_path
 
+from checkov.common.parsers.json.decoder import SimpleDecoder
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
+from checkov.common.util.consts import MAX_IAC_FILE_SIZE
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
@@ -250,5 +255,16 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
         return {}, []
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
+
+    if content_type == ContentType.TFPLAN:
+        file_size = len(content)
+        if file_size > MAX_IAC_FILE_SIZE:
+            # large files take too much time, when parsed with `pyyaml`, compared to a normal 'json.loads()'
+            # with start/end line numbers of 0 takes only a few seconds
+            logging.info(
+                f"File {filename} has a size of {file_size} which is bigger than the supported 50mb, "
+                "therefore file lines will default to 0"
+            )
+            return json.loads(content, cls=SimpleDecoder), file_lines
 
     return loads(content, filename, content_type), file_lines
