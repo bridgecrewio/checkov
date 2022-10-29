@@ -59,6 +59,26 @@ resource "aws_iam_policy" "policy_pass2" {
   })
 }
 
+# Test standard IAM Policy with an action that includes iam:* as a string but is not iam service - pass
+resource "aws_iam_policy" "policy_pass3" {
+  name        = "policy_pass2"
+  path        = "/"
+  description = "Deny IAM Full Access Privileges"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Action": "xsiam:*",
+        "Effect": "Deny",
+        "Resource": "*"
+        }
+    ]
+  })
+}
+
 # Test standard IAM Policy with a heredoc - fail
 resource "aws_iam_policy" "policy_fail2" {
   name = "policy_fail2"
@@ -94,6 +114,30 @@ resource "aws_iam_policy" "policy_mutiple_actions_fail" {
         "Action": [
           "iam:*",
           "s3*"
+        ]
+        "Effect": "Allow",
+        "Resource": "*"
+        }
+    ]
+  })
+}
+
+# Test standard IAM Policy with full "*" listed as an action - fail
+resource "aws_iam_policy" "full_admin_fail" {
+  name        = "IAMAndS3FullAccessPolicy"
+  path        = "/"
+  description = "Allows IAM & S3 Full Access Privileges"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+        "Action": [
+          "ec2:*",
+          "s3*",
+          "*"
         ]
         "Effect": "Allow",
         "Resource": "*"
