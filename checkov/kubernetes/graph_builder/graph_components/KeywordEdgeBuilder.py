@@ -37,8 +37,6 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
     #
     #     return connections
 
-
-
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
         """
