@@ -46,7 +46,6 @@ from checkov.common.checks_infra.solvers import (
     EqualsIgnoreCaseAttributeSolver,
     NotEqualsIgnoreCaseAttributeSolver
 )
-from checkov.common.bridgecrew.integration_features.features.attribute_resource_types_integration import integration as attribute_resource_type_integration
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -134,33 +133,18 @@ JSONPATH_PREFIX = "jsonpath_"
 class NXGraphCheckParser(BaseGraphCheckParser):
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
         policy_definition = raw_check.get("definition", {})
-
-        metadata = raw_check.get("metadata", {})
-
-        # the first approach comes from the custom policy integration
-        provider = metadata.get("scope", {}).get("provider")
-
-        # but the platform injects check metadata in a different way
-        if not provider and "scope" in raw_check:
-            raw_provider = raw_check["scope"].get("provider")  # will be a None, an empty list, or a list with the provider
-            if raw_provider:
-                provider = raw_provider[0].lower()
-
-        check = self._parse_raw_check(policy_definition, provider)
-
-        check.id = metadata.get("id", "")
-        check.name = metadata.get("name", "")
-        check.category = metadata.get("category", "")
-        check.frameworks = metadata.get("frameworks", [])
-        check.guideline = metadata.get("guideline")
-        check.provider = provider
-
+        check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
+        check.id = raw_check.get("metadata", {}).get("id", "")
+        check.name = raw_check.get("metadata", {}).get("name", "")
+        check.category = raw_check.get("metadata", {}).get("category", "")
+        check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        check.guideline = raw_check.get("metadata", {}).get("guideline")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
         return check
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], provider: Optional[str]) -> BaseGraphCheck:
+    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]]) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
@@ -174,11 +158,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                 sub_solvers = [sub_solvers]
 
             for sub_solver in sub_solvers:
-                check.sub_checks.append(self._parse_raw_check(sub_solver, provider))
-
-            # conditions with enumerated resource types will have them as a list. conditions where `all` is replaced with the
-            # actual list of resource for the attribute (e.g. tags) will have them as a set, because that logic works best with sets
-            # here, they will end up as a list in the policy resource types
+                check.sub_checks.append(self._parse_raw_check(sub_solver, resources_types))
             resources_types_of_sub_solvers = [
                 force_list(q.resource_types) for q in check.sub_checks if q is not None and q.resource_types is not None
             ]
@@ -193,17 +173,13 @@ class NXGraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                resource_types_for_attribute = attribute_resource_type_integration.get_attribute_resource_types(raw_check, provider)
-                check.resource_types = resource_types_for_attribute or []
+                check.resource_types = resources_types or []
             else:
                 check.resource_types = resource_type
 
             connected_resources_type = raw_check.get("connected_resource_types", [])
-
-            # TODO this code has a capital 'All', so I am pretty sure this rarely gets used. need to validate the use case
-            # and make it work with the resource types from the platform if needed
             if connected_resources_type == ["All"] or connected_resources_type == "all":
-                check.connected_resources_types = []
+                check.connected_resources_types = resources_types or []
             else:
                 check.connected_resources_types = connected_resources_type
 
