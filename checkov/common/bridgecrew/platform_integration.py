@@ -524,7 +524,7 @@ class BcPlatformIntegration:
             self.get_public_run_config()
 
     def get_run_config_url(self) -> str:
-        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&includeResources=true'
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:

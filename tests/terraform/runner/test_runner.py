@@ -9,6 +9,7 @@ from pathlib import Path
 # do not remove; prevents circular import error
 from typing import Dict, Any
 from unittest import mock
+import checkov.common.bridgecrew.integration_features.features
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -196,8 +197,11 @@ class TestRunnerValid(unittest.TestCase):
         extra_checks_dir_path = current_dir / "extra_yaml_checks"
         runner = Runner()
 
+        # not needed for this test
+        runner_filter = RunnerFilter(checks=['CUSTOM_GRAPH_AWS_2'])
+
         # when
-        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)])
+        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)], runner_filter=runner_filter)
 
         # then
         summary = report.get_summary()

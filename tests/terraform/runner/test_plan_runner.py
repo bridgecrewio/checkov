@@ -6,6 +6,7 @@ from pathlib import Path
 
 from typing import Dict, Any
 # do not remove - prevents circular import
+import checkov.common.bridgecrew.integration_features.features
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckCategories, CheckResult
