@@ -91,7 +91,7 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(1, len(local_graph.edges))
 
     def test_KeywordEdgeBuilder_on_templates_with_matched_cluster_role_binding(self) -> None:
-        relative_file_path = "resources/bind_policy/clusterrolebinding.yaml"
+        relative_file_path = "resources/Keyword/clusterrolebinding.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
         (definitions[relative_file_path], definitions_raw) = parse(file)
@@ -106,3 +106,22 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(local_graph.edges[0].dest, 3)
         self.assertEqual(local_graph.edges[1].origin, 0)
         self.assertEqual(local_graph.edges[1].dest, 4)
+
+    def test_KeywordEdgeBuilder_on_templates_with_pod_and_service_account(self) -> None:
+        relative_file_path = "resources/Keyword/pod_service_account.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(4, len(local_graph.vertices))
+        self.assertEqual(3, len(local_graph.edges))
+        self.assertEqual(local_graph.edges[0].origin, 1)
+        self.assertEqual(local_graph.edges[0].dest, 2)
+        self.assertEqual(local_graph.edges[1].origin, 1)
+        self.assertEqual(local_graph.edges[1].dest, 3)
+        self.assertEqual(local_graph.edges[2].origin, 3)
+        self.assertEqual(local_graph.edges[2].dest, 0)
