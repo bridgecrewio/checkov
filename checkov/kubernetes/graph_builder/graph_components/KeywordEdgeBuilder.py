@@ -12,35 +12,15 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
         return vertex.attributes.get("kind") in ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP.keys()
 
-    # @staticmethod
-    # def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
-    #     """
-    #
-    #     """
-    #
-    #     connections: list[int] = []
-    #     for potential_vertex_index, potential_vertex in enumerate(vertices):
-    #         if potential_vertex.id == vertex.id:
-    #             continue
-    #         references_definitions = ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP[vertex.attributes["kind"]]
-    #         for references_definition in references_definitions:
-    #             match = True
-    #             for reference_key, reference_value in references_definition.items():
-    #                 vertex_ref = vertex.attributes.get(reference_value)
-    #                 potential_vertex_ref = potential_vertex.attributes.get(reference_key)
-    #                 if vertex_ref != potential_vertex_ref:
-    #                     # not all attributes qualify for creating an edge
-    #                     match = False
-    #                     break
-    #             if match:
-    #                 connections.append(potential_vertex_index)
-    #
-    #     return connections
-
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
         """
+        connection is defined by a match between a vertex's (of a certain type) references definitions to a potential
+        vertex (of any type).
 
+        example:
+        A Pod with the property 'spec.serviceAccountName' with value 'service-123' will match a resource of type
+        'ServiceAccount' with a 'metadata.name' property equals to 'service-123'
         """
 
         connections: list[int] = []
