@@ -13,12 +13,10 @@ from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder 
 from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
 
 
-EDGE_BUILDERS = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder)
-
-
 class KubernetesLocalGraph(LocalGraph):
     def __init__(self, definitions: Dict[str, List]):
         self.definitions = definitions
+        self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder)
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
@@ -79,7 +77,7 @@ class KubernetesLocalGraph(LocalGraph):
     def _create_edges(self) -> None:
         edges_to_create = defaultdict(list)
         for vertex_index, vertex in enumerate(self.vertices):
-            for edge_builder in EDGE_BUILDERS:
+            for edge_builder in self.edge_builders:
                 if edge_builder.should_search_for_edges(vertex):
                     current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
                     if current_vertex_connections:

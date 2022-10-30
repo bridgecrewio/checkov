@@ -4,6 +4,8 @@ from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
 from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
+from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -49,7 +51,7 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[1].metadata.selector.match_labels is None
         assert local_graph.vertices[1].metadata.labels.get('app') == 'myapp'
 
-    def test_graph_data_on_template_with_matched_label_and_selector(self) -> None:
+    def test_LabelSelectorEdgeBuilder_on_template_with_matched_label_and_selector(self) -> None:
         relative_file_path = "resources/LabelSelector/label_selector_match.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -57,11 +59,12 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
 
-    def test_graph_data_on_template_with_non_matched_label_and_selector(self) -> None:
+    def test_LabelSelectorEdgeBuilder_on_template_with_non_matched_label_and_selector(self) -> None:
         relative_file_path = "resources/LabelSelector/label_selector_non_match.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -69,11 +72,12 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
 
-    def test_graph_data_on_template_with_matched_and_non_matched_label_and_selector(self) -> None:
+    def test_LabelSelectorEdgeBuilder_on_template_with_matched_and_non_matched_label_and_selector(self) -> None:
         relative_file_path = "resources/LabelSelector/label_selector_multiple_resources.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -81,11 +85,12 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(3, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
 
-    def test_graph_data_on_templates_with_cluster_role_binding(self) -> None:
+    def test_KeywordEdgeBuilder_on_templates_with_matched_cluster_role_binding(self) -> None:
         relative_file_path = "resources/bind_policy/clusterrolebinding.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -93,6 +98,11 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (KeywordEdgeBuilder, )
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
-        self.assertEqual(4, len(local_graph.vertices))
-        self.assertEqual(1, len(local_graph.edges))
+        self.assertEqual(5, len(local_graph.vertices))
+        self.assertEqual(2, len(local_graph.edges))
+        self.assertEqual(local_graph.edges[0].origin, 0)
+        self.assertEqual(local_graph.edges[0].dest, 3)
+        self.assertEqual(local_graph.edges[1].origin, 0)
+        self.assertEqual(local_graph.edges[1].dest, 4)
