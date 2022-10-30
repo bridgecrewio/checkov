@@ -8,9 +8,7 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        if vertex.metadata.labels is not None:
-            return True
-        return False
+        return vertex.metadata.labels is not None
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:

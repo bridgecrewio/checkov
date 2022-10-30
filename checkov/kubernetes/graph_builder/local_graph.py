@@ -10,9 +10,10 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
 
 
-EDGE_BUILDERS = (LabelSelectorEdgeBuilder,)
+EDGE_BUILDERS = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder)
 
 
 class KubernetesLocalGraph(LocalGraph):
