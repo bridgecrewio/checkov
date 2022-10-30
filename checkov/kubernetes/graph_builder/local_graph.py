@@ -7,19 +7,23 @@ from collections import defaultdict
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
 
 
-class KubernetesLocalGraph(LocalGraph):
-    def __init__(self, definitions: Dict[str, List]):
+class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
+    def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
         self.definitions = definitions
         self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder)
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
+        if graph_flags is None:
+            graph_flags = K8sGraphFlags()
+
         self._create_vertices(create_complex_vertices=graph_flags.create_complex_vertices)
         if graph_flags.create_edges:
             self._create_edges()
@@ -54,9 +58,13 @@ class KubernetesLocalGraph(LocalGraph):
                 config = deepcopy(resource)
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
-                attributes["__startline__"] = resource["__startline__"]
-                attributes["__endline__"] = resource["__endline__"]
+                attributes[START_LINE] = resource[START_LINE]
+                attributes[END_LINE] = resource[END_LINE]
+
                 block_id = get_resource_id(resource)
+                if not block_id:
+                    continue
+
                 block_metadata = None
                 if create_complex_vertices:
                     block_metadata = KubernetesLocalGraph._get_k8s_block_metadata(resource)
@@ -120,13 +128,13 @@ class KubernetesLocalGraph(LocalGraph):
 
     @staticmethod
     def _extract_nested_resources(file_conf: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        all_resources = []
+        all_resources: "list[dict[str, Any]]" = []
         for conf in file_conf:
             KubernetesLocalGraph._extract_nested_resources_recursive(conf, all_resources)
         return all_resources
             
     @staticmethod
-    def _extract_nested_resources_recursive(conf: Dict[str, Any], all_resources: List[Dict[str, Any]]):
+    def _extract_nested_resources_recursive(conf: Dict[str, Any], all_resources: List[Dict[str, Any]]) -> None:
         spec = conf.get('spec')
         if not spec or not isinstance(spec, dict):
             all_resources.append(conf)
@@ -138,3 +146,16 @@ class KubernetesLocalGraph(LocalGraph):
         spec.pop('template', None)
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
+
+    def update_vertices_configs(self) -> None:
+        # not used
+        pass
+
+    @staticmethod
+    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any]) -> None:
+        # not used
+        pass
+
+    def get_resources_types_in_graph(self) -> list[str]:
+        # not used
+        pass

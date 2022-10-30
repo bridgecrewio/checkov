@@ -27,9 +27,13 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
         """
 
         connections: list[int] = []
+
+        if not vertex.metadata:
+            return connections
+
         labels = vertex.metadata.labels
         for potential_vertex_index, potential_vertex in enumerate(vertices):
-            if potential_vertex.id == vertex.id:
+            if potential_vertex.id == vertex.id or not potential_vertex.metadata:
                 continue
             match_labels = potential_vertex.metadata.selector.match_labels
             if match_labels:

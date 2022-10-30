@@ -6,6 +6,7 @@ import logging
 import os
 import subprocess  # nosec
 import tempfile
+import threading
 from typing import Any, Type, TYPE_CHECKING
 import yaml
 
@@ -223,13 +224,16 @@ class Runner(BaseRunner):
                 helm_command_args.append("--values")
                 helm_command_args.append(var)
 
-        signal.signal(signal.SIGALRM, handle_timeout)
-        signal.alarm(timeout)
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGALRM, handle_timeout)
+            signal.alarm(timeout)
+
         try:
             # --dependency-update needed to pull in deps before templating.
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
-            signal.alarm(0)
+            if threading.current_thread() is threading.main_thread():
+                signal.alarm(0)
             if e:
                 logging.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
@@ -240,7 +244,8 @@ class Runner(BaseRunner):
             return o, chart_item
 
         except Exception as e:
-            signal.alarm(0)
+            if threading.current_thread() is threading.main_thread():
+                signal.alarm(0)
             if isinstance(e, TimeoutError):
                 logging.info(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. got timeout"
