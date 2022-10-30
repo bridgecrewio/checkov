@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import concurrent.futures
-import logging
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
@@ -110,11 +109,7 @@ class BaseAttributeSolver(BaseSolver):
         if self.is_jsonpath_check:
             parsed_attr = self.parsed_attributes.get(self.attribute)
             if parsed_attr is None:
-                try:
-                    parsed_attr = parse(self.attribute)
-                except Exception as e:
-                    logging.debug('Got an error parsing a jsonpath expression', exc_info=True)
-                    raise e
+                parsed_attr = parse(self.attribute)
                 self.parsed_attributes[self.attribute] = parsed_attr
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)

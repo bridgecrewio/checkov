@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
+
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
@@ -31,7 +32,6 @@ class BaseGraphCheck:
         self.bc_category: Optional[str] = None
         self.frameworks: List[str] = []
         self.is_jsonpath_check: bool = False
-        self.provider: Optional[str] = None
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver

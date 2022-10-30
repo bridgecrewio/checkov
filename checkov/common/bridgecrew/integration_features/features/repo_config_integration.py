@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 class RepoConfigIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)
+        super().__init__(bc_integration=bc_integration, order=0)
         self.skip_paths: set[str] = set()
         self.enforcement_rule: dict[str, Any] = {}
         self.code_category_configs: dict[str, CodeCategoryConfiguration] = {}

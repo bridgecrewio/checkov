@@ -70,14 +70,3 @@ class _LicenseStatus(TypedDict):
     policy: str
     license: str
     status: str
-
-
-class _ResourceDefinitions(TypedDict):
-    filterAttributes: dict[str, list[str]]
-    resourceTypes: dict[str, _ResourceTypes]
-
-
-class _ResourceTypes(TypedDict):
-    provider: str
-    text: str
-    arguments: list[str]

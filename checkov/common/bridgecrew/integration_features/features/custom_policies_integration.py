@@ -11,7 +11,7 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -24,8 +24,9 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=2)  # must be after policy metadata and before suppression integration
+        super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
         self.platform_policy_parser = NXGraphCheckParser()
+        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
 
     def is_valid(self) -> bool:
@@ -52,7 +53,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                         policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
-                    check = self.platform_policy_parser.parse_raw_check(converted_check)
+                    resource_types = Registry._get_resource_types(converted_check['metadata'])
+                    check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
                     check.bc_id = check.id
                     if check.frameworks:
@@ -82,13 +84,6 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'category': policy['category'],
             'frameworks': policy.get('frameworks', [])
         }
-
-        provider = policy.get('provider')
-        if provider:
-            metadata['scope'] = {
-                'provider': provider.lower()
-            }
-
         check = {
             'metadata': metadata,
             'definition': json.loads(policy['code'])
