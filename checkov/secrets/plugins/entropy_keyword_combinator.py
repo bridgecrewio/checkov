@@ -31,6 +31,7 @@ class EntropyKeywordCombinator(BasePlugin):
             line: str,
             line_number: int = 0,
             context: CodeSnippet | None = None,
+            raw_context: CodeSnippet | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         """
