@@ -111,7 +111,7 @@ def _prepare_resource_block(
     if mode == "managed":
         expressions = conf.get("expressions") if conf else None
 
-        resource_conf = _hclify(resource.get("values", {}), expressions)
+        resource_conf = _hclify(resource.get("values", {"start_line": 0, "end_line": 0}), expressions)
         resource_address = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
 
