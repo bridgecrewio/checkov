@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 from checkov.kubernetes.graph_builder.graph_components.ResourceKeywordIdentifier import ResourceKeywordIdentifier
@@ -31,7 +29,7 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
         for potential_vertex_index, potential_vertex in enumerate(vertices):
             if potential_vertex.id == vertex.id:
                 continue
-            references_definitions: list[dict[str, Any]] = ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP[vertex.attributes["kind"]]
+            references_definitions: list[dict[str, str | list[str]]] = ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP[vertex.attributes["kind"]]  # type: ignore[assignment]
             for references_definition in references_definitions:
                 match = True
                 # check that resource items comply to all references definitions defined in ResourceKeywordIdentifier
