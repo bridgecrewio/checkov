@@ -326,7 +326,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         block_conf[dynamic_argument] = dynamic_value
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs
+                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else [block_confs[0][list(block_confs[0].keys())[0]]]
 
         return rendered_blocks
 

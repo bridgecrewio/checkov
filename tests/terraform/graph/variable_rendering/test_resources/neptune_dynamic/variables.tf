@@ -1,0 +1,3 @@
+variable "dynamic" {
+ default  = [false]
+}
