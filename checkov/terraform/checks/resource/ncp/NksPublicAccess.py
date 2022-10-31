@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 
 class NkSPublicAccess(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure NCP EKS public endpoint disabled"
+        name = "Ensure NKS public endpoint disabled"
         id = "CKV_NCP_19"
         supported_resources = ("ncloud_nks_cluster",)
         categories = (CheckCategories.KUBERNETES,)
