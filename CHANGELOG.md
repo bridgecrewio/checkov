@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.0...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.8...HEAD)
+
+## [2.2.8](https://github.com/bridgecrewio/checkov/compare/2.2.5...2.2.8) - 2022-10-30
+
+### Feature
+
+- **terraform:** add CKV2_AWS_40 to Ensure AWS IAM policy does not allow full IAM privileges - [#3712](https://github.com/bridgecrewio/checkov/pull/3712)
+
+### Platform
+
+- **general:** Get resources from platform and filter taggable resources for policies - [#3621](https://github.com/bridgecrewio/checkov/pull/3621)
+
+## [2.2.5](https://github.com/bridgecrewio/checkov/compare/2.2.0...2.2.5) - 2022-10-27
+
+### Feature
+
+- **graph:** add support for modules in graph checks - [#3635](https://github.com/bridgecrewio/checkov/pull/3635)
+- **terraform:** add CKV NCP rules about Network ACL. - [#3668](https://github.com/bridgecrewio/checkov/pull/3668)
+- **terraform:** TF Dynamic Blocks support - `for_each` lists type - [#3737](https://github.com/bridgecrewio/checkov/pull/3737)
+
+### Bug Fix
+
+- **terraform:** fix a TF plan issue with CKV_AWS_274 - [#3747](https://github.com/bridgecrewio/checkov/pull/3747)
+- **terraform:** fix false positive for write ACL yaml check - [#3745](https://github.com/bridgecrewio/checkov/pull/3745)
+
+### Documentation
+
+- **general:** Update Jenkins page to use Checkov image - [#3725](https://github.com/bridgecrewio/checkov/pull/3725)
 
 ## [2.2.0](https://github.com/bridgecrewio/checkov/compare/2.1.294...2.2.0) - 2022-10-26
 
