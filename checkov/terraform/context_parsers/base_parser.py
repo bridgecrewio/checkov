@@ -67,7 +67,7 @@ class BaseContextParser(ABC):
         return self.filtered_lines
 
     def _read_file_lines(self) -> List[Tuple[int, str]]:
-        with open(self.tf_file, "r") as file:
+        with open(self.tf_file, "r", encoding="utf-8") as file:
             file.seek(0)
             file_lines = [(ind + 1, line) for ind, line in enumerate(file.readlines())]
             return file_lines
