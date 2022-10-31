@@ -29,4 +29,4 @@ class Runner(YamlRunner):
         return None
 
     def is_workflow_file(self, file_path: str) -> bool:
-        return file_path.endswith("azure-pipelines.yml")
+        return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
