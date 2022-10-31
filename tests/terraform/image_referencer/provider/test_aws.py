@@ -41,7 +41,7 @@ def test_extract_images_from_resources_with_external_module():
     module_resource = {
             "block_name_": "batch",
             "block_type_": "module",
-            "file_path_": "/tmp/checkov/james/JamesWoolfenden/terraform-aws-batch/master/src/example/examplea/module.batch.tf",
+            "file_path_": "/tmp/checkov/cshayner/cshayner/terraform-aws-batch/master/src/example/examplea/module.batch.tf",
             "config_": {
                 "batch": {
                     "__end_line__": 21,
