@@ -18,7 +18,8 @@ from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
 
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
-DEFAULT_NESTED_RESOURCE_TYPE = 'Pod'
+DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
+FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
 def get_folder_definitions(
@@ -217,6 +218,11 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return f'{resource_type}.{namespace}.{str(labels)}'
     return None
 
+
+def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
+    if isinstance(attribute, dict):
+        attribute.pop("__startline__", None)
+        attribute.pop("__endline__", None)
 
 @dataclass()
 class K8sGraphFlags:

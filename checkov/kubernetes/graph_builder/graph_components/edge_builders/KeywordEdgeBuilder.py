@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from checkov.kubernetes.graph_builder.graph_components.K8SEdgeBuilder import K8SEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 from checkov.kubernetes.graph_builder.graph_components.ResourceKeywordIdentifier import ResourceKeywordIdentifier
+from checkov.kubernetes.kubernetes_utils import FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 from checkov.common.util.type_forcers import force_list
 
 
@@ -10,7 +11,8 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        return vertex.attributes.get("kind") in ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP.keys()
+        return vertex.attributes.get("kind") in ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP.keys() \
+               and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:

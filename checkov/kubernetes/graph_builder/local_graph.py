@@ -9,15 +9,16 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags
-from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
-from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags, remove_metadata_from_attribute
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
 
 
 class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
         self.definitions = definitions
-        self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder)
+        self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder)
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
@@ -103,28 +104,28 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def _get_k8s_block_metadata(resource: Dict[str, Any]) -> KubernetesBlockMetadata:
         name = resource.get('metadata', {}).get('name')
         spec = resource.get('spec')
+        match_labels = None
         if isinstance(spec, list):
             for spec_item in spec:
                 if spec_item.get('selector'):
-                    match_labels = spec_item.get('selector').get('matchLabels')
+                    if resource.get('kind') == "Service":
+                        match_labels = spec_item.get('selector')
+                    else:
+                        match_labels = spec_item.get('selector').get('matchLabels')
                     break
             else:
                 match_labels = None
         elif isinstance(spec, dict):
-            match_labels = spec.get('selector', {}).get('matchLabels')
-        else:
-            match_labels = None
-        KubernetesLocalGraph.remove_metadata_from_attribute(match_labels)
+            if spec.get('selector'):
+                if resource.get('kind') == "Service":
+                    match_labels = spec.get('selector')
+                else:
+                    match_labels = spec.get('selector', {}).get('matchLabels')
+        remove_metadata_from_attribute(match_labels)
         selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')
-        KubernetesLocalGraph.remove_metadata_from_attribute(labels)
+        remove_metadata_from_attribute(labels)
         return KubernetesBlockMetadata(selector, labels, name)
-
-    @staticmethod
-    def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
-        if isinstance(attribute, dict):
-            attribute.pop("__startline__", None)
-            attribute.pop("__endline__", None)
 
     @staticmethod
     def _extract_nested_resources(file_conf: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

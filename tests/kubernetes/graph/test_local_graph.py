@@ -4,8 +4,9 @@ from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
 from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
-from checkov.kubernetes.graph_builder.graph_components.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
-from checkov.kubernetes.graph_builder.graph_components.KeywordEdgeBuilder import KeywordEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -125,3 +126,16 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(local_graph.edges[1].dest, 3)
         self.assertEqual(local_graph.edges[2].origin, 3)
         self.assertEqual(local_graph.edges[2].dest, 0)
+
+    def test_LabelSelectorEdgeBuilder_on_templates_with_network_policy(self) -> None:
+        relative_file_path = "resources/Keyword/network-policy-attached.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(5, len(local_graph.vertices))
+        self.assertEqual(4, len(local_graph.edges))

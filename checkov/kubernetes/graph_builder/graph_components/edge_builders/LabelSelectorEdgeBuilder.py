@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from checkov.kubernetes.graph_builder.graph_components.K8SEdgeBuilder import K8SEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
+from checkov.kubernetes.kubernetes_utils import FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
 
 class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        return vertex.metadata.labels is not None
+        return vertex.metadata.labels is not None \
+               and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
@@ -35,6 +37,7 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
         for potential_vertex_index, potential_vertex in enumerate(vertices):
             if potential_vertex.id == vertex.id or not potential_vertex.metadata:
                 continue
+
             match_labels = potential_vertex.metadata.selector.match_labels
             if match_labels:
                 if len(match_labels) > len(labels):
