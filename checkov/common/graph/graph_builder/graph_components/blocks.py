@@ -145,7 +145,9 @@ class Block:
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         # update the numbered attributes, if the new value is a list
-        if isinstance(attribute_value, list):
+        if attribute_value and isinstance(attribute_value, list) and isinstance(self.attributes[attribute_key][0], list):
+            # sometimes the attribute_value is a list and replaces the whole value of the key, which makes it a normal value
+            # ex. attribute_value = ["xyz"] and self.attributes[attribute_key][0] = "xyz"
             for idx, value in enumerate(attribute_value):
                 self.attributes[f"{attribute_key}.{idx}"] = value
 
