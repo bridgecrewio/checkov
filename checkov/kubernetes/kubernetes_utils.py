@@ -224,6 +224,7 @@ def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
         attribute.pop("__startline__", None)
         attribute.pop("__endline__", None)
 
+
 @dataclass()
 class K8sGraphFlags:
     create_complex_vertices: bool
