@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.ncp.NksPublicAccess import check
 from checkov.terraform.runner import Runner
 
 
-class TestLBListenerUsesSecureProtocols(unittest.TestCase):
+class TestNksPublicAccess(unittest.TestCase):
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_NksPublicAccess"
