@@ -34,11 +34,11 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "bc-detect-secrets==1.3.12",
+        "bc-detect-secrets==1.3.13",
         "deep-merge",
         "tabulate",
         "colorama",
-        "termcolor",
+        "termcolor<=2.0.1",
         "junit-xml>=1.9",
         "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
