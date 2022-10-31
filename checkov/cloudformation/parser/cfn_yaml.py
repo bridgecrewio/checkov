@@ -2,6 +2,9 @@
 Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 """
+from __future__ import annotations
+
+import json
 import logging
 import platform
 from enum import Enum
@@ -19,7 +22,9 @@ from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 from charset_normalizer import from_path
 
+from checkov.common.parsers.json.decoder import SimpleDecoder
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
+from checkov.common.util.consts import MAX_IAC_FILE_SIZE
 
 try:
     from yaml.cyaml import CParser as Parser  # pylint: disable=ungrouped-imports
@@ -225,30 +230,43 @@ def load(filename: Path, content_type: ContentType) -> Tuple[DictNode, List[Tupl
     """
     Load the given YAML file
     """
+    file_path = filename if isinstance(filename, Path) else Path(filename)
+
     if platform.system() == "Windows":
         try:
-            content = str(from_path(filename).best())
+            content = str(from_path(file_path).best())
         except UnicodeDecodeError as e:
-            LOGGER.error(f"Encoding for file {filename} could not be detected or read. Please try encoding the file as UTF-8.")
+            LOGGER.error(f"Encoding for file {file_path} could not be detected or read. Please try encoding the file as UTF-8.")
             raise e
     else:
-        file_path = filename if isinstance(filename, Path) else Path(filename)
         try:
             content = file_path.read_text()
         except UnicodeDecodeError:
-            LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
-            content = str(from_path(filename).best())
+            LOGGER.info(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+            content = str(from_path(file_path).best())
 
     if content_type == ContentType.CFN and "Resources" not in content:
-        logging.debug(f'File {filename} is expected to be a CFN template but has no Resources attribute')
+        logging.debug(f'File {file_path} is expected to be a CFN template but has no Resources attribute')
         return {}, []
     elif content_type == ContentType.SLS and "provider" not in content:
-        logging.debug(f'File {filename} is expected to be an SLS template but has no provider attribute')
+        logging.debug(f'File {file_path} is expected to be an SLS template but has no provider attribute')
         return {}, []
     elif content_type == ContentType.TFPLAN and "planned_values" not in content:
-        logging.debug(f'File {filename} is expected to be a TFPLAN file but has no planned_values attribute')
+        logging.debug(f'File {file_path} is expected to be a TFPLAN file but has no planned_values attribute')
         return {}, []
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
+
+    if file_path.suffix == ".json":
+        file_size = len(content)
+        if file_size > MAX_IAC_FILE_SIZE:
+            # large JSON files take too much time, when parsed with `pyyaml`, compared to a normal 'json.loads()'
+            # with start/end line numbers of 0 takes only a few seconds
+            logging.info(
+                f"File {file_path} has a size of {file_size} which is bigger than the supported 50mb, "
+                "therefore file lines will default to 0."
+                "This limit can be adjusted via the environment variable 'CHECKOV_MAX_IAC_FILE_SIZE'."
+            )
+            return json.loads(content, cls=SimpleDecoder), file_lines
 
     return loads(content, filename, content_type), file_lines

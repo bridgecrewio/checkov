@@ -77,7 +77,9 @@ class Github(BaseVCSDAL):
     def persist_organization_webhooks(self) -> None:
         organization_webhooks = self.get_organization_webhooks()
         if organization_webhooks:
-            BaseVCSDAL.persist(path=self.github_conf_file_paths["org_webhooks"], conf=organization_webhooks)
+            for idx, item in enumerate(organization_webhooks):
+                path = str(self.github_conf_file_paths["org_webhooks"])
+                BaseVCSDAL.persist(path=path.replace(".json", str(idx) + ".json"), conf=[item])    # type: ignore
 
     def get_organization_webhooks(self) -> dict[str, Any] | None:
         data = self._request(endpoint="orgs/{}/hooks".format(self.org), allowed_status_codes=[200])
@@ -107,7 +109,9 @@ class Github(BaseVCSDAL):
     def persist_repository_webhooks(self) -> None:
         repository_webhooks = self.get_repository_webhooks()
         if repository_webhooks:
-            BaseVCSDAL.persist(path=self.github_conf_file_paths["repository_webhooks"], conf=repository_webhooks)
+            for idx, item in enumerate(repository_webhooks):
+                path = str(self.github_conf_file_paths["repository_webhooks"])
+                BaseVCSDAL.persist(path=path.replace(".json", str(idx) + ".json"), conf=[item])    # type: ignore
 
     def get_organization_security(self) -> dict[str, str] | None:
         if not self._organization_security:
