@@ -77,7 +77,7 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonpath-ng = "*"
 jsonschema = ">=3.0.2,<4.0.0"
-prettytable = "==3.4.1"
+prettytable = ">=3.0.0"
 pycep-parser = "==0.3.9"
 charset-normalizer = "*"
 pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64'", index="pypi"}
