@@ -38,7 +38,7 @@ setup(
         "deep-merge",
         "tabulate",
         "colorama",
-        "termcolor",
+        "termcolor<=2.0.1",
         "junit-xml>=1.9",
         "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
