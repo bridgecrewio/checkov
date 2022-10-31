@@ -10,8 +10,8 @@ class NCPCredentials(BaseProviderCheck):
     def __init__(self) -> None:
         name = "Ensure no hard coded NCP access key and secret key exists in provider"
         id = "CKV_NCP_17"
-        supported_provider = ["ncloud"]
-        categories = [CheckCategories.SECRETS]
+        supported_provider = ("ncloud",)
+        categories = (CheckCategories.SECRETS,)
         super().__init__(name=name, id=id, categories=categories, supported_provider=supported_provider)
 
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
