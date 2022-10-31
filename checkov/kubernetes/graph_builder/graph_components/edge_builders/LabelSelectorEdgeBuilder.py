@@ -9,7 +9,8 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        return vertex.metadata.labels is not None \
+        return vertex.metadata is not None \
+            and vertex.metadata.labels is not None \
             and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
     @staticmethod

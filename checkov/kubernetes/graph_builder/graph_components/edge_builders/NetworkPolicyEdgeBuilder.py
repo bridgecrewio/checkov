@@ -43,7 +43,7 @@ class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
             remove_metadata_from_attribute(match_labels)
 
             # the network policy has specific pod labels
-            if match_labels:
+            if match_labels and pod.metadata is not None and pod.metadata.labels is not None:
                 pod_labels = pod.metadata.labels
                 if len(match_labels) > len(pod_labels):
                     continue
