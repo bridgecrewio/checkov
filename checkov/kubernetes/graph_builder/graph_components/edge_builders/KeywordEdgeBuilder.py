@@ -12,7 +12,7 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
         return vertex.attributes.get("kind") in ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP.keys() \
-               and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
+            and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
