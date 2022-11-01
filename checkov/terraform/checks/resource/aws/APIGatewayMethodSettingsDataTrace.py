@@ -3,12 +3,11 @@ from checkov.common.models.enums import CheckCategories
 
 
 class APIGatewayMethodSettingsDataTrace(BaseResourceNegativeValueCheck):
-
     def __init__(self):
         name = "Ensure Data Trace is not enabled in API Gateway Method Settings"
         id = "CKV_AWS_276"
-        supported_resources = ['aws_api_gateway_method_settings']
-        categories = [CheckCategories.LOGGING]
+        supported_resources = ('aws_api_gateway_method_settings',)
+        categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
