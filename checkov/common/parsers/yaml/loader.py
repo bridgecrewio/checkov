@@ -38,7 +38,7 @@ def load(filename: str | Path, content: str | None = None) -> tuple[list[dict[st
 
     template = loads(content)
 
-    return (template, file_lines)
+    return template, file_lines
 
 
 class SafeLineLoader(SafeLoader):
