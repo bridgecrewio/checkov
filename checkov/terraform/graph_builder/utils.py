@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -166,9 +168,14 @@ def get_referenced_vertices_in_value(
     resources_types: List[str],
     cleanup_functions: Optional[List[Callable[[str], str]]] = None,
 ) -> List[TerraformVertexReference]:
+    references_vertices: "list[TerraformVertexReference]" = []
+
+    if not value or isinstance(value, (bool, int)):
+        # bool/int values can't have a references to other vertices
+        return references_vertices
+
     if cleanup_functions is None:
         cleanup_functions = DEFAULT_CLEANUP_FUNCTIONS
-    references_vertices = []
 
     if isinstance(value, list):
         for sub_value in value:
@@ -183,11 +190,16 @@ def get_referenced_vertices_in_value(
             )
 
     if isinstance(value, str):
-        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(value):
-            logging.debug(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
+        value_len = len(value)
+        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < value_len:
+            logging.debug(f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
                           f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                          f'to {str(len(value) + 1)} or to 0 to allow rendering of any length')
+                          f'to {str(value_len + 1)} or to 0 to allow rendering of any length')
         else:
+            if value_len < 5 or "." not in value:
+                # the shortest reference is 'var.a' and references are done via dot notation
+                return references_vertices
+
             if cleanup_functions:
                 for func in cleanup_functions:
                     value = func(value)

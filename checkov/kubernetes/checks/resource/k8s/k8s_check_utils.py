@@ -1,9 +1,11 @@
-from typing import List
+from __future__ import annotations
+
+from typing import Any
 
 
-def extract_commands(conf: dict) -> (List[str], List[str]):
-    commands: List[str] = conf.get("command")
-    if not commands:
+def extract_commands(conf: dict[str, Any]) -> tuple[list[str], list[str]]:
+    commands = conf.get("command")
+    if not commands or not isinstance(commands, list):
         return [], []
     values = []
     keys = []
@@ -11,8 +13,7 @@ def extract_commands(conf: dict) -> (List[str], List[str]):
         if cmd is None:
             continue
         if "=" in cmd:
-            firstEqual = cmd.index("=")
-            [key, value] = [cmd[:firstEqual], cmd[firstEqual + 1:]]
+            key, value = cmd.split("=", maxsplit=1)
             keys.append(key)
             values.append(value)
         else:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from typing import Any
 from checkov.common.models.enums import CheckResult
 
 from checkov.gitlab_ci.checks.base_gitlab_ci_check import BaseGitlabCICheck
@@ -17,13 +17,12 @@ class SuspectCurlInScript(BaseGitlabCICheck):
             supported_entities=('*.script[]',)
         )
 
-    def scan_conf(self, conf: str) -> tuple[CheckResult, str]:  # type:ignore[override]
-        if "curl" in conf:
-            badstuff = ('curl', '$CI_')
-            lines = conf.split("\n")
-            for line in lines:
-                if all(x in line for x in badstuff):
-                    return CheckResult.FAILED, conf
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        for line in conf.values():
+            if not isinstance(line, str):
+                continue
+            if line.startswith("curl") and "$CI" in line:
+                return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
 
 

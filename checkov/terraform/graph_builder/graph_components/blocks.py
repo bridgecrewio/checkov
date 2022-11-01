@@ -8,10 +8,10 @@ from checkov.terraform.graph_builder.utils import remove_module_dependency_in_pa
 
 
 class TerraformBlock(Block):
-    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module")
+    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module", "has_dynamic_block")
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
-                 id: str = "", source: str = "") -> None:
+                 id: str = "", source: str = "", has_dynamic_block: bool = False) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -33,6 +33,7 @@ class TerraformBlock(Block):
         self.attributes = attributes
         self.module_connections: Dict[str, List[int]] = {}
         self.source_module: Set[int] = set()
+        self.has_dynamic_block = has_dynamic_block
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
