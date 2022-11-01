@@ -210,3 +210,30 @@ class TestRenderer(TestCase):
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value('${number}'))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(None))
         self.assertIsNone(TerraformVariableRenderer.get_default_placeholder_value(123))
+
+    def test_tfvar_rendering_module_vars(self):
+        resource_path = os.path.join(TEST_DIRNAME, "test_resources", "tfvar_module_variables")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('name') == ['airpods']
+
+    def test_dynamic_blocks_with_list(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_tfvars"),
+
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('ingress')) == 2
+            assert len(resources_vertex[0].attributes.get('egress')) == 2
+            assert resources_vertex[0].attributes.get('ingress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 80, 'protocol': 'tcp', 'to_port': 80},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443}]
+            assert resources_vertex[0].attributes.get('egress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 1433, 'protocol': 'tcp', 'to_port': 1433}]

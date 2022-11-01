@@ -148,6 +148,7 @@ def admission_response(allowed, uid, message):
                     }
                     })
 
+
 def getConfig(configfile):
     cf = {}
     with open(configfile) as myfile:
@@ -155,6 +156,7 @@ def getConfig(configfile):
             name, var = line.partition("=")[::2]
             cf[name.strip()] = list(var.strip().split(','))
     return cf
- 
+
+
 if __name__ == '__main__':
     webhook.run(host='0.0.0.0', port=1701)

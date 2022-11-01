@@ -61,7 +61,10 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
                         for check in report.failed_checks],
                     "skipped_checks": [
                         {k: getattr(check, k) for k in check_reduced_keys}
-                        for check in report.skipped_checks]}}
+                        for check in report.skipped_checks]
+                },
+                "image_cached_results": report.image_cached_results
+        }
     return reduced_scan_reports
 
 
@@ -78,6 +81,17 @@ def persist_checks_results(
         checks_results_paths[check_type] = check_result_object_path
         _put_json_object(s3_client, reduced_report, bucket, check_result_object_path)
     return checks_results_paths
+
+
+def persist_run_metadata(
+    run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+) -> None:
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
+    try:
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
+    except Exception:
+        logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        raise
 
 
 def enrich_and_persist_checks_metadata(

@@ -5,7 +5,7 @@ import os
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
-from typing import cast, Any, TYPE_CHECKING
+from typing import cast, Any, TYPE_CHECKING, Generic, TypeVar
 
 import docker
 
@@ -15,12 +15,15 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.commons import should_run_scan
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.runner_filter import RunnerFilter
     from networkx import DiGraph
+
+_Definitions = TypeVar("_Definitions")
 
 
 def enable_image_referencer(
@@ -111,23 +114,26 @@ class ImageReferencer:
             return ""
 
 
-class ImageReferencerMixin:
+class ImageReferencerMixin(Generic[_Definitions]):
     """Mixin class to simplify image reference search"""
 
     def check_container_image_references(
         self,
-        graph_connector: DiGraph,
         root_path: str | Path | None,
         runner_filter: RunnerFilter,
+        graph_connector: DiGraph | None = None,
+        definitions: _Definitions | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
     ) -> Report | None:
         """Tries to find image references in graph based IaC templates"""
         from checkov.common.bridgecrew.platform_integration import bc_integration
 
         # skip complete run, if flag '--check' was used without a CVE check ID
-        if runner_filter.checks and all(not check.startswith("CKV_CVE") for check in runner_filter.checks):
+        if not should_run_scan(runner_filter.checks):
             return None
 
-        images = self.extract_images(graph_connector=graph_connector)
+        images = self.extract_images(graph_connector=graph_connector, definitions=definitions,
+                                     definitions_raw=definitions_raw)
         if not images:
             return None
 
@@ -174,7 +180,8 @@ class ImageReferencerMixin:
                 file_path=dockerfile_path,
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
-                related_resource_id=image.related_resource_id)
+                related_resource_id=image.related_resource_id,
+                root_folder=root_path)
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
@@ -207,6 +214,9 @@ class ImageReferencerMixin:
             runner = sca_image_runner()
 
             image_id = ImageReferencer.inspect(image.name)
+            if not image_id:
+                return None
+
             scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 return None
@@ -267,7 +277,7 @@ class ImageReferencerMixin:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -276,13 +286,16 @@ class ImageReferencerMixin:
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=report_type,
         )
 
     @abstractmethod
     def extract_images(
-        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: _Definitions | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         """Tries to find image references in the graph or supported resource"""
 

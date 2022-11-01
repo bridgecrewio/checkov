@@ -40,6 +40,15 @@ resource "azurerm_container_registry" "ckv_unittest_pass_5" {
   anonymous_pull_enabled = true
 }
 
+## SHOULD PASS: malformed SKU
+resource "azurerm_container_registry" "ckv_unittest_pass_6" {
+  name                   = "containerRegistry1"
+  resource_group_name    = azurerm_resource_group.rg.name
+  location               = azurerm_resource_group.rg.location
+  sku                    = []
+  anonymous_pull_enabled = true
+}
+
 ## SHOULD FAIL: Premium tier, explicitly enabled
 resource "azurerm_container_registry" "ckv_unittest_fail_1" {
   name                   = "containerRegistry1"

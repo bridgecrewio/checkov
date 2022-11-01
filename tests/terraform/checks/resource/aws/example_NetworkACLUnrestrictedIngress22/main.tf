@@ -262,3 +262,48 @@ resource "aws_network_acl_rule" "public_ingress" {
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
 }
+
+
+resource "aws_network_acl_rule" "pass3" {
+  vpc_id = aws_network_acl.pass.id
+
+  egress {
+    rule_no    = 200
+    action     = "allow"
+    cidr_block = "10.3.0.0/18"
+    from_port  = false
+    to_port    = false
+  }
+
+  ingress {
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = false
+    to_port    = false
+  }
+  ingress {
+    rule_no    = 110
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = false
+    to_port    = false
+  }
+
+
+  tags = {
+    Name = "main"
+    test = "fail"
+  }
+}
+
+resource "aws_network_acl_rule" "unknown2" {
+  vpc_id = aws_network_acl.pass.id
+  rule_number    = 100
+  ingress         = true
+  protocol       = "-1"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 80
+  to_port        = 80
+}

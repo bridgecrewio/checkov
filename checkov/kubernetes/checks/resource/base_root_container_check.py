@@ -35,7 +35,7 @@ class BaseK8sRootContainerCheck(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf and "jobTemplate" in conf["spec"] and "spec" in conf["spec"]["jobTemplate"] and "template" in conf["spec"]["jobTemplate"]["spec"] and "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
+            if "spec" in conf and "jobTemplate" in conf["spec"] and "spec" in conf["spec"]["jobTemplate"] and conf["spec"]["jobTemplate"]["spec"] and "template" in conf["spec"]["jobTemplate"]["spec"] and "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
             inner_spec = self.get_inner_entry(conf, "spec")
@@ -44,6 +44,8 @@ class BaseK8sRootContainerCheck(BaseK8Check):
 
     @staticmethod
     def check_runAsNonRoot(spec):
+        if not isinstance(spec, dict):
+            return "ABSENT"
         security_context = spec.get("securityContext")
         if security_context and isinstance(security_context, dict) and "runAsNonRoot" in security_context:
             if security_context["runAsNonRoot"]:
@@ -54,7 +56,7 @@ class BaseK8sRootContainerCheck(BaseK8Check):
 
     @staticmethod
     def check_runAsUser(spec: Dict[str, Any], uid: int) -> str:
-        if spec.get("securityContext") and isinstance(spec.get("securityContext"), dict) and "runAsUser" in spec["securityContext"]:
+        if isinstance(spec, dict) and spec.get("securityContext") and isinstance(spec.get("securityContext"), dict) and "runAsUser" in spec["securityContext"]:
             if isinstance(spec["securityContext"]["runAsUser"], int) and spec["securityContext"]["runAsUser"] >= uid:
                 return "PASSED"
             else:

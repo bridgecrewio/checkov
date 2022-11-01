@@ -23,7 +23,7 @@ class SecretsEncrypted(BaseResourceNegativeValueCheck):
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         plaintext = conf.get("plaintext_value")
         if plaintext and self._is_variable_dependant(plaintext[0]):
-            return CheckResult.PASSED
+            return CheckResult.UNKNOWN
 
         return super().scan_resource_conf(conf)
 

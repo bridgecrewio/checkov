@@ -9,12 +9,13 @@ on:
 permissions: read-all
 
 jobs:
-  release:
+  github-release:
     runs-on: [self-hosted, public, linux, x64]
+    environment: release
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT_SECRET }}
@@ -31,13 +32,13 @@ jobs:
             create_release=false
           fi
 
-          echo "::set-output name=create_release::$create_release"
-          echo "::set-output name=latest_release_version::$latest_gh_release"
-          echo "::set-output name=version::$latest_tag"
+          echo "create_release=$create_release" >> $GITHUB_OUTPUT
+          echo "latest_release_version=$latest_gh_release" >> $GITHUB_OUTPUT
+          echo "version=$latest_tag" >> $GITHUB_OUTPUT
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
-        uses: mikepenz/release-changelog-builder-action@000e44613cdb6c340ac98cb1582f99e8d3230058  # v3
+        uses: mikepenz/release-changelog-builder-action@3a70419f3cc01ac7458a4fa44f09726475edfc6a  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
         with:
@@ -45,21 +46,21 @@ jobs:
           fromTag: ${{ steps.prepare_release.outputs.latest_release_version }}
           toTag: ${{ steps.prepare_release.outputs.version }}
       - name: Create GitHub Release
-        if: steps.prepare_release.outputs.create_release == 'true'
+        if: steps.build_github_release.outputs.changelog != ''
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
         with:
           tag_name: ${{ steps.prepare_release.outputs.version }}
           name: ${{ steps.prepare_release.outputs.version }}
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
-        if: steps.prepare_release.outputs.create_release == 'true'
-        uses: stefanzweifel/changelog-updater-action@d03272ada6fcd985ecd5cedbf984f472081b7b92  # v1
+        if: steps.build_github_release.outputs.changelog != ''
+        uses: stefanzweifel/changelog-updater-action@bbfa2bd8afcc53bf7ec1f01e69a7847d82a8b4c6  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
       - name: Commit updated CHANGELOG.md
-        if: steps.prepare_release.outputs.create_release == 'true'
-        uses: stefanzweifel/git-auto-commit-action@49620cd3ed21ee620a48530e81dba0d139c9cb80  # v4
+        if: steps.build_github_release.outputs.changelog != ''
+        uses: stefanzweifel/git-auto-commit-action@0049e3fa4059ca715255fbbcb7dea4516f02ce0a  # v4
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md

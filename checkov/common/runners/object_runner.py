@@ -31,20 +31,25 @@ class GhaMetadata(TypedDict):
 class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
     def __init__(self) -> None:
         super().__init__()
+        self.definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        self.definitions_raw: dict[str, list[tuple[int, str]]] = {}
         self.map_file_path_to_gha_metadata_dict: dict[str, GhaMetadata] = {}
 
     def _load_files(
             self,
             files_to_load: list[str],
-            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
-            definitions_raw: dict[str, list[tuple[int, str]]],
             filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
         results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
-        for file, result in results:
+        for file_result_pair in results:
+            if file_result_pair is None:
+                # this only happens, when an uncaught exception occurs
+                continue
+
+            file, result = file_result_pair
             if result:
-                (definitions[file], definitions_raw[file]) = result
+                (self.definitions[file], self.definitions_raw[file]) = result
                 definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
                     workflow_name = definition.get('name', '')
@@ -66,15 +71,12 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
         registry = self.import_registry()
-
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
-        definitions_raw: dict[str, list[tuple[int, str]]] = {}
 
         report = Report(self.check_type)
 
@@ -90,20 +92,23 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                 registry.load_external_checks(directory)
 
         if files:
-            self._load_files(files, definitions, definitions_raw)
+            self._load_files(files)
 
         if root_folder:
             for root, d_names, f_names in os.walk(root_folder):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
                 files_to_load = [os.path.join(root, f_name) for f_name in f_names]
-                self._load_files(files_to_load=files_to_load, definitions=definitions, definitions_raw=definitions_raw)
+                self._load_files(files_to_load=files_to_load)
 
-        self.pbar.initiate(len(definitions))
-        for file_path in definitions.keys():
+        self.pbar.initiate(len(self.definitions))
+        for file_path in self.definitions.keys():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file_path, root_folder)})
-            skipped_checks = collect_suppressions_for_context(definitions_raw[file_path])
-            results = registry.scan(file_path, definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
+            skipped_checks = collect_suppressions_for_context(self.definitions_raw[file_path])
+
+            if registry.report_type == CheckType.GITLAB_CI:
+                registry.definitions_raw = self.definitions_raw[file_path]
+            results = registry.scan(file_path, self.definitions[file_path], skipped_checks, runner_filter)  # type:ignore[arg-type] # this is overridden in the subclass
             for key, result in results.items():
                 result_config = result["results_configuration"]
                 start = 0
@@ -119,15 +124,15 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                     root_folder = os.path.split(file_path)[0]
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
-                    record = GithubActionsRecord(
+                    record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=result,
-                        code_block=definitions_raw[file_path][start - 1:end + 1],
+                        code_block=self.definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(file_path, key, check.supported_entities, definitions[file_path]),  # type:ignore[arg-type]  # key is str not BaseCheck
+                        resource=self.get_resource(file_path, key, check.supported_entities, self.definitions[file_path]),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -138,12 +143,12 @@ class Runner(BaseRunner[None]):  # if a graph is added, Any needs to replaced
                         workflow_name=self.map_file_path_to_gha_metadata_dict[file_path]["workflow_name"]
                     )
                 else:
-                    record = Record(  # type: ignore
+                    record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=result,
-                        code_block=definitions_raw[file_path][start - 1:end + 1],
+                        code_block=self.definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities),  # type:ignore[arg-type]  # key is str not BaseCheck

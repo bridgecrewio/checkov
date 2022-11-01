@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
 
-_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any]|None")
+_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
 def strtobool(val: str) -> int:
@@ -47,7 +47,8 @@ ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 class BaseRunner(ABC, Generic[_GraphManager]):
     check_type = ""
-    definitions = None
+    definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+    raw_definitions: dict[str, list[tuple[int, str]]] | None = None
     context: dict[str, dict[str, Any]] | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
@@ -67,7 +68,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         pass
 
     def should_scan_file(self, filename: str) -> bool:
@@ -87,7 +88,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def set_external_data(
             self,
-            definitions: dict[str, dict[str, Any]] | None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
             context: dict[str, dict[str, Any]] | None,
             breadcrumbs: dict[str, dict[str, Any]] | None,
             **kwargs: Any,

@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 151)
+        self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_honors_enforcement_rules(self):
@@ -67,6 +67,19 @@ class TestRunnerValid(unittest.TestCase):
         assert report.failed_checks[1].job[0] == 'build'
         assert report.failed_checks[1].triggers[0] == {'push', 'workflow_dispatch'}
         assert report.failed_checks[1].workflow_name == 'CI'
+
+    def test_runner_on_bad_jobs(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/nested_jobs.yaml"
+        file_dir = [str(file_path)]
+
+        # when
+        report = Runner().run(
+            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"])
+        )
+
+        # then
+        assert len(report.passed_checks) + len(report.failed_checks) == 0
 
     def test_runner_on_shell_injection(self):
         # given
@@ -152,7 +165,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_on_list_typed_workflow_dispatch(self):
         # given
-        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yaml"
+        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yml"
         file_dir = [str(file_path)]
 
         checks = ["CKV_GHA_7"]

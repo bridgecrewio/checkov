@@ -20,6 +20,7 @@ The Metadata includes:
 * Policy Name
 * ID - `CKV2_<provider>_<number>`
 * Category
+* Guideline (optional)
 
 The possible values for category are:
 
@@ -32,6 +33,17 @@ The possible values for category are:
 * CONVENTION
 * SECRETS
 * KUBERNETES
+* APPLICATION_SECURITY
+* SUPPLY_CHAIN
+* API_SECURITY
+
+```yaml
+metadata:
+  id: "CKV2_CUSTOM_1"
+  name: "Ensure bucket has versioning and owner tag"
+  category: "BACKUP_AND_RECOVERY"
+  guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
+```
 
 ## Policy Definition
 
@@ -39,7 +51,7 @@ The policy definition consists of:
 
 * **Definition Block(s)** - either *Attribute Block(s)* or *Connection State Block(s)* or both
 * **Logical Operator(s)** (optional)
-* **Filter**(optional)
+* **Filter** (optional)
 
 The top level object under `definition` must be a single object (not a list). It can be an attribute block, a connection block, or a logical operator (`and`, `or`, `not`).
 
@@ -76,39 +88,43 @@ definition:
 
 ### Attribute Condition: Operators
 
-| Operator              | Value in YAML           |
-|-----------------------|-------------------------|
-| Equals                | `equals`                |
-| Not Equals            | `not_equals`            |
-| Regex Match           | `regex_match`           |
-| Not Regex Match       | `not_regex_match`       |
-| Exists                | `exists`                |
-| Not Exists            | `not_exists`            |
-| One Exists            | `one_exists`            |
-| Any                   | `any`                   |
-| Contains              | `contains`              |
-| Not Contains          | `not_contains`          |
-| Within                | `within`                |
-| Starts With           | `starting_with`         |
-| Not Starts With       | `not_starting_with`     |
-| Ends With             | `ending_with`           |
-| Not Ends With         | `not_ending_with`       |
-| Greater Than          | `greater_than`          |
-| Greater Than Or Equal | `greater_than_or_equal` |
-| Less Than             | `less_than`             |
-| Less Than Or Equal    | `less_than_or_equal`    |
-| Subset                | `subset`                |
-| Not Subset            | `not_subset`            |
-| Is Empty              | `is_empty`              |
-| Is Not Empty          | `is_not_empty`          |
-| Length Equals         | `length_equals`         |
-| Length Not Equals     | `length_equals`         |
-| Length Less Than      | `length_less_than`      |
-| Length Less Than Or Equal   | `length_less_than_or_equal`      |
-| Length Greater Than   | `length_greater_than`   |
-| Length Greater Than Or Equal   | `length_greater_than_or_equal`   |
-| Is False              | `is_false`              |
-| Is True               | `is_true`               |
+| Operator                     | Value in YAML                  |
+|------------------------------|--------------------------------|
+| Equals                       | `equals`                       |
+| Not Equals                   | `not_equals`                   |
+| Regex Match                  | `regex_match`                  |
+| Not Regex Match              | `not_regex_match`              |
+| Exists                       | `exists`                       |
+| Not Exists                   | `not_exists`                   |
+| One Exists                   | `one_exists`                   |
+| Any                          | `any`                          |
+| Contains                     | `contains`                     |
+| Not Contains                 | `not_contains`                 |
+| Within                       | `within`                       |
+| Starts With                  | `starting_with`                |
+| Not Starts With              | `not_starting_with`            |
+| Ends With                    | `ending_with`                  |
+| Not Ends With                | `not_ending_with`              |
+| Greater Than                 | `greater_than`                 |
+| Greater Than Or Equal        | `greater_than_or_equal`        |
+| Less Than                    | `less_than`                    |
+| Less Than Or Equal           | `less_than_or_equal`           |
+| Subset                       | `subset`                       |
+| Not Subset                   | `not_subset`                   |
+| Is Empty                     | `is_empty`                     |
+| Is Not Empty                 | `is_not_empty`                 |
+| Length Equals                | `length_equals`                |
+| Length Not Equals            | `length_equals`                |
+| Length Less Than             | `length_less_than`             |
+| Length Less Than Or Equal    | `length_less_than_or_equal`    |
+| Length Greater Than          | `length_greater_than`          |
+| Length Greater Than Or Equal | `length_greater_than_or_equal` |
+| Is False                     | `is_false`                     |
+| Is True                      | `is_true`                      |
+| Intersects                   | `intersects`                   |
+| Not Intersects               | `not_intersects`               |
+| Equals Ignore Case           | `equals_ignore case`           |
+| Not Equals Ignore Case       | `not_equals_ignore case`       |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
@@ -119,7 +135,7 @@ All those operators are supporting JSONPath attribute expression by adding the `
 | `cond_type` | string | Must be `attribute`                                                                                                                                                                                                                                                                                      |
 | `resource_type` | collection of strings | Use either `all` or `[resource types from list]`                                                                                                                                                                                                                                                         |
 | `attribute` | string | Attribute of defined resource types. For example, `automated_snapshot_retention_period`                                                                                                                                                                                                                  |
-| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal`, `is_true`, `is_false` |
+| `operator` | string | - `equals`, `not_equals`, `regex_match`, `not_regex_match`, `exists`, `not exists`, `any`, `contains`, `not_contains`, `within`, `starting_with`, `not_starting_with`, `ending_with`, `not_ending_with`, `greater_than`, `greater_than_or_equal`, `less_than`, `less_than_or_equal`, `is_empty`, `is_not_empty`, `length_equals`, `length_not_equals`, `length_greater_than`, `length_greater_than_or_equal`, `length_less_than`, `length_less_than_or_equal`, `is_true`, `is_false`, `intersects`, `not_intersects` |
 | `value` (not relevant for operator: `exists`/`not_exists`) | string | User input.                                                                                                                                                                                                                                                                                              |
 
 

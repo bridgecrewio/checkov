@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import re
+from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -7,7 +10,7 @@ from checkov.json_doc.enums import BlockType
 
 
 class WebhookHttpsOrg(BaseGithubCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure GitHub organization webhooks are using HTTPS"
         id = "CKV_GITHUB_6"
         categories = [CheckCategories.SUPPLY_CHAIN]
@@ -19,7 +22,7 @@ class WebhookHttpsOrg(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]] | None:  # type:ignore[override]
         if org_webhooks_schema.validate(conf):
             for item in conf:
                 if isinstance(item, dict):
@@ -31,8 +34,8 @@ class WebhookHttpsOrg(BaseGithubCheck):
                     secret = item_config.get('secret', '')
                     if re.match("^http://", url) or insecure_ssl != '0' and secret != '********':  # nosec
                         return CheckResult.FAILED, item_config
-        if org_webhooks_schema.validate(conf):
             return CheckResult.PASSED, conf
+        return CheckResult.UNKNOWN, conf
 
 
 check = WebhookHttpsOrg()

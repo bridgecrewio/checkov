@@ -44,6 +44,8 @@ class Registry(BaseCheckRegistry):
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
+                    if isinstance(item, str):
+                        item = self.set_lines_for_item(item)
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
                             check,
@@ -157,10 +159,10 @@ class Registry(BaseCheckRegistry):
             )
 
         if self.wildcard_checks:
-            for wildcard_pattern in self.wildcard_checks:
+            for wildcard_pattern, checks in self.wildcard_checks.items():
                 self._scan_yaml(
                     scanned_file=scanned_file,
-                    checks=self.wildcard_checks[wildcard_pattern],
+                    checks=checks,
                     skipped_checks=skipped_checks,
                     runner_filter=runner_filter,
                     entity=entity,
@@ -253,3 +255,32 @@ class Registry(BaseCheckRegistry):
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
         pass
+
+    def set_lines_for_item(self, item: str) -> dict[int | str, str | int] | str:
+        if not self.definitions_raw:
+            return item
+
+        item_lines = item.rstrip().split("\n")
+        item_dict: dict[int | str, str | int] = {
+            idx: line for idx, line in enumerate(item_lines)
+        }
+
+        if len(item_lines) == 1:
+            item_line = item_lines[0]
+            for idx, line in self.definitions_raw:
+                if item_line in line:
+                    item_dict[STARTLINE_MARK] = idx
+                    item_dict[ENDLINE_MARK] = idx
+            return item_dict
+
+        first_line, last_line = item_lines[0], item_lines[-1]
+        for idx, line in self.definitions_raw:
+            if first_line in line:
+                item_dict[STARTLINE_MARK] = idx
+                continue
+
+            if last_line in line:
+                item_dict[ENDLINE_MARK] = idx
+                break
+
+        return item_dict

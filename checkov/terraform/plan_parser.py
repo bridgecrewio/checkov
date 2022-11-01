@@ -70,7 +70,11 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
     if conf and isinstance(conf, dict):
         found_ref = False
         for conf_key in conf.keys() - obj.keys():
-            ref = next((x for x in conf[conf_key].get("references", []) if not x.startswith(("var.", "local."))), None)
+            conf_value = conf[conf_key]
+            if not isinstance(conf_value, dict):
+                continue
+
+            ref = next((x for x in conf_value.get("references", []) if not x.startswith(("var.", "local."))), None)
             if ref:
                 ret_dict[conf_key] = [ref]
                 found_ref = True
@@ -104,10 +108,10 @@ def _prepare_resource_block(
         mode = resource.get("mode")
     # Rare cases where data block appears in resources with same name as resource block and only partial values
     # and where *_module resources don't have values field
-    if mode == "managed" and "values" in resource:
+    if mode == "managed":
         expressions = conf.get("expressions") if conf else None
 
-        resource_conf = _hclify(resource["values"], expressions)
+        resource_conf = _hclify(resource.get("values", {"start_line": 0, "end_line": 0}), expressions)
         resource_address = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
 
