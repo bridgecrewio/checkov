@@ -67,3 +67,16 @@ class TestYamlPolicies(TestYamlPoliciesBase):
             if check_result["result"] == CheckResult.FAILED:
                 report.failed_checks.append(record)
         return report
+
+    def assert_entities(self, expected_entities: List[str], results: List[Record], assertion: bool):
+        self.assertEqual(len(expected_entities), len(results),
+                         f"mismatch in number of results in {'passed' if assertion else 'failed'}, "
+                         f"expected: {len(expected_entities)}, got: {len(results)}")
+        for expected_entity in expected_entities:
+            found = False
+            for check_result in results:
+                entity_id = f"{os.path.basename(check_result.file_path)}.{check_result.resource}"
+                if entity_id == expected_entity:
+                    found = True
+                    break
+            self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
