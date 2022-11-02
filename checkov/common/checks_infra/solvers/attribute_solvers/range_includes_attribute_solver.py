@@ -30,12 +30,12 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         try:
             attr = force_int(attr)
             return attr == self.value
-        except ValueError as e:
+        except ValueError:
             if '-' in attr:
                 try:
                     [start, end] = [force_int(a for a in attr.split('-'))]
                     return start <= self.value <= end
-                except ValueError as e:
+                except ValueError:
                     # Occurs if there are not two entries or if one is not an int, in which case we just give up
                     pass
 
