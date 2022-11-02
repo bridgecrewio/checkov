@@ -4,7 +4,10 @@ import logging
 import os
 import re
 from typing import Tuple
-from typing import Union, List, Any, Dict, Optional, Callable
+from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -249,3 +252,24 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
     return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
+
+
+def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: dict[str, str]) -> str:
+    resource_id = resource.get(CustomAttributes.ID)
+    # for external modules resources the id should start with the prefix module.[module_name]
+    if resource.get(CustomAttributes.MODULE_DEPENDENCY):
+        referred_id = file_path_to_referred_id.get(f'{resource.get(CustomAttributes.FILE_PATH)}[{resource.get(CustomAttributes.MODULE_DEPENDENCY)}#{resource.get(CustomAttributes.MODULE_DEPENDENCY_NUM)}]')
+        resource_id = f'{referred_id}.{resource_id}'
+    return resource_id
+
+
+def setup_file_path_to_referred_id(graph_object: DiGraph) -> dict[str, str]:
+    file_path_to_module_id = {}
+    modules = [node for node in graph_object.nodes.values() if
+               node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
+    for modules_data in modules:
+        for module_name, module_content in modules_data.get(CustomAttributes.CONFIG, {}).items():
+            for path in module_content.get("__resolved__", []):
+                file_path_to_module_id[path] = f"module.{module_name}"
+    return file_path_to_module_id
+
