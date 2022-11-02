@@ -8,12 +8,12 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 
 if TYPE_CHECKING:
-    import networkx as nx
+    from networkx import DiGraph
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
 
 
 class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]"]):
-    def __init__(self, db_connector: DBConnector[nx.DiGraph], source: str) -> None:
+    def __init__(self, db_connector: DBConnector[DiGraph], source: str) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
@@ -25,8 +25,10 @@ class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[s
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
     ) -> tuple[ObjectLocalGraph, dict[str | Path, dict[str, Any] | list[dict[str, Any]]]]:
-        # needs some refactor of thr ObjectRunner to implement this
-        pass
+        definitions = local_graph_class.get_files_definitions(root_folder=source_dir)
+        local_graph = self.build_graph_from_definitions(definitions=definitions, graph_class=local_graph_class)
+
+        return local_graph, definitions
 
     def build_graph_from_definitions(
         self,

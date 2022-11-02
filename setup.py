@@ -88,12 +88,14 @@ setup(
     package_dir={
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
+        "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
     package_data={
         "checkov": ["py.typed"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
+        "checkov.github_actions.checks.graph_checks": ["*.yaml"],
         "checkov.terraform.checks.graph_checks": [
             "aws/*.yaml",
             "gcp/*.yaml",

@@ -49,3 +49,9 @@ class ObjectLocalGraph(LocalGraph[Block]):
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
+
+    @staticmethod
+    @abstractmethod
+    def get_files_definitions(root_folder: str | Path) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
+        """This is temporary till I have a better idea"""
+        pass

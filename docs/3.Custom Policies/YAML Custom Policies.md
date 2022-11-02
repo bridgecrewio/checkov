@@ -333,14 +333,14 @@ Following connections are supported
 
 #### Note
 The value for `permissions` can be either a map or a single string.
-Map entries can be referenced via their respective key, but a single string entry can be accessed by using `self` as the attribute.
+Map entries can be referenced via their respective key, but a single string entry can be accessed by using `permissions` as the attribute.
 
 ex.
 ```yaml
 cond_type: "attribute"
 resource_types:
   - "permissions"
-attribute: "self"
+attribute: "permissions"
 operator: "not_equals"
 value: "write-all"
 ```

@@ -1,0 +1,6 @@
+pass:
+  - "permissions.permissions"
+fail:
+  - "permissions.permissions"
+evaluated_keys:
+  - "permissions"

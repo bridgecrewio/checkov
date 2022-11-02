@@ -12,6 +12,7 @@ from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
+from checkov.github_actions.utils import get_scannable_file_paths, parse_file
 
 
 class GitHubActionsLocalGraph(ObjectLocalGraph):
@@ -103,7 +104,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
         if not permissions or not isinstance(permissions, (str, dict)):
             return
 
-        config = {"self": permissions} if isinstance(permissions, str) else permissions
+        config = {"permissions": permissions} if isinstance(permissions, str) else permissions
 
         attributes = deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
@@ -140,3 +141,15 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                     origin_vertex_index=origin_vertex_index,
                     dest_vertex_index=dest_vertex_index,
                 )
+
+    @staticmethod
+    def get_files_definitions(root_folder: str | Path) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
+        definitions: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
+        file_paths = get_scannable_file_paths(root_folder=root_folder)
+
+        for file_path in file_paths:
+            result = parse_file(f=file_path)
+            if result is not None:
+                definitions[file_path] = result[0]
+
+        return definitions
