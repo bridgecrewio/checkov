@@ -13,10 +13,10 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         super().__init__(resource_types, attribute, force_int(value), is_jsonpath_check)
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        if vertex.get(attribute) is None:  # type:ignore[arg-type]  # due to attribute can be None
-            return False
-
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
+
+        if attr is None:
+            return False
 
         # expects one of the following values:
         # - an actual int
@@ -27,16 +27,12 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         if attr == '*':
             return True
 
-        try:
-            attr = force_int(attr)
-            return attr == self.value
-        except ValueError:
-            if '-' in attr:
-                try:
-                    [start, end] = [force_int(a for a in attr.split('-'))]
-                    return start <= self.value <= end
-                except ValueError:
-                    # Occurs if there are not two entries or if one is not an int, in which case we just give up
-                    pass
+        if isinstance(attr, str) and attr.count("-") == 1:
+            try:
+                start, end = attr.split("-")
+                return True if force_int(start) <= self.value <= force_int(end) else False
+            except ValueError:
+                # Occurs if there are not two entries or if one is not an int, in which case we just give up
+                return False
 
-        return False
+        return True if force_int(attr) == self.value else False
