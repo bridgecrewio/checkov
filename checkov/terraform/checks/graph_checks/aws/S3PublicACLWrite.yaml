@@ -53,12 +53,33 @@ definition:
                         - aws_s3_bucket_acl
                       attribute: access_control_policy.grant
                       operator: not_exists
-                    - cond_type: attribute
-                      resource_types:
-                        - aws_s3_bucket_acl
-                      attribute: access_control_policy.grant.*.grantee.uri
-                      operator: not_equals
-                      value: "http://acs.amazonaws.com/groups/global/AllUsers"
+                    - or:
+                      - cond_type: attribute
+                        resource_types:
+                          - aws_s3_bucket_acl
+                        attribute: access_control_policy.grant.*.grantee.uri
+                        operator: not_equals
+                        value: "http://acs.amazonaws.com/groups/global/AllUsers"
+                      - not:
+                        - or:
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "WRITE"
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "FULL_CONTROL"
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "WRITE_ACP"
     - and:
       - cond_type: filter
         attribute: resource_type

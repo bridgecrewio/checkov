@@ -40,7 +40,7 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(gitlab_ci_report.resources) == 0
-    assert len(gitlab_ci_report.passed_checks) == 0
+    assert len(gitlab_ci_report.passed_checks) == 1
     assert len(gitlab_ci_report.failed_checks) == 1
     assert len(gitlab_ci_report.skipped_checks) == 0
     assert len(gitlab_ci_report.parsing_errors) == 0
