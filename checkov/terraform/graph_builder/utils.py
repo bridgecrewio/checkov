@@ -272,4 +272,3 @@ def setup_file_path_to_referred_id(graph_object: DiGraph) -> dict[str, str]:
             for path in module_content.get("__resolved__", []):
                 file_path_to_module_id[path] = f"module.{module_name}"
     return file_path_to_module_id
-
