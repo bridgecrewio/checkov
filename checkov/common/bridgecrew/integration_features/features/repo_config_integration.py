@@ -11,6 +11,7 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.output.report import Report
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
@@ -117,6 +118,14 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]:
             return True
         return False
+
+    def pre_runner(self) -> None:
+        # not used
+        pass
+
+    def post_runner(self, scan_reports: Report) -> None:
+        # not used
+        pass
 
 
 integration = RepoConfigIntegration(bc_integration)

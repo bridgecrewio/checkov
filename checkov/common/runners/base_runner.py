@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
 
-_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any]|None")
+_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
 def strtobool(val: str) -> int:

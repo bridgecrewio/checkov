@@ -51,6 +51,8 @@ class ServiceAccountTokens(BaseK8Check):
 
         # Collect results
         if spec:
+            if not isinstance(spec, dict):
+                return CheckResult.UNKNOWN
             if spec.get("automountServiceAccountToken") is False:
                 return CheckResult.PASSED
         return CheckResult.FAILED

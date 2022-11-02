@@ -212,6 +212,8 @@ def get_files_definitions(files: List[str], out_parsing_errors: Dict[str, str], 
                 else:
                     out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
             else:
+                if parsing_errors:
+                    logging.debug(f'File {file} had the following parsing errors: {parsing_errors}')
                 logging.debug(f"Parsed file {file} incorrectly {template}")
         except (TypeError, ValueError):
             logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template")

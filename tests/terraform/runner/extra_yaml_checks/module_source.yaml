@@ -1,0 +1,11 @@
+metadata:
+  name: "Ensure all modules are using the official AWS ones"
+  id: "CUSTOM_GRAPH_AWS_2"
+  category: "SUPPLY_CHAIN"
+definition:
+  cond_type: attribute
+  resource_types:
+    - module
+  attribute: source
+  operator: starting_with
+  value: terraform-aws-modules

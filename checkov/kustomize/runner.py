@@ -18,6 +18,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -27,6 +28,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
 
 
@@ -58,7 +60,16 @@ class K8sKustomizeRunner(K8sRunner):
     def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
         self.report_mutator_data = report_mutator_data
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None):
+    def mutate_kubernetes_results(
+        self,
+        results: dict[BaseCheck, _CheckResult],
+        report: Report,
+        k8_file: str,
+        k8_file_path: str,
+        file_abs_path: str,
+        entity_conf: dict[str, Any],
+        variable_evaluations: dict[str, Any],
+    ) -> Report:
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
@@ -100,7 +111,7 @@ class K8sKustomizeRunner(K8sRunner):
             file_line_range = [first_line, last_line]
         return file_line_range
 
-    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results) -> Report:
+    def mutate_kubernetes_graph_results(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
