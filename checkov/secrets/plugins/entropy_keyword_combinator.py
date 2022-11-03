@@ -153,8 +153,6 @@ class EntropyKeywordCombinator(BasePlugin):
 
         elif context is not None and raw_context is not None:
             i = context.target_index
-            if self.is_object_start(raw_context=raw_context, idx=i):
-                return secrets
 
             value_secret = self.extract_from_string(pattern=secret_pattern, string=context.lines[i])
             secret_adjust = self.format_reducing_noice_secret(value_secret)

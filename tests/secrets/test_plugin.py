@@ -1,12 +1,15 @@
+import logging
 import os
 import unittest
 
 from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.filetype import FileType
 
+from checkov.runner_filter import RunnerFilter
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
 from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_KEYWORD_BY_FILETYPE
 from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_SECRET_BY_FILETYPE
+from checkov.secrets.runner import Runner
 
 
 class TestCombinatorPlugin(unittest.TestCase):
@@ -64,12 +67,6 @@ class TestCombinatorPlugin(unittest.TestCase):
                 result[i] = self.plugin.lines_same_indentation(lines[i], lines[i+1])
 
         assert result
-
-    def test_lines_in_same_object_yml(self):
-        pass
-
-    def test_is_object_start_yml(self):
-        pass
 
     def test_line_is_comment_yml(self):
         examples = [
@@ -135,44 +132,46 @@ class TestCombinatorPlugin(unittest.TestCase):
         context = CodeSnippet(
             snippet=[
                 '',
-                'name: "SOME_NAME"',
-                'value: "some_value"',
+                '',
+                '',
+                '',
+                '',
                 'value: "Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE"',
                 'name: "TEST_PASSWORD_1"',
                 'name1: "TEST_PASSWORD_2"',
                 'value1: "1Vab3xejyUlh89P6tUJNXgO4t07DzmomF4tPBwTbwt+sjXHg3G0MPMRpH/I2ho4gS5H3AKJkvJZj87V7/Qnp/rHdbMVYK1F0BX35"',
                 'name: "TEST_PASSWORD_3"',
-                'value: "PtpfIZR+zZGPUWUYvLojqylVeEg63CBYN0FpGJ4yuH+9YxZZe8Uq7drEoTSfL64kElPEnVJk+H7SZr+wBoxN5qDWsbDmmUS2H76h"',
-                'name: "TEST_PASSWORD_4"'
+                'value: "PtpfIZR+zZGPUWUYvLojqylVeEg63CBYN0FpGJ4yuH+9YxZZe8Uq7drEoTSfL64kElPEnVJk+H7SZr+wBoxN5qDWsbDmmUS2H76h"'
             ],
-            start_line=0,
-            target_index=4
+            start_line=5,
+            target_index=5
         )
         raw_context = CodeSnippet(
             snippet=[
-                'spec:\n',
-                '  - name: SOME_NAME\n',
-                '    value: some_value\n',
-                '  - value: Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE\n',
-                '    name: TEST_PASSWORD_1\n',
-                '  - name1: TEST_PASSWORD_2\n',
-                '    value1: 1Vab3xejyUlh89P6tUJNXgO4t07DzmomF4tPBwTbwt+sjXHg3G0MPMRpH/I2ho4gS5H3AKJkvJZj87V7/Qnp/rHdbMVYK1F0BX35\n',
-                '  - name: TEST_PASSWORD_3\n',
-                '    value: PtpfIZR+zZGPUWUYvLojqylVeEg63CBYN0FpGJ4yuH+9YxZZe8Uq7drEoTSfL64kElPEnVJk+H7SZr+wBoxN5qDWsbDmmUS2H76h\n',
-                '  - name: TEST_PASSWORD_4\n'
+                '#\n',
+                 '#\n',
+                 'spec:\n',
+                 '  - name: SOME_NAME\n',
+                 '    value: some_value\n',
+                 '    value: Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE\n',
+                 '    name: TEST_PASSWORD_1\n',
+                 '  - name1: TEST_PASSWORD_2\n',
+                 '    value1: 1Vab3xejyUlh89P6tUJNXgO4t07DzmomF4tPBwTbwt+sjXHg3G0MPMRpH/I2ho4gS5H3AKJkvJZj87V7/Qnp/rHdbMVYK1F0BX35\n',
+                 '    name: TEST_PASSWORD_3\n',
+                 '    value: PtpfIZR+zZGPUWUYvLojqylVeEg63CBYN0FpGJ4yuH+9YxZZe8Uq7drEoTSfL64kElPEnVJk+H7SZr+wBoxN5qDWsbDmmUS2H76h\n'
             ],
-            start_line=0,
-            target_index=4
+            start_line=5,
+            target_index=5
         )
         res = self.plugin.analyze_line(
             filename="test.yml",
-            line='name: "TEST_PASSWORD_1"',
-            line_number=5,
+            line='value: "Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE"',
+            line_number=11,
             context=context,
             raw_context=raw_context
         )
 
-        expected_secret_value = 'Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE\\n'
+        expected_secret_value = 'Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE'
         assert res
         assert expected_secret_value == res.pop().secret_value
 
@@ -216,6 +215,18 @@ class TestCombinatorPlugin(unittest.TestCase):
         expected_secret_value = 'm9+1ONt6FdpnByhlaKDwZ/jjA5gaPzrKY9q5G8cr6kjn092ogigwEOGGryjDqq/NkX1DnKGGG7iduJUJ48+Rv0tgpdVAxwLQuiszRnssmi2ck/Zf1iDFlNQtiE8rvXE6OTCsb6mrpyItLOVnEwsRSpggyRa3KLSuiguiZsK5KyXQ6BsiAclpLvz6QFBQoQkZNxownQrqgLwVwkK1gW0/EEm0m1ylz20ZeLgYO6tRSvKDW0lrgAI7g60F7/eJGv1UqQlxK58T+7u1UX/K11Q69e9jJE+LkQ932eY37U70oVbBVchHwSFKUoffernEaG9XP1tyEpIptPqVpcS2BMpktoR1p1yyWuxC5GsPc2RlPQzEbs3n5lPPnC/uEVu7/cJENSw5+9DzigiHYPz1Cq/p5HedIl5ysn2U2VFgHWekGBYin6ytfmF2Sx+hYqeRd6RcxyU434CXspWQqc330sp9q7vwPQHNecBrvG2Iy7mqVSvaJDnkZ8AN'
         assert res
         assert expected_secret_value == res.pop().secret_value
+
+    def test_multiline_keyword_password_report(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        file_name = "test-multiline-secrets.yml"
+        valid_file_path = current_dir + f"/resources/cfn/{file_name}"
+
+        runner = Runner()
+        report = runner.run(root_folder=None, files=[valid_file_path], runner_filter=RunnerFilter(framework=['secrets']))
+        self.assertEqual(len(report.failed_checks), 5)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
 
     def test_regex_keyword_in_value_yml(self):
         # the regex only finds the relevant part from the keyword that matches,
