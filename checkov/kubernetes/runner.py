@@ -67,7 +67,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions: "dict[str, list[dict[str, Any]]]" = {}  # type:ignore[assignment]
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
-        self.report_mutator_data = None
+        self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.report_type = report_type
 
     def run(
@@ -232,7 +232,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         root_folder: str | None,
         runner_filter: RunnerFilter,
         report: Report,
-        checks_results: dict[BaseGraphCheck, list[dict[str, Any]]],
+        checks_results: dict[BaseGraphCheck, list[_CheckResult]],
     ) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
@@ -245,9 +245,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_path = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
-                entity_id = entity.get(CustomAttributes.ID)
+                entity_id = entity[CustomAttributes.ID]
                 entity_context = self.context[entity_file_path][entity_id]
 
                 clean_check_result: _CheckResult = {
@@ -262,7 +262,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     code_block=entity_context.get("code_lines"),
                     file_path=get_relative_file_path(entity_file_abs_path, root_folder),
                     file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
-                    resource=entity.get(CustomAttributes.ID),
+                    resource=entity[CustomAttributes.ID],
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,

@@ -20,6 +20,7 @@ class _CheckResult(TypedDict, total=False):
     evaluated_keys: list[str]
     results_configuration: dict[str, Any] | None
     check: BaseCheck
+    entity: dict[str, Any]  # only exists for graph results
 
 
 class _SkippedCheck(TypedDict, total=False):
