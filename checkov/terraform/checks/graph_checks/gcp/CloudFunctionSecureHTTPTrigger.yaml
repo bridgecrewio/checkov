@@ -1,0 +1,14 @@
+metadata:
+  id: "CKV_GCP_FUNCTION_1"
+  name: "GCP Cloud Function HTTP trigger is secured"
+  guidelines: "This policy identifies GCP Cloud Functions for which the HTTP trigger is not secured. When you configure HTTP functions to be triggered only with HTTPS, user requests will be redirected to use the HTTPS protocol, which is more secure. It is recommended to set the 'Trigger Security level' to 'SECURE_ALWAYS' for configuring HTTP triggers while deploying your function"
+  category: "NETWORKING"
+scope:
+  provider: "gcp"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "google_cloudfunctions_function"
+  attribute: "https_trigger_security_level"
+  operator: "equals"
+  value: "SECURE_ALWAYS"
