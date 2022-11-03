@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import inspect
 from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
@@ -60,10 +61,15 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
     print("\n\n---\n\n")
 
 
+def get_check_link(absolute_path: str) -> str:
+    link_start = 'https://github.com/bridgecrewio/checkov/tree/master/checkov'
+    return f'{link_start}{absolute_path.split("/checkov")[1]}'
+
+
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str]]:
+               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str, str]]:
     framework_list = frameworks if frameworks else ["all"]
-    printable_checks_list: list[tuple[str, str, str, str, str]] = []
+    printable_checks_list: list[tuple[str, str, str, str, str, str]] = []
     filtered_policy_ids = filtered_policy_ids or []
     runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies, filtered_policy_ids=filtered_policy_ids)
 
@@ -73,8 +79,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         if isinstance(registry, BaseCheckRegistry):
             for entity, check in registry.all_checks():
                 if runner_filter.should_run_check(check, check.id, check.bc_id, check.severity):
+                    check_link = get_check_link(inspect.getfile(check.__class__))
                     printable_checks_list.append(
-                        (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac))
+                        (check.get_output_id(use_bc_ids), checked_type, entity, check.name, iac, check_link))
         elif isinstance(registry, BaseGraphRegistry):
             for graph_check in registry.checks:
                 if runner_filter.should_run_check(graph_check, graph_check.id, graph_check.bc_id, graph_check.severity):
@@ -82,8 +89,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                         # only for platform custom polices with resource_types == all
                         graph_check.resource_types = ['all']
                     for rt in graph_check.resource_types:
+                        check_link = get_check_link(inspect.getfile(graph_check.__class__))
                         printable_checks_list.append(
-                            (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac))
+                            (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac, check_link))
 
     if any(x in framework_list for x in ("all", "terraform")):
         add_from_repository(resource_registry, "resource", "Terraform")
@@ -142,7 +150,8 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
             if not filtered_policy_ids or check_id in filtered_policy_ids:
                 if use_bc_ids:
                     check_id = metadata_integration.get_bc_id(check_id)
-                printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets"))
+                check_link = get_check_link(inspect.getfile(metadata_integration.__class__))
+                printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets", check_link))
     return sorted(printable_checks_list, key=get_compare_key)  # type:ignore[arg-type]
 
 
