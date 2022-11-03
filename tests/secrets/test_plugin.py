@@ -219,7 +219,7 @@ class TestCombinatorPlugin(unittest.TestCase):
     def test_multiline_keyword_password_report(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         file_name = "test-multiline-secrets.yml"
-        valid_file_path = current_dir + f"/resources/cfn/{file_name}"
+        valid_file_path = current_dir + f"/yml_multiline/{file_name}"
 
         runner = Runner()
         report = runner.run(root_folder=None, files=[valid_file_path], runner_filter=RunnerFilter(framework=['secrets']))

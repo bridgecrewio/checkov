@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import logging
 import json
 import re
 from typing import Generator
+from typing import Optional
 from typing import Any
 from typing import TYPE_CHECKING
-from typing import Optional
 from typing import Pattern
 
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
@@ -111,8 +110,8 @@ class EntropyKeywordCombinator(BasePlugin):
     ) -> set[PotentialSecret]:
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
         filetype = determine_file_type(filename)
-        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype, FileType.YAML)
-        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype, FileType.YAML)
+        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype, None)
+        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype, None)
 
         if len(line) <= MAX_LINE_LENGTH:
             if is_iac:
@@ -137,8 +136,8 @@ class EntropyKeywordCombinator(BasePlugin):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
-            value_pattern: Optional[dict[Pattern, int]] = None,
-            secret_pattern: Optional[dict[Pattern, int]] = None,
+            value_pattern: Optional[dict[Pattern[str], int]] = None,
+            secret_pattern: Optional[dict[Pattern[str], int]] = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         secrets = set()
@@ -159,7 +158,7 @@ class EntropyKeywordCombinator(BasePlugin):
             entropy_on_value = self.detect_secret(self.high_entropy_scanners, filename, secret_adjust, line_number, **kwargs)
 
             if entropy_on_value:
-                possible_keywords: set = set()
+                possible_keywords: set[str] = set()
                 forward_range = range(context.target_index - 1, -1, -1)
                 backwards_range = range(context.target_index + 1, len(context.lines))
                 possible_keywords |= self.get_lines_from_same_object(forward_range, context, raw_context)
@@ -172,8 +171,15 @@ class EntropyKeywordCombinator(BasePlugin):
                         break
         return secrets
 
-    def get_lines_from_same_object(self, search_range, context, raw_context):
-        possible_keywords = set()
+    def get_lines_from_same_object(
+            self,
+            search_range: range,
+            context: CodeSnippet | None,
+            raw_context: CodeSnippet | None
+    ) -> set[str]:
+        possible_keywords: set[str] = set()
+        if not context or not raw_context:
+            return possible_keywords
         for j in search_range:
             line = context.lines[j]
             if self.lines_in_same_object(raw_context=raw_context, idx=j) \
@@ -184,25 +190,40 @@ class EntropyKeywordCombinator(BasePlugin):
         return possible_keywords
 
     @staticmethod
-    def format_reducing_noice_secret(string):
+    def format_reducing_noice_secret(string: str) -> str:
         return json.dumps(string)
 
-    def lines_in_same_object(self, raw_context, idx):
-        return idx >= 0 \
-               and self.lines_same_indentation(raw_context.lines[idx], raw_context.lines[idx+1])
+    def lines_in_same_object(
+            self,
+            raw_context: CodeSnippet | None,
+            idx: int
+    ) -> bool:
+        if not raw_context:
+            return False  # could not know
+        return idx >= 0 and self.lines_same_indentation(raw_context.lines[idx], raw_context.lines[idx + 1])
 
     @staticmethod
-    def is_object_start(raw_context, idx) -> bool:
-        return '-' in re.match(INDENTATION_PATTERN, raw_context.lines[idx]).groups()[0]
+    def is_object_start(
+            raw_context: CodeSnippet | None,
+            idx: int
+    ) -> bool:
+        if not raw_context:
+            return False  # could not know
+        match = re.match(INDENTATION_PATTERN, raw_context.lines[idx])
+        if match:
+            return '-' in match.groups()[0]
+        return False
 
     @staticmethod
-    def line_is_comment(line):
+    def line_is_comment(line: str) -> bool:
         if re.match(COMMENT_PREFIX, line):
             return True
         return False
 
     @staticmethod
-    def extract_from_string(pattern, string) -> str:
+    def extract_from_string(pattern: Optional[dict[Pattern[str], int]], string: str) -> str:
+        if not pattern:
+            return ''
         for value_regex, group_number in pattern.items():
             match = value_regex.search(string)
             if match:
@@ -210,16 +231,22 @@ class EntropyKeywordCombinator(BasePlugin):
         return ''
 
     @staticmethod
-    def lines_same_indentation(line1, line2) -> bool:
-        indent1 = len(re.match(INDENTATION_PATTERN, line1).groups()[0])
-        indent2 = len(re.match(INDENTATION_PATTERN, line2).groups()[0])
+    def lines_same_indentation(line1: str, line2: str) -> bool:
+        match1 = re.match(INDENTATION_PATTERN, line1)
+        match2 = re.match(INDENTATION_PATTERN, line2)
+        if not match1 and not match2:
+            return True
+        if not match1 or not match2:
+            return False
+        indent1 = len(match1.groups()[0])
+        indent2 = len(match2.groups()[0])
         if indent1 == indent2:
             return True
         return False
 
     @staticmethod
     def detect_secret(
-            scanners: tuple,
+            scanners: tuple[Base64HighEntropyString, HexHighEntropyString],
             filename: str,
             line: str,
             line_number: int = 0,
@@ -230,4 +257,3 @@ class EntropyKeywordCombinator(BasePlugin):
             if matches:
                 return matches
         return set()
-
