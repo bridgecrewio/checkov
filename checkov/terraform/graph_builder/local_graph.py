@@ -476,7 +476,7 @@ def update_dictionary_attribute(
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
 
-    if isinstance(config, dict):
+    if isinstance(config, dict) and isinstance(key_parts, list):
         key = key_parts[0]
         inner_config = config.get(key)
 
