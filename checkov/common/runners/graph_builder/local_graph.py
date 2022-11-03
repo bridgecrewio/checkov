@@ -19,7 +19,7 @@ class ObjectLocalGraph(LocalGraph[Block]):
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
-        logging.info(f"[{self.__class__.__name__}] created {len(self.vertices)} vertices")
+        logging.debug(f"[{self.__class__.__name__}] created {len(self.vertices)} vertices")
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -30,7 +30,7 @@ class ObjectLocalGraph(LocalGraph[Block]):
             self.out_edges[i] = []
 
         self._create_edges()
-        logging.info(f"[{self.__class__.__name__}] created {len(self.edges)} edges")
+        logging.debug(f"[{self.__class__.__name__}] created {len(self.edges)} edges")
 
     @abstractmethod
     def _create_vertices(self) -> None:
