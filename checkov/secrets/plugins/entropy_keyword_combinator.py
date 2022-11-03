@@ -122,17 +122,17 @@ class EntropyKeywordCombinator(BasePlugin):
 
                 # not so classic key-value pair, from multiline, that is only in an array format.
                 # The scan is one-way backwards, so no duplicates expected.
-                elif filetype == filetype.YAML:
+                elif filetype == FileType.YAML:
                     return self.analyze_iac_line_yml(
-                            filename=filename,
-                            line=line,
-                            line_number=line_number,
-                            context=context,
-                            raw_context=raw_context,
-                            value_pattern=value_keyword_regex_to_group,
-                            secret_pattern=secret_keyword_regex_to_group,
-                            kwargs=kwargs
-                        )
+                        filename=filename,
+                        line=line,
+                        line_number=line_number,
+                        context=context,
+                        raw_context=raw_context,
+                        value_pattern=value_keyword_regex_to_group,
+                        secret_pattern=secret_keyword_regex_to_group,
+                        kwargs=kwargs
+                    )
             else:
                 return self.detect_secret(self.high_entropy_scanners, filename, line, line_number, **kwargs)
         return set()
