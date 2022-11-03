@@ -1,3 +1,0 @@
-variable "dynamic" {
- default  = [false]
-}
