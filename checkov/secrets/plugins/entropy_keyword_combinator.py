@@ -199,7 +199,8 @@ class EntropyKeywordCombinator(BasePlugin):
     ) -> bool:
         if not raw_context:
             return False  # could not know
-        return idx >= 0 and self.lines_same_indentation(raw_context.lines[idx], raw_context.lines[idx + 1])
+        return 0 <= idx < len(raw_context.lines) and 0 <= idx + 1 < len(raw_context.lines)\
+            and self.lines_same_indentation(raw_context.lines[idx], raw_context.lines[idx + 1])
 
     @staticmethod
     def is_object_start(
