@@ -302,8 +302,9 @@ class TerraformVariableRenderer(VariableRenderer):
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
 
         if not isinstance(dynamic_blocks, list):
-            logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
-            return rendered_blocks
+            dynamic_blocks = [dynamic_blocks]
+            # logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
+            # return rendered_blocks
 
         for block in dynamic_blocks:
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
@@ -316,17 +317,17 @@ class TerraformVariableRenderer(VariableRenderer):
             dynamic_arguments = [
                 argument
                 for argument, value in block_content.items()
-                if value == dynamic_value_ref
+                if value == dynamic_value_ref or isinstance(value, str) and dynamic_value_ref in value
             ]
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
                     for dynamic_argument in dynamic_arguments:
-                        block_conf[dynamic_argument] = dynamic_value
+                        block_conf[dynamic_argument] = dynamic_value if not isinstance(dynamic_value, dict) else dynamic_value[block_content[dynamic_argument].split('.')[-1]]
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else [block_confs[0][list(block_confs[0].keys())[0]]]
+                rendered_blocks[block_name] = block_confs
 
         return rendered_blocks
 
