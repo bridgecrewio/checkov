@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 from typing import Generator
-from typing import Optional
 from typing import Any
 from typing import TYPE_CHECKING
 from typing import Pattern
@@ -97,7 +96,7 @@ class EntropyKeywordCombinator(BasePlugin):
         self.keyword_scanner = KeywordDetector()
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
-        raise NotImplementedError()
+        pass
 
     def analyze_line(
             self,
@@ -118,7 +117,13 @@ class EntropyKeywordCombinator(BasePlugin):
                 # classic key-value pair
                 keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
                 if keyword_on_key:
-                    return self.detect_secret(self.high_entropy_scanners_iac, filename, line, line_number, **kwargs)
+                    return self.detect_secret(
+                        scanners=self.high_entropy_scanners_iac,
+                        filename=filename,
+                        line=line,
+                        line_number=line_number,
+                        kwargs=kwargs
+                    )
 
                 # not so classic key-value pair, from multiline, that is only in an array format.
                 # The scan is one-way backwards, so no duplicates expected.
@@ -134,7 +139,13 @@ class EntropyKeywordCombinator(BasePlugin):
                         kwargs=kwargs
                     )
             else:
-                return self.detect_secret(self.high_entropy_scanners, filename, line, line_number, **kwargs)
+                return self.detect_secret(
+                    scanners=self.high_entropy_scanners,
+                    filename=filename,
+                    line=line,
+                    line_number=line_number,
+                    kwargs=kwargs
+                )
         return set()
 
     def analyze_iac_line_yml(
@@ -144,17 +155,21 @@ class EntropyKeywordCombinator(BasePlugin):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
-            value_pattern: Optional[dict[Pattern[str], int]] = None,
-            secret_pattern: Optional[dict[Pattern[str], int]] = None,
+            value_pattern: dict[Pattern[str], int] | None = None,
+            secret_pattern: dict[Pattern[str], int] | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         secrets = set()
         if context is not None and raw_context is not None:
-            i = context.target_index
-
-            value_secret = self.extract_from_string(pattern=secret_pattern, string=context.lines[i])
+            value_secret = self.extract_from_string(pattern=secret_pattern, string=context.target_line)
             secret_adjust = self.format_reducing_noise_secret(value_secret)
-            entropy_on_value = self.detect_secret(self.high_entropy_scanners, filename, secret_adjust, line_number, **kwargs)
+            entropy_on_value = self.detect_secret(
+                scanners=self.high_entropy_scanners,
+                filename=filename,
+                line=secret_adjust,
+                line_number=line_number,
+                kwargs=kwargs
+            )
 
             if entropy_on_value:
                 possible_keywords: set[str] = set()
@@ -166,7 +181,6 @@ class EntropyKeywordCombinator(BasePlugin):
                 for other_value in possible_keywords:
                     if self.extract_from_string(pattern=value_pattern, string=other_value):
                         secrets |= entropy_on_value
-                    if secrets:
                         break
         return secrets
 
@@ -221,7 +235,7 @@ class EntropyKeywordCombinator(BasePlugin):
         return False
 
     @staticmethod
-    def extract_from_string(pattern: Optional[dict[Pattern[str], int]], string: str) -> str:
+    def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) -> str:
         if not pattern:
             return ''
         for value_regex, group_number in pattern.items():
