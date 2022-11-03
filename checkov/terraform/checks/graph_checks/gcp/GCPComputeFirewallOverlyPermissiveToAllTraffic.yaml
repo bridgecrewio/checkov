@@ -1,0 +1,40 @@
+metadata:
+  name: "Ensure GCP compute firewall ingress does not allow unrestricted access to all ports"
+  id: "CKV2_GCP_12"
+  guidelines: "This policy identifies GCP Firewall rules which allows inbound traffic on all protocols through the public internet. Doing so, may allow a bad actor to brute force their way into the system and potentially get access to the entire network."
+  category: "networking"
+  severity: "high"
+scope:
+  provider: "gcp"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall_policy"
+        - "google_compute_firewall"
+      attribute: "disabled"
+      operator: "equals"
+      value: "true"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall_policy"
+        - "google_compute_firewall"
+      attribute: "direction"
+      operator: "equals"
+      value: "EGRESS"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "allow.protocol"
+      operator: "jsonpath_not_equals"
+      value: "all"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "source_ranges"
+      operator: "within"
+      value:
+        - "::/0"
+        - "::0"
+        - "0.0.0.0"
+        - "0.0.0.0/0"

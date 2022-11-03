@@ -260,6 +260,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
 
+    def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
+        self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
