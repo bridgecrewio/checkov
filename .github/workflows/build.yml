@@ -47,7 +47,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
@@ -164,18 +164,23 @@ jobs:
           git fetch --tags
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
           echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-          if [ -n "${{ inputs.versionBump }}" ]
+          if [[ -z "${{ inputs.versionBump }}" ]]
           then
-          case ${{ inputs.versionBump }} in
-            "minor")
+            version="patch"
+          else
+            version="${{ inputs.versionBump }}"
+          fi
+          case $version in
+            minor)
               new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
               ;;
-            "major")
+            major)
               new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
               ;;
-          esac          
-          fi
+            patch)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+              ;;
+          esac
 
           echo "new tag: $new_tag"
           echo "version=$new_tag" >> $GITHUB_OUTPUT

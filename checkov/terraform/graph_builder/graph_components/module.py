@@ -156,13 +156,14 @@ class Module:
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
                     attributes["resource_type"] = [resource_type]
+                    block_name = f"{resource_type}.{name}"
                     resource_block = TerraformBlock(
                         block_type=BlockType.RESOURCE,
-                        name=f"{resource_type}.{name}",
+                        name=block_name,
                         config=self.clean_bad_characters(resource_dict),
                         path=path,
                         attributes=attributes,
-                        id=f"{resource_type}.{name}",
+                        id=block_name,
                         source=self.source,
                         has_dynamic_block=has_dynamic_block
                     )
@@ -179,13 +180,14 @@ class Module:
         for data_dict in blocks:
             for data_type in data_dict:
                 for name in data_dict[data_type]:
+                    block_name = f"{data_type}.{name}"
                     data_block = TerraformBlock(
                         block_type=BlockType.DATA,
-                        name=data_type + "." + name,
+                        name=block_name,
                         config=data_dict,
                         path=path,
                         attributes=data_dict.get(data_type, {}).get(name, {}),
-                        id=data_type + "." + name,
+                        id=block_name,
                         source=self.source,
                     )
                     self._add_to_blocks(data_block)

@@ -134,6 +134,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IAMUsersAreMembersAtLeastOneGroup(self):
         self.go("IAMUsersAreMembersAtLeastOneGroup")
 
+    def test_IAMPolicyNotAllowFullIAMAccess(self):
+        self.go("IAMPolicyNotAllowFullIAMAccess")
+
     def test_DataExplorerEncryptionUsesCustomKey(self):
         self.go("DataExplorerEncryptionUsesCustomKey")
 

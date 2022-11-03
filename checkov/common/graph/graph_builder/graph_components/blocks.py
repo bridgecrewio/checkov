@@ -96,6 +96,10 @@ class Block:
         if self.block_type == BlockType.DATA:
             base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
 
+        if self.block_type == BlockType.MODULE:
+            # since module names are user defined we are just setting 'module' as resource type for easier searching
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
+
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
             del base_attributes["changed_attributes"]

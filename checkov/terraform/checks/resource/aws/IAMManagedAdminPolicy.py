@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -7,7 +11,7 @@ ADMIN_POLICY_ARN = f"arn:aws:iam::aws:policy/{ADMIN_POLICY_NAME}"
 
 
 class IAMManagedAdminPolicy(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # This is the full description of your check
         description = "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 
@@ -27,10 +31,10 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         categories = (CheckCategories.IAM,)
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if self.entity_type == "aws_iam_role":
             if "managed_policy_arns" in conf.keys():
-                if ADMIN_POLICY_ARN in conf.get("managed_policy_arns")[0]:
+                if ADMIN_POLICY_ARN in conf["managed_policy_arns"][0]:
                     return CheckResult.FAILED
 
         elif self.entity_type in (
@@ -39,7 +43,8 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
             "aws_iam_user_policy_attachment",
             "aws_iam_group_policy_attachment",
         ):
-            if conf.get("policy_arn")[0] == ADMIN_POLICY_ARN:
+            policy_arn = conf.get("policy_arn")
+            if policy_arn and policy_arn[0] == ADMIN_POLICY_ARN:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED
