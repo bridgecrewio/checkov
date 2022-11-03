@@ -31,8 +31,8 @@ MAX_LINE_LENGTH = 10000
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 ENTROPY_KEYWORD_LIMIT = 4.5
 
-INDENTATION_PATTERN = re.compile(r'(^[\r\t\f\v ]*(?:-?[\r\t\f\v ]+)?)')
-COMMENT_PREFIX = re.compile(r'^[\r\t\f\v ]*#')
+INDENTATION_PATTERN = re.compile(r'(^\s*(?:-?\s+)?)')
+COMMENT_PREFIX = re.compile(r'^[\s]*(#|\/\/)')
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
@@ -115,21 +115,29 @@ class EntropyKeywordCombinator(BasePlugin):
 
         if len(line) <= MAX_LINE_LENGTH:
             if is_iac:
-                return self.analyze_iac_line(
-                    filename=filename,
-                    line=line,
-                    line_number=line_number,
-                    context=context,
-                    raw_context=raw_context,
-                    value_pattern=value_keyword_regex_to_group,
-                    secret_pattern=secret_keyword_regex_to_group,
-                    kwargs=kwargs
-                )
+                # classic key-value pair
+                keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
+                if keyword_on_key:
+                    return self.detect_secret(self.high_entropy_scanners_iac, filename, line, line_number, **kwargs)
+
+                # not so classic key-value pair, from multiline, that is only in an array format.
+                # The scan is one-way backwards, so no duplicates expected.
+                elif filetype == filetype.YAML:
+                    return self.analyze_iac_line_yml(
+                            filename=filename,
+                            line=line,
+                            line_number=line_number,
+                            context=context,
+                            raw_context=raw_context,
+                            value_pattern=value_keyword_regex_to_group,
+                            secret_pattern=secret_keyword_regex_to_group,
+                            kwargs=kwargs
+                        )
             else:
                 return self.detect_secret(self.high_entropy_scanners, filename, line, line_number, **kwargs)
         return set()
 
-    def analyze_iac_line(
+    def analyze_iac_line_yml(
             self,
             filename: str,
             line: str,
@@ -141,20 +149,11 @@ class EntropyKeywordCombinator(BasePlugin):
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         secrets = set()
-
-        # classic key-value pair
-        keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
-        if keyword_on_key:
-            return self.detect_secret(self.high_entropy_scanners_iac, filename, line, line_number, **kwargs)
-
-        # not so classic key-value pair, from multiline, that is only in an array format.
-        # The scan is one-way backwards, so no duplicates expected.
-
-        elif context is not None and raw_context is not None:
+        if context is not None and raw_context is not None:
             i = context.target_index
 
             value_secret = self.extract_from_string(pattern=secret_pattern, string=context.lines[i])
-            secret_adjust = self.format_reducing_noice_secret(value_secret)
+            secret_adjust = self.format_reducing_noise_secret(value_secret)
             entropy_on_value = self.detect_secret(self.high_entropy_scanners, filename, secret_adjust, line_number, **kwargs)
 
             if entropy_on_value:
@@ -190,7 +189,7 @@ class EntropyKeywordCombinator(BasePlugin):
         return possible_keywords
 
     @staticmethod
-    def format_reducing_noice_secret(string: str) -> str:
+    def format_reducing_noise_secret(string: str) -> str:
         return json.dumps(string)
 
     def lines_in_same_object(

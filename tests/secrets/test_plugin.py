@@ -72,7 +72,11 @@ class TestCombinatorPlugin(unittest.TestCase):
         examples = [
             (True,  "# comment"),
             (True,  "     # also comment"),
-            (False,  "var: not a comment # comment"),
+            (True,  "// nice comment here"),
+            (True,  "//and nice comment here2"),
+            (True,  "      // commenting with checkov and having fun"),
+            (False, "var: a  //this is not a comment"),
+            (False, "var: not a comment # comment"),
             (False, "  - var: a"),
             (False, "var: "),
         ]
