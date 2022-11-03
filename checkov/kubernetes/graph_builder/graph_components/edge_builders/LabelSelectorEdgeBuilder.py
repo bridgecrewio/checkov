@@ -11,7 +11,8 @@ class LabelSelectorEdgeBuilder(K8SEdgeBuilder):
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
         return vertex.metadata is not None \
             and vertex.metadata.labels is not None \
-            and vertex.attributes.get("kind") not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
+            and "kind" in vertex.attributes \
+            and vertex.attributes["kind"] not in FILTERED_RESOURCES_FOR_EDGE_BUILDERS
 
     @staticmethod
     def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:

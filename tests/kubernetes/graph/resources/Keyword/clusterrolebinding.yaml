@@ -7,6 +7,9 @@ subjects:
 - kind: ServiceAccount
   name: service-account-name
   namespace: default
+- kind: ServiceAccount
+  name: service-account-name2
+  namespace: default
 roleRef:
   kind: ClusterRole
   name: failing-cr1
@@ -48,3 +51,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: service-account-name
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-account-name2

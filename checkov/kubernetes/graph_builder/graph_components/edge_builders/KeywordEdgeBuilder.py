@@ -4,7 +4,6 @@ from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuil
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock
 from checkov.kubernetes.graph_builder.graph_components.ResourceKeywordIdentifier import ResourceKeywordIdentifier
 from checkov.kubernetes.kubernetes_utils import FILTERED_RESOURCES_FOR_EDGE_BUILDERS
-from checkov.common.util.type_forcers import force_list
 
 
 class KeywordEdgeBuilder(K8SEdgeBuilder):
@@ -29,28 +28,45 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
         for potential_vertex_index, potential_vertex in enumerate(vertices):
             if potential_vertex.id == vertex.id:
                 continue
-            references_definitions: list[dict[str, str]] = ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP[vertex.attributes["kind"]]  # type: ignore[assignment]
-            for references_definition in references_definitions:
+            resource_references_definitions: list[dict[str, str] | list[dict[str, dict[str, str]]]] = ResourceKeywordIdentifier.KINDS_KEYWORDS_MAP[vertex.attributes["kind"]]  # type: ignore[assignment]
+            # check that resource items comply to all references definitions defined in ResourceKeywordIdentifier
+            for references_definition in resource_references_definitions:
                 match = True
-                # check that resource items comply to all references definitions defined in ResourceKeywordIdentifier
-                for reference_key, reference_value in references_definition.items():
-                    reference_is_list = True if isinstance(reference_value, list) else False
-                    reference_values_list = force_list(reference_value)
-                    # some items are nested in lists and their value in the vertex is concatenated with their index,
-                    # like so:  subjects.0.name
-                    # the following lines force all properties to a list for ease of use and concatenate the index
-                    # only to items that are actual lists
-                    for i, reference_value_item in enumerate(reference_values_list):
-                        if reference_is_list:
-                            reference_value_item = f".{i}.".join(reference_value_item.split(".", 1))
-                        vertex_ref = vertex.attributes.get(reference_value_item)
-                        potential_vertex_ref = potential_vertex.attributes.get(reference_key)
-                        if vertex_ref is None or potential_vertex_ref is None or vertex_ref != potential_vertex_ref:
-                            # if not all attributes match then it's not qualified as an edge
-                            match = False
-                            break
-                if match:
-                    connections.append(potential_vertex_index)
-                    break
+
+                if isinstance(references_definition, dict):
+                    for potential_vertex_key, vertex_key in references_definition.items():
+                        match = KeywordEdgeBuilder._find_match_in_attributes(vertex, potential_vertex, potential_vertex_key, vertex_key, match)
+                    if match:
+                        connections.append(potential_vertex_index)
+
+                # some items are nested in lists and their value in the vertex is concatenated with their index,
+                # like so:  subjects.0.name
+                elif isinstance(references_definition, list):
+                    # not really a loop, just extracting the dict's key
+                    for base_key_attribute, reference_definitions_items in references_definition[0].items():
+                        vertex_attribute_references_list = vertex.attributes.get(base_key_attribute)
+                        # iterate every item on the list as a separate resource
+                        for i in range(len(vertex_attribute_references_list)):
+                            match = True
+                            for potential_vertex_key, vertex_key in reference_definitions_items.items():
+                                vertex_key = f"{base_key_attribute}.{i}.{vertex_key}"
+                                match = KeywordEdgeBuilder._find_match_in_attributes(vertex, potential_vertex, potential_vertex_key, vertex_key, match)
+                            if match:
+                                connections.append(potential_vertex_index)
 
         return connections
+
+    @staticmethod
+    def _find_match_in_attributes(vertex: KubernetesBlock,
+                                  potential_vertex: KubernetesBlock,
+                                  potential_vertex_key: str,
+                                  vertex_key: str,
+                                  match: bool) -> bool:
+
+        vertex_ref = vertex.attributes.get(vertex_key)
+        potential_vertex_ref = potential_vertex.attributes.get(potential_vertex_key)
+        if vertex_ref is None or potential_vertex_ref is None or vertex_ref != potential_vertex_ref:
+            # if not all attributes match then it's not qualified as an edge
+            match = False
+
+        return match

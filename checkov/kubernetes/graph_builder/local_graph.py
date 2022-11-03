@@ -59,6 +59,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 config = deepcopy(resource)
                 attributes = deepcopy(config)
                 attributes["resource_type"] = resource_type
+                attributes["kind"] = resource_type
                 attributes[START_LINE] = resource[START_LINE]
                 attributes[END_LINE] = resource[END_LINE]
 

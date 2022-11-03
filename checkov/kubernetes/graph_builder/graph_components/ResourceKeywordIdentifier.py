@@ -13,18 +13,19 @@ class ResourceKeywordIdentifier:
     """
 
     KINDS_KEYWORDS_MAP = {
-        # "PersistentVolumeClaim": ["claimName"],
-        # "ClusterRole": ["rules[].resources", "rules[].resourceNames"],
-        # "Role": ["rules[].resources", "rules[].resourceNames"],
+        # TODO: "PersistentVolumeClaim": ["claimName"],
+        # TODO: "ClusterRole": ["rules[].resources", "rules[].resourceNames"],
+        # TODO: "Role": ["rules[].resources", "rules[].resourceNames"],
+
         "ServiceAccount": [
             {"spec.serviceAccountName": "metadata.name"}
         ],
         "ClusterRoleBinding": [
             {"metadata.name": "roleRef.name", "kind": "roleRef.kind"},
-            {"metadata.name": ["subjects.name"], "kind": ["subjects.kind"]}
+            [{"subjects": {"metadata.name": "name", "kind": "kind"}}]
         ],
         "RoleBinding": [
             {"metadata.name": "roleRef.name", "kind": "roleRef.kind"},
-            {"metadata.name": ["subjects.name"], "kind": ["subjects.kind"], "metadata.namespace": ["subjects.namespace"]}
+            [{"subjects": {"metadata.name": "name", "kind": "kind", "metadata.namespace": "namespace"}}]
         ]
     }
