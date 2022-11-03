@@ -1,10 +1,7 @@
 metadata:
   id: "CKV2_AWS_41"
   name: "Ensure an IAM role is attached to EC2 instance"
-  guidelines: "AWS provides Identity Access Management (IAM) roles to securely access AWS services and resources. The role is an identity with permission policies that define what the identity can and cannot do in AWS. As a best practice, create IAM roles and attach the role to manage EC2 instance permissions securely instead of distributing or sharing keys or passwords."
   category: "IAM"
-scope:
-  provider: "aws"
 definition:
   cond_type: "attribute"
   resource_types:
