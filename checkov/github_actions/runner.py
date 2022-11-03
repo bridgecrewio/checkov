@@ -150,13 +150,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
 
     @staticmethod
     def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for step in [step for step in job_definition.get('steps', []) or [] if step]:
+        for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
-                try:
-                    name = step["name"]
-                except KeyError:
-                    name = step[next(iter(step.keys()))]
-
-                return cast(str, name)
+                name = step.get('name')
+                return f"{idx + 1}[{name}]" if name else str(idx + 1)
 
         return ""

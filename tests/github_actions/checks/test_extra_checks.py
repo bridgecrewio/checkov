@@ -66,7 +66,7 @@ def test_jobs_steps_connection_check():
 
 
     failing_resources = {
-        "jobs.attest.steps.5",
+        "jobs.attest.steps.6",
     }
 
     failed_check_resources = {c.resource for c in report.failed_checks}

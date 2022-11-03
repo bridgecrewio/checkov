@@ -29,7 +29,7 @@ def test_build_graph():
     step_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.STEPS]
     permission_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.PERMISSIONS]
     assert job_ids == ["jobs.bridgecrew", "jobs.bridgecrew2"]
-    assert step_ids == ["jobs.bridgecrew.steps.0", "jobs.bridgecrew2.steps.0"]
+    assert step_ids == ["jobs.bridgecrew.steps.1", "jobs.bridgecrew2.steps.1"]
     assert permission_ids == ["permissions"]
 
     out_edge_counts = Counter([e.origin for e in local_graph.edges])

@@ -84,7 +84,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                 attributes = deepcopy(config)
                 attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.STEPS
 
-                block_name = f"{ResourceType.JOBS}.{name}.{ResourceType.STEPS}.{idx}"
+                block_name = f"{ResourceType.JOBS}.{name}.{ResourceType.STEPS}.{idx + 1}"
 
                 block = Block(
                     name=block_name,
@@ -101,10 +101,26 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
     def _create_permissions_vertices(self, file_path: str, permissions: Any) -> None:
         """Creates root-level permissions vertices"""
 
+        if permissions is None:
+            # if 'permissions' is not set in a file, then it is automatically 'write-all'
+            permissions = {
+                "permissions": "write-all",
+                START_LINE: 0,
+                END_LINE: 0,
+            }
+
         if not permissions or not isinstance(permissions, (str, dict)):
             return
 
-        config = {"permissions": permissions} if isinstance(permissions, str) else permissions
+        if isinstance(permissions, str):
+            # to get the correct line numbers we would need to check the raw definition
+            config = {
+                "permissions": permissions,
+                START_LINE: 0,
+                END_LINE: 0,
+            }
+        else:
+            config = permissions
 
         attributes = deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
