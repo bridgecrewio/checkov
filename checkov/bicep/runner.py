@@ -205,7 +205,7 @@ class Runner(BaseRunner[BicepGraphManager]):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path = Path(entity.get(CustomAttributes.FILE_PATH))
+                entity_file_path = Path(entity[CustomAttributes.FILE_PATH])
 
                 clean_check_result: _CheckResult = {
                     "result": check_result["result"],
@@ -224,7 +224,7 @@ class Runner(BaseRunner[BicepGraphManager]):
                     code_block=file_code_lines[start_line - 1 : end_line],
                     file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
                     file_line_range=[start_line, end_line],
-                    resource=entity.get(CustomAttributes.ID),
+                    resource=entity[CustomAttributes.ID],
                     check_class=check.__class__.__module__,
                     file_abs_path=str(entity_file_path.absolute()),
                     evaluations=None,
