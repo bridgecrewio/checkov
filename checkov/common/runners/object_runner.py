@@ -230,7 +230,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         for check, check_results in graph_checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
+                entity_file_path: str = entity[CustomAttributes.FILE_PATH]
 
                 if platform.system() == "Windows":
                     root_folder = os.path.split(entity_file_path)[0]
@@ -252,7 +252,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         code_block=self.definitions_raw[entity_file_path][start_line - 1:end_line + 1],
                         file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
-                        resource=entity.get(CustomAttributes.ID),
+                        resource=entity[CustomAttributes.ID],
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(entity_file_path),
@@ -271,7 +271,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         code_block=self.definitions_raw[entity_file_path][start_line - 1:end_line + 1],
                         file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
-                        resource=entity.get(CustomAttributes.ID),
+                        resource=entity[CustomAttributes.ID],
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(entity_file_path),
