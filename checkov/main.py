@@ -136,6 +136,25 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.output is None:
         config.output = ['cli']
 
+    if config.bc_api_key and not config.include_all_checkov_policies:
+        if config.skip_download and not config.external_checks_dir:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
+                  'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
+                  '--external-checks-dir options.',
+                  file=sys.stderr)
+            exit(2)
+        elif config.skip_download:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so only local custom policies loaded with --external-checks-dir '
+                  'will be evaluated.',
+                  file=sys.stderr)
+        else:
+            logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
+                         '(this is the default behavior, and this message is just for debugging purposes)')
+
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
     bc_integration.setup_http_manager(config.ca_certificate)
@@ -256,7 +275,19 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.skip_download or BC_SKIP_MAPPING.upper() == "TRUE":
         bc_integration.skip_download = True
 
-    bc_integration.get_platform_run_config()
+    try:
+        bc_integration.get_platform_run_config()
+    except Exception as e:
+        if not config.include_all_checkov_policies:
+            # stack trace gets printed in the exception handlers above
+            # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
+            print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                  'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                  'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                  '(but note that this will not include any custom platform configurations or policy metadata).',
+                  file=sys.stderr)
+            exit(2)
+
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
@@ -628,10 +659,6 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
 
-    if config.bc_api_key and not config.include_all_checkov_policies:
-        # info because we expect this to be the standard usage
-        logger.info('You are using an API key and did not set the --include-all-checkov-policies flag, so policies '
-                    'that only exist in Checkov, and not the BC / PC platform, will be skipped.')
     elif not config.bc_api_key and not config.include_all_checkov_policies:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')

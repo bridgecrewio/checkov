@@ -562,6 +562,7 @@ class BcPlatformIntegration:
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+            raise
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """
@@ -666,7 +667,7 @@ class BcPlatformIntegration:
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}",
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
 
     def onboarding(self) -> None:
