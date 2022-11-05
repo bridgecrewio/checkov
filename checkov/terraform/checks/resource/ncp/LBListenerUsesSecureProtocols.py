@@ -18,9 +18,7 @@ class LBListenerUsesSecureProtocols(BaseResourceCheck):
                 if 'tls_min_version_type' in conf.keys():
                     if conf['tls_min_version_type'] == ['TLSV12']:
                         return CheckResult.PASSED
-                return CheckResult.FAILED
-            else:
-                return CheckResult.FAILED
+            return CheckResult.FAILED
 
 
 check = LBListenerUsesSecureProtocols()
