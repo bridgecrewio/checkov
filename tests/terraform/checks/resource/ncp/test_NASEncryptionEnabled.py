@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.ncp.LBListenerUsesSecureProtocols import check
+from checkov.terraform.checks.resource.ncp.NASEncryptionEnabled import check
 from checkov.terraform.runner import Runner
 
 
-class TestLBListenerUsesSecureProtocols(unittest.TestCase):
+class TestNASEncryptionEnabled(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_LBListenerUsesSecureProtocols"
+        test_files_dir = Path(__file__).parent / "example_NASEncryptionEnabled"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,11 +18,11 @@ class TestLBListenerUsesSecureProtocols(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "ncloud_lb_listener.pass",
+            "ncloud_nas_volume.pass",
         }
         failing_resources = {
-            "ncloud_lb_listener.fail",
-            "ncloud_lb_listener.fail2"
+            "ncloud_nas_volume.fail",
+            "ncloud_nas_volume.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
