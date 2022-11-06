@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import  Sequence
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -26,5 +26,9 @@ class Scanner:
         """run SCA package scan and poll scan results"""
         pass
 
+    def run_scan(self) -> dict[str, Any]:
+        pass
+
     def poll_scan_result(self) -> dict[str, Any]:
         pass
+
