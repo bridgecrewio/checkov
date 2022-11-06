@@ -13,7 +13,7 @@ INDENTATION_PATTERN = re.compile(r'(^\s*(?:-?\s+)?)')
 COMMENT_PREFIX = re.compile(r'^[\s]*(#|\/\/)')
 
 
-class YamlMultilineParser(BaseMultiLineParser):
+class YmlMultilineParser(BaseMultiLineParser):
 
 	def __init__(self):
 		super().__init__()
@@ -78,4 +78,4 @@ class YamlMultilineParser(BaseMultiLineParser):
 		return False
 
 
-yaml_multiline_parser = YamlMultilineParser()
+yml_multiline_parser = YmlMultilineParser()

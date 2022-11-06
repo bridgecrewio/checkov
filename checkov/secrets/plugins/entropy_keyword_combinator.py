@@ -22,7 +22,7 @@ from detect_secrets.util.filetype import determine_file_type
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 from checkov.common.parsers.multiline_parser import BaseMultiLineParser
-from checkov.common.parsers.yaml.yaml_multiline_parser import yaml_multiline_parser
+from checkov.common.parsers.yaml.yml_multiline_parser import yml_multiline_parser
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -86,7 +86,7 @@ REGEX_VALUE_SECRET_BY_FILETYPE = {
 }
 
 MULTILINE_PARSERS = {
-    FileType.YAML: yaml_multiline_parser,
+    FileType.YAML: yml_multiline_parser,
 }
 
 

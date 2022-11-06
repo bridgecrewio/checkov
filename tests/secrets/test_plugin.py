@@ -1,4 +1,3 @@
-import logging
 import os
 import unittest
 
@@ -51,38 +50,6 @@ class TestCombinatorPlugin(unittest.TestCase):
             for i, line in enumerate(f.readlines()):
                 result = self.plugin.analyze_line(file_name, line, i)
                 self.assertEqual(0, len(result))
-
-    def test_are_lines_same_indentation_yml(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "secret.yml"
-        valid_file_path = current_dir + f"/resources/cfn/{file_name}"
-
-        result = {0: True, 1: False, 2: False, 3: False, 4: False, 5: True, 6: False, 7: True,
-                  8: True, 9: True, 10: True, 11: False, 12: False, 13: False, 14: False, 15: False,
-                  16: True, 17: False, 18: False, 19: True, 20: True, 21: True}
-        with open(file=valid_file_path) as f:
-            lines = f.readlines()
-            # assert len(result) == len(lines)-1
-            for i in range(len(lines)-1):
-                result[i] = self.plugin.lines_same_indentation(lines[i], lines[i+1])
-
-        assert result
-
-    def test_line_is_comment_yml(self):
-        examples = [
-            (True,  "# comment"),
-            (True,  "     # also comment"),
-            (True,  "// nice comment here"),
-            (True,  "//and nice comment here2"),
-            (True,  "      // commenting with checkov and having fun"),
-            (False, "var: a  //this is not a comment"),
-            (False, "var: not a comment # comment"),
-            (False, "  - var: a"),
-            (False, "var: "),
-        ]
-
-        for ans, line in examples:
-            assert ans == self.plugin.is_line_comment(line)
 
     def test_keyword_in_value_pair_yml(self):
         # first line is keyword, next line (underneath) is password
