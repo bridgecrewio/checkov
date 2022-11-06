@@ -240,6 +240,23 @@ class TestRenderer(TestCase):
                    [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443},
                     {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 1433, 'protocol': 'tcp', 'to_port': 1433}]
 
+    def test_dynamic_blocks_with_map(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map_brackets"),
+            # os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested'),
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('ingress')) == 2
+            assert resources_vertex[0].attributes.get('ingress') == \
+                   [{'action': 'allow', 'cidr_block': '10.0.0.1/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 1,
+                     'to_port': 22},
+                    {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
+                     'to_port': 22}]
+
     def test_list_entry_rendering_module_vars(self):
         # given
         resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
