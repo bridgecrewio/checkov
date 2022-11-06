@@ -200,7 +200,7 @@ class EntropyKeywordCombinator(BasePlugin):
                 possible_keywords.add(raw_context.lines[j])
                 if self.is_object_start(raw_context=raw_context, idx=j):
                     return possible_keywords
-        return possible_keywords
+        return set()
 
     @staticmethod
     def format_reducing_noise_secret(string: str) -> str:
