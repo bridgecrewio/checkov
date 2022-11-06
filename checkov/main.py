@@ -230,7 +230,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source=source,
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
-                                                        prisma_api_url=config.prisma_api_url) # TODO here we create the timestamp
+                                                        prisma_api_url=config.prisma_api_url)
         except MaxRetryError:
             return None
         except Exception:

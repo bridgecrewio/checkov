@@ -23,7 +23,7 @@ class Scanner:
         self.root_folder = root_folder
 
     def scan(self) -> Sequence[dict[str, Any]]:
-        """run SCA scan and poll the results are ready"""
+        """run SCA package scan and poll scan results"""
         pass
 
     def poll_scan_result(self) -> dict[str, Any]:
