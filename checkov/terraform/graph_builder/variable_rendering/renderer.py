@@ -333,6 +333,8 @@ class TerraformVariableRenderer(VariableRenderer):
                     block_conf = deepcopy(block_content)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
+                            if not isinstance(dynamic_value, dict):
+                                continue
                             dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(block_content[dynamic_argument])
                             block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
                         else:

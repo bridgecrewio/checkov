@@ -244,7 +244,6 @@ class TestRenderer(TestCase):
         resource_paths = [
             os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map"),
             os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map_brackets"),
-            # os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested'),
         ]
         for path in resource_paths:
             graph_manager = TerraformGraphManager('m', ['m'])
