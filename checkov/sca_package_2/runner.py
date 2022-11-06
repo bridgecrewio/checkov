@@ -126,7 +126,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
-            root_folder:  str | Path | None = ""
+            root_folder: str | Path | None = ""
     ) -> bool:
         """ upload scannable files to s3"""
         excluded_file_names = excluded_file_names or set()
