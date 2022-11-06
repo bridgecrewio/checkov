@@ -22,7 +22,7 @@ from detect_secrets.util.filetype import determine_file_type
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 from checkov.common.parsers.multiline_parser import BaseMultiLineParser
-from checkov.common.parsers.yaml.yml_multiline_parser import yml_multiline_parser
+from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -163,11 +163,11 @@ class EntropyKeywordCombinator(BasePlugin):
             raw_context: CodeSnippet | None = None,
             value_pattern: dict[Pattern[str], int] | None = None,
             secret_pattern: dict[Pattern[str], int] | None = None,
-            multiline_parser: BaseMultiLineParser = None,
+            multiline_parser: BaseMultiLineParser | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         secrets = set()
-        if context is not None and raw_context is not None:
+        if context is not None and raw_context is not None and multiline_parser:
             value_secret = self.extract_from_string(pattern=secret_pattern, string=context.target_line)
             secret_adjust = self.format_reducing_noise_secret(value_secret)
 

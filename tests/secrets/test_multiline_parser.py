@@ -1,6 +1,6 @@
 import os
 import unittest
-from checkov.common.parsers.yaml.yml_multiline_parser import yml_multiline_parser
+from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
 
 
 class TestMultilineParser(unittest.TestCase):
