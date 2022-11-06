@@ -55,6 +55,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -75,6 +76,8 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
+RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', False)
+
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
     cfn_runner(),
@@ -93,7 +96,6 @@ DEFAULT_RUNNERS = (
     bitbucket_configuration_runner(),
     bitbucket_pipelines_runner(),
     kustomize_runner(),
-    sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
@@ -101,6 +103,7 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
+    sca_package_runner_2() if RUN_NEW_SCA_PACKAGE_SCAN else sca_package_runner()
 )
 
 
@@ -227,7 +230,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source=source,
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
-                                                        prisma_api_url=config.prisma_api_url)
+                                                        prisma_api_url=config.prisma_api_url) # TODO here we create the timestamp
         except MaxRetryError:
             return None
         except Exception:

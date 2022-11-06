@@ -30,7 +30,7 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SUPPORTED_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
@@ -74,6 +74,7 @@ SIGNUP_HEADER = merge_dicts({
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
+RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', False)
 
 
 class BcPlatformIntegration:
@@ -343,6 +344,8 @@ class BcPlatformIntegration:
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                        if RUN_NEW_SCA_PACKAGE_SCAN and file_extension in SUPPORTED_PACKAGE_FILES:
+                            continue
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
