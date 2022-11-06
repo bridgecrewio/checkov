@@ -1,0 +1,16 @@
+stages:
+  - integration-tests
+
+
+integration-tests:
+  image: python
+  stage: integration-tests
+  variables:
+    pythonver: "3.7"
+  script:
+    - pip install --no-cache-dir --upgrade pipenv
+    - pip install --upgrade pip
+    - pip install pytest pytest-xdist
+    - python setup.py sdist bdist_wheel
+    - bash -c 'pip install dist/checkov-*.whl'
+    - sh integration_tests/run_integration_tests.sh
