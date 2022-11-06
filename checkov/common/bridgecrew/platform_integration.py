@@ -74,8 +74,8 @@ SIGNUP_HEADER = merge_dicts({
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
-RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', False)
 
+RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
