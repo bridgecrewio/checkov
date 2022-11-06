@@ -82,7 +82,7 @@ class TestCombinatorPlugin(unittest.TestCase):
         ]
 
         for ans, line in examples:
-            assert ans == self.plugin.line_is_comment(line)
+            assert ans == self.plugin.is_line_comment(line)
 
     def test_keyword_in_value_pair_yml(self):
         # first line is keyword, next line (underneath) is password
