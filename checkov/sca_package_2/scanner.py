@@ -31,4 +31,3 @@ class Scanner:
 
     def poll_scan_result(self) -> dict[str, Any]:
         pass
-

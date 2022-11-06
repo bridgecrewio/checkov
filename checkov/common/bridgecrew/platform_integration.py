@@ -77,6 +77,7 @@ CI_METADATA_EXTRACTOR = registry.get_extractor()
 
 RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
 
+
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.bc_api_key = read_key()
