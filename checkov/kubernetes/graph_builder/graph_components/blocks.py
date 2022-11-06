@@ -9,7 +9,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 
 @dataclass
 class KubernetesSelector:
-    match_labels: Dict[str, Any]
+    match_labels: Dict[str, Any] | None
 
 
 @dataclass

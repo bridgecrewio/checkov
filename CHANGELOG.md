@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.15...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.21...HEAD)
+
+## [2.2.21](https://github.com/bridgecrewio/checkov/compare/2.2.17...2.2.21) - 2022-11-03
+
+### Feature
+
+- **general:** add range_includes and inverted operator - [#3752](https://github.com/bridgecrewio/checkov/pull/3752)
+- **secrets:** Add multiline detection to entropy keyword combinator - [#3788](https://github.com/bridgecrewio/checkov/pull/3788)
+
+### Bug Fix
+
+- **terraform:** render list entries via modules correctly - [#3781](https://github.com/bridgecrewio/checkov/pull/3781)
+
+## [2.2.17](https://github.com/bridgecrewio/checkov/compare/2.2.15...2.2.17) - 2022-11-02
+
+### Feature
+
+- **terraform:** Add CKV_AWS_276 to ensure that API Gateway Method Settings data_trace_enabled is not set to True - [#3761](https://github.com/bridgecrewio/checkov/pull/3761)
+
+### Bug Fix
+
+- **terraform:** Fix `related_resource_id` for ImageReferencer in `external_module` - [#3780](https://github.com/bridgecrewio/checkov/pull/3780)
+
+### Documentation
+
+- **general:** Fix typo in docs - [#3694](https://github.com/bridgecrewio/checkov/pull/3694)
 
 ## [2.2.15](https://github.com/bridgecrewio/checkov/compare/2.2.8...2.2.15) - 2022-10-31
 

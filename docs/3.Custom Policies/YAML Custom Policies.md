@@ -123,8 +123,10 @@ definition:
 | Is True                      | `is_true`                      |
 | Intersects                   | `intersects`                   |
 | Not Intersects               | `not_intersects`               |
-| Equals Ignore Case           | `equals_ignore case`           |
-| Not Equals Ignore Case       | `not_equals_ignore case`       |
+| Equals Ignore Case           | `equals_ignore_case`           |
+| Not Equals Ignore Case       | `not_equals_ignore_case`       |
+| Range Includes               | `range_includes`               |
+| Range Not Includes           | `range_not_includes`           |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
