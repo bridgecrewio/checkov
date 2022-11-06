@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
+
+from checkov.common.util.http_utils import request_wrapper
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -24,10 +27,34 @@ class Scanner:
 
     def scan(self) -> Sequence[dict[str, Any]]:
         """run SCA package scan and poll scan results"""
-        pass
+        self.run_scan()
 
     def run_scan(self) -> dict[str, Any]:
-        pass
+        logging.info(f"Start to scan package files.")
+
+        request_body = {
+            "branch": "",
+            "commit": "",
+            "path": bc_integration.repo_path + "/",
+            "repoId": bc_integration.repo_id, #TODO change
+            "id": bc_integration.timestamp,
+            "repositoryId": ""
+        }
+
+        response = request_wrapper(
+            "POST", f"{self._base_url}/api/v1/vulnerabilities/cli-scan/run",
+            headers=bc_integration.get_default_headers("POST"),
+            json=request_body,
+            should_call_raise_for_status=True
+        )
+
+        response_json = response.json()
+
+        if not response_json["startedSuccessfully"]:
+            logging.info(f"Failed to run package scan.")
+            return dict()
+
+        return self.poll_scan_result()
 
     def poll_scan_result(self) -> dict[str, Any]:
         pass
