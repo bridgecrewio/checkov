@@ -334,6 +334,8 @@ class BcPlatformIntegration:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
+                    if RUN_NEW_SCA_PACKAGE_SCAN and file_extension in SUPPORTED_PACKAGE_FILES:
+                        continue
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):

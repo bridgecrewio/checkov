@@ -14,7 +14,7 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.scanner import Scanner
+from checkov.sca_package_2.scanner import Scanner
 
 
 class Runner(BaseRunner[None]):
@@ -31,7 +31,6 @@ class Runner(BaseRunner[None]):
             root_folder: str | Path | None,
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
-            exclude_package_json: bool = True,
             excluded_file_names: set[str] | None = None,
     ) -> Sequence[dict[str, Any]] | None:
         runner_filter = runner_filter or RunnerFilter()
@@ -53,22 +52,19 @@ class Runner(BaseRunner[None]):
         if runner_filter.excluded_paths:
             excluded_paths.update(runner_filter.excluded_paths)
 
-        input_paths = self.find_scannable_files(
+        if not self.upload_scannable_files(
             root_path=self._code_repo_path,
             files=files,
             excluded_paths=excluded_paths,
-            exclude_package_json=exclude_package_json,
-            excluded_file_names=excluded_file_names
-        )
-        if not input_paths:
+            excluded_file_names=excluded_file_names,
+            root_folder=root_folder
+        ):
             # no packages found
             return None
 
-        logging.info(f"SCA package scanning will scan {len(input_paths)} files")
-
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_paths)
+        scan_results = scanner.scan()
 
         logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
@@ -124,36 +120,31 @@ class Runner(BaseRunner[None]):
 
         return report
 
-    def find_scannable_files(
+    def upload_scannable_files(
             self,
             root_path: Path | None,
             files: list[str] | None,
             excluded_paths: set[str],
-            exclude_package_json: bool = True,
-            excluded_file_names: set[str] | None = None
-    ) -> set[Path]:
+            excluded_file_names: set[str] | None = None,
+            root_folder: str = ""
+    ) -> bool:
+        """ upload scannable files to s3"""
         excluded_file_names = excluded_file_names or set()
-        input_paths: set[Path] = set()
         package_files_to_persist: List[FileToPersist] = []
         if root_path:
-            input_paths = {
-                file_path
-                for file_path in root_path.glob("**/*")
+            for file_path in root_path.glob("**/*"):
                 if file_path.name in SUPPORTED_PACKAGE_FILES and not any(
-                    p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names
-            }
+                        p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
+                    file_path_str = str(file_path)
+                    package_files_to_persist.append(FileToPersist(file_path_str, os.path.relpath(file_path_str, root_folder)))
 
         for file in files or []:
             file_path = Path(file)
             if not file_path.exists():
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
+            package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
-            # f_name = os.path.basename(file)
-            # _, file_extension = os.path.splitext(file)
-            # if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
-            #     files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_dir)))
-
-            input_paths.add(file_path)
-
-        return input_paths
+        logging.info(f"{len(package_files_to_persist)} sca package files found.")
+        bc_integration.persist_files(package_files_to_persist)
+        return bool(package_files_to_persist)
