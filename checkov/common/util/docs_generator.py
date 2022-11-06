@@ -38,6 +38,7 @@ from checkov.runner_filter import RunnerFilter
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/tree/master/checkov'
 
+
 def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
     res = []
     for match in ID_PARTS_PATTERN.finditer(c[0]):
