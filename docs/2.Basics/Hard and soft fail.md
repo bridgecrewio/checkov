@@ -57,7 +57,7 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 |Soft Fail|Soft Fail On|Hard Fail On|Scan Result|Comments|
 |-|-|-|-|-|
 |True | - | - |0 (soft fail)|All errors are soft fails|
-|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail critera|
+|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail criteria|
 |False|-|CKV_999|0|Every failed check did not match a hard fail criteria, so the result is implicitly soft fail|
 |False|LOW,CKV_789|CKV_123|1|The explicit match of the hard fail criteria results in a hard fail|
 |False|CKV_789|HIGH|1|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to the value of `--soft-fail`, which is false|
