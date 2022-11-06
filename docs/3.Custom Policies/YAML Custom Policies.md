@@ -127,6 +127,8 @@ definition:
 | Not Equals Ignore Case       | `not_equals_ignore_case`       |
 | Range Includes               | `range_includes`               |
 | Range Not Includes           | `range_not_includes`           |
+| Number of words Equals       | `number_of_words_equals`       |
+| Number of words not Equals   | `number_of_words_not_equals`   |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 

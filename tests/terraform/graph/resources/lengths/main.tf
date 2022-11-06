@@ -33,7 +33,7 @@ resource "aws_security_group" "sg2" {
   }
 
   ingress {
-    description     = "Access to Bastion Host Security Group"
+    description     = "Access to Bastion Host SG"
     from_port       = "5432"
     protocol        = "tcp"
     security_groups = ["sg-id-0"]
