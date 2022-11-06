@@ -2,6 +2,7 @@ from typing import Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from checkov.common.util.type_forcers import force_int
 
 
 class NumberOfWordsEqualsAttributeSolver(BaseAttributeSolver):
@@ -13,5 +14,6 @@ class NumberOfWordsEqualsAttributeSolver(BaseAttributeSolver):
         if not isinstance(vertex_attr, str):
             return False
         words = vertex_attr.split(" ")
+        value_numeric = force_int(self.value)
 
-        return len(words) == self.value
+        return len(words) == value_numeric
