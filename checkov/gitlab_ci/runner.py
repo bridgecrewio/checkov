@@ -47,7 +47,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def included_paths(self) -> Iterable[str]:
         return (".gitlab-ci.yml", ".gitlab-ci.yaml")
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
         start_line, end_line = Runner.get_start_and_end_lines(key)
         file_config = force_dict(self.definitions[file_path])
         if not file_config:

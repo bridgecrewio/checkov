@@ -65,7 +65,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def included_paths(self) -> Iterable[str]:
         return [".github"]
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
         if not definitions:
             return key
 
