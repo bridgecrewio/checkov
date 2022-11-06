@@ -240,8 +240,8 @@ class TestRenderer(TestCase):
 
     def test_dynamic_blocks_with_map(self):
         resource_paths = [
-            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map")
-
+            # os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map"),
+            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested')
         ]
         for path in resource_paths:
             graph_manager = TerraformGraphManager('m', ['m'])

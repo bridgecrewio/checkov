@@ -32,6 +32,10 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'list': [],
     'map': {}
 }
+
+DYNAMIC_BLOCKS_LISTS = 'list'
+DYNAMIC_BLOCKS_MAPS = 'map'
+
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
@@ -298,36 +302,52 @@ class TerraformVariableRenderer(VariableRenderer):
                     self.local_graph.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
+        dynamic_type = DYNAMIC_BLOCKS_LISTS
 
         if not isinstance(dynamic_blocks, list):
             dynamic_blocks = [dynamic_blocks]
-            # logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
-            # return rendered_blocks
+            dynamic_type = DYNAMIC_BLOCKS_MAPS
+            logging.info(f"Dynamic blocks found, with type {type(dynamic_blocks)}")
 
         for block in dynamic_blocks:
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
             block_content = block_values.get("content")
             dynamic_values = block_values.get("for_each")
             if not block_content or not dynamic_values:
-                return rendered_blocks
+                continue
 
+            if 'dynamic' in block_content:
+                next_key = list(block_content['dynamic'].keys())[0]
+                block_content['dynamic'][next_key]['for_each'] = dynamic_values[0][next_key]
+                TerraformVariableRenderer._process_dynamic_blocks(block_content['dynamic'])
+
+            block_content.pop('dynamic', None)
             dynamic_value_ref = f"{block_name}.value"
-            dynamic_arguments = [
-                argument
-                for argument, value in block_content.items()
-                if value == dynamic_value_ref or isinstance(value, str) and dynamic_value_ref in value
-            ]
+            dynamic_arguments = []
+            for argument, value in block_content.items():
+                if dynamic_type == DYNAMIC_BLOCKS_LISTS and value == dynamic_value_ref:
+                    dynamic_arguments.append(argument)
+                if dynamic_type == DYNAMIC_BLOCKS_MAPS and isinstance(value, str) and dynamic_value_ref in value:
+                    dynamic_arguments.append(argument)
+
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
                     for dynamic_argument in dynamic_arguments:
-                        block_conf[dynamic_argument] = dynamic_value if not isinstance(dynamic_value, dict) else dynamic_value[block_content[dynamic_argument].split('.')[-1]]
+                        if dynamic_type == DYNAMIC_BLOCKS_MAPS:
+                            dynamic_value_in_map = block_content[dynamic_argument].split('.')[-1]
+                            if isinstance(dynamic_value, dict):
+                                block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                            else:
+                                block_conf[dynamic_argument] = dynamic_value[0][dynamic_value_in_map]
+                        else:
+                            block_conf[dynamic_argument] = dynamic_value
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs
+                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
 
         return rendered_blocks
 
