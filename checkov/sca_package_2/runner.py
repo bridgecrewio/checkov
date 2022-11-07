@@ -143,7 +143,7 @@ class Runner(BaseRunner[None]):
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
             if file_path.name in SUPPORTED_PACKAGE_FILES:
-                root_folder = os.path.split(os.path.commonprefix(files))[0]
+                root_folder = os.path.split(os.path.commonprefix(files))[0]  # type: ignore
                 package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")
