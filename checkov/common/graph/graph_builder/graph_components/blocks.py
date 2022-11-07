@@ -213,6 +213,12 @@ class Block:
         return not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id
 
     def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
+        """
+        override in case of a special case where additional attributes are needed to be tracked included in self.changed_attributes
+        and self.breadcrumbs, such as terraform dynamic blocks
+        :param attribute_key: JSONPath notation of an attribute key that is used for extraction
+        :return: list of the additional attributes, in JSONPath notation
+        """
         return []
 
     @staticmethod
