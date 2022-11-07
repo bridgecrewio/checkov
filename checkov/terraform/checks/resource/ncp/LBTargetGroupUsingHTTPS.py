@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class LBTargetGroupUsingHTTPS(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure LB TargetGroup Using HTTPS"
+        name = "Ensure Load Balancer Target Group is not using HTTP"
         id = "CKV_NCP_15"
         supported_resources = ("ncloud_lb_target_group",)
         categories = (CheckCategories.GENERAL_SECURITY,)
