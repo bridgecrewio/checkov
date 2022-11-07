@@ -200,6 +200,7 @@ class EntropyKeywordCombinator(BasePlugin):
                 possible_keywords.add(raw_context.lines[j])
                 if self.is_object_start(raw_context=raw_context, idx=j):
                     return possible_keywords
+        # No start of array detected, hence all found possible_keywords are irrelevant
         return set()
 
     @staticmethod
