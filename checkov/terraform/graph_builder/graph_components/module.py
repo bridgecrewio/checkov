@@ -37,6 +37,7 @@ class Module:
         self.source = ""
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
+        self.render_dynamic_blocks_env_var = os.getenv('RENDER_DYNAMIC_MODULES', 'True')
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -151,7 +152,7 @@ class Module:
                     attributes = self.clean_bad_characters(resource_conf)
                     if not isinstance(attributes, dict):
                         continue
-                    if os.getenv('RENDER_DYNAMIC_MODULES', 'True').lower() == 'false':
+                    if self.render_dynamic_blocks_env_var.lower() == 'false':
                         has_dynamic_block = False
                     else:
                         has_dynamic_block = handle_dynamic_values(attributes)
