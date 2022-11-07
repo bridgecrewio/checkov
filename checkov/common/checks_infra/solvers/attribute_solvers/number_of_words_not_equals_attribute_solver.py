@@ -1,7 +1,7 @@
 from typing import Optional, Any, Dict
 
 from checkov.common.graph.checks_infra.enums import Operators
-from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_equals_solver import NumberOfWordsEqualsAttributeSolver
+from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_equals_attribute_solver import NumberOfWordsEqualsAttributeSolver
 
 
 class NumberOfWordsNotEqualsAttributeSolver(NumberOfWordsEqualsAttributeSolver):
