@@ -10,9 +10,9 @@ resources:
 
 stages:
 - stage: Example
-  displayName: ExampleDisplayName
   jobs:
   - job: FailNoTag
+    displayName: FailNoTagDisplayName
     pool:
       vmImage: 'ubuntu-18.04'
 
@@ -20,9 +20,8 @@ stages:
 
     steps:
       - script: printenv
-        displayName: printenvDisplayName
+        name: runPrintenv
   - job: PassDigest
-    displayName: PassDigestDisplayName
     pool:
       vmImage: 'ubuntu-18.04'
 
@@ -30,7 +29,6 @@ stages:
 
     steps:
       - script: printenv
-        name: printenvName
 
 jobs:
 - job: FailTag
