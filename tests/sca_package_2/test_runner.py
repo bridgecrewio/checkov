@@ -15,7 +15,7 @@ def test_upload_scannable_files():
     )
 
     # expected
-    expected_output = [
+    expected_output = {
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
@@ -24,12 +24,12 @@ def test_upload_scannable_files():
                       s3_file_key='package-lock.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
-    ]
+    }
 
     # then
     assert len(input_paths) == 4
 
-    assert set(input_paths) == set(expected_output)
+    assert set(input_paths) == expected_output
 
 
 def test_upload_scannable_files_exclude_go_and_requirements():
@@ -41,17 +41,17 @@ def test_upload_scannable_files_exclude_go_and_requirements():
         excluded_file_names={"go.sum", "package-lock.json"}
     )
     # expected
-    expected_output = [
+    expected_output = {
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
-    ]
+    }
 
     # then
     assert len(input_output_paths) == 2
 
-    assert set(input_output_paths) == set(expected_output)
+    assert set(input_output_paths) == expected_output
 
 
 def test_upload_scannable_files_file_config():
@@ -69,7 +69,7 @@ def test_upload_scannable_files_file_config():
         excluded_file_names=set()
     )
     # expected
-    expected_output = [
+    expected_output = {
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
@@ -78,9 +78,9 @@ def test_upload_scannable_files_file_config():
                       s3_file_key='package-lock.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
-    ]
+    }
 
     # then
     assert len(input_output_paths) == 4
 
-    assert set(input_output_paths) == set(expected_output)
+    assert set(input_output_paths) == expected_output
