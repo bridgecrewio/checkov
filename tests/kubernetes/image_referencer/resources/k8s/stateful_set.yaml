@@ -57,7 +57,7 @@ spec:
               topologyKey: kubernetes.io/hostname
       containers:
       - name: cockroachdb
-        image: ghcr.io/build-trust/ockam-builder@sha256:e43dd94652096b03cc472a3c709c7335e8b166cab77b7a7b56f88fa38f3d24cc
+        image: cockroachdb/cockroach:v1.1.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 26257
