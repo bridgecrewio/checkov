@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from checkov.azure_pipelines.checks.registry import registry
 from checkov.common.output.report import CheckType
@@ -37,7 +37,7 @@ class Runner(YamlRunner):
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
         relative_file_path = f"/{os.path.relpath(file_path, root_folder)}"
-        if not self.definitions:
+        if not self.definitions or not isinstance(self.definitions.get, dict):
             return relative_file_path
         start_line, end_line = Runner.get_start_and_end_lines(key)
         resource_name = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
@@ -56,11 +56,13 @@ class Runner(YamlRunner):
         return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
 
 
-def generate_resource_key_recursive(start_line, end_line, conf, key=None):
+def generate_resource_key_recursive(start_line: int, end_line: int,
+                                    conf: Dict[str, Dict[str, Any] | List[Dict[str, Any]]], key: str | None = None
+                                    ) -> str | None:
     if not isinstance(conf, dict):
         return key
 
-    def _get_resource_from_dict(dict_to_inspect, key) -> str | None:
+    def _get_resource_from_dict(dict_to_inspect: dict[str, Any], key: str | None) -> str | None:
         if dict_to_inspect[START_LINE] <= start_line <= end_line <= dict_to_inspect[END_LINE]:
             job_name = dict_to_inspect.get('job', None)
             key = f'{key}.{job_name}' if job_name else key
