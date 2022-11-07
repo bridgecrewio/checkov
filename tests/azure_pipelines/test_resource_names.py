@@ -2,8 +2,6 @@ import pytest
 
 from checkov.azure_pipelines.runner import Runner
 
-no_tag_result_config = {'job': 'FailNoTag', 'pool': {'vmImage': 'ubuntu-18.04', '__startline__': 16, '__endline__': 18}, 'container': 'ubuntu', 'steps': [{'script': 'printenv', '__startline__': 21, '__endline__': 22}], '__startline__': 14, '__endline__': 22}
-
 @pytest.mark.parametrize(
     "key,file_path,expected_key",
     [
