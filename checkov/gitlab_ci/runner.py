@@ -14,6 +14,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.gitlab_ci.image_referencer.manager import GitlabCiImageReferencerManager
 from checkov.yaml_doc.runner import Runner as YamlRunner
+from pathlib import Path
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -47,8 +48,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def included_paths(self) -> Iterable[str]:
         return (".gitlab-ci.yml", ".gitlab-ci.yaml")
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
-        start_line, end_line = Runner.get_start_and_end_lines(key)
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
+        start_line, end_line = self.get_start_and_end_lines(key)
         file_config = force_dict(self.definitions[file_path])
         if not file_config:
             return key
@@ -102,13 +104,3 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             images.extend(manager.extract_images_from_workflow())
 
         return images
-
-    @staticmethod
-    def get_start_and_end_lines(key: str) -> list[int]:
-        check_name = key.split('.')[-1]
-        if "[" not in check_name or "[]" in check_name:
-            return [-1, -1]
-
-        start_end_line_bracket_index = check_name.index('[')
-
-        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]

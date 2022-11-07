@@ -45,7 +45,7 @@ class NSGRulePortAccessRestricted(BaseResourceCheck):
                 if "properties" in rule:
                     if "access" in rule["properties"] and rule["properties"]["access"].lower() == "allow":
                         if "direction" in rule["properties"] and rule["properties"]["direction"].lower() == "inbound":
-                            if "protocol" in rule["properties"] and rule["properties"]["protocol"].lower() == "tcp":
+                            if "protocol" in rule["properties"] and rule["properties"]["protocol"].lower() in ("tcp", "*"):
                                 if "destinationPortRanges" in rule["properties"]:
                                     portRanges.extend(rule["properties"]["destinationPortRanges"])
                                 if "destinationPortRange" in rule["properties"]:

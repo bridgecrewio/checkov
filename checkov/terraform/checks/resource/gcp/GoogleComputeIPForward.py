@@ -31,6 +31,8 @@ class GoogleComputeIPForward(BaseResourceNegativeValueCheck):
         return "name"
 
     def check_excluded_condition(self, value):
+        if not isinstance(value, str):
+            return False
         return value.startswith('gke-')
 
 
