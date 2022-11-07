@@ -34,7 +34,7 @@ from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FI
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
@@ -74,8 +74,6 @@ SIGNUP_HEADER = merge_dicts({
     'Content-Type': 'application/json;charset=UTF-8'},
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
-
-RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('RUN_SCA_PACKAGE_SCAN_V2', '').lower() == 'true'
 
 
 class BcPlatformIntegration:
@@ -334,9 +332,9 @@ class BcPlatformIntegration:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
+                if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
+                    continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
-                    if RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
-                        continue
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
@@ -346,9 +344,9 @@ class BcPlatformIntegration:
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
+                    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
+                        continue
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
-                        if RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
-                            continue
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
