@@ -16,13 +16,13 @@ def test_upload_scannable_files():
 
     # expected
     expected_output = [
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/requirements.txt',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/go.sum',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
                       s3_file_key='go.sum'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package-lock.json',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
                       s3_file_key='package-lock.json'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package.json',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
     ]
 
@@ -42,9 +42,9 @@ def test_upload_scannable_files_exclude_go_and_requirements():
     )
     # expected
     expected_output = [
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/requirements.txt',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package.json',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
     ]
 
@@ -58,24 +58,25 @@ def test_upload_scannable_files_file_config():
     # when
     input_output_paths = Runner().upload_package_files(
         root_path=None,
-        files=['/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/requirements.txt',
-               '/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/go.sum',
-               '/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package-lock.json',
-               '/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package.json',
-               '/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/go.mod',
-               ],
+        files=[
+            str(EXAMPLES_DIR / 'requirements.txt'),
+            str(EXAMPLES_DIR / 'go.sum'),
+            str(EXAMPLES_DIR / 'package-lock.json'),
+            str(EXAMPLES_DIR / 'package.json'),
+            str(EXAMPLES_DIR / 'go.mod'),
+        ],
         excluded_paths=set(),
         excluded_file_names=set()
     )
     # expected
     expected_output = [
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/requirements.txt',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/go.sum',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
                       s3_file_key='go.sum'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package-lock.json',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
                       s3_file_key='package-lock.json'),
-        FileToPersist(full_file_path='/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/package.json',
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json')
     ]
 
