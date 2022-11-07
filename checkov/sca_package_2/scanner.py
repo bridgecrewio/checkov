@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -35,8 +36,8 @@ class Scanner:
         request_body = {
             "branch": "",
             "commit": "",
-            "path": bc_integration.repo_path + "/",
-            "repoId": bc_integration.repo_id, #TODO change
+            "path": os.path.join(bc_integration.repo_path, ''),
+            "repoId": bc_integration.repo_id,
             "id": bc_integration.timestamp,
             "repositoryId": ""
         }
