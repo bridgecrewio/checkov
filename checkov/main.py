@@ -76,7 +76,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
+RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
 
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
@@ -103,7 +103,7 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
-    sca_package_runner_2() if RUN_NEW_SCA_PACKAGE_SCAN else sca_package_runner()
+    sca_package_runner_2() if RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
 )
 
 

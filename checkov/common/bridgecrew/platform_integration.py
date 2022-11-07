@@ -75,7 +75,7 @@ SIGNUP_HEADER = merge_dicts({
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
-RUN_NEW_SCA_PACKAGE_SCAN = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
+RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
 
 
 class BcPlatformIntegration:
@@ -335,7 +335,7 @@ class BcPlatformIntegration:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
-                    if RUN_NEW_SCA_PACKAGE_SCAN and file_extension in SUPPORTED_PACKAGE_FILES:
+                    if RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
                         continue
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
@@ -347,7 +347,7 @@ class BcPlatformIntegration:
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
-                        if RUN_NEW_SCA_PACKAGE_SCAN and file_extension in SUPPORTED_PACKAGE_FILES:
+                        if RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
                             continue
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
