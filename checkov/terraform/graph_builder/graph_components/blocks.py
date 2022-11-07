@@ -11,7 +11,12 @@ from checkov.terraform.graph_builder.utils import remove_module_dependency_in_pa
 
 
 class TerraformBlock(Block):
-    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module", "has_dynamic_block")
+    __slots__ = (
+        "module_connections",
+        "module_dependency",
+        "module_dependency_num",
+        "source_module",
+        "has_dynamic_block")
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
                  id: str = "", source: str = "", has_dynamic_block: bool = False) -> None:
@@ -54,7 +59,7 @@ class TerraformBlock(Block):
             while remainder_key_parts:
                 dynamic_for_each_index = dynamic_attribute_key_parts.index('for_each')
                 dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[:dynamic_for_each_index],\
-                                                     dynamic_attribute_key_parts[dynamic_for_each_index + 1:]
+                    dynamic_attribute_key_parts[dynamic_for_each_index + 1:]
                 dynamic_block_name = dynamic_content_key_parts[-1]
                 dynamic_content_path = dynamic_content_key_parts + ['content']
                 if dpath.search(self.attributes, dynamic_content_path):
@@ -78,7 +83,8 @@ class TerraformBlock(Block):
                     dynamic_changed_attributes.append(key_path)
         elif isinstance(value, list):
             for idx, sub_value in enumerate(value):
-                TerraformBlock._collect_dynamic_dependent_keys(dynamic_ref, sub_value, f'{key_path}.{idx}', dynamic_changed_attributes)
+                TerraformBlock._collect_dynamic_dependent_keys(
+                    dynamic_ref, sub_value, f'{key_path}.{idx}', dynamic_changed_attributes)
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
