@@ -28,9 +28,7 @@ class BaseMultiLineParser(ABC):
             line = raw_context.lines[j]
             if line_length_limit and len(line) > line_length_limit:
                 continue
-            if self.lines_in_same_object(raw_context=raw_context,
-                                         other_line_idx=j,
-                                         target_line_idx=raw_context.target_index) \
+            if self.lines_in_same_object(raw_context=raw_context, other_line_idx=j) \
                     and not self.is_line_comment(line):
                 possible_keywords.add(raw_context.lines[j])
                 if self.is_object_start(line=line):
@@ -43,7 +41,6 @@ class BaseMultiLineParser(ABC):
         self,
         raw_context: CodeSnippet | None,
         other_line_idx: int,
-        target_line_idx: int,
     ) -> bool:
         pass
 

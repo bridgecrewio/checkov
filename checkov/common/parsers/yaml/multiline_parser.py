@@ -21,13 +21,11 @@ class YmlMultilineParser(BaseMultiLineParser):
         self,
         raw_context: CodeSnippet | None,
         other_line_idx: int,
-        target_line_idx: int,
     ) -> bool:
         if not raw_context:
             return False  # could not know
         return 0 <= other_line_idx < len(raw_context.lines) and \
-            0 <= target_line_idx + 1 < len(raw_context.lines) and \
-            self.lines_same_indentation(raw_context.lines[other_line_idx], raw_context.lines[target_line_idx])
+            self.lines_same_indentation(raw_context.lines[other_line_idx], raw_context.target_line)
 
     @staticmethod
     def is_object_start(
