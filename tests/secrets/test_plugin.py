@@ -1,6 +1,6 @@
-import logging
 import os
 import unittest
+from pathlib import Path
 
 from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.filetype import FileType
@@ -228,6 +228,21 @@ class TestCombinatorPlugin(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=None, files=[valid_file_path], runner_filter=RunnerFilter(framework=['secrets']))
         self.assertEqual(len(report.failed_checks), 5)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+
+    def test_non_multiline_keyword_password_report(self):
+        # given
+        test_file_path = Path(__file__).parent / "yml_multiline/pomerium_compose.yml"
+
+        # when
+        report = Runner().run(
+            root_folder=None, files=[str(test_file_path)], runner_filter=RunnerFilter(framework=['secrets'])
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 4)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
