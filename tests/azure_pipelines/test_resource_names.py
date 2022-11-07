@@ -6,11 +6,11 @@ from checkov.azure_pipelines.runner import Runner
     "key,file_path,expected_key",
     [
         ('jobs.jobs.CKV_AZUREPIPELINES_1[32:39]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
-         '/azure-pipelines.yml:jobs.FailTag'),
+         '/azure-pipelines.yml:jobs[0](FailTag)'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[14:22]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
-         '/azure-pipelines.yml:stages[0].jobs.FailNoTag'),
+         '/azure-pipelines.yml:stages[0](Example).jobs[0](FailNoTagDisplayName)'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[22:29]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
-         '/azure-pipelines.yml:stages[0].jobs.PassDigest'),
+         '/azure-pipelines.yml:stages[0](Example).jobs[1](PassDigest)'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
          '/azure-pipelines.yml')
     ],

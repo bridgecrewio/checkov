@@ -34,6 +34,7 @@ def definitions() -> dict[str, Any]:
                     'jobs': [
                         {
                             'job': 'FailNoTag',
+                            'displayName': 'FailNoTagDisplayName',
                             'pool': {
                                 'vmImage': 'ubuntu-18.04',
                                 '__startline__': 16,

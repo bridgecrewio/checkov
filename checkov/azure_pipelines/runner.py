@@ -55,8 +55,12 @@ def generate_resource_key_recursive(start_line: int, end_line: int,
 
     def _get_resource_from_code_block(block_to_inspect: dict[str, Any], inspected_key: str | None) -> str | None:
         if block_to_inspect[START_LINE] <= start_line <= end_line <= block_to_inspect[END_LINE]:
-            job_name = block_to_inspect.get('job', None)
-            inspected_key = f'{inspected_key}.{job_name}' if job_name else inspected_key
+            block_name = block_to_inspect.get('displayName',
+                                              block_to_inspect.get('name',
+                                                                   block_to_inspect.get('job',
+                                                                                        block_to_inspect.get('stage',
+                                                                                                             False))))
+            inspected_key = f'{inspected_key}({block_name})' if block_name else inspected_key
             if block_to_inspect[START_LINE] == start_line:
                 return inspected_key
             return generate_resource_key_recursive(start_line, end_line, block_to_inspect, resource_key=inspected_key)
@@ -71,8 +75,7 @@ def generate_resource_key_recursive(start_line: int, end_line: int,
         elif isinstance(code_block, list):
             for index, item in enumerate(code_block):
                 if isinstance(item, dict):
-                    name = f'{code_block_name}[{index}]' if code_block_name != 'jobs' else code_block_name
-                    resource_key_to_inspect = f'{resource_key}.{name}' if resource_key else name
+                    resource_key_to_inspect = f'{resource_key}.{code_block_name}[{index}]' if resource_key else f'{code_block_name}[{index}]'
                     resource = _get_resource_from_code_block(item, resource_key_to_inspect)
                     if resource:
                         return resource
