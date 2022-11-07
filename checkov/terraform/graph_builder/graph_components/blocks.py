@@ -64,6 +64,18 @@ class TerraformBlock(Block):
 
         return None
 
+    def update_list_attribute(self, attribute_key: str, attribute_value: Any) -> None:
+        """Updates list attributes with their index
+
+        This needs to be overridden, because of our hcl parser adding a list around any value
+        """
+
+        if attribute_key not in self.attributes or isinstance(self.attributes[attribute_key][0], list):
+            # sometimes the attribute_value is a list and replaces the whole value of the key, which makes it a normal value
+            # ex. attribute_value = ["xyz"] and self.attributes[attribute_key][0] = "xyz"
+            for idx, value in enumerate(attribute_value):
+                self.attributes[f"{attribute_key}.{idx}"] = value
+
     @classmethod
     def get_inner_attributes(
         cls,
