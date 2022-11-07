@@ -1,8 +1,8 @@
 stages:
   - integration-tests
   - unit-tests
-  - dev_build
   - tag
+  - dev_build
   - build
 
 tag:
@@ -44,7 +44,7 @@ unit-tests:
 
 dev_build:
   rules:
-    - if: '$CI_COMMIT_TAG != "/^$/" && $CI_COMMIT_REF_NAME == "develop" && $CI_COMMIT_MESSAGE!=/^[^bump]/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
+    - if: '$CI_COMMIT_TAG != "/^$/" && $CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_MESSAGE!=/^[^bump]/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
   image: docker:19.03.12
   stage: build
   services:
