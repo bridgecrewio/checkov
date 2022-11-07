@@ -34,7 +34,8 @@ class Runner(YamlRunner):
     def is_workflow_file(self, file_path: str) -> bool:
         return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any]|None = None, root_folder: str | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
         relative_file_path = f"/{os.path.relpath(file_path, root_folder)}"
         if not self.definitions:
             return relative_file_path
@@ -58,6 +59,7 @@ class Runner(YamlRunner):
 def generate_resource_key_recursive(start_line, end_line, conf, key=None):
     if not isinstance(conf, dict):
         return key
+
     def _get_resource_from_dict(dict_to_inspect, key) -> str | None:
         if dict_to_inspect[START_LINE] <= start_line <= end_line <= dict_to_inspect[END_LINE]:
             job_name = dict_to_inspect.get('job', None)
