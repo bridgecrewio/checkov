@@ -1,6 +1,5 @@
 stages:
-  - integration-tests
-  - unit-tests
+  - tests
   - tag
   - dev_build
   - build
@@ -17,7 +16,7 @@ tag:
 
 integration-tests:
   image: python
-  stage: integration-tests
+  stage: tests
   variables:
     pythonver: "3.7"
   script:
@@ -30,7 +29,7 @@ integration-tests:
 
 unit-tests:
   image: python
-  stage: unit-tests
+  stage: tests
   variables:
     pythonver: "3.7"
   script:
