@@ -20,6 +20,7 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_dict
 from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
+from pathlib import Path
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -68,7 +69,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def included_paths(self) -> Iterable[str]:
         return [".github"]
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
         if not definitions:
             return key
 
@@ -76,7 +78,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         if potential_job_name != '*':
             new_key = f'jobs.{potential_job_name}'
         else:
-            start_line, end_line = Runner.get_start_and_end_lines(key)
+            start_line, end_line = self.get_start_and_end_lines(key)
             job_name = Runner.resolve_job_name(definitions, start_line, end_line)
             step_name = Runner.resolve_step_name(definitions["jobs"][job_name], start_line, end_line)
             new_key = f'jobs.{job_name}.steps.{step_name}'
@@ -129,15 +131,6 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             images.extend(manager.extract_images_from_workflow())
 
         return images
-
-    @staticmethod
-    def get_start_and_end_lines(key: str) -> list[int]:
-        check_name = key.split('.')[-1]
-        try:
-            start_end_line_bracket_index = check_name.index('[')
-        except ValueError:
-            return [-1, -1]
-        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
 
     @staticmethod
     def resolve_job_name(definition: dict[str, Any], start_line: int, end_line: int) -> str:
