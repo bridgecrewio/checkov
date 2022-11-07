@@ -288,6 +288,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
         return f"{file_path}.{key}"
+
     @abstractmethod
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
         raise Exception("should be handled by derived class")
