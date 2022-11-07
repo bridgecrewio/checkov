@@ -37,7 +37,7 @@ class Runner(YamlRunner):
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
         relative_file_path = f"/{os.path.relpath(file_path, root_folder)}"
-        if not self.definitions or not isinstance(self.definitions.get, dict):
+        if not self.definitions or not isinstance(self.definitions, dict):
             return relative_file_path
         start_line, end_line = Runner.get_start_and_end_lines(key)
         resource_name = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
