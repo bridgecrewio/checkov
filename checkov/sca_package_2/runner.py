@@ -57,7 +57,6 @@ class Runner(BaseRunner[None]):
                 files=files,
                 excluded_paths=excluded_paths,
                 excluded_file_names=excluded_file_names,
-                root_folder=root_folder
         ):
             # no packages found
             return None
@@ -126,7 +125,6 @@ class Runner(BaseRunner[None]):
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
-            root_folder: str | Path | None = ""
     ) -> bool:
         """ upload scannable files to s3"""
         excluded_file_names = excluded_file_names or set()
@@ -137,13 +135,14 @@ class Runner(BaseRunner[None]):
                         p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
                     file_path_str = str(file_path)
                     package_files_to_persist.append(
-                        FileToPersist(file_path_str, os.path.relpath(file_path_str, root_folder)))
+                        FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
 
         for file in files or []:
             file_path = Path(file)
             if not file_path.exists():
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
             package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")
