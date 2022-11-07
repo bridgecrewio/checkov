@@ -137,14 +137,15 @@ class Runner(BaseRunner[None]):
                     package_files_to_persist.append(
                         FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
 
-        for file in files or []:
-            file_path = Path(file)
-            if not file_path.exists():
-                logging.warning(f"File {file_path} doesn't exist")
-                continue
-            if file_path.name in SUPPORTED_PACKAGE_FILES:
-                root_folder = os.path.split(os.path.commonprefix(files))[0]  # type: ignore
-                package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
+        if files:
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+            for file in files:
+                file_path = Path(file)
+                if not file_path.exists():
+                    logging.warning(f"File {file_path} doesn't exist")
+                    continue
+                if file_path.name in SUPPORTED_PACKAGE_FILES:
+                    package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")
         bc_integration.persist_files(package_files_to_persist)
