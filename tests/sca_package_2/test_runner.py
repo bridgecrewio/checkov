@@ -8,7 +8,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def test_upload_scannable_files():
     # when
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    input_paths = Runner().upload_scannable_files(
+    input_paths = Runner().upload_package_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
@@ -34,7 +34,7 @@ def test_upload_scannable_files():
 
 def test_upload_scannable_files_exclude_go_and_requirements():
     # when
-    input_output_paths = Runner().upload_scannable_files(
+    input_output_paths = Runner().upload_package_files(
         root_path=EXAMPLES_DIR,
         files=[],
         excluded_paths=set(),
@@ -56,7 +56,7 @@ def test_upload_scannable_files_exclude_go_and_requirements():
 
 def test_upload_scannable_files_file_config():
     # when
-    input_output_paths = Runner().upload_scannable_files(
+    input_output_paths = Runner().upload_package_files(
         root_path=None,
         files=['/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/requirements.txt',
                '/Users/ajbara/dev2/checkov/tests/sca_package_2/examples/go.sum',

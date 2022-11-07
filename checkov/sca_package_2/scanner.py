@@ -52,7 +52,7 @@ class Scanner:
         response_json = response.json()
 
         if not response_json["startedSuccessfully"]:
-            logging.info(f"Failed to run package scan.")
+            logging.info(f"Failed to run package scanning.")
             return dict()
 
         return self.poll_scan_result()
