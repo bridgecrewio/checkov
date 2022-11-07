@@ -210,7 +210,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(
                             file_path, key, check.supported_entities,  # type:ignore[arg-type]  # key is str not BaseCheck
-                            ),
+                        ),
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),

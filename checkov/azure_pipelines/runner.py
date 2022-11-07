@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from checkov.azure_pipelines.checks.registry import registry
