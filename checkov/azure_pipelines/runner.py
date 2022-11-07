@@ -48,32 +48,32 @@ class Runner(YamlRunner):
 
 
 def generate_resource_key_recursive(start_line: int, end_line: int,
-                                    conf: Dict[str, Any] | List[Dict[str, Any]], key: str | None = None
+                                    file_conf: Dict[str, Any] | List[Dict[str, Any]], resource_key: str | None = None
                                     ) -> str | None:
-    if not isinstance(conf, dict):
-        return key
+    if not isinstance(file_conf, dict):
+        return resource_key
 
-    def _get_resource_from_dict(dict_to_inspect: dict[str, Any], key: str | None) -> str | None:
-        if dict_to_inspect[START_LINE] <= start_line <= end_line <= dict_to_inspect[END_LINE]:
-            job_name = dict_to_inspect.get('job', None)
-            key = f'{key}.{job_name}' if job_name else key
-            if dict_to_inspect[START_LINE] == start_line:
-                return key
-            return generate_resource_key_recursive(start_line, end_line, dict_to_inspect, key=key)
+    def _get_resource_from_code_block(block_to_inspect: dict[str, Any], inspected_key: str | None) -> str | None:
+        if block_to_inspect[START_LINE] <= start_line <= end_line <= block_to_inspect[END_LINE]:
+            job_name = block_to_inspect.get('job', None)
+            inspected_key = f'{inspected_key}.{job_name}' if job_name else inspected_key
+            if block_to_inspect[START_LINE] == start_line:
+                return inspected_key
+            return generate_resource_key_recursive(start_line, end_line, block_to_inspect, resource_key=inspected_key)
         return None
 
-    for k, value in conf.items():
-        if isinstance(value, dict):
-            new_key = f'{key}.{k}' if key else k
-            resource = _get_resource_from_dict(value, new_key)
+    for code_block_name, code_block in file_conf.items():
+        if isinstance(code_block, dict):
+            new_key = f'{resource_key}.{code_block_name}' if resource_key else code_block_name
+            resource = _get_resource_from_code_block(code_block, new_key)
             if resource:
                 return resource
-        elif isinstance(value, list):
-            for i, e in enumerate(value):
-                if isinstance(e, dict):
-                    name = f'{k}[{i}]' if k != 'jobs' else k
-                    new_key = f'{key}.{name}' if key else name
-                    resource = _get_resource_from_dict(e, new_key)
+        elif isinstance(code_block, list):
+            for index, item in enumerate(code_block):
+                if isinstance(item, dict):
+                    name = f'{code_block_name}[{index}]' if code_block_name != 'jobs' else code_block_name
+                    resource_key_to_inspect = f'{resource_key}.{name}' if resource_key else name
+                    resource = _get_resource_from_code_block(item, resource_key_to_inspect)
                     if resource:
                         return resource
-    return key
+    return resource_key
