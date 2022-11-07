@@ -40,21 +40,11 @@ class Runner(YamlRunner):
         relative_file_path = f"/{os.path.relpath(file_path, root_folder)}"
         if not self.definitions or not isinstance(self.definitions, dict):
             return relative_file_path
-        start_line, end_line = Runner.get_start_and_end_lines(key)
+        start_line, end_line = self.get_start_and_end_lines(key)
         resource_name = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
         if not resource_name:
             return relative_file_path
         return f"{relative_file_path}:{resource_name}"
-
-    @staticmethod
-    def get_start_and_end_lines(key: str) -> list[int]:
-        check_name = key.split('.')[-1]
-        if "[" not in check_name or "[]" in check_name:
-            return [-1, -1]
-
-        start_end_line_bracket_index = check_name.index('[')
-
-        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
 
 
 def generate_resource_key_recursive(start_line: int, end_line: int,

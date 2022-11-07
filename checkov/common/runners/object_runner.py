@@ -335,3 +335,11 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
+
+    def get_start_and_end_lines(self, key: str) -> list[int]:
+        check_name = key.split('.')[-1]
+        try:
+            start_end_line_bracket_index = check_name.index('[')
+        except ValueError:
+            return [-1, -1]
+        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
