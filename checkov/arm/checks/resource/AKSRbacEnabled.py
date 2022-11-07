@@ -12,7 +12,7 @@ class AKSRbacEnabled(BaseResourceCheck):
         # apiVersion 2017-08-03 = Fail - No enableRBAC option to configure
         name = "Ensure RBAC is enabled on AKS clusters"
         id = "CKV_AZURE_5"
-        supported_resources = ('Microsoft.ContainerService/managedClusters',)
+        supported_resources = ('Microsoft.ContainerService/managedClusters')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

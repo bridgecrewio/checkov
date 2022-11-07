@@ -12,7 +12,7 @@ class AKSDashboardDisabled(BaseResourceCheck):
         # apiVersion 2017-08-03 = Fail - No addonProfiles option to configure
         name = "Ensure Kubernetes Dashboard is disabled"
         id = "CKV_AZURE_8"
-        supported_resources = ('Microsoft.ContainerService/managedClusters',)
+        supported_resources = ('Microsoft.ContainerService/managedClusters')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

@@ -14,7 +14,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
         # apiversion 2019-08-01 and greater are fully supported
         name = "Ensure AKS has an API Server Authorized IP Ranges enabled"
         id = "CKV_AZURE_6"
-        supported_resources = ('Microsoft.ContainerService/managedClusters',)
+        supported_resources = ('Microsoft.ContainerService/managedClusters')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

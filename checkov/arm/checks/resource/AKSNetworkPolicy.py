@@ -12,7 +12,7 @@ class AKSNetworkPolicy(BaseResourceCheck):
         # apiVersion 2017-08-03 = Fail - No networkProfile option to configure
         name = "Ensure AKS cluster has Network Policy configured"
         id = "CKV_AZURE_7"
-        supported_resources = ('Microsoft.ContainerService/managedClusters',)
+        supported_resources = ('Microsoft.ContainerService/managedClusters')
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
