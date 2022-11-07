@@ -104,4 +104,3 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             images.extend(manager.extract_images_from_workflow())
 
         return images
-
