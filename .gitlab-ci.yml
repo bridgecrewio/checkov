@@ -5,14 +5,14 @@ stages:
   - tag
   - build
 
-
 tag:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   image: python:3.8
   stage: tag
   script:
     - sh tag.sh
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
 
 
 integration-tests:
