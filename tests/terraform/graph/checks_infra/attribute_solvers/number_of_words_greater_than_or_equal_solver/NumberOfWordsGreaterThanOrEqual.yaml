@@ -1,0 +1,9 @@
+metadata:
+  id: "NumberOfWordsGreaterThanOrEqual"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: ingress.description
+  operator: number_of_words_greater_than_or_equal
+  value: 6
