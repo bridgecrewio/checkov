@@ -60,9 +60,10 @@ def generate_resource_key_recursive(start_line, end_line, conf, key=None):
         return key
     def _get_resource_from_dict(dict_to_inspect, key) -> str | None:
         if dict_to_inspect[START_LINE] <= start_line <= end_line <= dict_to_inspect[END_LINE]:
+            job_name = dict_to_inspect.get('job', None)
+            key = f'{key}.{job_name}' if job_name else key
             if dict_to_inspect[START_LINE] == start_line:
-                name = dict_to_inspect[list(dict_to_inspect.keys())[0]]
-                return f'{key}.{name}' if key else f'{name}'
+                return key
             return generate_resource_key_recursive(start_line, end_line, dict_to_inspect, key=key)
         return None
 
@@ -70,15 +71,14 @@ def generate_resource_key_recursive(start_line, end_line, conf, key=None):
         if isinstance(value, dict):
             new_key = f'{key}.{k}' if key else k
             resource = _get_resource_from_dict(value, new_key)
-            if resource and resource != new_key:
+            if resource:
                 return resource
-            continue
-        if isinstance(value, list):
-            for e in value:
+        elif isinstance(value, list):
+            for i, e in enumerate(value):
                 if isinstance(e, dict):
-                    new_key = f'{key}.{k}' if key else k
+                    name = f'{k}[{i}]' if k != 'jobs' else k
+                    new_key = f'{key}.{name}' if key else name
                     resource = _get_resource_from_dict(e, new_key)
-                    if resource and resource != new_key:
+                    if resource:
                         return resource
-            continue
     return key

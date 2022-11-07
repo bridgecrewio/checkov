@@ -10,9 +10,9 @@ no_tag_result_config = {'job': 'FailNoTag', 'pool': {'vmImage': 'ubuntu-18.04', 
         ('jobs.jobs.CKV_AZUREPIPELINES_1[32:39]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
          '/azure-pipelines.yml:jobs.FailTag'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[14:22]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
-         '/azure-pipelines.yml:stages.jobs.FailNoTag'),
+         '/azure-pipelines.yml:stages[0].jobs.FailNoTag'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[22:29]', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
-         '/azure-pipelines.yml:stages.jobs.PassDigest'),
+         '/azure-pipelines.yml:stages[0].jobs.PassDigest'),
         ('stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1', '/checkov/tests/azure_pipelines/resources/azure-pipelines.yml',
          '/azure-pipelines.yml')
     ],
@@ -20,7 +20,7 @@ no_tag_result_config = {'job': 'FailNoTag', 'pool': {'vmImage': 'ubuntu-18.04', 
 def test_get_resource(key, file_path, expected_key, definitions, supported_entities):
     runner = Runner()
     runner.definitions = definitions
-    new_key = runner.get_resource(file_path, key, [], '/checkov/tests/azure_pipelines/resources')
+    new_key = runner.get_resource(file_path, key, [], definitions, '/checkov/tests/azure_pipelines/resources')
 
     assert new_key == expected_key
 
