@@ -32,7 +32,7 @@ class Scanner:
         return []
 
     def run_scan(self) -> dict[str, Any]:
-        logging.info(f"Start to scan package files.")
+        logging.info("Start to scan package files.")
 
         request_body = {
             "branch": "",
@@ -53,7 +53,7 @@ class Scanner:
         response_json = response.json()
 
         if not response_json["startedSuccessfully"]:
-            logging.info(f"Failed to run package scanning.")
+            logging.info("Failed to run package scanning.")
             return dict()
 
         return self.poll_scan_result()
