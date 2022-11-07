@@ -282,7 +282,7 @@ class TestRenderer(TestCase):
         )
 
     def test_dynamic_with_env_var_false(self):
-        os.environ['RENDER_DYNAMIC_MODULES'] = 'False'
+        os.environ['CHECKOV_RENDER_DYNAMIC_MODULES'] = 'False'
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"), render_variables=True)
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
