@@ -7,6 +7,7 @@ from checkov.azure_pipelines.checks.registry import registry
 from checkov.common.output.report import CheckType
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.common.util.consts import START_LINE, END_LINE
+from pathlib import Path
 
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ class Runner(YamlRunner):
         return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None, root_folder: str | None = None) -> str:
+                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
         relative_file_path = f"/{os.path.relpath(file_path, root_folder)}"
         if not self.definitions or not isinstance(self.definitions, dict):
             return relative_file_path
@@ -57,7 +58,7 @@ class Runner(YamlRunner):
 
 
 def generate_resource_key_recursive(start_line: int, end_line: int,
-                                    conf: Dict[str, Dict[str, Any] | List[Dict[str, Any]]], key: str | None = None
+                                    conf: Dict[str, Any] | List[Dict[str, Any]], key: str | None = None
                                     ) -> str | None:
     if not isinstance(conf, dict):
         return key
