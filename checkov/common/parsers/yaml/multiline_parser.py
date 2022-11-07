@@ -3,10 +3,10 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from checkov.common.parsers.multiline_parser import BaseMultiLineParser
-
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
+
+from checkov.common.parsers.multiline_parser import BaseMultiLineParser
 
 INDENTATION_PATTERN = re.compile(r'(^\s*(?:-?\s+)?)')
 COMMENT_PREFIX = re.compile(r'^[\s]*(#|\/\/)')
@@ -19,10 +19,15 @@ class YmlMultilineParser(BaseMultiLineParser):
 
     def lines_in_same_object(
         self,
-        other_line: str,
-        target_line: str,
+        raw_context: CodeSnippet | None,
+        other_line_idx: int,
+        target_line_idx: int,
     ) -> bool:
-        return self.lines_same_indentation(line1=other_line, line2=target_line)
+        if not raw_context:
+            return False  # could not know
+        return 0 <= other_line_idx < len(raw_context.lines) and \
+            0 <= target_line_idx + 1 < len(raw_context.lines) and \
+            self.lines_same_indentation(raw_context.lines[other_line_idx], raw_context.lines[target_line_idx])
 
     @staticmethod
     def is_object_start(

@@ -204,7 +204,7 @@ class EntropyKeywordCombinator(BasePlugin):
             secret_pattern: dict[Pattern[str], int] | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
-        secrets = set()
+        secrets: set[PotentialSecret] = set()
         if context is None or raw_context is None:
             return secrets
         value_secrets = self.extract_from_string(pattern=secret_pattern, string=context.target_line)
@@ -247,7 +247,7 @@ class EntropyKeywordCombinator(BasePlugin):
 
     @staticmethod
     def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) -> set[str]:
-        matches = set()
+        matches: set[str] = set()
         if not pattern:
             return matches
         for value_regex, group_number in pattern.items():

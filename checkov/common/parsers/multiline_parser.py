@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING
 from abc import ABC
 from abc import abstractmethod
 
-import math
-
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
@@ -20,7 +18,7 @@ class BaseMultiLineParser(ABC):
         search_range: range,
         context: CodeSnippet | None,
         raw_context: CodeSnippet | None,
-        line_length_limit: int = math.inf
+        line_length_limit: int = 0,
     ) -> set[str]:
         possible_keywords: set[str] = set()
 
@@ -28,9 +26,12 @@ class BaseMultiLineParser(ABC):
             return possible_keywords
         for j in search_range:
             line = raw_context.lines[j]
-            if len(line) > line_length_limit:
+            if line_length_limit and len(line) > line_length_limit:
                 continue
-            if self.lines_in_same_object(other_line=line, target_line=raw_context.target_line) and not self.is_line_comment(line):
+            if self.lines_in_same_object(raw_context=raw_context,
+                                         other_line_idx=j,
+                                         target_line_idx=raw_context.target_index) \
+                    and not self.is_line_comment(line):
                 possible_keywords.add(raw_context.lines[j])
                 if self.is_object_start(line=line):
                     return possible_keywords
@@ -40,8 +41,9 @@ class BaseMultiLineParser(ABC):
     @abstractmethod
     def lines_in_same_object(
         self,
-        other_line: str,
-        target_line: str,
+        raw_context: CodeSnippet | None,
+        other_line_idx: int,
+        target_line_idx: int,
     ) -> bool:
         pass
 
