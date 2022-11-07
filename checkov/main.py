@@ -76,7 +76,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('RUN_NEW_SCA_PACKAGE_SCAN', '').lower() == 'true'
+RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('RUN_SCA_PACKAGE_SCAN_V2', '').lower() == 'true'
 
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
