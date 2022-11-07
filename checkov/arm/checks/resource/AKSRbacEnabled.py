@@ -13,7 +13,7 @@ class AKSRbacEnabled(BaseResourceCheck):
         name = "Ensure RBAC is enabled on AKS clusters"
         id = "CKV_AZURE_5"
         supported_resources = ('Microsoft.ContainerService/managedClusters')
-        categories = (CheckCategories.KUBERNETES,)
+        categories = (CheckCategories.KUBERNETES)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
