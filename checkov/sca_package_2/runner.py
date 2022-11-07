@@ -53,11 +53,11 @@ class Runner(BaseRunner[None]):
             excluded_paths.update(runner_filter.excluded_paths)
 
         if not self.upload_scannable_files(
-            root_path=self._code_repo_path,
-            files=files,
-            excluded_paths=excluded_paths,
-            excluded_file_names=excluded_file_names,
-            root_folder=root_folder
+                root_path=self._code_repo_path,
+                files=files,
+                excluded_paths=excluded_paths,
+                excluded_file_names=excluded_file_names,
+                root_folder=root_folder
         ):
             # no packages found
             return None
@@ -66,7 +66,7 @@ class Runner(BaseRunner[None]):
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan()
 
-        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        # logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -126,7 +126,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
-            root_folder: str = ""
+            root_folder: str | Path | None = ""
     ) -> bool:
         """ upload scannable files to s3"""
         excluded_file_names = excluded_file_names or set()
@@ -136,7 +136,8 @@ class Runner(BaseRunner[None]):
                 if file_path.name in SUPPORTED_PACKAGE_FILES and not any(
                         p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
                     file_path_str = str(file_path)
-                    package_files_to_persist.append(FileToPersist(file_path_str, os.path.relpath(file_path_str, root_folder)))
+                    package_files_to_persist.append(
+                        FileToPersist(file_path_str, os.path.relpath(file_path_str, root_folder)))
 
         for file in files or []:
             file_path = Path(file)
