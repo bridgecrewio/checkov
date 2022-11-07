@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -79,7 +79,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -91,7 +91,6 @@ jobs:
       - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -126,7 +125,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest]
     env:
       working-directory: ./performance_tests
@@ -140,7 +139,6 @@ jobs:
       - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          version: 3.10.1  # https://github.com/Azure/setup-helm/issues/98
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Install pipenv
@@ -149,7 +147,6 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel

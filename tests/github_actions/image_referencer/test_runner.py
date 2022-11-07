@@ -41,7 +41,7 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, lice
 
     assert len(gha_report.resources) == 0
     assert len(gha_report.passed_checks) == 14
-    assert len(gha_report.failed_checks) == 1
+    assert len(gha_report.failed_checks) == 2
     assert len(gha_report.skipped_checks) == 0
     assert len(gha_report.parsing_errors) == 0
 
