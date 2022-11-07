@@ -1,6 +1,21 @@
 stages:
   - integration-tests
 
+tag:
+  image: python:3.8
+  stage: tag
+  script:
+    - sh tag.sh
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+tag:
+  image: python:3.8
+  stage: tag
+  script:
+    - sh tag.sh
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 integration-tests:
   image: python
@@ -14,3 +29,46 @@ integration-tests:
     - python setup.py sdist bdist_wheel
     - bash -c 'pip install dist/checkov-*.whl'
     - sh integration_tests/run_integration_tests.sh
+
+unit-tests:
+  image: python
+  stage: unit-tests
+  variables:
+    pythonver: "3.7"
+  script:
+    - pip install --no-cache-dir --upgrade pipenv
+    - pip install --upgrade pip
+    - pip install pytest pytest-xdist
+    - python setup.py sdist bdist_wheel
+    - bash -c 'pip install dist/checkov-*.whl'
+    - sh integration_tests/run_integration_tests.sh
+
+
+dev_build:
+  rules:
+    - if: '$CI_COMMIT_TAG != "/^$/" && $CI_COMMIT_REF_NAME == "develop" && $CI_COMMIT_MESSAGE!=/^[^bump]/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
+  image: docker:19.03.12
+  stage: build
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  script:
+    - sh dev_ci.sh
+
+build:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  image: docker:19.03.12
+  stage: build
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  script:
+    - sh ci.sh

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+##### Things to change #####
+VERSION="v20221103.0214"
+set -e
+git --version
+git remote remove origin
+git remote add origin https://oauth2:glpat-rH6AGjvtpost8paa7_6c@gitlab.com/flybuys/secops/iac/flybuys-checkov.git
+git config --global user.email "checkov@flybuys.com.au"
+git config --global user.name "Pipeline"
+git pull origin main
+git checkout main
+pip install pycalver
+pycalver bump  --release final
+Version=$(pycalver  show | grep Current | cut -d ":" -f 2 | cut -d " " -f 2)
+echo "Bumped ${Version}"
+git add -A
+echo "git Add"
+#echo "git commit"
+git push origin main  --follow-tags
+echo "git push"
+

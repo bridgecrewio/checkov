@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "checkov"
+version = "v20221103.0214"
+description = ""
+authors = ["Daniel Sanders <daniel.sanders@flybuys.com.au>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pycalver = "^202010.1043"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[pycalver]
+current_version = "v20221103.0214"
+version_pattern = "{pycalver}"
+commit = true
+tag = true
+push = true
+
+[pycalver.file_patterns]
+"pyproject.toml" = [
+    'version = "{version}"',
+    'current_version = "{version}"',
+]
+"checkov/checkov/fb_version.py" = [
+    'version = "{version}"',
+]
+"README.md" = [
+    '[![version](https://img.shields.io/badge/version-v{year}{month}{dom}{build}-green)](#)'
+]
+"tag.sh" = [
+    'VERSION="v{year}{month}{dom}{build}"',
+]
+"ci.sh" = [
+    'VERSION="v{year}{month}{dom}{build}"',
+]
+
+

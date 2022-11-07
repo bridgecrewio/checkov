@@ -86,6 +86,6 @@ pytest integration_tests
 #deactivate
 
 echo "Deleting reports and repositories."
-delete_reports
-delete_repositories
+#delete_reports
+#delete_repositories
 
