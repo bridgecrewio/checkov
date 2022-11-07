@@ -6,6 +6,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from tests.terraform.graph.variable_rendering.expected_data import (
     expected_terragoat_local_resource_prefix,
     expected_terragoat_db_instance,
@@ -239,6 +240,24 @@ class TestRenderer(TestCase):
             assert resources_vertex[0].attributes.get('egress') == \
                    [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443},
                     {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 1433, 'protocol': 'tcp', 'to_port': 1433}]
+
+    def test_dynamic_blocks_breadcrumbs(self):
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+            local_graph.vertices,
+            root_folder,
+        )
+        # Test multiple dynamic blocks
+        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+
+        # Test single dynamic block
+        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
+        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
 
     def test_list_entry_rendering_module_vars(self):
         # given
