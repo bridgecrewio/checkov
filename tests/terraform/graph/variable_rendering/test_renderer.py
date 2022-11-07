@@ -256,6 +256,10 @@ class TestRenderer(TestCase):
                     {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
                      'to_port': 22}]
 
+    def test_extract_dynamic_value_in_map(self):
+        self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1.value2'), 'value2')
+        self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1["value2"]'), 'value2')
+
     def test_list_entry_rendering_module_vars(self):
         # given
         resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
