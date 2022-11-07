@@ -13,7 +13,7 @@ class AKSDashboardDisabled(BaseResourceCheck):
         name = "Ensure Kubernetes Dashboard is disabled"
         id = "CKV_AZURE_8"
         supported_resources = ('Microsoft.ContainerService/managedClusters')
-        categories = (CheckCategories.KUBERNETES,)
+        categories = (CheckCategories.KUBERNETES)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:

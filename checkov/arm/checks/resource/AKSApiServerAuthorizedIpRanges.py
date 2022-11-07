@@ -15,7 +15,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
         name = "Ensure AKS has an API Server Authorized IP Ranges enabled"
         id = "CKV_AZURE_6"
         supported_resources = ('Microsoft.ContainerService/managedClusters')
-        categories = (CheckCategories.KUBERNETES,)
+        categories = (CheckCategories.KUBERNETES)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
