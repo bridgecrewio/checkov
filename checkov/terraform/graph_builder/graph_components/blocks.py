@@ -53,8 +53,9 @@ class TerraformBlock(Block):
             remainder_key_parts = ['start_extract_dynamic_changed_attributes']  # For 1st iteration
             while remainder_key_parts:
                 dynamic_for_each_index = dynamic_attribute_key_parts.index('for_each')
-                dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[:dynamic_for_each_index], \
-                                                                 dynamic_attribute_key_parts[dynamic_for_each_index + 1:]
+                dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[
+                                                                 :dynamic_for_each_index], dynamic_attribute_key_parts[
+                                                                                           dynamic_for_each_index + 1:]
                 dynamic_block_name = dynamic_content_key_parts[-1]
                 dynamic_content_path = dynamic_content_key_parts + ['content']
                 if dpath.search(self.attributes, dynamic_content_path):
