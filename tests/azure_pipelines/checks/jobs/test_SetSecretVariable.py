@@ -16,15 +16,15 @@ def test_examples():
     summary = report.get_summary()
 
     passing_resources = {
-        f"/azure-pipelines.yml:jobs[1](PassSetNormalVariable).steps[0]",
-        f"/azure-pipelines.yml:jobs[1](PassSetNormalVariable).steps[1]",
-        f"/azure-pipelines.yml:stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[0]",
-        f"/azure-pipelines.yml:stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[1]",
+        f"jobs[1](PassSetNormalVariable).steps[0]",
+        f"jobs[1](PassSetNormalVariable).steps[1]",
+        f"stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[0]",
+        f"stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[1]",
     }
 
     failing_resources = {
-        f"/azure-pipelines.yml:jobs[0](FailSetSecretVariable).steps[0](setSecretVariableStep)",
-        f"/azure-pipelines.yml:jobs[0](FailSetSecretVariable).steps[1]",
+        f"jobs[0](FailSetSecretVariable).steps[0](setSecretVariableStep)",
+        f"jobs[0](FailSetSecretVariable).steps[1]",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}
