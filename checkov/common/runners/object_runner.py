@@ -336,7 +336,8 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
 
-    def get_start_and_end_lines(self, key: str) -> list[int]:
+    @staticmethod
+    def get_start_and_end_lines(key: str) -> list[int]:
         check_name = key.split('.')[-1]
         try:
             start_end_line_bracket_index = check_name.index('[')
