@@ -15,7 +15,7 @@ class LBTargetGroupUsingHTTPS(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if "protocol" in conf.keys():
-            if conf.get("protocol")[0] == 'HTTPS':
+            if conf.get("protocol") != ['HTTP']:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
