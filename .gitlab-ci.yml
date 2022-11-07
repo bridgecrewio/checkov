@@ -5,6 +5,7 @@ stages:
   - tag
   - build
 
+
 tag:
   image: python:3.8
   stage: tag
