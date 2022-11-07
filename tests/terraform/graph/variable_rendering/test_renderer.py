@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 from unittest.case import TestCase
 
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -241,6 +243,7 @@ class TestRenderer(TestCase):
     def test_dynamic_blocks_with_map(self):
         resource_paths = [
             os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_map_brackets"),
         ]
         for path in resource_paths:
             graph_manager = TerraformGraphManager('m', ['m'])
@@ -248,18 +251,31 @@ class TestRenderer(TestCase):
             resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
             assert len(resources_vertex[0].attributes.get('ingress')) == 2
             assert resources_vertex[0].attributes.get('ingress') == \
-                   [{'action': 'allow', 'cidr_block': '10.0.0.1/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 1, 'to_port': 22},
-                    {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2, 'to_port': 22}]
+                   [{'action': 'allow', 'cidr_block': '10.0.0.1/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 1,
+                     'to_port': 22},
+                    {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
+                     'to_port': 22}]
 
-    def test_dynamic_blocks_with_nested_map(self):
-        resource_paths = [
-            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested'),
-        ]
-        for path in resource_paths:
-            graph_manager = TerraformGraphManager('m', ['m'])
-            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
-            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
-            assert len(resources_vertex[0].attributes.get('required_resource_access')) == 2
-            assert resources_vertex[0].attributes.get('required_resource_access') == \
-                   {'resource_app_id': '00000003-0000-0000-c000-000000000000',
-                    'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
+    def test_extract_dynamic_value_in_map(self):
+        self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1.value2'), 'value2')
+        self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1["value2"]'), 'value2')
+
+    def test_list_entry_rendering_module_vars(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+
+        # when
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        resource_vertex = next(v for v in local_graph.vertices if v.id == 'aws_security_group.sg')
+
+        self.assertEqual(
+            resource_vertex.config["aws_security_group"]["sg"]["ingress"][0]["cidr_blocks"][0],
+            ["0.0.0.0/0"],
+        )
+        self.assertCountEqual(
+            resource_vertex.config["aws_security_group"]["sg"]["egress"][0]["cidr_blocks"][0],
+            ["10.0.0.0/16", "0.0.0.0/0"],
+        )

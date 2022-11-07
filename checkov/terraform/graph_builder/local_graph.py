@@ -14,6 +14,7 @@ from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -474,21 +475,54 @@ def update_dictionary_attribute(
         config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
-    if isinstance(config, dict):
-        if config.get(key_parts[0]) is not None:
-            key = key_parts[0]
+
+    if isinstance(config, dict) and isinstance(key_parts, list):
+        key = key_parts[0]
+        inner_config = config.get(key)
+
+        if inner_config is not None:
             if len(key_parts) == 1:
-                if isinstance(config[key], list) and not isinstance(new_value, list):
+                if isinstance(inner_config, list) and not isinstance(new_value, list):
                     new_value = [new_value]
                 config[key] = new_value
                 return config
             else:
-                config[key] = update_dictionary_attribute(config[key], ".".join(key_parts[1:]), new_value)
+                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value)
         else:
             for key in config:
                 config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
     if isinstance(config, list):
-        for i, config_value in enumerate(config):
-            config[i] = update_dictionary_attribute(config_value, key_to_update, new_value)
+        return update_list_attribute(
+            config=config,
+            key_parts=key_parts,
+            key_to_update=key_to_update,
+            new_value=new_value,
+        )
+    return config
+
+
+def update_list_attribute(
+    config: list[Any], key_parts: list[str], key_to_update: str, new_value: Any
+) -> list[Any] | dict[str, Any]:
+    """Updates a list attribute in the given config"""
+
+    if not config:
+        # happens when we can't correctly evaluate something, because of strange defaults or 'for_each' blocks
+        return config
+
+    if len(key_parts) == 1:
+        idx = force_int(key_parts[0])
+        inner_config = config[0]
+
+        if idx is not None and isinstance(inner_config, list):
+            if not inner_config:
+                # happens when config = [[]]
+                return config
+
+            inner_config[idx] = new_value
+            return config
+
+    for i, config_value in enumerate(config):
+        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value)
 
     return config

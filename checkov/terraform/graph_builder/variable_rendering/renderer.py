@@ -35,6 +35,9 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
 
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
+LEFT_BRACKET_WITH_QUOTATION = '["'
+RIGHT_BRACKET_WITH_QUOTATION = '"]'
+LEFT_BRACKET = '['
 
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
@@ -304,12 +307,14 @@ class TerraformVariableRenderer(VariableRenderer):
     @staticmethod
     def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
-        dynamic_type = DYNAMIC_BLOCKS_LISTS
 
-        if not isinstance(dynamic_blocks, list):
+        if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
+            logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
+
+        dynamic_type = DYNAMIC_BLOCKS_LISTS
+        if isinstance(dynamic_blocks, dict):
             dynamic_blocks = [dynamic_blocks]
             dynamic_type = DYNAMIC_BLOCKS_MAPS
-            logging.info(f"Dynamic blocks found, with type {type(dynamic_blocks)}")
 
         for block in dynamic_blocks:
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
@@ -319,35 +324,27 @@ class TerraformVariableRenderer(VariableRenderer):
                 continue
 
             dynamic_value_ref = f"{block_name}.value"
-            dynamic_arguments = []
-            for argument, value in block_content.items():
-                if dynamic_type == DYNAMIC_BLOCKS_LISTS and value == dynamic_value_ref:
-                    dynamic_arguments.append(argument)
-                if dynamic_type == DYNAMIC_BLOCKS_MAPS and isinstance(value, str) and dynamic_value_ref in value:
-                    dynamic_arguments.append(argument)
+            dynamic_arguments = [
+                argument
+                for argument, value in block_content.items()
+                if value == dynamic_value_ref or isinstance(value, str) and dynamic_value_ref in value
+            ]
 
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
-                    block_conf.pop('dynamic', None)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
-                            dynamic_value_in_map = block_content[dynamic_argument].split('.')[-1]
-                            if isinstance(dynamic_value, dict) and block_name not in dynamic_value:
-                                block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
-                            else:
-                                block_conf[dynamic_argument] = dynamic_value[block_name][0][dynamic_value_in_map]
+                            if not isinstance(dynamic_value, dict):
+                                continue
+                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(block_content[dynamic_argument])
+                            block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
                         else:
                             block_conf[dynamic_argument] = dynamic_value
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
-
-            if 'dynamic' in block_content:
-                next_key = list(block_content['dynamic'].keys())[0]
-                block_content['dynamic'][next_key]['for_each'] = dynamic_values
-                rendered_blocks = {**rendered_blocks, **TerraformVariableRenderer._process_dynamic_blocks(block_content['dynamic'])}
+                rendered_blocks[block_name] = block_confs
 
         return rendered_blocks
 
@@ -386,6 +383,13 @@ class TerraformVariableRenderer(VariableRenderer):
                     vertex.update_inner_attribute(attribute, vertex.attributes, evaluated)
                     changed_attributes[attribute] = evaluated
             self.local_graph.update_vertex_config(vertex, changed_attributes)
+
+    @staticmethod
+    def extract_dynamic_value_in_map(dynamic_value: str) -> str:
+        dynamic_value_in_map = dynamic_value.split('.')[-1]
+        if LEFT_BRACKET not in dynamic_value_in_map:
+            return dynamic_value_in_map
+        return dynamic_value_in_map.split(LEFT_BRACKET_WITH_QUOTATION)[-1].replace(RIGHT_BRACKET_WITH_QUOTATION, '')
 
     def evaluate_value(self, val: Any) -> Any:
         val_length: int = len(str(val))
