@@ -13,7 +13,7 @@ class TestNumberOfWordsEquals(TestBaseSolver):
     def test_number_of_words_not_equals(self):
         # this is just a basic check to make sure the operator works
         # we'll check all the other combinations more directly (because coming up with all the policy combos is painful)
-        root_folder = '../../../resources/lengths'
+        root_folder = '../../../resources/number_of_words'
         check_id = "NumberOfWordsNotEquals"
         should_pass = ['aws_security_group.sg2']
         should_fail = ['aws_security_group.sg1']

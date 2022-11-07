@@ -13,7 +13,7 @@ class NumberOfWordsEqualsAttributeSolver(BaseAttributeSolver):
 
         if not isinstance(vertex_attr, str):
             return False
-        words = vertex_attr.split(" ")
+        words = vertex_attr.split()
         value_numeric = force_int(self.value)
 
         return len(words) == value_numeric
