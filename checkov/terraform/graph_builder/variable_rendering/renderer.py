@@ -334,17 +334,27 @@ class TerraformVariableRenderer(VariableRenderer):
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
+                    block_conf.pop('dynamic', None)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
-                            if not isinstance(dynamic_value, dict):
-                                continue
-                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(block_content[dynamic_argument])
-                            block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
+                                block_content[dynamic_argument]
+                            )
+                            if isinstance(dynamic_value, dict) and block_name not in dynamic_value:
+                                block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                            else:
+                                block_conf[dynamic_argument] = dynamic_value[block_name][0][dynamic_value_in_map]
                         else:
                             block_conf[dynamic_argument] = dynamic_value
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs
+                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
+
+            if 'dynamic' in block_content:
+                next_key = list(block_content['dynamic'].keys())[0]
+                block_content['dynamic'][next_key]['for_each'] = dynamic_values
+                rendered_blocks = {**rendered_blocks,
+                                   **TerraformVariableRenderer._process_dynamic_blocks(block_content['dynamic'])}
 
         return rendered_blocks
 

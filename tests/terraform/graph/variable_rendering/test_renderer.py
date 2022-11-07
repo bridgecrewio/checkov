@@ -279,3 +279,16 @@ class TestRenderer(TestCase):
             resource_vertex.config["aws_security_group"]["sg"]["egress"][0]["cidr_blocks"][0],
             ["10.0.0.0/16", "0.0.0.0/0"],
         )
+
+    def test_dynamic_blocks_with_nested_map(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested'),
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('required_resource_access')) == 2
+            assert resources_vertex[0].attributes.get('required_resource_access') == \
+                   {'resource_app_id': '00000003-0000-0000-c000-000000000000',
+                    'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
