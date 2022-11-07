@@ -151,7 +151,10 @@ class Module:
                     attributes = self.clean_bad_characters(resource_conf)
                     if not isinstance(attributes, dict):
                         continue
-                    has_dynamic_block = handle_dynamic_values(attributes)
+                    if os.getenv('RENDER_DYNAMIC_MODULES', 'True').lower() == 'false':
+                        has_dynamic_block = False
+                    else:
+                        has_dynamic_block = handle_dynamic_values(attributes)
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)

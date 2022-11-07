@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from unittest import mock
 from unittest.case import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -279,3 +280,11 @@ class TestRenderer(TestCase):
             resource_vertex.config["aws_security_group"]["sg"]["egress"][0]["cidr_blocks"][0],
             ["10.0.0.0/16", "0.0.0.0/0"],
         )
+
+    def test_dynamic_with_env_var_false(self):
+        os.environ['RENDER_DYNAMIC_MODULES'] = 'False'
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert not resources_vertex[0].attributes.get('ingress')
+        assert not resources_vertex[0].attributes.get('egress')
