@@ -29,6 +29,7 @@ class Scanner:
     def scan(self) -> Sequence[dict[str, Any]]:
         """run SCA package scan and poll scan results"""
         self.run_scan()
+        return []
 
     def run_scan(self) -> dict[str, Any]:
         logging.info(f"Start to scan package files.")
@@ -36,7 +37,7 @@ class Scanner:
         request_body = {
             "branch": "",
             "commit": "",
-            "path": os.path.join(bc_integration.repo_path, ''),
+            "path": os.path.join(bc_integration.repo_path, '') if bc_integration.repo_path else "",
             "repoId": bc_integration.repo_id,
             "id": bc_integration.timestamp,
             "repositoryId": ""
