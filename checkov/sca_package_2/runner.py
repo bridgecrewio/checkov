@@ -125,7 +125,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
-    ) -> bool:
+    ) -> List[FileToPersist]:
         """ upload scannable files to s3"""
         excluded_file_names = excluded_file_names or set()
         package_files_to_persist: List[FileToPersist] = []
@@ -142,9 +142,10 @@ class Runner(BaseRunner[None]):
             if not file_path.exists():
                 logging.warning(f"File {file_path} doesn't exist")
                 continue
-            root_folder = os.path.split(os.path.commonprefix(files))[0]
-            package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
+            if file_path.name in SUPPORTED_PACKAGE_FILES:
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+                package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")
         bc_integration.persist_files(package_files_to_persist)
-        return bool(package_files_to_persist)
+        return package_files_to_persist
