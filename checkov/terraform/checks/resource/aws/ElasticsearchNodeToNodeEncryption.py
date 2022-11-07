@@ -33,7 +33,7 @@ class ElasticsearchNodeToNodeEncryption(BaseResourceCheck):
                 return CheckResult.UNKNOWN
         if not instance_count:
             return CheckResult.UNKNOWN
-        if instance_count <= 1:
+        if isinstance(instance_count, int) and instance_count <= 1:
             return CheckResult.PASSED
 
         self.evaluated_keys.append('node_to_node_encryption/[0]/enabled')

@@ -21,8 +21,6 @@ from detect_secrets.util.filetype import FileType
 from detect_secrets.util.filetype import determine_file_type
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
-from checkov.common.parsers.multiline_parser import BaseMultiLineParser
-from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -32,6 +30,8 @@ MAX_LINE_LENGTH = 10000
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 ENTROPY_KEYWORD_LIMIT = 4.5
 
+INDENTATION_PATTERN = re.compile(r'(^\s*(?:-?\s+)?)')
+COMMENT_PREFIX = re.compile(r'^[\s]*(#|\/\/)')
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
@@ -85,10 +85,6 @@ REGEX_VALUE_SECRET_BY_FILETYPE = {
     FileType.YAML: PAIR_VALUE_SECRET_REGEX_TO_GROUP,
 }
 
-MULTILINE_PARSERS = {
-    FileType.YAML: yml_multiline_parser,
-}
-
 
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
@@ -113,9 +109,8 @@ class EntropyKeywordCombinator(BasePlugin):
     ) -> set[PotentialSecret]:
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
         filetype = determine_file_type(filename)
-        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype)
-        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype)
-        multiline_parser = MULTILINE_PARSERS.get(filetype)
+        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype, None)
+        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype, None)
 
         if len(line) <= MAX_LINE_LENGTH:
             if is_iac:
@@ -132,8 +127,8 @@ class EntropyKeywordCombinator(BasePlugin):
 
                 # not so classic key-value pair, from multiline, that is only in an array format.
                 # The scan is one-way backwards, so no duplicates expected.
-                elif multiline_parser:
-                    return self.analyze_multiline(
+                elif filetype == FileType.YAML:
+                    return self.analyze_iac_line_yml(
                         filename=filename,
                         line=line,
                         line_number=line_number,
@@ -141,7 +136,6 @@ class EntropyKeywordCombinator(BasePlugin):
                         raw_context=raw_context,
                         value_pattern=value_keyword_regex_to_group,
                         secret_pattern=secret_keyword_regex_to_group,
-                        multiline_parser=multiline_parser,
                         kwargs=kwargs
                     )
             else:
@@ -154,7 +148,7 @@ class EntropyKeywordCombinator(BasePlugin):
                 )
         return set()
 
-    def analyze_multiline(
+    def analyze_iac_line_yml(
             self,
             filename: str,
             line: str,
@@ -163,14 +157,12 @@ class EntropyKeywordCombinator(BasePlugin):
             raw_context: CodeSnippet | None = None,
             value_pattern: dict[Pattern[str], int] | None = None,
             secret_pattern: dict[Pattern[str], int] | None = None,
-            multiline_parser: BaseMultiLineParser | None = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         secrets = set()
-        if context is not None and raw_context is not None and multiline_parser:
+        if context is not None and raw_context is not None:
             value_secret = self.extract_from_string(pattern=secret_pattern, string=context.target_line)
             secret_adjust = self.format_reducing_noise_secret(value_secret)
-
             entropy_on_value = self.detect_secret(
                 scanners=self.high_entropy_scanners,
                 filename=filename,
@@ -183,8 +175,8 @@ class EntropyKeywordCombinator(BasePlugin):
                 possible_keywords: set[str] = set()
                 forward_range = range(context.target_index - 1, -1, -1)
                 backwards_range = range(context.target_index + 1, len(context.lines))
-                possible_keywords |= multiline_parser.get_lines_from_same_object(forward_range, context, raw_context)
-                possible_keywords |= multiline_parser.get_lines_from_same_object(backwards_range, context, raw_context)
+                possible_keywords |= self.get_lines_from_same_object(forward_range, context, raw_context)
+                possible_keywords |= self.get_lines_from_same_object(backwards_range, context, raw_context)
 
                 for other_value in possible_keywords:
                     if self.extract_from_string(pattern=value_pattern, string=other_value):
@@ -192,9 +184,56 @@ class EntropyKeywordCombinator(BasePlugin):
                         break
         return secrets
 
+    def get_lines_from_same_object(
+            self,
+            search_range: range,
+            context: CodeSnippet | None,
+            raw_context: CodeSnippet | None
+    ) -> set[str]:
+        possible_keywords: set[str] = set()
+        if not context or not raw_context:
+            return possible_keywords
+        for j in search_range:
+            line = context.lines[j]
+            if self.lines_in_same_object(raw_context=raw_context, idx=j) \
+                    and not self.line_is_comment(line):
+                possible_keywords.add(raw_context.lines[j])
+                if self.is_object_start(raw_context=raw_context, idx=j):
+                    return possible_keywords
+        # No start of array detected, hence all found possible_keywords are irrelevant
+        return set()
+
     @staticmethod
     def format_reducing_noise_secret(string: str) -> str:
         return json.dumps(string)
+
+    def lines_in_same_object(
+            self,
+            raw_context: CodeSnippet | None,
+            idx: int
+    ) -> bool:
+        if not raw_context:
+            return False  # could not know
+        return 0 <= idx < len(raw_context.lines) and 0 <= idx + 1 < len(raw_context.lines)\
+            and self.lines_same_indentation(raw_context.lines[idx], raw_context.lines[idx + 1])
+
+    @staticmethod
+    def is_object_start(
+            raw_context: CodeSnippet | None,
+            idx: int
+    ) -> bool:
+        if not raw_context:
+            return False  # could not know
+        match = re.match(INDENTATION_PATTERN, raw_context.lines[idx])
+        if match:
+            return '-' in match.groups()[0]
+        return False
+
+    @staticmethod
+    def line_is_comment(line: str) -> bool:
+        if re.match(COMMENT_PREFIX, line):
+            return True
+        return False
 
     @staticmethod
     def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) -> str:
@@ -205,6 +244,20 @@ class EntropyKeywordCombinator(BasePlugin):
             if match:
                 return match.group(group_number)
         return ''
+
+    @staticmethod
+    def lines_same_indentation(line1: str, line2: str) -> bool:
+        match1 = re.match(INDENTATION_PATTERN, line1)
+        match2 = re.match(INDENTATION_PATTERN, line2)
+        if not match1 and not match2:
+            return True
+        if not match1 or not match2:
+            return False
+        indent1 = len(match1.groups()[0])
+        indent2 = len(match2.groups()[0])
+        if indent1 == indent2:
+            return True
+        return False
 
     @staticmethod
     def detect_secret(

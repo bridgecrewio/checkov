@@ -38,7 +38,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICE
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
@@ -55,6 +55,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -75,6 +76,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
+
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
     cfn_runner(),
@@ -93,7 +95,6 @@ DEFAULT_RUNNERS = (
     bitbucket_configuration_runner(),
     bitbucket_pipelines_runner(),
     kustomize_runner(),
-    sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
@@ -101,6 +102,7 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
+    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
 )
 
 
