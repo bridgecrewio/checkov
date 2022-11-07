@@ -1,4 +1,5 @@
 import os
+import time
 import unittest
 from pathlib import Path
 
@@ -189,27 +190,29 @@ class TestCombinatorPlugin(unittest.TestCase):
         assert expected_secret_value == res.pop().secret_value
 
     def test_multiline_keyword_password_report(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "test-multiline-secrets.yml"
-        valid_file_path = current_dir + f"/yml_multiline/{file_name}"
+        test_file_path = Path(__file__).parent / "yml_multiline/test-multiline-secrets.yml"
 
         runner = Runner()
-        report = runner.run(root_folder=None, files=[valid_file_path], runner_filter=RunnerFilter(framework=['secrets']))
+        report = runner.run(root_folder=None, files=[str(test_file_path)],
+                            runner_filter=RunnerFilter(framework=['secrets']))
         self.assertEqual(len(report.failed_checks), 5)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
 
-    def test_non_multiline_keyword_password_report(self):
+    def test_non_multiline_pair_time_limit_creating_report(self):
         # given
         test_file_path = Path(__file__).parent / "yml_multiline/pomerium_compose.yml"
 
         # when
+        start_time = time.time()
         report = Runner().run(
             root_folder=None, files=[str(test_file_path)], runner_filter=RunnerFilter(framework=['secrets'])
         )
+        end_time = time.time()
 
         # then
+        assert end_time-start_time < 0.2  # assert the time limit is not too long for parsing long lines.
         self.assertEqual(len(report.failed_checks), 4)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
