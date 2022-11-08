@@ -1,5 +1,5 @@
 stages:
-  - tests
+#  - tests
   - tag
   - dev_build
   - build
@@ -14,13 +14,13 @@ tag:
 
 
 
-integration-tests:
-  image: python
-  stage: tests
-  variables:
-    pythonver: "3.7"
-  script:
-    - echo "skip unit tests for now"
+#integration-tests:
+#  image: python
+#  stage: tests
+#  variables:
+#    pythonver: "3.7"
+#  script:
+#    - echo "skip unit tests for now"
 #    - pip install --no-cache-dir --upgrade pipenv
 #    - pip install --upgrade pip
 #    - pip install pytest pytest-xdist
@@ -28,13 +28,13 @@ integration-tests:
 #    - bash -c 'pip install dist/checkov-*.whl'
 #    - sh integration_tests/run_integration_tests.sh
 
-unit-tests:
-  image: python
-  stage: tests
-  variables:
-    pythonver: "3.7"
-  script:
-    - echo "skip unit tests for now"
+#unit-tests:
+#  image: python
+#  stage: tests
+#  variables:
+#    pythonver: "3.7"
+#  script:
+#    - echo "skip unit tests for now"
 #    - pip install --no-cache-dir --upgrade pipenv
 #    - pip install --upgrade pip
 #    - pip install pytest pytest-xdist
