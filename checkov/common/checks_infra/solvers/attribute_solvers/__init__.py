@@ -34,3 +34,5 @@ from checkov.common.checks_infra.solvers.attribute_solvers.equals_ignore_case_at
 from checkov.common.checks_infra.solvers.attribute_solvers.not_equals_ignore_case_attribute_solver import NotEqualsIgnoreCaseAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.range_includes_attribute_solver import RangeIncludesAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.range_not_includes_attribute_solver import RangeNotIncludesAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_equals_attribute_solver import NumberOfWordsEqualsAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_not_equals_attribute_solver import NumberOfWordsNotEqualsAttributeSolver  # noqa
