@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GHA_1"
+  name: "Ensure top-level permissions are not set to write-all"
+  category: "IAM"
+definition:
+  cond_type: attribute
+  resource_types:
+    - permissions
+  attribute: permissions
+  operator: not_equals
+  value: write-all
