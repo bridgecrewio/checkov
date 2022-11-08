@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "checkov"
-version = "v20221108.0216"
+version = "v20221108.0217"
 description = ""
 authors = ["Daniel Sanders <daniel.sanders@flybuys.com.au>"]
 readme = "README.md"
@@ -15,7 +15,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [pycalver]
-current_version = "v20221108.0216"
+current_version = "v20221108.0217"
 version_pattern = "v{year}{month}{dom}{build}"
 commit = true
 tag = true
