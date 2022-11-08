@@ -22,7 +22,7 @@ definition:
       resource_types:
         - "google_compute_firewall"
       attribute: "allow.protocol"
-      operator: "jsonpath_not_equals"
+      operator: "not_equals"
       value: "all"
     - cond_type: "attribute"
       resource_types:
