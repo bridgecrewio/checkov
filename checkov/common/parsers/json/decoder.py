@@ -12,6 +12,32 @@ from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
 
 
+class SimpleDecoder(JSONDecoder):
+    def __init__(
+        self,
+        *,
+        object_hook: Callable[[dict[str, Any]], Any] | None = None,
+        parse_float: Callable[[str], Any] | None = None,
+        parse_int: Callable[[str], Any] | None = None,
+        parse_constant: Callable[[str], Any] | None = None,
+        strict: bool = True,
+        object_pairs_hook: Callable[[list[tuple[str, Any]]], Any] | None = None,
+    ) -> None:
+        super().__init__(
+            object_hook=self.object_hook,
+            parse_float=parse_float,
+            parse_int=parse_int,
+            parse_constant=parse_constant,
+            strict=strict,
+            object_pairs_hook=object_pairs_hook,
+        )
+
+    def object_hook(self, obj: dict[str, Any]) -> Any:
+        obj["start_line"] = 0
+        obj["end_line"] = 0
+        return obj
+
+
 class Mark:
     """Mark of line and column"""
     __slots__ = ("column", "line")

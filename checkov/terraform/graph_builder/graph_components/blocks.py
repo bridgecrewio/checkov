@@ -1,6 +1,9 @@
 import os
 from typing import Union, Dict, Any, List, Optional, Set
+import dpath.util
+import re
 
+from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -8,7 +11,12 @@ from checkov.terraform.graph_builder.utils import remove_module_dependency_in_pa
 
 
 class TerraformBlock(Block):
-    __slots__ = ("module_connections", "module_dependency", "module_dependency_num", "source_module", "has_dynamic_block")
+    __slots__ = (
+        "module_connections",
+        "module_dependency",
+        "module_dependency_num",
+        "source_module",
+        "has_dynamic_block")
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
                  id: str = "", source: str = "", has_dynamic_block: bool = False) -> None:
@@ -38,6 +46,46 @@ class TerraformBlock(Block):
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
 
+    def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
+        if self.has_dynamic_block:
+            return self._extract_dynamic_changed_attributes(attribute_key)
+        return super().extract_additional_changed_attributes(attribute_key)
+
+    def _extract_dynamic_changed_attributes(self, dynamic_attribute_key: str) -> List[str]:
+        dynamic_changed_attributes = []
+        dynamic_attribute_key_parts = dynamic_attribute_key.split('.')
+        try:
+            remainder_key_parts = ['start_extract_dynamic_changed_attributes']  # For 1st iteration
+            while remainder_key_parts:
+                dynamic_for_each_index = dynamic_attribute_key_parts.index('for_each')
+                dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[:dynamic_for_each_index],\
+                    dynamic_attribute_key_parts[dynamic_for_each_index + 1:]
+                dynamic_block_name = dynamic_content_key_parts[-1]
+                dynamic_content_path = dynamic_content_key_parts + ['content']
+                if dpath.search(self.attributes, dynamic_content_path):
+                    dynamic_block_content = dpath.get(self.attributes, dynamic_content_path)
+                    for key, value in dynamic_block_content.items():
+                        dynamic_ref = f'{dynamic_block_name}.value'
+                        key_path = f"{dynamic_block_name}.{key}"
+                        self._collect_dynamic_dependent_keys(dynamic_ref, value, key_path, dynamic_changed_attributes)
+                dynamic_attribute_key_parts = remainder_key_parts
+            return dynamic_changed_attributes
+        except ValueError:
+            return dynamic_changed_attributes
+
+    @staticmethod
+    def _collect_dynamic_dependent_keys(dynamic_ref: str, value: Union[str, List], key_path: str,
+                                        dynamic_changed_attributes: List[str]) -> None:
+        if isinstance(value, str):
+            interpolation_matches = re.findall(INTERPOLATION_EXPR, value)
+            for match in interpolation_matches:
+                if dynamic_ref in match:
+                    dynamic_changed_attributes.append(key_path)
+        elif isinstance(value, list):
+            for idx, sub_value in enumerate(value):
+                TerraformBlock._collect_dynamic_dependent_keys(
+                    dynamic_ref, sub_value, f'{key_path}.{idx}', dynamic_changed_attributes)
+
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
         :param attribute: key to search in self.attributes
@@ -63,6 +111,18 @@ class TerraformBlock(Block):
                 return attribute[1]
 
         return None
+
+    def update_list_attribute(self, attribute_key: str, attribute_value: Any) -> None:
+        """Updates list attributes with their index
+
+        This needs to be overridden, because of our hcl parser adding a list around any value
+        """
+
+        if attribute_key not in self.attributes or isinstance(self.attributes[attribute_key][0], list):
+            # sometimes the attribute_value is a list and replaces the whole value of the key, which makes it a normal value
+            # ex. attribute_value = ["xyz"] and self.attributes[attribute_key][0] = "xyz"
+            for idx, value in enumerate(attribute_value):
+                self.attributes[f"{attribute_key}.{idx}"] = value
 
     @classmethod
     def get_inner_attributes(
