@@ -44,15 +44,13 @@ class Runner(BaseRunner[None]):
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return None
 
-        logging.info("SCA package scanning searching for scannable files")
-
         self._code_repo_path = Path(root_folder) if root_folder else None
 
         excluded_paths = {*ignored_directories}
         if runner_filter.excluded_paths:
             excluded_paths.update(runner_filter.excluded_paths)
 
-        if not self.upload_scannable_files(
+        if not self.upload_package_files(
                 root_path=self._code_repo_path,
                 files=files,
                 excluded_paths=excluded_paths,
@@ -119,14 +117,15 @@ class Runner(BaseRunner[None]):
 
         return report
 
-    def upload_scannable_files(
+    def upload_package_files(
             self,
             root_path: Path | None,
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
     ) -> List[FileToPersist]:
-        """ upload scannable files to s3"""
+        """ upload package files to s3"""
+        logging.info("SCA package scanning upload for package files")
         excluded_file_names = excluded_file_names or set()
         package_files_to_persist: List[FileToPersist] = []
         if root_path:

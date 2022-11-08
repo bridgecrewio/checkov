@@ -20,7 +20,6 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_dict
 from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
-from pathlib import Path
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -70,7 +69,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         return [".github"]
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
+                     definitions: dict[str, Any] | None = None) -> str:
         if not definitions:
             return key
 

@@ -14,7 +14,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab_ci.checks.registry import registry
 from checkov.gitlab_ci.image_referencer.manager import GitlabCiImageReferencerManager
 from checkov.yaml_doc.runner import Runner as YamlRunner
-from pathlib import Path
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -49,7 +48,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         return (".gitlab-ci.yml", ".gitlab-ci.yaml")
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
+                     definitions: dict[str, Any] | None = None) -> str:
         start_line, end_line = self.get_start_and_end_lines(key)
         file_config = force_dict(self.definitions[file_path])
         if not file_config:

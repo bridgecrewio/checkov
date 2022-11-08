@@ -210,7 +210,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(
                             file_path, key, check.supported_entities,  # type:ignore[arg-type]  # key is str not BaseCheck
-                            root_folder=root_folder),
+                        ),
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -286,7 +286,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         return []
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None, root_folder: str | Path | None = None) -> str:
+                     definitions: dict[str, Any] | None = None) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod
