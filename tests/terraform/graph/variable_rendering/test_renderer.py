@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
+from unittest import mock
 from unittest.case import TestCase
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from tests.terraform.graph.variable_rendering.expected_data import (
     expected_terragoat_local_resource_prefix,
     expected_terragoat_db_instance,
@@ -260,6 +262,24 @@ class TestRenderer(TestCase):
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1.value2'), 'value2')
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1["value2"]'), 'value2')
 
+    def test_dynamic_blocks_breadcrumbs(self):
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+            local_graph.vertices,
+            root_folder,
+        )
+        # Test multiple dynamic blocks
+        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+
+        # Test single dynamic block
+        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
+        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
+
     def test_list_entry_rendering_module_vars(self):
         # given
         resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
@@ -279,6 +299,14 @@ class TestRenderer(TestCase):
             resource_vertex.config["aws_security_group"]["sg"]["egress"][0]["cidr_blocks"][0],
             ["10.0.0.0/16", "0.0.0.0/0"],
         )
+
+    def test_dynamic_with_env_var_false(self):
+        os.environ['CHECKOV_RENDER_DYNAMIC_MODULES'] = 'False'
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert not resources_vertex[0].attributes.get('ingress')
+        assert not resources_vertex[0].attributes.get('egress')
 
     def test_dynamic_blocks_with_nested_map(self):
         resource_paths = [

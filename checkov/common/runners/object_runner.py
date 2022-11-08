@@ -209,7 +209,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(
-                            file_path, key, check.supported_entities  # type:ignore[arg-type]  # key is str not BaseCheck
+                            file_path, key, check.supported_entities,  # type:ignore[arg-type]  # key is str not BaseCheck
                         ),
                         evaluations=None,
                         check_class=check.__class__.__module__,
@@ -285,7 +285,8 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
     def included_paths(self) -> Iterable[str]:
         return []
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     definitions: dict[str, Any] | None = None) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod
@@ -334,3 +335,12 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
+
+    @staticmethod
+    def get_start_and_end_lines(key: str) -> list[int]:
+        check_name = key.split('.')[-1]
+        try:
+            start_end_line_bracket_index = check_name.index('[')
+        except ValueError:
+            return [-1, -1]
+        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]
