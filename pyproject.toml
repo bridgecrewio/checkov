@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "checkov"
-version = "v20221103.0214"
+version = "v20221108.0219"
 description = ""
 authors = ["Daniel Sanders <daniel.sanders@flybuys.com.au>"]
 readme = "README.md"
@@ -15,27 +15,27 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [pycalver]
-current_version = "v20221103.0214"
-version_pattern = "{pycalver}"
+current_version = "v20221108.0219"
+version_pattern = "v{year}{month}{dom}{build}"
 commit = true
 tag = true
 push = true
 
 [pycalver.file_patterns]
 "pyproject.toml" = [
-    'version = "{version}"',
-    'current_version = "{version}"',
+    'current_version = "v{year}{month}{dom}{build}"',
+    'version = "v{year}{month}{dom}{build}"',
 ]
-"checkov/checkov/fb_version.py" = [
-    'version = "{version}"',
+"checkov/fb_version.py" = [
+    'version = "v{year}{month}{dom}{build}"',
 ]
 "README.md" = [
-    '[![version](https://img.shields.io/badge/version-v{year}{month}{dom}{build}-green)](#)'
+    '[![flybuys version](https://img.shields.io/badge/version-v{year}{month}{dom}{build}-green)](#)'
 ]
-"tag.sh" = [
+"cicd/tag.sh" = [
     'VERSION="v{year}{month}{dom}{build}"',
 ]
-"ci.sh" = [
+"cicd/ci.sh" = [
     'VERSION="v{year}{month}{dom}{build}"',
 ]
 
