@@ -28,7 +28,7 @@ class BaseMultiLineParser(ABC):
             line = raw_context.lines[j]
             if line_length_limit and len(line) > line_length_limit:
                 continue
-            if self.lines_in_same_object(raw_context=raw_context, other_line_idx=j) \
+            if self.consecutive_lines_in_same_object(raw_context=raw_context, other_line_idx=j) \
                     and not self.is_line_comment(line):
                 possible_keywords.add(raw_context.lines[j])
                 if self.is_object_start(line=line):
@@ -37,7 +37,7 @@ class BaseMultiLineParser(ABC):
         return set()
 
     @abstractmethod
-    def lines_in_same_object(
+    def consecutive_lines_in_same_object(
         self,
         raw_context: CodeSnippet | None,
         other_line_idx: int,

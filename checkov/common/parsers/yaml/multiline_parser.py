@@ -17,7 +17,7 @@ class YmlMultilineParser(BaseMultiLineParser):
     def __init__(self) -> None:
         super().__init__()
 
-    def lines_in_same_object(
+    def consecutive_lines_in_same_object(
         self,
         raw_context: CodeSnippet | None,
         other_line_idx: int,

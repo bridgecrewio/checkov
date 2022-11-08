@@ -1,15 +1,12 @@
-import os
 import unittest
 from pathlib import Path
 
-from checkov.common.parsers.json.multiline_parser import json_multiline_parser
 from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
 
 
-class TestMultilineParser(unittest.TestCase):
+class TestMultilineParserYml(unittest.TestCase):
 	def setUp(self) -> None:
 		self.yml_parser = yml_multiline_parser
-		self.json_parser = json_multiline_parser
 
 	def test_are_lines_same_indentation_yml(self):
 		test_file_path = Path(__file__).parent / "resources/cfn/secret.yml"
@@ -40,5 +37,3 @@ class TestMultilineParser(unittest.TestCase):
 
 		for ans, line in examples:
 			assert ans == self.yml_parser.is_line_comment(line)
-
-
