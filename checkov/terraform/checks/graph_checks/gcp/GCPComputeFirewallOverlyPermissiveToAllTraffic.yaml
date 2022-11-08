@@ -2,8 +2,6 @@ metadata:
   name: "Ensure GCP compute firewall ingress does not allow unrestricted access to all ports"
   id: "CKV2_GCP_12"
   category: "NETWORKING"
-scope:
-  provider: "gcp"
 definition:
   or:
     - cond_type: "attribute"
