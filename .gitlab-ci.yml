@@ -6,7 +6,7 @@ stages:
 
 tag:
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_REF_NAME == "master"'
   image: python:3.8
   stage: tag
   script:
