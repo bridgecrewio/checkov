@@ -2,7 +2,7 @@
 
 
 ##### Things to change #####
-VERSION="v20221108.0221"
+VERSION="v20221108.0222"
 set -e
 git --version
 git remote remove origin
