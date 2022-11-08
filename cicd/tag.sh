@@ -18,6 +18,6 @@ echo "Bumped ${Version}"
 git add -A
 echo "git Add"
 #echo "git commit"
-git push origin main  --follow-tags
+git push origin master  --follow-tags
 echo "git push"
 
