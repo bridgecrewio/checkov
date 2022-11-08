@@ -1,8 +1,7 @@
 stages:
-  - integration-tests
-  - unit-tests
-  - dev_build
+  - tests
   - tag
+  - dev_build
   - build
 
 tag:
@@ -11,13 +10,13 @@ tag:
   image: python:3.8
   stage: tag
   script:
-    - sh tag.sh
+    - sh cicd/tag.sh
 
 
 
 integration-tests:
   image: python
-  stage: integration-tests
+  stage: tests
   variables:
     pythonver: "3.7"
   script:
@@ -30,7 +29,7 @@ integration-tests:
 
 unit-tests:
   image: python
-  stage: unit-tests
+  stage: tests
   variables:
     pythonver: "3.7"
   script:
@@ -39,12 +38,12 @@ unit-tests:
     - pip install pytest pytest-xdist
     - python setup.py sdist bdist_wheel
     - bash -c 'pip install dist/checkov-*.whl'
-    - sh integration_tests/run_integration_tests.sh
+    - sh cicd/run_unittests.sh
 
 
 dev_build:
   rules:
-    - if: '$CI_COMMIT_TAG != "/^$/" && $CI_COMMIT_REF_NAME == "develop" && $CI_COMMIT_MESSAGE!=/^[^bump]/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
+    - if: '$CI_COMMIT_TAG != "/^$/" && $CI_COMMIT_REF_NAME != "master" && $CI_COMMIT_MESSAGE!=/^[^bump]/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
   image: docker:19.03.12
   stage: build
   services:
@@ -54,7 +53,7 @@ dev_build:
     DOCKER_TLS_CERTDIR: "/certs"
     CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   script:
-    - sh dev_ci.sh
+    - sh cicd/dev_ci.sh
 
 build:
   rules:
@@ -69,4 +68,4 @@ build:
     CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
   script:
-    - sh ci.sh
+    - sh cicd/ci.sh
