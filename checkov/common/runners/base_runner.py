@@ -6,7 +6,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Dict, Any, TYPE_CHECKING, TypeVar, Generic
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic
 
 from checkov.common.util.tqdm_utils import ProgressBar
 
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
+    from checkov.common.typing import _CheckResult
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
@@ -103,8 +104,8 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         pass
 
-    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
-        checks_results: Dict[BaseGraphCheck, List[Dict[str, Any]]] = {}
+    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
+        checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
 
         if not self.graph_manager or not self.graph_registry:
             # should not happen
