@@ -370,7 +370,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 attr
                 for attr in vertex.attributes
                 if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
-                   and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
+                and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
             ]
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
