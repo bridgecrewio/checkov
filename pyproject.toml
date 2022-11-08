@@ -16,18 +16,18 @@ build-backend = "poetry.core.masonry.api"
 
 [pycalver]
 current_version = "v20221103.0214"
-version_pattern = "{pycalver}"
+version_pattern = "v{year}{month}{dom}{build}"
 commit = true
 tag = true
 push = true
 
 [pycalver.file_patterns]
 "pyproject.toml" = [
-    'version = "{version}"',
-    'current_version = "{version}"',
+    'current_version = "v{year}{month}{dom}{build}"',
+    'version = "v{year}{month}{dom}{build}"',
 ]
 "checkov/checkov/fb_version.py" = [
-    'version = "{version}"',
+    'version = "v{year}{month}{dom}{build}"',
 ]
 "README.md" = [
     '[![version](https://img.shields.io/badge/version-v{year}{month}{dom}{build}-green)](#)'
