@@ -426,20 +426,27 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
 def report_contributor_metrics(repository: str) -> None:
 
-    def _parseGitLog():
-        process = subprocess.Popen(['git', 'shortlog', '-sne', '--all', '--since', '"90 days ago"'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def _parse_gitlog():
+        process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty="commit-%ct"', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if err:
             logger.info('Failed to collect contributor metrics')
             return None
-        list_of_contributors = out.decode('utf-8').split('\n')
+        # split per contributor
+        list_of_contributors = out.decode('utf-8').split('\n\n')
         return {"repository": repository,
-                "contributors": list(map(lambda contributor: contributor.split('\t')[1],
+                "contributors": list(map(lambda contributor: _process_contributor(contributor),
                                          list(filter(lambda x: x, list_of_contributors))
                                          ))
                 }
 
-    request_body = _parseGitLog()
+    def _process_contributor(contributor: str) -> str:
+        splittedList = contributor.split('\n')
+        user = splittedList[0]
+        commit = splittedList[1]
+        return user[0:user.find('(')] + commit[commit.find('-')+1:len(commit)].strip('\"')
+
+    request_body = _parse_gitlog()
     if request_body:
         response = request_wrapper(
             "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
