@@ -314,3 +314,46 @@ definition:
 
 [See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
 
+## Supported Frameworks
+
+### Bicep
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### CloudFormation
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### GitHub Actions
+Following `resource_types` are supported
+
+- `permissions` on the root level
+- `steps`
+- `jobs`
+
+Following connections are supported
+
+- `steps` -> `jobs`
+
+#### Note
+The value for `permissions` can be either a map or a single string.
+Map entries can be referenced via their respective key, but a single string entry can be accessed by using `permissions` as the attribute.
+
+ex.
+```yaml
+cond_type: "attribute"
+resource_types:
+  - "permissions"
+attribute: "permissions"
+operator: "not_equals"
+value: "write-all"
+```
+
+### Kubernetes
+All resources can be referenced under `resource_types`.
+Currently, no support for connections.
+
+### Terraform
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+

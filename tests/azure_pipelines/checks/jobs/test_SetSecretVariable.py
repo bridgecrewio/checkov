@@ -16,15 +16,15 @@ def test_examples():
     summary = report.get_summary()
 
     passing_resources = {
-        f"{test_files_dir}/azure-pipelines.yml.stages[].jobs[].steps[].stages[].jobs[].steps[].CKV_AZUREPIPELINES_3[17:19]",
-        f"{test_files_dir}/azure-pipelines.yml.stages[].jobs[].steps[].stages[].jobs[].steps[].CKV_AZUREPIPELINES_3[19:21]",
-        f"{test_files_dir}/azure-pipelines.yml.jobs[].steps[].jobs[].steps[].CKV_AZUREPIPELINES_3[49:51]",
-        f"{test_files_dir}/azure-pipelines.yml.jobs[].steps[].jobs[].steps[].CKV_AZUREPIPELINES_3[51:53]",
+        f"jobs[1](PassSetNormalVariable).steps[0]",
+        f"jobs[1](PassSetNormalVariable).steps[1]",
+        f"stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[0]",
+        f"stages[0](Example).jobs[0](PassSetNoSecretVariable).steps[1]",
     }
 
     failing_resources = {
-        f"{test_files_dir}/azure-pipelines.yml.jobs[].steps[].jobs[].steps[].CKV_AZUREPIPELINES_3[38:41]",
-        f"{test_files_dir}/azure-pipelines.yml.jobs[].steps[].jobs[].steps[].CKV_AZUREPIPELINES_3[41:45]",
+        f"jobs[0](FailSetSecretVariable).steps[0](setSecretVariableStep)",
+        f"jobs[0](FailSetSecretVariable).steps[1]",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}

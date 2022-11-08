@@ -49,10 +49,10 @@ from checkov.common.checks_infra.solvers import (
     RangeNotIncludesAttributeSolver,
     NumberOfWordsEqualsAttributeSolver,
     NumberOfWordsNotEqualsAttributeSolver,
-    NumberOfWordsLessThanAttributeSolver,
-    NumberOfWordsGreaterThanOrEqualAttributeSolver,
     NumberOfWordsGreaterThanAttributeSolver,
-    NumberOfWordsLessThanOrEqualAttributeSolver
+    NumberOfWordsLessThanOrEqualAttributeSolver,
+    NumberOfWordsLessThanAttributeSolver,
+    NumberOfWordsGreaterThanOrEqualAttributeSolver
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver

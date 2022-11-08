@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_AWS_41"
+  name: "Ensure an IAM role is attached to EC2 instance"
+  category: "IAM"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_instance"
+  attribute: "iam_instance_profile"
+  operator: "exists"
