@@ -321,3 +321,17 @@ class TestRenderer(TestCase):
                    {'resource_app_id': '00000003-0000-0000-c000-000000000000',
                     'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
 
+    def test_dynamic_example_for_security_rule(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_block_map_example"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('security_rule') == [
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 80, 'direction': 'Inbound', 'name': 'AllowHttpIn', 'priority': 100, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 443, 'direction': 'Inbound', 'name': 'AllowHttpsIn', 'priority': 110, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 3389, 'direction': 'Inbound', 'name': 'AllowRdpIn', 'priority': 120, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': '*', 'direction': 'Inbound', 'name': 'AllowIcmpIn', 'priority': 130, 'protocol': 'Icmp', 'source_address_prefix': '*', 'source_port_range': '*'}]
+        assert resources_vertex[1].attributes.get('security_rule') == [
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': 80, 'direction': 'Inbound', 'name': 'DenyHttpIn', 'priority': 100, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 443, 'direction': 'Inbound', 'name': 'AllowHttpsIn', 'priority': 110, 'protocol': 'Tcp', 'source_address_prefix': '35.181.123.80/32', 'source_port_range': '*'},
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': 3389, 'direction': 'Inbound', 'name': 'DenyRdpIn', 'priority': 120, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': '*', 'direction': 'Inbound', 'name': 'DenyIcmpIn', 'priority': 130, 'protocol': 'Icmp', 'source_address_prefix': '*', 'source_port_range': '*'}]

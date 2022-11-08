@@ -37,6 +37,6 @@ def run_function_multithreaded(
 def filter_sub_keys(key_list: list[str]) -> list[str]:
     filtered_key_list = []
     for key in key_list:
-        if not any(other_key != key and other_key.startswith(key) for other_key in key_list):
+        if not any(other_key != key and other_key.startswith(key) for other_key in key_list) and f"dynamic.{key.split('.')[0]}" not in key_list:
             filtered_key_list.append(key)
     return filtered_key_list

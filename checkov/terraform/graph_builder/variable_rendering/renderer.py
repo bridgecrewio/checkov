@@ -19,7 +19,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
-    attribute_has_nested_attributes,
+    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
@@ -323,11 +323,12 @@ class TerraformVariableRenderer(VariableRenderer):
             if not block_content or not dynamic_values:
                 continue
 
-            dynamic_value_ref = f"{block_name}.value"
+            dynamic_value_dot_ref = f"{block_name}.value"
+            dynamic_value_bracket_ref = f'{block_name}["value"]'
             dynamic_arguments = [
                 argument
                 for argument, value in block_content.items()
-                if value == dynamic_value_ref or isinstance(value, str) and dynamic_value_ref in value
+                if (value == dynamic_value_dot_ref or value == dynamic_value_bracket_ref) or isinstance(value, str) and dynamic_value_dot_ref in value
             ]
 
             if dynamic_arguments:
@@ -369,6 +370,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 attr
                 for attr in vertex.attributes
                 if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+                   and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
             ]
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
