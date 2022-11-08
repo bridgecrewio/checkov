@@ -24,10 +24,10 @@ class Scanner:
 
     def scan(self) -> Sequence[dict[str, Any]]:
         """run SCA package scan and poll scan results"""
-        pass
+        return []
 
     def run_scan(self) -> dict[str, Any]:
-        pass
+        return {}
 
     def poll_scan_result(self) -> dict[str, Any]:
-        pass
+        return {}
