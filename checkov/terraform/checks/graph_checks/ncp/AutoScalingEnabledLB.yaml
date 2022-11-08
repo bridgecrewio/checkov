@@ -1,0 +1,36 @@
+metadata:
+  id: "CKV_NCP_18"
+  name: "Ensure that auto Scaling groups that are associated with a load balancer, are using Load Balancing health checks."
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - ncloud_auto_scaling_group
+      operator: within
+    - or:
+      - cond_type: attribute
+        resource_types:
+          - ncloud_auto_scaling_group
+        attribute: health_check_type_code
+        operator: equals
+        value: "SVR"
+      - and:
+        - cond_type: attribute
+          resource_types:
+              - ncloud_auto_scaling_group
+          attribute: health_check_type_code
+          operator: equals
+          value: "LOADB"
+        - resource_types:
+            - ncloud_lb_target_group
+          connected_resource_types:
+            - ncloud_auto_scaling_group
+          operator: exists
+          cond_type: connection
+        - cond_type: attribute
+          resource_types:
+            - ncloud_lb_target_group
+          attribute: health_check
+          operator: exists

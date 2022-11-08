@@ -1,0 +1,5 @@
+pass:
+  - "ncloud_auto_scaling_group.pass"
+fail:
+  - "ncloud_auto_scaling_group.fail"
+  - "ncloud_auto_scaling_group.fail2"
