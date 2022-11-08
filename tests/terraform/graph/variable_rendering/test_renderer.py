@@ -280,6 +280,19 @@ class TestRenderer(TestCase):
         assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
         assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
 
+    def test_nested_dynamic_blocks_breadcrumbs(self):
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_with_nested")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+            local_graph.vertices,
+            root_folder,
+        )
+        # Test multiple dynamic blocks
+        assert 'required_resource_access.resource_app_id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.type' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+
     def test_list_entry_rendering_module_vars(self):
         # given
         resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"

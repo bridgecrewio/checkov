@@ -33,6 +33,7 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'map': {}
 }
 
+DYNAMIC_STRING = 'dynamic'
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
 LEFT_BRACKET_WITH_QUOTATION = '["'
@@ -325,17 +326,18 @@ class TerraformVariableRenderer(VariableRenderer):
 
             dynamic_value_dot_ref = f"{block_name}.value"
             dynamic_value_bracket_ref = f'{block_name}["value"]'
+            dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
             dynamic_arguments = [
                 argument
                 for argument, value in block_content.items()
-                if (value == dynamic_value_dot_ref or value == dynamic_value_bracket_ref) or isinstance(value, str) and dynamic_value_dot_ref in value
+                if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value
             ]
 
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
-                    block_conf.pop('dynamic', None)
+                    block_conf.pop(DYNAMIC_STRING, None)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
                             if not isinstance(dynamic_value, dict):
@@ -353,11 +355,10 @@ class TerraformVariableRenderer(VariableRenderer):
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
 
-            if 'dynamic' in block_content:
-                next_key = list(block_content['dynamic'].keys())[0]
-                block_content['dynamic'][next_key]['for_each'] = dynamic_values
-                rendered_blocks = {**rendered_blocks,
-                                   **TerraformVariableRenderer._process_dynamic_blocks(block_content['dynamic'])}
+            if DYNAMIC_STRING in block_content:
+                next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
+                block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
+                rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
         return rendered_blocks
 
