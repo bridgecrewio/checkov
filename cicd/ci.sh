@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##### Things to change #####
-VERSION="v20221103.0214"
+VERSION="v20221108.0219"
 set -e
 
 CONTAINER_VERSION="$CI_REGISTRY_IMAGE:${VERSION}"
