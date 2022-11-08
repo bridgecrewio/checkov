@@ -145,9 +145,8 @@ class Block:
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         # update the numbered attributes, if the new value is a list
-        if isinstance(attribute_value, list):
-            for idx, value in enumerate(attribute_value):
-                self.attributes[f"{attribute_key}.{idx}"] = value
+        if attribute_value and isinstance(attribute_value, list):
+            self.update_list_attribute(attribute_key=attribute_key, attribute_value=attribute_value)
 
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) == 1:
@@ -158,6 +157,7 @@ class Block:
         for i in range(len(attribute_key_parts)):
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
+                additional_changed_attributes = self.extract_additional_changed_attributes(key)
                 self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
                 if transform_step and end_key_part in ("1", "2"):
@@ -166,6 +166,9 @@ class Block:
                 attribute_value = {end_key_part: attribute_value}
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
+                    if additional_changed_attributes:
+                        for changed_attribute in additional_changed_attributes:
+                            self.changed_attributes[changed_attribute] = previous_breadcrumbs
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
@@ -197,11 +200,26 @@ class Block:
             elif curr_key in nested_attributes.keys():
                 self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
 
+    def update_list_attribute(self, attribute_key: str, attribute_value: Any) -> None:
+        """Updates list attributes with their index"""
+
+        for idx, value in enumerate(attribute_value):
+            self.attributes[f"{attribute_key}.{idx}"] = value
+
     @staticmethod
     def _should_add_previous_breadcrumbs(
         change_origin_id: int | None, previous_breadcrumbs: list[BreadcrumbMetadata], attribute_at_dest: str | None
     ) -> bool:
         return not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id
+
+    def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
+        """
+        override in case of a special case where additional attributes are needed to be tracked included in self.changed_attributes
+        and self.breadcrumbs, such as terraform dynamic blocks
+        :param attribute_key: JSONPath notation of an attribute key that is used for extraction
+        :return: list of the additional attributes, in JSONPath notation
+        """
+        return []
 
     @staticmethod
     def _should_set_changed_attributes(change_origin_id: int | None, attribute_at_dest: str | None) -> bool:

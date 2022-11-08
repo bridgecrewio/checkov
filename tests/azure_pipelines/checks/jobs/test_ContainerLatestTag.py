@@ -16,13 +16,13 @@ def test_examples():
     summary = report.get_summary()
 
     passing_resources = {
-        f"{test_files_dir}/azure-pipelines.yml.jobs.jobs.CKV_AZUREPIPELINES_1[41:49]",
-        f"{test_files_dir}/azure-pipelines.yml.stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[22:31]",
+        f"jobs[1](PassTag)",
+        f"stages[0](Example).jobs[1](PassDigest)",
     }
 
     failing_resources = {
-        f"{test_files_dir}/azure-pipelines.yml.jobs.jobs.CKV_AZUREPIPELINES_1[32:41]",
-        f"{test_files_dir}/azure-pipelines.yml.stages[].jobs[].stages[].jobs[].CKV_AZUREPIPELINES_1[14:22]",
+        f"jobs[0](FailLatestTag)",
+        f"stages[0](Example).jobs[0](FailNoTag)",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}
