@@ -59,7 +59,7 @@ dev_build:
 
 build:
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_REF_NAME == "master"'
   image: docker:19.03.12
   stage: build
   services:
