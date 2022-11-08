@@ -8,6 +8,7 @@ from hcl2 import START_LINE, END_LINE
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 from checkov.common.util.str_utils import removeprefix
+from checkov.terraform.graph_builder.utils import setup_file_path_to_referred_id, get_related_resource_id
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -35,6 +36,7 @@ class BaseTerraformProvider:
         ]
 
         supported_resources_graph = self.graph_connector.subgraph(resource_nodes)
+        file_path_to_referred_id = setup_file_path_to_referred_id(self.graph_connector)
 
         for _, resource in supported_resources_graph.nodes(data=True):
             image_names: list[str] = []
@@ -44,6 +46,7 @@ class BaseTerraformProvider:
             if extract_images_func:
                 image_names.extend(extract_images_func(resource))
 
+            related_resource_id = get_related_resource_id(resource, file_path_to_referred_id)
             for name in image_names:
                 images.append(
                     Image(
@@ -51,7 +54,7 @@ class BaseTerraformProvider:
                         name=name,
                         start_line=resource[START_LINE],
                         end_line=resource[END_LINE],
-                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}'
+                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{related_resource_id}'
                     )
                 )
 

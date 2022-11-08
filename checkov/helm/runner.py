@@ -66,7 +66,8 @@ class K8sHelmRunner(k8_runner):
             else:
                 helm_report = chart_results
 
-            fix_report_paths(helm_report, root_folder)
+            if root_folder is not None:
+                fix_report_paths(helm_report, root_folder)
 
             return chart_results
         except Exception:
@@ -82,7 +83,7 @@ class K8sHelmRunner(k8_runner):
             return report
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner["KubernetesGraphManager"]):
     check_type: str = CheckType.HELM  # noqa: CCE003  # a static attribute
     helm_command = 'helm'  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
@@ -92,7 +93,7 @@ class Runner(BaseRunner):
         self.file_names = ['Chart.yaml']
         self.target_folder_path = ''
         self.root_folder = ''
-        self.runner_filter = None
+        self.runner_filter: "RunnerFilter | None" = None
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -156,8 +157,9 @@ class Runner(BaseRunner):
                     os.makedirs(parent, exist_ok=True)
                     cur_source_file = source
                     cur_writer = open(os.path.join(target_dir, source), 'a')
-                cur_writer.write('---' + os.linesep)
-                cur_writer.write(s + os.linesep)
+                if cur_writer:
+                    cur_writer.write('---' + os.linesep)
+                    cur_writer.write(s + os.linesep)
 
                 last_line_dashes = False
             else:
@@ -268,7 +270,11 @@ class Runner(BaseRunner):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         if not target_dir:
             return
+
         o, _ = Runner.get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
+        if o is None:
+            return
+
         try:
             Runner._parse_output(target_dir, o)
         except Exception:
@@ -281,14 +287,14 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _get_chart_dir_and_meta(
-        root_folder: str, files: list[str], runner_filter: RunnerFilter
+        root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> list[tuple[str, dict[str, Any]]]:
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, Runner.parse_helm_chart_details(cd)), chart_directories))
         # remove parsing failures
-        chart_dir_and_meta = [chart_meta for chart_meta in chart_dir_and_meta if chart_meta[1]]
-        return chart_dir_and_meta
+        cleaned_chart_dir_and_meta = [(chart_dir, meta) for chart_dir, meta in chart_dir_and_meta if meta]
+        return cleaned_chart_dir_and_meta
 
     @staticmethod
     def _get_processed_chart_dir_and_meta(
@@ -302,10 +308,10 @@ class Runner(BaseRunner):
     def convert_helm_to_k8s(
         self, root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> list[tuple[Any, dict[str, Any]]]:
-        self.root_folder = root_folder
+        self.root_folder = root_folder or ""
         self.runner_filter = runner_filter
         self.target_folder_path = tempfile.mkdtemp()
-        chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, self.runner_filter)
+        chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, runner_filter)
 
         list(
             parallel_runner.run_function(
@@ -314,7 +320,7 @@ class Runner(BaseRunner):
                     root_folder=self.root_folder,
                     target_folder_path=self.target_folder_path,
                     helm_command=self.helm_command,
-                    runner_filter=self.runner_filter,
+                    runner_filter=runner_filter,
                 ),
                 chart_dir_and_meta,
             )
