@@ -6,14 +6,12 @@ definition:
   or:
     - cond_type: "attribute"
       resource_types:
-        - "google_compute_firewall_policy"
         - "google_compute_firewall"
       attribute: "disabled"
       operator: "equals"
       value: "true"
     - cond_type: "attribute"
       resource_types:
-        - "google_compute_firewall_policy"
         - "google_compute_firewall"
       attribute: "direction"
       operator: "equals"
