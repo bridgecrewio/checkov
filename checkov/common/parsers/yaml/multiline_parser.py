@@ -37,6 +37,15 @@ class YmlMultilineParser(BaseMultiLineParser):
         return False
 
     @staticmethod
+    def is_object_end(
+        line: str,
+    ) -> bool:
+        match = re.match(INDENTATION_PATTERN, line)
+        if match:
+            return '-' in match.groups()[0]
+        return False
+
+    @staticmethod
     def is_line_comment(
         line: str
     ) -> bool:

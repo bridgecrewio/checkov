@@ -31,7 +31,7 @@ class BaseMultiLineParser(ABC):
             if self.consecutive_lines_in_same_object(raw_context=raw_context, other_line_idx=j) \
                     and not self.is_line_comment(line):
                 possible_keywords.add(raw_context.lines[j])
-                if self.is_object_start(line=line):
+                if self.is_object_start(line=line) or self.is_object_end(line=line):
                     return possible_keywords
         # No start of array detected, hence all found possible_keywords are irrelevant
         return set()
@@ -47,6 +47,13 @@ class BaseMultiLineParser(ABC):
     @staticmethod
     @abstractmethod
     def is_object_start(
+        line: str,
+    ) -> bool:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def is_object_end(
         line: str,
     ) -> bool:
         pass

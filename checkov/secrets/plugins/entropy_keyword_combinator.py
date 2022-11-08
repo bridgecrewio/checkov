@@ -221,8 +221,8 @@ class EntropyKeywordCombinator(BasePlugin):
 
             if entropy_on_value:
                 possible_keywords: set[str] = set()
-                forward_range = range(context.target_index - 1, -1, -1)
-                backwards_range = range(context.target_index + 1, len(context.lines))
+                backwards_range = range(context.target_index - 1, -1, -1)
+                forward_range = range(context.target_index + 1, len(context.lines))
 
                 possible_keywords |= multiline_parser.get_lines_from_same_object(
                     search_range=forward_range,
