@@ -400,9 +400,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        details=check.details.copy()
+                        details=check.details
                     )
-                    check.details.clear()
                     if CHECKOV_CREATE_GRAPH:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
                             '.'.join([entity_type, entity_name]))
