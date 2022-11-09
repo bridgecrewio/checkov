@@ -5,10 +5,10 @@ from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
-class TestNumberOfNotWordsLessThan(TestBaseSolver):
+class TestNumberOfWordsLessThan(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
-        super(TestNumberOfNotWordsLessThan, self).setUp()
+        super(TestNumberOfWordsLessThan, self).setUp()
 
     def test_number_of_words_less_than(self):
         # this is just a basic check to make sure the operator works
