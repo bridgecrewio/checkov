@@ -23,7 +23,7 @@ class AKSNetworkPolicy(BaseResourceCheck):
                 return CheckResult.FAILED
 
         properties = conf.get('properties')
-        if not properties or not isinstance(properties, DictNode):
+        if not properties or not isinstance(properties, dict):
             return CheckResult.FAILED
         network_profile = properties.get('networkProfile')
         if not network_profile:
