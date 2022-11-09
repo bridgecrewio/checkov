@@ -96,7 +96,7 @@ class EntropyKeywordCombinator(BasePlugin):
         self.keyword_scanner = KeywordDetector()
 
     def analyze_string(self, string: str) -> Generator[str, None, None]:
-        pass
+        yield ""
 
     def analyze_line(
             self,
