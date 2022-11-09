@@ -345,7 +345,7 @@ class TerraformVariableRenderer(VariableRenderer):
                             dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
                                 block_content[dynamic_argument]
                             )
-                            if block_name not in dynamic_value:
+                            if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
                                 block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
                             else:
                                 block_conf[dynamic_argument] = dynamic_value[block_name][0][dynamic_value_in_map]
@@ -356,7 +356,10 @@ class TerraformVariableRenderer(VariableRenderer):
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
 
             if DYNAMIC_STRING in block_content:
-                next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
+                try:
+                    next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
+                except StopIteration:
+                    continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
                 rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
