@@ -14,9 +14,6 @@ COMMENT_PREFIX = re.compile(r'^[\s]*(#|\/\/)')
 
 class YmlMultilineParser(BaseMultiLineParser):
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def consecutive_lines_in_same_object(
         self,
         raw_context: CodeSnippet | None,

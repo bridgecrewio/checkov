@@ -21,9 +21,6 @@ WHOLE_OBJ_INLINE = re.compile(r'{[^{]*{?\s*\}\s*,?\s*$')
 
 class JsonMultiLineParser(BaseMultiLineParser):
 
-    def __init__(self) -> None:
-        pass
-
     def consecutive_lines_in_same_object(
         self,
         raw_context: CodeSnippet | None,

@@ -9,9 +9,6 @@ if TYPE_CHECKING:
 
 
 class BaseMultiLineParser(ABC):
-    @abstractmethod
-    def __init__(self) -> None:
-        pass
 
     def get_lines_from_same_object(
         self,
