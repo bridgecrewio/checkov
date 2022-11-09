@@ -12,7 +12,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_feature_order(self):
         self.assertGreater(fixes_integration.order, max([i.order for i in [policy_metadata_integration, custom_policies_integration, repo_config_integration, suppressions_integration]]))
         self.assertGreater(custom_policies_integration.order, policy_metadata_integration.order)
-        self.assertGreater(attribute_resource_types_integration.order, custom_policies_integration.order)
+        self.assertLess(attribute_resource_types_integration.order, custom_policies_integration.order)
         self.assertGreater(suppressions_integration.order, policy_metadata_integration.order)
         self.assertGreater(suppressions_integration.order, policy_metadata_integration.order)
 
