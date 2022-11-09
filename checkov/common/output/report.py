@@ -17,10 +17,15 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
-from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_cli_output
+
+if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
+    from checkov.sca_package_2.output import create_cli_output
+else:
+    from checkov.sca_package.output import create_cli_output
+
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -116,7 +121,8 @@ class Report:
         """
 
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
-        logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+        logging.debug(
+            f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
         soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
         soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
@@ -131,7 +137,8 @@ class Report:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
         elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
-            logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+            logging.debug(
+                'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
         elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
             logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
@@ -152,7 +159,8 @@ class Report:
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
                     (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
-                logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
+                logging.debug(
+                    f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
         logging.debug('No failed check triggered hard fail - returning 0')
@@ -160,10 +168,10 @@ class Report:
 
     def is_empty(self, full: bool = False) -> bool:
         checks_count = (
-            len(self.passed_checks)
-            + len(self.failed_checks)
-            + len(self.skipped_checks)
-            + len(self.parsing_errors)
+                len(self.passed_checks)
+                + len(self.failed_checks)
+                + len(self.skipped_checks)
+                + len(self.parsing_errors)
         )
 
         if full:
@@ -172,13 +180,13 @@ class Report:
         return checks_count == 0
 
     def print_console(
-        self,
-        is_quiet: bool = False,
-        is_compact: bool = False,
-        created_baseline_path: str | None = None,
-        baseline: Baseline | None = None,
-        use_bc_ids: bool = False,
-        summary_position: str = 'top'
+            self,
+            is_quiet: bool = False,
+            is_compact: bool = False,
+            created_baseline_path: str | None = None,
+            baseline: Baseline | None = None,
+            use_bc_ids: bool = False,
+            summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -199,7 +207,8 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
+                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
+                                                 self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
@@ -558,7 +567,8 @@ class Report:
                     report.add_record(record)
 
             if record.resource_address and record.resource_address.startswith("module."):
-                module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
+                module_path = record.resource_address[
+                              module_address_len:record.resource_address.index('.', module_address_len + 1)]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:
