@@ -49,9 +49,7 @@ class YmlMultilineParser(BaseMultiLineParser):
     def is_line_comment(
         line: str
     ) -> bool:
-        if re.match(COMMENT_PREFIX, line):
-            return True
-        return False
+        return bool(re.match(COMMENT_PREFIX, line))
 
     @staticmethod
     def lines_same_indentation(line1: str, line2: str) -> bool:
@@ -63,9 +61,7 @@ class YmlMultilineParser(BaseMultiLineParser):
             return False
         indent1 = len(match1.groups()[0])
         indent2 = len(match2.groups()[0])
-        if indent1 == indent2:
-            return True
-        return False
+        return indent1 == indent2
 
 
 yml_multiline_parser = YmlMultilineParser()

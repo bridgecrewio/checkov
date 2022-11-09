@@ -151,8 +151,6 @@ class EntropyKeywordCombinator(BasePlugin):
     ) -> set[PotentialSecret]:
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
         filetype = determine_file_type(filename)
-        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype)
-        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype)
         multiline_parser = MULTILINE_PARSERS.get(filetype)
 
         if len(line) <= MAX_LINE_LENGTH:
@@ -171,6 +169,8 @@ class EntropyKeywordCombinator(BasePlugin):
                 # not so classic key-value pair, from multiline, that is only in an array format.
                 # The scan is one-way backwards, so no duplicates expected.
                 elif multiline_parser:
+                    value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype)
+                    secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype)
                     return self.analyze_multiline(
                         filename=filename,
                         line=line,

@@ -29,37 +29,29 @@ class JsonMultiLineParser(BaseMultiLineParser):
         raw_context: CodeSnippet | None,
         other_line_idx: int,
     ) -> bool:
-        if not raw_context:
-            return False  # could not know
-        if not 0 <= other_line_idx < len(raw_context.lines):
+        if not raw_context or not 0 <= other_line_idx < len(raw_context.lines):
             return False
-        line1 = raw_context.lines[other_line_idx]
-        line2 = raw_context.target_line
+        higher_line = raw_context.lines[other_line_idx]
+        lower_line = raw_context.target_line
         if other_line_idx > raw_context.target_index:
-            line1, line2 = line2, line1
-        if not self.is_object_end(line1) and not re.search(START_OBJ_INCLUDING_CURRENT_LINE, line2):
-            if self.is_object_start(line1):
-                if re.search(START_OBJ_INCLUDING_CURRENT_LINE, line1):
-                    return True
-                return False
-            return True
-        return False
+            higher_line, lower_line = lower_line, higher_line
+        if self.is_object_end(higher_line) or re.search(START_OBJ_INCLUDING_CURRENT_LINE, lower_line):
+            return False
+        if self.is_object_start(higher_line):
+            return bool(re.search(START_OBJ_INCLUDING_CURRENT_LINE, higher_line))
+        return True
 
     @staticmethod
     def is_object_start(
         line: str
     ) -> bool:
-        if re.search(START_OBJ, line) and not re.search(WHOLE_OBJ_INLINE, line):
-            return True
-        return False
+        return bool(re.search(START_OBJ, line) and not re.search(WHOLE_OBJ_INLINE, line))
 
     @staticmethod
     def is_object_end(
         line: str
     ) -> bool:
-        if re.search(END_OBJ, line) and not re.search(WHOLE_OBJ_INLINE, line):
-            return True
-        return False
+        return bool(re.search(END_OBJ, line) and not re.search(WHOLE_OBJ_INLINE, line))
 
     @staticmethod
     def is_line_comment(
