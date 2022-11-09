@@ -15,7 +15,7 @@ class AppServicePHPVersion(BaseResourceValueCheck):
         return "site_config/[0]/php_version/[0]"
 
     def get_expected_value(self):
-        return '7.4'
+        return '8.1'
 
 
 check = AppServicePHPVersion()
