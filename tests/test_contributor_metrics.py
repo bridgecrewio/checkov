@@ -1,22 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING
 from unittest import mock
 
-from typing_extensions import Literal
-
-from checkov import main
-from checkov.common.runners.base_runner import BaseRunner
-from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.contributor_metrics import process_contributor, parse_gitlog
-from checkov.main import DEFAULT_RUNNERS
-from checkov.runner_filter import RunnerFilter
+
 
 
 def test_process_contributor():
-    contributor = 'Fake User <fake.user@gmail.com> (50):\n    "commit-1667835804"\n    "commit-1667835527"\n    ' \
-                  '"commit-1667834817"\n    "commit-1667826784"\n    "commit-1667808222"'
+    contributor = 'Fake User <fake.user@gmail.com> (50):\n    commit-1667835804\n    commit-1667835527\n    ' \
+                  'commit-1667834817\n    commit-1667826784\n    commit-1667808222'
 
     result = process_contributor(contributor)
 
