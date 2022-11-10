@@ -78,7 +78,6 @@ spec:
           mountPath: "/app/tmp"
         - name: "tmp"
           mountPath: "/tmp"
-        imagePullPolicy: Always
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
