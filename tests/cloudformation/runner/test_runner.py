@@ -183,20 +183,25 @@ class TestRunnerValid(unittest.TestCase):
         entity = {resource_name: resource}
         entity_tags = cfn_utils.get_resource_tags(entity)
 
-        self.assertIsNone(entity_tags)
+        self.assertDictEqual(
+            entity_tags,
+            {
+                "Name": "TF-FulfillmentServer",
+                "terraform-server-tag-key": "terraform-server-tag-value",
+            }
+        )
 
         resource_name = 'EKSClusterNodegroup'
         resource = definitions['Resources'][resource_name]
         entity = {resource_name: resource}
         entity_tags = cfn_utils.get_resource_tags(entity)
 
-        self.assertEqual(len(entity_tags), 1)
-        tags = {
-            'Name': '{\'Ref\': \'ClusterName\'}-EKS-{\'Ref\': \'NodeGroupName\'}'
-        }
-
-        for name, value in tags.items():
-            self.assertEqual(entity_tags[name], value)
+        self.assertDictEqual(
+            entity_tags,
+            {
+                'Name': '{\'Ref\': \'ClusterName\'}-EKS-{\'Ref\': \'NodeGroupName\'}',
+            }
+        )
 
     def test_wrong_check_imports(self):
         wrong_imports = ["arm", "dockerfile", "helm", "kubernetes", "serverless", "terraform"]
