@@ -25,16 +25,16 @@ class BCSourceType:
 
 
 SourceTypes = {
-    BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False, False),
-    BCSourceType.JETBRAINS: SourceType(BCSourceType.JETBRAINS, False, False),
-    BCSourceType.CLI: SourceType(BCSourceType.CLI, True, False),
-    BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True, False),
-    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True, True),
-    BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False, False),
-    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True, True),
-    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True, True),
-    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True, True),
-    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, False, False)
+    BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
+    BCSourceType.JETBRAINS: SourceType(BCSourceType.JETBRAINS, False),
+    BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
+    BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
+    BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
+    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True, report_contributor_metrics=True),
+    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True, report_contributor_metrics=True),
+    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True, report_contributor_metrics=True),
+    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True, report_contributor_metrics=True),
+    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, False)
 }
 
 

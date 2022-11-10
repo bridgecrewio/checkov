@@ -26,7 +26,7 @@ def parse_gitlog(repository: str) -> dict[str, Any] | None:
     process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
     out, err = process.communicate()
     if err:
-        logger.info(f'Failed to collect contributor metrics due to: {err}')
+        logger.info(f"Failed to collect contributor metrics due to: {err}")     # type: ignore
         return None
     # split per contributor
     list_of_contributors = out.decode('utf-8').split('\n\n')
