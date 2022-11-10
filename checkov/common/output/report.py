@@ -165,10 +165,10 @@ class Report:
 
     def is_empty(self, full: bool = False) -> bool:
         checks_count = (
-                len(self.passed_checks)
-                + len(self.failed_checks)
-                + len(self.skipped_checks)
-                + len(self.parsing_errors)
+            len(self.passed_checks)
+            + len(self.failed_checks)
+            + len(self.skipped_checks)
+            + len(self.parsing_errors)
         )
 
         if full:
