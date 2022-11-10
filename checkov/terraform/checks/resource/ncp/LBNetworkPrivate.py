@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class LBNetworkPrivate(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure LB isn't exposed to the internet"
+        name = "Ensure Load Balancer isn't exposed to the internet"
         id = "CKV_NCP_16"
         supported_resources = ("ncloud_lb",)
         categories = (CheckCategories.NETWORKING,)
