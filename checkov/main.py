@@ -7,7 +7,7 @@ import logging
 import os
 import shutil
 import signal
-import subprocess
+import subprocess  # nosec
 import sys
 from pathlib import Path
 from typing import Any, List, Optional, TYPE_CHECKING
@@ -252,7 +252,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            if source.name in [BCSourceType.GITHUB_ACTIONS, BCSourceType.JENKINS, BCSourceType.CIRCLECI, BCSourceType.CODEBUILD] and config.repo_id:
+            if source.name in [BCSourceType.GITHUB_ACTIONS, BCSourceType.JENKINS, BCSourceType.CIRCLECI, BCSourceType.CODEBUILD] \
+                    and config.repo_id and config.prisma_api_url:
                 try:        # collect contributor info and upload
                     report_contributor_metrics(config.repo_id)
                 except Exception as e:
