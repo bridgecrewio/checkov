@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import os
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.http_utils import request_wrapper
@@ -38,7 +37,7 @@ class Scanner:
         request_body = {
             "branch": "",
             "commit": "",
-            "path": os.path.join(bc_integration.repo_path, '') if bc_integration.repo_path else "",
+            "path": bc_integration.repo_path,
             "repoId": bc_integration.repo_id,
             "id": bc_integration.timestamp,
             "repositoryId": ""
@@ -73,7 +72,7 @@ class Scanner:
                 logging.info(response_json)
                 report_url = response_json['reportUrl']
                 report_response = request_wrapper("GET", report_url, headers={'Accept': 'application/json'})
-                return report_response.json() # type: ignore
+                return report_response.json()  # type: ignore
 
             if current_state == "FAILED":
                 logging.error(response_json)

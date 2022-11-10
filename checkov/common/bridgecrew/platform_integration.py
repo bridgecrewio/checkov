@@ -236,6 +236,7 @@ class BcPlatformIntegration:
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
+                self.repo_path = path.join(self.repo_path, "src")
                 self.credentials = cast("dict[str, str]", response["creds"])
                 config = Config(
                     s3={

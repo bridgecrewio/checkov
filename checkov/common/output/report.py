@@ -121,8 +121,7 @@ class Report:
         """
 
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
-        logging.debug(
-            f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+        logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
         soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
         soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
@@ -137,8 +136,7 @@ class Report:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
         elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
-            logging.debug(
-                'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+            logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
             return 0
         elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
             logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
@@ -159,8 +157,7 @@ class Report:
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
                     (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
-                logging.debug(
-                    f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
+                logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
         logging.debug('No failed check triggered hard fail - returning 0')
@@ -567,8 +564,7 @@ class Report:
                     report.add_record(record)
 
             if record.resource_address and record.resource_address.startswith("module."):
-                module_path = record.resource_address[
-                              module_address_len:record.resource_address.index('.', module_address_len + 1)]
+                module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:

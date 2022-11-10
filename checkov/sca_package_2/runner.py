@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Any, List
+from typing import Any, List
 
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
@@ -64,7 +64,7 @@ class Runner(BaseRunner[None]):
         scan_results = scanner.scan()
 
         # logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
-        return scan_results  # type: ignore
+        return scan_results
 
     def run(
             self,
