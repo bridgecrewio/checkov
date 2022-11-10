@@ -114,7 +114,7 @@ def create_report_cve_record(
     file_abs_path: str,
     check_class: str,
     vulnerability_details: dict[str, Any],
-    licenses: str,
+    licenses: dict[str, str],
     runner_filter: RunnerFilter | None = None,
     sca_details: SCADetails | None = None,
     scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
@@ -258,7 +258,7 @@ def add_to_reports_cves_and_packages(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             vulnerability_details=vulnerability,
-            licenses=", ".join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or "Unknown",
+            licenses=licenses_per_package_map[get_package_alias(package_name, package_version)] or [],
             runner_filter=runner_filter,
             sca_details=sca_details,
             scan_data_format=scan_data_format,
@@ -292,10 +292,7 @@ def add_to_reports_cves_and_packages(
                     vulnerability_details={
                         "package_name": package["name"],
                         "package_version": package["version"],
-                        "licenses": ", ".join(
-                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]
-                        )
-                        or "Unknown",
+                        "licenses": licenses_per_package_map[get_package_alias(package["name"], package["version"])] or [],
                         "package_type": get_package_type(package["name"], package["version"], sca_details),
                     },
                 )
