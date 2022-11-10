@@ -299,7 +299,8 @@ class TerraformVariableRenderer(VariableRenderer):
                     try:
                         rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
                     except Exception as e:
-                        logging.info(f'Failed to process dynamic blocks for blocks: {dynamic_blocks}, error {e}')
+                        logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
+                                     f' for blocks: {dynamic_blocks}')
                         continue
                     changed_attributes = []
 
