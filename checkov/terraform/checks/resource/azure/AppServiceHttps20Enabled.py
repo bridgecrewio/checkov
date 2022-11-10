@@ -6,7 +6,7 @@ class AppServiceHttps20Enabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that 'HTTP Version' is the latest if used to run the web app"
         id = "CKV_AZURE_18"
-        supported_resources = ['azurerm_app_service']
+        supported_resources = ['azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
