@@ -7,7 +7,6 @@ import logging
 import os
 import shutil
 import signal
-import subprocess  # nosec
 import sys
 from pathlib import Path
 from typing import Any, List, Optional, TYPE_CHECKING
@@ -45,6 +44,7 @@ from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.http_utils import request_wrapper
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -252,10 +252,11 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            if source.name in [BCSourceType.GITHUB_ACTIONS, BCSourceType.JENKINS, BCSourceType.CIRCLECI, BCSourceType.CODEBUILD] \
-                    and config.repo_id and config.prisma_api_url:
+            should_run_contributor_reporting = os.getenv('RUN_CONTRIBUTOR_REPORTING', False)
+            # TODO : Replace the following condition with: if source.report_contributor_metrics and config.repo_id and config.prisma_api_url:
+            if should_run_contributor_reporting:
                 try:        # collect contributor info and upload
-                    report_contributor_metrics(config.repo_id)
+                    report_contributor_metrics(config.repo_id, bc_integration)
                 except Exception as e:
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 
@@ -423,40 +424,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
         bc_integration.onboarding()
     return None
-
-
-def report_contributor_metrics(repository: str) -> None:  # ignore: type
-
-    def _parse_gitlog() -> dict[str, Any] | None:
-        process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty="commit-%ct"', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-        out, err = process.communicate()
-        if err:
-            logger.info('Failed to collect contributor metrics')
-            return None
-        # split per contributor
-        list_of_contributors = out.decode('utf-8').split('\n\n')
-        return {"repository": repository,
-                "contributors": list(map(lambda contributor: _process_contributor(contributor),
-                                         list(filter(lambda x: x, list_of_contributors))
-                                         ))
-                }
-
-    def _process_contributor(contributor: str) -> str:
-        splittedList = contributor.split('\n')
-        user = splittedList[0]
-        commit = splittedList[1]
-        return user[0:user.find('(')] + commit[commit.find('-') + 1:len(commit)].strip('\"')
-
-    request_body = _parse_gitlog()
-    if request_body:
-        response = request_wrapper(
-            "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
-            headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
-        )
-        if response.status_code < 300:
-            logging.info(f"Successfully uploaded contributor metrics with status: {response.status_code}")
-        else:
-            logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
 
 
 def add_parser_args(parser: ArgumentParser) -> None:

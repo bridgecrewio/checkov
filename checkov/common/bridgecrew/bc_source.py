@@ -2,11 +2,12 @@ from dataclasses import dataclass
 
 
 class SourceType:
-    __slots__ = ("name", "upload_results")
+    __slots__ = ("name", "upload_results", "report_contributor_metrics")
 
-    def __init__(self, name: str, upload_results: bool):
+    def __init__(self, name: str, upload_results: bool, report_contributor_metrics: bool = False):
         self.name = name
         self.upload_results = upload_results
+        self.report_contributor_metrics = report_contributor_metrics
 
 
 @dataclass
@@ -24,16 +25,16 @@ class BCSourceType:
 
 
 SourceTypes = {
-    BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False),
-    BCSourceType.JETBRAINS: SourceType(BCSourceType.JETBRAINS, False),
-    BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
-    BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
-    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),
-    BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
-    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
-    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
-    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True),
-    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, True)
+    BCSourceType.VSCODE: SourceType(BCSourceType.VSCODE, False, False),
+    BCSourceType.JETBRAINS: SourceType(BCSourceType.JETBRAINS, False, False),
+    BCSourceType.CLI: SourceType(BCSourceType.CLI, True, False),
+    BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True, False),
+    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True, True),
+    BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False, False),
+    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True, True),
+    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True, True),
+    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True, True),
+    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, True, False)
 }
 
 
