@@ -19,7 +19,7 @@ class Registry(BaseCheckRegistry):
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not needed
-        pass
+        return "", "", {}
 
     def scan(
         self,
