@@ -252,7 +252,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            if source.name in [BCSourceType.GITHUB_ACTIONS, BCSourceType.JENKINS, BCSourceType.CIRCLECI, BCSourceType.CODEBUILD]:
+            if source.name in [BCSourceType.GITHUB_ACTIONS, BCSourceType.JENKINS, BCSourceType.CIRCLECI, BCSourceType.CODEBUILD] and config.repo_id:
                 try:        # collect contributor info and upload
                     report_contributor_metrics(config.repo_id)
                 except Exception as e:
@@ -424,9 +424,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     return None
 
 
-def report_contributor_metrics(repository: str) -> None:
+def report_contributor_metrics(repository: str) -> None:  # ignore: type
 
-    def _parse_gitlog():
+    def _parse_gitlog() -> dict[str, Any] | None:
         process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty="commit-%ct"', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if err:
@@ -444,7 +444,7 @@ def report_contributor_metrics(repository: str) -> None:
         splittedList = contributor.split('\n')
         user = splittedList[0]
         commit = splittedList[1]
-        return user[0:user.find('(')] + commit[commit.find('-')+1:len(commit)].strip('\"')
+        return user[0:user.find('(')] + commit[commit.find('-') + 1:len(commit)].strip('\"')
 
     request_body = _parse_gitlog()
     if request_body:
@@ -456,7 +456,6 @@ def report_contributor_metrics(repository: str) -> None:
             logging.info(f"Successfully uploaded contributor metrics with status: {response.status_code}")
         else:
             logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
-
 
 
 def add_parser_args(parser: ArgumentParser) -> None:
