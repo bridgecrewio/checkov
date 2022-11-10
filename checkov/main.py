@@ -427,7 +427,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 def report_contributor_metrics(repository: str) -> None:  # ignore: type
 
     def _parse_gitlog() -> dict[str, Any] | None:
-        process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty="commit-%ct"', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty="commit-%ct"', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         out, err = process.communicate()
         if err:
             logger.info('Failed to collect contributor metrics')
