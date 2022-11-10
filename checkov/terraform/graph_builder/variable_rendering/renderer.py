@@ -296,7 +296,12 @@ class TerraformVariableRenderer(VariableRenderer):
                 # only check dynamic blocks on the root level for now
                 dynamic_blocks = vertex.attributes.get("dynamic")
                 if dynamic_blocks:
-                    rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    try:
+                        rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    except Exception:
+                        logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
+                                     f' for blocks: {dynamic_blocks}')
+                        continue
                     changed_attributes = []
 
                     for block_name, block_confs in rendered_blocks.items():
@@ -321,7 +326,7 @@ class TerraformVariableRenderer(VariableRenderer):
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
             block_content = block_values.get("content")
             dynamic_values = block_values.get("for_each")
-            if not block_content or not dynamic_values:
+            if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
             dynamic_value_dot_ref = f"{block_name}.value"
@@ -358,7 +363,7 @@ class TerraformVariableRenderer(VariableRenderer):
             if DYNAMIC_STRING in block_content:
                 try:
                     next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
-                except StopIteration:
+                except (StopIteration, AttributeError):
                     continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
                 rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))

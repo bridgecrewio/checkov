@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from unittest import mock
 from unittest.case import TestCase
@@ -348,3 +349,20 @@ class TestRenderer(TestCase):
             {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 443, 'direction': 'Inbound', 'name': 'AllowHttpsIn', 'priority': 110, 'protocol': 'Tcp', 'source_address_prefix': '35.181.123.80/32', 'source_port_range': '*'},
             {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': 3389, 'direction': 'Inbound', 'name': 'DenyRdpIn', 'priority': 120, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
             {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': '*', 'direction': 'Inbound', 'name': 'DenyIcmpIn', 'priority': 130, 'protocol': 'Icmp', 'source_address_prefix': '*', 'source_port_range': '*'}]
+
+    def test_dynamic_blocks_with_nested_lookup(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_nested_with_lookup_foreach'),
+        ]
+        for path in resource_paths:
+            start_time = time.time()
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            end_time = time.time()
+            assert end_time - start_time < 1
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+
+            # Should fail after implementing dynamic for_each with lookup
+            for resource_vertex in resources_vertex:
+                if resource_vertex.has_dynamic_block:
+                    assert '$' in resource_vertex.attributes.get('stage', {}).get('name')
