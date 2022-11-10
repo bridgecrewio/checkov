@@ -325,7 +325,7 @@ class TerraformVariableRenderer(VariableRenderer):
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
             block_content = block_values.get("content")
             dynamic_values = block_values.get("for_each")
-            if not block_content or not dynamic_values:
+            if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
             dynamic_value_dot_ref = f"{block_name}.value"
