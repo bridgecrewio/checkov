@@ -19,10 +19,16 @@ class TestAppServiceClientCertificate(unittest.TestCase):
 
         passing_resources = {
             'azurerm_app_service.pass',
+            'azurerm_windows_web_app.pass',
+            'azurerm_linux_web_app.pass'
         }
         failing_resources = {
             'azurerm_app_service.fail',
             'azurerm_app_service.fail2',
+            'azurerm_windows_web_app.fail',
+            'azurerm_linux_web_app.fail',
+            'azurerm_windows_web_app.fail2',
+            'azurerm_linux_web_app.fail2'
         }
         skipped_resources = {}
 
