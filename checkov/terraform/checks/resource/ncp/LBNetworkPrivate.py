@@ -16,7 +16,7 @@ class LBNetworkPrivate(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if "network_type" in conf.keys():
             network_type = conf["network_type"]
-            if network_type in (["PRIVATE"],):
+            if network_type == ["PRIVATE"]:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
