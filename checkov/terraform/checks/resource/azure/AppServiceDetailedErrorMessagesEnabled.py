@@ -6,8 +6,8 @@ class AppServiceDetailedErrorMessagesEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that App service enables detailed error messages"
         id = "CKV_AZURE_65"
-        supported_resources = ['azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app']
-        categories = [CheckCategories.LOGGING]
+        supported_resources = ('azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app')
+        categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.FAILED)
 

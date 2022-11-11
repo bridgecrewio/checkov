@@ -6,8 +6,8 @@ class AppServiceAuthentication(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure App Service Authentication is set on Azure App Service"
         id = "CKV_AZURE_13"
-        supported_resources = ['azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app')
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.FAILED)
 
