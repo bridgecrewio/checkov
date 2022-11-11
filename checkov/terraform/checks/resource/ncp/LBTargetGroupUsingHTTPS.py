@@ -9,7 +9,7 @@ class LBTargetGroupUsingHTTPS(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Load Balancer Target Group is not using HTTP"
         id = "CKV_NCP_15"
-        supported_resources = ("ncloud_lb_target_group",)
+        supported_resources = ("ncloud_lb_listener",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
