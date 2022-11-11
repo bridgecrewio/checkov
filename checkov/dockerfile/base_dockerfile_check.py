@@ -4,10 +4,11 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from checkov.common.checks.base_check import BaseCheck
+from checkov.common.models.enums import CheckResult
 from checkov.dockerfile.registry import registry
 
 if TYPE_CHECKING:
-    from checkov.common.models.enums import CheckResult, CheckCategories
+    from checkov.common.models.enums import CheckCategories
     from dockerfile_parse.parser import _Instruction
 
 
@@ -40,4 +41,4 @@ class BaseDockerfileCheck(BaseCheck):
 
     def scan_resource_conf(self, conf: list[_Instruction]) -> tuple[CheckResult, list[_Instruction] | None]:
         # this is not an abstractmethod to be backward compatible
-        pass
+        return CheckResult.PASSED, None

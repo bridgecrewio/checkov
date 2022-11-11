@@ -17,6 +17,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.models.consts import YAML_COMMENT_MARK
 
 CF_POSSIBLE_ENDINGS = frozenset([".yml", ".yaml", ".json", ".template"])
+TAG_FIELD_NAMES = ("Key", "Value")
 
 
 def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_registry) -> Optional[Dict[str, str]]:
@@ -43,8 +44,12 @@ def get_resource_tags(entity: Dict[StrNode, DictNode], registry: Registry = cfn_
 
 
 def parse_entity_tags(tags: Union[ListNode, Dict[str, Any]]) -> Optional[Dict[str, str]]:
-    if isinstance(tags, ListNode):
-        tag_dict = {get_entity_value_as_string(tag["Key"]): get_entity_value_as_string(tag["Value"]) for tag in tags}
+    if isinstance(tags, list):
+        tag_dict = {
+            get_entity_value_as_string(tag["Key"]): get_entity_value_as_string(tag["Value"])
+            for tag in tags
+            if all(field in tag for field in TAG_FIELD_NAMES)
+        }
         return tag_dict
     elif isinstance(tags, dict):
         tag_dict = {
