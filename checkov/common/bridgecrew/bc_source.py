@@ -33,7 +33,7 @@ SourceTypes = {
     BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
     BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
     BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True),
-    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, True)
+    BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, False)
 }
 
 

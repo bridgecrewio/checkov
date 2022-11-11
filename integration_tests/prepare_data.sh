@@ -40,6 +40,6 @@ then
   echo "running list"
   pipenv run checkov --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
   echo "running tfc"
-  GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
+#  GITHUB_PAT="$GITHUB_PAT" TFC_TOKEN="$TFC_TOKEN" pipenv run checkov -s -d integration_tests/example_ext_private_modules/ --download-external-modules True
 
 fi

@@ -4,7 +4,6 @@ from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-from checkov.common.parsers.node import DictNode
 
 
 class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
@@ -32,7 +31,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceCheck):
             else:
                 # ApiServerAuthorizedIpRanges fully supported in all future API versions
                 properties = conf.get('properties')
-                if not properties or not isinstance(properties, DictNode):
+                if not properties or not isinstance(properties, dict):
                     return CheckResult.FAILED
                 api_server_access_profile = properties.get('apiServerAccessProfile')
                 if not api_server_access_profile:

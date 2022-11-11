@@ -77,7 +77,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
           TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
-          GITHUB_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
@@ -210,8 +210,8 @@ jobs:
           git add "docs/5.Policy Index/*"
           git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
           
-          git config --global user.name 'schosterbarak'
-          git config --global user.email 'schosterbarak@users.noreply.github.com'
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
           
           new_tag=${{ steps.calculateVersion.outputs.version }}
           echo "new tag: $new_tag"
@@ -281,10 +281,42 @@ jobs:
           tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
+  publish-checkov-pyston-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - name: Get release version
+        id: versions
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        with:
+          name: bridgecrew/checkov
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
+          dockerfile: Dockerfile.pyston
+          buildoptions: "--no-cache"
+  update-bridgecrew-projects:
+    needs: publish-checkov-dockerhub
+    runs-on: [self-hosted, public, linux, x64]
+    environment: release
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - name: update checkov release
+        run: |
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    needs: bump-version
+    needs: update-bridgecrew-projects
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
@@ -319,35 +351,3 @@ jobs:
           git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
-  publish-checkov-pyston-dockerhub:
-    runs-on: [self-hosted, public, linux, x64]
-    needs: bump-version
-    environment: release
-    steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - name: Get release version
-        id: versions
-        run: |
-          checkov_version=${{ needs.bump-version.outputs.version }}
-          checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> $GITHUB_OUTPUT
-          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
-        with:
-          name: bridgecrew/checkov
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
-          dockerfile: Dockerfile.pyston
-          buildoptions: "--no-cache"
-  update-bridgecrew-projects:
-    needs: publish-checkov-dockerhub
-    runs-on: [self-hosted, public, linux, x64]
-    environment: release
-    steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - name: update checkov release
-        run: |
-          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
-          curl -XPOST -u "${{ secrets.GH_PAT_USE}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'

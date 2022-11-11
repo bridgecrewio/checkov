@@ -4,7 +4,6 @@ from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-from checkov.common.parsers.node import DictNode
 
 
 class AKSDashboardDisabled(BaseResourceCheck):
@@ -23,13 +22,13 @@ class AKSDashboardDisabled(BaseResourceCheck):
                 return CheckResult.FAILED
 
         properties = conf.get("properties")
-        if properties is None or not isinstance(properties, DictNode):
+        if properties is None or not isinstance(properties, dict):
             return CheckResult.FAILED
         addon_profiles = conf["properties"].get("addonProfiles")
-        if not isinstance(addon_profiles, DictNode):
+        if not isinstance(addon_profiles, dict):
             return CheckResult.FAILED
         kube_dashboard = addon_profiles.get("kubeDashboard")
-        if not isinstance(kube_dashboard, DictNode):
+        if not isinstance(kube_dashboard, dict):
             return CheckResult.FAILED
         enabled = kube_dashboard.get("enabled")
         if enabled is not None and str(enabled).lower() == "false":
