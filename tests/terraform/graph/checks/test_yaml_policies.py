@@ -227,9 +227,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SQLServerAuditingRetention90Days(self):
         self.go("SQLServerAuditingRetention90Days")
 
-    def test_SecurityGroupRuleDefine(self):
-       self.go("SecurityGroupRuleDefine")
-
     def test_AWSSSMParameterShouldBeEncrypted(self):
         self.go("AWSSSMParametershouldbeEncrypted", "AWSSSMParameterShouldBeEncrypted")
 

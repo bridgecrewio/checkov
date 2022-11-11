@@ -1,6 +1,0 @@
-pass:
-  - "aws_security_group.pass1"
-  - "aws_security_group.pass2"
-  - "aws_security_group_rule.example"
-fail:
-  - "aws_security_group.fail"
