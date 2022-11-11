@@ -19,7 +19,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
-    attribute_has_nested_attributes,
+    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
@@ -33,6 +33,7 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'map': {}
 }
 
+DYNAMIC_STRING = 'dynamic'
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
 LEFT_BRACKET_WITH_QUOTATION = '["'
@@ -295,7 +296,12 @@ class TerraformVariableRenderer(VariableRenderer):
                 # only check dynamic blocks on the root level for now
                 dynamic_blocks = vertex.attributes.get("dynamic")
                 if dynamic_blocks:
-                    rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    try:
+                        rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    except Exception:
+                        logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
+                                     f' for blocks: {dynamic_blocks}')
+                        continue
                     changed_attributes = []
 
                     for block_name, block_confs in rendered_blocks.items():
@@ -320,31 +326,47 @@ class TerraformVariableRenderer(VariableRenderer):
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
             block_content = block_values.get("content")
             dynamic_values = block_values.get("for_each")
-            if not block_content or not dynamic_values:
+            if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
-            dynamic_value_ref = f"{block_name}.value"
+            dynamic_value_dot_ref = f"{block_name}.value"
+            dynamic_value_bracket_ref = f'{block_name}["value"]'
+            dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
             dynamic_arguments = [
                 argument
                 for argument, value in block_content.items()
-                if value == dynamic_value_ref or isinstance(value, str) and dynamic_value_ref in value
+                if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value
             ]
 
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
+                    block_conf.pop(DYNAMIC_STRING, None)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
                             if not isinstance(dynamic_value, dict):
                                 continue
-                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(block_content[dynamic_argument])
-                            block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
+                                block_content[dynamic_argument]
+                            )
+                            if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
+                                block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                            else:
+                                block_conf[dynamic_argument] = dynamic_value[block_name][0][dynamic_value_in_map]
                         else:
                             block_conf[dynamic_argument] = dynamic_value
 
                     block_confs.append(block_conf)
-                rendered_blocks[block_name] = block_confs
+                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
+
+            if DYNAMIC_STRING in block_content:
+                try:
+                    next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
+                except (StopIteration, AttributeError):
+                    continue
+                block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
+                rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
         return rendered_blocks
 
@@ -357,6 +379,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 attr
                 for attr in vertex.attributes
                 if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+                and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
             ]
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
