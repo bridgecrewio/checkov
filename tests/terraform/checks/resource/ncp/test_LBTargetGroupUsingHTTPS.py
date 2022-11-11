@@ -18,10 +18,10 @@ class TestLBTargetGroupUsingHTTPS(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "ncloud_lb_listener.pass",
+            "ncloud_lb_target_group.pass",
         }
         failing_resources = {
-            "ncloud_lb_listener.fail",
+            "ncloud_lb_target_group.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
