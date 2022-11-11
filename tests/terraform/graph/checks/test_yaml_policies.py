@@ -200,6 +200,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ARecordAttachedResource(self):
         self.go("Route53ARecordAttachedResource")
 
+    def test_RouteTablePublicSubnetConnection(self):
+        self.go("RouteTablePublicSubnetConnection")
+
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
