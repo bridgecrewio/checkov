@@ -53,7 +53,6 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices, unknown_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
-        attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
         # handle edge cases in some policies that explicitly look for blank values
