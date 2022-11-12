@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.ncp.LBNetworkPrivate import check
+from checkov.terraform.checks.resource.ncp.LBTargetGroupUsingHTTPS import check
 from checkov.terraform.runner import Runner
 
 
-class TestLBNetworkPrivate(unittest.TestCase):
+class TestLBTargetGroupUsingHTTPS(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_LBNetworkPrivate"
+        test_files_dir = Path(__file__).parent / "example_LBTargetGroupUsingHTTPS"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,18 +18,17 @@ class TestLBNetworkPrivate(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "ncloud_lb.pass",
+            "ncloud_lb_target_group.pass",
         }
         failing_resources = {
-            "ncloud_lb.fail",
-            "ncloud_lb.fail2"
+            "ncloud_lb_target_group.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
