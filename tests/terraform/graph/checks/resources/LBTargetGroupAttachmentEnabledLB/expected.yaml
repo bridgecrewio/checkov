@@ -1,0 +1,4 @@
+pass:
+  - "ncloud_lb_target_group_attachment.pass"
+fail:
+  - "ncloud_lb_target_group_attachment.fail"
