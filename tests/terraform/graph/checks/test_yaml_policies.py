@@ -50,6 +50,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SGAttachedToResource(self):
         self.go("SGAttachedToResource")
 
+    def test_EC2InstanceHasIAMRoleAttached(self):
+        self.go("EC2InstanceHasIAMRoleAttached") 
+
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
 
@@ -89,6 +92,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_GCRContainerVulnerabilityScanningEnabled(self):
+        self.go("GCRContainerVulnerabilityScanningEnabled")    
+
     def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
         self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
 
@@ -106,6 +112,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPLogBucketsConfiguredUsingLock(self):
         self.go("GCPLogBucketsConfiguredUsingLock")
+
+    def test_CloudFunctionSecureHTTPTrigger(self):
+        self.go("CloudFunctionSecureHTTPTrigger")    
 
     def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
         self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
@@ -262,6 +271,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
+
+    def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
+        self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
 
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(

@@ -66,3 +66,5 @@ class Operators:
     NOT_EQUALS_IGNORE_CASE = 'not_equals_ignore_case'
     RANGE_INCLUDES = 'range_includes'
     RANGE_NOT_INCLUDES = 'range_not_includes'
+    NUMBER_OF_WORDS_EQUALS = 'number_of_words_equals'
+    NUMBER_OF_WORDS_NOT_EQUALS = 'number_of_words_not_equals'
