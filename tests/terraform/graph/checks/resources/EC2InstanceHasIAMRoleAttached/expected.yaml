@@ -1,0 +1,4 @@
+pass:
+  - "aws_instance.pass"
+fail:
+  - "aws_instance.fail"

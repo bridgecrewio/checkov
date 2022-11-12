@@ -183,4 +183,4 @@ class Registry(BaseCheckRegistry):
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}

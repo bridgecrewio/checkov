@@ -402,7 +402,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         benchmarks=check.benchmarks,
                         details=check.details
                     )
-
                     if CHECKOV_CREATE_GRAPH:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
                             '.'.join([entity_type, entity_name]))
