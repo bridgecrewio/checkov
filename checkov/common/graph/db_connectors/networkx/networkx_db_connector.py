@@ -44,3 +44,7 @@ class NetworkxConnector(DBConnector[nx.DiGraph]):
         self.graph.add_edges_from(edges_to_add)
 
         return self.graph
+
+    def disconnect(self) -> None:
+        # not used, but is an abstractmethod
+        return None

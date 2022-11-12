@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from unittest import mock
 from unittest.case import TestCase
@@ -280,6 +281,19 @@ class TestRenderer(TestCase):
         assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
         assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
 
+    def test_nested_dynamic_blocks_breadcrumbs(self):
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_with_nested")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+            local_graph.vertices,
+            root_folder,
+        )
+        # Test multiple dynamic blocks
+        assert 'required_resource_access.resource_app_id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.type' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+
     def test_list_entry_rendering_module_vars(self):
         # given
         resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
@@ -300,10 +314,55 @@ class TestRenderer(TestCase):
             ["10.0.0.0/16", "0.0.0.0/0"],
         )
 
+    @mock.patch.dict(os.environ, {"CHECKOV_RENDER_DYNAMIC_MODULES": "False"})
     def test_dynamic_with_env_var_false(self):
-        os.environ['CHECKOV_RENDER_DYNAMIC_MODULES'] = 'False'
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"), render_variables=True)
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert not resources_vertex[0].attributes.get('ingress')
         assert not resources_vertex[0].attributes.get('egress')
+
+    def test_dynamic_blocks_with_nested_map(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_blocks_with_nested'),
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('required_resource_access')) == 2
+            assert resources_vertex[0].attributes.get('required_resource_access') == \
+                   {'resource_app_id': '00000003-0000-0000-c000-000000000000',
+                    'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
+
+    def test_dynamic_example_for_security_rule(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(os.path.join(TEST_DIRNAME, "test_resources", "dynamic_block_map_example"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('security_rule') == [
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 80, 'direction': 'Inbound', 'name': 'AllowHttpIn', 'priority': 100, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 443, 'direction': 'Inbound', 'name': 'AllowHttpsIn', 'priority': 110, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 3389, 'direction': 'Inbound', 'name': 'AllowRdpIn', 'priority': 120, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': '*', 'direction': 'Inbound', 'name': 'AllowIcmpIn', 'priority': 130, 'protocol': 'Icmp', 'source_address_prefix': '*', 'source_port_range': '*'}]
+        assert resources_vertex[1].attributes.get('security_rule') == [
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': 80, 'direction': 'Inbound', 'name': 'DenyHttpIn', 'priority': 100, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Allow', 'destination_address_prefix': '*', 'destination_port_range': 443, 'direction': 'Inbound', 'name': 'AllowHttpsIn', 'priority': 110, 'protocol': 'Tcp', 'source_address_prefix': '35.181.123.80/32', 'source_port_range': '*'},
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': 3389, 'direction': 'Inbound', 'name': 'DenyRdpIn', 'priority': 120, 'protocol': 'Tcp', 'source_address_prefix': '*', 'source_port_range': '*'},
+            {'access': 'Deny', 'destination_address_prefix': '*', 'destination_port_range': '*', 'direction': 'Inbound', 'name': 'DenyIcmpIn', 'priority': 130, 'protocol': 'Icmp', 'source_address_prefix': '*', 'source_port_range': '*'}]
+
+    def test_dynamic_blocks_with_nested_lookup(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, 'test_resources', 'dynamic_nested_with_lookup_foreach'),
+        ]
+        for path in resource_paths:
+            start_time = time.time()
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            end_time = time.time()
+            assert end_time - start_time < 1
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+
+            # Should fail after implementing dynamic for_each with lookup
+            for resource_vertex in resources_vertex:
+                if resource_vertex.has_dynamic_block:
+                    assert '$' in resource_vertex.attributes.get('stage', {}).get('name')
