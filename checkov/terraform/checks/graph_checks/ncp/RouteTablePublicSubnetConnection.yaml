@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV_NCP_30"
+  id: "CKV_NCP_22"
   name: "Ensure a route table for the public subnets is created."
   category: "NETWORKING"
 definition:
