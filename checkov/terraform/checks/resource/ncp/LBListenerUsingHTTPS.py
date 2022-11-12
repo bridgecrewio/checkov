@@ -8,7 +8,7 @@ class LBListenerUsingHTTPS(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure LB Listener Using HTTPS"
-        id = "CKV_NCP_30"
+        id = "CKV_NCP_24"
         supported_resources = ("ncloud_lb_listener",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
