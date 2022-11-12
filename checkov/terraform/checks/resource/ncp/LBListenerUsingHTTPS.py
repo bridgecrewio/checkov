@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class LBListenerUsingHTTPS(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure LB Listener Using HTTPS"
+        name = "Ensure Load Balancer Listener Using HTTPS"
         id = "CKV_NCP_24"
         supported_resources = ("ncloud_lb_listener",)
         categories = (CheckCategories.GENERAL_SECURITY,)
