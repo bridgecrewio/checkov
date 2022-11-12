@@ -8,7 +8,7 @@ class RouteTableNATGatewayDefault(BaseResourceCheck):
                "allow connectivity "
         id = "CKV_NCP_20"
         supported_resources = ('ncloud_route',)
-        categories = (CheckCategories.KUBERNETES,)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
