@@ -163,7 +163,7 @@ class Record:
             detail_buffer = [colored(f"\tDetails: {self.details[0]}\n", "blue")]
 
             for t in self.details[1:]:
-                detail_buffer.append(colored(f"\t\t{t}\n", "blue"))
+                detail_buffer.append(colored(f"\t         {t}\n", "blue"))
 
             detail = "".join(detail_buffer)
 

@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GHA_CUSTOM_1"
+  name: "Ensure job permissions don't contain contents write access"
+  category: "IAM"
+definition:
+  cond_type: attribute
+  resource_types:
+    - jobs
+  attribute: permissions.contents
+  operator: not_equals
+  value: write
