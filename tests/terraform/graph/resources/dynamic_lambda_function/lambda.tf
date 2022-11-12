@@ -9,4 +9,11 @@ resource "aws_lambda_function" "lambda" {
       target_arn = dead_letter_config.value.target_arn
     }
   }
+
+  dynamic "environment" {
+    for_each = var.environment == null ? [] : [var.environment]
+    content {
+      variables = environment.value.variables
+    }
+  }
 }

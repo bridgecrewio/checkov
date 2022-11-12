@@ -334,4 +334,4 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
         return key, key_parts
 
     def get_resources_types_in_graph(self) -> list[str]:
-        pass
+        return []
