@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV_NCP_39"
+  id: "CKV_NCP_27"
   name: "Ensure that auto Scaling groups that are associated with a load balancer, are using Load Balancing health checks."
   category: "NETWORKING"
 definition:
