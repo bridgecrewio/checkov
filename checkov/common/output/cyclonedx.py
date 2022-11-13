@@ -221,7 +221,7 @@ class CycloneDX:
         licenses = resource.vulnerability_details.get("licenses")
         if licenses:
             license_choices = [
-                LicenseChoice(license_=License(license_name=license)) for license in licenses.split(", ")
+                LicenseChoice(license_=License(license_name=license)) for license in licenses
             ]
 
         purl = PackageURL(
