@@ -107,6 +107,9 @@ def test_get_cyclonedx_report(sca_image_report, tmp_path: Path):
     actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
     expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
 
+    print('first', actual_pretty_xml_as_list)
+    print('second', expected_pretty_xml_as_list)
+
     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
 
