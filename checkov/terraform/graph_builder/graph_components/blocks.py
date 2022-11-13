@@ -138,7 +138,7 @@ class TerraformBlock(Block):
         attribute_value: Union[str, List[str], Dict[str, Any]],
         strip_list: bool = True
     ) -> Dict[str, Any]:
-        if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1 and not isinstance(attribute_value[0], str) and 'lookup' in attribute_value[0]:
+        if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1 and not isinstance(attribute_value[0], str) and not 'lookup' in attribute_value[0]:
             attribute_value = attribute_value[0]
 
         return super().get_inner_attributes(
