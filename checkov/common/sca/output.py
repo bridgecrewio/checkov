@@ -25,6 +25,7 @@ from checkov.common.sca.commons import (
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
+from checkov.common.output.common import fotmat_licenses_to_string
 
 if TYPE_CHECKING:
     from checkov.common.output.common import SCADetails
@@ -235,7 +236,6 @@ def _add_to_report_licenses_statuses(
 
     return licenses_per_package_map
 
-
 def add_to_reports_cves_and_packages(
     report: Report,
     check_class: str | None,
@@ -258,7 +258,7 @@ def add_to_reports_cves_and_packages(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             vulnerability_details=vulnerability,
-            licenses=", ".join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or "Unknown",
+            licenses=fotmat_licenses_to_string(licenses_per_package_map[get_package_alias(package_name, package_version)]),
             runner_filter=runner_filter,
             sca_details=sca_details,
             scan_data_format=scan_data_format,
@@ -288,14 +288,11 @@ def add_to_reports_cves_and_packages(
                 ExtraResource(
                     file_abs_path=scanned_file_path,
                     file_path=get_file_path_for_record(rootless_file_path),
-                    resource=get_resource_for_record(rootless_file_path, package["name"]),
+                    resource=fotmat_licenses_to_string(rootless_file_path, package["name"]),
                     vulnerability_details={
                         "package_name": package["name"],
                         "package_version": package["version"],
-                        "licenses": ", ".join(
-                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]
-                        )
-                        or "Unknown",
+                        "licenses": get_fotmatted_licenses(licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
                         "package_type": get_package_type(package["name"], package["version"], sca_details),
                     },
                 )
