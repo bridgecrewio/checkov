@@ -193,7 +193,6 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
     csv_output_str_as_list = csv_output_str.split("\n")
     assert csv_output_str_as_list == expected_csv_output_str
 
-
 def test_get_sarif_json(sca_package_report_with_skip_scope_function):
     # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
     # a report that is unique for the scope of the function
