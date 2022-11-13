@@ -396,8 +396,8 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
-        if not self.bucket:
-            logging.error("Bucket was not set")
+        if not self.bucket or not self.repo_path:
+            logging.error("Bucket or repo_path was not set")
             return
 
         repo_path_without_src = os.path.dirname(self.repo_path)
