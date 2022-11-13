@@ -140,7 +140,7 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
     censored_code_lines = []
 
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
-        secrets.add(str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret'))
+        secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
 
     if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
             resource_attributes_to_omit[check.entity_type] in entity_config:
