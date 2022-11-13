@@ -51,13 +51,7 @@ class Block:
         self.breadcrumbs: Dict[str, List[Dict[str, Any]]] = {}
 
         attributes_to_add = self._extract_inner_attributes()
-
-        if 'dynamic' in self.attributes:
-            for key_to_add, value_to_add in attributes_to_add.items():
-                exists_key = key_to_add.split('.')
-                exists_key = exists_key[0] if len(exists_key) > 0 else key_to_add
-                if not self.attributes.get(exists_key) or key_to_add == 'dynamic':
-                    self.attributes[key_to_add] = value_to_add
+        self.attributes.update(attributes_to_add)
 
     def _extract_inner_attributes(self) -> Dict[str, Any]:
         attributes_to_add = {}
