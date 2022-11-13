@@ -114,7 +114,7 @@ def create_report_cve_record(
     file_abs_path: str,
     check_class: str,
     vulnerability_details: dict[str, Any],
-    licenses: dict[str, str],
+    licenses: List[str],
     runner_filter: RunnerFilter | None = None,
     sca_details: SCADetails | None = None,
     scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI

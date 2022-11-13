@@ -85,7 +85,7 @@ def test_valid_cyclonedx_image_bom():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability,
-        licenses="BSD-3-Clause",
+        licenses=["BSD-3-Clause"],
         sca_details=image_details,
     )
     report = Report(check_type='sca_image')
@@ -164,7 +164,7 @@ def test_sca_packages_cyclonedx_bom():
         file_abs_path=file_abs_path,
         check_class=check_class,
         vulnerability_details=vulnerability_details,
-        licenses='OSI_BDS',
+        licenses=['OSI_BDS'],
     )
 
     report = Report(CheckType.SCA_PACKAGE)
@@ -179,7 +179,7 @@ def test_sca_packages_cyclonedx_bom():
             vulnerability_details={
                 "package_name": "testpkg",
                 "package_version": "1.1.1",
-                "licenses": "MIT"
+                "licenses": ["MIT"]
             }
         )
     )
@@ -223,7 +223,7 @@ def test_create_library_component_maven_package() -> None:
         vulnerability_details={
             "package_name": package["name"],
             "package_version": package["version"],
-            "licenses": "Unknown",
+            "licenses": [],
             "package_type": 'jar',
         },
     )
@@ -249,7 +249,7 @@ def test_create_library_component_maven_package_without_group_name() -> None:
         vulnerability_details={
             "package_name": package["name"],
             "package_version": package["version"],
-            "licenses": "Unknown",
+            "licenses": [],
             "package_type": 'jar',
         },
     )
