@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Dict
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
@@ -13,6 +13,9 @@ _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
+_Resource = str
+_Attribute = str
+ResourceAttributesToOmit = Dict[_Resource, _Attribute]
 
 class _CheckResult(TypedDict, total=False):
     result: "CheckResult" | tuple["CheckResult", dict[str, Any]]

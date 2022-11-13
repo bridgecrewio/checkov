@@ -56,3 +56,60 @@ def scan_result_success_response() -> Dict[str, Any]:
                    "anz3q7neGie2cS8HcBin/BL8U8U/AL0XOSX+jt75P82r6+RIV6DoZDXW14oKMNz5rR2TA6fr6j3WG52dFumrjvsG"
                    "sp7dAH12j5wbWz+sG1vfOD6+m3b/8HQd/FwVgXAAA=",
      'compressionMethod': 'gzip'}
+
+
+@pytest.fixture
+def tfplan_resource_config_with_secrets():
+    return {
+        'content_type': [''],
+        'expiration_date': [None],
+        'id': ['https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5'],
+        'key_vault_id': ['/subscriptions/resourceGroups/'],
+        'name': ['sb-nau2d-bsn00vn34-01-primary-cs'],
+        'not_before_date': [None],
+        'resource_id': ['/subscriptions/resourceGroups/'],
+        'resource_versionless_id': ['/subscriptions/resourceGroups/'],
+        'tags': [{'__startline__': 45, '__endline__': 45, 'start_line': 44, 'end_line': 44}],
+        'timeouts': [None],
+        'value': ['Endpoint=sb://te-st123-abcdse-02.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5='],
+        'version': ['123d0b12ab123c123456ab123e120bc1'],
+        'versionless_id': ['https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02'],
+        '__startline__': [35],
+        '__endline__': [50],
+        'start_line': [34],
+        'end_line': [49],
+        '__address__': 'module.test.azurerm_key_vault_secret.sb_primary_cs["te-st123-abcdse-02"]'}
+@pytest.fixture
+def tfplan_resource_lines_with_secrets():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "/subscriptions/resourceGroups/",\n'),
+            (40, '                                "name": "sb-nau2d-bsn00vn34-01-primary-cs",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "/subscriptions/resourceGroups/",\n'),
+            (43, '                                "resource_versionless_id": "/subscriptions/resourceGroups/",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "Endpoint=sb://te-st123-abcdse-02.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5=",\n'),
+            (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
+            (49, '                                "versionless_id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02"\n')]
+
+@pytest.fixture
+def tfplan_resource_lines_without_secrets():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "/subscriptions/resourceGroups/",\n'),
+            (40, '                                "name": "sb-nau2d-bsn00vn34-01-primary-cs",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "/subscriptions/resourceGroups/",\n'),
+            (43, '                                "resource_versionless_id": "/subscriptions/resourceGroups/",\n'),
+            (44, '                                "tags":\n'), (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "Endpoint=sb://te-st123-abcdse-02.service***************************************************************************************************************************",\n'),
+            (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
+            (49, '                                "versionless_id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02"\n')]
