@@ -16,13 +16,8 @@ class ImageDetails(SCADetails):
     name: str | None = ''
     related_resource_id: str | None = ''
 
-def fotmat_licenses_to_string(licenses_lst:list[str]) -> str:
+def format_licenses_to_string(licenses_lst:list[str]) -> str:
     if licenses_lst and len(licenses_lst) > 0:
-        # in case we have a quote inside the license, then we need to escape it,
-        # in CSV the escape is 2 double quotes
-        # for license in licenses_lst:
-        #   license = license.replace(r'"', r'"""')
-
         joined_str = '","'.join(licenses_lst)
         return f'"{joined_str}"'
     else:
