@@ -77,8 +77,6 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
-        print('CSV: license to put', resource.vulnerability_details.get("licenses"))
-
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -163,6 +161,7 @@ class CSVSBOM:
 
     @staticmethod
     def arrange_rows(rows: list[dict[str, Any]]) -> None:
+        # we search for formatted rows and covert them back into csv formatted file.
         for row in rows:
             for key in row.keys():
                 val = str(row[key])
