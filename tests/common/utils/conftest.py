@@ -79,6 +79,8 @@ def tfplan_resource_config_with_secrets():
         'start_line': [34],
         'end_line': [49],
         '__address__': 'module.test.azurerm_key_vault_secret.sb_primary_cs["te-st123-abcdse-02"]'}
+
+
 @pytest.fixture
 def tfplan_resource_lines_with_secrets():
     return [(35, '                            {\n'),
@@ -96,6 +98,7 @@ def tfplan_resource_lines_with_secrets():
             (47, '                                "value": "Endpoint=sb://te-st123-abcdse-02.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5=",\n'),
             (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
             (49, '                                "versionless_id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02"\n')]
+
 
 @pytest.fixture
 def tfplan_resource_lines_without_secrets():

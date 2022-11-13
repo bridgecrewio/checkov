@@ -17,6 +17,7 @@ _Resource = str
 _Attribute = str
 ResourceAttributesToOmit = Dict[_Resource, _Attribute]
 
+
 class _CheckResult(TypedDict, total=False):
     result: "CheckResult" | tuple["CheckResult", dict[str, Any]]
     suppress_comment: str
