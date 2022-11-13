@@ -326,7 +326,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     @staticmethod
     def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
-        str, list[dict[str, Any]]]:
+            str, list[dict[str, Any]]]:
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
