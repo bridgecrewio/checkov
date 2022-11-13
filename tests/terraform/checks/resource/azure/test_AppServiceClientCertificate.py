@@ -3,16 +3,16 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AppServiceAuthentication import check
+from checkov.terraform.checks.resource.azure.AppServiceClientCertificate import check
 
 
-class TestAppServiceAuthentication(unittest.TestCase):
+class TestAppServiceClientCertificate(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_AppServiceAuthentication")
+        test_files_dir = os.path.join(current_dir, "example_AppServiceClientCertificate")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
@@ -20,7 +20,7 @@ class TestAppServiceAuthentication(unittest.TestCase):
         passing_resources = {
             'azurerm_app_service.pass',
             'azurerm_windows_web_app.pass',
-            'azurerm_linux_web_app.pass',
+            'azurerm_linux_web_app.pass'
         }
         failing_resources = {
             'azurerm_app_service.fail',
@@ -28,7 +28,7 @@ class TestAppServiceAuthentication(unittest.TestCase):
             'azurerm_windows_web_app.fail',
             'azurerm_linux_web_app.fail',
             'azurerm_windows_web_app.fail2',
-            'azurerm_linux_web_app.fail2',
+            'azurerm_linux_web_app.fail2'
         }
         skipped_resources = {}
 
