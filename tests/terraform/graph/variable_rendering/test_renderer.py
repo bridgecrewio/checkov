@@ -365,4 +365,4 @@ class TestRenderer(TestCase):
             # Should fail after implementing dynamic for_each with lookup
             for resource_vertex in resources_vertex:
                 if resource_vertex.has_dynamic_block:
-                    assert '$' in resource_vertex.attributes.get('stage', {}).get('name')
+                    assert resource_vertex.attributes.get('stage', {}).get('name') == 'stage.value.name'
