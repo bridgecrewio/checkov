@@ -129,7 +129,6 @@ def test_get_csv_report(sca_image_report, tmp_path: Path):
                            '']
 
     csv_output_as_list = csv_output.split("\n")
-
     assert csv_output_as_list == expected_csv_output
 
     expected_csv_output_str = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses',
