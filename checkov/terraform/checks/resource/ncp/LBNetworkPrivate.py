@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from typing import Any, List
+from typing import Any
+
 
 class LBNetworkPrivate(BaseResourceValueCheck):
 
@@ -16,8 +17,8 @@ class LBNetworkPrivate(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "network_type"
 
-    def get_expected_values(self) -> List[Any]:
-        return ["PRIVATE"]
+    def get_expected_values(self) -> Any:
+        return "PRIVATE"
 
 
 check = LBNetworkPrivate()
