@@ -319,12 +319,14 @@ class TerraformVariableRenderer(VariableRenderer):
         dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
         for argument, value in block_content.items():
             if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value:
-                dynamic_arguments.append('.'.join(filter(None, [*path_accumulator , argument])))
+                dynamic_arguments.append('.'.join(filter(None, [*path_accumulator, argument])))
             elif isinstance(value, dict):
-                TerraformVariableRenderer._extract_dynamic_arguments(block_name, value, dynamic_arguments, path_accumulator + [argument])
+                TerraformVariableRenderer._extract_dynamic_arguments(block_name, value, dynamic_arguments,
+                                                                     path_accumulator + [argument])
 
     @staticmethod
-    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
+        str, list[dict[str, Any]]]:
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
