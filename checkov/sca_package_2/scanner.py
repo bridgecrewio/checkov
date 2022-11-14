@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from checkov.common.util.data_structures_utils import merge_dicts
+
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.http_utils import request_wrapper
 
@@ -63,10 +65,14 @@ class Scanner:
         while total_sleeping_time < MAX_SLEEP_DURATION:
             response = request_wrapper(
                 "GET", f"{self.bc_cli_scan_api_url}/{bc_integration.timestamp}",
-                headers=bc_integration.get_default_headers("GET")
+                headers=bc_integration.get_default_headers("GET"),
+                params={"repoId": bc_integration.repo_id}
             )
             response_json = response.json()
-            current_state = response_json["status"]
+            current_state = response_json.get("status")
+            if not current_state:
+                logging.error("Failed to poll scan results.")
+                return {}
 
             if current_state == "COMPLETED":
                 logging.info(response_json)
