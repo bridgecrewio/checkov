@@ -29,3 +29,4 @@ tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-F
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
 checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
+tests/common/utils/conftest.py
