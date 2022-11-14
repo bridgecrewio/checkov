@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.ncp.NksPublicAccess import check
+from checkov.terraform.checks.resource.ncp.NKSPublicAccess import check
 from checkov.terraform.runner import Runner
 
 
-class TestNksPublicAccess(unittest.TestCase):
+class TestNKSPublicAccess(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_NksPublicAccess"
+        test_files_dir = Path(__file__).parent / "example_NKSPublicAccess"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,6 +19,7 @@ class TestNksPublicAccess(unittest.TestCase):
 
         passing_resources = {
             "ncloud_nks_cluster.pass",
+            "ncloud_nks_cluster.pass2"
         }
         failing_resources = {
             "ncloud_nks_cluster.fail",
@@ -27,7 +28,7 @@ class TestNksPublicAccess(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["passed"], 2)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
