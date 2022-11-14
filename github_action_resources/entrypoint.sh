@@ -140,11 +140,14 @@ fi
 
 CHECKOV_EXIT_CODE=$?
 
+# print to console
+echo "${CHECKOV_RESULTS}"
+
 CHECKOV_RESULTS="${CHECKOV_RESULTS//$'\\n'/''}"
 
-{ echo "CHECKOV_RESULTS<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_ENV
-
-echo "results=${CHECKOV_RESULTS}" >> $GITHUB_OUTPUT
+# save output to GitHub files for further usage
+{ echo "CHECKOV_RESULTS<<EOF"; echo "${CHECKOV_RESULTS:0:65536}"; echo "EOF"; } >> $GITHUB_ENV
+{ echo "results<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_OUTPUT
 
 if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ]; then
   echo "Cleaning up $INPUT_DIRECTORY/.external_modules directory"

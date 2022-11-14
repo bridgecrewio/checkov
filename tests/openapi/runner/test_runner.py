@@ -17,13 +17,12 @@ class TestRunnerValid(unittest.TestCase):
         checks = ["CKV_OPENAPI_1", "CKV_OPENAPI_4", "CKV_OPENAPI_3"]
         report = runner.run(
             root_folder=valid_dir_path,
-            runner_filter=RunnerFilter(framework='openapi', checks=checks)
+            runner_filter=RunnerFilter(framework=['openapi'], checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 12)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(report.skipped_checks, [])
-        report.print_console()
 
     def test_runner_honors_enforcement_rules(self) -> None:
         current_dir = os.path.dirname(__file__)
@@ -51,9 +50,8 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(
             root_folder=valid_dir_path,
-            runner_filter=RunnerFilter(framework='openapi')
+            runner_filter=RunnerFilter(framework=['openapi'])
         )
-        report.print_console()
 
     def test_pre_validate_non_openapi_file(self) -> None:
         runner = Runner()
@@ -73,7 +71,7 @@ class TestRunnerValid(unittest.TestCase):
         result = runner.pre_validate_file(file_content)
         self.assertFalse(result)
 
-    def test_pre_validate_openapi_file(self) -> None:
+    def test_pre_validate_openapi_yaml_file(self) -> None:
         runner = Runner()
         file_content = """
             'openapi: 3.0.0
@@ -92,6 +90,41 @@ class TestRunnerValid(unittest.TestCase):
         result = runner.pre_validate_file(file_content)
         self.assertTrue(result)
 
+    def test_pre_validate_openapi_json_file(self) -> None:
+        runner = Runner()
+        file_content = json.dumps(
+            {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "test",
+                    "version": "1.0.0"
+                },
+                "components": {
+                    "securitySchemes": {
+                        "encryptedScheme": {
+                            "type": "oauth2"
+                        }
+                    }
+                },
+                "paths": {
+                    "/": {
+                        "get": {
+                            "security": [
+                                {
+                                    "encryptedScheme": [
+                                        "write",
+                                        "read"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        )
+        result = runner.pre_validate_file(file_content)
+        self.assertTrue(result)
+
     def test_runner_results_consistency(self) -> None:
         current_dir = os.path.dirname(__file__)
         valid_dir_path = os.path.join(current_dir, "resources")
@@ -100,7 +133,7 @@ class TestRunnerValid(unittest.TestCase):
         checks = ["CKV_OPENAPI_1", "CKV_OPENAPI_4", "CKV_OPENAPI_3"]
         report = runner.run(
             root_folder=valid_dir_path,
-            runner_filter=RunnerFilter(framework='openapi', checks=checks)
+            runner_filter=RunnerFilter(framework=['openapi'], checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 12)
         self.assertEqual(report.parsing_errors, [])

@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  namespace: default
+  labels:
+    app: myapp-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.7.9
+    ports:
+    - containerPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod2
+  namespace: default
+  labels:
+    app: myapp-pod2
+spec:
+  containers:
+  - name: myapp-container
+    image: byrnedo/alpine-curl
+    command: ["/bin/sh"]
+    args: ["-c", "sleep 36000"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-pod
+  namespace: default
+  labels:
+    app: myapp-pod
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: myapp-pod
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: myapp-pod-to-myapp-pod2
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: myapp-pod
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 1.1.1.1/32
+    - ipBlock:
+        cidr: 2.2.2.2/32
+    - podSelector:
+        matchLabels:
+          app: myapp-pod2
+    ports:
+    - port: 80
+      protocol: UDP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from collections import defaultdict
@@ -12,6 +14,7 @@ from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
+from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -33,9 +36,10 @@ class Undetermined(TypedDict):
     variable_vertex_id: int
 
 
-class TerraformLocalGraph(LocalGraph):
+class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def __init__(self, module: Module) -> None:
         super().__init__()
+        self.vertices: list[TerraformBlock] = []
         self.module = module
         self.map_path_to_module: Dict[str, List[int]] = {}
         self.relative_paths_cache = {}
@@ -46,7 +50,10 @@ class TerraformLocalGraph(LocalGraph):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
+        logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
+        logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
+
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
@@ -75,6 +82,7 @@ class TerraformLocalGraph(LocalGraph):
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
+        resources_types = self.get_resources_types_in_graph()
         for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
             module_vertex = self.vertices[module_vertex_id]
             for attribute_name, attribute_value in module_vertex.attributes.items():
@@ -86,7 +94,7 @@ class TerraformLocalGraph(LocalGraph):
                     #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
                     if module_vertex.path in self.module.module_dependency_map.get(variable_dir, []):
                         has_var_reference = get_referenced_vertices_in_value(
-                            value=attribute_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                            value=attribute_value, aliases={}, resources_types=resources_types
                         )
                         if has_var_reference:
                             undetermined_values.append(
@@ -101,7 +109,7 @@ class TerraformLocalGraph(LocalGraph):
                             not has_var_reference
                             or not var_default_value
                             or get_referenced_vertices_in_value(
-                                value=var_default_value, aliases={}, resources_types=self.get_resources_types_in_graph()
+                                value=var_default_value, aliases={}, resources_types=resources_types
                             )
                         ):
                             self.update_vertex_attribute(
@@ -162,16 +170,17 @@ class TerraformLocalGraph(LocalGraph):
         logging.info("Creating edges")
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
+        resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
-            for attribute_key in vertex.attributes:
+            for attribute_key, attribute_value in vertex.attributes.items():
                 if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
                     attribute_key, vertex.attributes
                 ):
                     continue
                 referenced_vertices = get_referenced_vertices_in_value(
-                    value=vertex.attributes[attribute_key],
+                    value=attribute_value,
                     aliases=aliases,
-                    resources_types=self.get_resources_types_in_graph(),
+                    resources_types=resources_types,
                 )
                 for vertex_reference in referenced_vertices:
                     # for certain blocks such as data and resource, the block name is composed from several parts.
@@ -466,21 +475,54 @@ def update_dictionary_attribute(
         config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
-    if isinstance(config, dict):
-        if config.get(key_parts[0]) is not None:
-            key = key_parts[0]
+
+    if isinstance(config, dict) and isinstance(key_parts, list):
+        key = key_parts[0]
+        inner_config = config.get(key)
+
+        if inner_config is not None:
             if len(key_parts) == 1:
-                if isinstance(config[key], list) and not isinstance(new_value, list):
+                if isinstance(inner_config, list) and not isinstance(new_value, list):
                     new_value = [new_value]
                 config[key] = new_value
                 return config
             else:
-                config[key] = update_dictionary_attribute(config[key], ".".join(key_parts[1:]), new_value)
+                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value)
         else:
             for key in config:
                 config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
     if isinstance(config, list):
-        for i, config_value in enumerate(config):
-            config[i] = update_dictionary_attribute(config_value, key_to_update, new_value)
+        return update_list_attribute(
+            config=config,
+            key_parts=key_parts,
+            key_to_update=key_to_update,
+            new_value=new_value,
+        )
+    return config
+
+
+def update_list_attribute(
+    config: list[Any], key_parts: list[str], key_to_update: str, new_value: Any
+) -> list[Any] | dict[str, Any]:
+    """Updates a list attribute in the given config"""
+
+    if not config:
+        # happens when we can't correctly evaluate something, because of strange defaults or 'for_each' blocks
+        return config
+
+    if len(key_parts) == 1:
+        idx = force_int(key_parts[0])
+        inner_config = config[0]
+
+        if idx is not None and isinstance(inner_config, list):
+            if not inner_config:
+                # happens when config = [[]]
+                return config
+
+            inner_config[idx] = new_value
+            return config
+
+    for i, config_value in enumerate(config):
+        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value)
 
     return config

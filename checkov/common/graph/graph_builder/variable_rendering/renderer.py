@@ -112,5 +112,6 @@ class VariableRenderer(ABC):
             edge_groups.setdefault(f"{edge.origin}{edge.label}", []).append(edge)
         return list(edge_groups.values())
 
+    @abstractmethod
     def evaluate_non_rendered_values(self) -> None:
         pass

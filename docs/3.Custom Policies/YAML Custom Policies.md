@@ -123,8 +123,12 @@ definition:
 | Is True                      | `is_true`                      |
 | Intersects                   | `intersects`                   |
 | Not Intersects               | `not_intersects`               |
-| Equals Ignore Case           | `equals_ignore case`           |
-| Not Equals Ignore Case       | `not_equals_ignore case`       |
+| Equals Ignore Case           | `equals_ignore_case`           |
+| Not Equals Ignore Case       | `not_equals_ignore_case`       |
+| Range Includes               | `range_includes`               |
+| Range Not Includes           | `range_not_includes`           |
+| Number of words Equals       | `number_of_words_equals`       |
+| Number of words not Equals   | `number_of_words_not_equals`   |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
@@ -309,4 +313,47 @@ definition:
 ```
 
 [See all examples of Custom Policies in code](https://www.checkov.io/3.Custom%20Policies/Examples.html)
+
+## Supported Frameworks
+
+### Bicep
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### CloudFormation
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
+
+### GitHub Actions
+Following `resource_types` are supported
+
+- `permissions` on the root level
+- `steps`
+- `jobs`
+
+Following connections are supported
+
+- `steps` -> `jobs`
+
+#### Note
+The value for `permissions` can be either a map or a single string.
+Map entries can be referenced via their respective key, but a single string entry can be accessed by using `permissions` as the attribute.
+
+ex.
+```yaml
+cond_type: "attribute"
+resource_types:
+  - "permissions"
+attribute: "permissions"
+operator: "not_equals"
+value: "write-all"
+```
+
+### Kubernetes
+All resources can be referenced under `resource_types`.
+Currently, no support for connections.
+
+### Terraform
+All resources can be referenced under `resource_types`.
+Any kind of connection between resources is supported
 

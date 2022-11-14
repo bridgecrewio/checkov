@@ -13,11 +13,6 @@ class LengthLessThanAttributeSolver(BaseAttributeSolver):
         if attr is None:
             return False
 
-        # if this value contains an underendered variable, then we cannot evaluate the check,
-        # so return True (since we cannot return UNKNOWN)
-        if self._is_variable_dependant(attr, vertex['source_']):
-            return True
-
         value_int = force_int(self.value)
 
         if value_int is None:

@@ -19,20 +19,17 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 if TYPE_CHECKING:
     from networkx import DiGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
-
-OPERATION_TO_FUNC = {
-    'all': all,
-    'any': any
-}
 
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
+    is_value_attribute_check = True    # noqa: CCE003  # a static attribute
 
-    def __init__(self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
-                 ) -> None:
+    def __init__(
+        self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
+    ) -> None:
         super().__init__(SolverType.ATTRIBUTE)
         self.resource_types = resource_types
         self.attribute = attribute
@@ -40,28 +37,61 @@ class BaseAttributeSolver(BaseSolver):
         self.is_jsonpath_check = is_jsonpath_check
         self.parsed_attributes: Dict[Optional[str], Any] = {}
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices: List[Dict[str, Any]] = []
         failed_vertices: List[Dict[str, Any]] = []
+        unknown_vertices: List[Dict[str, Any]] = []
         for _, data in graph_connector.nodes(data=True):
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
                     and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
-                jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices))
+                jobs.append(executer.submit(
+                    self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
         concurrent.futures.wait(jobs)
-        return passed_vertices, failed_vertices
+        return passed_vertices, failed_vertices, unknown_vertices
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:
+    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+        # if this value contains an underendered variable, then we cannot evaluate value checks,
+        # and will return None (for UNKNOWN)
+        # handle edge cases in some policies that explicitly look for blank values
+        # we also need to check the attribute stack - e.g., if they are looking for tags.component, but tags = local.tags,
+        # then we actually need to see if tags is variable dependent as well
+        attr_parts = self.attribute.split('.')  # type:ignore[union-attr]  # due to attribute can be None (but not really)
+        attr_to_check = None
+        for attr in attr_parts:
+            attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
+            value_to_check = vertex.get(attr_to_check)
+
+            # we can only check is_attribute_value_check when evaluating the full attribute
+            # for example, if we have a policy that says "tags.component exists", and tags = local.tags, then
+            # we need to check if tags is variable dependent even though this is a not value_attribute check
+            if (attr_to_check != self.attribute or self.is_value_attribute_check) \
+                    and self._is_variable_dependant(value_to_check, vertex['source_']) \
+                    and self.value != '':
+                return None
+
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
+            filtered_attribute_matches = attribute_matches
+            if self.is_value_attribute_check and self.value != '':
+                filtered_attribute_matches = [
+                    a for a in attribute_matches
+                    if not self._is_variable_dependant(vertex.get(a), vertex['source_'])
+                ]
 
-            operator = OPERATION_TO_FUNC['all'] if self.is_jsonpath_check else OPERATION_TO_FUNC['any']
             if attribute_matches:
-                return self.resource_type_pred(vertex, self.resource_types) and operator(
-                    self._get_operation(vertex=vertex, attribute=attr) for attr in attribute_matches
-                )
+                if self.is_jsonpath_check:
+                    if self.resource_type_pred(vertex, self.resource_types) and all(
+                            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
+                        return True if len(attribute_matches) == len(filtered_attribute_matches) else None
+                    return False
+
+                if self.resource_type_pred(vertex, self.resource_types) and any(
+                        self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
+                    return True
+                return False if len(attribute_matches) == len(filtered_attribute_matches) else None
 
         return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
@@ -71,11 +101,16 @@ class BaseAttributeSolver(BaseSolver):
         raise NotImplementedError
 
     def _process_node(
-        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]]
+        self, data: Dict[str, Any], passed_vartices: List[Dict[str, Any]], failed_vertices: List[Dict[str, Any]],
+            unknown_vertices: List[Dict[str, Any]]
     ) -> None:
         if not self.resource_type_pred(data, self.resource_types):
             return
-        if self.get_operation(vertex=data):
+        result = self.get_operation(vertex=data)
+        # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+        if result is None:
+            unknown_vertices.append(data)
+        elif result:
             passed_vartices.append(data)
         else:
             failed_vertices.append(data)

@@ -47,6 +47,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SGAttachedToResource(self):
         self.go("SGAttachedToResource")
 
+    def test_EC2InstanceHasIAMRoleAttached(self):
+        self.go("EC2InstanceHasIAMRoleAttached") 
+
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
 
@@ -86,6 +89,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_GCRContainerVulnerabilityScanningEnabled(self):
+        self.go("GCRContainerVulnerabilityScanningEnabled")    
+
     def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
         self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
 
@@ -103,6 +109,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPLogBucketsConfiguredUsingLock(self):
         self.go("GCPLogBucketsConfiguredUsingLock")
+
+    def test_CloudFunctionSecureHTTPTrigger(self):
+        self.go("CloudFunctionSecureHTTPTrigger")    
 
     def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
         self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
@@ -133,6 +142,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_IAMUsersAreMembersAtLeastOneGroup(self):
         self.go("IAMUsersAreMembersAtLeastOneGroup")
+
+    def test_IAMPolicyNotAllowFullIAMAccess(self):
+        self.go("IAMPolicyNotAllowFullIAMAccess")
 
     def test_DataExplorerEncryptionUsesCustomKey(self):
         self.go("DataExplorerEncryptionUsesCustomKey")
@@ -257,22 +269,25 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
 
+    def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
+        self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
+
     def test_registry_load(self):
         registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
 
-    def go(self, dir_name: str , check_name: str | None = None) -> None:
+    def go(self, dir_name: str, check_name: str | None = None) -> None:
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 f"resources/{dir_name}")
+        check_name = dir_name if check_name is None else check_name
         assert os.path.exists(dir_path)
         policy_dir_path = os.path.dirname(checks.__file__)
         assert os.path.exists(policy_dir_path)
         found = False
         for root, d_names, f_names in os.walk(policy_dir_path):
             for f_name in f_names:
-                check_name = dir_name if check_name is None else check_name
                 if f_name == f"{check_name}.yaml":
                     found = True
                     policy = load_yaml_data(f_name, root)
