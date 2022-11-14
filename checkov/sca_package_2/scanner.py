@@ -5,8 +5,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-from checkov.common.util.data_structures_utils import merge_dicts
-
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.http_utils import request_wrapper
 
