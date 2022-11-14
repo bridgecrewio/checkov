@@ -17,7 +17,7 @@ class LBNetworkPrivate(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "network_type"
 
-    def get_expected_values(self) -> Any:
+    def get_expected_value(self) -> Any:
         return "PRIVATE"
 
 
