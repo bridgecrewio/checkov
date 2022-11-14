@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
@@ -154,7 +155,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     if ckv_id:
                         self.filtered_policy_ids.append(ckv_id)
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
         pass
 

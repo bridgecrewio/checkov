@@ -19,6 +19,8 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
+    integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
@@ -26,7 +28,7 @@ from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.typing import _ExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -40,8 +42,6 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
-
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -73,25 +73,30 @@ class RunnerRegistry:
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
-        integration_feature_registry.run_pre_runner()
         if len(self.runners) == 1:
-            reports: Iterable[Report | list[Report]] = [
-                self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                    runner_filter=self.runner_filter,
-                                    collect_skip_comments=collect_skip_comments)]
+            if licensing_integration.is_runner_valid(self.runners[0]):
+                reports: Iterable[Report | list[Report]] = [
+                    self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                        runner_filter=self.runner_filter,
+                                        collect_skip_comments=collect_skip_comments)]
+            else:
+                reports = []
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
-                report = runner.run(
-                    root_folder=root_folder,
-                    external_checks_dir=external_checks_dir,
-                    files=files,
-                    runner_filter=self.runner_filter,
-                    collect_skip_comments=collect_skip_comments,
-                )
-                if report is None:
-                    # this only happens, when an uncaught exception inside the runner occurs
-                    logging.error(f"Failed to create report for {runner.check_type} framework")
-                    report = Report(check_type=runner.check_type)
+                if licensing_integration.is_runner_valid(runner):
+                    report = runner.run(
+                        root_folder=root_folder,
+                        external_checks_dir=external_checks_dir,
+                        files=files,
+                        runner_filter=self.runner_filter,
+                        collect_skip_comments=collect_skip_comments,
+                    )
+                    if report is None:
+                        # this only happens, when an uncaught exception inside the runner occurs
+                        logging.error(f"Failed to create report for {runner.check_type} framework")
+                        report = Report(check_type=runner.check_type)
+                else:
+                    report = Report(None)
 
                 return report
 

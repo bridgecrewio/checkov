@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 
 class IntegrationFeatureRegistry:
@@ -24,10 +25,10 @@ class IntegrationFeatureRegistry:
             if integration.is_valid():
                 integration.pre_scan()
 
-    def run_pre_runner(self) -> None:
+    def run_pre_runner(self, runner: _BaseRunner) -> None:
         for integration in self.features:
             if integration.is_valid():
-                integration.pre_runner()
+                integration.pre_runner(runner)
 
     def run_post_runner(self, scan_report: Report) -> None:
         for integration in self.features:
