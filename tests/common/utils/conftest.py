@@ -59,49 +59,37 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def aws_instance_resource_config_with_secrets():
+def aws_provider_config_with_secrets():
     return {
-        '__end_line__': 23,
-        '__start_line__': 1,
-        'ami': ['ami-09a5b0b7edf08843d'],
-        'instance_type': ['t2.nano'],
-        'subnet_id': ['aws_subnet.web_subnet.id'],
-        'tags': [{'Name': '${data.aws_caller_identity.current.account_id}-acme-dev-ec2'}],
-        'user_data': ['#! /bin/bashsudo apt-get updatesudo apt-get install -y apache2sudo systemctl start apache2sudo systemctl enable apache2export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAAexport AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEYexport AWS_DEFAULT_REGION=us-west-2echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'],
-        'vpc_security_group_ids': [['aws_security_group.web-node.id']],
-        'CKV_AWS_46_secret': '#! /bin/bashsudo apt-get updatesudo apt-get install -y apache2sudo systemctl start apache2sudo systemctl enable apache2export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAAexport AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEYexport AWS_DEFAULT_REGION=us-west-2echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'
-    }
+            '__end_line__': 12,
+            '__start_line__': 7,
+            'access_key': ['AKIAIOSFODNN7EXAMPLE'],
+            'alias': ['plain_text_access_keys_provider'],
+            'region': ['us-west-1'],
+            'secret_key': ['wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'],
+            'CKV_AWS_41_secret_access_key': 'AKIAIOSFODNN7EXAMPLE',
+            'CKV_AWS_41_secret_secret_key': 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+            }
 
 
 @pytest.fixture
-def aws_instance_resource_lines_with_secrets():
-    return [
-        (1, 'resource "aws_instance" "web_host" {\n'),
-        (2, '  # ec2 have plain text secrets in user data\n'),
-        (3, '  ami           = "${var.ami}"\n'),
-        (4, '  instance_type = "t2.nano"\n'),
-        (5, '\n'),
-        (6, '  vpc_security_group_ids = [\n'),
-        (7, '  "${aws_security_group.web-node.id}"]\n'),
-        (8, '  subnet_id = "${aws_subnet.web_subnet.id}"\n'),
-        (9, '  user_data = <<EOF\n'),
-        (10, '#! /bin/bash\n'),
-        (11, 'sudo apt-get update\n'),
-        (12, 'sudo apt-get install -y apache2\n'),
-        (13, 'sudo systemctl start apache2\n'),
-        (14, 'sudo systemctl enable apache2\n'),
-        (15, 'export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAA\n'),
-        (16, 'export AWS_SECRET_ACCESS_KEY=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\n'),
-        (17, 'export AWS_DEFAULT_REGION=us-west-2\n'),
-        (18, 'echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html\n'),
-        (19, 'EOF\n'),
-        (20, '  tags = {\n'),
-        (21, '    Name = "${local.resource_prefix.value}-ec2"\n'),
-        (22, '  }\n'),
-        (23, '}\n')
-    ]
+def aws_provider_lines_with_secrets():
+    return [(7, 'provider "aws" {\n'),
+            (8, '  alias      = "plain_text_access_keys_provider"\n'),
+            (9, '  region     = "us-west-1"\n'),
+            (10, '  access_key = "AKIAIOSFODNN7EXAMPLE"\n'),
+            (11, '  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"\n'),
+            (12, '}\n')]
 
 
+@pytest.fixture
+def aws_provider_lines_without_secrets():
+    return [(7, 'provider "aws" {\n'),
+            (8, '  alias      = "plain_text_access_keys_provider"\n'),
+            (9, '  region     = "us-west-1"\n'),
+            (10, '  access_key = "AKIAI***************"\n'),
+            (11, '  secret_key = "wJalrXUtnF******************************"\n'),
+            (12, '}\n')]
 
 
 @pytest.fixture
