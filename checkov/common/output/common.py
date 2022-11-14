@@ -22,10 +22,11 @@ def is_raw_formatted(licenses: str) -> bool:
 
 
 def format_licenses_to_string(licenses_lst: list[str]) -> str:
-    if licenses_lst and len(licenses_lst) > 0:
+    if licenses_lst and len(licenses_lst) > 1:
         joined_str = '","'.join(licenses_lst)
-        print('format_licenses_to_string res', f'"{joined_str}"')
         return f'"{joined_str}"'
+    elif licenses_lst and len(licenses_lst) == 1:
+        return licenses_lst[0]
     else:
         return 'Unknown'
 
@@ -38,7 +39,6 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
         licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith('"') else licenses_str
         license_lst = licenses_str.split('","')
 
-        print('format_string_to_licenses:', license_lst)
         return license_lst
     else:
         return []
