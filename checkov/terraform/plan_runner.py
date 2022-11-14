@@ -129,9 +129,10 @@ class Runner(TerraformRunner):
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
                         continue
-                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                        entity_code_lines,
-                                                                        entity_config,
+                    censored_code_lines = omit_secret_value_from_checks(check=check,
+                                                                        check_result=check_result,
+                                                                        entity_code_lines=entity_code_lines,
+                                                                        entity_config=entity_config,
                                                                         resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                     check_result=check_result,
