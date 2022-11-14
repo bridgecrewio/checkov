@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+UNKNOWN_LICENSE = 'Unknown'
 
 @dataclass
 class SCADetails:
@@ -28,11 +29,11 @@ def format_licenses_to_string(licenses_lst: list[str]) -> str:
             return f'"{joined_str}"'
         elif licenses_lst:
             return licenses_lst[0]
-    return 'Unknown'
+    return UNKNOWN_LICENSE
 
 
 def format_string_to_licenses(licenses_str: str) -> list[str]:
-    if licenses_str == 'Unknown':
+    if licenses_str == UNKNOWN_LICENSE:
         return [licenses_str]
     elif licenses_str:
         # remove first and last quotes
