@@ -161,7 +161,7 @@ class CSVSBOM:
 
     @staticmethod
     def arrange_rows(rows: list[dict[str, Any]]) -> None:
-        # we search for formatted rows and covert them back into csv formatted file.
+        # we search for formatted rows and convert them back into csv formatted file.
         for row in rows:
             for key, value in row.items():
                 val = str(value)
