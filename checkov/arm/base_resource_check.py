@@ -43,6 +43,7 @@ class BaseResourceCheck(BaseCheck):
                 return CheckResult.UNKNOWN
 
             self.api_version = conf["api_version"]
+            conf["config"]["apiVersion"] = conf["api_version"]  # set for better reusability of existing ARM checks
 
             return self.scan_resource_conf(conf["config"], entity_type)
 

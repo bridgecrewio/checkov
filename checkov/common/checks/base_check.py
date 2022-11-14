@@ -49,6 +49,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_type: str,
         skip_info: _SkippedCheck,
     ) -> _CheckResult:
+        self.details = []
         check_result: _CheckResult = {}
         if skip_info:
             check_result["result"] = CheckResult.SKIPPED

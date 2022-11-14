@@ -1,6 +1,99 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.21...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.50...HEAD)
+
+## [2.2.50](https://github.com/bridgecrewio/checkov/compare/2.2.44...2.2.50) - 2022-11-13
+
+### Feature
+
+- **general:** add reporting contributor metrics - [#3823](https://github.com/bridgecrewio/checkov/pull/3823)
+- **terraform:** add CKV NCP rules about access key hard coding - [#3820](https://github.com/bridgecrewio/checkov/pull/3820)
+- **terraform:** NSGRulePortAccessRestricted - Remove the condition for dynamic blocks - [#3862](https://github.com/bridgecrewio/checkov/pull/3862)
+
+### Bug Fix
+
+- **kubernetes:** handle empty spec object in k8s templates - [#3865](https://github.com/bridgecrewio/checkov/pull/3865)
+- **openapi:** fixed error in invalid openapi template - [#3863](https://github.com/bridgecrewio/checkov/pull/3863)
+- **terraform:** app_service Upgrade tests and add web app resources - [#3838](https://github.com/bridgecrewio/checkov/pull/3838)
+- **terraform:** Handled nested unrendered vars - [#3853](https://github.com/bridgecrewio/checkov/pull/3853)
+
+## [2.2.44](https://github.com/bridgecrewio/checkov/compare/2.2.43...2.2.44) - 2022-11-11
+
+### Bug Fix
+
+- **terraform:** fix an issue with dynamics replacing a whole block - [#3846](https://github.com/bridgecrewio/checkov/pull/3846)
+
+## [2.2.43](https://github.com/bridgecrewio/checkov/compare/2.2.38...2.2.43) - 2022-11-10
+
+### Feature
+
+- **terraform:** Wrap render dynamic blocks flow with try except - [#3837](https://github.com/bridgecrewio/checkov/pull/3837)
+
+### Bug Fix
+
+- **bicep:** make ARM AKS checks compatible with Bicep - [#3836](https://github.com/bridgecrewio/checkov/pull/3836)
+- **cloudformation:** only parse valid tag key-pairs in CloudFormation - [#3835](https://github.com/bridgecrewio/checkov/pull/3835)
+- **general:** Clear details before next check run to avoid duplications in output - [#3711](https://github.com/bridgecrewio/checkov/pull/3711)
+
+## [2.2.38](https://github.com/bridgecrewio/checkov/compare/2.2.35...2.2.38) - 2022-11-09
+
+### Feature
+
+- **secrets:** add abstract multiline parser + implement multiline json parser - [#3799](https://github.com/bridgecrewio/checkov/pull/3799)
+- **terraform:** Support for nested dynamic modules - [#3813](https://github.com/bridgecrewio/checkov/pull/3813)
+
+### Bug Fix
+
+- **kubernetes:** fixed unexpected list object - [#3833](https://github.com/bridgecrewio/checkov/pull/3833)
+
+## [2.2.35](https://github.com/bridgecrewio/checkov/compare/2.2.31...2.2.35) - 2022-11-08
+
+### Feature
+
+- **general:** Added Number of Words operator - [#3801](https://github.com/bridgecrewio/checkov/pull/3801)
+- **terraform:** add CKV NCP rules about LBTargetGroupUsingHTTPS - [#3797](https://github.com/bridgecrewio/checkov/pull/3797)
+- **terraform:** add CKV NCP rules about NASEncrytionEnabled - [#3796](https://github.com/bridgecrewio/checkov/pull/3796)
+- **terraform:** Add Env Var for rendering Dynamic Blocks - [#3816](https://github.com/bridgecrewio/checkov/pull/3816)
+- **terraform:** Dynamic blocks breadcrumbs support - [#3814](https://github.com/bridgecrewio/checkov/pull/3814)
+- **terraform:** PC Policy Team Yaml Policies Check-in - [#3785](https://github.com/bridgecrewio/checkov/pull/3785)
+- **terraform:** PC-Policy-Team: Ensure GCP compute firewall ingress does not allow unrestricted access to all ports - [#3786](https://github.com/bridgecrewio/checkov/pull/3786)
+
+### Platform
+
+- **sca:** Run package scan using API - [#3812](https://github.com/bridgecrewio/checkov/pull/3812)
+
+## [2.2.31](https://github.com/bridgecrewio/checkov/compare/2.2.22...2.2.31) - 2022-11-07
+
+### Feature
+
+- **azure:** Add get resource names for azure_pipelines - [#3798](https://github.com/bridgecrewio/checkov/pull/3798)
+- **github:** add graph to GitHub Actions - [#3672](https://github.com/bridgecrewio/checkov/pull/3672)
+- **terraform:** add CKV NCP rules about LBListenerUsesSecureProtocols - [#3782](https://github.com/bridgecrewio/checkov/pull/3782)
+- **terraform:** Dynamic Modules Support map type - [#3800](https://github.com/bridgecrewio/checkov/pull/3800)
+- **terraform:** include pods of kubernetes_deployment in kubernetes_pod checks (1/4) - [#3691](https://github.com/bridgecrewio/checkov/pull/3691)
+- **terraform:** include pods of kubernetes_deployment in kubernetes_pod checks (2/4) - [#3702](https://github.com/bridgecrewio/checkov/pull/3702)
+- **terraform:** include pods of kubernetes_deployment in kubernetes_pod checks (3/4) - [#3703](https://github.com/bridgecrewio/checkov/pull/3703)
+- **terraform:** include pods of kubernetes_deployment in kubernetes_pod checks (4/4) - [#3738](https://github.com/bridgecrewio/checkov/pull/3738)
+
+### Bug Fix
+
+- **arm:** CKV_AZURE_9 & CKV_AZURE_10 - Scan fails if protocol value is a wildcard - [#3750](https://github.com/bridgecrewio/checkov/pull/3750)
+- **azure:** Remove redundant file path from resource name in azure pipelines - [#3818](https://github.com/bridgecrewio/checkov/pull/3818)
+- **secrets:** fix slow secrets scan in yaml files - [#3803](https://github.com/bridgecrewio/checkov/pull/3803)
+- **secrets:** fixed path of secrets tests to exclude - [#3817](https://github.com/bridgecrewio/checkov/pull/3817)
+- **terraform:** fix gke resource name not string - [#3811](https://github.com/bridgecrewio/checkov/pull/3811)
+
+### Platform
+
+- **general:** rationalize policy metadata error handling behavior - [#3795](https://github.com/bridgecrewio/checkov/pull/3795)
+- **sca:** add new sca package scan - [#3802](https://github.com/bridgecrewio/checkov/pull/3802)
+- **sca:** Extract checkov check links - [#3790](https://github.com/bridgecrewio/checkov/pull/3790)
+
+## [2.2.22](https://github.com/bridgecrewio/checkov/compare/2.2.21...2.2.22) - 2022-11-06
+
+### Feature
+
+- **kubernetes:** Create keyword and network policy edge builders - [#3763](https://github.com/bridgecrewio/checkov/pull/3763)
 
 ## [2.2.21](https://github.com/bridgecrewio/checkov/compare/2.2.17...2.2.21) - 2022-11-03
 

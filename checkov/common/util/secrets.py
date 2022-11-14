@@ -11,7 +11,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, ResourceAttributesToOmit
     from pycep.typing import ParameterAttributes, ResourceAttributes
 
 
@@ -109,7 +109,7 @@ def string_has_secrets(s: str, *categories: str) -> bool:
     return False
 
 
-def omit_multiple_secret_values_from_line(secrets: list[str], line_text: str) -> str:
+def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> str:
     censored_line = line_text
     for secret in secrets:
         censored_line = omit_secret_value_from_line(secret, censored_line)
@@ -133,20 +133,28 @@ def omit_secret_value_from_line(secret: str, line_text: str) -> str:
 
 def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
                                   entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes) -> \
+                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+                                  resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
         list[tuple[int, str]]:
-    if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
-        censored_code_lines = []
-        secrets = [str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')]
-        if not secrets:
-            logging.debug(f"Secret was not saved in {check.id}, can't omit")
-            return entity_code_lines
+    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    censored_code_lines = []
 
-        for idx, line in entity_code_lines:
-            censored_line = omit_multiple_secret_values_from_line(secrets, line)
-            censored_code_lines.append((idx, censored_line))
-    else:
-        censored_code_lines = entity_code_lines
+    if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
+        secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
+
+    if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
+            resource_attributes_to_omit.get(check.entity_type) in entity_config:
+        secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, ''), [])
+        if isinstance(secret, list) and secret:
+            secrets.add(secret[0])
+
+    if not secrets:
+        logging.debug(f"Secret was not saved in {check.id}, can't omit")
+        return entity_code_lines
+
+    for idx, line in entity_code_lines:
+        censored_line = omit_multiple_secret_values_from_line(secrets, line)
+        censored_code_lines.append((idx, censored_line))
 
     return censored_code_lines
 

@@ -99,10 +99,10 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.breadcrumbs = breadcrumbs
 
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
-        pass
+        return None
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
-        pass
+        return Report(check_type="not_defined")
 
     def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}

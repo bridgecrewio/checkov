@@ -38,11 +38,12 @@ from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICE
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -55,6 +56,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -75,6 +77,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
+
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
     cfn_runner(),
@@ -93,7 +96,6 @@ DEFAULT_RUNNERS = (
     bitbucket_configuration_runner(),
     bitbucket_pipelines_runner(),
     kustomize_runner(),
-    sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
@@ -101,6 +103,7 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
+    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
 )
 
 
@@ -135,6 +138,25 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
+
+    if config.bc_api_key and not config.include_all_checkov_policies:
+        if config.skip_download and not config.external_checks_dir:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
+                  'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
+                  '--external-checks-dir options.',
+                  file=sys.stderr)
+            exit(2)
+        elif config.skip_download:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so only local custom policies loaded with --external-checks-dir '
+                  'will be evaluated.',
+                  file=sys.stderr)
+        else:
+            logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
+                         '(this is the default behavior, and this message is just for debugging purposes)')
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
@@ -228,6 +250,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
+
+            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+            if should_run_contributor_metrics:
+                try:        # collect contributor info and upload
+                    report_contributor_metrics(config.repo_id, bc_integration)
+                except Exception as e:
+                    logger.warning(f"Unable to report contributor metrics due to: {e}")
+
         except MaxRetryError:
             return None
         except Exception:
@@ -256,7 +287,19 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.skip_download or BC_SKIP_MAPPING.upper() == "TRUE":
         bc_integration.skip_download = True
 
-    bc_integration.get_platform_run_config()
+    try:
+        bc_integration.get_platform_run_config()
+    except Exception:
+        if not config.include_all_checkov_policies:
+            # stack trace gets printed in the exception handlers above
+            # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
+            print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                  'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                  'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                  '(but note that this will not include any custom platform configurations or policy metadata).',
+                  file=sys.stderr)
+            exit(2)
+
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
@@ -628,10 +671,6 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
 
-    if config.bc_api_key and not config.include_all_checkov_policies:
-        # info because we expect this to be the standard usage
-        logger.info('You are using an API key and did not set the --include-all-checkov-policies flag, so policies '
-                    'that only exist in Checkov, and not the BC / PC platform, will be skipped.')
     elif not config.bc_api_key and not config.include_all_checkov_policies:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
