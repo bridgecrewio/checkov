@@ -13,7 +13,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
-ResourceAttributesToOmit: TypeAlias = dict[str, str]
+ResourceAttributesToOmit: TypeAlias = Dict[str, str]
 
 
 class _CheckResult(TypedDict, total=False):
