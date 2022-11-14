@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 UNKNOWN_LICENSE = 'Unknown'
 
+
 @dataclass
 class SCADetails:
     package_types: dict[str, str] = field(default_factory=dict)
