@@ -498,22 +498,23 @@ def update_dictionary_attribute(
                 config[key] = to_list(new_value) if dynamic_blocks else new_value
                 return config
             else:
-                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value)
+                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks)
         else:
             for key in config:
-                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value)
+                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks)
     if isinstance(config, list):
         return update_list_attribute(
             config=config,
             key_parts=key_parts,
             key_to_update=key_to_update,
             new_value=new_value,
+            dynamic_blocks=dynamic_blocks
         )
     return config
 
 
 def update_list_attribute(
-    config: list[Any], key_parts: list[str], key_to_update: str, new_value: Any
+    config: list[Any], key_parts: list[str], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
 ) -> list[Any] | dict[str, Any]:
     """Updates a list attribute in the given config"""
 
@@ -534,6 +535,6 @@ def update_list_attribute(
             return config
 
     for i, config_value in enumerate(config):
-        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value)
+        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config

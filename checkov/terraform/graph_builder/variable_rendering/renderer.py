@@ -309,7 +309,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
                         changed_attributes.append(block_name)
 
-                    self.local_graph.update_vertex_config(vertex, changed_attributes, False)
+                    self.local_graph.update_vertex_config(vertex, changed_attributes, True)
 
     @staticmethod
     def _extract_dynamic_arguments(block_name: str, block_content: Dict[str, Any], dynamic_arguments: List[str],
