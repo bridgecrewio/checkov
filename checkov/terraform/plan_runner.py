@@ -35,7 +35,8 @@ TF_LIFECYCLE_CHECK_IDS = {
 RESOURCE_ATTRIBUTES_TO_OMIT = {
     'azurerm_key_vault_secret': 'value',
     'aws_secretsmanager_secret_version': 'secret_string',
-    'google_kms_secret_ciphertext': 'plaintext'
+    'google_kms_secret_ciphertext': 'plaintext',
+    'aws_ssm_parameter': 'value'
 }
 
 
