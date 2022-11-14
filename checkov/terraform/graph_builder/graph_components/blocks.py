@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Union, Dict, Any, List, Optional, Set
 import dpath.util
@@ -139,8 +141,7 @@ class TerraformBlock(Block):
         strip_list: bool = True
     ) -> Dict[str, Any]:
         if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
-            if not isinstance(attribute_value[0], str) or isinstance(attribute_value[0], str) and 'lookup' not in attribute_value[0]:
-                attribute_value = attribute_value[0]
+            attribute_value = attribute_value[0]
 
         return super().get_inner_attributes(
             attribute_key=attribute_key,
