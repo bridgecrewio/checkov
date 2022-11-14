@@ -21,7 +21,7 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     # (in the second 'if')
     filtered_list = []
     for i, line in enumerate(pretty_xml_as_list):
-        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line:
+        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line and "bom" not in line and "xml" not in line:
             if i == 0 or not any(tool_name in pretty_xml_as_list[i-1] for tool_name in ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
                 filtered_list.append(line)
     return filtered_list
@@ -147,6 +147,22 @@ def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
     actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
     expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
 
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_with_comma_in_licenses, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report_with_comma_in_licenses]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+    print('cyclonedx_output', cyclonedx_output)
+    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx_with_comma_in_licenses.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
+    expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
+    print('first', actual_pretty_xml_as_list)
+    print('second', expected_pretty_xml_as_list)
     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
 
