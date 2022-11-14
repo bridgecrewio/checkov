@@ -19,9 +19,10 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     # timestamp). so we skip these lines by the first 'if when checking whether we get the expected results
     # in addition also the line that display the checkov version may be changeable, so we skip it as well
     # (in the second 'if')
+    black_list_words = ["bom-ref", "serialNumber", "timestamp", "bom", "xml"]
     filtered_list = []
     for i, line in enumerate(pretty_xml_as_list):
-        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line and "bom" not in line and "xml" not in line:
+        if not any(word in line for word in black_list_words):
             if i == 0 or not any(tool_name in pretty_xml_as_list[i-1] for tool_name in ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
                 filtered_list.append(line)
     return filtered_list
