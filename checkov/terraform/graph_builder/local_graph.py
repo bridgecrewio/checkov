@@ -471,6 +471,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         return dir_name
 
 
+def to_list(data):
+    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], str):
+        return data
+    elif isinstance(data, list):
+        return [to_list(x) for x in data]
+    elif isinstance(data, dict):
+        return {key: to_list(val) for key, val in data.items()}
+    else:
+        return [data]
+
+
 def update_dictionary_attribute(
         config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
 ) -> Union[List[Any], Dict[str, Any]]:
@@ -484,7 +495,7 @@ def update_dictionary_attribute(
             if len(key_parts) == 1:
                 if isinstance(inner_config, list) and not isinstance(new_value, list):
                     new_value = [new_value]
-                config[key] = new_value
+                config[key] = to_list(new_value)
                 return config
             else:
                 config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value)

@@ -254,9 +254,9 @@ class TestRenderer(TestCase):
             resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
             assert len(resources_vertex[0].attributes.get('ingress')) == 2
             assert resources_vertex[0].attributes.get('ingress') == \
-                   [{'action': 'allow', 'cidr_block': '10.0.0.1/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 1,
+                   [{'action': 'allow', 'cidr_block': ['10.0.0.1/32'], 'from_port': 22, 'protocol': 'tcp', 'rule_no': 1,
                      'to_port': 22},
-                    {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
+                    {'action': 'allow', 'cidr_block': ['10.0.0.2/32'], 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
                      'to_port': 22}]
 
     def test_dynamic_blocks_with_nesting_attributes(self):
@@ -378,4 +378,4 @@ class TestRenderer(TestCase):
             # Should fail after implementing dynamic for_each with lookup
             for resource_vertex in resources_vertex:
                 if resource_vertex.has_dynamic_block:
-                    assert resource_vertex.attributes.get('stage', {}).get('name') == 'stage.value.name'
+                    assert resource_vertex.attributes.get('stage', [{}])[0].get('name') == ['stage.value.name']

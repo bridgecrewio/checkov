@@ -57,7 +57,7 @@ class Block:
         attributes_to_add = self._extract_inner_attributes(has_dynamic_block, dynamic_attributes)
         self.attributes.update(attributes_to_add)
 
-    def _extract_inner_attributes(self, has_dynamic_block: bool, dynamic_attributes: dict[str, Any] | None) -> Dict[str, Any]:
+    def _extract_inner_attributes(self, has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None) -> Dict[str, Any]:
         attributes_to_add = {}
         for attribute_key, attribute_value in self.attributes.items():
             if has_dynamic_block and attribute_key in dynamic_attributes.keys():
