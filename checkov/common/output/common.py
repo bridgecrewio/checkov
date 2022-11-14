@@ -23,13 +23,13 @@ def is_raw_formatted(licenses: str) -> bool:
 
 def format_licenses_to_string(licenses_lst: list[str]) -> str:
     print('format_licenses_to_string - start', licenses_lst)
-    if licenses_lst and len(licenses_lst) > 1:
-        joined_str = '","'.join(licenses_lst)
-        return f'"{joined_str}"'
-    elif licenses_lst and len(licenses_lst) == 1:
-        return licenses_lst[0]
-    else:
-        return 'Unknown'
+    if isinstance(licenses_lst, list):
+        if len(licenses_lst) > 1:
+            joined_str = '","'.join(licenses_lst)
+            return f'"{joined_str}"'
+        elif licenses_lst:
+            return licenses_lst[0]
+    return 'Unknown'
 
 
 def format_string_to_licenses(licenses_str: str) -> list[str]:
