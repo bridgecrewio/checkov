@@ -143,7 +143,7 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
         secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
 
     if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
-            resource_attributes_to_omit.get(check.entity_type, None) in entity_config:
+            resource_attributes_to_omit.get(check.entity_type) in entity_config:
         secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, {}), [])  # type:ignore[arg-type]
         if isinstance(secret, list) and len(secret) != 0:
             secrets.add(secret[0])
