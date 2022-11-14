@@ -24,7 +24,7 @@ class BaseSolver:
         raise NotImplementedError()
 
     @abstractmethod
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError()
 
     @staticmethod

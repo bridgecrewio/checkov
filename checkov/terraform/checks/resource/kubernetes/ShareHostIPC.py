@@ -11,7 +11,7 @@ class ShareHostIPC(BaseResourceNegativeValueCheck):
         # CIS-1.5 5.2.3
         name = "Do not admit containers wishing to share the host IPC namespace"
         id = "CKV_K8S_18"
-        supported_resources = ["kubernetes_pod"]
+        supported_resources = ["kubernetes_pod", "kubernetes_pod_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

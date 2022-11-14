@@ -96,6 +96,10 @@ class Block:
         if self.block_type == BlockType.DATA:
             base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
 
+        if self.block_type == BlockType.MODULE:
+            # since module names are user defined we are just setting 'module' as resource type for easier searching
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
+
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
             del base_attributes["changed_attributes"]
@@ -141,9 +145,8 @@ class Block:
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         # update the numbered attributes, if the new value is a list
-        if isinstance(attribute_value, list):
-            for idx, value in enumerate(attribute_value):
-                self.attributes[f"{attribute_key}.{idx}"] = value
+        if attribute_value and isinstance(attribute_value, list):
+            self.update_list_attribute(attribute_key=attribute_key, attribute_value=attribute_value)
 
         attribute_key_parts = attribute_key.split(".")
         if len(attribute_key_parts) == 1:
@@ -192,6 +195,12 @@ class Block:
                 nested_attributes[curr_key] = value_to_update
             elif curr_key in nested_attributes.keys():
                 self.update_inner_attribute(".".join(split_key[i:]), nested_attributes[curr_key], value_to_update)
+
+    def update_list_attribute(self, attribute_key: str, attribute_value: Any) -> None:
+        """Updates list attributes with their index"""
+
+        for idx, value in enumerate(attribute_value):
+            self.attributes[f"{attribute_key}.{idx}"] = value
 
     @staticmethod
     def _should_add_previous_breadcrumbs(

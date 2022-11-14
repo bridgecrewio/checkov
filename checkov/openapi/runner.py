@@ -46,14 +46,13 @@ class Runner(YamlRunner, JsonRunner):
         func: _ParseFormatJsonCallable | _ParseFormatYamlCallable,
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         try:
-            if f.endswith(".json"):
-                parsed_file = func(self, f, None)
-            elif f.endswith(".yml") or f.endswith(".yaml"):
-                content = self.load_yaml_file(f)
-                valid_openapi_file = self.pre_validate_file(content)
-                if not valid_openapi_file:
-                    return None
-                parsed_file = func(self, f, content)
+            content = self.load_file(f)
+            valid_openapi_file = self.pre_validate_file(content)
+            if not valid_openapi_file:
+                return None
+
+            parsed_file = func(self, f, content)
+
             if isinstance(parsed_file, tuple) and self.is_valid(parsed_file[0]):
                 return parsed_file  # type:ignore[return-value]  # is_valid checks for being not empty
         except ValueError:
@@ -95,7 +94,7 @@ class Runner(YamlRunner, JsonRunner):
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
         return ",".join(supported_entities)
 
-    def load_yaml_file(self, filename: str | Path) -> str:
+    def load_file(self, filename: str | Path) -> str:
         file_path = filename if isinstance(filename, Path) else Path(filename)
         content = file_path.read_text()
         return content

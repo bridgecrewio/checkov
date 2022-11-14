@@ -17,7 +17,7 @@ def parse(
     template_lines = None
     try:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            (template, template_lines) = loader.load(filename, file_content)
+            template, template_lines = loader.load(filename, file_content)
 
         if template and template_lines:
             if isinstance(template, list):
@@ -30,22 +30,20 @@ def parse(
             return None
     except IOError as e:
         if e.errno == 2:
-            logger.error('Template file not found: %s', filename)
+            logger.error(f"Template file not found: {filename}")
             return None
         elif e.errno == 21:
-            logger.error('Template references a directory, not a file: %s',
-                         filename)
+            logger.error(f"Template references a directory, not a file: {filename}")
             return None
         elif e.errno == 13:
-            logger.error('Permission denied when accessing template file: %s',
-                         filename)
+            logger.error(f"Permission denied when accessing template file: {filename}")
             return None
     except UnicodeDecodeError:
-        logger.error('Cannot read file contents: %s', filename)
+        logger.error(f"Cannot read file contents: {filename}")
         return None
     except YAMLError:
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            logger.debug('Cannot read file contents: %s - is it a yaml?', filename)
+            logger.debug(f"Cannot read file contents: {filename} - is it a yaml?")
         return None
 
     return None

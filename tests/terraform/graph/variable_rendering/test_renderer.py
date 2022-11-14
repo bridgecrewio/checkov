@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 from unittest.case import TestCase
 
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -217,3 +219,43 @@ class TestRenderer(TestCase):
         local_graph, _ = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('name') == ['airpods']
+
+    def test_dynamic_blocks_with_list(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_resource"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering"),
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_tfvars"),
+
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+            assert len(resources_vertex[0].attributes.get('ingress')) == 2
+            assert len(resources_vertex[0].attributes.get('egress')) == 2
+            assert resources_vertex[0].attributes.get('ingress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 80, 'protocol': 'tcp', 'to_port': 80},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443}]
+            assert resources_vertex[0].attributes.get('egress') == \
+                   [{'cidr_blocks': ['0.0.0.0/0'], 'from_port': 443, 'protocol': 'tcp', 'to_port': 443},
+                    {'cidr_blocks': ['0.0.0.0/0'], 'from_port': 1433, 'protocol': 'tcp', 'to_port': 1433}]
+
+    def test_list_entry_rendering_module_vars(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/list_entry_module_var"
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+
+        # when
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        resource_vertex = next(v for v in local_graph.vertices if v.id == 'aws_security_group.sg')
+
+        self.assertEqual(
+            resource_vertex.config["aws_security_group"]["sg"]["ingress"][0]["cidr_blocks"][0],
+            ["0.0.0.0/0"],
+        )
+        self.assertCountEqual(
+            resource_vertex.config["aws_security_group"]["sg"]["egress"][0]["cidr_blocks"][0],
+            ["10.0.0.0/16", "0.0.0.0/0"],
+        )

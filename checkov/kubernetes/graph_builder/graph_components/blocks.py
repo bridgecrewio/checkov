@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Dict, Any
 
@@ -7,7 +9,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 
 @dataclass
 class KubernetesSelector:
-    match_labels: Dict[str, Any]
+    match_labels: Dict[str, Any] | None
 
 
 @dataclass
@@ -25,7 +27,7 @@ class KubernetesBlock(Block):
             config: Dict[str, Any],
             path: str,
             attributes: Dict[str, Any],
-            metadata: KubernetesBlockMetadata
+            metadata: KubernetesBlockMetadata | None
     ) -> None:
         super().__init__(block_name, config, path, BlockType.RESOURCE, attributes, block_name, 'Kubernetes')
         self.metadata = metadata
