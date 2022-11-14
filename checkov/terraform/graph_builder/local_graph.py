@@ -412,7 +412,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if len(changed_attributes) > 0:
             if vertex.block_type == BlockType.LOCALS:
                 updated_config = updated_config.get(vertex.name)
-            update_dictionary_attribute(vertex.config, vertex.name, updated_config)
+            update_dictionary_attribute(vertex.config, vertex.name, updated_config, dynamic_blocks)
 
     def get_resources_types_in_graph(self) -> List[str]:
         return self.module.get_resources_types()
