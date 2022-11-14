@@ -236,6 +236,7 @@ def _add_to_report_licenses_statuses(
 
     return licenses_per_package_map
 
+
 def add_to_reports_cves_and_packages(
     report: Report,
     check_class: str | None,
