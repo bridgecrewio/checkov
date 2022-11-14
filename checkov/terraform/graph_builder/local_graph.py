@@ -386,7 +386,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             changed_attributes = filter_sub_keys(changed_attributes)
             self.update_vertex_config(vertex, changed_attributes)
 
-    def update_vertex_config(self, vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(self, vertex: TerraformBlock, changed_attributes: Union[List[str], Dict[str, Any]], dynamic_blocks: bool = False) -> None:
         if not changed_attributes:
             # skip, if there is no change
             return
@@ -407,7 +407,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if new_value is not None:
                 if vertex.block_type == BlockType.LOCALS:
                     changed_attribute = changed_attribute.replace(vertex.name + ".", "")
-                updated_config = update_dictionary_attribute(updated_config, changed_attribute, new_value)
+                updated_config = update_dictionary_attribute(updated_config, changed_attribute, new_value, dynamic_blocks)
 
         if len(changed_attributes) > 0:
             if vertex.block_type == BlockType.LOCALS:
@@ -483,7 +483,7 @@ def to_list(data):
 
 
 def update_dictionary_attribute(
-        config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any
+        config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
 
@@ -495,7 +495,7 @@ def update_dictionary_attribute(
             if len(key_parts) == 1:
                 if isinstance(inner_config, list) and not isinstance(new_value, list):
                     new_value = [new_value]
-                config[key] = to_list(new_value)
+                config[key] = to_list(new_value) if dynamic_blocks else new_value
                 return config
             else:
                 config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value)
