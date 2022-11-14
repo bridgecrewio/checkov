@@ -472,7 +472,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
 
 def to_list(data):
-    if isinstance(data, list) and len(data) == 1 and isinstance(data[0], str):
+    if isinstance(data, list) and len(data) == 1 and (isinstance(data[0], str) or isinstance(data[0], int)):
         return data
     elif isinstance(data, list):
         return [to_list(x) for x in data]
