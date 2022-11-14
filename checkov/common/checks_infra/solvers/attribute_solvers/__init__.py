@@ -40,4 +40,3 @@ from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_great
 from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_greater_than_or_equal_attribute_solver import NumberOfWordsGreaterThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_less_than_or_equal_attribute_solver import NumberOfWordsLessThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.number_of_words_less_than_attribute_solver import NumberOfWordsLessThanAttributeSolver  # noqa
-

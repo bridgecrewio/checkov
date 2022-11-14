@@ -9,7 +9,7 @@ class NumberOfWordsEqualsAttributeSolver(BaseNumberOfWordsAttributeSolver):
     operator = Operators.NUMBER_OF_WORDS_EQUALS  # noqa: CCE003  # a static attribute
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
-        attr = vertex.get(attribute)
+        attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
 
         if not self._validate_vertex_value(attr):
             return False

@@ -50,9 +50,9 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsEqualsAttributeSolver,
     NumberOfWordsNotEqualsAttributeSolver,
     NumberOfWordsGreaterThanAttributeSolver,
-    NumberOfWordsLessThanOrEqualAttributeSolver,
+    NumberOfWordsGreaterThanOrEqualAttributeSolver,
     NumberOfWordsLessThanAttributeSolver,
-    NumberOfWordsGreaterThanOrEqualAttributeSolver
+    NumberOfWordsLessThanOrEqualAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
