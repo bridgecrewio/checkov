@@ -80,7 +80,8 @@ class RunnerRegistry:
                                         runner_filter=self.runner_filter,
                                         collect_skip_comments=collect_skip_comments)]
             else:
-                reports = []
+                # This is the only runner, so raise a clear indication of failure
+                raise Exception('Framework is not enabled')
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
                 if licensing_integration.is_runner_valid(runner):

@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING, Any, Optional, List
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
-from checkov.common.bridgecrew.licensing import CustomerLicense, SubscriptionCategoryMapping
+from checkov.common.bridgecrew.licensing import CustomerLicense, SubscriptionCategoryMapping, \
+    CategoryToSubscriptionMapping
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
@@ -55,21 +56,28 @@ class LicensingIntegration(BaseIntegrationFeature):
                 logging.debug('Customer is on legacy resource licensing, so all frameworks are enabled')
             else:
                 logging.debug('Customer is on developer-based licensing')
-                enabled_modules = ['iac']
+                enabled_modules = ['IaC']
                 logging.debug(f'The following modules are enabled: {enabled_modules}')
 
                 self.enabled_code_categories = list(itertools.chain.from_iterable(SubscriptionCategoryMapping.get(m) for m in enabled_modules))
-
-                # for m in enabled_modules:
-                #     self.enabled_code_categories += SubscriptionCategoryMapping.get(m)
 
                 logging.debug(f'The following code categories are enabled: {self.enabled_code_categories}')
 
     def is_runner_valid(self, runner: _BaseRunner):
         if self.licensing_type == CustomerLicense.RESOURCES:
             return True
+        # elif self.open_source_only and # TODO
         else:
-            return CodeCategoryMapping[runner.check_type] in self.enabled_code_categories
+            enabled = CodeCategoryMapping[runner.check_type] in self.enabled_code_categories
+            if not enabled:
+                sub_type = LicensingIntegration.get_subscription_for_runner(runner)
+                logging.error(f'You specified the framework {runner.check_type}, which is part of the {sub_type} subscription, '
+                              f'but it is not enabled in your tenant. Please enable it and try again.')
+            return enabled
+
+    @staticmethod
+    def get_subscription_for_runner(runner: _BaseRunner):
+        return CategoryToSubscriptionMapping.get(CodeCategoryMapping[runner.check_type])
 
     def post_runner(self, scan_report: Report) -> None:
         pass
