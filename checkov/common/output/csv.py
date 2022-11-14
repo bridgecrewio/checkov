@@ -163,14 +163,13 @@ class CSVSBOM:
     def arrange_rows(rows: list[dict[str, Any]]) -> None:
         # we search for formatted rows and covert them back into csv formatted file.
         for row in rows:
-            for key in row.keys():
-                val = str(row[key])
+            for key, value in row.items():
+                val = str(value)
 
                 if is_raw_formatted(val):
-                    row[key] = ', '.join(format_string_to_licenses(val))
-                    val = str(row[key])
-                row[key] = val[1:-1] if val.startswith('"') and val.endswith('"') else row[key]
-                row[key] = '' if val == 'None' else row[key]
+                    val = ', '.join(format_string_to_licenses(val))
+                val = val[1:-1] if val.startswith('"') and val.endswith('"') else val
+                row[key] = '' if val == 'None' else val
 
     @staticmethod
     def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:
