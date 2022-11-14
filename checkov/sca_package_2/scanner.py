@@ -69,7 +69,7 @@ class Scanner:
                 params={"repoId": bc_integration.repo_id}
             )
             response_json = response.json()
-            current_state = response_json.get("status")
+            current_state = response_json.get("status", "")
             if not current_state:
                 logging.error("Failed to poll scan results.")
                 return {}
