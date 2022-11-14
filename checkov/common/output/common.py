@@ -36,7 +36,7 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
     print('format_string_to_licenses - start', licenses_str)
     if licenses_str == 'Unknown':
         return [licenses_str]
-    elif licenses_str and len(licenses_str) > 0:
+    elif licenses_str:
         # remove first and last quotes
         licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith('"') else licenses_str
         license_lst = licenses_str.split('","')
