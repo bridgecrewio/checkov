@@ -8,7 +8,7 @@ from typing import Any
 class LBNetworkPrivate(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure LB isn't exposed to the internet"
+        name = "Ensure Load Balancer isn't exposed to the internet"
         id = "CKV_NCP_16"
         supported_resources = ("ncloud_lb",)
         categories = (CheckCategories.NETWORKING,)
