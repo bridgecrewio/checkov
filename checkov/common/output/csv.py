@@ -172,7 +172,6 @@ class CSVSBOM:
                 row[key] = val[1:-1] if val.startswith('"') and val.endswith('"') else row[key]
                 row[key] = '' if val == 'None' else row[key]
 
-
     @staticmethod
     def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:
         CSVSBOM.arrange_rows(rows)
