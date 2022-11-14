@@ -59,26 +59,72 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture
+def aws_instance_resource_config_with_secrets():
+    return {
+        '__end_line__': 23,
+        '__start_line__': 1,
+        'ami': ['ami-09a5b0b7edf08843d'],
+        'instance_type': ['t2.nano'],
+        'subnet_id': ['aws_subnet.web_subnet.id'],
+        'tags': [{'Name': '${data.aws_caller_identity.current.account_id}-acme-dev-ec2'}],
+        'user_data': ['#! /bin/bashsudo apt-get updatesudo apt-get install -y apache2sudo systemctl start apache2sudo systemctl enable apache2export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAAexport AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEYexport AWS_DEFAULT_REGION=us-west-2echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'],
+        'vpc_security_group_ids': [['aws_security_group.web-node.id']],
+        'CKV_AWS_46_secret': '#! /bin/bashsudo apt-get updatesudo apt-get install -y apache2sudo systemctl start apache2sudo systemctl enable apache2export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAAexport AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEYexport AWS_DEFAULT_REGION=us-west-2echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html'
+    }
+
+
+@pytest.fixture
+def aws_instance_resource_lines_with_secrets():
+    return [
+        (1, 'resource "aws_instance" "web_host" {\n'),
+        (2, '  # ec2 have plain text secrets in user data\n'),
+        (3, '  ami           = "${var.ami}"\n'),
+        (4, '  instance_type = "t2.nano"\n'),
+        (5, '\n'),
+        (6, '  vpc_security_group_ids = [\n'),
+        (7, '  "${aws_security_group.web-node.id}"]\n'),
+        (8, '  subnet_id = "${aws_subnet.web_subnet.id}"\n'),
+        (9, '  user_data = <<EOF\n'),
+        (10, '#! /bin/bash\n'),
+        (11, 'sudo apt-get update\n'),
+        (12, 'sudo apt-get install -y apache2\n'),
+        (13, 'sudo systemctl start apache2\n'),
+        (14, 'sudo systemctl enable apache2\n'),
+        (15, 'export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMAAA\n'),
+        (16, 'export AWS_SECRET_ACCESS_KEY=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\n'),
+        (17, 'export AWS_DEFAULT_REGION=us-west-2\n'),
+        (18, 'echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html\n'),
+        (19, 'EOF\n'),
+        (20, '  tags = {\n'),
+        (21, '    Name = "${local.resource_prefix.value}-ec2"\n'),
+        (22, '  }\n'),
+        (23, '}\n')
+    ]
+
+
+
+
+@pytest.fixture
 def tfplan_resource_config_with_secrets():
     return {
         'content_type': [''],
         'expiration_date': [None],
-        'id': ['https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5'],
+        'id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5'],
         'key_vault_id': ['/subscriptions/resourceGroups/'],
-        'name': ['sb-nau2d-bsn00vn34-01-primary-cs'],
+        'name': ['test-123-abcdse-02-primary-key'],
         'not_before_date': [None],
         'resource_id': ['/subscriptions/resourceGroups/'],
         'resource_versionless_id': ['/subscriptions/resourceGroups/'],
         'tags': [{'__startline__': 45, '__endline__': 45, 'start_line': 44, 'end_line': 44}],
         'timeouts': [None],
-        'value': ['Endpoint=sb://te-st123-abcdse-02.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5='],
+        'value': ['IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5='],
         'version': ['123d0b12ab123c123456ab123e120bc1'],
-        'versionless_id': ['https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02'],
+        'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02'],
         '__startline__': [35],
         '__endline__': [50],
         'start_line': [34],
         'end_line': [49],
-        '__address__': 'module.test.azurerm_key_vault_secret.sb_primary_cs["te-st123-abcdse-02"]'}
+        '__address__': 'module.test.azurerm_key_vault_secret.te_primary_key["test-123-abcdse-02"]'}
 
 
 @pytest.fixture
@@ -86,18 +132,18 @@ def tfplan_resource_lines_with_secrets():
     return [(35, '                            {\n'),
             (36, '                                "content_type": "",\n'),
             (37, '                                "expiration_date": null,\n'),
-            (38, '                                "id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5",\n'),
-            (39, '                                "key_vault_id": "/subscriptions/resourceGroups/",\n'),
-            (40, '                                "name": "sb-nau2d-bsn00vn34-01-primary-cs",\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
             (41, '                                "not_before_date": null,\n'),
-            (42, '                                "resource_id": "/subscriptions/resourceGroups/",\n'),
-            (43, '                                "resource_versionless_id": "/subscriptions/resourceGroups/",\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
             (44, '                                "tags":\n'),
             (45, '                                {},\n'),
             (46, '                                "timeouts": null,\n'),
-            (47, '                                "value": "Endpoint=sb://te-st123-abcdse-02.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5=",\n'),
+            (47, '                                "value": "IClnjeTb8fgd14LyV9m1qG0xvFfUyQY3qHq/slUIrk5=",\n'),
             (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
-            (49, '                                "versionless_id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02"\n')]
+            (49, '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
 
 
 @pytest.fixture
@@ -105,14 +151,15 @@ def tfplan_resource_lines_without_secrets():
     return [(35, '                            {\n'),
             (36, '                                "content_type": "",\n'),
             (37, '                                "expiration_date": null,\n'),
-            (38, '                                "id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/352d0b63ac873c528170cb366b570da5",\n'),
-            (39, '                                "key_vault_id": "/subscriptions/resourceGroups/",\n'),
-            (40, '                                "name": "sb-nau2d-bsn00vn34-01-primary-cs",\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
             (41, '                                "not_before_date": null,\n'),
-            (42, '                                "resource_id": "/subscriptions/resourceGroups/",\n'),
-            (43, '                                "resource_versionless_id": "/subscriptions/resourceGroups/",\n'),
-            (44, '                                "tags":\n'), (45, '                                {},\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
             (46, '                                "timeouts": null,\n'),
-            (47, '                                "value": "Endpoint=sb://te-st123-abcdse-02.service***************************************************************************************************************************",\n'),
+            (47, '                                "value": "IClnjeTb8fg*********************************",\n'),
             (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
-            (49, '                                "versionless_id": "https://te-st123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02"\n')]
+            (49, '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
