@@ -365,7 +365,10 @@ class TerraformVariableRenderer(VariableRenderer):
                                 dpath.set(block_conf, dynamic_argument,
                                           dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
                         else:
-                            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
+                            if isinstance(dynamic_value, dict) and dynamic_argument in dynamic_value:
+                                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator='.')
+                            else:
+                                dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
 
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
