@@ -186,6 +186,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
+          ## update docs
+          export PYTHONPATH='.'
+          git pull
+
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines all
+          do
+            export scansdoc="docs/5.Policy Index/$i.md"
+            echo "---" > "$scansdoc"
+            echo "layout: default" >> "$scansdoc"
+            echo "title: $i resource scans" >> "$scansdoc"
+            echo "nav_order: 1" >> "$scansdoc"
+            echo "---" >> "$scansdoc"
+            echo "" >> "$scansdoc"
+            echo "# $i resource scans (auto generated)" >> "$scansdoc"
+            echo "" >> "$scansdoc"
+            pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
+          done
+
+          #add cloudformation scans to serverless
+          export scansdoc="docs/5.Policy Index/serverless.md"
+          pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
+          git add "docs/5.Policy Index/*"
+          git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
+          
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          
+          new_tag=${{ steps.calculateVersion.outputs.version }}
+          echo "new tag: $new_tag"
+          ## update python version
+          echo "version = '$new_tag'" > 'checkov/version.py'
+          echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
+          echo "checkov==$new_tag" > 'admissioncontroller/checkov-requirements.txt'
+
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt admissioncontroller/checkov-requirements.txt || echo "No changes to commit"
+          git push origin
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
@@ -280,7 +316,7 @@ jobs:
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    needs: [update-bridgecrew-projects, bump-version]
+    needs: update-bridgecrew-projects
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
@@ -312,39 +348,5 @@ jobs:
           include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
-          ## update docs
-          export PYTHONPATH='.'
-          git pull
-
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines all
-          do
-            export scansdoc="docs/5.Policy Index/$i.md"
-            echo "---" > "$scansdoc"
-            echo "layout: default" >> "$scansdoc"
-            echo "title: $i resource scans" >> "$scansdoc"
-            echo "nav_order: 1" >> "$scansdoc"
-            echo "---" >> "$scansdoc"
-            echo "" >> "$scansdoc"
-            echo "# $i resource scans (auto generated)" >> "$scansdoc"
-            echo "" >> "$scansdoc"
-            pipenv run python checkov/main.py --list --framework "$i" >> "$scansdoc"
-          done
-
-          #add cloudformation scans to serverless
-          export scansdoc="docs/5.Policy Index/serverless.md"
-          pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
-          git add "docs/5.Policy Index/*"
-          git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
-          
-          git config --global user.name 'GitHub Actions Bot'
-          git config --global user.email 'actions@github.com'
-          
-          new_tag=${{ steps.versions.outputs.version }}
-          echo "new tag: $new_tag"
-          ## update python version
-          echo "version = '$new_tag'" > 'checkov/version.py'
-          echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
-          echo "checkov==$new_tag" > 'admissioncontroller/checkov-requirements.txt'
-
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt admissioncontroller/checkov-requirements.txt admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
