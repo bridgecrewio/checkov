@@ -1,6 +1,6 @@
 import os
 import shutil
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -247,3 +247,16 @@ class TestGraphBuilder(TestCase):
         expected_attributes = ["backend", "required_version", "required_providers"]
         for attr in expected_attributes:
             self.assertIn(attr, list(terraform_block.attributes.keys()))
+
+    @mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES": "True"})
+    def test_build_graph_with_cross_variables_connections(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/cross_variables')
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        var_bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket_public_access_block.var_bucket')
+        bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket.example')
+
+        self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
+                        expected_label="[cross-variable] bucket")
