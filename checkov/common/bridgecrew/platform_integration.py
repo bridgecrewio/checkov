@@ -235,8 +235,7 @@ class BcPlatformIntegration:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
-                self.timestamp = self.repo_path.split("/")[-1]
-                self.repo_path = path.join(self.repo_path, "src")
+                self.timestamp = self.repo_path.split("/")[-2]
                 self.credentials = cast("dict[str, str]", response["creds"])
                 config = Config(
                     s3={
