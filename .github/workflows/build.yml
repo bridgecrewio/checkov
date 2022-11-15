@@ -348,6 +348,5 @@ jobs:
           include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
-          git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
