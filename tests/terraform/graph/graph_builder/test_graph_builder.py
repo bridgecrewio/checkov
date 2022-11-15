@@ -258,5 +258,6 @@ class TestGraphBuilder(TestCase):
         var_bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket_public_access_block.var_bucket')
         bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket.example')
 
+        self.assertEqual(len(local_graph.edges), 4)
         self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
                         expected_label="[cross-variable] bucket")
