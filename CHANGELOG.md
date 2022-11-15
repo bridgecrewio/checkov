@@ -1,6 +1,54 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.58...HEAD)
+
+## [2.2.58](https://github.com/bridgecrewio/checkov/compare/2.2.50...2.2.58) - 2022-11-14
+
+### Feature
+
+- **general:** number of words larger/less than or equal operators - [#3827](https://github.com/bridgecrewio/checkov/pull/3827)
+- **general:** remove env var for running contributor metrics report and add logs - [#3873](https://github.com/bridgecrewio/checkov/pull/3873)
+- **terraform:** add CKV NCP rules about Load Balancer Exposed to Internet - [#3819](https://github.com/bridgecrewio/checkov/pull/3819)
+- **terraform:** Mask secret values in Terraform plan file reports by resource - [#3868](https://github.com/bridgecrewio/checkov/pull/3868)
+- **terraform:** Support dynamic blocks with nested attributes - [#3869](https://github.com/bridgecrewio/checkov/pull/3869)
+
+### Bug Fix
+
+- **general:** Fixed operator name for number_of_words_derivaties - [#3875](https://github.com/bridgecrewio/checkov/pull/3875)
+- **terraform:** Fix dynamic attributes override each other - [#3866](https://github.com/bridgecrewio/checkov/pull/3866)
+
+## [2.2.50](https://github.com/bridgecrewio/checkov/compare/2.2.44...2.2.50) - 2022-11-13
+
+### Feature
+
+- **general:** add reporting contributor metrics - [#3823](https://github.com/bridgecrewio/checkov/pull/3823)
+- **terraform:** add CKV NCP rules about access key hard coding - [#3820](https://github.com/bridgecrewio/checkov/pull/3820)
+- **terraform:** NSGRulePortAccessRestricted - Remove the condition for dynamic blocks - [#3862](https://github.com/bridgecrewio/checkov/pull/3862)
+
+### Bug Fix
+
+- **kubernetes:** handle empty spec object in k8s templates - [#3865](https://github.com/bridgecrewio/checkov/pull/3865)
+- **openapi:** fixed error in invalid openapi template - [#3863](https://github.com/bridgecrewio/checkov/pull/3863)
+- **terraform:** app_service Upgrade tests and add web app resources - [#3838](https://github.com/bridgecrewio/checkov/pull/3838)
+- **terraform:** Handled nested unrendered vars - [#3853](https://github.com/bridgecrewio/checkov/pull/3853)
+
+## [2.2.44](https://github.com/bridgecrewio/checkov/compare/2.2.43...2.2.44) - 2022-11-11
+
+### Bug Fix
+
+- **terraform:** fix an issue with dynamics replacing a whole block - [#3846](https://github.com/bridgecrewio/checkov/pull/3846)
+
+## [2.2.43](https://github.com/bridgecrewio/checkov/compare/2.2.38...2.2.43) - 2022-11-10
+
+### Feature
+
+- **terraform:** Wrap render dynamic blocks flow with try except - [#3837](https://github.com/bridgecrewio/checkov/pull/3837)
+
+### Bug Fix
+
+- **bicep:** make ARM AKS checks compatible with Bicep - [#3836](https://github.com/bridgecrewio/checkov/pull/3836)
+- **cloudformation:** only parse valid tag key-pairs in CloudFormation - [#3835](https://github.com/bridgecrewio/checkov/pull/3835)
+- **general:** Clear details before next check run to avoid duplications in output - [#3711](https://github.com/bridgecrewio/checkov/pull/3711)
 
 ## [2.2.38](https://github.com/bridgecrewio/checkov/compare/2.2.35...2.2.38) - 2022-11-09
 

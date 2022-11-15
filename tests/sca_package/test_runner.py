@@ -67,7 +67,7 @@ def test_run(sca_package_report):
     cve_record_with_2_license = next((c for c in report.failed_checks if c.resource == "path/to/requirements.txt.flask" and c.check_name == "SCA package scan"), None)
     assert cve_record_with_2_license is not None
     assert "licenses" in cve_record_with_2_license.vulnerability_details
-    assert cve_record_with_2_license.vulnerability_details["licenses"] == "OSI_APACHE, DUMMY_OTHER_LICENSE"
+    assert cve_record_with_2_license.vulnerability_details["licenses"] == '"OSI_APACHE","DUMMY_OTHER_LICENSE"'
 
     # making sure extra-resources (a scanned packages without cves) also have licenses - this data will be printed
     # as part of the BON report.
