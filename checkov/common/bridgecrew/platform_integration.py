@@ -236,6 +236,7 @@ class BcPlatformIntegration:
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-1]
+                self.repo_path = path.join(self.repo_path, "src")
                 self.credentials = cast("dict[str, str]", response["creds"])
                 config = Config(
                     s3={
@@ -395,11 +396,12 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
-        if not self.bucket:
-            logging.error("Bucket was not set")
+        if not self.bucket or not self.repo_path:
+            logging.error("Bucket or repo_path was not set")
             return
 
-        target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
+        repo_path_without_src = os.path.dirname(self.repo_path)
+        target_report_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 

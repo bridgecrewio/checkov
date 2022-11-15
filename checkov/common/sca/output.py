@@ -123,7 +123,7 @@ def create_report_cve_record(
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
     package_type = get_package_type(package_name, package_version, sca_details)
-    cve_id = vulnerability_details["id"].upper()
+    cve_id = vulnerability_details.get("id", vulnerability_details.get("cveId", '')).upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
     if severity == "moderate":
