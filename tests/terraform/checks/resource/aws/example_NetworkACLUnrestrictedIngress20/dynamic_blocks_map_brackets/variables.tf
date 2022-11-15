@@ -6,12 +6,12 @@ variable "http_headers" {
   default = [{
     "num": 1,
     "protoc": "tcp",
-    "values": ["10.0.0.1/32"]
+    "values": ["0.0.0.0/0"]
   },
   {
     "num": 2,
     "protoc": "tcp",
-    "values": ["10.0.0.2/32"]
+    "values": ["0.0.0.0/0"]
   }]
 }
 
