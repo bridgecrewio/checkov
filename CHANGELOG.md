@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.58...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.65...HEAD)
+
+## [2.2.65](https://github.com/bridgecrewio/checkov/compare/2.2.58...2.2.65) - 2022-11-15
+
+### Feature
+
+- **terraform:** test checks for any port access - [#3882](https://github.com/bridgecrewio/checkov/pull/3882)
+
+### Bug Fix
+
+- **terraform:** Fixing some broke flow in dynamic blocks rendering - [#3879](https://github.com/bridgecrewio/checkov/pull/3879)
+- **terraform:** Not adding dynamic blocks attributes to attributes - [#3872](https://github.com/bridgecrewio/checkov/pull/3872)
+
+### Platform
+
+- **general:** Support s3 client config for govcloud - [#3880](https://github.com/bridgecrewio/checkov/pull/3880)
+- **sca:** Add repoId to GET request - [#3876](https://github.com/bridgecrewio/checkov/pull/3876)
+- **sca:** Fix bom report - [#3867](https://github.com/bridgecrewio/checkov/pull/3867)
+- **sca:** Poll sca scan results using Polling API - [#3841](https://github.com/bridgecrewio/checkov/pull/3841)
+- **sca:** remove src from repo path - [#3884](https://github.com/bridgecrewio/checkov/pull/3884)
 
 ## [2.2.58](https://github.com/bridgecrewio/checkov/compare/2.2.50...2.2.58) - 2022-11-14
 
