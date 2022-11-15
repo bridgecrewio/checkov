@@ -1,7 +1,7 @@
 variable "http_headers" {
   type = list(object({
     num    = number
-    values = number
+    values = string
   }))
   default = [{
     "num": 1,
