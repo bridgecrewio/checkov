@@ -6,6 +6,7 @@ import os
 import re
 from collections.abc import Hashable
 from copy import deepcopy
+import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
 from lark.tree import Tree
@@ -308,10 +309,24 @@ class TerraformVariableRenderer(VariableRenderer):
                         vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
                         changed_attributes.append(block_name)
 
-                    self.local_graph.update_vertex_config(vertex, changed_attributes)
+                    self.local_graph.update_vertex_config(vertex, changed_attributes, True)
 
     @staticmethod
-    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    def _extract_dynamic_arguments(block_name: str, block_content: Dict[str, Any], dynamic_arguments: List[str],
+                                   path_accumulator: List[str]) -> None:
+        dynamic_value_dot_ref = f"{block_name}.value"
+        dynamic_value_bracket_ref = f'{block_name}["value"]'
+        dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
+        for argument, value in block_content.items():
+            if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value:
+                dynamic_arguments.append('.'.join(filter(None, [*path_accumulator, argument])))
+            elif isinstance(value, dict):
+                TerraformVariableRenderer._extract_dynamic_arguments(block_name, value, dynamic_arguments,
+                                                                     path_accumulator + [argument])
+
+    @staticmethod
+    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
+            str, list[dict[str, Any]]]:
         rendered_blocks: dict[str, list[dict[str, Any]]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
@@ -329,15 +344,8 @@ class TerraformVariableRenderer(VariableRenderer):
             if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
-            dynamic_value_dot_ref = f"{block_name}.value"
-            dynamic_value_bracket_ref = f'{block_name}["value"]'
-            dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
-            dynamic_arguments = [
-                argument
-                for argument, value in block_content.items()
-                if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value
-            ]
-
+            dynamic_arguments = []
+            TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
             if dynamic_arguments:
                 block_confs = []
                 for dynamic_value in dynamic_values:
@@ -348,14 +356,16 @@ class TerraformVariableRenderer(VariableRenderer):
                             if not isinstance(dynamic_value, dict):
                                 continue
                             dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
-                                block_content[dynamic_argument]
+                                dpath.get(block_content, dynamic_argument, separator='.')
                             )
                             if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
-                                block_conf[dynamic_argument] = dynamic_value[dynamic_value_in_map]
+                                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map],
+                                          separator='.')
                             else:
-                                block_conf[dynamic_argument] = dynamic_value[block_name][0][dynamic_value_in_map]
+                                dpath.set(block_conf, dynamic_argument,
+                                          dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
                         else:
-                            block_conf[dynamic_argument] = dynamic_value
+                            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
 
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
