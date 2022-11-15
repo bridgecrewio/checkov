@@ -67,7 +67,7 @@ FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
 GOV_CLOUD_REGION = 'us-gov-west-1'
-PRISMA_GOV_API_KEY = 'https://api.gov.prismacloud.io'
+PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
 MAX_RETRIES = 40
 ONBOARDING_SOURCE = "checkov"
 
@@ -232,7 +232,7 @@ class BcPlatformIntegration:
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.setup_api_urls()
-            if self.prisma_api_url == PRISMA_GOV_API_KEY:
+            if self.prisma_api_url == PRISMA_GOV_API_URL:
                 region = GOV_CLOUD_REGION
                 use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
