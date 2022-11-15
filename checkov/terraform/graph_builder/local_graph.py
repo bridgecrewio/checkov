@@ -14,6 +14,7 @@ from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
+from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -60,6 +61,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
+            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
+                # experimental flag on building cross variable edges for terraform graph
+                self._build_cross_variable_edges()
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
@@ -172,90 +176,115 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
         for origin_node_index, vertex in enumerate(self.vertices):
-            for attribute_key, attribute_value in vertex.attributes.items():
-                if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
+            self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
+
+    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str], cross_variable_edges: bool = False):
+        for attribute_key, attribute_value in vertex.attributes.items():
+            if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
                     attribute_key, vertex.attributes
-                ):
-                    continue
-                referenced_vertices = get_referenced_vertices_in_value(
-                    value=attribute_value,
-                    aliases=aliases,
-                    resources_types=resources_types,
-                )
-                for vertex_reference in referenced_vertices:
-                    # for certain blocks such as data and resource, the block name is composed from several parts.
-                    # the purpose of the loop is to avoid not finding the node if the name has several parts
-                    sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
-                    for i, _ in enumerate(sub_values):
-                        reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
-                        if vertex.module_dependency:
+            ):
+                continue
+            referenced_vertices = get_referenced_vertices_in_value(
+                value=attribute_value,
+                aliases=aliases,
+                resources_types=resources_types,
+            )
+            for vertex_reference in referenced_vertices:
+                # for certain blocks such as data and resource, the block name is composed from several parts.
+                # the purpose of the loop is to avoid not finding the node if the name has several parts
+                sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
+                for i, _ in enumerate(sub_values):
+                    reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
+                    if vertex.module_dependency:
+                        dest_node_index = self._find_vertex_index_relative_to_path(
+                            vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
+                            vertex.module_dependency_num
+                        )
+                        if dest_node_index == -1:
                             dest_node_index = self._find_vertex_index_relative_to_path(
-                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency, vertex.module_dependency_num
+                                vertex_reference.block_type, reference_name, vertex.path, vertex.path,
+                                vertex.module_dependency_num
                             )
-                            if dest_node_index == -1:
-                                dest_node_index = self._find_vertex_index_relative_to_path(
-                                    vertex_reference.block_type, reference_name, vertex.path, vertex.path, vertex.module_dependency_num
+                    else:
+                        dest_node_index = self._find_vertex_index_relative_to_path(
+                            vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
+                            vertex.module_dependency_num
+                        )
+                    if dest_node_index > -1 and origin_node_index > -1:
+                        if vertex_reference.block_type == BlockType.MODULE:
+                            try:
+                                self._connect_module(
+                                    sub_values, attribute_key, self.vertices[dest_node_index], origin_node_index,
+                                    cross_variable_edges
                                 )
+                            except Exception as e:
+                                logging.warning(
+                                    f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
+                                )
+                                logging.warning(e, stack_info=True)
                         else:
-                            dest_node_index = self._find_vertex_index_relative_to_path(
-                                vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency, vertex.module_dependency_num
-                            )
-                        if dest_node_index > -1 and origin_node_index > -1:
-                            if vertex_reference.block_type == BlockType.MODULE:
-                                try:
-                                    self._connect_module(
-                                        sub_values, attribute_key, self.vertices[dest_node_index], origin_node_index
-                                    )
-                                except Exception as e:
-                                    logging.warning(
-                                        f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
-                                    )
-                                    logging.warning(e, stack_info=True)
-                            else:
-                                self._create_edge(origin_node_index, dest_node_index, attribute_key)
-                            break
+                            self._create_edge(origin_node_index, dest_node_index, attribute_key, cross_variable_edges)
+                        break
 
-            if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
-                    and isinstance(vertex.attributes.get('source')[0], str):
-                target_path = vertex.path
-                if vertex.module_dependency != "":
-                    target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
-                dest_module_path = self._get_dest_module_path(
-                    curr_module_dir=self.get_dirname(vertex.path),
-                    dest_module_source=vertex.attributes["source"][0],
-                    dest_module_version=vertex.attributes.get("version", ["latest"])[0]
-                )
-                target_variables = [
-                    index
-                    for index in self.vertices_by_module_dependency.get((target_path, self.module.module_address_map.get((vertex.path, vertex.name))), {}).get(BlockType.VARIABLE, [])
-                    if self.get_dirname(self.vertices[index].path) == dest_module_path
-                ]
-                for attribute in vertex.attributes.keys():
-                    if attribute in MODULE_RESERVED_ATTRIBUTES:
-                        continue
-                    target_variable = next((v for v in target_variables if self.vertices[v].name == attribute), None)
-                    if target_variable is not None:
-                        self._create_edge(target_variable, origin_node_index, "default")
-            elif vertex.block_type == BlockType.TF_VARIABLE:
-                # Assuming the tfvars file is in the same directory as the variables file (best practice)
-                target_variables = [
-                    index
-                    for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
-                    if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path)
-                ]
-                if len(target_variables) == 1:
-                    self._create_edge(target_variables[0], origin_node_index, "default")
+        if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
+                and isinstance(vertex.attributes.get('source')[0], str):
+            target_path = vertex.path
+            if vertex.module_dependency != "":
+                target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+            dest_module_path = self._get_dest_module_path(
+                curr_module_dir=self.get_dirname(vertex.path),
+                dest_module_source=vertex.attributes["source"][0],
+                dest_module_version=vertex.attributes.get("version", ["latest"])[0]
+            )
+            target_variables = [
+                index
+                for index in self.vertices_by_module_dependency.get(
+                    (target_path, self.module.module_address_map.get((vertex.path, vertex.name))), {}).get(
+                    BlockType.VARIABLE, [])
+                if self.get_dirname(self.vertices[index].path) == dest_module_path
+            ]
+            for attribute in vertex.attributes.keys():
+                if attribute in MODULE_RESERVED_ATTRIBUTES:
+                    continue
+                target_variable = next((v for v in target_variables if self.vertices[v].name == attribute), None)
+                if target_variable is not None:
+                    self._create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
+        elif vertex.block_type == BlockType.TF_VARIABLE:
+            # Assuming the tfvars file is in the same directory as the variables file (best practice)
+            target_variables = [
+                index
+                for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
+                if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path)
+            ]
+            if len(target_variables) == 1:
+                self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
 
-    def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str) -> None:
+    def _build_cross_variable_edges(self):
+        target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
+                                self.vertices[v].block_type == BlockType.RESOURCE and any(
+            self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices)]
+        aliases = self._get_aliases()
+        resources_types = self.get_resources_types_in_graph()
+        for origin_node_index in target_nodes_indexes:
+            vertex = self.vertices[origin_node_index]
+            self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
+
+    def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
+                     cross_variable_edges: bool = False) -> bool:
         if origin_vertex_index == dest_vertex_index:
-            return
+            return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
+        if cross_variable_edges:
+            if any(str(e) == str(edge) for e in self.edges):
+                return False
+            edge.label = '[cross-variable] ' + edge.label
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
+        return True
 
     def _connect_module(
-        self, sub_values: List[str], attribute_key: str, module_node: TerraformBlock, origin_node_index: int
+        self, sub_values: List[str], attribute_key: str, module_node: TerraformBlock, origin_node_index: int, cross_variable_edges: bool = False
     ) -> None:
         """
         :param sub_values: list of sub values of the attribute value.
@@ -288,8 +317,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     or self.get_abspath(vertex.module_dependency)
                     == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
                 ):
-                    self._create_edge(origin_node_index, vertex_index, attribute_key)
-                    self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
+                    added_edge = self._create_edge(origin_node_index, vertex_index, attribute_key, cross_variable_edges)
+                    if added_edge:
+                        self.vertices[origin_node_index].add_module_connection(attribute_key, vertex_index)
                     break
 
     def _get_dest_module_path(self, curr_module_dir: str, dest_module_source: str, dest_module_version: str) -> str:
