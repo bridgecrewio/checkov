@@ -124,7 +124,7 @@ class BaseAttributeSolver(BaseSolver):
                 try:
                     parsed_attr = parse(self.attribute)
                     self.parsed_attributes[self.attribute] = parsed_attr
-                except:
+                except Exception:
                     logging.debug('Error parsing jsonpath expression', exc_info=True)
                     raise
             for match in parsed_attr.find(vertex):
