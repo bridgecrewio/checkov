@@ -299,9 +299,9 @@ class TerraformVariableRenderer(VariableRenderer):
                 if dynamic_blocks:
                     try:
                         rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
-                    except Exception:
+                    except Exception as e:
                         logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
-                                     f' for blocks: {dynamic_blocks}')
+                                     f' for blocks: {dynamic_blocks}, error: {e}')
                         continue
                     changed_attributes = []
 
@@ -327,7 +327,7 @@ class TerraformVariableRenderer(VariableRenderer):
     @staticmethod
     def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
             str, list[dict[str, Any]]]:
-        rendered_blocks: dict[str, list[dict[str, Any]]] = {}
+        rendered_blocks: dict[str, list[dict[str, Any]] | dict[str, Any]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
             logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
@@ -379,7 +379,12 @@ class TerraformVariableRenderer(VariableRenderer):
                 except (StopIteration, AttributeError):
                     continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
-                rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+
+                flatten_key = next(iter(rendered_blocks.keys()))
+                if next_key in rendered_blocks[flatten_key]:
+                    rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                else:
+                    rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
         return rendered_blocks
 
