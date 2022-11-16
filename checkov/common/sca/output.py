@@ -88,7 +88,7 @@ def _update_details_by_scan_data_format(
     sca_details: SCADetails | None = None,
     scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI_FORMAT
 ) -> None:
-    if scan_data_format == ScanDataFormat.TWISTCLI_FORMAT or scan_data_format == ScanDataFormat.DEPENDENCY_TREE_FORMAT:
+    if scan_data_format in {ScanDataFormat.TWISTCLI_FORMAT, ScanDataFormat.DEPENDENCY_TREE_FORMAT}:
         lowest_fixed_version = UNFIXABLE_VERSION
         package_version = vulnerability_details["packageVersion"]
         fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
