@@ -3,5 +3,5 @@ variable "bucket"{
 }
 
 variable "block_public_acls" {
-//  type = bool
+  type = bool
 }
