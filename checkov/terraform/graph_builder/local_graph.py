@@ -29,6 +29,7 @@ from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
+CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
 
 
 class Undetermined(TypedDict):
@@ -277,7 +278,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if cross_variable_edges:
             if any(str(e) == str(edge) for e in self.edges):
                 return False
-            edge.label = '[cross-variable] ' + edge.label
+            edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
