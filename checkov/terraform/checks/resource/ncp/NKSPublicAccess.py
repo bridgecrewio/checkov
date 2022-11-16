@@ -1,8 +1,8 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
-class NKSPublicAccess(BaseResourceCheck):
+class NKSPublicAccess(BaseResourceNegativeValueCheck):
     def __init__(self) -> None:
         name = "Ensure Naver Kubernetes Service public endpoint disabled"
         id = "CKV_NCP_19"
@@ -10,14 +10,11 @@ class NKSPublicAccess(BaseResourceCheck):
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if "public_network" in conf.keys():
-            if conf.get("public_network") == [False]:
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
-        else:
-            return CheckResult.PASSED
+    def get_inspected_key(self):
+        return 'public_network'
+
+    def get_forbidden_values(self):
+        return [True]
 
 
 check = NKSPublicAccess()
