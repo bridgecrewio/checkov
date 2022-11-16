@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 151)
+        self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_honors_enforcement_rules(self):
@@ -79,7 +79,7 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         # then
-        assert len(report.passed_checks) > 0
+        assert len(report.passed_checks) + len(report.failed_checks) == 0
 
     def test_runner_on_shell_injection(self):
         # given
@@ -165,7 +165,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_runner_on_list_typed_workflow_dispatch(self):
         # given
-        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yaml"
+        file_path = Path(__file__).parent / "resources/.github/workflows/list_workflow_dispatch.yml"
         file_dir = [str(file_path)]
 
         checks = ["CKV_GHA_7"]
@@ -214,7 +214,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.failed_checks[0].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.failed_checks[0].workflow_name == 'build'
 
-        assert report.passed_checks[6].job[0] == "publish-checkov-admissioncontroller-dockerhub"
+        assert report.passed_checks[6].job[0] == "publish-checkov-pyston-dockerhub"
         assert report.passed_checks[6].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.passed_checks[6].workflow_name == 'build'
 

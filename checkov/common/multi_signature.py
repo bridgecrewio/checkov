@@ -12,12 +12,12 @@ _MultiT = TypeVar("_MultiT")
 
 class _MultiSignataureMethod(Protocol):
     __code__: CodeType
-    __multi_signature_wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., _MultiT]]
+    __multi_signature_wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., Any]]
 
-    def __call__(self, *args: Any, **kwargs: Any) -> _MultiT:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
 
-    def add_signature(self, *, args: list[str], varargs: Any = None, varkw: Any = None) -> Callable[[Callable[..., _MultiT]], Callable[..., _MultiT]]:
+    def add_signature(self, *, args: list[str], varargs: Any = None, varkw: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         ...
 
 

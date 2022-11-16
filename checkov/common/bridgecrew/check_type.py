@@ -7,6 +7,7 @@ class CheckType:
     CIRCLECI_PIPELINES = "circleci_pipelines"
     ARGO_WORKFLOWS = "argo_workflows"
     ARM = "arm"
+    AZURE_PIPELINES = "azure_pipelines"
     BICEP = "bicep"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"

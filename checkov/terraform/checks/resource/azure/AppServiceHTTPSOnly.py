@@ -6,8 +6,8 @@ class AppServiceHTTPSOnly(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service"
         id = "CKV_AZURE_14"
-        supported_resources = ['azurerm_app_service']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('azurerm_app_service', 'azurerm_linux_web_app', 'azurerm_windows_web_app')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):

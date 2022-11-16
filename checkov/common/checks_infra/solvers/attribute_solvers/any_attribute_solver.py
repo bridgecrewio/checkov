@@ -6,6 +6,7 @@ from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver
 
 class AnyResourceSolver(BaseAttributeSolver):
     operator = Operators.ANY  # noqa: CCE003  # a static attribute
+    is_value_attribute_check = False  # noqa: CCE003  # a static attribute
 
-    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:  # type:ignore[override]
+    def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return vertex is not None

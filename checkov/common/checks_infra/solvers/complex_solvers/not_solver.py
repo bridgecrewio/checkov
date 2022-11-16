@@ -1,4 +1,4 @@
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -18,5 +18,6 @@ class NotSolver(BaseComplexSolver):
             raise Exception('The "not" operator must have exactly one child')
         return not args[0]
 
-    def get_operation(self, vertex: Dict[str, Any]) -> bool:  # type:ignore[override]
-        return not self.solvers[0].get_operation(vertex)
+    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+        result = self.solvers[0].get_operation(vertex)
+        return None if result is None else not result

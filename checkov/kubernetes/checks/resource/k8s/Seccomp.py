@@ -37,9 +37,9 @@ class Seccomp(BaseK8Check):
                 metadata = conf["metadata"]
         elif conf['kind'] == 'CronJob':
             if "spec" in conf:
-                if "jobTemplate" in conf["spec"]:
+                if isinstance(conf["spec"], dict) and "jobTemplate" in conf["spec"]:
                     if "spec" in conf["spec"]["jobTemplate"]:
-                        if "template" in conf["spec"]["jobTemplate"]["spec"]:
+                        if conf["spec"]["jobTemplate"]["spec"] and "template" in conf["spec"]["jobTemplate"]["spec"]:
                             if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                                 metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["metadata"]
                             elif "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:

@@ -107,3 +107,17 @@ resource "google_sql_database_instance" "unknown" {
     tier = "db-custom-1-3840"
   }
 }
+
+resource "google_sql_database_instance" "unknown_var" {
+  database_version = "POSTGRES_12"
+  name             = "general-pos121"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+    pricing_plan      = "PER_USE"
+    tier              = "db-custom-1-3840"
+    database_flags = ["${var.test_var}"]
+  }
+}

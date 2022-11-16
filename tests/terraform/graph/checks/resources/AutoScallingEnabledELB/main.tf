@@ -113,3 +113,63 @@ resource "aws_elb" "test_bad" {
     Name = "foobar-terraform-elb"
   }
 }
+
+# LB
+resource "aws_autoscaling_group" "alb_pass" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  desired_capacity          = 4
+  force_delete              = true
+
+  lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
+  }
+}
+
+resource "aws_lb_target_group" "alb_pass" {
+  name     = "tf-example-lb-tg"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    port                = 8080
+    protocol            = "HTTP"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200-499"
+  }
+}
+
+resource "aws_autoscaling_attachment" "alb_pass" {
+  autoscaling_group_name = aws_autoscaling_group.alb_pass.id
+  lb_target_group_arn    = aws_lb_target_group.alb_pass.arn
+}
+
+resource "aws_autoscaling_group" "alb_fail" {
+  max_size                  = 5
+  min_size                  = 2
+  health_check_grace_period = 300
+  health_check_type         = "ELB"
+  desired_capacity          = 4
+  force_delete              = true
+
+  lifecycle {
+    ignore_changes = [load_balancers, target_group_arns]
+  }
+}
+
+resource "aws_lb_target_group" "alb_fail" {
+  name     = "tf-example-lb-tg"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+}
+
+resource "aws_autoscaling_attachment" "alb_fail" {
+  autoscaling_group_name = aws_autoscaling_group.alb_fail.id
+  lb_target_group_arn    = aws_lb_target_group.alb_fail.arn
+}

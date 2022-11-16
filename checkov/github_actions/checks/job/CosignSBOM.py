@@ -1,4 +1,6 @@
-from typing import Any, Tuple, Dict
+from __future__ import annotations
+
+from typing import Any
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.consts import START_LINE
@@ -16,10 +18,10 @@ class CosignSignSBOM(BaseGithubActionsCheck):
             name=name,
             id=id,
             block_type=BlockType.OBJECT,
-            supported_entities=['jobs']
+            supported_entities=('jobs',)
         )
 
-    def scan_entity_conf(self, conf: Dict[str, Any]) -> Tuple[CheckResult, Dict[str, Any]]:
+    def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         if not isinstance(conf, dict):
             return CheckResult.UNKNOWN, conf
 

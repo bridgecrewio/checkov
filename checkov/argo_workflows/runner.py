@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 API_VERSION_PATTERN = re.compile(r"^apiVersion:\s*argoproj.io/", re.MULTILINE)
+KIND_PATTERN = re.compile(r"^kind:\s*Workflow", re.MULTILINE)
 
 
 class Runner(YamlRunner, ImageReferencer):
@@ -44,9 +45,12 @@ class Runner(YamlRunner, ImageReferencer):
             return None
 
         content = Path(file_path).read_text()
-        match = re.search(API_VERSION_PATTERN, content)
-        if match:
-            return content
+        match_api = re.search(API_VERSION_PATTERN, content)
+        if match_api:
+            match_kind = re.search(KIND_PATTERN, content)
+            if match_kind:
+                # only scan Argo Workflows
+                return content
 
         return None
 

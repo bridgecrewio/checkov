@@ -1,8 +1,13 @@
 name: Supply Chain
 on:
   workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
   schedule:
     - cron: 0 0 * * 0
+permissions:
+  contents: none
 jobs:
    bridgecrew:
     runs-on: ubuntu-latest

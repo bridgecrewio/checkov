@@ -15,6 +15,8 @@ from checkov.dockerfile.runner import Runner, get_files_definitions
 from checkov.dockerfile.registry import registry
 from checkov.runner_filter import RunnerFilter
 
+RESOURCES_DIR = Path(__file__).parent / "resources"
+
 
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
@@ -292,6 +294,30 @@ class TestRunnerValid(unittest.TestCase):
         assert len(results) == 2
         assert len(results[0]) == 1 and list(results[0].keys())[0] == valid_dockerfile
         assert len(results[1]) == 1 and list(results[1].keys())[0] == valid_dockerfile
+
+    def test_runner_extra_resources(self):
+        # given
+        test_file = RESOURCES_DIR / "name_variations/Dockerfile.prod"
+
+        # when
+        report = Runner().run(
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(framework=['dockerfile'], checks=["CKV_DOCKER_4"])  # chose a check, which will find nothing
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 1)
+
+        self.assertEqual(len(report.extra_resources), 1)
+        extra_resource = next(iter(report.extra_resources))
+        self.assertEqual(extra_resource.file_abs_path, str(test_file))
+        self.assertTrue(extra_resource.file_path.endswith("Dockerfile.prod"))
 
 
     def tearDown(self) -> None:

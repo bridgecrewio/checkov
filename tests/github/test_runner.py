@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -22,14 +23,14 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         runner.github.github_conf_dir_path = valid_dir_path
 
-        checks = ["CKV_GITHUB_6","CKV_GITHUB_7"]
+        checks = ["CKV_GITHUB_6", "CKV_GITHUB_7"]
         report = runner.run(
             root_folder=valid_dir_path,
             runner_filter=RunnerFilter(checks=checks)
         )
         self.assertEqual(len(report.failed_checks), 1)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.skipped_checks, [])
 
     @mock.patch.dict(os.environ, {"CKV_GITHUB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1",
@@ -139,6 +140,25 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(report.skipped_checks, [])
+
+    @mock.patch.dict(os.environ, {"CKV_GITHUB_CONFIG_FETCH_DATA": "False", "PYCHARM_HOSTED": "1"}, clear=True)
+    def test_runner_files_ignore(self):
+        # given
+        test_file = Path(__file__).parent / "resources/github_conf/pass/org_security.json"
+        checks = ["CKV_GITHUB_1", "CKV_GITHUB_2", "CKV_GITHUB_3"]
+
+        # when
+        report = Runner().run(
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(checks=checks)
+        )
+
+        # then
+        # even it points to a file with scannable content, it should skip it
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
 
 
 if __name__ == "__main__":

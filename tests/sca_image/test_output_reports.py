@@ -3,6 +3,8 @@ from pathlib import Path
 import xml.dom.minidom
 from typing import List
 
+from pytest_mock import MockerFixture
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
@@ -19,7 +21,7 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     filtered_list = []
     for i, line in enumerate(pretty_xml_as_list):
         if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line:
-            if i == 0 or "<name>checkov</name>" not in pretty_xml_as_list[i-1]:
+            if i == 0 or not any(tool_name in pretty_xml_as_list[i-1] for tool_name in ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
                 filtered_list.append(line)
     return filtered_list
 
@@ -29,28 +31,67 @@ def test_console_output(sca_image_report):
 
     # then
     assert console_output == "\n".join(
-        ['\x1b[34msca_image scan results:', '\x1b[0m\x1b[36m', 'Passed checks: 1, Failed checks: 3, Skipped checks: 1',
-         '',
-         '\x1b[0m\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:',
-         '\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐',
-         '\t│ Total CVEs: 3      │ critical: 0        │ high: 0            │ medium: 1          │ low: 1             │ skipped: 1         │',
-         '\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤',
-         '\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤',
-         '\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │',
-         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
-         '\t│ perl               │ CVE-2020-16156     │ medium             │ 5.34.0-3ubuntu1    │ N/A                │ N/A                │',
-         '\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤',
-         '\t│ pcre2              │ CVE-2022-1587      │ low                │ 10.39-3build1      │ N/A                │ N/A                │',
-         '\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘',
-         '',
-         '\t/path/to/Dockerfile (sha256:123456) - Licenses Statuses:',
-         '\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐',
-         '\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │',
-         '\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤',
-         '\t│ perl                   │ 5.34.0-3ubuntu1        │ BC_LIC_1               │ Apache-2.0-Fake        │ FAILED                  │',
-         '\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘',
-         '']
+        [
+            "sca_image scan results:",
+            "",
+            "Passed checks: 1, Failed checks: 3, Skipped checks: 1",
+            "",
+            "\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:",
+            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐",
+            "\t│ Total CVEs: 3      │ critical: 0        │ high: 0            │ medium: 1          │ low: 1             │ skipped: 1         │",
+            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤",
+            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤",
+            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │",
+            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
+            "\t│ perl               │ CVE-2020-16156     │ medium             │ 5.34.0-3ubuntu1    │ N/A                │ N/A                │",
+            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
+            "\t│ pcre2              │ CVE-2022-1587      │ low                │ 10.39-3build1      │ N/A                │ N/A                │",
+            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘",
+            "",
+            "\t/path/to/Dockerfile (sha256:123456) - Licenses Statuses:",
+            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐",
+            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤",
+            "\t│ perl                   │ 5.34.0-3ubuntu1        │ BC_LIC_1               │ Apache-2.0-Fake        │ FAILED                  │",
+            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘",
+            "",
+        ]
+    )
 
+
+def test_console_output_in_tty(mocker: MockerFixture, sca_image_report):
+    # simulate a tty call by enforcing color
+    mocker.patch.dict(os.environ, {"FORCE_COLOR": "True"})
+
+    console_output = sca_image_report.print_console(False, False, None, None, False)
+
+    # then
+    assert console_output == "\n".join(
+        [
+            "\x1b[34msca_image scan results:",
+            "\x1b[0m\x1b[36m",
+            "Passed checks: 1, Failed checks: 3, Skipped checks: 1",
+            "",
+            "\x1b[0m\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:",
+            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐",
+            "\t│ Total CVEs: 3      │ critical: 0        │ high: 0            │ medium: 1          │ low: 1             │ skipped: 1         │",
+            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤",
+            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤",
+            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Fixed version      │ Compliant version  │",
+            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
+            "\t│ perl               │ CVE-2020-16156     │ medium             │ 5.34.0-3ubuntu1    │ N/A                │ N/A                │",
+            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
+            "\t│ pcre2              │ CVE-2022-1587      │ low                │ 10.39-3build1      │ N/A                │ N/A                │",
+            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘",
+            "",
+            "\t/path/to/Dockerfile (sha256:123456) - Licenses Statuses:",
+            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐",
+            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │",
+            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤",
+            "\t│ perl                   │ 5.34.0-3ubuntu1        │ BC_LIC_1               │ Apache-2.0-Fake        │ FAILED                  │",
+            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘",
+            "",
+        ]
     )
 
 
@@ -110,7 +151,6 @@ def test_get_sarif_json(sca_image_report_scope_function):
 
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
-    print(sarif_output)
     assert sarif_output == \
            {
                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
@@ -133,7 +173,7 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "SCA license"
                                        },
                                        "help": {
-                                           "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                           "text": "\"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl\""
                                        },
                                        "defaultConfiguration": {
                                            "level": "error"
@@ -149,8 +189,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "CPAN 2.28 allows Signature Verification Bypass."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
@@ -165,8 +206,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }
@@ -181,8 +223,9 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                            "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT."
                                        },
                                        "help": {
-                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nGuideline: None\""
+                                           "text": "\"SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\""
                                        },
+                                       "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1586",
                                        "defaultConfiguration": {
                                            "level": "error"
                                        }

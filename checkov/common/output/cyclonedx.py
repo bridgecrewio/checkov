@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
+from checkov.common.output.common import format_string_to_licenses
 
 from cyclonedx.model import (
     XsUri,
@@ -30,7 +31,7 @@ from cyclonedx.model.vulnerability import (
     VulnerabilitySeverity,
 )
 from cyclonedx.output import get_instance
-from packageurl import PackageURL  # type:ignore[import]
+from packageurl import PackageURL
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import CheckType
@@ -69,7 +70,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")  # type:ignore[no-untyped-call]  # issue between Python versions
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -105,7 +106,7 @@ class CycloneDX:
                 if bom.has_component(component=component):
                     component = (
                         bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl
+                            purl=component.purl  # type:ignore[arg-type]  # fix https://github.com/CycloneDX/cyclonedx-python-lib/pull/310
                         )
                     )
 
@@ -221,7 +222,7 @@ class CycloneDX:
         licenses = resource.vulnerability_details.get("licenses")
         if licenses:
             license_choices = [
-                LicenseChoice(license_=License(license_name=license)) for license in licenses.split(", ")
+                LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
             ]
 
         purl = PackageURL(
@@ -264,7 +265,7 @@ class CycloneDX:
     def create_vulnerability(self, check_type: str, resource: Record, component: Component) -> Vulnerability:
         """Creates a vulnerability"""
 
-        if check_type == CheckType.SCA_PACKAGE:
+        if check_type in SCA_CHECKTYPES:
             vulnerability = self.create_cve_vulnerability(resource=resource, component=component)
         else:
             vulnerability = self.create_iac_vulnerability(resource=resource, component=component)

@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import re
+from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -7,7 +10,7 @@ from checkov.json_doc.enums import BlockType
 
 
 class WebhookHttpsRepo(BaseGithubCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure GitHub repository webhooks are using HTTPS"
         id = "CKV_GITHUB_7"
         categories = [CheckCategories.SUPPLY_CHAIN]
@@ -19,8 +22,7 @@ class WebhookHttpsRepo(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf):
-
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]] | None:  # type:ignore[override]
         if repository_webhooks_schema.validate(conf):
             for item in conf:
                 if isinstance(item, dict):
@@ -31,8 +33,8 @@ class WebhookHttpsRepo(BaseGithubCheck):
                     insecure_ssl = item_config.get('insecure_ssl', '0')
                     if re.match("^http://", url) or insecure_ssl != '0':
                         return CheckResult.FAILED, item_config
-        if repository_webhooks_schema.validate(conf):
             return CheckResult.PASSED, conf
+        return CheckResult.UNKNOWN, conf
 
 
 check = WebhookHttpsRepo()
