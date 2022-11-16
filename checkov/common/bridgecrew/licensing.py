@@ -1,20 +1,19 @@
 from collections import ChainMap
 from dataclasses import dataclass
+from enum import Enum
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 
 
-@dataclass
-class CustomerLicense:
-    RESOURCES = "resources"
+class CustomerLicense(Enum):
+    RESOURCE = "resource"
     DEVELOPER = "developer"
 
 
-@dataclass
-class CustomerSubscription:
-    IAC = "IaC"
+class CustomerSubscription(Enum):
+    IAC = "IAC"
     SCA = "SCA"
-    SECRETS = "Secrets"
+    SECRETS = "SECRETS"
 
 
 SubscriptionCategoryMapping = {
