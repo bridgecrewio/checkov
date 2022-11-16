@@ -169,11 +169,10 @@ def omit_secret_value_from_definitions(definitions: Dict[str, DictNode],
         """
     found_secrets = False
     censored_definitions = definitions
-    for file in definitions:
-        for i, resource in enumerate(definitions[file].get('resource', [])):
+    for file, definition in definitions.items():
+        for i, resource in enumerate(definition.get('resource', [])):
             for resource_type in [r_type for r_type in resource if r_type in resource_attributes_to_omit]:
-                for resource_name in resource[resource_type]:
-                    resource_config = resource[resource_type][resource_name]
+                for resource_name, resource_config in resource[resource_type].items():
                     for attribute in [attribute for attribute in resource_config if
                                       attribute == resource_attributes_to_omit[resource_type]]:
                         if not found_secrets:
