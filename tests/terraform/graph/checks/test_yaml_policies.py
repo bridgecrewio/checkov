@@ -134,9 +134,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AutoScallingEnabledELB(self):
         self.go("AutoScallingEnabledELB")
 
-    def test_LBTargetGroupAttachmentEnabledLB(self):
-        self.go("LBTargetGroupAttachmentEnabledLB")
-
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 
