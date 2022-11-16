@@ -194,7 +194,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 # for certain blocks such as data and resource, the block name is composed from several parts.
                 # the purpose of the loop is to avoid not finding the node if the name has several parts
                 sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
-                for i in range(sub_values):
+                for i in range(len(sub_values)):
                     reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
                     if vertex.module_dependency:
                         dest_node_index = self._find_vertex_index_relative_to_path(
