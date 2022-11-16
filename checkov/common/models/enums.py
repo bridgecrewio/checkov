@@ -44,6 +44,6 @@ class ContextCategories(Enum):
 
 
 class ScanDataFormat(Enum):
-    TWISTCLI_FORMAT = 1
-    PLATFORM_FORMAT = 2
-    DEPENDENCY_TREE_FORMAT = 3
+    TWISTCLI = 1
+    PLATFORM = 2
+    DEPENDENCY_TREE = 3

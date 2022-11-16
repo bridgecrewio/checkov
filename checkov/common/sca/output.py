@@ -86,9 +86,9 @@ def _update_details_by_scan_data_format(
     details: dict[str, Any],
     vulnerability_details: dict[str, Any],
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI_FORMAT
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI
 ) -> None:
-    if scan_data_format in {ScanDataFormat.TWISTCLI_FORMAT, ScanDataFormat.DEPENDENCY_TREE_FORMAT}:
+    if scan_data_format in {ScanDataFormat.TWISTCLI, ScanDataFormat.DEPENDENCY_TREE}:
         lowest_fixed_version = UNFIXABLE_VERSION
         package_version = vulnerability_details["packageVersion"]
         fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
@@ -104,7 +104,7 @@ def _update_details_by_scan_data_format(
                 lowest_fixed_version = str(min(fixed_versions))
         details.update({"status": status, "lowest_fixed_version": lowest_fixed_version,
                         "fixed_versions": fixed_versions, "image_details": sca_details})
-    elif scan_data_format == ScanDataFormat.PLATFORM_FORMAT:
+    elif scan_data_format == ScanDataFormat.PLATFORM:
         status = vulnerability_details["status"]
         fix_version = vulnerability_details.get("cveStatus")
         details.update({"status": status, "fix_version": fix_version})
@@ -118,7 +118,7 @@ def create_report_cve_record(
     licenses: str,
     runner_filter: RunnerFilter | None = None,
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI_FORMAT
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -248,7 +248,7 @@ def add_to_reports_cves_and_packages(
     licenses_per_package_map: dict[str, list[str]],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI_FORMAT,
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
     vulnerable_packages = []
 
@@ -319,7 +319,7 @@ def add_to_report_sca_data(
 
     add_to_reports_cves_and_packages(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                      vulnerabilities, packages, licenses_per_package_map, sca_details, report_type,
-                                     ScanDataFormat.TWISTCLI_FORMAT if dependencies is None else ScanDataFormat.DEPENDENCY_TREE_FORMAT)
+                                     ScanDataFormat.TWISTCLI if dependencies is None else ScanDataFormat.DEPENDENCY_TREE)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
