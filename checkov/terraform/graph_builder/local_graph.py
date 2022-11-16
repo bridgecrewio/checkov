@@ -220,9 +220,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 )
                             except Exception as e:
                                 logging.warning(
-                                    f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
+                                    f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping", exc_info=True
                                 )
-                                logging.warning(e, stack_info=True)
                         else:
                             self._create_edge(origin_node_index, dest_node_index, attribute_key, cross_variable_edges)
                         break
@@ -276,7 +275,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         if cross_variable_edges:
-            if any(str(e) == str(edge) for e in self.edges):
+            if edge in self.edges:
                 return False
             edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
         self.edges.append(edge)
