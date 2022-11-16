@@ -25,6 +25,7 @@ from checkov.common.sca.commons import (
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
+from checkov.common.output.common import format_licenses_to_string
 
 if TYPE_CHECKING:
     from checkov.common.output.common import SCADetails
@@ -123,7 +124,7 @@ def create_report_cve_record(
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
     package_type = get_package_type(package_name, package_version, sca_details)
-    cve_id = vulnerability_details["id"].upper()
+    cve_id = vulnerability_details.get("id", vulnerability_details.get("cveId", '')).upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
     if severity == "moderate":
@@ -258,7 +259,7 @@ def add_to_reports_cves_and_packages(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             vulnerability_details=vulnerability,
-            licenses=", ".join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or "Unknown",
+            licenses=format_licenses_to_string(licenses_per_package_map[get_package_alias(package_name, package_version)]),
             runner_filter=runner_filter,
             sca_details=sca_details,
             scan_data_format=scan_data_format,
@@ -292,10 +293,7 @@ def add_to_reports_cves_and_packages(
                     vulnerability_details={
                         "package_name": package["name"],
                         "package_version": package["version"],
-                        "licenses": ", ".join(
-                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]
-                        )
-                        or "Unknown",
+                        "licenses": format_licenses_to_string(licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
                         "package_type": get_package_type(package["name"], package["version"], sca_details),
                     },
                 )

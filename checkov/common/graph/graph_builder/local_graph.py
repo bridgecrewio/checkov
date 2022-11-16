@@ -70,7 +70,7 @@ class LocalGraph(Generic[_Block]):
 
     @staticmethod
     @abstractmethod
-    def update_vertex_config(vertex: _Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(vertex: _Block, changed_attributes: Union[List[str], Dict[str, Any]], has_dynamic_blocks: bool = False) -> None:
         pass
 
     @abstractmethod
