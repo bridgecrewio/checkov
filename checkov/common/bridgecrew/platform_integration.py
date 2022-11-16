@@ -650,7 +650,7 @@ class BcPlatformIntegration:
         for filter_name, filter_value in policy_filter.items():
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
-                logging.warning(f"Available filter names: {'. '.join(valid_filters.keys())}")
+                logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
                 return False
             elif filter_name == 'policy.subtype' and filter_value != 'build':
                 logging.warning(f"Filter value not allowed: {filter_value}")
