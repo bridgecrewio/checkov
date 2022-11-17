@@ -26,7 +26,7 @@ definition:
       operator:  equals
       cond_type: attribute
       attribute: container_access_type
-      value: "blob"
+      value: "private"
     - cond_type: filter
       attribute: resource_type
       value:
