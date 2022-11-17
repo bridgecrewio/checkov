@@ -21,6 +21,8 @@ class Block:
         "name",
         "path",
         "source",
+        "has_dynamic_block",
+        "dynamic_attributes",
     )
 
     def __init__(
@@ -32,6 +34,8 @@ class Block:
             attributes: Dict[str, Any],
             id: str = "",
             source: str = "",
+            has_dynamic_block: bool = False,
+            dynamic_attributes: dict[str, Any] | None = None,
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -50,12 +54,14 @@ class Block:
         self.changed_attributes: Dict[str, List[Any]] = {}
         self.breadcrumbs: Dict[str, List[Dict[str, Any]]] = {}
 
-        attributes_to_add = self._extract_inner_attributes()
+        attributes_to_add = self._extract_inner_attributes(has_dynamic_block, dynamic_attributes)
         self.attributes.update(attributes_to_add)
 
-    def _extract_inner_attributes(self) -> Dict[str, Any]:
+    def _extract_inner_attributes(self, has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None) -> Dict[str, Any]:
         attributes_to_add = {}
         for attribute_key, attribute_value in self.attributes.items():
+            if has_dynamic_block and attribute_key in dynamic_attributes.keys():  # type: ignore
+                continue
             if isinstance(attribute_value, dict) or (
                 isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
             ):
@@ -79,8 +85,8 @@ class Block:
         self.get_origin_attributes(base_attributes)
 
         if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency  # type:ignore[attr-defined]
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num  # type:ignore[attr-defined]
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
 
         if self.changed_attributes:
             # add changed attributes only for calculating the hash

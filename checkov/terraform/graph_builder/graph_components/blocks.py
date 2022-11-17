@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Union, Dict, Any, List, Optional, Set
 import dpath.util
@@ -16,10 +18,12 @@ class TerraformBlock(Block):
         "module_dependency",
         "module_dependency_num",
         "source_module",
-        "has_dynamic_block")
+        "has_dynamic_block",
+        "dynamic_attributes",
+    )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
-                 id: str = "", source: str = "", has_dynamic_block: bool = False) -> None:
+                 id: str = "", source: str = "", has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None,) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -27,7 +31,7 @@ class TerraformBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source)
+        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source, has_dynamic_block, dynamic_attributes)
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:
@@ -51,7 +55,7 @@ class TerraformBlock(Block):
             return self._extract_dynamic_changed_attributes(attribute_key)
         return super().extract_additional_changed_attributes(attribute_key)
 
-    def _extract_dynamic_changed_attributes(self, dynamic_attribute_key: str) -> List[str]:
+    def _extract_dynamic_changed_attributes(self, dynamic_attribute_key: str, nesting_prefix='') -> List[str]:
         dynamic_changed_attributes = []
         dynamic_attribute_key_parts = dynamic_attribute_key.split('.')
         try:
@@ -65,26 +69,33 @@ class TerraformBlock(Block):
                 if dpath.search(self.attributes, dynamic_content_path):
                     dynamic_block_content = dpath.get(self.attributes, dynamic_content_path)
                     for key, value in dynamic_block_content.items():
-                        dynamic_ref = f'{dynamic_block_name}.value'
-                        key_path = f"{dynamic_block_name}.{key}"
-                        self._collect_dynamic_dependent_keys(dynamic_ref, value, key_path, dynamic_changed_attributes)
+                        key_path = ".".join(filter(None, [nesting_prefix, dynamic_block_name, key]))
+                        self._collect_dynamic_dependent_keys(dynamic_block_name, value, key_path, dynamic_content_path, dynamic_changed_attributes)
                 dynamic_attribute_key_parts = remainder_key_parts
             return dynamic_changed_attributes
         except ValueError:
             return dynamic_changed_attributes
 
-    @staticmethod
-    def _collect_dynamic_dependent_keys(dynamic_ref: str, value: Union[str, List], key_path: str,
-                                        dynamic_changed_attributes: List[str]) -> None:
+    def _collect_dynamic_dependent_keys(self, dynamic_block_name: str, value: Union[str, List], key_path: str,
+                                        dynamic_content_path: List[str], dynamic_changed_attributes: List[str]) -> None:
         if isinstance(value, str):
+            dynamic_ref = f'{dynamic_block_name}.value'
             interpolation_matches = re.findall(INTERPOLATION_EXPR, value)
             for match in interpolation_matches:
                 if dynamic_ref in match:
                     dynamic_changed_attributes.append(key_path)
         elif isinstance(value, list):
             for idx, sub_value in enumerate(value):
-                TerraformBlock._collect_dynamic_dependent_keys(
-                    dynamic_ref, sub_value, f'{key_path}.{idx}', dynamic_changed_attributes)
+                self._collect_dynamic_dependent_keys(
+                    dynamic_block_name, sub_value, f'{key_path}.{idx}', dynamic_content_path, dynamic_changed_attributes)
+        elif isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                if isinstance(sub_value, dict) and 'content' in sub_value.keys() and 'for_each' in sub_value.keys():
+                    nested_dynamic_block_key_path = f'{".".join(dynamic_content_path)}.dynamic.{sub_key}.for_each'
+                    dynamic_changed_attributes.extend(self._extract_dynamic_changed_attributes(nested_dynamic_block_key_path, nesting_prefix=dynamic_block_name))
+                else:
+                    self._collect_dynamic_dependent_keys(
+                        dynamic_block_name, sub_value, f'{key_path}.{sub_key}', dynamic_content_path, dynamic_changed_attributes)
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """

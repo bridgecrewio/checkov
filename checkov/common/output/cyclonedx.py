@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
+from checkov.common.output.common import format_string_to_licenses
 
 from cyclonedx.model import (
     XsUri,
@@ -221,7 +222,7 @@ class CycloneDX:
         licenses = resource.vulnerability_details.get("licenses")
         if licenses:
             license_choices = [
-                LicenseChoice(license_=License(license_name=license)) for license in licenses.split(", ")
+                LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
             ]
 
         purl = PackageURL(
