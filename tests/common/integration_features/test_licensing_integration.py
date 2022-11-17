@@ -103,7 +103,8 @@ class TestLicensingIntegration(unittest.TestCase):
 
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.RESOURCE.value
+                'mode': CustomerLicense.RESOURCE.value,
+                'git_clone_enabled': True  # value does not matter for this test
             }
         }
 
@@ -130,7 +131,8 @@ class TestLicensingIntegration(unittest.TestCase):
 
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.RESOURCE.value
+                'mode': CustomerLicense.RESOURCE.value,
+                'git_clone_enabled': True  # value does not matter for this test
             }
         }
 
@@ -195,7 +197,12 @@ class TestLicensingIntegration(unittest.TestCase):
 
         licensing_integration.open_source_only = False
         licensing_integration.licensing_type = CustomerLicense.RESOURCE
-        self.assertTrue(licensing_integration.include_new_secrets())  # TODO verify
+        licensing_integration.git_clone_enabled = True
+        self.assertTrue(licensing_integration.include_new_secrets())
+        self.assertTrue(licensing_integration.include_old_secrets())
+
+        licensing_integration.git_clone_enabled = False
+        self.assertFalse(licensing_integration.include_new_secrets())
         self.assertTrue(licensing_integration.include_old_secrets())
 
         licensing_integration.licensing_type = CustomerLicense.DEVELOPER
