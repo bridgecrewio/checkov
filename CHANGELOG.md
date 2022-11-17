@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.72...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.75...HEAD)
+
+## [2.2.75](https://github.com/bridgecrewio/checkov/compare/2.2.72...2.2.75) - 2022-11-17
+
+### Feature
+
+- **github:** add output-file-path flag to checkov-action - [#3897](https://github.com/bridgecrewio/checkov/pull/3897)
+
+### Bug Fix
+
+- **terraform:** Dynamic blocks - added support for lookup null/true/false values - [#3893](https://github.com/bridgecrewio/checkov/pull/3893)
+
+### Platform
+
+- **sca:** added dependency tree format  - [#3892](https://github.com/bridgecrewio/checkov/pull/3892)
 
 ## [2.2.72](https://github.com/bridgecrewio/checkov/compare/2.2.65...2.2.72) - 2022-11-16
 
