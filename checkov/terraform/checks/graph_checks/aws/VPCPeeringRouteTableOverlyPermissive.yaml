@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_TEST_VPC_2"
+  id: "CKV2_AWS_44"
   name: "Ensure AWS route table with VPC peering does not contain routes overly permissive to all traffic"
   category: "NETWORKING"
 definition:

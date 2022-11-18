@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_TEST_2"
+  id: "CKV2_AWS_42"
   name: "Ensure AWS CloudFront distribution uses custom SSL certificate"
   category: "NETWORKING"
 definition:
