@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def report_contributor_metrics(repository: str, source: str, bc_integration: BcPlatformIntegration) -> None:  # ignore: type
-    logging.debug(f"Attempting to get log history for repository {repository}")
+    logging.debug(f"Attempting to get log history for repository {repository} under source {source}")
     request_body = parse_gitlog(repository, source)
     if request_body:
         response = request_wrapper(
