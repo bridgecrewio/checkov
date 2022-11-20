@@ -502,20 +502,27 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    def update_nested_modules_address(self):
+    @staticmethod
+    def get_current_address(vertex: TerraformBlock, address_prefix: str = ''):
+        if vertex.block_type == BlockType.MODULE:
+            return address_prefix + f"{vertex.block_type}.{vertex.name}"
+        else:
+            return address_prefix + vertex.name
+
+    def update_nested_modules_address(self) -> None:
         for vertex in self.vertices:
             if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
             if not source_module:
+                address = self.get_current_address(vertex)
+                vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
                 continue
-            address = ''
+            address_prefix = ''
             for module in source_module:
-                address += f"{module.get('type')}.{module.get('name')}."
-            if vertex.block_type == BlockType.MODULE:
-                address += f"{vertex.block_type}.{vertex.name}"
-            else:
-                address += vertex.name
+                address_prefix += f"{module.get('type')}.{module.get('name')}."
+
+            address = self.get_current_address(vertex, address_prefix)
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
