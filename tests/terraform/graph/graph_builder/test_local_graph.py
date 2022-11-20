@@ -329,7 +329,15 @@ class TestLocalGraph(TestCase):
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
+        # module
         assert local_graph.vertices[0].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module'
+        # inner module
         assert local_graph.vertices[5].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
+        # inner resource
         assert local_graph.vertices[12].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'
-
+        # variable
+        assert local_graph.vertices[7].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module'
+        # inner local
+        assert local_graph.vertices[11].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
+        # inner variable
+        assert local_graph.vertices[11].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
