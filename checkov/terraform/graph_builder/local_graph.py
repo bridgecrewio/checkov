@@ -502,51 +502,68 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    @staticmethod
-    def get_current_block_address(vertex: TerraformBlock) -> str:
-        current_address = ''
-        if vertex.block_type == BlockType.RESOURCE:
-            current_address = vertex.name
-        if vertex.block_type == BlockType.MODULE:
-            current_address = f'{BlockType.MODULE}.{vertex.name}'
-        return current_address
+    # @staticmethod
+    # def get_current_block_address(vertex: TerraformBlock) -> str:
+    #     current_address = ''
+    #     if vertex.block_type == BlockType.RESOURCE:
+    #         current_address = vertex.name
+    #     if vertex.block_type == BlockType.MODULE:
+    #         current_address = f'{BlockType.MODULE}.{vertex.name}'
+    #     return current_address
+    #
+    # def update_nested_module_address_recursive(self, edge: Edge) -> str:
+    #     vertex = self.vertices[edge.origin]
+    #     if vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS):
+    #         return vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+    #
+    #     current_address = TerraformLocalGraph.get_current_block_address(vertex)
+    #
+    #     new_edge = None
+    #     for cur_edge in self.edges:
+    #         if cur_edge.origin == edge.dest:
+    #             new_edge = cur_edge
+    #             break
+    #
+    #     # This is the first module in the chain
+    #     if new_edge is None:
+    #         current_address = f'{vertex.block_type}.{vertex.name}'
+    #         self.vertices[edge.origin].attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = current_address
+    #         return current_address
+    #
+    #     nested_address = self.update_nested_module_address_recursive(new_edge)
+    #     if current_address:
+    #         address = f'{nested_address}.{current_address}'
+    #         vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
+    #         return address
+    #     vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = nested_address
+    #     return nested_address
+    #
+    # def update_nested_modules_address_old(self) -> None:
+    #     relevant_start_edges = set()
+    #     for edge in self.edges:
+    #         if self.vertices[edge.origin].block_type != BlockType.RESOURCE:
+    #             continue
+    #         relevant_start_edges.add(edge)
+    #
+    #     for relevant_start_edge in relevant_start_edges:
+    #         self.update_nested_module_address_recursive(relevant_start_edge)
 
-    def update_nested_module_address_recursive(self, edge: Edge) -> str:
-        vertex = self.vertices[edge.origin]
-        if vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS):
-            return vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-
-        current_address = TerraformLocalGraph.get_current_block_address(vertex)
-
-        new_edge = None
-        for cur_edge in self.edges:
-            if cur_edge.origin == edge.dest:
-                new_edge = cur_edge
-                break
-
-        # This is the first module in the chain
-        if new_edge is None:
-            current_address = f'{vertex.block_type}.{vertex.name}'
-            self.vertices[edge.origin].attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = current_address
-            return current_address
-
-        nested_address = self.update_nested_module_address_recursive(new_edge)
-        if current_address:
-            address = f'{nested_address}.{current_address}'
-            vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
-            return address
-        vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = nested_address
-        return nested_address
-
-    def update_nested_modules_address(self) -> None:
-        relevant_start_edges = set()
-        for edge in self.edges:
-            if self.vertices[edge.origin].block_type != BlockType.RESOURCE:
+    def update_nested_modules_address(self):
+        for vertex in self.vertices:
+            if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
                 continue
-            relevant_start_edges.add(edge)
+            source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
+            if not source_module:
+                continue
+            address = ''
+            for module in source_module:
+                address += f"{module.get('type')}.{module.get('name')}."
+            if vertex.block_type == BlockType.MODULE:
+                address += f"{vertex.block_type}.{vertex.name}"
+            else:
+                address += vertex.name
+            vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-        for relevant_start_edge in relevant_start_edges:
-            self.update_nested_module_address_recursive(relevant_start_edge)
 
 
 def to_list(data):
