@@ -20,6 +20,7 @@ from detect_secrets.plugins.base import BasePlugin
 from detect_secrets.util.filetype import FileType
 from detect_secrets.util.filetype import determine_file_type
 
+from checkov.secrets.parsers.terraform.multiline_parser import terraform_multiline_parser
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 from checkov.common.parsers.multiline_parser import BaseMultiLineParser
 from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
@@ -93,6 +94,30 @@ QUOTES_REQUIRED_FOLLOWED_BY_COLON_VALUE_SECRET_REGEX = re.compile(
     flags=re.IGNORECASE,
 )
 
+FOLLOWED_BY_EQUAL_VALUE_KEYWORD_REGEX = re.compile(
+    # e.g. var = MY_PASSWORD_123
+    r'{whitespace}({key})?={whitespace}({quote}?){words}{denylist}({closing})?(\3)'.format(
+        key=KEY,
+        whitespace=OPTIONAL_WHITESPACE,
+        quote=QUOTE,
+        words=AFFIX_REGEX,
+        denylist=DENY_LIST_REGEX2,
+        closing=CLOSING,
+    ),
+    flags=re.IGNORECASE,
+)
+
+FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
+    # e.g. var = Zmlyc3Rfc2VjcmV0X2hlcmVfd2hvYV9tdWx0aWxsaW5lX3Nob3VsZF93b3JrXzE==
+    r'{whitespace}({key})?={whitespace}({quote}?)({secret})(\3)'.format(
+        key=KEY,
+        whitespace=OPTIONAL_WHITESPACE,
+        quote=QUOTE,
+        secret=SECRET,
+    ),
+    flags=re.IGNORECASE,
+)
+
 #  if the current regex is not enough, can add more regexes to check
 
 YML_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP = {
@@ -111,20 +136,30 @@ JSON_PAIR_VALUE_SECRET_REGEX_TO_GROUP = {
     QUOTES_REQUIRED_FOLLOWED_BY_COLON_VALUE_SECRET_REGEX: 4,
 }
 
+TERRAFORM_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_VALUE_KEYWORD_REGEX: 4,
+}
+
+TERRAFORM_PAIR_VALUE_SECRET_REGEX_TO_GROUP = {
+    FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX: 4,
+}
 
 REGEX_VALUE_KEYWORD_BY_FILETYPE = {
     FileType.YAML: YML_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP,
     FileType.JSON: JSON_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP,
+    FileType.TERRAFORM: TERRAFORM_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP,
 }
 
 REGEX_VALUE_SECRET_BY_FILETYPE = {
     FileType.YAML: YML_PAIR_VALUE_SECRET_REGEX_TO_GROUP,
     FileType.JSON: JSON_PAIR_VALUE_SECRET_REGEX_TO_GROUP,
+    FileType.TERRAFORM: TERRAFORM_PAIR_VALUE_SECRET_REGEX_TO_GROUP,
 }
 
 MULTILINE_PARSERS = {
     FileType.YAML: yml_multiline_parser,
     FileType.JSON: json_multiline_parser,
+    FileType.TERRAFORM: terraform_multiline_parser,
 }
 
 
