@@ -508,7 +508,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if vertex.block_type == BlockType.RESOURCE:
             current_address = vertex.name
         if vertex.block_type == BlockType.MODULE:
-            current_address = f'module.{vertex.name}'
+            current_address = f'{BlockType.MODULE}.{vertex.name}'
         return current_address
 
     def update_nested_module_address_recursive(self, edge: Edge) -> str:
@@ -526,7 +526,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         # This is the first module in the chain
         if new_edge is None:
-            current_address = f'{self.vertices[edge.origin].block_type}.{self.vertices[edge.origin].name}'
+            current_address = f'{vertex.block_type}.{vertex.name}'
             self.vertices[edge.origin].attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = current_address
             return current_address
 
