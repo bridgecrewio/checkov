@@ -147,7 +147,6 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel

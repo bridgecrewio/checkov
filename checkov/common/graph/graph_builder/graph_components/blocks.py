@@ -21,6 +21,8 @@ class Block:
         "name",
         "path",
         "source",
+        "has_dynamic_block",
+        "dynamic_attributes",
     )
 
     def __init__(
@@ -32,6 +34,8 @@ class Block:
             attributes: Dict[str, Any],
             id: str = "",
             source: str = "",
+            has_dynamic_block: bool = False,
+            dynamic_attributes: dict[str, Any] | None = None,
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -50,12 +54,14 @@ class Block:
         self.changed_attributes: Dict[str, List[Any]] = {}
         self.breadcrumbs: Dict[str, List[Dict[str, Any]]] = {}
 
-        attributes_to_add = self._extract_inner_attributes()
+        attributes_to_add = self._extract_inner_attributes(has_dynamic_block, dynamic_attributes)
         self.attributes.update(attributes_to_add)
 
-    def _extract_inner_attributes(self) -> Dict[str, Any]:
+    def _extract_inner_attributes(self, has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None) -> Dict[str, Any]:
         attributes_to_add = {}
         for attribute_key, attribute_value in self.attributes.items():
+            if has_dynamic_block and attribute_key in dynamic_attributes.keys():  # type: ignore
+                continue
             if isinstance(attribute_value, dict) or (
                 isinstance(attribute_value, list) and len(attribute_value) > 0 and isinstance(attribute_value[0], dict)
             ):
@@ -79,8 +85,8 @@ class Block:
         self.get_origin_attributes(base_attributes)
 
         if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency  # type:ignore[attr-defined]
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num  # type:ignore[attr-defined]
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
+            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
 
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
@@ -157,6 +163,7 @@ class Block:
         for i in range(len(attribute_key_parts)):
             key = join_trimmed_strings(char_to_join=".", str_lst=attribute_key_parts, num_to_trim=i)
             if key.find(".") > -1:
+                additional_changed_attributes = self.extract_additional_changed_attributes(key)
                 self.attributes[key] = attribute_value
                 end_key_part = attribute_key_parts[len(attribute_key_parts) - 1 - i]
                 if transform_step and end_key_part in ("1", "2"):
@@ -165,6 +172,9 @@ class Block:
                 attribute_value = {end_key_part: attribute_value}
                 if self._should_set_changed_attributes(change_origin_id, attribute_at_dest):
                     self.changed_attributes[key] = previous_breadcrumbs
+                    if additional_changed_attributes:
+                        for changed_attribute in additional_changed_attributes:
+                            self.changed_attributes[changed_attribute] = previous_breadcrumbs
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any
@@ -207,6 +217,15 @@ class Block:
         change_origin_id: int | None, previous_breadcrumbs: list[BreadcrumbMetadata], attribute_at_dest: str | None
     ) -> bool:
         return not previous_breadcrumbs or previous_breadcrumbs[-1].vertex_id != change_origin_id
+
+    def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
+        """
+        override in case of a special case where additional attributes are needed to be tracked included in self.changed_attributes
+        and self.breadcrumbs, such as terraform dynamic blocks
+        :param attribute_key: JSONPath notation of an attribute key that is used for extraction
+        :return: list of the additional attributes, in JSONPath notation
+        """
+        return []
 
     @staticmethod
     def _should_set_changed_attributes(change_origin_id: int | None, attribute_at_dest: str | None) -> bool:

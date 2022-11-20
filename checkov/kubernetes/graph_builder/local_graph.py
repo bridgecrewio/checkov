@@ -151,13 +151,13 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
 
     def update_vertices_configs(self) -> None:
         # not used
-        pass
+        return None
 
     @staticmethod
-    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any]) -> None:
+    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False) -> None:
         # not used
-        pass
+        return None
 
     def get_resources_types_in_graph(self) -> list[str]:
         # not used
-        pass
+        return []
