@@ -330,7 +330,6 @@ class TestLocalGraph(TestCase):
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
         # inner module
-        assert local_graph.vertices[5].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
+        assert local_graph.vertices[3].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
         # inner resource
-        assert local_graph.vertices[12].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'
-
+        assert local_graph.vertices[8].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'
