@@ -12,6 +12,7 @@ resource "kubernetes_pod_v1" "test" {
         name  = "SOME_NAME"
         value = "some_value"
       }
+      # name1 & value1 are not valid arguments
       env {
         value  = "Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE"
         name = "TEST_PASSWORD_1"

@@ -21,6 +21,7 @@ from detect_secrets.util.filetype import FileType
 from detect_secrets.util.filetype import determine_file_type
 
 from checkov.secrets.parsers.terraform.multiline_parser import terraform_multiline_parser
+from checkov.secrets.plugins.ignore_secret import ignore_secret
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 from checkov.common.parsers.multiline_parser import BaseMultiLineParser
 from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
@@ -157,9 +158,17 @@ REGEX_VALUE_SECRET_BY_FILETYPE = {
 }
 
 MULTILINE_PARSERS = {
-    FileType.YAML: yml_multiline_parser,
-    FileType.JSON: json_multiline_parser,
-    FileType.TERRAFORM: terraform_multiline_parser,
+    FileType.YAML: (
+        (FileType.YAML, yml_multiline_parser),
+    ),
+    FileType.JSON: (
+        (FileType.JSON, json_multiline_parser),
+    ),
+    FileType.TERRAFORM: (
+        (FileType.TERRAFORM, terraform_multiline_parser),
+        (FileType.JSON, json_multiline_parser),
+        (FileType.YAML, yml_multiline_parser),
+    ),
 }
 
 
@@ -186,37 +195,54 @@ class EntropyKeywordCombinator(BasePlugin):
     ) -> set[PotentialSecret]:
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
         filetype = determine_file_type(filename)
-        multiline_parser = MULTILINE_PARSERS.get(filetype)
+        multiline_parsers = MULTILINE_PARSERS.get(filetype)
 
         if len(line) <= MAX_LINE_LENGTH:
             if is_iac:
                 # classic key-value pair
                 keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
                 if keyword_on_key:
-                    return self.detect_secret(
+                    potential_secrets = self.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
                         line=line,
                         line_number=line_number,
                         kwargs=kwargs
                     )
+                    if potential_secrets and ignore_secret(
+                        file_type=filetype,
+                        context=context,
+                        raw_context=raw_context,
+                    ):
+                        # to reduce false-positives we check the context of the finding
+                        return set()
+
+                    return potential_secrets
 
                 # not so classic key-value pair, from multiline, that is only in an array format.
                 # The scan is one-way backwards, so no duplicates expected.
-                elif multiline_parser:
-                    value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(filetype)
-                    secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(filetype)
-                    return self.analyze_multiline(
-                        filename=filename,
-                        line=line,
-                        multiline_parser=multiline_parser,
-                        line_number=line_number,
-                        context=context,
-                        raw_context=raw_context,
-                        value_pattern=value_keyword_regex_to_group,
-                        secret_pattern=secret_keyword_regex_to_group,
-                        kwargs=kwargs
-                    )
+                elif multiline_parsers:
+                    # iterate over multiple parser and their related file type.
+                    # this is needed for file types, which embed other file type parser, ex Terraform with heredoc
+                    for parser_file_type, multiline_parser in multiline_parsers:
+                        value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(parser_file_type)
+                        secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(parser_file_type)
+
+                        potential_secrets = self.analyze_multiline(
+                            filename=filename,
+                            line=line,
+                            multiline_parser=multiline_parser,
+                            line_number=line_number,
+                            context=context,
+                            raw_context=raw_context,
+                            value_pattern=value_keyword_regex_to_group,
+                            secret_pattern=secret_keyword_regex_to_group,
+                            kwargs=kwargs
+                        )
+
+                        if potential_secrets:
+                            # return a possible secret, otherwise check with next parser
+                            return potential_secrets
             else:
                 return self.detect_secret(
                     scanners=self.high_entropy_scanners,
