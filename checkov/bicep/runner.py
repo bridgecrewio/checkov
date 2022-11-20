@@ -40,10 +40,10 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
-class Runner(ImageReferencerMixin, BaseRunner[BicepGraphManager]):
+class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
     check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
-    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
+    block_type_registries: 'dict[Literal["parameters", "resources"], BaseCheckRegistry]' = {  # noqa: CCE003  # a static attribute
         "parameters": param_registry,
         "resources": resource_registry,
     }
@@ -144,7 +144,9 @@ class Runner(ImageReferencerMixin, BaseRunner[BicepGraphManager]):
     def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
-    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None) -> None:
+    def add_python_check_results(
+        self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None
+    ) -> None:
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
@@ -179,9 +181,13 @@ class Runner(ImageReferencerMixin, BaseRunner[BicepGraphManager]):
                                 elif check.bc_id and check.bc_id in suppressions.keys():
                                     check_result = suppressions[check.bc_id]
 
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    file_code_lines[start_line - 1 : end_line],
-                                                                                    conf)
+                                censored_code_lines = omit_secret_value_from_checks(
+                                    check=check,
+                                    check_result=check_result,
+                                    entity_code_lines=file_code_lines[start_line - 1 : end_line],
+                                    entity_config=conf,
+                                )
+
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
@@ -257,7 +263,10 @@ class Runner(ImageReferencerMixin, BaseRunner[BicepGraphManager]):
                 report.add_record(record=record)
 
     def extract_images(
-        self, graph_connector: DiGraph | None = None, resources: list[dict[str, Any]] | None = None
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
     ) -> list[Image]:
         if not graph_connector:
             # should not happen
