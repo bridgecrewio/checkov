@@ -6,6 +6,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_manager import TerraformGraphManager
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.parser import external_modules_download_path
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -275,3 +276,12 @@ class TestGraphBuilder(TestCase):
         self.assertEqual(len(local_graph.edges), 6)
         self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
                         expected_label="[cross-variable] bucket")
+
+    def test_nested_modules_address_attribute(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/nested_modules_address'))
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+        module = self.get_vertex_by_name_and_type(local_graph, BlockType.MODULE, 'inner_s3_module')
+        assert module.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
+        resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket_public_access_block.var_bucket')
+        assert resource.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'

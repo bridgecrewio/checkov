@@ -322,14 +322,3 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
-
-    def test_nested_modules_address_attribute(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/nested_modules_address'))
-        hcl_config_parser = Parser()
-        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-        # inner module
-        assert local_graph.vertices[3].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
-        # inner resource
-        assert local_graph.vertices[8].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'
