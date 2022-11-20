@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import copy
 import itertools
 import logging
 import re
 
 # secret categories for use as constants
-from typing import Any, TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 
@@ -13,6 +14,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.typing import _CheckResult, ResourceAttributesToOmit
     from pycep.typing import ParameterAttributes, ResourceAttributes
+    from checkov.common.parsers.node import DictNode
 
 
 AWS = 'aws'
@@ -157,6 +159,33 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
         censored_code_lines.append((idx, censored_line))
 
     return censored_code_lines
+
+
+def omit_secret_value_from_definitions(definitions: Dict[str, DictNode],
+                                       resource_attributes_to_omit: ResourceAttributesToOmit) -> Dict[str, DictNode]:
+    """
+        Mask secret values from definitions, as a way to mask these values in the created graph.
+        Should be used only in runners that have the resource_attributes_to_omit mapping
+        """
+    found_secrets = False
+    censored_definitions = definitions
+    for file, definition in definitions.items():
+        for i, resource in enumerate(definition.get('resource', [])):
+            for resource_type in [r_type for r_type in resource if r_type in resource_attributes_to_omit]:
+                for resource_name, resource_config in resource[resource_type].items():
+                    for attribute in [attribute for attribute in resource_config if
+                                      attribute == resource_attributes_to_omit[resource_type]]:
+                        if not found_secrets:
+                            found_secrets = True
+                            # The values in self.definitions shouldn't be changed so that checks' results
+                            # of checks that rely on the definitions values are not affected.
+                            # Hence, if secrets are found, we should censor them in a deep copy of self.definitions
+                            censored_definitions = copy.deepcopy(definitions)
+                        secret = resource_config[attribute][0]
+                        censored_value = omit_secret_value_from_line(secret, secret)
+                        censored_definitions[file]['resource'][i][resource_type][resource_name][attribute] = \
+                            [censored_value]
+    return censored_definitions
 
 
 def get_secrets_from_string(s: str, *categories: str) -> list[str]:
