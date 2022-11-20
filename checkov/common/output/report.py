@@ -6,9 +6,9 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
 from colorama import init
-from junit_xml import TestCase, TestSuite, to_xml_report_string  # type:ignore[import]
+from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
@@ -17,10 +17,15 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
-from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_cli_output
+
+if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
+    from checkov.sca_package_2.output import create_cli_output
+else:
+    from checkov.sca_package.output import create_cli_output
+
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -172,13 +177,13 @@ class Report:
         return checks_count == 0
 
     def print_console(
-        self,
-        is_quiet: bool = False,
-        is_compact: bool = False,
-        created_baseline_path: str | None = None,
-        baseline: Baseline | None = None,
-        use_bc_ids: bool = False,
-        summary_position: str = 'top'
+            self,
+            is_quiet: bool = False,
+            is_compact: bool = False,
+            created_baseline_path: str | None = None,
+            baseline: Baseline | None = None,
+            use_bc_ids: bool = False,
+            summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -199,7 +204,8 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
+                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
+                                                 self.skipped_checks)
         else:
             if not is_quiet:
                 for record in self.passed_checks:
@@ -263,9 +269,11 @@ class Report:
                 "help": {
                     "text": f'"{record.check_name}\nResource: {record.resource}"',
                 },
-                "helpUri": help_uri,
                 "defaultConfiguration": {"level": "error"},
             }
+            if help_uri:
+                rule["helpUri"] = help_uri
+
             if record.check_id not in ruleset:
                 ruleset.add(record.check_id)
                 rules.append(rule)
@@ -352,8 +360,8 @@ class Report:
             print(f"More details: \n {e}")
 
     @staticmethod
-    def get_junit_xml_string(ts: List[TestSuite]) -> str:
-        return cast(str, to_xml_report_string(ts))
+    def get_junit_xml_string(ts: list[TestSuite]) -> str:
+        return to_xml_report_string(ts)
 
     def print_failed_github_md(self, use_bc_ids: bool = False) -> str:
         result = []
@@ -375,7 +383,6 @@ class Report:
                 showindex=True,
             )
             output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
-            print(output_data)
             return output_data
         else:
             return "\n\n---\n\n"
@@ -541,6 +548,7 @@ class Report:
     def handle_skipped_checks(
             report: "Report", enriched_resources: Dict[str, Dict[str, Any]]
     ) -> "Report":
+        module_address_len = len("module.")
         skip_records = []
         for record in report.failed_checks:
             resource_skips = enriched_resources.get(record.resource, {}).get(
@@ -556,7 +564,7 @@ class Report:
                     report.add_record(record)
 
             if record.resource_address and record.resource_address.startswith("module."):
-                module_path = record.resource_address[0:record.resource_address.index('.', len("module.") + 1)]
+                module_path = record.resource_address[module_address_len:record.resource_address.index('.', module_address_len + 1)]
                 module_enrichments = enriched_resources.get(module_path, {})
                 for module_skip in module_enrichments.get("skipped_checks", []):
                     if record.check_id in module_skip["id"]:
@@ -576,6 +584,7 @@ def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.failed_checks.extend(report_to_merge.failed_checks)
     base_report.skipped_checks.extend(report_to_merge.skipped_checks)
     base_report.parsing_errors.extend(report_to_merge.parsing_errors)
+    base_report.image_cached_results.extend(report_to_merge.image_cached_results)
     base_report.resources.update(report_to_merge.resources)
     base_report.extra_resources.update(report_to_merge.extra_resources)
 

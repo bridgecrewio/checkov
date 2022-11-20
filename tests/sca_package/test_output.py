@@ -5,7 +5,7 @@ from typing import Any
 from packaging import version as packaging_version
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.output import (
@@ -16,6 +16,7 @@ from checkov.sca_package.output import (
     compare_cve_severity,
     CveCount,
 )
+
 
 def get_vulnerabilities_details() -> list[dict[str, Any]]:
     return [
@@ -114,12 +115,78 @@ def test_create_report_cve_record():
     assert record.resource == "requirements.txt.django"
     assert record.severity == Severities[BcSeverities.CRITICAL]
     assert record.short_description == "CVE-2019-19844 - django: 1.12"
+    assert record.vulnerability_details["status"] == "fixed in 3.0.1, 2.2.9, 1.11.27"
     assert record.vulnerability_details["lowest_fixed_version"] == "2.2.9"
     assert record.vulnerability_details["fixed_versions"] == [
         packaging_version.parse("3.0.1"),
         packaging_version.parse("2.2.9"),
     ]
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
+
+
+def test_create_report_cve_record_results_from_platform():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    vulnerability_details = {
+                "severity": "CRITICAL",
+                "riskFactors": "{\"Critical severity\":{},\"Attack vector: network\":{},\"Has fix\":{},\"Attack complexity: low\":{}}",
+                "id": "CVE-2019-19844",
+                "link": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
+                "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)",
+                "packageVersion": "1.2",
+                "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "packageName": "django",
+                "publishedDate": "2019-12-18T19:15:00Z",
+                "cvss": 9.8,
+                "status": "OPEN",
+                "cveStatus": "1.11.27",
+                "fileMetadataId": "d9f631f2-86b3-4d47-9b23-a2529c255392",
+                "ViolationResource": {
+                    "scannerType": "Twistcli",
+                    "customerName": "ipeleg",
+                    "status": "OPEN",
+                    "firstDetectionDate": None,
+                    "updatedDate": "2022-08-23T09:37:27.207Z",
+                    "resourceId": "/packages/requirements.txt",
+                    "violationId": "BC_VUL_2",
+                    "sourceId": "itai1357/terragoat1",
+                    "ticket": None,
+                    "metadataFixId": None,
+                    "originalResourceDefinition": None,
+                    "fixedResourceDefinition": None,
+                    "errorLine": None,
+                    "resourcePlanId": None,
+                    "errorLines": None,
+                    "variableCode": None,
+                    "variableFixCode": None,
+                    "resourceFixCode": None,
+                    "gitBlameMetadataId": None
+                },
+                "isRootPackage": None,
+                "packageId": "49d27c4c-68cc-4eeb-ab98-d40a11334fdf",
+                "causePackageId": "49d27c4c-68cc-4eeb-ab98-d40a11334fdf",
+            }
+
+    # when
+    record = create_report_cve_record(
+        rootless_file_path=rootless_file_path,
+        file_abs_path=file_abs_path,
+        check_class=check_class,
+        vulnerability_details=vulnerability_details,
+        licenses='OSI_BDS',
+        scan_data_format=ScanDataFormat.PLATFORM
+    )
+
+    # then
+
+    # in the case of scan_data_format=ScanDataFormat.FROM_PLATFORM we just have to make sure that 'status' and
+    # 'fix_version' are as expected, as the rest are the same as in default flow
+    # (can_data_format=ScanDataFormat.FROM_TWISTCLI)
+    assert "lowest_fixed_version" not in record.vulnerability_details
+    assert "fixed_versions" not in record.vulnerability_details
+    assert record.vulnerability_details["fix_version"] == '1.11.27'
 
 
 def test_create_report_cve_record_moderate_severity():

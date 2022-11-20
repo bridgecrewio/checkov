@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Any, Tuple, Dict, TYPE_CHECKING
+from abc import abstractmethod
+from typing import List, Any, Tuple, Dict, TYPE_CHECKING, Optional
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -25,10 +26,21 @@ class BaseComplexSolver(BaseSolver):
     def _get_negative_op(self, *args: Any) -> Any:
         return not self._get_operation(args)
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        all_vertices_resource_types = [
-            data for _, data in graph_connector.nodes(data=True) if self.resource_type_pred(data, self.resource_types)
-        ]
-        passed_vertices = [data for data in all_vertices_resource_types if self.get_operation(data)]
-        failed_vertices = [resource for resource in all_vertices_resource_types if resource not in passed_vertices]
-        return passed_vertices, failed_vertices
+    @abstractmethod
+    def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
+        raise NotImplementedError()
+
+    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+        passed_vertices = []
+        failed_vertices = []
+        unknown_vertices = []
+        for _, data in graph_connector.nodes(data=True):
+            if self.resource_type_pred(data, self.resource_types):
+                result = self.get_operation(data)
+                if result is None:
+                    unknown_vertices.append(data)
+                elif result:
+                    passed_vertices.append(data)
+                else:
+                    failed_vertices.append(data)
+        return passed_vertices, failed_vertices, unknown_vertices

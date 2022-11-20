@@ -34,6 +34,8 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
                 if not isinstance(rule_lst, list):
                     rule_lst = [rule_lst]
                 for sub_rule in rule_lst:
+                    if not isinstance(sub_rule, dict):
+                        return CheckResult.UNKNOWN
                     if not self.check_rule(sub_rule):
                         return CheckResult.FAILED
             return CheckResult.PASSED

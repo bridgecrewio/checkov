@@ -7,6 +7,7 @@ from pathlib import Path
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
@@ -321,6 +322,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self):
         registry.checks = self.orig_checks
+        get_graph_checks_registry("kubernetes").checks = []
 
 
 if __name__ == '__main__':

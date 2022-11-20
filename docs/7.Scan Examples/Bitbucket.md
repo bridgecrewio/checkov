@@ -298,4 +298,4 @@ Check: CKV_BITBUCKET_1: "Merge requests should require at least 2 approvals"
 
 ```
 
-To add more Bitbucket policies and configuration to be inspected take a look at [Github policy contribution guide](/docs/6.Contribution/Contribute%20New%20Bitbucket%20Policies.md)
+To add more Bitbucket policies and configuration to be inspected take a look at the [Bitbucket policy contribution guide](https://www.checkov.io/6.Contribution/Contribute%20New%20Bitbucket%20Policies.html)

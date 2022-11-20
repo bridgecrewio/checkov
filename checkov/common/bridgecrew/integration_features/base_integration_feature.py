@@ -21,14 +21,17 @@ class BaseIntegrationFeature(ABC):
     def is_valid(self) -> bool:
         raise NotImplementedError()
 
+    @abstractmethod
     def pre_scan(self) -> None:
         """Runs before any runners"""
         pass
 
+    @abstractmethod
     def pre_runner(self) -> None:
         """Runs before each runner"""
         pass
 
+    @abstractmethod
     def post_runner(self, scan_reports: Report) -> None:
         """Runs after each runner completes"""
         pass

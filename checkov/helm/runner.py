@@ -6,14 +6,13 @@ import logging
 import os
 import subprocess  # nosec
 import tempfile
-from typing import Any, Type
+import threading
+from typing import Any, Type, TYPE_CHECKING
 import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -23,25 +22,34 @@ from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout
 from checkov.runner_filter import RunnerFilter
 import signal
 
+if TYPE_CHECKING:
+    from checkov.kubernetes.graph_manager import KubernetesGraphManager
+
 
 class K8sHelmRunner(k8_runner):
     def __init__(
         self,
-        graph_class: Type[LocalGraph] = KubernetesLocalGraph,
+        graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
         source: str = "Kubernetes",
-        graph_manager: GraphManager | None = None,
+        graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
         db_connector = db_connector or NetworkxConnector()
 
         self.check_type = CheckType.HELM
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
-        self.chart_dir_and_meta = []
+        self.chart_dir_and_meta: list[tuple[str, dict[str, Any]]] = []
         self.pbar.turn_off_progress_bar()
 
-    def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
-            runner_filter: RunnerFilter | None = None, collect_skip_comments: bool = True) -> Report:
+    def run(
+        self,
+        root_folder: str | None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         report = Report(self.check_type)
 
@@ -52,7 +60,15 @@ class K8sHelmRunner(k8_runner):
                 registry.load_external_checks(directory)
         try:
             chart_results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
-            fix_report_paths(chart_results, root_folder)
+
+            if isinstance(chart_results, list):
+                helm_report = next(chart_result for chart_result in chart_results if chart_result.check_type == self.check_type)
+            else:
+                helm_report = chart_results
+
+            if root_folder is not None:
+                fix_report_paths(helm_report, root_folder)
+
             return chart_results
         except Exception:
             logging.warning(f"Failed to run Kubernetes runner on charts {self.chart_dir_and_meta}", exc_info=True)
@@ -63,12 +79,12 @@ class K8sHelmRunner(k8_runner):
             #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
             # shutil.move(target_dir, save_error_dir)
 
-            # TODO: Export helm dependancies for the chart we've extracted in chart_dependencies
+            # TODO: Export helm dependencies for the chart we've extracted in chart_dependencies
             return report
 
 
-class Runner(BaseRunner):
-    check_type = CheckType.HELM  # noqa: CCE003  # a static attribute
+class Runner(BaseRunner["KubernetesGraphManager"]):
+    check_type: str = CheckType.HELM  # noqa: CCE003  # a static attribute
     helm_command = 'helm'  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
 
@@ -77,7 +93,7 @@ class Runner(BaseRunner):
         self.file_names = ['Chart.yaml']
         self.target_folder_path = ''
         self.root_folder = ''
-        self.runner_filter = None
+        self.runner_filter: "RunnerFilter | None" = None
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -141,8 +157,9 @@ class Runner(BaseRunner):
                     os.makedirs(parent, exist_ok=True)
                     cur_source_file = source
                     cur_writer = open(os.path.join(target_dir, source), 'a')
-                cur_writer.write('---' + os.linesep)
-                cur_writer.write(s + os.linesep)
+                if cur_writer:
+                    cur_writer.write('---' + os.linesep)
+                    cur_writer.write(s + os.linesep)
 
                 last_line_dashes = False
             else:
@@ -209,13 +226,16 @@ class Runner(BaseRunner):
                 helm_command_args.append("--values")
                 helm_command_args.append(var)
 
-        signal.signal(signal.SIGALRM, handle_timeout)
-        signal.alarm(timeout)
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGALRM, handle_timeout)
+            signal.alarm(timeout)
+
         try:
             # --dependency-update needed to pull in deps before templating.
             proc = subprocess.Popen(helm_command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
-            signal.alarm(0)
+            if threading.current_thread() is threading.main_thread():
+                signal.alarm(0)
             if e:
                 logging.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
@@ -226,7 +246,8 @@ class Runner(BaseRunner):
             return o, chart_item
 
         except Exception as e:
-            signal.alarm(0)
+            if threading.current_thread() is threading.main_thread():
+                signal.alarm(0)
             if isinstance(e, TimeoutError):
                 logging.info(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. got timeout"
@@ -249,7 +270,11 @@ class Runner(BaseRunner):
         target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
         if not target_dir:
             return
+
         o, _ = Runner.get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
+        if o is None:
+            return
+
         try:
             Runner._parse_output(target_dir, o)
         except Exception:
@@ -262,14 +287,14 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _get_chart_dir_and_meta(
-        root_folder: str, files: list[str], runner_filter: RunnerFilter
+        root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> list[tuple[str, dict[str, Any]]]:
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
         chart_dir_and_meta = list(parallel_runner.run_function(
             lambda cd: (cd, Runner.parse_helm_chart_details(cd)), chart_directories))
         # remove parsing failures
-        chart_dir_and_meta = [chart_meta for chart_meta in chart_dir_and_meta if chart_meta[1]]
-        return chart_dir_and_meta
+        cleaned_chart_dir_and_meta = [(chart_dir, meta) for chart_dir, meta in chart_dir_and_meta if meta]
+        return cleaned_chart_dir_and_meta
 
     @staticmethod
     def _get_processed_chart_dir_and_meta(
@@ -281,12 +306,12 @@ class Runner(BaseRunner):
         return processed_chart_dir_and_meta
 
     def convert_helm_to_k8s(
-        self, root_folder: str, files: list[str], runner_filter: RunnerFilter
+        self, root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> list[tuple[Any, dict[str, Any]]]:
-        self.root_folder = root_folder
+        self.root_folder = root_folder or ""
         self.runner_filter = runner_filter
         self.target_folder_path = tempfile.mkdtemp()
-        chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, self.runner_filter)
+        chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, runner_filter)
 
         list(
             parallel_runner.run_function(
@@ -295,15 +320,21 @@ class Runner(BaseRunner):
                     root_folder=self.root_folder,
                     target_folder_path=self.target_folder_path,
                     helm_command=self.helm_command,
-                    runner_filter=self.runner_filter,
+                    runner_filter=runner_filter,
                 ),
                 chart_dir_and_meta,
             )
         )
         return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
-    def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
-            runner_filter: RunnerFilter | None = None, collect_skip_comments: bool = True) -> Report:
+    def run(
+        self,
+        root_folder: str | None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -316,7 +347,6 @@ class Runner(BaseRunner):
 def fix_report_paths(report: Report, tmp_dir: str) -> None:
     for check in itertools.chain(report.failed_checks, report.passed_checks):
         check.repo_file_path = check.repo_file_path.replace(tmp_dir, '', 1)
-        check.file_abs_path = check.file_abs_path.replace(tmp_dir, '', 1)
     report.resources = {r.replace(tmp_dir, '', 1) for r in report.resources}
 
 
@@ -347,7 +377,7 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[dict[str, str]]:
     return skipped
 
 
-def find_chart_directories(root_folder: str, files: list[str], excluded_paths: list[str]) -> list[str]:
+def find_chart_directories(root_folder: str | None, files: list[str] | None, excluded_paths: list[str]) -> list[str]:
     chart_directories = []
     if not excluded_paths:
         excluded_paths = []

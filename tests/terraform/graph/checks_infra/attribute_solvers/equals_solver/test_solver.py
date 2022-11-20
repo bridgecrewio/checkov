@@ -42,7 +42,7 @@ class TestEqualsSolver(TestBaseSolver):
     def test_equals_solver_unrendered(self):
         root_folder = '../../../resources/variable_rendering/unrendered'
         check_id = "UnrenderedVar"
-        should_pass = ['aws_s3_bucket.pass1', 'aws_s3_bucket.pass2', 'aws_s3_bucket.pass3']
+        should_pass = []
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 

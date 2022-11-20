@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Dict
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
@@ -13,6 +13,10 @@ _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
+_Resource: TypeAlias = str
+_Attribute: TypeAlias = str
+ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attribute]
+
 
 class _CheckResult(TypedDict, total=False):
     result: "CheckResult" | tuple["CheckResult", dict[str, Any]]
@@ -20,6 +24,7 @@ class _CheckResult(TypedDict, total=False):
     evaluated_keys: list[str]
     results_configuration: dict[str, Any] | None
     check: BaseCheck
+    entity: dict[str, Any]  # only exists for graph results
 
 
 class _SkippedCheck(TypedDict, total=False):
@@ -41,6 +46,7 @@ class _BaselineFailedChecks(TypedDict):
 
 class _ReducedScanReport(TypedDict):
     checks: _ReducedScanReportCheck
+    image_cached_results: list[dict[str, Any]]
 
 
 class _ReducedScanReportCheck(TypedDict):
@@ -53,6 +59,7 @@ class _CicdDetails(TypedDict, total=False):
     commit: str | None
     pr: str | None
     runId: str | None
+    scaCliScanId: str | None
 
 
 class _ExitCodeThresholds(TypedDict):

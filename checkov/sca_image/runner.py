@@ -6,9 +6,7 @@ import logging
 import os.path
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Optional, List, Union, Dict, Any
-
-import requests
+from typing import Optional, Union, Dict, Any
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
@@ -21,9 +19,10 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import parse_vulns_to_records, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
@@ -89,7 +88,12 @@ class Runner(PackageRunner):
         stdout, stderr = await process.communicate()
 
         # log output for debugging
-        logging.debug(stdout.decode())
+        try:
+            logging.debug(stdout.decode())
+        except UnicodeDecodeError:
+            logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
+                          f"file content is:\n{image_scanner.dockerfile_content}.\n"
+                          f"twistcli command is \'{command}\'", exc_info=True)
 
         exit_code = await process.wait()
 
@@ -110,7 +114,7 @@ class Runner(PackageRunner):
             "compressionMethod": "gzip",
             "id": image_id_sha
         }
-        response = requests.request(
+        response = request_wrapper(
             "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
             headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
         )
@@ -124,13 +128,13 @@ class Runner(PackageRunner):
 
     def run(
             self,
-            root_folder: Union[str, Path],
-            external_checks_dir: Optional[List[str]] = None,
-            files: Optional[List[str]] = None,
+            root_folder: str | Path | None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
             **kwargs: str
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -147,6 +151,9 @@ class Runner(PackageRunner):
             return report
         if files:
             self.pbar.initiate(len(files))
+            # 'root_folder' should contain the common prefix so the absolute full path can be shortened later
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
+
             for file in files:
                 self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(file, root_folder)})
                 self.iterate_image_files(file, report, runner_filter)
@@ -158,12 +165,14 @@ class Runner(PackageRunner):
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
-                    self.iterate_image_files(abs_fname, report, runner_filter)
+                    self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
         return report
 
-    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter) -> None:
+    def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter,
+                            root_folder: Union[str, Path, None] = None) -> None:
         """
         Get workflow file, and get the list of images from every relevant imagereferencer, and create a unified vulnrability report
+        :param root_folder: for CLI scans - the directory in which checkov runs
         :param abs_fname: file path to inspect
         :param report: unified report object
         :param runner_filter: filter for report
@@ -174,14 +183,21 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    if not strtobool(os.getenv('CHECKOV_PRESENT_CACHED_RESULTS', "False")):
+                    image_cached_result: Dict[str, Any] = image_scanner.get_scan_results_from_cache(
+                        f"image:{image.name}")
+
+                    image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname,
+                                                                                        image=image,
+                                                                                        image_cached_result=image_cached_result,
+                                                                                        root_folder=root_folder)
+                    if image_cached_report:
+                        report.image_cached_results.append(image_cached_report)
+
+                    if strtobool(os.getenv('CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR', "True")):
                         image_report = self.get_image_report(dockerfile_path=abs_fname, image=image,
-                                                             runner_filter=runner_filter)
+                                                             runner_filter=runner_filter,
+                                                             image_cached_result=image_cached_result)
                         merge_reports(report, image_report)
-                    else:
-                        image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname, image=image)
-                        if image_cached_report:
-                            report.image_cached_results.append(image_cached_report)
 
     def get_report_from_scan_result(self, result: Dict[str, Any], dockerfile_path: str, rootless_file_path: str,
                                     image_details: ImageDetails | None, runner_filter: RunnerFilter) -> Report:
@@ -190,7 +206,7 @@ class Runner(PackageRunner):
         packages = result.get("packages", [])
         license_statuses = get_license_statuses(packages)
 
-        parse_vulns_to_records(
+        add_to_report_sca_data(
             report=report,
             check_class=self._check_class,
             scanned_file_path=os.path.abspath(dockerfile_path),
@@ -199,32 +215,37 @@ class Runner(PackageRunner):
             vulnerabilities=vulnerabilities,
             packages=packages,
             license_statuses=license_statuses,
-            image_details=image_details,
+            sca_details=image_details,
             report_type=self.report_type,
         )
         return report
 
-    def get_image_cached_results(self, dockerfile_path: str, image: Image) -> dict[str, Any]:
+    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any],
+                                 root_folder: Union[str, Path, None] = None) -> dict[str, Any]:
         """
+            :param image_cached_result: twistcli result for image as saved in cache
+            :param root_folder: for CLI scans - the directory in which checkov runs
             :param dockerfile_path: path of a file that might contain a container image
             :param image: Image object
             :return: cached_results report
         """
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
-        if not cached_results:
+
+        if not image_cached_result:
             # TODO: do we want to trigger a scan in this case?
-            logging.info(f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
+            logging.info(
+                f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
             return {}
         payload: dict[str, Any] = docker_image_scanning_integration.create_report(
-            twistcli_scan_result=cached_results,
+            twistcli_scan_result=image_cached_result,
             bc_platform_integration=bc_integration,
             file_path=dockerfile_path,
             file_content=f'image: {image.name}',
             docker_image_name=image.name,
-            related_resource_id=image.related_resource_id)
+            related_resource_id=image.related_resource_id,
+            root_folder=root_folder)
         return payload
 
-    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter) -> Report:
+    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter, image_cached_result: Dict[str, Any]) -> Report:
         """
 
         :param dockerfile_path: path of a file that might contain a container image
@@ -236,12 +257,10 @@ class Runner(PackageRunner):
         if not should_run_scan(runner_filter.checks):
             return Report(self.check_type)
 
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
-
-        if cached_results:
+        if image_cached_result:
             logging.info(f"Found cached scan results of image {image.name}")
-            self.raw_report = cached_results
-            result = cached_results.get('results', [{}])[0]
+            self.raw_report = image_cached_result
+            result = image_cached_result.get('results', [{}])[0]
             image_id = self.extract_image_short_id(result)
             image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id,
                                                                         image_name=image.name,
@@ -261,6 +280,9 @@ class Runner(PackageRunner):
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
             image_id = ImageReferencer.inspect(image.name)
+            if not image_id:
+                logging.info(f"Unable to extract image id from {image.name}")
+                return Report(self.check_type)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 return Report(self.check_type)

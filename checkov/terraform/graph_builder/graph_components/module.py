@@ -37,6 +37,7 @@ class Module:
         self.source = ""
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
+        self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -149,21 +150,30 @@ class Module:
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
                     attributes = self.clean_bad_characters(resource_conf)
+                    dynamic_attributes = None
                     if not isinstance(attributes, dict):
                         continue
-                    handle_dynamic_values(attributes)
+                    if self.render_dynamic_blocks_env_var.lower() == 'false':
+                        has_dynamic_block = False
+                    else:
+                        old_attributes = deepcopy(attributes)
+                        has_dynamic_block = handle_dynamic_values(attributes)
+                        dynamic_attributes = {k: attributes[k] for k in set(attributes) - set(old_attributes)}
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
                     attributes["resource_type"] = [resource_type]
+                    block_name = f"{resource_type}.{name}"
                     resource_block = TerraformBlock(
                         block_type=BlockType.RESOURCE,
-                        name=f"{resource_type}.{name}",
+                        name=block_name,
                         config=self.clean_bad_characters(resource_dict),
                         path=path,
                         attributes=attributes,
-                        id=f"{resource_type}.{name}",
+                        id=block_name,
                         source=self.source,
+                        has_dynamic_block=has_dynamic_block,
+                        dynamic_attributes=dynamic_attributes
                     )
                     self._add_to_blocks(resource_block)
 
@@ -178,13 +188,14 @@ class Module:
         for data_dict in blocks:
             for data_type in data_dict:
                 for name in data_dict[data_type]:
+                    block_name = f"{data_type}.{name}"
                     data_block = TerraformBlock(
                         block_type=BlockType.DATA,
-                        name=data_type + "." + name,
+                        name=block_name,
                         config=data_dict,
                         path=path,
                         attributes=data_dict.get(data_type, {}).get(name, {}),
-                        id=data_type + "." + name,
+                        id=block_name,
                         source=self.source,
                     )
                     self._add_to_blocks(data_block)

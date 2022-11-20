@@ -266,6 +266,38 @@ class TestSarifReport(unittest.TestCase):
         )
         record9.set_guideline("")
 
+        # Record with non-empty guideline
+        record10 = Record(
+            check_id="CKV_AWS_23",
+            check_name="Some Check",
+            check_result={"result": CheckResult.FAILED},
+            code_block=None,
+            file_path="./s3.tf",
+            file_line_range=[1, 3],
+            resource="aws_s3_bucket.operations",
+            evaluations=None,
+            check_class=None,
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+        )
+        record10.set_guideline("https://example.com")
+
+        # Record without guideline
+        record11 = Record(
+            check_id="CKV_AWS_24",
+            check_name="Some Check",
+            check_result={"result": CheckResult.FAILED},
+            code_block=None,
+            file_path="./s3.tf",
+            file_line_range=[1, 3],
+            resource="aws_s3_bucket.operations",
+            evaluations=None,
+            check_class=None,
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+        )
+        # No guideline here
+
         r = Report("terraform")
         r.add_record(record=record1)
         r.add_record(record=record2)
@@ -276,6 +308,8 @@ class TestSarifReport(unittest.TestCase):
         r.add_record(record=record7)
         r.add_record(record=record8)
         r.add_record(record=record9)
+        r.add_record(record=record10)
+        r.add_record(record=record11)
         json_structure = r.get_sarif_json("")
         print(json.dumps(json_structure))
         self.assertEqual(
@@ -284,6 +318,7 @@ class TestSarifReport(unittest.TestCase):
         )
         self.assertFalse(are_duplicates_in_sarif_rules(json_structure))
         self.assertTrue(are_rule_indexes_correct_in_results(json_structure))
+        self.assertTrue(are_rules_without_help_uri_correct(json_structure))
 
 
 def get_sarif_schema():
@@ -312,6 +347,15 @@ def are_rule_indexes_correct_in_results(sarif_json) -> bool:
             if result["ruleId"] == rule["id"]:
                 if result["ruleIndex"] != rules.index(rule) or result["ruleIndex"] > len(rules):
                     return False
+    return True
+
+def are_rules_without_help_uri_correct(sarif_json) -> bool:
+    rules = sarif_json["runs"][0]["tool"]["driver"]["rules"]
+    results = sarif_json["runs"][0]["results"]
+    for rule in rules:
+        if "helpUri" in rule:
+            if rule["helpUri"] is None or rule["helpUri"] == "":
+                return False
     return True
 
 

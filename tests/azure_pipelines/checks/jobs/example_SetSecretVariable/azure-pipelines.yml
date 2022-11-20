@@ -1,0 +1,53 @@
+resources:
+- repo: self
+
+trigger:
+- master
+
+stages:
+- stage: Example
+  jobs:
+  - job: PassSetNoSecretVariable
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    container: ubuntu
+
+    steps:
+      - bash: |
+          echo "##vso[task.setvariable variable=normal_variable;issecret=false]something"
+      - powershell: |
+          Write-Host "##vso[task.setvariable variable=normal_variable;issecret=false]something"
+  - job: UnknownNoSetVariable
+    pool:
+      vmImage: 'ubuntu-18.04'
+
+    container: ubuntu@sha256:a0a45bd8c6c4acd6967396366f01f2a68f73406327285edc5b7b07cb1cf073db
+
+    steps:
+      - bash: |
+          echo "hello world"
+      - powershell: |
+          Write-Host "hello world"
+
+jobs:
+- job: FailSetSecretVariable
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - bash: |
+      echo "##vso[task.setvariable variable=normal_variable;]something"
+      echo "##vso[task.setvariable variable=secret_variable;issecret=true]super-secret"
+    name: setSecretVariableStep
+  - powershell: |
+      Write-Host "##vso[task.setvariable variable=normal_variable;]something"
+      Write-Host "##vso[task.setvariable variable=secret_variable;issecret=true]super-secret"
+
+- job: PassSetNormalVariable
+  pool:
+    vmImage: 'ubuntu-20.04'
+  steps:
+  - bash: |
+      echo "##vso[task.setvariable variable=normal_variable;]something"
+  - powershell: |
+      Write-Host "##vso[task.setvariable variable=normal_variable;]something"

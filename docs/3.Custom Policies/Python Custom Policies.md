@@ -119,7 +119,7 @@ Produces the following CLI report:
 check = RDSEncryption()
 ```
 
-#### Selecting the best base check class to extend
+### Selecting the best base check class to extend
 Terraform and CloudFormation have two base classes extending `BaseResourceCheck`:
 
 1. **BaseResourceValueCheck**: This check will pass only if the `inspected_key` is within the `expected_values`. If `get_expected_value` is not implemented, the default value is `[True]`. 
@@ -264,7 +264,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-scanner = S3PCIPrivateACL()
+check = S3PCIPrivateACL()
 ```
 
 2. With the new custom check in place, run Checkov:

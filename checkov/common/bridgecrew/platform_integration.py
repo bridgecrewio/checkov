@@ -30,11 +30,11 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES
+from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SUPPORTED_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
@@ -66,6 +66,8 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
+GOV_CLOUD_REGION = 'us-gov-west-1'
+PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
 MAX_RETRIES = 40
 ONBOARDING_SOURCE = "checkov"
 
@@ -224,10 +226,15 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
+        region = DEFAULT_REGION
+        use_accelerate_endpoint = True
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.setup_api_urls()
+            if self.prisma_api_url == PRISMA_GOV_API_URL:
+                region = GOV_CLOUD_REGION
+                use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source and self.bc_source.upload_results:
@@ -235,11 +242,11 @@ class BcPlatformIntegration:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
-                self.timestamp = self.repo_path.split("/")[-1]
+                self.timestamp = self.repo_path.split("/")[-2]
                 self.credentials = cast("dict[str, str]", response["creds"])
                 config = Config(
                     s3={
-                        "use_accelerate_endpoint": True,
+                        "use_accelerate_endpoint": use_accelerate_endpoint,
                     }
                 )
                 self.s3_client = boto3.client(
@@ -247,7 +254,7 @@ class BcPlatformIntegration:
                     aws_access_key_id=self.credentials["AccessKeyId"],
                     aws_secret_access_key=self.credentials["SecretAccessKey"],
                     aws_session_token=self.credentials["SessionToken"],
-                    region_name=DEFAULT_REGION,
+                    region_name=region,
                     config=config,
                 )
                 self.platform_integration_configured = True
@@ -332,6 +339,8 @@ class BcPlatformIntegration:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
+                if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
+                    continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
         else:
@@ -342,6 +351,8 @@ class BcPlatformIntegration:
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
+                    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SUPPORTED_PACKAGE_FILES:
+                        continue
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
@@ -391,11 +402,12 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
-        if not self.bucket:
-            logging.error("Bucket was not set")
+        if not self.bucket or not self.repo_path:
+            logging.error("Bucket or repo_path was not set")
             return
 
-        target_report_path = f'{self.repo_path}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
+        repo_path_without_src = os.path.dirname(self.repo_path)
+        target_report_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SCA_IMAGE}/raw_results.json'
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
@@ -562,6 +574,7 @@ class BcPlatformIntegration:
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+            raise
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """
@@ -617,6 +630,7 @@ class BcPlatformIntegration:
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
             request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
+            logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
@@ -624,6 +638,9 @@ class BcPlatformIntegration:
 
     @staticmethod
     def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+        """
+        Validates only the filter names
+        """
         valid_filters = valid_filters or {}
 
         if not policy_filter:
@@ -633,10 +650,7 @@ class BcPlatformIntegration:
         for filter_name, filter_value in policy_filter.items():
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
-                return False
-            elif filter_value not in valid_filters[filter_name].get('options', []):
-                logging.warning(f"Invalid filter value: {filter_value}")
-                logging.warning(f"Available options: {valid_filters[filter_name].get('options')}")
+                logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
                 return False
             elif filter_name == 'policy.subtype' and filter_value != 'build':
                 logging.warning(f"Filter value not allowed: {filter_value}")
@@ -666,7 +680,7 @@ class BcPlatformIntegration:
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}",
+            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
 
     def onboarding(self) -> None:
