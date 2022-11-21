@@ -28,6 +28,7 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
+
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
 
@@ -62,6 +63,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
+            self.update_nested_modules_address()
             if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
                 # experimental flag on building cross variable edges for terraform graph
                 self._build_cross_variable_edges()
@@ -499,6 +501,29 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             dir_name = os.path.abspath(path)
             self.abspath_cache[path] = dir_name
         return dir_name
+
+    @staticmethod
+    def get_current_address(vertex: TerraformBlock, address_prefix: str = ''):
+        if vertex.block_type == BlockType.MODULE:
+            return address_prefix + f"{vertex.block_type}.{vertex.name}"
+        else:
+            return address_prefix + vertex.name
+
+    def update_nested_modules_address(self) -> None:
+        for vertex in self.vertices:
+            if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
+                continue
+            source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
+            if not source_module:
+                address = self.get_current_address(vertex)
+                vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
+                continue
+            address_prefix = ''
+            for module in source_module:
+                address_prefix += f"{module.get('type')}.{module.get('name')}."
+
+            address = self.get_current_address(vertex, address_prefix)
+            vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
 def to_list(data):
