@@ -259,6 +259,19 @@ class TestRenderer(TestCase):
                     {'action': 'allow', 'cidr_block': '10.0.0.2/32', 'from_port': 22, 'protocol': 'tcp', 'rule_no': 2,
                      'to_port': 22}]
 
+    def test_dynamic_blocks_with_nesting_attributes(self):
+        root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_block_nesting_attribute")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
+
+        # Test dynamic blocks with nesting attributes
+        resource_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))[0]
+
+        assert resource_vertex.attributes.get('server_side_encryption_configuration') == [{'rule': {
+            'apply_server_side_encryption_by_default': {'kms_master_key_id': 'testkey1', 'sse_algorithm': 'aws:kms'}}},
+            {'rule': {'apply_server_side_encryption_by_default': {'kms_master_key_id': 'testkey2',
+                                                                  'sse_algorithm': 'aws:notkms'}}}]
+
     def test_extract_dynamic_value_in_map(self):
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1.value2'), 'value2')
         self.assertEqual(TerraformVariableRenderer.extract_dynamic_value_in_map('value.value1["value2"]'), 'value2')
@@ -267,32 +280,32 @@ class TestRenderer(TestCase):
         root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_variable_rendering")
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
-        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+        definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(
             local_graph.vertices,
             root_folder,
         )
         # Test multiple dynamic blocks
-        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
-        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
-        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
-        assert 'egress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'ingress.from_port' in breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'ingress.to_port' in breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in breadcrumbs['/main.tf']['aws_security_group.list_example']
+        assert 'egress.to_port' in breadcrumbs['/main.tf']['aws_security_group.list_example']
 
         # Test single dynamic block
-        assert 'ingress.from_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
-        assert 'ingress.to_port' in self.breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
+        assert 'ingress.from_port' in breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
+        assert 'ingress.to_port' in breadcrumbs['/main.tf']['aws_security_group.single_dynamic_example']
 
     def test_nested_dynamic_blocks_breadcrumbs(self):
         root_folder = os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_with_nested")
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, _ = graph_manager.build_graph_from_source_directory(root_folder, render_variables=True)
-        self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+        definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(
             local_graph.vertices,
             root_folder,
         )
         # Test multiple dynamic blocks
-        assert 'required_resource_access.resource_app_id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
-        assert 'required_resource_access.resource_access.id' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
-        assert 'required_resource_access.resource_access.type' in self.breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_app_id' in breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.id' in breadcrumbs['/main.tf']['azuread_application.bootstrap']
+        assert 'required_resource_access.resource_access.type' in breadcrumbs['/main.tf']['azuread_application.bootstrap']
 
     def test_list_entry_rendering_module_vars(self):
         # given
@@ -365,4 +378,14 @@ class TestRenderer(TestCase):
             # Should fail after implementing dynamic for_each with lookup
             for resource_vertex in resources_vertex:
                 if resource_vertex.has_dynamic_block:
-                    assert '$' in resource_vertex.attributes.get('stage', {}).get('name')
+                    assert resource_vertex.attributes.get('stage', [{}])[0].get('name') == ['stage.value.name']
+
+    def test_dynamic_blocks_null_lookup(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_null_lookup"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert len(resources_vertex[0].attributes.get('ingress')) == 2
+        assert resources_vertex[0].attributes.get('ingress')[0].get('ipv6_cidr_blocks') == 'null'
+        assert resources_vertex[0].attributes.get('ingress')[0].get('self') == 'false'
+        assert resources_vertex[0].attributes.get('ingress')[0].get('cidr_blocks') == ['10.248.180.0/23', '10.248.186.0/23']
