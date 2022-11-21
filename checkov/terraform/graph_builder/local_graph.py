@@ -275,7 +275,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for origin_node_index in target_nodes_indexes:
             vertex = self.vertices[origin_node_index]
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
-            modules = vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE]
+            modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
             for module in modules:
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
 
