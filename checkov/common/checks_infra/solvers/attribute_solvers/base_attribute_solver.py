@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import logging
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
@@ -53,13 +54,24 @@ class BaseAttributeSolver(BaseSolver):
         return passed_vertices, failed_vertices, unknown_vertices
 
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
-        attr_val = vertex.get(self.attribute)   # type:ignore[arg-type]  # due to attribute can be None
         # if this value contains an underendered variable, then we cannot evaluate value checks,
         # and will return None (for UNKNOWN)
         # handle edge cases in some policies that explicitly look for blank values
-        if self.is_value_attribute_check and self._is_variable_dependant(attr_val, vertex['source_']) \
-                and self.value != '':
-            return None
+        # we also need to check the attribute stack - e.g., if they are looking for tags.component, but tags = local.tags,
+        # then we actually need to see if tags is variable dependent as well
+        attr_parts = self.attribute.split('.')  # type:ignore[union-attr]  # due to attribute can be None (but not really)
+        attr_to_check = None
+        for attr in attr_parts:
+            attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
+            value_to_check = vertex.get(attr_to_check)
+
+            # we can only check is_attribute_value_check when evaluating the full attribute
+            # for example, if we have a policy that says "tags.component exists", and tags = local.tags, then
+            # we need to check if tags is variable dependent even though this is a not value_attribute check
+            if (attr_to_check != self.attribute or self.is_value_attribute_check) \
+                    and self._is_variable_dependant(value_to_check, vertex['source_']) \
+                    and self.value != '':
+                return None
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)
@@ -109,8 +121,12 @@ class BaseAttributeSolver(BaseSolver):
         if self.is_jsonpath_check:
             parsed_attr = self.parsed_attributes.get(self.attribute)
             if parsed_attr is None:
-                parsed_attr = parse(self.attribute)
-                self.parsed_attributes[self.attribute] = parsed_attr
+                try:
+                    parsed_attr = parse(self.attribute)
+                    self.parsed_attributes[self.attribute] = parsed_attr
+                except Exception:
+                    logging.debug('Error parsing jsonpath expression', exc_info=True)
+                    raise
             for match in parsed_attr.find(vertex):
                 full_path = str(match.full_path)
                 if full_path not in vertex:
