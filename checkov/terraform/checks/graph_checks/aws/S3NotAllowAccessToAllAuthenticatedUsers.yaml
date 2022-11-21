@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AWS_43"
   name: "Ensure S3 Bucket does not allow access to all Authenticated users"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 definition:
   cond_type: "attribute"
   resource_types:
