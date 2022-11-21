@@ -103,7 +103,8 @@ class OrgWebhooksSchema(VCSSchema):
                         ]
                     },
                     "type": {
-                        "type": "string"
+                        "type": "string",
+                        "const": "Organization"
                     }
                 },
                 "required": [

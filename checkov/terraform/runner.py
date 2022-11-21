@@ -67,7 +67,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser or Parser()
-        self.definitions = None
+        self.definitions: "dict[str, dict[str, Any]] | None" = None
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
@@ -143,7 +143,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
-        self.pbar.initiate(len(self.definitions))  # type: ignore
+        self.pbar.initiate(len(self.definitions))
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
 
         report.add_parsing_errors(parsing_errors.keys())
@@ -334,10 +334,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
                     try:
                         caller_context = definition_context[abs_caller_file]
-                        # HACK ALERT: module data is currently double-nested in
-                        #             definition context. If fixed, remove the
-                        #             addition of "module." at the beginning.
-                        for part in f"module.{referrer_id}".split("."):
+                        for part in referrer_id.split("."):
                             caller_context = caller_context[part]
                     except KeyError:
                         logging.debug("Unable to find caller context for: %s", abs_caller_file)
@@ -405,7 +402,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         benchmarks=check.benchmarks,
                         details=check.details
                     )
-
                     if CHECKOV_CREATE_GRAPH:
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
                             '.'.join([entity_type, entity_name]))
@@ -467,19 +463,23 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if module_path not in mod_ref:
                 continue
 
-            for next_type in definition_context[definition]:
-                # skip if type is not a terraform resource
-                if next_type not in CHECK_BLOCK_TYPES:
+            for block_type, block_configs in definition_context[definition].items():
+                # skip if type is not a Terraform resource
+                if block_type not in CHECK_BLOCK_TYPES:
                     continue
 
-                # there may be multiple resource types - aws_bucket, etc
-                for resource_type in definition_context[definition][next_type]:
-                    # there may be multiple names for each resource type
-                    for resource_name in definition_context[definition][next_type][resource_type]:
-                        # append the skipped checks from the module to the other resources.
-                        # this could also be from a module to another module.
-                        self.context[definition][next_type][resource_type][resource_name][
-                            "skipped_checks"] += skipped_checks
+                if block_type == "module":
+                    # modules don't have a type, just a name
+                    for resource_config in block_configs.values():
+                        # append the skipped checks also from a module to another module
+                        resource_config["skipped_checks"] += skipped_checks
+                else:
+                    # there may be multiple resource types - aws_bucket, etc
+                    for resource_configs in block_configs.values():
+                        # there may be multiple names for each resource type
+                        for resource_config in resource_configs.values():
+                            # append the skipped checks from the module to the other resources.
+                            resource_config["skipped_checks"] += skipped_checks
 
     @staticmethod
     def _strip_module_referrer(file_path: str) -> Tuple[str, Optional[str]]:
@@ -529,7 +529,10 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 __cache_file_content(file_name=file, file_modules=file_content["module"])
 
     def extract_images(
-        self, graph_connector: DiGraph | None = None, definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
     ) -> list[Image]:
         if not graph_connector:
             # should not happen

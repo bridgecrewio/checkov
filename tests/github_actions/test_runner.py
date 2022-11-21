@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 151)
+        self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_honors_enforcement_rules(self):
@@ -214,7 +214,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.failed_checks[0].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.failed_checks[0].workflow_name == 'build'
 
-        assert report.passed_checks[6].job[0] == "publish-checkov-admissioncontroller-dockerhub"
+        assert report.passed_checks[6].job[0] == "publish-checkov-pyston-dockerhub"
         assert report.passed_checks[6].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.passed_checks[6].workflow_name == 'build'
 

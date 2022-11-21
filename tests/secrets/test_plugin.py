@@ -1,5 +1,5 @@
-import os
 import unittest
+from pathlib import Path
 
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
 
@@ -36,12 +36,8 @@ class TestCombinatorPlugin(unittest.TestCase):
         self.assertEqual(0, len(result))
 
     def test_no_false_positive_yml_1(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "secret-no-false-positive.yml"
-        valid_file_path = current_dir + f"/resources/cfn/{file_name}"
-        with open(file=valid_file_path) as f:
+        test_file_path = Path(__file__).parent / "resources/cfn/secret-no-false-positive.yml"
+        with open(file=str(test_file_path)) as f:
             for i, line in enumerate(f.readlines()):
-                result = self.plugin.analyze_line(file_name, line, i)
+                result = self.plugin.analyze_line("secret-no-false-positive.yml", line, i)
                 self.assertEqual(0, len(result))
-
-

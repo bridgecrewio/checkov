@@ -9,7 +9,8 @@ class LivenessProbe(BaseResourceValueCheck):
     def __init__(self):
         name = "Liveness Probe Should be Configured"
         id = "CKV_K8S_8"
-        supported_resources = ["kubernetes_pod"]
+        supported_resources = ["kubernetes_pod", "kubernetes_pod_v1",
+                               "kubernetes_deployment", "kubernetes_deployment_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.FAILED)
@@ -19,7 +20,18 @@ class LivenessProbe(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
-        if spec and isinstance(spec, dict):
+
+        if isinstance(spec, dict) and spec:
+            evaluated_keys_path = "spec"
+
+            template = spec.get("template")
+            if template and isinstance(template, list):
+                template = template[0]
+                template_spec = template.get("spec")
+                if template_spec and isinstance(template_spec, list):
+                    spec = template_spec[0]
+                    evaluated_keys_path = f'{evaluated_keys_path}/[0]/template/[0]/spec'
+
             containers = spec.get("container")
             if containers is None:
                 return CheckResult.UNKNOWN
@@ -28,7 +40,7 @@ class LivenessProbe(BaseResourceValueCheck):
                     return CheckResult.UNKNOWN
                 if container.get("liveness_probe"):
                     return CheckResult.PASSED
-                self.evaluated_keys = [f'spec/[0]/container/[{idx}]']
+                self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]']
                 return CheckResult.FAILED
 
         return CheckResult.FAILED

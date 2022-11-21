@@ -1,18 +1,20 @@
 from __future__ import annotations
 
+import copy
 import itertools
 import logging
 import re
 
 # secret categories for use as constants
-from typing import Any, TYPE_CHECKING
+from typing import Any, Dict, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, ResourceAttributesToOmit
     from pycep.typing import ParameterAttributes, ResourceAttributes
+    from checkov.common.parsers.node import DictNode
 
 
 AWS = 'aws'
@@ -109,7 +111,7 @@ def string_has_secrets(s: str, *categories: str) -> bool:
     return False
 
 
-def omit_multiple_secret_values_from_line(secrets: list[str], line_text: str) -> str:
+def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> str:
     censored_line = line_text
     for secret in secrets:
         censored_line = omit_secret_value_from_line(secret, censored_line)
@@ -133,22 +135,57 @@ def omit_secret_value_from_line(secret: str, line_text: str) -> str:
 
 def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
                                   entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes) -> \
+                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+                                  resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
         list[tuple[int, str]]:
-    if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
-        censored_code_lines = []
-        secrets = [str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')]
-        if not secrets:
-            logging.debug(f"Secret was not saved in {check.id}, can't omit")
-            return entity_code_lines
+    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    censored_code_lines = []
 
-        for idx, line in entity_code_lines:
-            censored_line = omit_multiple_secret_values_from_line(secrets, line)
-            censored_code_lines.append((idx, censored_line))
-    else:
-        censored_code_lines = entity_code_lines
+    if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
+        secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
+
+    if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
+            resource_attributes_to_omit.get(check.entity_type) in entity_config:
+        secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, ''), [])
+        if isinstance(secret, list) and secret:
+            secrets.add(secret[0])
+
+    if not secrets:
+        logging.debug(f"Secret was not saved in {check.id}, can't omit")
+        return entity_code_lines
+
+    for idx, line in entity_code_lines:
+        censored_line = omit_multiple_secret_values_from_line(secrets, line)
+        censored_code_lines.append((idx, censored_line))
 
     return censored_code_lines
+
+
+def omit_secret_value_from_definitions(definitions: Dict[str, DictNode],
+                                       resource_attributes_to_omit: ResourceAttributesToOmit) -> Dict[str, DictNode]:
+    """
+        Mask secret values from definitions, as a way to mask these values in the created graph.
+        Should be used only in runners that have the resource_attributes_to_omit mapping
+        """
+    found_secrets = False
+    censored_definitions = definitions
+    for file, definition in definitions.items():
+        for i, resource in enumerate(definition.get('resource', [])):
+            for resource_type in [r_type for r_type in resource if r_type in resource_attributes_to_omit]:
+                for resource_name, resource_config in resource[resource_type].items():
+                    for attribute in [attribute for attribute in resource_config if
+                                      attribute == resource_attributes_to_omit[resource_type]]:
+                        if not found_secrets:
+                            found_secrets = True
+                            # The values in self.definitions shouldn't be changed so that checks' results
+                            # of checks that rely on the definitions values are not affected.
+                            # Hence, if secrets are found, we should censor them in a deep copy of self.definitions
+                            censored_definitions = copy.deepcopy(definitions)
+                        secret = resource_config[attribute][0]
+                        censored_value = omit_secret_value_from_line(secret, secret)
+                        censored_definitions[file]['resource'][i][resource_type][resource_name][attribute] = \
+                            [censored_value]
+    return censored_definitions
 
 
 def get_secrets_from_string(s: str, *categories: str) -> list[str]:

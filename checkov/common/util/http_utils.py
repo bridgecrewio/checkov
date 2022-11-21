@@ -118,7 +118,8 @@ def request_wrapper(
         headers: dict[str, Any],
         data: Any | None = None,
         json: dict[str, Any] | None = None,
-        should_call_raise_for_status: bool = False
+        should_call_raise_for_status: bool = False,
+        params: dict[str, Any] | None = None
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -135,7 +136,7 @@ def request_wrapper(
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
-            response = requests.request(method, url, headers=headers, data=data, json=json)
+            response = requests.request(method, url, headers=headers, data=data, json=json, params=params)
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response
@@ -173,10 +174,16 @@ async def aiohttp_client_session_wrapper(
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
+    try:  # TODO: test again, when Python 3.11 is out
+        import aiodns  # type: ignore[import]  # noqa: F401
+        resolver: "aiohttp.abc.AbstractResolver" = aiohttp.AsyncResolver()
+    except ImportError:
+        resolver = aiohttp.ThreadedResolver()
+
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver)) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")

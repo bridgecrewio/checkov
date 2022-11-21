@@ -1,7 +1,18 @@
 name: build
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      versionBump:
+        description: 'The part of the version to bump'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
   push:
     branches:
       - master
@@ -27,27 +38,26 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@2fddd8803e2f5c9604345a0b591c3020ee971a93  # v3
-      - uses: azure/setup-helm@b5b231a831f96336bbfeccc1329990f0005c5bb1  # v3
+      - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
+      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
-      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -67,15 +77,15 @@ jobs:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
           TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
-          GITHUB_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
   prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -86,7 +96,6 @@ jobs:
       - name: Build & install checkov package
         run: |
           pipenv --python 3.7
-          pipenv run pip install --upgrade pip
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           pipenv run pip install dist/checkov-*.whl
@@ -102,9 +111,9 @@ jobs:
     timeout-minutes: 30
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -114,7 +123,7 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@aa978fb4ab742121859f62594f53d7f42c7f4ec0  # v1
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
@@ -127,17 +136,17 @@ jobs:
     environment: release
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@c8bb57c57e8df1be8c73ff3d59deab1dbc00e0d1  # v5
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@b55428b1882923874294fa556849718a1d7f2ca5  # v4
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -147,6 +156,32 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install
+      - name: Calculate version
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "latest tag: $latest_tag"
+          if [[ -z "${{ inputs.versionBump }}" ]]
+          then
+            version="patch"
+          else
+            version="${{ inputs.versionBump }}"
+          fi
+          case $version in
+            minor)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
+              ;;
+            major)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
+              ;;
+            patch)
+              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+              ;;
+          esac
+
+          echo "new tag: $new_tag"
+          echo "version=$new_tag" >> $GITHUB_OUTPUT
+        id: calculateVersion
       - name: version
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
@@ -155,7 +190,7 @@ jobs:
           export PYTHONPATH='.'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
@@ -175,15 +210,11 @@ jobs:
           git add "docs/5.Policy Index/*"
           git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
           
-          git config --global user.name 'schosterbarak'
-          git config --global user.email 'schosterbarak@users.noreply.github.com'
-
-          git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-          echo "latest tag: $latest_tag"
-          new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
-
-          echo "new tag: $new_tag"          
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'actions@github.com'
+          
+          new_tag=${{ steps.calculateVersion.outputs.version }}
+          echo "new tag: $new_tag"
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
@@ -194,7 +225,6 @@ jobs:
           git tag $new_tag
           git push --tags
           RELEASE_NOTE=$(git log -1 --pretty=%B)
-          echo "::set-output name=version::$new_tag"
         id: version
       - name: create python package
         run: |
@@ -207,22 +237,22 @@ jobs:
         run: |
           sleep 2m
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.calculateVersion.outputs.version }}
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: bump-version
     environment: release
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Get release version
         id: versions
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -234,16 +264,16 @@ jobs:
     needs: bump-version
     environment: release
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: update checkov-k8s version
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -251,24 +281,56 @@ jobs:
           tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
           dockerfile: kubernetes/Dockerfile
           buildoptions: "--no-cache"
+  publish-checkov-pyston-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - name: Get release version
+        id: versions
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        with:
+          name: bridgecrew/checkov
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
+          dockerfile: Dockerfile.pyston
+          buildoptions: "--no-cache"
+  update-bridgecrew-projects:
+    needs: publish-checkov-dockerhub
+    runs-on: [self-hosted, public, linux, x64]
+    environment: release
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - name: update checkov release
+        run: |
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    needs: bump-version
+    needs: update-bridgecrew-projects
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: get versions
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
+          echo "version=$checkov_version" >> $GITHUB_OUTPUT
+          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
+        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -286,38 +348,7 @@ jobs:
           include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
+          git checkout master
           git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin
-  publish-checkov-pyston-dockerhub:
-    runs-on: [self-hosted, public, linux, x64]
-    needs: bump-version
-    environment: release
-    steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - name: Get release version
-        id: versions
-        run: |
-          checkov_version=${{ needs.bump-version.outputs.version }}
-          checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "::set-output name=version::$checkov_version"
-          echo "::set-output name=major_version::$checkov_major_version"
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@33a481be3e179353cb7793a92b57cf9a6c985860  # v4
-        with:
-          name: bridgecrew/checkov
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
-          dockerfile: Dockerfile.pyston
-          buildoptions: "--no-cache"
-  update-bridgecrew-projects:
-    needs: publish-checkov-dockerhub
-    runs-on: [self-hosted, public, linux, x64]
-    environment: release
-    steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b  # v3
-      - name: update checkov release
-        run: |
-          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
-          curl -XPOST -u "${{ secrets.GH_PAT_USE}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'

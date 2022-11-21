@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
-        super().__init__(bc_integration=bc_integration, order=1)  # must be after the policy metadata
+        super().__init__(bc_integration=bc_integration, order=2)  # must be after the custom policies integration
         self.suppressions: dict[str, list[dict[str, Any]]] = {}
         self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
@@ -60,6 +60,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
             logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+            logging.debug('The found suppression rules are:')
+            logging.debug(self.suppressions)
         except Exception:
             self.integration_feature_failures = True
             logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
@@ -84,9 +86,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
+                suppress_comment = applied_suppression['comment']
+                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
-                    'suppress_comment': applied_suppression['comment']
+                    'suppress_comment': suppress_comment
                 }
                 scan_report.skipped_checks.append(check)
             elif check.check_result['result'] == CheckResult.FAILED:
@@ -158,8 +162,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Cves':
             if 'accountIds' not in suppression:
                 return False
-            if self.bc_integration.repo_id in suppression['accountIds']:
-                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]  # type: ignore
+            if self.bc_integration.repo_id and self.bc_integration.repo_id in suppression['accountIds']:
+                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]
                 suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
                 file_abs_path = record.file_abs_path.replace('\\', '/')
                 if file_abs_path == suppression_path[1:] or \
@@ -203,6 +207,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _init_repo_regex(self) -> None:
         self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
+
+    def pre_runner(self) -> None:
+        # not used
+        pass
 
 
 integration = SuppressionsIntegration(bc_integration)

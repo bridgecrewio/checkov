@@ -10,14 +10,16 @@ import platform
 import shutil
 import subprocess  # nosec
 import tempfile
+
 import yaml
-from typing import Optional, Dict, Any, Type, TextIO, TYPE_CHECKING
+from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -27,13 +29,15 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 if TYPE_CHECKING:
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
 
 
 class K8sKustomizeRunner(K8sRunner):
     def __init__(
         self,
-        graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
+        graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
         source: str = "Kubernetes",
         graph_manager: KubernetesGraphManager | None = None,
@@ -42,37 +46,56 @@ class K8sKustomizeRunner(K8sRunner):
 
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
-        self.report_mutator_data = {}
+        self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.pbar.turn_off_progress_bar()
 
     def set_external_data(
         self,
-        definitions: Optional[Dict[str, Dict[str, Any]]],
-        context: Optional[Dict[str, Dict[str, Any]]],
-        breadcrumbs: Optional[Dict[str, Dict[str, Any]]],
-        report_mutator_data: Optional[Dict[str, Dict[str, Any]]]
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
+        context: dict[str, dict[str, Any]] | None,
+        breadcrumbs: dict[str, dict[str, Any]] | None,
+        report_mutator_data: dict[str, dict[str, Any]] | None = None,
+        **kwargs: Any,
     ) -> None:
         super().set_external_data(definitions, context, breadcrumbs)
-        self.report_mutator_data = report_mutator_data
+        self.report_mutator_data = report_mutator_data or {}
 
     def set_report_mutator_data(self, report_mutator_data: Optional[Dict[str, Dict[str, Any]]]) -> None:
-        self.report_mutator_data = report_mutator_data
+        self.report_mutator_data = report_mutator_data or {}
 
-    def mutateKubernetesResults(self, results, report, k8_file=None, k8_file_path=None, file_abs_path=None, entity_conf=None, variable_evaluations=None):
+    def mutate_kubernetes_results(
+        self,
+        results: dict[BaseCheck, _CheckResult],
+        report: Report,
+        k8_file: str,
+        k8_file_path: str,
+        file_abs_path: str,
+        entity_conf: dict[str, Any],
+        variable_evaluations: dict[str, Any],
+    ) -> Report:
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'],
-        kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
+        if not self.context:
+            # this shouldn't happen
+            logging.error("context was not set correctly")
+            return report
+
+        kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
+        kustomize_file_mappings = self.report_mutator_data['kustomizeFileMappings']
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
+            if not resource_id:
+                logging.error(f"Couldn't get resource ID for {entity_conf}")
+                continue
+
             entity_context = self.context[k8_file][resource_id]
 
-            if file_abs_path not in kustomizeFileMappings:
+            if file_abs_path not in kustomize_file_mappings:
                 logging.warning(f"couldn't find {file_abs_path} path in kustomizeFileMappings")
                 continue
 
-            realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[file_abs_path]]
+            realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[file_abs_path]]
             if 'overlay' in realKustomizeEnvMetadata["type"]:
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{resource_id}'
             else:
@@ -91,7 +114,7 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def line_range(self, code_lines):
+    def line_range(self, code_lines: list[tuple[int, str]]) -> list[int]:
         num_of_lines = len(code_lines)
         file_line_range = [0, 0]
         if num_of_lines > 0:
@@ -100,23 +123,30 @@ class K8sKustomizeRunner(K8sRunner):
             file_line_range = [first_line, last_line]
         return file_line_range
 
-    def mutateKubernetesGraphResults(self, root_folder: str, runner_filter: RunnerFilter, report: Report, checks_results) -> Report:
+    def mutate_kubernetes_graph_results(
+        self, root_folder: str | None, runner_filter: RunnerFilter, report: Report, checks_results: dict[BaseGraphCheck, list[_CheckResult]]
+    ) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        kustomizeMetadata = self.report_mutator_data['kustomizeMetadata'],
-        kustomizeFileMappings = self.report_mutator_data['kustomizeFileMappings']
+        if not self.context:
+            # this shouldn't happen
+            logging.error("Context for Kustomize runner was not set")
+            return report
+
+        kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
+        kustomize_file_mappings = self.report_mutator_data['kustomizeFileMappings']
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path = entity.get(CustomAttributes.FILE_PATH)
-                entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
-                entity_id = entity.get(CustomAttributes.ID)
+                entity_file_path: str = entity[CustomAttributes.FILE_PATH]
+                entity_file_abs_path: str = _get_entity_abs_path(root_folder, entity_file_path)
+                entity_id: str = entity[CustomAttributes.ID]
                 entity_context = self.context[entity_file_path][entity_id]
 
-                if entity_file_abs_path in kustomizeFileMappings:
-                    realKustomizeEnvMetadata = kustomizeMetadata[0][kustomizeFileMappings[entity_file_abs_path]]
+                if entity_file_abs_path in kustomize_file_mappings:
+                    realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[entity_file_abs_path]]
                     if 'overlay' in realKustomizeEnvMetadata["type"]:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{str(realKustomizeEnvMetadata["overlay_name"])}:{entity_id}'
                     else:
@@ -146,7 +176,7 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner["KubernetesGraphManager"]):
     kustomize_command = 'kustomize'  # noqa: CCE003  # a static attribute
     kubectl_command = 'kubectl'  # noqa: CCE003  # a static attribute
     check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
@@ -155,10 +185,10 @@ class Runner(BaseRunner):
 
     def __init__(self) -> None:
         super().__init__(file_names=Runner.kustomizeSupportedFileTypes)
-        self.potentialBases = []
-        self.potentialOverlays = []
-        self.kustomizeProcessedFolderAndMeta = {}
-        self.kustomizeFileMappings: dict[str, str] = {}
+        self.potentialBases: "list[str]" = []
+        self.potentialOverlays: "list[str]" = []
+        self.kustomizeProcessedFolderAndMeta: "dict[str, dict[str, str]]" = {}
+        self.kustomizeFileMappings: "dict[str, str]" = {}
         self.templateRendererCommand: str | None = None
         self.target_folder_path = ''
 
@@ -169,7 +199,7 @@ class Runner(BaseRunner):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
 
-    def _parseKustomization(self, parseKustomizationData):
+    def _parseKustomization(self, kustomize_dir: str) -> dict[str, str]:
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
         # - OR, Multiple different Kustomize-powered deployments
@@ -177,8 +207,8 @@ class Runner(BaseRunner):
         # We need parse some of the Kustomization.yaml files to work out which
         # This is so we can provide "Environment" information back to the user as part of the checked resource name/description.
         # TODO: We could also add a --kustomize-environment option so we only scan certain overlay names (prod, test etc) useful in CI.
-        yaml_path = os.path.join(parseKustomizationData, "kustomization.yaml")
-        yml_path = os.path.join(parseKustomizationData, "kustomization.yml")
+        yaml_path = os.path.join(kustomize_dir, "kustomization.yaml")
+        yml_path = os.path.join(kustomize_dir, "kustomization.yml")
         if os.path.isfile(yml_path):
             kustomization_path = yml_path
         elif os.path.isfile(yaml_path):
@@ -218,14 +248,14 @@ class Runner(BaseRunner):
 
         return metadata
 
-    def check_system_deps(self):
+    def check_system_deps(self) -> str | None:
         # Ensure local system dependancies are available and of the correct version.
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
 
         if shutil.which(self.kubectl_command) is not None:
             try:
-                proc = subprocess.Popen([self.kubectl_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+                proc = subprocess.Popen([self.kubectl_command, 'version', '--client=true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
                 oString = str(o, 'utf-8')
 
@@ -239,11 +269,9 @@ class Runner(BaseRunner):
                         return None
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e}")
-                pass
+                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e.decode()}")
 
         elif shutil.which(self.kustomize_command) is not None:
-
             try:
                 proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
                 o, e = proc.communicate()
@@ -258,36 +286,37 @@ class Runner(BaseRunner):
                     return self.check_type
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e}")
-                pass
+                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e.decode()}")
 
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
 
+        return None
+
     def _handle_overlay_case(self, file_path: str) -> None:
         for parent in pathlib.Path(file_path).parents:
             for potentialBase in self.potentialBases:
-                pathlibBaseObject = pathlib.Path(potentialBase)
-                potentialBasePath = pathlibBaseObject.parents[1]
-                if parent == potentialBasePath.resolve():
-                    self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlibBaseObject.parent)
+                pathlib_base_object = pathlib.Path(potentialBase)
+                potential_base_path = pathlib_base_object.parents[1]
+                if parent == potential_base_path.resolve():
+                    self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlib_base_object.parent)
         try:
             relativeToFullPath = f"{file_path}/{self.kustomizeProcessedFolderAndMeta[file_path]['referenced_bases'][0]}"
             if pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']) == pathlib.Path(relativeToFullPath).resolve():
                 self.kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
-                checkovKustomizeEnvNameByPath = pathlib.Path(file_path).relative_to(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent)
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = str(checkovKustomizeEnvNameByPath)
-                logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkovKustomizeEnvNameByPath} for Checkov Results.")
+                checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
+                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
             else:
-                checkovKustomizeEnvNameByPath = f"{pathlib.Path(file_path).stem}"
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkovKustomizeEnvNameByPath
-                logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
+                checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
+                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
         except KeyError:
-            checkovKustomizeEnvNameByPath = f"{pathlib.Path(file_path).stem}"
-            self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkovKustomizeEnvNameByPath
-            logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkovKustomizeEnvNameByPath} for Checkov Results.")
+            checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
+            self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+            logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
     @staticmethod
     def _get_parsed_output(
@@ -321,8 +350,10 @@ class Runner(BaseRunner):
                     os.makedirs(parent, exist_ok=True)
                     cur_source_file = source
                     cur_writer = open(os.path.join(extract_dir, str(source)), 'a')
-                cur_writer.write('---' + os.linesep)
-                cur_writer.write(s + os.linesep)
+                if cur_writer:
+                    cur_writer.write('---' + os.linesep)
+                    cur_writer.write(s + os.linesep)
+
                 last_line_dashes = False
             else:
                 if not cur_writer:
@@ -355,15 +386,15 @@ class Runner(BaseRunner):
                 logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {file_path}")
                 env_or_base_path_prefix = ""
             else:
-                basePathParents = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['calculated_bases']).parents
-                mostSignificantBasePath = "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2] + "/" + basePathParents._parts[-1]
-                env_or_base_path_prefix = f"{mostSignificantBasePath}/{kustomize_processed_folder_and_meta[file_path]['overlay_name']}"
+                base_path_parts = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['calculated_bases']).parts
+                most_significant_base_path = f"/{base_path_parts[-3]}/{base_path_parts[-2]}/{base_path_parts[-1]}"
+                env_or_base_path_prefix = f"{most_significant_base_path}/{kustomize_processed_folder_and_meta[file_path]['overlay_name']}"
 
-        if kustomize_processed_folder_and_meta[file_path].get('type') == "base":
+        elif kustomize_processed_folder_and_meta[file_path].get('type') == "base":
             # Validated base last three parents as a path
-            basePathParents = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['filePath']).parents
-            mostSignificantBasePath = "/" + basePathParents._parts[-4] + "/" + basePathParents._parts[-3] + "/" + basePathParents._parts[-2]
-            env_or_base_path_prefix = mostSignificantBasePath
+            base_path_parts = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['filePath']).parts
+            most_significant_base_path = f"/{base_path_parts[-4]}/{base_path_parts[-3]}/{base_path_parts[-2]}"
+            env_or_base_path_prefix = most_significant_base_path
 
         return env_or_base_path_prefix
 
@@ -406,47 +437,60 @@ class Runner(BaseRunner):
 
     @staticmethod
     def _run_kustomize_parser(
-        filePath: str,
-        sharedKustomizeFileMappings: dict[str, str],
-        kustomizeProcessedFolderAndMeta: dict[str, dict[str, Any]],
-        templateRendererCommand: str,
+        file_path: str,
+        shared_kustomize_file_mappings: dict[str, str],
+        kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
+        template_renderer_command: str,
         target_folder_path: str,
     ) -> None:
-        output, _ = Runner.get_binary_output(filePath, kustomizeProcessedFolderAndMeta, templateRendererCommand)
+        output, _ = Runner.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
         if not output:
             return
-        Runner._parse_output(output, filePath, kustomizeProcessedFolderAndMeta, target_folder_path, sharedKustomizeFileMappings)
+        Runner._parse_output(output, file_path, kustomize_processed_folder_and_meta, target_folder_path, shared_kustomize_file_mappings)
 
     def run_kustomize_to_k8s(
         self, root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> None:
         kustomize_dirs = find_kustomize_directories(root_folder, files, runner_filter.excluded_paths)
+        if not kustomize_dirs:
+            # nothing to process
+            return
+
         for kustomize_dir in kustomize_dirs:
             self.kustomizeProcessedFolderAndMeta[kustomize_dir] = self._parseKustomization(kustomize_dir)
         self.target_folder_path = tempfile.mkdtemp()
-        for filePath in self.kustomizeProcessedFolderAndMeta:
-            if self.kustomizeProcessedFolderAndMeta[filePath].get('type') == 'overlay':
-                self._handle_overlay_case(filePath)
+        for file_path in self.kustomizeProcessedFolderAndMeta:
+            if self.kustomizeProcessedFolderAndMeta[file_path].get('type') == 'overlay':
+                self._handle_overlay_case(file_path)
 
         if platform.system() == 'Windows':
-            sharedKustomizeFileMappings: dict[str, str] = {}
-            for filePath in self.kustomizeProcessedFolderAndMeta:
-                Runner._run_kustomize_parser(filePath, sharedKustomizeFileMappings, self.kustomizeProcessedFolderAndMeta,
-                                             self.templateRendererCommand, self.target_folder_path)
-            self.kustomizeFileMappings = sharedKustomizeFileMappings
+            if not self.templateRendererCommand:
+                logging.error("The 'templateRendererCommand' was not set correctly")
+                return
+
+            shared_kustomize_file_mappings: dict[str, str] = {}
+            for file_path in self.kustomizeProcessedFolderAndMeta:
+                Runner._run_kustomize_parser(
+                    file_path=file_path,
+                    shared_kustomize_file_mappings=shared_kustomize_file_mappings,
+                    kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
+                    template_renderer_command=self.templateRendererCommand,
+                    target_folder_path=self.target_folder_path,
+                )
+            self.kustomizeFileMappings = shared_kustomize_file_mappings
             return
 
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        sharedKustomizeFileMappings = copy.copy(manager.dict())
-        sharedKustomizeFileMappings.clear()
+        shared_kustomize_file_mappings = copy.copy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        shared_kustomize_file_mappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(
                 target=Runner._run_kustomize_parser,
                 args=(
                     filePath,
-                    sharedKustomizeFileMappings,
+                    shared_kustomize_file_mappings,
                     self.kustomizeProcessedFolderAndMeta,
                     self.templateRendererCommand,
                     self.target_folder_path
@@ -458,7 +502,7 @@ class Runner(BaseRunner):
         for proc in jobs:
             proc.join()
 
-        self.kustomizeFileMappings = dict(sharedKustomizeFileMappings)
+        self.kustomizeFileMappings = dict(shared_kustomize_file_mappings)
 
     def run(
         self,
@@ -473,7 +517,12 @@ class Runner(BaseRunner):
             self.pbar.turn_off_progress_bar()
 
         self.run_kustomize_to_k8s(root_folder, files, runner_filter)
-        report = Report(self.check_type)
+        report: "Report | list[Report]" = Report(self.check_type)
+
+        if not self.kustomizeProcessedFolderAndMeta:
+            # nothing to process
+            return report
+
         target_dir = ""
         try:
             k8s_runner = K8sKustomizeRunner()
