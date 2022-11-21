@@ -4,15 +4,20 @@ from typing import Any
 
 
 class ActionTrailLogAllRegions(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Action Trail Logging for all regions"
         id = "CKV_ALI_4"
-        supported_resources = ['alicloud_actiontrail_trail']
-        categories = [CheckCategories.LOGGING]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED)
+        supported_resources = ("alicloud_actiontrail_trail",)
+        categories = (CheckCategories.LOGGING,)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.PASSED,
+        )
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "trail_region"
 
     def get_expected_value(self) -> Any:

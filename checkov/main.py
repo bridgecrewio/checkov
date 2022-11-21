@@ -43,6 +43,7 @@ from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -249,6 +250,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
+
+            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+            if should_run_contributor_metrics:
+                try:        # collect contributor info and upload
+                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
+                except Exception as e:
+                    logger.warning(f"Unable to report contributor metrics due to: {e}")
+
         except MaxRetryError:
             return None
         except Exception:

@@ -25,5 +25,4 @@ BRIDGECREW_PLATFORM = 'Bridgecrew'
 
 MAX_IAC_FILE_SIZE = int(os.getenv('CHECKOV_MAX_IAC_FILE_SIZE', '50_000_000'))  # 50 MB is default limit
 
-
 CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('CHECKOV_RUN_SCA_PACKAGE_SCAN_V2', '').lower() == 'true'
