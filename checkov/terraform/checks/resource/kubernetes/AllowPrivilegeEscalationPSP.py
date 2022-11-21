@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
-from typing import Any, List
+from typing import Any
 
 
 class AllowPrivilegeEscalationPSP(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # CIS-1.3 1.7.5
         # CIS-1.5 5.2.5
         # https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
@@ -16,14 +18,14 @@ class AllowPrivilegeEscalationPSP(BaseResourceNegativeValueCheck):
         # Location: PodSecurityPolicy.spec.allowPrivilegeEscalation
         name = "Containers should not run with allowPrivilegeEscalation"
         id = "CKV_K8S_5"
-        supported_resources = ['kubernetes_pod_security_policy']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('kubernetes_pod_security_policy',)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
         return 'spec/[0]/allow_privilege_escalation'
 
-    def get_forbidden_values(self) -> List[Any]:
+    def get_forbidden_values(self) -> list[Any]:
         return [True]
 
 
