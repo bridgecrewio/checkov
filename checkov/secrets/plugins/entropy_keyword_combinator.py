@@ -23,11 +23,11 @@ from detect_secrets.util.filetype import determine_file_type
 from checkov.secrets.parsers.terraform.multiline_parser import terraform_multiline_parser
 from checkov.secrets.plugins.ignore_secret import ignore_secret
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
-from checkov.common.parsers.multiline_parser import BaseMultiLineParser
-from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
-from checkov.common.parsers.json.multiline_parser import json_multiline_parser
+from checkov.secrets.parsers.yaml.multiline_parser import yml_multiline_parser
+from checkov.secrets.parsers.json.multiline_parser import json_multiline_parser
 
 if TYPE_CHECKING:
+    from checkov.secrets.parsers.multiline_parser import BaseMultiLineParser
     from detect_secrets.core.potential_secret import PotentialSecret
     from detect_secrets.util.code_snippet import CodeSnippet
 
@@ -220,7 +220,7 @@ class EntropyKeywordCombinator(BasePlugin):
                     return potential_secrets
 
                 # not so classic key-value pair, from multiline, that is only in an array format.
-                # The scan is one-way backwards, so no duplicates expected.
+                # The scan searches forwards and backwards for a potential secret pair, so no duplicates expected.
                 elif multiline_parsers:
                     # iterate over multiple parser and their related file type.
                     # this is needed for file types, which embed other file type parser, ex Terraform with heredoc
