@@ -181,7 +181,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
 
-    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str], cross_variable_edges: bool = False):
+    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str], cross_variable_edges: bool = False, referenced_module: Optional[Dict[str, Any]] = None):
+        referenced_module_idx = referenced_module.get("idx") if referenced_module else None
+        referenced_module_path = referenced_module.get("path") if referenced_module else None
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
                     attribute_key, vertex.attributes
@@ -198,7 +200,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
                 for i in range(len(sub_values)):
                     reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
-                    if vertex.module_dependency:
+                    if referenced_module is not None:
+                        dest_node_index = self._find_vertex_index_relative_to_path(
+                            vertex_reference.block_type, reference_name, referenced_module_path, vertex.module_dependency,
+                            vertex.module_dependency_num, referenced_module_idx
+                        )
+                    elif vertex.module_dependency:
                         dest_node_index = self._find_vertex_index_relative_to_path(
                             vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
                             vertex.module_dependency_num
@@ -270,6 +277,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for origin_node_index in target_nodes_indexes:
             vertex = self.vertices[origin_node_index]
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
+            modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
+            for module in modules:
+                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                      cross_variable_edges: bool = False) -> bool:
@@ -352,10 +362,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         return os.path.realpath(dest_module_path)
 
     def _find_vertex_index_relative_to_path(
-        self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str
+        self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None
     ) -> int:
         relative_vertices = []
-        possible_vertices = self.vertices_by_module_dependency_by_name.get((module_path, module_num), {}).get(block_type, {}).get(name, [])
+        if relative_module_idx is not None:
+            module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
+        else:
+            module_dependency_by_name_key = (module_path, module_num)
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
@@ -466,11 +480,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     hash_breadcrumbs.append(breadcrumb)
                 vertex.breadcrumbs[attribute_key] = hash_breadcrumbs
             if len(vertex.source_module) == 1:
-                m = self.vertices[list(vertex.source_module)[0]]
-                source_module_data = [m.get_export_data()]
-                while len(m.source_module) == 1:
-                    m = self.vertices[list(m.source_module)[0]]
-                    source_module_data.append(m.get_export_data())
+                v = vertex
+                source_module_data = []
+                while len(v.source_module) == 1:
+                    idx = list(v.source_module)[0]
+                    v = self.vertices[idx]
+                    module_data = v.get_export_data()
+                    module_data["idx"] = idx
+                    source_module_data.append(module_data)
                 source_module_data.reverse()
                 vertex.breadcrumbs[CustomAttributes.SOURCE_MODULE] = source_module_data
 

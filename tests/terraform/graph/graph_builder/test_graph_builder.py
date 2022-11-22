@@ -277,6 +277,36 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
                         expected_label="[cross-variable] bucket")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES": "True"})
+    def test_build_graph_with_cross_modules_connections(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/cross_modules'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        var_bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE,
+                                                               'aws_s3_bucket_public_access_block.var_bucket')
+        bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket.example')
+
+        self.assertEqual(len(local_graph.edges), 5)
+        self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
+                        expected_label="[cross-variable] bucket")
+
+    @mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES": "True"})
+    def test_build_graph_with_cross_nested_modules_connections(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/cross_modules2'))
+
+        graph_manager = TerraformGraphManager(NetworkxConnector())
+        local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
+
+        var_bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE,
+                                                               'aws_s3_bucket_public_access_block.var_bucket')
+        bucket_resource = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket.example')
+
+        self.assertEqual(len(local_graph.edges), 8)
+        self.check_edge(local_graph, node_from=var_bucket_resource, node_to=bucket_resource,
+                        expected_label="[cross-variable] bucket")
+
     def test_nested_modules_address_attribute(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/nested_modules_address'))
         graph_manager = TerraformGraphManager(NetworkxConnector())
