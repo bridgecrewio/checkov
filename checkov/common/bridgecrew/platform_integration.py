@@ -66,6 +66,8 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
+GOV_CLOUD_REGION = 'us-gov-west-1'
+PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
 MAX_RETRIES = 40
 ONBOARDING_SOURCE = "checkov"
 
@@ -224,10 +226,15 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
+        region = DEFAULT_REGION
+        use_accelerate_endpoint = True
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.setup_api_urls()
+            if self.prisma_api_url == PRISMA_GOV_API_URL:
+                region = GOV_CLOUD_REGION
+                use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source and self.bc_source.upload_results:
@@ -235,12 +242,11 @@ class BcPlatformIntegration:
                 self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
-                self.timestamp = self.repo_path.split("/")[-1]
-                self.repo_path = path.join(self.repo_path, "src")
+                self.timestamp = self.repo_path.split("/")[-2]
                 self.credentials = cast("dict[str, str]", response["creds"])
                 config = Config(
                     s3={
-                        "use_accelerate_endpoint": True,
+                        "use_accelerate_endpoint": use_accelerate_endpoint,
                     }
                 )
                 self.s3_client = boto3.client(
@@ -248,7 +254,7 @@ class BcPlatformIntegration:
                     aws_access_key_id=self.credentials["AccessKeyId"],
                     aws_secret_access_key=self.credentials["SecretAccessKey"],
                     aws_session_token=self.credentials["SessionToken"],
-                    region_name=DEFAULT_REGION,
+                    region_name=region,
                     config=config,
                 )
                 self.platform_integration_configured = True
@@ -624,6 +630,7 @@ class BcPlatformIntegration:
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
             request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
+            logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
             logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
@@ -631,6 +638,9 @@ class BcPlatformIntegration:
 
     @staticmethod
     def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+        """
+        Validates only the filter names
+        """
         valid_filters = valid_filters or {}
 
         if not policy_filter:
@@ -640,10 +650,7 @@ class BcPlatformIntegration:
         for filter_name, filter_value in policy_filter.items():
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
-                return False
-            elif filter_value not in valid_filters[filter_name].get('options', []):
-                logging.warning(f"Invalid filter value: {filter_value}")
-                logging.warning(f"Available options: {valid_filters[filter_name].get('options')}")
+                logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
                 return False
             elif filter_name == 'policy.subtype' and filter_value != 'build':
                 logging.warning(f"Filter value not allowed: {filter_value}")

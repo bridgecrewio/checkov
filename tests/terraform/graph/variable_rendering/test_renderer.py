@@ -344,10 +344,9 @@ class TestRenderer(TestCase):
             local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
             resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
             assert len(resources_vertex[0].attributes.get('required_resource_access')) == 2
-            # TODO support nested with dict.
-            # assert resources_vertex[0].attributes.get('required_resource_access') == \
-            #        {'resource_app_id': '00000003-0000-0000-c000-000000000000',
-            #         'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
+            assert resources_vertex[0].attributes.get('required_resource_access') == \
+                   {'resource_app_id': '00000003-0000-0000-c000-000000000000',
+                    'resource_access': {'id': '7ab1d382-f21e-4acd-a863-ba3e13f7da61', 'type': 'Role'}}
 
     def test_dynamic_example_for_security_rule(self):
         graph_manager = TerraformGraphManager('m', ['m'])
@@ -380,3 +379,13 @@ class TestRenderer(TestCase):
             for resource_vertex in resources_vertex:
                 if resource_vertex.has_dynamic_block:
                     assert resource_vertex.attributes.get('stage', [{}])[0].get('name') == ['stage.value.name']
+
+    def test_dynamic_blocks_null_lookup(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_blocks_null_lookup"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert len(resources_vertex[0].attributes.get('ingress')) == 2
+        assert resources_vertex[0].attributes.get('ingress')[0].get('ipv6_cidr_blocks') == 'null'
+        assert resources_vertex[0].attributes.get('ingress')[0].get('self') == 'false'
+        assert resources_vertex[0].attributes.get('ingress')[0].get('cidr_blocks') == ['10.248.180.0/23', '10.248.186.0/23']
