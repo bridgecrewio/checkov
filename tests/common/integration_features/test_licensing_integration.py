@@ -101,22 +101,11 @@ class TestLicensingIntegration(unittest.TestCase):
         for runner in checkov_runners:
             self.assertEqual(licensing_integration.is_runner_valid(runner), runner_to_subscription_map[runner] != CustomerSubscription.SCA)
 
+        # value does not matter for this test, just checking if it's set
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.RESOURCE.value,
-                'git_clone_enabled': True  # value does not matter for this test
-            }
-        }
-
-        licensing_integration.pre_scan()
-        self.assertFalse(licensing_integration.open_source_only)
-
-        instance.customer_run_config_response = {
-            'license': {
-                'mode': CustomerLicense.DEVELOPER.value,
-                'modules': {
-
-                }
+                'modules': {m: True for m in module_keys},
+                'git_clone_enabled': True
             }
         }
 
@@ -124,6 +113,8 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertFalse(licensing_integration.open_source_only)
 
     def test_resource_mode(self):
+        # tests for return values that can occur when the user is in resource pricing
+
         instance = BcPlatformIntegration()
         instance.bc_api_key = '1234'
 
@@ -131,18 +122,36 @@ class TestLicensingIntegration(unittest.TestCase):
 
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.RESOURCE.value,
-                'git_clone_enabled': True  # value does not matter for this test
+                'modules': {m: True for m in module_keys},
+                'git_clone_enabled': True
             }
         }
 
         licensing_integration.pre_scan()
-        self.assertEqual(licensing_integration.licensing_type, CustomerLicense.RESOURCE)
 
         for runner in checkov_runners:
             self.assertTrue(licensing_integration.is_runner_valid(runner))
+        self.assertTrue(licensing_integration.should_run_image_referencer())
+        self.assertTrue(licensing_integration.include_old_secrets())
+        self.assertTrue(licensing_integration.include_new_secrets())
+
+        instance.customer_run_config_response = {
+            'license': {
+                'modules': {m: True for m in module_keys},
+                'git_clone_enabled': False
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        for runner in checkov_runners:
+            self.assertTrue(licensing_integration.is_runner_valid(runner))
+        self.assertTrue(licensing_integration.should_run_image_referencer())
+        self.assertTrue(licensing_integration.include_old_secrets())
+        self.assertFalse(licensing_integration.include_new_secrets())
 
     def test_developer_mode(self):
+        # tests for return values that can occur when the user is in dev pricing
         instance = BcPlatformIntegration()
         instance.bc_api_key = '1234'
 
@@ -151,42 +160,49 @@ class TestLicensingIntegration(unittest.TestCase):
         # test all enabled
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.DEVELOPER.value,
-                'modules': {key: True for key in module_keys}
+                'modules': {key: True for key in module_keys},
+                'git_clone_enabled': True
             }
         }
 
         licensing_integration.pre_scan()
-        self.assertEqual(licensing_integration.licensing_type, CustomerLicense.DEVELOPER)
 
         for runner in checkov_runners:
             self.assertTrue(licensing_integration.is_runner_valid(runner))
+        self.assertTrue(licensing_integration.should_run_image_referencer())
+        self.assertTrue(licensing_integration.include_old_secrets())
+        self.assertTrue(licensing_integration.include_new_secrets())
 
         instance.customer_run_config_response = {
             'license': {
-                'mode': CustomerLicense.DEVELOPER.value,
-                'modules': {key: False for key in module_keys}
+                'modules': {key: False for key in module_keys},
+                'git_clone_enabled': False
             }
         }
 
         licensing_integration.pre_scan()
-        self.assertEqual(licensing_integration.licensing_type, CustomerLicense.DEVELOPER)
 
         # test all disabled
         for runner in checkov_runners:
             self.assertFalse(licensing_integration.is_runner_valid(runner))
+        self.assertFalse(licensing_integration.should_run_image_referencer())
+        self.assertFalse(licensing_integration.include_old_secrets())
+        self.assertFalse(licensing_integration.include_new_secrets())
 
         # test one module at a time
         for module in module_keys:
             instance.customer_run_config_response = {
                 'license': {
-                    'mode': CustomerLicense.DEVELOPER.value,
-                    'modules': {key: key == module for key in module_keys}
+                    'modules': {key: key == module for key in module_keys},
+                    'git_clone_enabled': module == 'SECRETS'
                 }
             }
             licensing_integration.pre_scan()
             for runner in checkov_runners:
                 self.assertEqual(licensing_integration.is_runner_valid(runner), runner in subscription_to_runner_map[CustomerSubscription(module)])
+            self.assertEqual(licensing_integration.should_run_image_referencer(), module == 'SCA')
+            self.assertEqual(licensing_integration.include_old_secrets(), module == 'SECRETS')
+            self.assertEqual(licensing_integration.include_new_secrets(), module == 'SECRETS')
 
     def test_include_secrets(self):
         licensing_integration = LicensingIntegration(None)
@@ -195,21 +211,19 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertFalse(licensing_integration.include_new_secrets())
         self.assertTrue(licensing_integration.include_old_secrets())
 
+        # could be resource or dev pricing mode
         licensing_integration.open_source_only = False
-        licensing_integration.licensing_type = CustomerLicense.RESOURCE
         licensing_integration.git_clone_enabled = True
-        self.assertTrue(licensing_integration.include_new_secrets())
-        self.assertTrue(licensing_integration.include_old_secrets())
-
-        licensing_integration.git_clone_enabled = False
-        self.assertFalse(licensing_integration.include_new_secrets())
-        self.assertTrue(licensing_integration.include_old_secrets())
-
-        licensing_integration.licensing_type = CustomerLicense.DEVELOPER
         licensing_integration.enabled_modules = [CustomerSubscription.SECRETS]
         self.assertTrue(licensing_integration.include_new_secrets())
         self.assertTrue(licensing_integration.include_old_secrets())
 
+        # resource mode without git clone
+        licensing_integration.git_clone_enabled = False
+        self.assertFalse(licensing_integration.include_new_secrets())
+        self.assertTrue(licensing_integration.include_old_secrets())
+
+        # dev mode with secrets disabled
         licensing_integration.enabled_modules = []
         self.assertFalse(licensing_integration.include_new_secrets())
         self.assertFalse(licensing_integration.include_old_secrets())
@@ -220,14 +234,12 @@ class TestLicensingIntegration(unittest.TestCase):
         # starts in OSS mode
         self.assertFalse(licensing_integration.should_run_image_referencer())
 
+        # dev or resource mode, doesn't matter
         licensing_integration.open_source_only = False
-        licensing_integration.licensing_type = CustomerLicense.RESOURCE
-        self.assertTrue(licensing_integration.should_run_image_referencer())
-
-        licensing_integration.licensing_type = CustomerLicense.DEVELOPER
         licensing_integration.enabled_modules = [CustomerSubscription.SCA]
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
+        # dev mode with SCA disabled
         licensing_integration.enabled_modules = []
         self.assertFalse(licensing_integration.should_run_image_referencer())
 

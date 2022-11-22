@@ -53,39 +53,29 @@ class LicensingIntegration(BaseIntegrationFeature):
             logging.debug(f'User license details: {license_details}')
 
             self.open_source_only = False
-            self.licensing_type = CustomerLicense(license_details['mode'])
-
-            logging.debug(f'Customer license type: {self.licensing_type}')
-
-            if self.licensing_type == CustomerLicense.RESOURCE:
-                logging.debug('Customer is on legacy resource licensing, so all frameworks are enabled')
-                self.git_clone_enabled = license_details['git_clone_enabled']
-                logging.debug(f'git clone is {"en" if self.git_clone_enabled else "dis"}abled, so new secret signatures will {"" if self.git_clone_enabled else "not "} be used')
-            else:
-                logging.debug('Customer is on developer-based licensing')
-                self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get('modules').items() if e]
-                logging.debug(f'The following modules are enabled: {self.enabled_modules}')
+            self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get('modules').items() if e]
+            self.git_clone_enabled = license_details['git_clone_enabled']
 
     def is_runner_valid(self, runner: str):
-        if self.licensing_type == CustomerLicense.RESOURCE:
-            logging.debug(f'Checking if {runner} is valid for license - license type is {CustomerLicense.RESOURCE}, so all runners are valid')
-            return True
-        elif self.licensing_type == CustomerLicense.DEVELOPER:
+        logging.debug(f'Checking if {runner} is valid for license')
+        if self.open_source_only:
+            enabled = CodeCategoryMapping[runner] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
+            logging.debug('Open source mode - the runner is {"en" if enabled else "dis"}abled')
+        else:
             sub_type = LicensingIntegration.get_subscription_for_runner(runner)
             enabled = sub_type in self.enabled_modules
-            logging.debug(f'Checking if {runner} is valid for license - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
-            return enabled
-        else:  # open_source_only is True
-            return CodeCategoryMapping[runner] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
+            logging.debug(f'Customer mode - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
+
+        return enabled
 
     def include_old_secrets(self):
-        return self.licensing_type == CustomerLicense.RESOURCE or self.open_source_only or (self.licensing_type == CustomerLicense.DEVELOPER and CustomerSubscription.SECRETS in self.enabled_modules)
+        return self.open_source_only or CustomerSubscription.SECRETS in self.enabled_modules
 
     def include_new_secrets(self):
-        return (self.licensing_type == CustomerLicense.RESOURCE and self.git_clone_enabled) or (self.licensing_type == CustomerLicense.DEVELOPER and CustomerSubscription.SECRETS in self.enabled_modules)
+        return self.git_clone_enabled and CustomerSubscription.SECRETS in self.enabled_modules
 
     def should_run_image_referencer(self):
-        return self.licensing_type == CustomerLicense.RESOURCE or (self.licensing_type == CustomerLicense.DEVELOPER and CustomerSubscription.SCA in self.enabled_modules)
+        return not self.open_source_only and CustomerSubscription.SCA in self.enabled_modules
 
     @staticmethod
     def get_subscription_for_runner(runner: str):
