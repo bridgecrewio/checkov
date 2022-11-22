@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 from typing import TYPE_CHECKING, Any, Iterable
 
@@ -72,7 +71,6 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             if job_name:
                 image_name = Runner.resolve_image_name(definition['jobs'][job_name], start_line, end_line)
                 new_key = f'jobs.{job_name}.docker.image#{image_name}'
-        logging.info(f"{new_key=}")
         return new_key
 
     def run(
