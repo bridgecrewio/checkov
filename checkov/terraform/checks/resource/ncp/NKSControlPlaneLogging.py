@@ -13,8 +13,5 @@ class NKSControlPlaneLogging(BaseResourceValueCheck):
     def get_inspected_key(self):
         return 'log/0/audit/0'
 
-    def get_expected_values(self):
-        return [True]
-
 
 check = NKSControlPlaneLogging()
