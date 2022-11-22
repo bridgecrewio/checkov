@@ -26,7 +26,7 @@ class PreventVolatileOrbs(BaseCircleCIPipelinesCheck):
                     # Potentially more JMEpath reflection-foo can resolve this so we end up with a call to scan_entity_conf per orb.
                     return CheckResult.FAILED, conf
         
-        return CheckResult.PASSED, conf
+        return CheckResult.UNKNOWN, conf
 
 
 check = PreventVolatileOrbs()

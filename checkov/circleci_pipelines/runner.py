@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Iterable
 
 from checkov.circleci_pipelines.image_referencer.manager import CircleCIImageReferencerManager
 from checkov.common.images.image_referencer import Image, ImageReferencerMixin
@@ -44,6 +45,35 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("config.yml", "config.yaml"))
+
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     start_line: int = -1, end_line: int = -1) -> str:
+        """
+        supported resources for circleCI:
+            jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}
+            jobs.*.steps[]
+            orbs.{orbs: @}
+        """
+        new_key = key
+        definition = self.definitions.get(file_path, {})
+        if not definition or not isinstance(definition, dict):
+            return new_key
+        if 'orbs.{orbs: @}' in supported_entities:
+            new_key = "orbs"
+        elif 'jobs.*.steps[]' in supported_entities:
+            job_name = Runner.resolve_job_name(definition, start_line, end_line)
+            new_key = f"jobs.{job_name}" if job_name else "jobs"
+            if job_name:
+                step_name = Runner.resolve_step_name(definition['jobs'][job_name], start_line, end_line)
+                new_key = f'jobs.{job_name}.steps.{step_name}'
+        elif 'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}' in supported_entities:
+            job_name = Runner.resolve_job_name(definition, start_line, end_line)
+            new_key = f"jobs.{job_name}" if job_name else "jobs"
+            if job_name:
+                image_name = Runner.resolve_image_name(definition['jobs'][job_name], start_line, end_line)
+                new_key = f'jobs.{job_name}.docker.{image_name}'
+        logging.info(f"{new_key=}")
+        return new_key
 
     def run(
             self,

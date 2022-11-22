@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.runners.object_runner import Runner as ObjectRunner
+from checkov.common.util.consts import START_LINE, END_LINE
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -53,3 +54,34 @@ class Runner(ObjectRunner):
             start = result_config["__startline__"]
             end = result_config["__endline__"]
         return end, start
+
+    @staticmethod
+    def resolve_job_name(definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        for key, job in definition.get('jobs', {}).items():
+            if key in [START_LINE, END_LINE]:
+                continue
+            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
+                return str(key)
+        return ""
+
+    @staticmethod
+    def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
+            if isinstance(step, str):
+                return f"{idx + 1}[{step}]"
+            elif isinstance(step, dict):
+                if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
+                    name = step.get('name')
+                    return f"{idx + 1}[{name}]" if name else str(idx + 1)
+        return ""
+
+    @staticmethod
+    def resolve_image_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+        for idx, step in enumerate([step for step in job_definition.get('docker') or [] if step]):
+            if isinstance(step, str):
+                return f"{idx + 1}[{step}]"
+            elif isinstance(step, dict):
+                if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
+                    name = step.get('image')
+                    return f"{idx + 1}[{name}]" if name else str(idx + 1)
+        return ""
