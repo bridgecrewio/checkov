@@ -77,6 +77,8 @@ class Runner(TerraformRunner):
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
+            if not root_folder:
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
@@ -103,7 +105,7 @@ class Runner(TerraformRunner):
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
             else:
-                scanned_file = f"/{os.path.relpath(full_file_path)}"
+                scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
