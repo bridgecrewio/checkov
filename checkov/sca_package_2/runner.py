@@ -113,6 +113,7 @@ class Runner(BaseRunner[None]):
                 packages=packages,
                 license_statuses=license_statuses,
                 report_type=self.report_type,
+                dependencies=result.get("dependencies", None)
             )
 
         return report

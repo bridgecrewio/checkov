@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 
 BICEP_POSSIBLE_ENDINGS = [".bicep"]
+BICEP_START_LINE = "__start_line__"
+BICEP_END_LINE = "__end_line__"
 
 
 def get_scannable_file_paths(root_folder: str | Path | None = None, files: list[str] | None = None) -> set[Path]:
