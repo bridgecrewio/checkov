@@ -1,5 +1,3 @@
-
-
 resource "aws_s3_bucket_acl" "fail_1" {
   bucket = "name"
   access_control_policy {
