@@ -23,7 +23,6 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
     normalize_twistcli_language,
-    get_package_alias_for_dependencies
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -267,7 +266,7 @@ def add_to_reports_cves_and_packages(
 
     for vulnerability in vulnerabilities:
         package_alias = get_package_alias(vulnerability["packageName"], vulnerability["packageVersion"])
-        if not vulnerable_packages[package_alias]:
+        if package_alias not in vulnerable_packages:
             vulnerable_packages[package_alias] = []
 
         vulnerable_packages[package_alias].append(vulnerability)

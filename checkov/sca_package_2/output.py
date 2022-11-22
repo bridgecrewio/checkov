@@ -308,15 +308,19 @@ def create_fixable_cve_summary_table_part(
 def create_package_overview_table_part(
         table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
+
+
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
+    symbols = package_table.bottom_left_junction_char
+    symbols_2 = package_table.vertical_char
     package_table.field_names = [
         "Package",
         "CVE ID",
         "Severity",
         "Current version",
-        "Fixed version",
+        "Root fixed version",
         "Compliant version",
     ]
     for package_idx, (package_name, details) in enumerate(package_details_map.items()):
@@ -344,6 +348,28 @@ def create_package_overview_table_part(
                     col_compliant_version,
                 ]
             )
+            package_table.add_row(
+                [
+                    "".join([symbols, ' xxx']),
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                ]
+            )
+            package_table.add_row(
+                [
+                    "".join([symbols_2, ' xxx']),
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                    'xxxxx',
+                ]
+            )
+
+        #check for dependencies and if we have add them + adjustment
 
         package_table.align = "l"
         package_table.min_width = column_width
