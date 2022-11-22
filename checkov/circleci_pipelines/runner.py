@@ -71,7 +71,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             new_key = f"jobs.{job_name}" if job_name else "jobs"
             if job_name:
                 image_name = Runner.resolve_image_name(definition['jobs'][job_name], start_line, end_line)
-                new_key = f'jobs.{job_name}.docker.{image_name}'
+                new_key = f'jobs.{job_name}.docker.image#{image_name}'
         logging.info(f"{new_key=}")
         return new_key
 
