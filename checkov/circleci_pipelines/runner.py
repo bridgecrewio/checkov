@@ -10,6 +10,9 @@ from checkov.circleci_pipelines.registry import registry
 from checkov.common.util.type_forcers import force_dict
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
+from checkov.yaml_doc.runner import resolve_sub_name
+from checkov.yaml_doc.runner import resolve_image_name
+from checkov.yaml_doc.runner import resolve_step_name
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -60,16 +63,16 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         if 'orbs.{orbs: @}' in supported_entities:
             new_key = "orbs"
         elif 'jobs.*.steps[]' in supported_entities:
-            job_name = Runner.resolve_job_name(definition, start_line, end_line)
+            job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
             new_key = f"jobs.{job_name}" if job_name else "jobs"
             if job_name:
-                step_name = Runner.resolve_step_name(definition['jobs'][job_name], start_line, end_line)
+                step_name = resolve_step_name(definition['jobs'][job_name], start_line, end_line)
                 new_key = f'jobs.{job_name}.steps.{step_name}'
         elif 'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}' in supported_entities:
-            job_name = Runner.resolve_job_name(definition, start_line, end_line)
+            job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
             new_key = f"jobs.{job_name}" if job_name else "jobs"
             if job_name:
-                image_name = Runner.resolve_image_name(definition['jobs'][job_name], start_line, end_line)
+                image_name = resolve_image_name(definition['jobs'][job_name], start_line, end_line)
                 new_key = f'jobs.{job_name}.docker.image#{image_name}'
         return new_key
 

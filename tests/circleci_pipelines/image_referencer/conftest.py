@@ -140,6 +140,7 @@ def circle_ci_image1(file_path) -> Image:
           start_line=16,
           name='mongo:2.6.8',
           file_path=file_path,
+          related_resource_id='executors.image-executor.docker.image#1[mongo:2.6.8]',
         )
     return image
 
@@ -151,6 +152,7 @@ def circle_ci_image2(file_path) -> Image:
           start_line=21,
           name='mongo:2.6.8',
           file_path=file_path,
+          related_resource_id='jobs.test-docker-versioned-img.docker.image#1[mongo:2.6.8]',
         )
     return image
 

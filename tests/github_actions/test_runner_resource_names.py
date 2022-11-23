@@ -1,5 +1,6 @@
 import pytest
 from checkov.github_actions.runner import Runner
+from checkov.yaml_doc.runner import resolve_sub_name
 
 
 @pytest.mark.parametrize(
@@ -13,7 +14,7 @@ from checkov.github_actions.runner import Runner
     ],
 )
 def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
-    job_name = Runner.resolve_job_name(definition, start_line, end_line)
+    job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
 
     assert job_name == expected_job_name
 
@@ -21,8 +22,8 @@ def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
 @pytest.mark.parametrize(
     "key,expected_key, supported_entities, start_line, end_line",
     [
-        ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job",
-         ('jobs', 'jobs.*.steps[]'), 7, 23),
+        # ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job",
+        #  ('jobs', 'jobs.*.steps[]'), 7, 23),
         ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps.1[Check for dockerenv file]",
          ('jobs', 'jobs.*.steps[]'), 18, 23),
     ],

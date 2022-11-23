@@ -55,33 +55,36 @@ class Runner(ObjectRunner):
             end = result_config["__endline__"]
         return end, start
 
-    @staticmethod
-    def resolve_job_name(definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for key, job in definition.get('jobs', {}).items():
-            if key in [START_LINE, END_LINE]:
-                continue
-            if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
-                return str(key)
-        return ""
 
-    @staticmethod
-    def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
-            if isinstance(step, str):
-                return f"{idx + 1}[{step}]"
-            elif isinstance(step, dict):
-                if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
-                    name = step.get('name')
-                    return f"{idx + 1}[{name}]" if name else str(idx + 1)
-        return ""
+def resolve_sub_name(definition: dict[str, Any], start_line: int, end_line: int, tag: str) -> str:
+    for key, sub_name in definition.get(tag, {}).items():
+        if key in [START_LINE, END_LINE]:
+            continue
+        if sub_name[START_LINE] <= start_line <= end_line <= sub_name[END_LINE]:
+            return str(key)
+    return ""
 
-    @staticmethod
-    def resolve_image_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
-        for idx, step in enumerate([step for step in job_definition.get('docker') or [] if step]):
-            if isinstance(step, str):
-                return f"{idx + 1}[{step}]"
-            elif isinstance(step, dict):
-                if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
-                    name = step.get('image')
-                    return f"{idx + 1}[{name}]" if name else str(idx + 1)
-        return ""
+
+def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+    for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
+        if isinstance(step, str):
+            return f"{idx + 1}[{step}]"
+        elif isinstance(step, dict):
+            if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
+                name = step.get('name')
+                return f"{idx + 1}[{name}]" if name else str(idx + 1)
+    return ""
+
+
+def resolve_image_name(image_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+    for idx, step in enumerate([step for step in image_definition.get('docker') or [] if step]):
+        if isinstance(image_definition.get('docker'), dict):
+            if step == 'image':
+                return f"{idx + 1}[{image_definition['docker'][step]}]"
+        if isinstance(step, str):
+            return f"{idx + 1}[{step}]"
+        elif isinstance(step, dict):
+            if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
+                name = step.get('image')
+                return f"{idx + 1}[{name}]" if name else str(idx + 1)
+    return ""
