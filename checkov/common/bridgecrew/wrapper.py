@@ -5,6 +5,7 @@ import os
 import json
 import itertools
 from typing import Any, TYPE_CHECKING
+from collections import defaultdict
 
 import dpath.util
 
@@ -37,9 +38,14 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
 
 
 def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
-    return {check.check_id: dict({k: getattr(check, k, "") for k in check_metadata_keys},
-                                 **{'file_object_path': full_repo_object_key + check.file_path}) for check in
-            list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks))}
+    metadata = defaultdict(dict)
+    for check in list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)):
+        metadata_key = f'{check.file_path}:{check.resource}'
+        check_meta = dict({k: getattr(check, k, "") for k in check_metadata_keys},
+             **{'file_object_path': full_repo_object_key + check.file_path})
+        metadata[metadata_key][check.check_id] = check_meta
+
+    return metadata
 
 
 def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanReport]:
