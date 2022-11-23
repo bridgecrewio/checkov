@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
 import jmespath
 
@@ -17,7 +16,7 @@ class CircleCIProvider:
         self.file_path = file_path
         self.workflow_config = workflow_config
 
-    def generate_resource_key(self, start_line: int, end_line: int, tag: str):
+    def generate_resource_key(self, start_line: int, end_line: int, tag: str) -> str:
         sub_name = resolve_sub_name(self.workflow_config, start_line, end_line, tag)
         new_key = f"{tag}.{sub_name}" if sub_name else tag
         if sub_name:
