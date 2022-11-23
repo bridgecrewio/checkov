@@ -22,6 +22,7 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
     integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.output.csv import CSVSBOM
@@ -61,6 +62,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool_name
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
+        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -74,34 +76,40 @@ class RunnerRegistry:
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
         if len(self.runners) == 1:
-            if licensing_integration.is_runner_valid(self.runners[0]):
+            runner_name = self.runners[0].check_type
+            if self.licensing_integration.is_runner_valid(runner_name):
                 reports: Iterable[Report | list[Report]] = [
                     self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                         runner_filter=self.runner_filter,
                                         collect_skip_comments=collect_skip_comments)]
             else:
                 # This is the only runner, so raise a clear indication of failure
-                raise Exception('Framework is not enabled')
+                raise ModuleNotEnabledError(f'The framework {runner_name} is part of the {self.licensing_integration.get_subscription_for_runner(runner_name).name} module, which is not enabled in the platform')
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
-                if licensing_integration.is_runner_valid(runner):
-                    report = runner.run(
-                        root_folder=root_folder,
-                        external_checks_dir=external_checks_dir,
-                        files=files,
-                        runner_filter=self.runner_filter,
-                        collect_skip_comments=collect_skip_comments,
-                    )
-                    if report is None:
-                        # this only happens, when an uncaught exception inside the runner occurs
-                        logging.error(f"Failed to create report for {runner.check_type} framework")
-                        report = Report(check_type=runner.check_type)
-                else:
-                    report = Report(None)
+                report = runner.run(
+                    root_folder=root_folder,
+                    external_checks_dir=external_checks_dir,
+                    files=files,
+                    runner_filter=self.runner_filter,
+                    collect_skip_comments=collect_skip_comments,
+                )
+                if report is None:
+                    # this only happens, when an uncaught exception inside the runner occurs
+                    logging.error(f"Failed to create report for {runner.check_type} framework")
+                    report = Report(check_type=runner.check_type)
 
                 return report
 
-            reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
+            valid_runners = []
+
+            for runner in self.runners:
+                if self.licensing_integration.is_runner_valid(runner.check_type):
+                    valid_runners.append(runner)
+                else:
+                    logging.info(f'Skipping the framework {runner.check_type} - part of the {self.licensing_integration.get_subscription_for_runner(runner.check_type).name} module, which is not enabled in the platform')
+
+            reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
 
         merged_reports = self._merge_reports(reports)
 

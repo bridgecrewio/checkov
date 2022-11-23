@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional, List
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
-from checkov.common.bridgecrew.licensing import CustomerLicense, SubscriptionCategoryMapping, \
+from checkov.common.bridgecrew.licensing import SubscriptionCategoryMapping, \
     CategoryToSubscriptionMapping, CustomerSubscription
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
@@ -29,7 +29,6 @@ CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z
 class LicensingIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=6)
-        self.licensing_type: Optional[CustomerLicense] = None
         self.enabled_modules: List[CustomerSubscription] = []
         self.open_source_only: bool = True
         self.git_clone_enabled: bool = False
@@ -47,9 +46,7 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.open_source_only = True
         else:
             logging.debug('Found customer run config and using it for licensing')
-
             license_details = self.bc_integration.customer_run_config_response.get('license') # TODO
-
             logging.debug(f'User license details: {license_details}')
 
             self.open_source_only = False
@@ -85,7 +82,6 @@ class LicensingIntegration(BaseIntegrationFeature):
         pass
 
     def pre_runner(self, runner: _BaseRunner) -> None:
-        # not used
         pass
 
 

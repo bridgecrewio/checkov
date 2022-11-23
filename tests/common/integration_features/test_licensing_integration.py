@@ -1,11 +1,28 @@
+import os
 import unittest
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import LicensingIntegration
-from checkov.common.bridgecrew.licensing import CustomerLicense, CustomerSubscription, SubscriptionCategoryMapping, \
+from checkov.common.bridgecrew.licensing import CustomerSubscription, SubscriptionCategoryMapping, \
     CategoryToSubscriptionMapping
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.runner_filter import RunnerFilter
+
+from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
+from checkov.secrets.runner import Runner as secrets_runner
+from checkov.terraform.runner import Runner as tf_graph_runner
+
+
+DEFAULT_RUNNERS = (
+    tf_graph_runner(),
+    secrets_runner(),
+    bitbucket_configuration_runner(),
+    sca_package_runner_2()
+)
 
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 module_keys = [e.value for e in CustomerSubscription]
@@ -242,6 +259,77 @@ class TestLicensingIntegration(unittest.TestCase):
         # dev mode with SCA disabled
         licensing_integration.enabled_modules = []
         self.assertFalse(licensing_integration.should_run_image_referencer())
+
+    def test_runner_registry_single_runner(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+        licensing_integration = LicensingIntegration(instance)
+        instance.customer_run_config_response = {
+            'license': {
+                'modules': {m: True for m in module_keys},
+                'git_clone_enabled': True
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        scan_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+
+        runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.licensing_integration = licensing_integration
+        reports = runner_registry.run(root_folder=scan_dir)
+        self.assertEqual(len(reports), 1)
+        self.assertIsNotNone(reports[0])
+
+    def test_runner_registry_single_runner_hard_fail(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+        licensing_integration = LicensingIntegration(instance)
+        instance.customer_run_config_response = {
+            'license': {
+                'modules': {m: False for m in module_keys},
+                'git_clone_enabled': True
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        scan_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+
+        runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.licensing_integration = licensing_integration
+        try:
+            runner_registry.run(root_folder=scan_dir)
+            raise AssertionError('Runner registry should hard fail because a single framework was used')
+        except Exception as e:
+            self.assertTrue(isinstance(e, ModuleNotEnabledError))
+
+    def test_runner_registry_multiple_runners(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+        licensing_integration = LicensingIntegration(instance)
+        instance.customer_run_config_response = {
+            'license': {
+                'modules': {
+                    'IAC': True,
+                    'SECRETS': False,
+                    'SCA': False
+                },
+                'git_clone_enabled': False
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        scan_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+
+        runner_filter = RunnerFilter(framework=['terraform', 'bitbucket_configuration', 'sca_package', 'secrets'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.licensing_integration = licensing_integration
+        reports = runner_registry.run(root_folder=scan_dir)
+        self.assertEqual(len(reports), 2)  # terraform and bitbucket
 
 
 if __name__ == '__main__':

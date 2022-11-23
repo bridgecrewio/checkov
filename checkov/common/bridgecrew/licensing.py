@@ -5,11 +5,6 @@ from enum import Enum
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 
 
-class CustomerLicense(Enum):
-    RESOURCE = "resource"
-    DEVELOPER = "developer"
-
-
 class CustomerSubscription(Enum):
     IAC = "IAC"
     SCA = "SCA"
