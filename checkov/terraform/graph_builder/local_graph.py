@@ -66,7 +66,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.update_nested_modules_address()
             if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
                 # experimental flag on building cross variable edges for terraform graph
+                logging.info(f"Building cross variable edges")
+                edges_count = len(self.edges)
                 self._build_cross_variable_edges()
+                logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
