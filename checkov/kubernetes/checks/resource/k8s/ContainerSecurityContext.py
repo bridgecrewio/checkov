@@ -7,7 +7,7 @@ from checkov.kubernetes.checks.resource.base_container_check import BaseK8sConta
 class ContainerSecurityContext(BaseK8sContainerCheck):
     def __init__(self) -> None:
         # CIS-1.5 5.7.3
-        name = "Apply security context to your pods and containers"
+        name = "Apply security context to your containers"
         # Security context can be set at pod or container level.
         # Location: container .securityContext
         id = "CKV_K8S_30"
