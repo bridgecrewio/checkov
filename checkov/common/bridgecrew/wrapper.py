@@ -42,7 +42,7 @@ def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[
     for check in list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = dict({k: getattr(check, k, "") for k in check_metadata_keys},
-             **{'file_object_path': full_repo_object_key + check.file_path})
+                          **{'file_object_path': full_repo_object_key + check.file_path})
         metadata[metadata_key][check.check_id] = check_meta
 
     return metadata
@@ -75,7 +75,8 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
 
 
 def persist_checks_results(
-    reduced_scan_reports: dict[str, _ReducedScanReport], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        reduced_scan_reports: dict[str, _ReducedScanReport], s3_client: BaseClient, bucket: str,
+        full_repo_object_key: str
 ) -> dict[str, str]:
     """
     Save reduced scan reports into bridgecrew's platform
@@ -90,7 +91,7 @@ def persist_checks_results(
 
 
 def persist_run_metadata(
-    run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> None:
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
     try:
@@ -101,7 +102,7 @@ def persist_run_metadata(
 
 
 def enrich_and_persist_checks_metadata(
-    scan_reports: list[Report], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        scan_reports: list[Report], s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> dict[str, dict[str, str]]:
     """
     Save checks metadata into bridgecrew's platform
