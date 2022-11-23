@@ -45,7 +45,7 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, file
 
 def test_runner_image_check(file_path):
     test_file = RESOURCES_PATH / file_path
-    runner_filter = RunnerFilter(framework=['circleci'], checks=['CKV_CIRCLECIPIPELINES_8'])
+    runner_filter = RunnerFilter(framework=['circleci_pipelines'], checks=['CKV_CIRCLECIPIPELINES_8'])
 
     report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
