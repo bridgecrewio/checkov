@@ -38,7 +38,7 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
 
 
 def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
-    metadata = defaultdict(dict)
+    metadata: dict[str, dict[str, Any]] = defaultdict(dict)
     for check in list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = dict({k: getattr(check, k, "") for k in check_metadata_keys},
