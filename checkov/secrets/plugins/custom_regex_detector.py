@@ -45,7 +45,6 @@ def load_detectors() -> list[dict[str, Any]]:
             policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
                 customer_run_config_response['secretsPolicies'] else []
         except Exception as e:
-            logging.error(f'Failed to get detectors from customer_run_config_response, error: {e}')
             return []
 
         if policies_list:
@@ -82,8 +81,6 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
                                                  'Regex': regex})
-        if not_parsed:
-            logging.info(f'policy : {secret_policy} could not be parsed')
     return custom_detectors
 
 
