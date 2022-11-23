@@ -39,5 +39,5 @@ def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path
     assert len(circleci_report.skipped_checks) == 0
     assert len(circleci_report.parsing_errors) == 0
 
-    assert len(sca_image_report.extra_resources) == 9
-    assert len(sca_image_report.image_cached_results) == 9
+    assert len(sca_image_report.extra_resources) == 10
+    assert len(sca_image_report.image_cached_results) == 10

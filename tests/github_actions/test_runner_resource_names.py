@@ -22,8 +22,8 @@ def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
 @pytest.mark.parametrize(
     "key,expected_key, supported_entities, start_line, end_line",
     [
-        # ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job",
-        #  ('jobs', 'jobs.*.steps[]'), 7, 23),
+        ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job",
+         ('jobs', 'jobs.*.steps[]'), 7, 23),
         ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps.1[Check for dockerenv file]",
          ('jobs', 'jobs.*.steps[]'), 18, 23),
     ],
