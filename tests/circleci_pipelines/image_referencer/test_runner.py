@@ -41,3 +41,15 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, file
 
     assert len(sca_image_report.extra_resources) == 9
     assert len(sca_image_report.image_cached_results) == 9
+
+
+def test_runner_image_check(file_path):
+    test_file = RESOURCES_PATH / file_path
+    runner_filter = RunnerFilter(framework=['circleci'], checks=['CKV_CIRCLECIPIPELINES_8'])
+
+    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+
+    assert len(report.failed_checks) == 0
+    assert report.parsing_errors == []
+    assert len(report.passed_checks) == 1
+    assert report.skipped_checks ==[]
