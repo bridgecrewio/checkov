@@ -55,6 +55,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}
             jobs.*.steps[]
             orbs.{orbs: @}
+
+        NOTICE!!!! this function assumes len(supported_entities) == 1. in case this is changes -->
+        probably the order of the entities will decide the key, which is not correct.
         """
         new_key = key
         definition = self.definitions.get(file_path, {})

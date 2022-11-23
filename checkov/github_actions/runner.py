@@ -72,7 +72,13 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
                      start_line: int = -1, end_line: int = -1) -> str:
         """
         supported resources for GHA:
-            jobs, jobs.<job_name>.steps<#step_number>[<step_name>], permissions, on
+            jobs
+            jobs.<job_name>.steps<#step_number>[<step_name>]
+            permissions
+            on
+
+        NOTICE!!!! this function assumes len(supported_entities) == 1 (in a sense, excluding jobs).
+        in case this is changes --> probably the order of the entities will decide the key, which is not correct.
         """
         new_key = key
         definition = self.definitions.get(file_path, {})
