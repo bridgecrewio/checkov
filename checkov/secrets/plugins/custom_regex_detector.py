@@ -15,9 +15,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
 
-SCAN_RESULT_BUCKET = os.getenv('RESULT_BUCKET', 'missing_result_bucket')
-USE_LOCAL_FILE = os.getenv('USE_LOCAL_FILE',
-                           False)  # temporary, so we still load detectors from local file - remove once detectors are on s3.
 
 DETECTORS_BY_CUSTOMER_CACHE: dict[str, list[dict[str, Any]]] = {}
 
