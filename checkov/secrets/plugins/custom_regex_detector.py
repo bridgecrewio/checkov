@@ -11,12 +11,13 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 import re
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
-from utilsPython.s3.helpers import get_json_object
 
 SCAN_RESULT_BUCKET = os.getenv('RESULT_BUCKET', 'missing_result_bucket')
-USE_LOCAL_FILE = os.getenv('USE_LOCAL_FILE', True)  # temporary, so we still load detectors from local file - remove once detectors are on s3.
+USE_LOCAL_FILE = os.getenv('USE_LOCAL_FILE',
+                           False)  # temporary, so we still load detectors from local file - remove once detectors are on s3.
 
 DETECTORS_BY_CUSTOMER_CACHE: dict[str, list[dict[str, Any]]] = {}
 
@@ -33,25 +34,21 @@ def get_detectors_from_cache(customer_name: str | None) -> list[dict[str, Any]]:
 
 
 def get_detectors_from_local_file() -> list[dict[str, Any]]:
-    plugins_path = os.getenv('CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH')
-    with open(f'{plugins_path}/detectors.json') as f:
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(f'{current_dir}/detectors.json') as f:
         return cast("list[dict[str, Any]]", json.load(f))
 
 
 def load_detectors() -> list[dict[str, Any]]:
     customer_name = os.getenv('CUSTOMER_NAME')
     detectors = get_detectors_from_cache(customer_name)
-    secrets_file_path = f'secrets/{customer_name}/secretPolicies.json'
     if not detectors:
-        policies_list: List[dict[str, Any]] | dict[str, Any] = []
         try:
-            if USE_LOCAL_FILE:
-                detectors = get_detectors_from_local_file()
-            else:
-                policies_list = get_json_object(bucket=SCAN_RESULT_BUCKET, object_path=secrets_file_path,
-                                                throw_json_error=True) or []
+            customer_run_config_response = bc_integration.customer_run_config_response
+            policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
+                customer_run_config_response['secretsPolicies'] else []
         except Exception as e:
-            logging.error(f'Failed to get detectors from s3, error: {e}')
+            logging.error(f'Failed to get detectors from customer_run_config_response, error: {e}')
             return []
 
         if policies_list:
@@ -83,7 +80,8 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
                 if 'value' in code_dict['definition']:
                     not_parsed = False
                     for regex in code_dict['definition']['value']:
-                        check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else secret_policy['incidentId']
+                        check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
+                        secret_policy['incidentId']
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
                                                  'Regex': regex})
@@ -131,7 +129,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
         return output
 
-    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
+    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[
+        Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
