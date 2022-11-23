@@ -277,9 +277,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         if cross_variable_edges:
-            if edge in self.edges:
+            if edge in self.edges or self.vertices[edge.dest].block_type != BlockType.RESOURCE or \
+                    self.vertices[edge.origin].block_type != BlockType.RESOURCE:
                 return False
             edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
+            if edge in self.edges:
+                return False
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
         self.in_edges[dest_vertex_index].append(edge)
