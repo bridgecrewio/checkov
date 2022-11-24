@@ -5,7 +5,6 @@ import linecache
 import logging
 import os
 import re
-from os.path import exists
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
