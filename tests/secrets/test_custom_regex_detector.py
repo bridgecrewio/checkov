@@ -4335,11 +4335,11 @@ class TestCustomRegexDetector(unittest.TestCase):
             }
         ]
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/custom_regex_detecto"
+        valid_dir_path = current_dir + "/resources/custom_regex_detector"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets']))
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 8)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])

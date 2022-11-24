@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from abc import ABC
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
 
 import yaml
@@ -60,13 +59,14 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
     return custom_detectors
 
 
-class CustomRegexDetector(RegexBasedDetector, ABC):
+class CustomRegexDetector(RegexBasedDetector):
+    secret_type = "Regex Detector"
 
     denylist: Set[Pattern[str]] = set()
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
-        self.denylist = set()
+        self.denylist: set[Pattern[str]] = set()
         detectors = load_detectors()
 
         for detector in detectors:
