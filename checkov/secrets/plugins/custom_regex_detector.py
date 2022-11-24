@@ -62,7 +62,7 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
 
 
 class CustomRegexDetector(RegexBasedDetector):
-    secret_type = "Regex Detector"  # noqa: CCE003
+    secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
 
     def __init__(self) -> None:
