@@ -87,6 +87,7 @@ class Parser:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
         self.visited_definition_keys = set()
+        self.module_to_resolved = {}
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -113,6 +114,7 @@ class Parser:
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
+        self._update_resolved_modules()
 
     def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
         if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
@@ -393,6 +395,15 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
+                    file_key = self.get_file_key(file, nested_data)
+                    current_nested_data = (file_key, module_index, module_call_name)
+
+                    if current_nested_data in self.module_to_resolved:
+                        resolved_list = self.module_to_resolved[current_nested_data]
+                    else:
+                        resolved_list = []
+                        self.module_to_resolved[current_nested_data] = resolved_list
+
                     module_address = (file, module_index, module_call_name)
 
                     # Variables being passed to module, "source" and "version" are reserved
@@ -459,11 +470,6 @@ class Parser:
                         #       list pointing to the location of the module data that was resolved. For example:
                         #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
 
-                        resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
-                        if resolved_loc_list is None:
-                            resolved_loc_list = []
-                            module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
-
                         # NOTE: Modules can load other modules, so only append referrer information where it
                         #       has not already been added.
                         keys = list(module_definitions.keys())
@@ -475,16 +481,18 @@ class Parser:
                             if new_key in self.visited_definition_keys:
                                 del module_definitions[key]
                                 del self.out_definitions[key]
+                                self.module_to_resolved.pop(key, None)
                                 continue
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
+                            self.module_to_resolved.pop(key, None)
                             self.visited_definition_keys.add(new_key)
-                            if new_key not in resolved_loc_list:
-                                resolved_loc_list.append(new_key)
+                            if new_key not in resolved_list:
+                                resolved_list.append(new_key)
                             if (file, module_call_name) not in self.module_address_map:
                                 self.module_address_map[(file, module_call_name)] = str(module_index)
-                        resolved_loc_list.sort()  # For testing, need predictable ordering
+                        resolved_list.sort()  # For testing, need predictable ordering
 
                         if all_module_definitions:
                             deep_merge.merge(all_module_definitions, module_definitions)
@@ -528,6 +536,10 @@ class Parser:
             module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
         return module, tf_definitions
+
+    def _update_resolved_modules(self):
+        for key, resolved_list in self.module_to_resolved.items():
+            self.out_definitions[key[0]]['module'][key[1]][key[2]][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
 
     def parse_hcl_module_from_tf_definitions(
         self,
@@ -584,6 +596,13 @@ class Parser:
                 sorted_conf[attribute] = str(values)
         return sorted_conf
 
+    def get_file_key(self, file, nested_data):
+        if not nested_data:
+            return f'{file}'
+        nested_str = self.get_file_key(nested_data.get("file"), nested_data.get('nested_data'))
+        nested = f'{file}[{nested_str}#{nested_data.get("module_index")}]'
+        return nested
+
     def get_new_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
             return f"{key}[{file}#{module_index}]"
@@ -591,6 +610,12 @@ class Parser:
         nested_key = self.get_new_key('', nested_data.get('file'), nested_data.get('module_index'), nested_data.get('nested_data'))
         new_key = f"{key}[{file}#{module_index}{nested_key}]"
         return new_key
+
+    def get_nested_str(self, nested_data) -> str:
+        if not nested_data:
+            return ''
+        new_str = f'({nested_data.get("file")}#{str(nested_data.get("module_index"))} {self.get_nested_str(nested_data=nested_data.get("nested_data"))})'
+        return new_str
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
