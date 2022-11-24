@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 
 
 class BaseMultiLineParser(ABC):
-
     def get_lines_from_same_object(
         self,
         search_range: range,

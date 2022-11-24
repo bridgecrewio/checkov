@@ -19,7 +19,7 @@ class ExposePort22(BaseDockerfileCheck):
 
     def scan_resource_conf(self, conf: list[_Instruction]) -> tuple[CheckResult, list[_Instruction] | None]:
         for expose in conf:
-            if "22" in expose["value"].split(" "):
+            if any(port in expose["value"].split(" ") for port in ("22", "22/tcp")):
                 return CheckResult.FAILED, [expose]
 
         return CheckResult.PASSED, None
