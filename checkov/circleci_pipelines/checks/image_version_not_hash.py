@@ -14,7 +14,7 @@ class ImageReferenceHashVersion(BaseCircleCIPipelinesCheck):
             name=name,
             id=id,
             block_type=BlockType.ARRAY,
-            supported_entities=['jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}']
+            supported_entities=('jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}',)
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
