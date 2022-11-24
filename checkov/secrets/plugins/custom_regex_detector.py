@@ -4,7 +4,7 @@ import logging
 from abc import ABC
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
 
-import yaml  # type: ignore
+import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
@@ -19,8 +19,7 @@ def load_detectors() -> list[dict[str, Any]]:
     detectors: List[dict[str, Any]] = []
     try:
         customer_run_config_response = bc_integration.customer_run_config_response
-        policies_list: List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
-            customer_run_config_response['secretsPolicies'] else []
+        policies_list: List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if customer_run_config_response['secretsPolicies'] else []
     except Exception as e:
         logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
         return []
