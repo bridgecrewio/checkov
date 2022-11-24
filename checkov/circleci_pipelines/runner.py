@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Iterable
 
 from checkov.circleci_pipelines.image_referencer.manager import CircleCIImageReferencerManager
 from checkov.common.images.image_referencer import Image, ImageReferencerMixin
@@ -10,6 +11,9 @@ from checkov.circleci_pipelines.registry import registry
 from checkov.common.util.type_forcers import force_dict
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
+from checkov.yaml_doc.runner import resolve_sub_name
+from checkov.yaml_doc.runner import resolve_image_name
+from checkov.yaml_doc.runner import resolve_step_name
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -44,6 +48,32 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         """
         abspath = os.path.abspath(file_path)
         return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("config.yml", "config.yaml"))
+
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     start_line: int = -1, end_line: int = -1) -> str:
+        """
+        supported resources for circleCI:
+            jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}
+            jobs.*.steps[]
+            orbs.{orbs: @}
+        """
+        if len(list(supported_entities)) > 1:
+            logging.debug("order of entities might cause extracting the wrong key for resource_id")
+        new_key = key
+        definition = self.definitions.get(file_path, {})
+        if not definition or not isinstance(definition, dict):
+            return new_key
+        if 'orbs.{orbs: @}' in supported_entities:
+            new_key = "orbs"
+        elif 'jobs.*.steps[]' in supported_entities:
+            job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
+            step_name = resolve_step_name(definition['jobs'].get(job_name), start_line, end_line)
+            new_key = f'jobs({job_name}).steps{step_name}' if job_name else "jobs"
+        elif 'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}' in supported_entities:
+            job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
+            image_name = resolve_image_name(definition['jobs'].get(job_name), start_line, end_line)
+            new_key = f'jobs({job_name}).docker.image{image_name}' if job_name else "jobs"
+        return new_key
 
     def run(
             self,

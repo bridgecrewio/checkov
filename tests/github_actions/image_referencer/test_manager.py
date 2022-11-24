@@ -15,7 +15,7 @@ def test_extract_images_from_workflow(workflow_with_images, workflow_line_number
             start_line=12,
             name='node:14.16',
             file_path=file_path,
-            related_resource_id='jobs.destroy_cert'
+            related_resource_id='jobs(destroy_cert)'
         )
     ]
 

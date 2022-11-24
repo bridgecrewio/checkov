@@ -23,7 +23,7 @@ class GithubActionProvider:
                 continue
 
             if job[START_LINE] <= start_line <= end_line <= job[END_LINE]:
-                return f'jobs.{job_name}'
+                return f'jobs({job_name})'
 
         return ''
 
