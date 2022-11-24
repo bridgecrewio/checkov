@@ -86,6 +86,7 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
+        self.visited_definition_keys = set()
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -177,7 +178,8 @@ class Parser:
                            specified_vars: Optional[Mapping[str, str]] = None,
                            vars_files: Optional[List[str]] = None,
                            root_dir: Optional[str] = None,
-                           excluded_paths: Optional[List[str]] = None):
+                           excluded_paths: Optional[List[str]] = None,
+                           nested_data=None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
@@ -312,7 +314,7 @@ class Parser:
 
             # Stage 4a: Load eligible modules
             has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
-                                                  keys_referenced_as_modules, force_final_module_load)
+                                                  keys_referenced_as_modules, force_final_module_load, nested_data=nested_data)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -352,7 +354,8 @@ class Parser:
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool],
-                      keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
+                      keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False,
+                      nested_data=None) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
 
@@ -382,7 +385,6 @@ class Parser:
                 continue
 
             for module_index, module_call in enumerate(module_calls):
-
                 if not isinstance(module_call, dict):
                     continue
 
@@ -392,8 +394,6 @@ class Parser:
                         continue
 
                     module_address = (file, module_index, module_call_name)
-                    if module_address in self._loaded_modules:
-                        continue
 
                     # Variables being passed to module, "source" and "version" are reserved
                     specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
@@ -435,7 +435,9 @@ class Parser:
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                keys_referenced_as_modules=keys_referenced_as_modules)
+                                                keys_referenced_as_modules=keys_referenced_as_modules,
+                                                nested_data={'module_index': module_index, 'file': file,
+                                                             'nested': nested_data})
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
@@ -469,10 +471,15 @@ class Parser:
                             if key.endswith("]") or file.endswith("]"):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = f"{key}[{file}#{module_index}]"
+                            new_key = self.get_new_key(key, file, module_index, nested_data)
+                            if new_key in self.visited_definition_keys:
+                                del module_definitions[key]
+                                del self.out_definitions[key]
+                                continue
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
+                            self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
                                 resolved_loc_list.append(new_key)
                             if (file, module_call_name) not in self.module_address_map:
@@ -576,6 +583,14 @@ class Parser:
             elif isinstance(values, Tree):
                 sorted_conf[attribute] = str(values)
         return sorted_conf
+
+    def get_new_key(self, key, file, module_index, nested_data) -> str:
+        if not nested_data:
+            return f"{key}[{file}#{module_index}]"
+        self.visited_definition_keys.add(f"{key}[{file}#{module_index}]")
+        nested_key = self.get_new_key('', nested_data.get('file'), nested_data.get('module_index'), nested_data.get('nested_data'))
+        new_key = f"{key}[{file}#{module_index}{nested_key}]"
+        return new_key
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
