@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, cast, List
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
 
 import yaml  # type: ignore
 from detect_secrets.constants import VerifiedResult
@@ -16,41 +15,23 @@ from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
 
 
-DETECTORS_BY_CUSTOMER_CACHE: dict[str, list[dict[str, Any]]] = {}
-
-
-def get_customer_cache() -> dict[str, list[dict[str, Any]]]:
-    return DETECTORS_BY_CUSTOMER_CACHE
-
-
-def get_detectors_from_cache(customer_name: str | None) -> list[dict[str, Any]]:
-    if customer_name:
-        cache = get_customer_cache()
-        return cache.get(customer_name, [])
-    return []
-
 
 def load_detectors() -> list[dict[str, Any]]:
-    customer_name = os.getenv('CUSTOMER_NAME')
-    detectors = get_detectors_from_cache(customer_name)
-    if not detectors:
-        try:
-            customer_run_config_response = bc_integration.customer_run_config_response
-            policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
-                customer_run_config_response['secretsPolicies'] else []
-        except Exception as e:
-            logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
-            return []
+    detectors: List[dict[str, Any]] = []
+    try:
+        customer_run_config_response = bc_integration.customer_run_config_response
+        policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
+            customer_run_config_response['secretsPolicies'] else []
+    except Exception as e:
+        logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
+        return []
 
-        if policies_list:
-            if isinstance(policies_list, dict):
-                policies_list = [policies_list]
-            detectors = modify_secrets_policy_to_detectors(policies_list)
-
-        if customer_name:
-            DETECTORS_BY_CUSTOMER_CACHE[customer_name] = detectors
-
-    logging.info(f"Successfully loaded {len(detectors)} detectors from s3")
+    if policies_list:
+        if isinstance(policies_list, dict):
+            policies_list = [policies_list]
+        detectors = modify_secrets_policy_to_detectors(policies_list)
+    if detectors:
+        logging.info(f"Successfully loaded {len(detectors)} detectors from bc_integration")
     return detectors
 
 
