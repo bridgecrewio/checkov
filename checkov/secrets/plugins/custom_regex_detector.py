@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 import logging
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING
 
 import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
-from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
 import re
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+
+if TYPE_CHECKING:
+    from detect_secrets.util.code_snippet import CodeSnippet
 
 
 def load_detectors() -> list[dict[str, Any]]:
@@ -61,12 +63,11 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
 
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"
-
     denylist: Set[Pattern[str]] = set()
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
-        self.denylist: set[Pattern[str]] = set()
+        self.denylist = set()
         detectors = load_detectors()
 
         for detector in detectors:
