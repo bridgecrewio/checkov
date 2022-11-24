@@ -132,6 +132,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "id": record.vulnerability_details["id"],
                             "severity": severity_str,
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
+                            "group_id": record.vulnerability_details["group_id"]
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -323,6 +324,7 @@ def create_package_overview_table_part(
         "Root fixed version",
         "Compliant version",
     ]
+    group_id = None
     for package_idx, (package_name, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
@@ -333,6 +335,7 @@ def create_package_overview_table_part(
             col_package = ""
             col_current_version = ""
             col_compliant_version = ""
+            current_group_id = cve["group_id"]
             if cve_idx == 0:
                 col_package = package_name
                 col_current_version = details["current_version"]

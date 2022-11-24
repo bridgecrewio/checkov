@@ -217,6 +217,7 @@ class Runner(PackageRunner):
             license_statuses=license_statuses,
             sca_details=image_details,
             report_type=self.report_type,
+            dependencies=result.get("dependencies", None)
         )
         return report
 
