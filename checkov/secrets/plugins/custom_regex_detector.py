@@ -1,26 +1,24 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
 
 import yaml  # type: ignore
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
+from detect_secrets.util.code_snippet import CodeSnippet
+from detect_secrets.util.inject import call_function_with_arguments
 import re
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from detect_secrets.util.code_snippet import CodeSnippet
-from detect_secrets.util.inject import call_function_with_arguments
-
 
 
 def load_detectors() -> list[dict[str, Any]]:
     detectors: List[dict[str, Any]] = []
     try:
         customer_run_config_response = bc_integration.customer_run_config_response
-        policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
+        policies_list: List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
             customer_run_config_response['secretsPolicies'] else []
     except Exception as e:
         logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
@@ -53,7 +51,7 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
                     not_parsed = False
                     for regex in code_dict['definition']['value']:
                         check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
-                        secret_policy['incidentId']
+                            secret_policy['incidentId']
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
                                                  'Regex': regex})
