@@ -40,8 +40,6 @@ GOOD_BLOCK_TYPES = {BlockType.LOCALS, BlockType.TERRAFORM}  # used for cleaning 
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 
-ENABLE_NESTED_MODULES = os.getenv('ENABLE_NESTED_MODULES', False)
-
 
 def _filter_ignored_paths(root, paths, excluded_paths):
     filter_ignored_paths(root, paths, excluded_paths)
@@ -88,6 +86,7 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
+        self.enable_nested_modules = os.getenv('ENABLE_NESTED_MODULES', 'False') == 'True'
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
 
@@ -116,7 +115,7 @@ class Parser:
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
-        if ENABLE_NESTED_MODULES:
+        if self.enable_nested_modules:
             self._update_resolved_modules()
 
     def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
@@ -399,7 +398,7 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
-                    if ENABLE_NESTED_MODULES:
+                    if self.enable_nested_modules:
                         file_key = self.get_file_key(file, nested_modules_data)
                         current_nested_data = (file_key, module_index, module_call_name)
 
@@ -410,7 +409,7 @@ class Parser:
                             self.module_to_resolved[current_nested_data] = resolved_loc_list
 
                     module_address = (file, module_index, module_call_name)
-                    if not ENABLE_NESTED_MODULES:
+                    if not self.enable_nested_modules:
                         if module_address in self._loaded_modules:
                             continue
 
@@ -480,7 +479,7 @@ class Parser:
                         #       list pointing to the location of the module data that was resolved. For example:
                         #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
 
-                        if not ENABLE_NESTED_MODULES:
+                        if not self.enable_nested_modules:
                             resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
                             if resolved_loc_list is None:
                                 resolved_loc_list = []
@@ -494,7 +493,7 @@ class Parser:
                             if key.endswith("]") or file.endswith("]"):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            if ENABLE_NESTED_MODULES:
+                            if self.enable_nested_modules:
                                 new_key = self.get_new_key(key, file, module_index, nested_modules_data)
                                 if new_key in self.visited_definition_keys:
                                     del module_definitions[key]
@@ -505,7 +504,7 @@ class Parser:
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
-                            if ENABLE_NESTED_MODULES:
+                            if self.enable_nested_modules:
                                 self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
                                 resolved_loc_list.append(new_key)

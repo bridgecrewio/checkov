@@ -76,6 +76,40 @@ class TestRendererScenarios(TestCase):
     def test_module_simple_up_dir_ref(self):
         self.go("module_simple_up_dir_ref")
 
+    def test_nested_modules_instances_enable(self):
+        os.environ['ENABLE_NESTED_MODULES'] = 'True'
+        dir_name = 'nested_modules_instances_enable'
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+
+        from checkov.terraform.parser import Parser
+        parser = Parser()
+        tf_definitions = {}
+        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+
+        with open(f'{resources_dir}/expected.json') as fp:
+            expected = json.load(fp)
+        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result = result.replace(resources_dir, '')
+        expected = expected.replace(resources_dir, '')
+        assert result == expected
+
+    def test_nested_modules_instances_disable(self):
+        os.environ.pop('ENABLE_NESTED_MODULES', None)
+        dir_name = 'nested_modules_instances_disable'
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+
+        from checkov.terraform.parser import Parser
+        parser = Parser()
+        tf_definitions = {}
+        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+
+        with open(f'{resources_dir}/expected.json') as fp:
+            expected = json.load(fp)
+        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result = result.replace(resources_dir, '')
+        expected = expected.replace(resources_dir, '')
+        assert result == expected
+
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
