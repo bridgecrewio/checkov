@@ -410,6 +410,9 @@ class Parser:
                             self.module_to_resolved[current_nested_data] = resolved_loc_list
 
                     module_address = (file, module_index, module_call_name)
+                    if not ENABLE_NESTED_MODULES:
+                        if module_address in self._loaded_modules:
+                            continue
 
                     # Variables being passed to module, "source" and "version" are reserved
                     specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
@@ -448,12 +451,14 @@ class Parser:
                             logging.info(f'Got no content for {source}:{version}')
                             continue
 
+                        new_nested_modules_data = {'module_index': module_index, 'file': file,
+                                                   'nested_modules_data': nested_modules_data}
+
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
                                                 keys_referenced_as_modules=keys_referenced_as_modules,
-                                                nested_modules_data={'module_index': module_index, 'file': file,
-                                                             'nested_modules_data': nested_modules_data})
+                                                nested_modules_data=new_nested_modules_data)
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
