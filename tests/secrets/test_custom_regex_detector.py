@@ -2257,7 +2257,7 @@ class TestCustomRegexDetector(unittest.TestCase):
         assert len(detectors_result) == len(detector_obj)
 
     def test_test_custom_regex_detector(self) -> None:
-        bc_integration.customer_run_config_response = [
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
             {
                 "incidentId": "lshindelman1_AWS_1666860510378",
                 "category": "Secrets",
@@ -4333,7 +4333,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "pcSeverity": "LOW",
                 "sourceIncidentId": None
             }
-        ]
+        ]}
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/custom_regex_detector"
         runner = Runner()
