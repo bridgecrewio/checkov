@@ -61,8 +61,6 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
 
 
 class CustomRegexDetector(RegexBasedDetector):
-    secret_type = "Regex Detector"
-
     denylist: Set[Pattern[str]] = set()
 
     def __init__(self) -> None:
