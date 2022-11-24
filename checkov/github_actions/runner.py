@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
@@ -77,9 +78,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             permissions
             on
 
-        NOTICE!!!! this function assumes len(supported_entities) == 1 (in a sense, excluding jobs).
-        in case this is changes --> probably the order of the entities will decide the key, which is not correct.
         """
+        if len(list(supported_entities)) > 1:
+            logging.debug("order of entities might cause extracting the wrong key for resource_id")
         new_key = key
         definition = self.definitions.get(file_path, {})
         if not definition or not isinstance(definition, dict):
