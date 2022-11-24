@@ -98,14 +98,11 @@ class Runner(BaseRunner[None]):
         ]
 
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
-        if exists(detector_path):
-            logging.info(f"Custom detector found at {detector_path}. Loading...")
-            plugins_used.append({
-                'name': 'CustomRegexDetector',
-                'path': f'file://{detector_path}'
-            })
-        else:
-            logging.info(f"Custom detector not found at path {detector_path}. Skipping...")
+        logging.info(f"Custom detector found at {detector_path}. Loading...")
+        plugins_used.append({
+            'name': 'CustomRegexDetector',
+            'path': f'file://{detector_path}'
+        })
         with transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
