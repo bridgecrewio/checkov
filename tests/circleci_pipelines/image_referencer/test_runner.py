@@ -10,7 +10,7 @@ from pytest_mock import MockerFixture
 RESOURCES_PATH = Path(__file__).parent.parent / "resources"
 
 
-def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path):
+def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path, image_cached_results_for_report):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     test_file = RESOURCES_PATH / file_path
 
@@ -41,3 +41,11 @@ def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path
 
     assert len(sca_image_report.extra_resources) == 10
     assert len(sca_image_report.image_cached_results) == 10
+
+    got_images = ({
+                'image_name': image['dockerImageName'],
+                'related_resource_id': image['relatedResourceId'],
+                'packages': image['packages']
+                 } for image in sca_image_report.image_cached_results)
+    for image in got_images:
+        assert image in image_cached_results_for_report
