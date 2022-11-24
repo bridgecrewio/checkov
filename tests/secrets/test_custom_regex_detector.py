@@ -4335,7 +4335,7 @@ class TestCustomRegexDetector(unittest.TestCase):
             }
         ]}
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/custom_regex_detector"
+        valid_dir_path = current_dir + "/custom_regex_detector"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
