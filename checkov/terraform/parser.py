@@ -40,6 +40,8 @@ GOOD_BLOCK_TYPES = {BlockType.LOCALS, BlockType.TERRAFORM}  # used for cleaning 
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 
+ENABLE_NESTED_MODULES = os.getenv('ENABLE_NESTED_MODULES', False)
+
 
 def _filter_ignored_paths(root, paths, excluded_paths):
     filter_ignored_paths(root, paths, excluded_paths)
@@ -114,7 +116,8 @@ class Parser:
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
-        self._update_resolved_modules()
+        if ENABLE_NESTED_MODULES:
+            self._update_resolved_modules()
 
     def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
         if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
@@ -396,14 +399,15 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
-                    file_key = self.get_file_key(file, nested_modules_data)
-                    current_nested_data = (file_key, module_index, module_call_name)
+                    if ENABLE_NESTED_MODULES:
+                        file_key = self.get_file_key(file, nested_modules_data)
+                        current_nested_data = (file_key, module_index, module_call_name)
 
-                    if current_nested_data in self.module_to_resolved:
-                        resolved_list = self.module_to_resolved[current_nested_data]
-                    else:
-                        resolved_list = []
-                        self.module_to_resolved[current_nested_data] = resolved_list
+                        if current_nested_data in self.module_to_resolved:
+                            resolved_loc_list = self.module_to_resolved[current_nested_data]
+                        else:
+                            resolved_loc_list = []
+                            self.module_to_resolved[current_nested_data] = resolved_loc_list
 
                     module_address = (file, module_index, module_call_name)
 
@@ -471,29 +475,38 @@ class Parser:
                         #       list pointing to the location of the module data that was resolved. For example:
                         #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
 
+                        if not ENABLE_NESTED_MODULES:
+                            resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
+                            if resolved_loc_list is None:
+                                resolved_loc_list = []
+                                module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
+
                         # NOTE: Modules can load other modules, so only append referrer information where it
                         #       has not already been added.
+
                         keys = list(module_definitions.keys())
                         for key in keys:
                             if key.endswith("]") or file.endswith("]"):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = self.get_new_key(key, file, module_index, nested_modules_data)
-                            if new_key in self.visited_definition_keys:
-                                del module_definitions[key]
-                                del self.out_definitions[key]
-                                self.module_to_resolved.pop(key, None)
-                                continue
+                            if ENABLE_NESTED_MODULES:
+                                new_key = self.get_new_key(key, file, module_index, nested_modules_data)
+                                if new_key in self.visited_definition_keys:
+                                    del module_definitions[key]
+                                    del self.out_definitions[key]
+                                    continue
+                            else:
+                                new_key = f"{key}[{file}#{module_index}]"
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
-                            self.module_to_resolved.pop(key, None)
-                            self.visited_definition_keys.add(new_key)
-                            if new_key not in resolved_list:
-                                resolved_list.append(new_key)
+                            if ENABLE_NESTED_MODULES:
+                                self.visited_definition_keys.add(new_key)
+                            if new_key not in resolved_loc_list:
+                                resolved_loc_list.append(new_key)
                             if (file, module_call_name) not in self.module_address_map:
                                 self.module_address_map[(file, module_call_name)] = str(module_index)
-                        resolved_list.sort()  # For testing, need predictable ordering
+                        resolved_loc_list.sort()  # For testing, need predictable ordering
 
                         if all_module_definitions:
                             deep_merge.merge(all_module_definitions, module_definitions)
