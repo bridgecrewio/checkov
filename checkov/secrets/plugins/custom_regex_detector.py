@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import logging
 from abc import ABC
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING
 
 import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
-from detect_secrets.util.code_snippet import CodeSnippet
 from detect_secrets.util.inject import call_function_with_arguments
 import re
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+
+if TYPE_CHECKING:
+    from detect_secrets.util.code_snippet import CodeSnippet
 
 
 def load_detectors() -> list[dict[str, Any]]:
