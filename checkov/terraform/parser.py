@@ -539,7 +539,12 @@ class Parser:
 
     def _update_resolved_modules(self):
         for key, resolved_list in self.module_to_resolved.items():
-            self.out_definitions[key[0]]['module'][key[1]][key[2]][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+            file_key = key[0]
+            module_index = key[1]
+            module_name = key[2]
+            if file_key not in self.out_definitions:
+                continue
+            self.out_definitions[file_key]['module'][module_index][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
 
     def parse_hcl_module_from_tf_definitions(
         self,
