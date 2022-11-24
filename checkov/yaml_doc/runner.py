@@ -81,25 +81,24 @@ def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line:
     extract the step name from the given job within the line of range(start_line, end_line)
 
     >>> resolve_step_name({"steps":["checkout",{}],"__startline__":42,"__endline__":49}, 48, 49)
-    '1[checkout]'
-    that's the first step with the name checkout.
+    '[1](checkout)'
 
-    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{"uses":"actions/checkout@v2","__startline__":22,"__endline__":23}]}, 48, 49)
-    '1'
+    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{"uses":"actions/checkout@v2","__startline__":22,"__endline__":23}]}, 22, 23)
+    '[1]'
 
-    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{}, {"name":"step_name","__startline__":23,"__endline__":33}]}, 23, 33)
-    '2[step_name]'
+    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{"name": "ab","__startline__":22,"__endline__":23}, {"name":"step_name","__startline__":23,"__endline__":33}]}, 23, 33)
+    '[2](step_name)'
 
     """
     if not job_definition:
         return ""
     for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
         if isinstance(step, str):
-            return f"{idx + 1}[{step}]"
+            return f"[{idx + 1}]({step})"
         elif isinstance(step, dict):
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
                 name = step.get('name')
-                return f"{idx + 1}[{name}]" if name else str(idx + 1)
+                return f"[{idx + 1}]({name})" if name else f"[{idx + 1}]"
     return ""
 
 
@@ -108,7 +107,7 @@ def resolve_image_name(image_definition: dict[str, Any], start_line: int, end_li
     extract the image name from the given job definition within the line of range(start_line, end_line)
 
     >>> resolve_image_name({"docker":[{"image":"mongo:2.6.8","__startline__":15,"__endline__":16}]}, 15, 16)
-    '1[mongo:2.6.8]'
+    '[1](mongo:2.6.8)'
 
     """
     if not image_definition:
@@ -116,11 +115,11 @@ def resolve_image_name(image_definition: dict[str, Any], start_line: int, end_li
     for idx, step in enumerate([step for step in image_definition.get('docker') or [] if step]):
         if isinstance(image_definition.get('docker'), dict):
             if step == 'image':
-                return f"{idx + 1}[{image_definition['docker'][step]}]"
+                return f"[{idx + 1}]({image_definition['docker'][step]})"
         if isinstance(step, str):
-            return f"{idx + 1}[{step}]"
+            return f"[{idx + 1}]({step})"
         elif isinstance(step, dict):
             if step[START_LINE] <= start_line <= end_line <= step[END_LINE]:
                 name = step.get('image')
-                return f"{idx + 1}[{name}]" if name else str(idx + 1)
+                return f"[{idx + 1}]({name})" if name else f"[{idx + 1}]"
     return ""

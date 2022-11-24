@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from checkov.circleci_pipelines.runner import Runner

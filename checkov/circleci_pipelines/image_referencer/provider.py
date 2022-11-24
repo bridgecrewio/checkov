@@ -18,7 +18,7 @@ class CircleCIProvider:
     def generate_resource_key(self, start_line: int, end_line: int, tag: str) -> str:
         sub_name = resolve_sub_name(self.workflow_config, start_line, end_line, tag)
         image_name = resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
-        new_key = f'{tag}.{sub_name}.docker.image#{image_name}' if sub_name else tag
+        new_key = f'{tag}({sub_name}).docker.image{image_name}' if sub_name else tag
         return new_key
 
     def extract_images_from_workflow(self) -> list[Image]:

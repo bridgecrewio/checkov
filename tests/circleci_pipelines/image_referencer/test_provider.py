@@ -30,7 +30,7 @@ def test_extract_images_from_workflow_no_images(circle_ci_filepath_workflow_no_i
          'jobs',
         ('jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}',),
          'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}.jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}.CKV_CIRCLECIPIPELINES_1[85:86]',
-         "jobs.test-docker-versioned-img.docker.image#1[mongo:2.6.8]"),
+         "jobs(test-docker-versioned-img).docker.image[1](mongo:2.6.8)"),
     ],
 )
 def test_generate_resource_key_generates_same_key_as_get_resource(file_path,

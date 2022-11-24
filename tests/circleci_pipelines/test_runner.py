@@ -58,13 +58,13 @@ class TestRunnerValid(unittest.TestCase):
         ),
         (
             'jobs.*.steps[].jobs.*.steps[].CKV_CIRCLECIPIPELINES_7[48:49]',
-            "jobs.test-echo.steps.1[checkout]",
+            "jobs(test-echo).steps[1](checkout)",
             ('jobs.*.steps[]',),
             48, 49
         ),
         (
             'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}.jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}.CKV_CIRCLECIPIPELINES_2[33:34]',
-            'jobs.test-docker-versioned-img.docker.image#1[mongo:2.6.8]',
+            'jobs(test-docker-versioned-img).docker.image[1](mongo:2.6.8)',
             ('jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}', ),
             33, 34
         )
