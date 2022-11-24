@@ -67,16 +67,12 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             new_key = "orbs"
         elif 'jobs.*.steps[]' in supported_entities:
             job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
-            new_key = f"jobs.{job_name}" if job_name else "jobs"
-            if job_name:
-                step_name = resolve_step_name(definition['jobs'][job_name], start_line, end_line)
-                new_key = f'jobs.{job_name}.steps.{step_name}'
+            step_name = resolve_step_name(definition['jobs'].get(job_name), start_line, end_line)
+            new_key = f'jobs.{job_name}.steps.{step_name}' if job_name else "jobs"
         elif 'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}' in supported_entities:
             job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
-            new_key = f"jobs.{job_name}" if job_name else "jobs"
-            if job_name:
-                image_name = resolve_image_name(definition['jobs'][job_name], start_line, end_line)
-                new_key = f'jobs.{job_name}.docker.image#{image_name}'
+            image_name = resolve_image_name(definition['jobs'].get(job_name), start_line, end_line)
+            new_key = f'jobs.{job_name}.docker.image#{image_name}' if job_name else "jobs"
         return new_key
 
     def run(

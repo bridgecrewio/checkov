@@ -57,6 +57,17 @@ class Runner(ObjectRunner):
 
 
 def resolve_sub_name(definition: dict[str, Any], start_line: int, end_line: int, tag: str) -> str:
+    """
+    extract the value of the tag, that is within the line of range(start_line, end_line)
+
+    >>> resolve_sub_name({"executors":{"image-executor":{"docker":[],"__startline__":8,"__endline__":11}}}, 9, 11, 'executors')
+    'image-executor'
+
+    >>> resolve_sub_name({"jobs":{"job-name":{"docker":[],"__startline__":13,"__endline__":20}}}, 15, 16, 'jobs')
+    'job-name'
+    """
+    if not definition:
+        return ""
     for key, sub_name in definition.get(tag, {}).items():
         if key in (START_LINE, END_LINE):
             continue
@@ -66,6 +77,22 @@ def resolve_sub_name(definition: dict[str, Any], start_line: int, end_line: int,
 
 
 def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+    """
+    extract the step name from the given job within the line of range(start_line, end_line)
+
+    >>> resolve_step_name({"steps":["checkout",{}],"__startline__":42,"__endline__":49}, 48, 49)
+    '1[checkout]'
+    that's the first step with the name checkout.
+
+    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{"uses":"actions/checkout@v2","__startline__":22,"__endline__":23}]}, 48, 49)
+    '1'
+
+    >>> resolve_step_name({"runs-on":"ubuntu-latest","steps":[{}, {"name":"step_name","__startline__":23,"__endline__":33}]}, 23, 33)
+    '2[step_name]'
+
+    """
+    if not job_definition:
+        return ""
     for idx, step in enumerate([step for step in job_definition.get('steps') or [] if step]):
         if isinstance(step, str):
             return f"{idx + 1}[{step}]"
@@ -77,6 +104,15 @@ def resolve_step_name(job_definition: dict[str, Any], start_line: int, end_line:
 
 
 def resolve_image_name(image_definition: dict[str, Any], start_line: int, end_line: int) -> str:
+    """
+    extract the image name from the given job definition within the line of range(start_line, end_line)
+
+    >>> resolve_image_name({"docker":[{"image":"mongo:2.6.8","__startline__":15,"__endline__":16}]}, 15, 16)
+    '1[mongo:2.6.8]'
+
+    """
+    if not image_definition:
+        return ""
     for idx, step in enumerate([step for step in image_definition.get('docker') or [] if step]):
         if isinstance(image_definition.get('docker'), dict):
             if step == 'image':

@@ -17,19 +17,17 @@ class CircleCIProvider:
 
     def generate_resource_key(self, start_line: int, end_line: int, tag: str) -> str:
         sub_name = resolve_sub_name(self.workflow_config, start_line, end_line, tag)
-        new_key = f"{tag}.{sub_name}" if sub_name else tag
-        if sub_name:
-            image_name = resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
-            new_key = f'{tag}.{sub_name}.docker.image#{image_name}'
+        image_name = resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
+        new_key = f'{tag}.{sub_name}.docker.image#{image_name}' if sub_name else tag
         return new_key
 
     def extract_images_from_workflow(self) -> list[Image]:
         images: list[Image] = []
 
-        keywords = [
+        keywords = (
             ('jobs', "jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}"),
             ('executors', "executors.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}"),
-        ]
+        )
         for tag, keyword in keywords:
             results = jmespath.search(keyword, self.workflow_config)
             if not results:
