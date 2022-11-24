@@ -20,7 +20,8 @@ def load_detectors() -> list[dict[str, Any]]:
     detectors: List[dict[str, Any]] = []
     try:
         customer_run_config_response = bc_integration.customer_run_config_response
-        policies_list: List[dict[str, Any]] = customer_run_config_response['secretsPolicies'] if customer_run_config_response['secretsPolicies'] else []
+        policies_list: List[dict[str, Any]] = customer_run_config_response['secretsPolicies'] if \
+        customer_run_config_response['secretsPolicies'] else []
     except Exception as e:
         logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
         return []
@@ -60,8 +61,8 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
 
 
 class CustomRegexDetector(RegexBasedDetector):
-    secret_type = "Regex Detector"
-    denylist: Set[Pattern[str]] = set() # noqa: CCE003
+    secret_type = "Regex Detector"  # noqa: CCE003
+    denylist: Set[Pattern[str]] = set()  # noqa: CCE003
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
@@ -97,7 +98,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
         return output
 
-    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
+    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[
+        Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
