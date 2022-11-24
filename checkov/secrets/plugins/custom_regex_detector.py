@@ -26,8 +26,6 @@ def load_detectors() -> list[dict[str, Any]]:
         return []
 
     if policies_list:
-        if isinstance(policies_list, dict):
-            policies_list = [policies_list]
         detectors = modify_secrets_policy_to_detectors(policies_list)
     if detectors:
         logging.info(f"Successfully loaded {len(detectors)} detectors from bc_integration")
