@@ -181,7 +181,7 @@ class Parser:
                            vars_files: Optional[List[str]] = None,
                            root_dir: Optional[str] = None,
                            excluded_paths: Optional[List[str]] = None,
-                           nested_data=None):
+                           nested_modules_data=None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
@@ -316,7 +316,8 @@ class Parser:
 
             # Stage 4a: Load eligible modules
             has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
-                                                  keys_referenced_as_modules, force_final_module_load, nested_data=nested_data)
+                                                  keys_referenced_as_modules, force_final_module_load,
+                                                  nested_modules_data=nested_modules_data)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -357,7 +358,7 @@ class Parser:
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool],
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False,
-                      nested_data=None) -> bool:
+                      nested_modules_data=None) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
 
@@ -395,7 +396,7 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
-                    file_key = self.get_file_key(file, nested_data)
+                    file_key = self.get_file_key(file, nested_modules_data)
                     current_nested_data = (file_key, module_index, module_call_name)
 
                     if current_nested_data in self.module_to_resolved:
@@ -447,8 +448,8 @@ class Parser:
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
                                                 keys_referenced_as_modules=keys_referenced_as_modules,
-                                                nested_data={'module_index': module_index, 'file': file,
-                                                             'nested': nested_data})
+                                                nested_modules_data={'module_index': module_index, 'file': file,
+                                                             'nested_modules_data': nested_modules_data})
 
                         module_definitions = {path: self.out_definitions[path] for path in
                                               list(self.out_definitions.keys()) if
@@ -477,7 +478,7 @@ class Parser:
                             if key.endswith("]") or file.endswith("]"):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = self.get_new_key(key, file, module_index, nested_data)
+                            new_key = self.get_new_key(key, file, module_index, nested_modules_data)
                             if new_key in self.visited_definition_keys:
                                 del module_definitions[key]
                                 del self.out_definitions[key]
@@ -604,7 +605,7 @@ class Parser:
     def get_file_key(self, file, nested_data):
         if not nested_data:
             return f'{file}'
-        nested_str = self.get_file_key(nested_data.get("file"), nested_data.get('nested_data'))
+        nested_str = self.get_file_key(nested_data.get("file"), nested_data.get('nested_modules_data'))
         nested = f'{file}[{nested_str}#{nested_data.get("module_index")}]'
         return nested
 
@@ -612,15 +613,9 @@ class Parser:
         if not nested_data:
             return f"{key}[{file}#{module_index}]"
         self.visited_definition_keys.add(f"{key}[{file}#{module_index}]")
-        nested_key = self.get_new_key('', nested_data.get('file'), nested_data.get('module_index'), nested_data.get('nested_data'))
+        nested_key = self.get_new_key('', nested_data.get('file'), nested_data.get('module_index'), nested_data.get('nested_modules_data'))
         new_key = f"{key}[{file}#{module_index}{nested_key}]"
         return new_key
-
-    def get_nested_str(self, nested_data) -> str:
-        if not nested_data:
-            return ''
-        new_str = f'({nested_data.get("file")}#{str(nested_data.get("module_index"))} {self.get_nested_str(nested_data=nested_data.get("nested_data"))})'
-        return new_str
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
