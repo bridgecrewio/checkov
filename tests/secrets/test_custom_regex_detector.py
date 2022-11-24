@@ -4338,7 +4338,7 @@ class TestCustomRegexDetector(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/custom_regex_detector"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework=['secrets']))
+                            runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 8)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
