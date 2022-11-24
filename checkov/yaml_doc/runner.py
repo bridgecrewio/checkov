@@ -58,7 +58,7 @@ class Runner(ObjectRunner):
 
 def resolve_sub_name(definition: dict[str, Any], start_line: int, end_line: int, tag: str) -> str:
     for key, sub_name in definition.get(tag, {}).items():
-        if key in [START_LINE, END_LINE]:
+        if key in (START_LINE, END_LINE):
             continue
         if sub_name[START_LINE] <= start_line <= end_line <= sub_name[END_LINE]:
             return str(key)
