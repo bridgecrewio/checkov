@@ -98,10 +98,12 @@ class Runner(BaseRunner[None]):
 
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
         logging.info(f"Custom detector found at {detector_path}. Loading...")
-        plugins_used.append({
-            'name': 'CustomRegexDetector',
-            'path': f'file://{detector_path}'
-        })
+        enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
+        if enable_secret_scan_all_files:
+            plugins_used.append({
+                'name': 'CustomRegexDetector',
+                'path': f'file://{detector_path}'
+            })
         with transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
@@ -114,7 +116,6 @@ class Runner(BaseRunner[None]):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
-                enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
                 block_list_secret_scan = runner_filter.block_list_secret_scan or []
                 block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
                 for root, d_names, f_names in os.walk(root_folder):
