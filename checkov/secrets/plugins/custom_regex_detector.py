@@ -30,12 +30,6 @@ def get_detectors_from_cache(customer_name: str | None) -> list[dict[str, Any]]:
     return []
 
 
-def get_detectors_from_local_file() -> list[dict[str, Any]]:
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(f'{current_dir}/detectors.json') as f:
-        return cast("list[dict[str, Any]]", json.load(f))
-
-
 def load_detectors() -> list[dict[str, Any]]:
     customer_name = os.getenv('CUSTOMER_NAME')
     detectors = get_detectors_from_cache(customer_name)
@@ -45,6 +39,7 @@ def load_detectors() -> list[dict[str, Any]]:
             policies_list:  List[dict[str, Any]] | dict[str, Any] = customer_run_config_response['secretsPolicies'] if \
                 customer_run_config_response['secretsPolicies'] else []
         except Exception as e:
+            logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
             return []
 
         if policies_list:
@@ -55,13 +50,13 @@ def load_detectors() -> list[dict[str, Any]]:
         if customer_name:
             DETECTORS_BY_CUSTOMER_CACHE[customer_name] = detectors
 
-    logging.info(f'Successfully loaded {len(detectors)} detectors from s3')
+    logging.info(f"Successfully loaded {len(detectors)} detectors from s3")
     return detectors
 
 
 def modify_secrets_policy_to_detectors(policies_list: List[dict[str, Any]]) -> List[dict[str, Any]]:
     secrets_list = transforms_policies_to_detectors_list(policies_list)
-    logging.info(f'(modify_secrets_policy_to_detectors) secrets_list = {secrets_list}')
+    logging.info(f"(modify_secrets_policy_to_detectors) secrets_list = {secrets_list}")
     return secrets_list
 
 
@@ -81,6 +76,8 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
                                                  'Regex': regex})
+        if not_parsed:
+            logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
 
 
