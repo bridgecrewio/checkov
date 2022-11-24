@@ -99,7 +99,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
         return output
 
-    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
+    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[
+        Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         for regex in self.denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
