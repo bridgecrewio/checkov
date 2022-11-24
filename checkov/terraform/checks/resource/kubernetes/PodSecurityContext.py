@@ -6,7 +6,7 @@ class PodSecurityContext(BaseResourceCheck):
 
     def __init__(self):
         # CIS-1.5 5.7.3
-        name = "Apply security context to your pods and containers"
+        name = "Apply security context to your pods, deployments and daemon_sets"
         # Security context can be set at pod or container level.
         id = "CKV_K8S_29"
 
