@@ -91,8 +91,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
             new_key = f"jobs.{job_name}" if job_name else "jobs"
 
-            potential_step_in_job = key.split('.')[1] == '*'
-            if 'jobs.*.steps[]' in supported_entities and potential_step_in_job:
+            if 'jobs.*.steps[]' in supported_entities and key.split('.')[1] == '*':
                 step_name = resolve_step_name(definition['jobs'][job_name], start_line, end_line)
                 new_key = f'jobs.{job_name}.steps.{step_name}'
         return new_key
