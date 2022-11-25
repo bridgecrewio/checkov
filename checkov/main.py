@@ -251,11 +251,11 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            should_run_contributor_reporting = os.getenv('RUN_CONTRIBUTOR_REPORTING', False)
-            # TODO : Replace the following condition with: if source.report_contributor_metrics and config.repo_id and config.prisma_api_url:
-            if should_run_contributor_reporting:
+            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+            if should_run_contributor_metrics:
                 try:        # collect contributor info and upload
-                    report_contributor_metrics(config.repo_id, bc_integration)
+                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
                 except Exception as e:
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 

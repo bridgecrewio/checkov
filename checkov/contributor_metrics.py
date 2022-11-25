@@ -9,8 +9,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-def report_contributor_metrics(repository: str, bc_integration: BcPlatformIntegration) -> None:  # ignore: type
-    request_body = parse_gitlog(repository)
+def report_contributor_metrics(repository: str, source: str, bc_integration: BcPlatformIntegration) -> None:  # ignore: type
+    logging.debug(f"Attempting to get log history for repository {repository} under source {source}")
+    request_body = parse_gitlog(repository, source)
     if request_body:
         response = request_wrapper(
             "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
@@ -22,7 +23,7 @@ def report_contributor_metrics(repository: str, bc_integration: BcPlatformIntegr
             logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
 
 
-def parse_gitlog(repository: str) -> dict[str, Any] | None:
+def parse_gitlog(repository: str, source: str) -> dict[str, Any] | None:
     process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
     out, err = process.communicate()
     if err:
@@ -30,7 +31,7 @@ def parse_gitlog(repository: str) -> dict[str, Any] | None:
         return None
     # split per contributor
     list_of_contributors = out.decode('utf-8').split('\n\n')
-    return {"repository": repository,
+    return {"repository": repository, "source": source,
             "contributors": list(map(lambda contributor: process_contributor(contributor),
                                      list(filter(lambda x: x, list_of_contributors))
                                      ))
