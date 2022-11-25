@@ -3,7 +3,7 @@ from __future__ import annotations
 from checkov.github.base_github_branch_security import BranchSecurity
 
 
-class GithubBranchRequireStatusChecks(BranchSecurity):
+class GithubBranchRequirePushRestrictions(BranchSecurity):
     def __init__(self) -> None:
         name = "Ensure GitHub branch protection requires push restrictions - CIS 1.1.15"
         id = "CKV_GITHUB_17"
@@ -13,4 +13,4 @@ class GithubBranchRequireStatusChecks(BranchSecurity):
         return ["restrictions"]
 
 
-check = GithubBranchRequireStatusChecks()
+check = GithubBranchRequirePushRestrictions()
