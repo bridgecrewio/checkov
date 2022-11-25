@@ -23,7 +23,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
             id=id,
             categories=categories,
             supported_resources=supported_resources,
-            guideline=guideline
+            guideline=guideline,
         )
         self.missing_block_result = missing_block_result
 

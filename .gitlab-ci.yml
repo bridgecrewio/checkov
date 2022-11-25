@@ -1,0 +1,73 @@
+stages:
+#  - tests
+  - tag
+  - dev_build
+  - build
+
+tag:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_MESSAGE=~/^[^bump]/'
+  image: python:3.8
+  stage: tag
+  script:
+    - sh cicd/tag.sh
+
+
+
+#integration-tests:
+#  image: python
+#  stage: tests
+#  variables:
+#    pythonver: "3.7"
+#  script:
+#    - echo "skip unit tests for now"
+#    - pip install --no-cache-dir --upgrade pipenv
+#    - pip install --upgrade pip
+#    - pip install pytest pytest-xdist
+#    - python setup.py sdist bdist_wheel
+#    - bash -c 'pip install dist/checkov-*.whl'
+#    - sh integration_tests/run_integration_tests.sh
+
+#unit-tests:
+#  image: python
+#  stage: tests
+#  variables:
+#    pythonver: "3.7"
+#  script:
+#    - echo "skip unit tests for now"
+#    - pip install --no-cache-dir --upgrade pipenv
+#    - pip install --upgrade pip
+#    - pip install pytest pytest-xdist
+#    - python setup.py sdist bdist_wheel
+#    - bash -c 'pip install dist/checkov-*.whl'
+#    - sh cicd/run_unittests.sh
+
+
+dev_build:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME != "master" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_MESSAGE=~/^[^bump]/'
+  image: docker:19.03.12
+  stage: build
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  script:
+    - sh cicd/dev_ci.sh
+
+build:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_MESSAGE=~/^[^bump]/'
+  image: docker:19.03.12
+  stage: build
+  services:
+    - docker:19.03.12-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  script:
+    - sh cicd/ci.sh
