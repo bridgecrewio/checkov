@@ -19,8 +19,5 @@ class ACRUseSignedImages(BaseResourceValueCheck):
     def get_inspected_key(self):
         return "trust_policy/[0]/enabled"
 
-    def get_expected_value(self):
-        return True
-
 
 check = ACRUseSignedImages()
