@@ -16,18 +16,18 @@ prepare_data () {
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o sarif
   python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ -o json --external-checks-dir ./checkov/cloudformation/checks/graph_checks/aws > checkov_report_cfngoat.json
   python checkov/main.py -s -d repositories/kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
-#  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
+  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
   python checkov/main.py -s -d repositories/kustomizegoat/ --framework kustomize -o json > checkov_report_kustomizegoat.json
   python checkov/main.py -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
   python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
   python checkov/main.py -s -d repositories/terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml -o json > checkov_config_report_terragoat.json
 
-  python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf  > checkov_report_s3_singlefile_api_key_terragoat.txt
-  python checkov/main.py -s -d repositories/terragoat/terraform/azure/  > checkov_report_azuredir_api_key_terragoat.txt
+  python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
+  python checkov/main.py -s -d repositories/terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
 #  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True #cant run it on M1 mac, docker image node:14.16 needed
-  python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json  --include-all-checkov-policies > checkov_report_workflow_cve.json
-#  python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json  --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
-  python checkov/main.py --list  --output-bc-ids > checkov_checks_list.txt
+  python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
+  python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
+  python checkov/main.py --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
 }
 
 clone_repositories () {
@@ -56,6 +56,17 @@ delete_reports () {
   rm checkov_checks_list.txt
 }
 
+echo $BC_KEY
+if [[ -z "$BC_KEY" ]]; then
+   echo "BC_API_KEY is missing."
+   exit 1
+fi
+
+echo $BC_API_URL
+if [[ -z "$BC_API_URL" ]]; then
+   echo "BC_API_URL is missing."
+   exit 1
+fi
 
 # Create repositories dir
 mkdir repositories
@@ -66,15 +77,15 @@ clone_repositories
 
 cd ..
 
-#if [ ! -z "$VIRTUAL_ENV" ]; then
-#  deactivate
-#fi
-#
-##activate virtual env
-#ENV_PATH=$(pipenv --venv)
-#echo $ENV_PATH
-source venv/bin/activate
-#
+if [ ! -z "$VIRTUAL_ENV" ]; then
+  deactivate
+fi
+
+#activate virtual env
+ENV_PATH=$(pipenv --venv)
+echo $ENV_PATH
+source $ENV_PATH/bin/activate
+
 working_dir=$(pwd) # should be the path of local checkov project
 export PYTHONPATH="$working_dir/checkov:$PYTHONPATH"
 
@@ -83,9 +94,9 @@ prepare_data
 #Run integration tests.
 pytest integration_tests
 
-#deactivate
+deactivate
 
 echo "Deleting reports and repositories."
-#delete_reports
-#delete_repositories
+delete_reports
+delete_repositories
 
