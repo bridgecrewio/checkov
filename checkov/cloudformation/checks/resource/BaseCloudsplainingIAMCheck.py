@@ -4,7 +4,7 @@ import json
 import logging
 from abc import abstractmethod
 from collections import defaultdict
-from typing import Any
+from typing import Any, Optional
 
 from cloudsplaining.scan.policy_document import PolicyDocument
 
@@ -20,10 +20,16 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     # therefore a cache is defined at class level
     policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(lambda: defaultdict(PolicyDocument))  # noqa: CCE003
 
-    def __init__(self, name: str, id: str) -> None:
+    def __init__(
+            self,
+            name: str,
+            id: str,
+            guideline: Optional[str] = None,
+    ) -> None:
         super().__init__(
             name=name,
             id=id,
+
             categories=[CheckCategories.IAM],
             supported_resources=[
                 "AWS::IAM::Policy",
@@ -31,7 +37,8 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                 "AWS::IAM::Group",
                 "AWS::IAM::Role",
                 "AWS::IAM::User",
-            ]
+            ],
+            guideline=guideline
         )
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
