@@ -1,7 +1,5 @@
 import argparse
 import json
-import logging
-import pytest
 import unittest
 
 import os
@@ -26,10 +24,6 @@ import re
 
 
 class TestRunnerRegistry(unittest.TestCase):
-    @pytest.fixture(autouse=True)
-    def inject_fixtures(self, caplog):
-        self._caplog = caplog
-
     def test_multi_iac(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = current_dir + "/example_multi_iac"
@@ -220,32 +214,6 @@ class TestRunnerRegistry(unittest.TestCase):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
         for runner in checkov_runners:
             self.assertIn(runner, CodeCategoryMapping)
-
-    def test_get_enriched_resources(self):
-        test_files_dir = os.path.dirname(os.path.realpath(__file__)) + "/plan_with_tf_modules_for_enrichment"
-        runner_filter = RunnerFilter(download_external_modules=True)
-        runner_registry = RunnerRegistry(
-            banner, runner_filter, tf_runner()
-        )
-        reports = runner_registry.run(root_folder=test_files_dir)
-
-        config = argparse.Namespace(
-            file=['./plan_with_tf_modules_for_enrichment/tfplan.json'],
-            compact=True,
-            output=['json'],
-            quiet=True,
-            soft_fail=False,
-            soft_fail_on=None,
-            hard_fail_on=None,
-            output_file_path=None,
-            use_enforcement_rules=None
-        )
-
-        runner_registry.print_reports(scan_reports=reports, config=config)
-
-        with self._caplog.at_level(logging.WARNING):
-            #ensure there were no warnings of type: 'Failed to download module <module url> (for external modules, the --download-external-modules flag is required)'
-            assert len(self._caplog.records) == 0
 
     def test_extract_git_info_from_account_id(self):
         account_id = "owner/name"
