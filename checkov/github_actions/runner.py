@@ -19,8 +19,7 @@ from checkov.common.images.image_referencer import Image, ImageReferencerMixin
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.type_forcers import force_dict
 from checkov.github_actions.checks.registry import registry
-from checkov.yaml_doc.runner import Runner as YamlRunner, resolve_step_name
-from checkov.yaml_doc.runner import resolve_sub_name
+from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -89,11 +88,11 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             workflow_name = definition.get('name', "")
             new_key = f"on({workflow_name})" if workflow_name else "on"
         elif 'jobs' in supported_entities:
-            job_name = resolve_sub_name(definition, start_line, end_line, tag='jobs')
+            job_name = self.resolve_sub_name(definition, start_line, end_line, tag='jobs')
             new_key = f"jobs({job_name})" if job_name else "jobs"
 
             if 'jobs.*.steps[]' in supported_entities and key.split('.')[1] == '*':
-                step_name = resolve_step_name(definition['jobs'][job_name], start_line, end_line)
+                step_name = self.resolve_step_name(definition['jobs'].get(job_name), start_line, end_line)
                 new_key = f'jobs({job_name}).steps{step_name}'
         return new_key
 
