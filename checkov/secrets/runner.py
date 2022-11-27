@@ -224,9 +224,9 @@ class Runner(BaseRunner[None]):
             if run_time > datetime.timedelta(seconds=10):
                 logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
             return file_path, file_results
-        except Exception:
-            logging.warning(f"Secret scanning:could not process file {full_file_path}")
-            logging.debug("Complete trace:", exc_info=True)
+        except Exception as e:
+            logging.warning(f"Secret scanning: could not process file {full_file_path}")
+            logging.debug(e, exc_info=True)
             return file_path, []
 
     @staticmethod
