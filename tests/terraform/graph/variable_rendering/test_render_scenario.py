@@ -99,6 +99,7 @@ class TestRendererScenarios(TestCase):
 
         from checkov.terraform.parser import Parser
         parser = Parser()
+        parser.enable_nested_modules = False
         tf_definitions = {}
         parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
 

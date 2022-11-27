@@ -86,7 +86,7 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
-        self.enable_nested_modules = os.getenv('ENABLE_NESTED_MODULES', 'False') == 'True'
+        self.enable_nested_modules = os.getenv('ENABLE_NESTED_MODULES', 'True') == 'True'
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
 
