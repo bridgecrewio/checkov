@@ -77,12 +77,12 @@ class TestRendererScenarios(TestCase):
         self.go("module_simple_up_dir_ref")
 
     def test_nested_modules_instances_enable(self):
-        os.environ['ENABLE_NESTED_MODULES'] = 'True'
         dir_name = 'nested_modules_instances_enable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
         from checkov.terraform.parser import Parser
         parser = Parser()
+        parser.enable_nested_modules = True
         tf_definitions = {}
         parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
 
@@ -94,7 +94,6 @@ class TestRendererScenarios(TestCase):
         assert result == expected
 
     def test_nested_modules_instances_disable(self):
-        os.environ.pop('ENABLE_NESTED_MODULES', None)
         dir_name = 'nested_modules_instances_disable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
