@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class LBListenerUsingHTTPS(BaseResourceCheck):
+class LBListenerUsingHTTPS(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure Load Balancer Listener Using HTTPS"
@@ -13,11 +13,11 @@ class LBListenerUsingHTTPS(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if "protocol" in conf.keys():
-            if conf.get("protocol") != ['HTTP']:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self):
+        return 'protocol'
+
+    def get_expected_values(self):
+        return ['HTTPS']
 
 
 check = LBListenerUsingHTTPS()
