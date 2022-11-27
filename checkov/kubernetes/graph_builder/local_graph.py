@@ -154,7 +154,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         return None
 
     @staticmethod
-    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any]) -> None:
+    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False) -> None:
         # not used
         return None
 

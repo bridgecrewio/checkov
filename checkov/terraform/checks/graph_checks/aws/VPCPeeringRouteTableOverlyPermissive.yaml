@@ -1,0 +1,66 @@
+metadata:
+  id: "CKV2_AWS_44"
+  name: "Ensure AWS route table with VPC peering does not contain routes overly permissive to all traffic"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_route_table"
+      attribute: "route.*.vpc_peering_connection_id"
+      operator: "not_exists"
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
+          attribute: "route.*.cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0/0"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route_table"
+          attribute: "route.*.cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_route_table"
+          attribute: "route.*.ipv6_cidr_block"
+          operator: "not_contains"
+          value: "::0"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_route_table"
+          attribute: "route.*.ipv6_cidr_block"
+          operator: "not_contains"
+          value: "::/0"  
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_route"
+      attribute: "vpc_peering_connection_id"          
+      operator: "not_exists"
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "destination_cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0/0"
+        - cond_type: "attribute"
+          resource_types:
+          - "aws_route"
+          attribute: "destination_cidr_block"
+          operator: "not_contains"
+          value: "0.0.0.0"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_route"
+          attribute: "destination_ipv6_cidr_block"
+          operator: "not_contains"
+          value: "::0"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_route"
+          attribute: "destination_ipv6_cidr_block"
+          operator: "not_contains"
+          value: "::/0"

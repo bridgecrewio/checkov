@@ -1,0 +1,39 @@
+{
+  "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection",
+  "required_pull_request_reviews": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/required_pull_request_reviews",
+    "dismiss_stale_reviews": false,
+    "require_code_owner_reviews": false,
+    "require_last_push_approval": false,
+    "required_approving_review_count": 1
+  },
+  "required_signatures": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/required_signatures",
+    "enabled": false
+  },
+  "enforce_admins": {
+    "url": "https://api.github.com/repos/bridgecrewio/example/branches/main/protection/enforce_admins",
+    "enabled": false
+  },
+  "required_linear_history": {
+    "enabled": false
+  },
+  "allow_force_pushes": {
+    "enabled": false
+  },
+  "allow_deletions": {
+    "enabled": true
+  },
+  "block_creations": {
+    "enabled": false
+  },
+  "required_conversation_resolution": {
+    "enabled": false
+  },
+  "lock_branch": {
+    "enabled": false
+  },
+  "allow_fork_syncing": {
+    "enabled": false
+  }
+}

@@ -1,180 +1,49 @@
+import os
 import unittest
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AppServiceDetailedErrorMessagesEnabled import check
-from checkov.common.models.enums import CheckResult
 
 
-class TestAppServiceDetailedErrorMessagesEnabled(unittest.TestCase):
+class TestAppServiceClientCertificate(unittest.TestCase):
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-              site_config {
-                dotnet_framework_version = "v4.0"
-                scm_type                 = "LocalGit"
-              }
+        test_files_dir = os.path.join(current_dir, "example_AppServiceDetailedErrorMessagesEnabled")
+        report = runner.run(root_folder=test_files_dir,
+                            runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-           logs {
-               application_logs {
-                   azure_blob_storage {
-                   level = "warning"
-                   sas_url = "www.example.com"
-                   retention_in_days = 4
-                }
-            }
-          }              
+        passing_resources = {
+            'azurerm_app_service.pass',
+            'azurerm_app_service.pass2',
+            'azurerm_windows_web_app.pass',
+            'azurerm_linux_web_app.pass',
+        }
+        failing_resources = {
+            'azurerm_app_service.fail',
+            'azurerm_app_service.fail2',
+            'azurerm_app_service.fail3',
+            'azurerm_windows_web_app.fail',
+            'azurerm_linux_web_app.fail',
+            'azurerm_windows_web_app.fail2',
+            'azurerm_linux_web_app.fail2',
+        }
+        skipped_resources = {}
 
-              app_settings = {
-                "SOME_KEY" = "some-value"
-              }
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-              connection_string {
-                name  = "Database"
-                type  = "SQLServer"
-                value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(summary['passed'], len(passing_resources))
+        self.assertEqual(summary['failed'], len(failing_resources))
+        self.assertEqual(summary['skipped'], len(skipped_resources))
+        self.assertEqual(summary['parsing_errors'], 0)
 
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-
-              site_config {
-                dotnet_framework_version = "v4.0"
-                scm_type                 = "LocalGit"
-              }
-
-              app_settings = {
-                "SOME_KEY" = "some-value"
-              }
-              
-              logs {
-               application_logs {
-                   azure_blob_storage {
-                   level = "warning"
-                   sas_url = "www.example.com"
-                   retention_in_days = 4
-                }
-            }
-            detailed_error_messages_enabled = false
-          } 
-
-              connection_string {
-                name  = "Database"
-                type  = "SQLServer"
-                value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure3(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-
-              site_config {
-                dotnet_framework_version = "v4.0"
-                scm_type                 = "LocalGit"
-              }
-
-              app_settings = {
-                "SOME_KEY" = "some-value"
-              }
-
-              connection_string {
-                name  = "Database"
-                type  = "SQLServer"
-                value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-
-              logs {
-                http_logs {
-                    retention_in_days = 4
-                    retention_in_mb = 10
-                }
-                detailed_error_messages_enabled = true
-              }
-
-              app_settings = {
-                "SOME_KEY" = "some-value"
-              }
-
-              connection_string {
-                name  = "Database"
-                type  = "SQLServer"
-                value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success2(self):
-        hcl_res = hcl2.loads("""
-                        resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-
-              site_config {
-                dotnet_framework_version = "v4.0"
-                scm_type                 = "LocalGit"
-              }
-
-              logs {
-                detailed_error_messages_enabled = true
-              }
-
-              app_settings = {
-                "SOME_KEY" = "some-value"
-              }
-
-              connection_string {
-                name  = "Database"
-                type  = "SQLServer"
-                value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':

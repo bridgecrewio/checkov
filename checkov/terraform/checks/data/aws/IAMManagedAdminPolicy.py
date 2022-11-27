@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.data.base_check import BaseDataCheck
 
@@ -15,13 +19,13 @@ class IAMManagedAdminPolicy(BaseDataCheck):
         id = "CKV_AWS_275"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
-        supported_data = ('aws_iam_policy',)
+        supported_data = ("aws_iam_policy",)
 
         # Valid CheckCategories checkov/common/models/enums.py
-        categories = [CheckCategories.IAM]
+        categories = (CheckCategories.IAM,)
         super().__init__(name=description, id=id, categories=categories, supported_data=supported_data)
 
-    def scan_data_conf(self, conf):
+    def scan_data_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "name" in conf.keys():
             if conf.get("name")[0] == ADMIN_POLICY_NAME:
                 return CheckResult.FAILED

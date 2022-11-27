@@ -13,6 +13,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
+from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_definitions
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
@@ -29,6 +30,14 @@ TF_LIFECYCLE_CHECK_IDS = {
     "CKV_AWS_233",
     "CKV_AWS_237",
     "CKV_GCP_82",
+}
+
+RESOURCE_ATTRIBUTES_TO_OMIT = {
+    'azurerm_key_vault_secret': 'value',
+    'aws_secretsmanager_secret_version': 'secret_string',
+    'google_kms_secret_ciphertext': 'plaintext',
+    'aws_ssm_parameter': 'value',
+    'aws_db_instance': 'password'
 }
 
 
@@ -71,7 +80,9 @@ class Runner(TerraformRunner):
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
-                graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
+                censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
+                                                                          resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
+                graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
                 self.graph_manager.save_graph(graph)
 
         if external_checks_dir:
@@ -115,16 +126,21 @@ class Runner(TerraformRunner):
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
+                _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
                         continue
-
+                    censored_code_lines = omit_secret_value_from_checks(check=check,
+                                                                        check_result=check_result,
+                                                                        entity_code_lines=entity_code_lines,
+                                                                        entity_config=entity_config,
+                                                                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
                                     check_result=check_result,
-                                    code_block=entity_code_lines, file_path=scanned_file,
+                                    code_block=censored_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, resource_address=entity_address, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path,

@@ -2,7 +2,7 @@ import unittest
 
 from detect_secrets.util.code_snippet import CodeSnippet
 
-from checkov.common.parsers.json.multiline_parser import json_multiline_parser
+from checkov.secrets.parsers.json.multiline_parser import json_multiline_parser
 
 
 class TestMultilineParserJson(unittest.TestCase):
