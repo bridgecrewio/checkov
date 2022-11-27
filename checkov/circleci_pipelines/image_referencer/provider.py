@@ -4,8 +4,7 @@ from typing import Any
 import jmespath
 from checkov.common.images.image_referencer import Image
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.yaml_doc.runner import resolve_sub_name
-from checkov.yaml_doc.runner import resolve_image_name
+from checkov.yaml_doc.runner import Runner
 
 
 class CircleCIProvider:
@@ -16,8 +15,8 @@ class CircleCIProvider:
         self.workflow_config = workflow_config
 
     def generate_resource_key(self, start_line: int, end_line: int, tag: str) -> str:
-        sub_name = resolve_sub_name(self.workflow_config, start_line, end_line, tag)
-        image_name = resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
+        sub_name = Runner.resolve_sub_name(self.workflow_config, start_line, end_line, tag)
+        image_name = Runner.resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
         new_key = f'{tag}({sub_name}).docker.image{image_name}' if sub_name else tag
         return new_key
 
