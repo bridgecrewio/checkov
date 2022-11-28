@@ -722,7 +722,8 @@ class Parser:
             for file_path in next_level:
                 path, module_dependency, module_dependency_num = remove_module_dependency_in_path(file_path)
                 dir_name = os.path.dirname(path)
-                current_deps = deepcopy(module_dependency_map[os.path.dirname(module_dependency)])
+                module_dir = os.path.dirname(module_dependency.split('[')[0])
+                current_deps = deepcopy(module_dependency_map[module_dir])
                 for dep in current_deps:
                     dep.append(module_dependency)
                 if dir_name not in module_dependency_map:

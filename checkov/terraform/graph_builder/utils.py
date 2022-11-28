@@ -49,9 +49,16 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
         return ["", ""]
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
+
+    module_dependency = module_dependency[1:-1]
+    if '[' in module_dependency:
+        return [
+            module_dependency[:module_dependency.index('.tf#') + len('.tf')] + module_dependency[module_dependency.index('['):],
+            module_dependency[module_dependency.index('.tf#') + len('.tf#'):module_dependency.index('[')]
+        ]
     return [
-        module_dependency[1:module_dependency.index('.tf#') + len('.tf')],
-        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-1]
+        module_dependency[:module_dependency.index('.tf#') + len('.tf')],
+        module_dependency[module_dependency.index('.tf#') + len('.tf#'):]
     ]
 
 
