@@ -17,12 +17,11 @@ class AvoidDoublePipelines(BaseGitlabCICheck):
 
     def scan_entity_conf(self, conf):
         c = 0
-        pipelinecheck1 = '$CI_PIPELINE_SOURCE == "merge_request_event"'
-        pipelinecheck2 = '$CI_PIPELINE_SOURCE == "push"'
+        pipeline_sources = ('$CI_PIPELINE_SOURCE == "merge_request_event"', '$CI_PIPELINE_SOURCE == "push"')
         for x in conf:
             if "if" in x:
                 value = x['if']
-                if value.startswith(pipelinecheck1) or value.startswith(pipelinecheck2):
+                if value.startswith(pipeline_sources):
                     c += 1
                 if c > 1:
                     return CheckResult.FAILED, conf
