@@ -129,7 +129,10 @@ class RunnerRegistry:
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment:
-            enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+            enriched_resources = RunnerRegistry.get_enriched_resources(
+                repo_roots=repo_root_for_plan_enrichment,
+                download_external_modules=self.runner_filter.download_external_modules,
+            )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
@@ -506,7 +509,9 @@ class RunnerRegistry:
                 record.set_guideline(guideline)
 
     @staticmethod
-    def get_enriched_resources(repo_roots: list[str | Path]) -> dict[str, dict[str, Any]]:
+    def get_enriched_resources(
+        repo_roots: list[str | Path], download_external_modules: bool
+    ) -> dict[str, dict[str, Any]]:
         repo_definitions = {}
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
@@ -515,6 +520,7 @@ class RunnerRegistry:
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
+                download_external_modules=download_external_modules,
             )
             repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 
