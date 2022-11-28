@@ -57,10 +57,10 @@ class DockerfileLocalGraph(LocalGraph[Block]):
             # not interested in comments
             return
 
-        for idx, instruction in enumerate(instructions):
+        for instruction in instructions:
             resource_type = ResourceType.__dict__.get(instruction_type)
             if not resource_type:
-                logging.warning(f"An supported instruction {instruction_type} was used in {file_path}")
+                logging.warning(f"An unsupported instruction {instruction_type} was used in {file_path}")
                 continue
 
             config = {

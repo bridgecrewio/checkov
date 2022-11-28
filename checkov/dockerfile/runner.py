@@ -98,9 +98,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info(f"Creating Dockerfile graph")
+            logging.info("Creating Dockerfile graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info(f"Successfully created Dockerfile graph")
+            logging.info("Successfully created Dockerfile graph")
 
             self.graph_manager.save_graph(local_graph)
 
