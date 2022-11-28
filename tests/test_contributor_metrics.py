@@ -32,7 +32,9 @@ def test_parse_gitlog(mock_subproc_popen):
     process_mock.configure_mock(**attrs)
     mock_subproc_popen.return_value = process_mock
 
-    result = parse_gitlog("my_repo")
-    assert result == {"repository": "my_repo", "contributors": ["Fake User <fake1@paloaltonetworks.com> 1666516907",
+    result = parse_gitlog("my_repo", "jenkins")
+    assert result == {"repository": "my_repo",
+                      "source": "jenkins",
+                      "contributors": ["Fake User <fake1@paloaltonetworks.com> 1666516907",
                                                                 "dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com> 1667819806",
                                                                 "Fake User <fake2@paloaltonetworks.com> 1667216980"]}
