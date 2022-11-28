@@ -20,6 +20,8 @@ class DontAllowShellInjection(BaseCircleCIPipelinesCheck):
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if not isinstance(conf, dict):
+            return CheckResult.UNKNOWN, conf
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")

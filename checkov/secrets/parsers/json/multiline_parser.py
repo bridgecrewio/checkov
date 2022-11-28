@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
-from checkov.common.parsers.multiline_parser import BaseMultiLineParser
+from checkov.secrets.parsers.multiline_parser import BaseMultiLineParser
 
 
 START_OBJ_END_OF_LINE = r'({\s*}?\s*,?\s*$)'
