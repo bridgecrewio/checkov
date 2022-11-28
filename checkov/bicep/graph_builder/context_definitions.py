@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import cast, List, Tuple, Dict, Any
+from typing import cast, List, Tuple, Dict, Any, TYPE_CHECKING
 
 from checkov.common.util.suppression import collect_suppressions_for_report
 
-from pycep.typing import BicepJson
+if TYPE_CHECKING:
+    from pycep.typing import BicepJson
 
 BICEP_COMMENT = "//"
 DEFINITIONS_KEYS_TO_PARSE = {"parameters": "parameters", "resources": "resources"}

@@ -6,7 +6,6 @@ from hcl2 import START_LINE, END_LINE
 from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
 
-
 class VariableContextParser(BaseContextParser):
     def __init__(self) -> None:
         definition_type = "variable"

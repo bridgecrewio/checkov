@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import logging
-from itertools import groupby
-
 import json
-from typing import TYPE_CHECKING
-
-import requests
+import logging
+from collections.abc import Iterable
+from itertools import groupby
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
@@ -15,15 +13,16 @@ from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import extract_error_message, get_default_post_headers
 
 if TYPE_CHECKING:
+    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 
 
 class FixesIntegration(BaseIntegrationFeature):
-
-    def __init__(self, bc_integration):
-        super().__init__(bc_integration, order=10)
+    def __init__(self, bc_integration: BcPlatformIntegration) -> None:
+        super().__init__(bc_integration=bc_integration, order=10)
         self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
     def is_valid(self) -> bool:
@@ -42,15 +41,15 @@ class FixesIntegration(BaseIntegrationFeature):
             self.integration_feature_failures = True
             logging.debug("Fixes will not be applied.", exc_info=True)
 
-    def _get_platform_fixes(self, scan_report):
+    def _get_platform_fixes(self, scan_report: Report) -> None:
 
         # We might want to convert this to one call for all results (all files), but then we would also have to deal
         # with repo size issues. Because the primary use case for this at the moment is VSCode integration, which
         # runs one file at a time, this can wait.
 
         sorted_by_file = sorted(scan_report.failed_checks, key=lambda c: c.file_abs_path)
-        for file, failed_checks in groupby(sorted_by_file, key=lambda c: c.file_abs_path):
-            failed_checks = [fc for fc in failed_checks if fc.check_id in metadata_integration.check_metadata]
+        for file, sorted_failed_checks in groupby(sorted_by_file, key=lambda c: c.file_abs_path):
+            failed_checks = [fc for fc in sorted_failed_checks if fc.check_id in metadata_integration.check_metadata]
             if not failed_checks:
                 continue
             with open(file, 'r') as reader:
@@ -63,14 +62,28 @@ class FixesIntegration(BaseIntegrationFeature):
 
             # a mapping of (checkov_check_id, resource_id) to the failed check Record object for lookup later
             # guaranteed to map to exactly one record
-            failed_check_by_check_resource = {k: list(v)[0] for k, v in groupby(failed_checks, key=lambda c: (c.check_id, c.resource))}
+            failed_check_by_check_resource: dict[tuple[str, str], Record] = {
+                k: list(v)[0] for k, v in groupby(failed_checks, key=lambda c: (c.check_id, c.resource))
+            }
 
             for fix in all_fixes:
                 ckv_id = metadata_integration.get_ckv_id_from_bc_id(fix['policyId'])
-                failed_check = failed_check_by_check_resource[(ckv_id, fix['resourceId'])]
+                if not ckv_id:
+                    logging.debug(f"BC ID {fix['policyId']} has no checkov ID - might be a cloned policy")
+                    ckv_id = fix.get('policyId', '')
+
+                failed_check = failed_check_by_check_resource.get((ckv_id, fix['resourceId']))  # type:ignore[arg-type]  # ckv_id is not None here
+                if not failed_check:
+                    logging.warning(f'Could not find the corresponding failed check for the fix for ID {ckv_id} and resource {fix["resourceId"]}')
+                    continue
                 failed_check.fixed_definition = fix['fixedDefinition']
 
-    def _get_fixes_for_file(self, check_type, filename, file_contents, failed_checks):
+    def _get_fixes_for_file(
+        self, check_type: str, filename: str, file_contents: str, failed_checks: Iterable[Record]
+    ) -> dict[str, Any] | None:
+        if not self.bc_integration.bc_source:
+            logging.error("Source was not set")
+            return None
 
         errors = list(map(lambda c: {
             'resourceId': c.resource,
@@ -91,19 +104,30 @@ class FixesIntegration(BaseIntegrationFeature):
             {"Authorization": self.bc_integration.get_auth_token()}
         )
 
-        response = requests.request('POST', self.fixes_url, headers=headers, json=payload)
+        if not self.bc_integration.http:
+            raise AttributeError("HTTP manager was not correctly created")
 
-        if response.status_code != 200:
-            error_message = extract_error_message(response)
-            raise Exception(f'Get fixes request failed with response code {response.status_code}: {error_message}')
+        request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
 
-        logging.debug(f'Response from fixes API: {response.content}')
+        if request.status != 200:
+            error_message = extract_error_message(request)
+            raise Exception(f'Get fixes request failed with response code {request.status}: {error_message}')
 
-        fixes = json.loads(response.content) if response.content else None
-        if not fixes or type(fixes) != list:
+        logging.debug(f'Response from fixes API: {request.data}')
+
+        fixes: list[dict[str, Any]] = json.loads(request.data) if request.data else None
+        if not fixes or not isinstance(fixes, list):
             logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
             return None
         return fixes[0]
+
+    def pre_scan(self) -> None:
+        # not used
+        pass
+
+    def pre_runner(self) -> None:
+        # not used
+        pass
 
 
 integration = FixesIntegration(bc_integration)

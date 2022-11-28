@@ -5,9 +5,9 @@ import json
 import logging
 import os
 import time
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Sequence, Collection
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 import requests
 
@@ -26,16 +26,17 @@ MAX_SLEEP_DURATION = 60
 
 
 class Scanner:
-    def __init__(self, pbar: ProgressBar = None, root_folder: str | Path | None = None) -> None:
+    def __init__(self, pbar: ProgressBar | None = None, root_folder: str | Path | None = None) -> None:
         self._base_url = bc_integration.api_url
-        self.pbar = pbar
-        if not self.pbar:
+        if pbar:
+            self.pbar = pbar
+        else:
             self.pbar = ProgressBar('')
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
-    def scan(self, input_paths: Iterable[Path]) -> Sequence[dict[str, Any]]:
-        self.pbar.initiate(len(input_paths))  # type: ignore
+    def scan(self, input_paths: Collection[Path]) -> Sequence[dict[str, Any]]:
+        self.pbar.initiate(len(input_paths))
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
         )
@@ -51,13 +52,13 @@ class Scanner:
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
-            scan_results = []
+            scan_results: list[dict[str, Any]] = []
             for input_path in input_paths:
                 scan_results.append(await self.run_scan(input_path))
         else:
             scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
-        if any(scan_result["vulnerabilities"] is None for scan_result in scan_results):
+        if any(scan_result.get("packages") is None for scan_result in scan_results):
             image_scanner.setup_twistcli()
 
             if os.getenv("PYCHARM_HOSTED") == "1":
@@ -65,13 +66,23 @@ class Scanner:
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
                 logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
                 scan_results = [
-                    await self.execute_twistcli_scan(input_path) if scan_results[idx]["vulnerabilities"] is None else
+                    await self.execute_twistcli_scan(input_path) if scan_results[idx].get("packages") is None else
                     scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
-                scan_results = await asyncio.gather(*[
-                    self.execute_twistcli_scan(input_path) if scan_results[idx]["vulnerabilities"] is None else scan_results[idx] for idx, input_path in enumerate(input_paths)
+                input_paths_as_list: List[Path] = list(input_paths)  # create a list from a set ("Iterable")
+                indices_to_fix: List[int] = [
+                    idx
+                    for idx in range(len(input_paths_as_list))
+                    if scan_results[idx].get("packages") is None
+                ]
+                new_scan_results = await asyncio.gather(*[
+                    self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix
                 ])
+                for idx in indices_to_fix:
+                    res = new_scan_results.pop(0)
+                    res['repository'] = str(input_paths_as_list[idx])
+                    scan_results[idx] = res
 
         return scan_results
 
@@ -95,6 +106,7 @@ class Scanner:
         response_json = response.json()
 
         if response_json["status"] == "already_exist":
+            logging.info(f"result for {input_path} exists in the cache")
             return self.parse_api_result(input_path, response_json["outputData"])
 
         return self.run_scan_busy_wait(input_path, response_json['id'])

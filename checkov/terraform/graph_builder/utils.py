@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
 from typing import Tuple
-from typing import Union, List, Any, Dict, Optional, Callable
+from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from networkx import DiGraph
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -56,6 +61,7 @@ INTERPOLATION_PATTERN = re.compile(r"[${}]")
 INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
 INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
 MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
+
 
 def get_vertices_references(
     str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
@@ -165,9 +171,14 @@ def get_referenced_vertices_in_value(
     resources_types: List[str],
     cleanup_functions: Optional[List[Callable[[str], str]]] = None,
 ) -> List[TerraformVertexReference]:
+    references_vertices: "list[TerraformVertexReference]" = []
+
+    if not value or isinstance(value, (bool, int)):
+        # bool/int values can't have a references to other vertices
+        return references_vertices
+
     if cleanup_functions is None:
         cleanup_functions = DEFAULT_CLEANUP_FUNCTIONS
-    references_vertices = []
 
     if isinstance(value, list):
         for sub_value in value:
@@ -182,11 +193,16 @@ def get_referenced_vertices_in_value(
             )
 
     if isinstance(value, str):
-        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(value):
-            logging.info(f'Rendering was skipped for a {len(value)}-character-long string. If you wish to have it '
-                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                         f'to {str(len(value) + 1)} or to 0 to allow rendering of any length')
+        value_len = len(value)
+        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < value_len:
+            logging.debug(f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
+                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                          f'to {str(value_len + 1)} or to 0 to allow rendering of any length')
         else:
+            if value_len < 5 or "." not in value:
+                # the shortest reference is 'var.a' and references are done via dot notation
+                return references_vertices
+
             if cleanup_functions:
                 for func in cleanup_functions:
                     value = func(value)
@@ -236,3 +252,38 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
     return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
+
+
+def attribute_has_dup_with_dynamic_attributes(attribute_key: str, attributes: dict[str, Any] | list[str]) -> bool:
+    """
+    :param attribute_key: key inside the `attributes` dictionary
+    :param attributes: `attributes` dictionary
+    :return: True if attribute_key has duplicate attribute with dynamic reference.
+    :example: if attributes.keys == [name.rule, dynamic.name.content.rule] -> will return True.
+    """
+    attribute_key_paths = attribute_key.split('.')
+    if len(attribute_key_paths) > 1:
+        attar_key_dynamic_ref = f"dynamic.{attribute_key_paths[0]}.content.{attribute_key_paths[1]}"
+        return attar_key_dynamic_ref in attributes
+    else:
+        return False
+
+
+def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: dict[str, str]) -> str:
+    resource_id = resource.get(CustomAttributes.ID)
+    # for external modules resources the id should start with the prefix module.[module_name]
+    if resource.get(CustomAttributes.MODULE_DEPENDENCY):
+        referred_id = file_path_to_referred_id.get(f'{resource.get(CustomAttributes.FILE_PATH)}[{resource.get(CustomAttributes.MODULE_DEPENDENCY)}#{resource.get(CustomAttributes.MODULE_DEPENDENCY_NUM)}]')
+        resource_id = f'{referred_id}.{resource_id}'
+    return resource_id
+
+
+def setup_file_path_to_referred_id(graph_object: DiGraph) -> dict[str, str]:
+    file_path_to_module_id = {}
+    modules = [node for node in graph_object.nodes.values() if
+               node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
+    for modules_data in modules:
+        for module_name, module_content in modules_data.get(CustomAttributes.CONFIG, {}).items():
+            for path in module_content.get("__resolved__", []):
+                file_path_to_module_id[path] = f"module.{module_name}"
+    return file_path_to_module_id

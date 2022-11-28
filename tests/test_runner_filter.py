@@ -19,6 +19,7 @@ from checkov.runner_filter import RunnerFilter
             {
                 "argo_workflows",
                 "arm",
+                "azure_pipelines",
                 "bicep",
                 "cloudformation",
                 "dockerfile",
@@ -34,6 +35,7 @@ from checkov.runner_filter import RunnerFilter
                 "gitlab_ci",
                 "bitbucket_configuration",
                 "bitbucket_pipelines",
+                "circleci_pipelines",
                 "kustomize",
                 "sca_package",
                 "openapi",

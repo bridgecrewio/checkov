@@ -5,24 +5,25 @@ import logging
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
-from pycep.typing import BicepJson
-from typing_extensions import Literal
-
 from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 from checkov.bicep.graph_manager import BicepGraphManager
+from checkov.bicep.image_referencer.manager import BicepImageReferencerManager
 from checkov.bicep.parser import Parser
 from checkov.bicep.utils import clean_file_path, get_scannable_file_paths
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.images.image_referencer import ImageReferencerMixin
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
-from checkov.common.output.report import CheckType, Report
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.typing import _CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks
@@ -33,13 +34,16 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager
+    from checkov.common.images.image_referencer import Image
+    from networkx import DiGraph
+    from pycep.typing import BicepJson
+    from typing_extensions import Literal
 
 
-class Runner(BaseRunner):
+class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
     check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
-    block_type_registries: dict[Literal["parameters", "resources"], BaseCheckRegistry] = {  # noqa: CCE003  # a static attribute
+    block_type_registries: 'dict[Literal["parameters", "resources"], BaseCheckRegistry]' = {  # noqa: CCE003  # a static attribute
         "parameters": param_registry,
         "resources": resource_registry,
     }
@@ -49,7 +53,7 @@ class Runner(BaseRunner):
         db_connector: NetworkxConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
-        graph_manager: GraphManager | None = None,
+        graph_manager: BicepGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
         db_connector = db_connector or NetworkxConnector()
@@ -74,7 +78,7 @@ class Runner(BaseRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -120,12 +124,29 @@ class Runner(BaseRunner):
         if CHECKOV_CREATE_GRAPH:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
+
         return report
 
     def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
 
-    def add_python_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None) -> None:
+    def add_python_check_results(
+        self, report: Report, runner_filter: RunnerFilter, root_folder: str | Path | None
+    ) -> None:
         """Adds Python check results to given report"""
 
         for file_path, definition in self.definitions.items():
@@ -138,7 +159,7 @@ class Runner(BaseRunner):
                             scanned_file=str(file_path),
                             entity={name: conf},
                             skipped_checks=[],
-                            runner_filter=runner_filter,
+                            runner_filter=runner_filter
                         )
 
                         if results:
@@ -160,9 +181,13 @@ class Runner(BaseRunner):
                                 elif check.bc_id and check.bc_id in suppressions.keys():
                                     check_result = suppressions[check.bc_id]
 
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    file_code_lines[start_line - 1 : end_line],
-                                                                                    conf)
+                                censored_code_lines = omit_secret_value_from_checks(
+                                    check=check,
+                                    check_result=check_result,
+                                    entity_code_lines=file_code_lines[start_line - 1 : end_line],
+                                    entity_config=conf,
+                                )
+
                                 record = Record(
                                     check_id=check.id,
                                     bc_check_id=check.bc_id,
@@ -179,6 +204,18 @@ class Runner(BaseRunner):
                                 )
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
+                        elif conf.get("existing") is False:
+                            # resources without checks, but not existing ones
+
+                            cleaned_path = clean_file_path(file_path)
+                            resource_id = f"{conf['type']}.{name}"
+                            report.extra_resources.add(
+                                ExtraResource(
+                                    file_abs_path=str(file_path.absolute()),
+                                    file_path=self.extract_file_path_from_abs_path(cleaned_path),
+                                    resource=resource_id,
+                                )
+                            )
             self.pbar.update()
         self.pbar.close()
 
@@ -188,12 +225,12 @@ class Runner(BaseRunner):
     def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
         """Adds YAML check results to given report"""
 
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
-                entity_file_path = Path(entity.get(CustomAttributes.FILE_PATH))
+                entity_file_path = Path(entity[CustomAttributes.FILE_PATH])
 
                 clean_check_result: _CheckResult = {
                     "result": check_result["result"],
@@ -202,7 +239,7 @@ class Runner(BaseRunner):
 
                 file_code_lines = self.definitions_raw[entity_file_path]
                 start_line = entity["__start_line__"]
-                end_line = cast(int, entity["__end_line__"])
+                end_line = cast("int", entity["__end_line__"])
 
                 record = Record(
                     check_id=check.id,
@@ -210,9 +247,9 @@ class Runner(BaseRunner):
                     check_name=check.name,
                     check_result=clean_check_result,
                     code_block=file_code_lines[start_line - 1 : end_line],
-                    file_path=str(clean_file_path(entity_file_path)),
+                    file_path=self.extract_file_path_from_abs_path(clean_file_path(entity_file_path)),
                     file_line_range=[start_line, end_line],
-                    resource=entity.get(CustomAttributes.ID),
+                    resource=entity[CustomAttributes.ID],
                     check_class=check.__class__.__module__,
                     file_abs_path=str(entity_file_path.absolute()),
                     evaluations=None,
@@ -224,3 +261,18 @@ class Runner(BaseRunner):
                         record = GraphRecord(record, breadcrumb)
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
+
+    def extract_images(
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None,
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = BicepImageReferencerManager(graph_connector=graph_connector)
+        images = manager.extract_images_from_resources()
+
+        return images

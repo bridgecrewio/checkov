@@ -6,18 +6,21 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Dict, Any, TYPE_CHECKING
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic
 
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager
+    from checkov.common.graph.graph_manager import GraphManager  # noqa
+    from checkov.common.typing import _CheckResult
+
+_GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
 def strtobool(val: str) -> int:
@@ -43,13 +46,14 @@ IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 
-class BaseRunner(ABC):
+class BaseRunner(ABC, Generic[_GraphManager]):
     check_type = ""
-    definitions = None
+    definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+    raw_definitions: dict[str, list[tuple[int, str]]] | None = None
     context: dict[str, dict[str, Any]] | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
-    graph_manager: GraphManager | None = None
+    graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
@@ -63,9 +67,9 @@ class BaseRunner(ABC):
             root_folder: str | None,
             external_checks_dir: list[str] | None = None,
             files: list[str] | None = None,
-            runner_filter: RunnerFilter = RunnerFilter(),
+            runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
-    ) -> Report:
+    ) -> Report | list[Report]:
         pass
 
     def should_scan_file(self, filename: str) -> bool:
@@ -85,7 +89,7 @@ class BaseRunner(ABC):
 
     def set_external_data(
             self,
-            definitions: dict[str, dict[str, Any]] | None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
             context: dict[str, dict[str, Any]] | None,
             breadcrumbs: dict[str, dict[str, Any]] | None,
             **kwargs: Any,
@@ -95,13 +99,13 @@ class BaseRunner(ABC):
         self.breadcrumbs = breadcrumbs
 
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
-        pass
+        return None
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
-        pass
+        return Report(check_type="not_defined")
 
-    def run_graph_checks_results(self, runner_filter: RunnerFilter) -> Dict[BaseGraphCheck, List[Dict[str, Any]]]:
-        checks_results: Dict[BaseGraphCheck, List[Dict[str, Any]]] = {}
+    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
+        checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
 
         if not self.graph_manager or not self.graph_registry:
             # should not happen
@@ -110,7 +114,7 @@ class BaseRunner(ABC):
 
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter)
+            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         return checks_results
 

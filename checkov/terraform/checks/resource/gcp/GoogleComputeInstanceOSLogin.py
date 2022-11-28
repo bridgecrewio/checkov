@@ -14,7 +14,7 @@ class GoogleComputeInstanceOSLogin(BaseResourceNegativeValueCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if ('source_instance_template' in conf.keys() and 'metadata' not in conf.keys()) or \
-                ('source_instance_template' in conf.keys() and 'enable-oslogin' not in
+                ('source_instance_template' in conf.keys() and isinstance(conf['metadata'][0], dict) and 'enable-oslogin' not in
                  conf['metadata'][0].keys()):
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
             # and enable-oslogin is not present, then this check cannot PASS, since we don't know what the

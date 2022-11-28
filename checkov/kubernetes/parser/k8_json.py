@@ -1,10 +1,17 @@
+from __future__ import annotations
+
+from collections.abc import Hashable
 from pathlib import Path
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any, List, TYPE_CHECKING
 
 import yaml
 from yaml.loader import SafeLoader
 
-def loads(content):
+if TYPE_CHECKING:
+    from yaml import MappingNode
+
+
+def loads(content: str) -> list[dict[str, Any]]:
     """
     Load the given YAML string
     """
@@ -13,13 +20,11 @@ def loads(content):
     content = content.replace('}{', '},{')
     content = content.replace('}\n{', '},\n{')
 
-    template_temp = list(yaml.load_all(content, Loader=SafeLineLoader))
+    template: list[dict[str, Any]] = yaml.load(content, Loader=SafeLineLoader)  # nosec  # custom safe loader
 
     # Convert an empty file to an empty dict
-    if template_temp is None:
-        template = {}
-    else:
-        template = template_temp[0]
+    if template is None:
+        template = []
 
     return template
 
@@ -39,12 +44,12 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
     template = loads(content)
 
-    return (template, file_lines)
+    return template, file_lines
 
 
 class SafeLineLoader(SafeLoader):
-    def construct_mapping(self, node, deep=False):
-        mapping = super(SafeLineLoader, self).construct_mapping(node, deep=deep)
+    def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[Hashable, Any]:
+        mapping = super().construct_mapping(node, deep=deep)
         # Add 1 so line numbering starts at 1
         # mapping['__line__'] = node.start_mark.line + 1
         mapping['__startline__'] = node.start_mark.line + 1

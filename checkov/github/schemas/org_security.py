@@ -2,7 +2,7 @@ from checkov.common.vcs.vcs_schema import VCSSchema
 
 
 class OrgSecuritySchema(VCSSchema):
-    def __init__(self):
+    def __init__(self) -> None:
         schema = {
             "type": "object",
             "properties": {
@@ -19,7 +19,10 @@ class OrgSecuritySchema(VCSSchema):
                                     "type": "string"
                                 },
                                 "description": {
-                                    "type": "string"
+                                    "oneOf": [
+                                        {"type": "string"},
+                                        {"type": "null"}
+                                    ]
                                 },
                                 "ipAllowListEnabledSetting": {
                                     "type": "string"
@@ -31,12 +34,19 @@ class OrgSecuritySchema(VCSSchema):
                                     "type": "boolean"
                                 },
                                 "samlIdentityProvider": {
-                                    "type": "object",
-                                    "properties": {
-                                        "ssoUrl": {
-                                            "type": "string"
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "ssoUrl": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "null"
                                         }
-                                    }
+                                    ]
                                 }
                             },
                             "required": [

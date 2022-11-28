@@ -21,9 +21,9 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     if isinstance(input_str, str) and CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
-        logging.info(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
-                     f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                     f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
+        logging.debug(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
+                      f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                      f'to {str(len(input_str) + 1)} or to 0 to allow rendering of any length')
         return input_str
     evaluated_value = _try_evaluate(input_str)
     if type(evaluated_value) is not str:

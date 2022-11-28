@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import annotations
+
 import atexit
 import json
 import logging
@@ -7,18 +9,17 @@ import shutil
 import signal
 import sys
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, TYPE_CHECKING
 
-import argcomplete
+import argcomplete  # type:ignore[import]
 import configargparse
-from configargparse import ArgumentParser
-from configargparse import Namespace
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
+from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -30,17 +31,19 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
-from checkov.common.output.report import CheckType
-from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -53,6 +56,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
@@ -61,6 +65,10 @@ from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+
+if TYPE_CHECKING:
+    from configargparse import ArgumentParser, Namespace
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -68,6 +76,7 @@ outer_registry = None
 
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+
 
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
@@ -87,12 +96,14 @@ DEFAULT_RUNNERS = (
     bitbucket_configuration_runner(),
     bitbucket_pipelines_runner(),
     kustomize_runner(),
-    sca_package_runner(),
     github_actions_runner(),
     bicep_runner(),
     openapi_runner(),
     sca_image_runner(),
     argo_workflows_runner(),
+    circleci_pipelines_runner(),
+    azure_pipelines_runner(),
+    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
 )
 
 
@@ -106,13 +117,17 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     argcomplete.autocomplete(parser)
     config = parser.parse_args(argv)
 
-    normalize_config(config)
+    normalize_config(config, parser)
 
-    logger.debug(f'Checkov version: {version}')
-    logger.debug(f'Python executable: {sys.executable}')
-    logger.debug(f'Python version: {sys.version}')
-    logger.debug(f'Checkov executable (argv[0]): {sys.argv[0]}')
-    logger.debug(parser.format_values(sanitize=True))
+    run_metadata: dict[str, str | list[str]] = {
+        "checkov_version": version,
+        "python_executable": sys.executable,
+        "python_version": sys.version,
+        "checkov_executable": sys.argv[0],
+        "args": parser.format_values(sanitize=True).split('\n')
+    }
+
+    logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
 
     if config.add_check:
         resp = prompt.Prompt()
@@ -123,6 +138,25 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
+
+    if config.bc_api_key and not config.include_all_checkov_policies:
+        if config.skip_download and not config.external_checks_dir:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
+                  'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
+                  '--external-checks-dir options.',
+                  file=sys.stderr)
+            exit(2)
+        elif config.skip_download:
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so only local custom policies loaded with --external-checks-dir '
+                  'will be evaluated.',
+                  file=sys.stderr)
+        else:
+            logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
+                         '(this is the default behavior, and this message is just for debugging purposes)')
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
@@ -138,6 +172,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.var_file:
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
+    run_image_referencer = enable_image_referencer(
+        bc_integration=bc_integration,
+        frameworks=config.framework,
+        skip_frameworks=config.skip_framework,
+    )
+
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
@@ -145,7 +185,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
                                  runners=checkov_runners, excluded_paths=excluded_paths,
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
-                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet)
+                                 skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
+                                 use_enforcement_rules=config.use_enforcement_rules,
+                                 run_image_referencer=run_image_referencer,
+                                 enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
+                                 block_list_secret_scan=config.block_list_secret_scan)
+
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -157,7 +202,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     runnerDependencyHandler.validate_runner_deps()
 
     if config.show_config:
-        print(parser.format_values())
+        print(parser.format_values(sanitize=True))
         return None
 
     if config.bc_api_key == '':
@@ -165,6 +210,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                      'secret, you may need to double check the mapping.')
     elif config.bc_api_key:
         logger.debug(f'Using API key ending with {config.bc_api_key[-8:]}')
+
+        if not bc_integration.is_token_valid(config.bc_api_key):
+            raise Exception('The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
+                            'access key and secret key. For Prisma, the value must be in the form '
+                            'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
+                            'created it, not the token ID visible later on. If you are using environment variables, '
+                            'make sure they are properly set and exported.')
 
         if config.repo_id is None and not config.list:
             # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
@@ -198,6 +250,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
+
+            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+            if should_run_contributor_metrics:
+                try:        # collect contributor info and upload
+                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
+                except Exception as e:
+                    logger.warning(f"Unable to report contributor metrics due to: {e}")
+
         except MaxRetryError:
             return None
         except Exception:
@@ -226,7 +287,19 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.skip_download or BC_SKIP_MAPPING.upper() == "TRUE":
         bc_integration.skip_download = True
 
-    bc_integration.get_platform_run_config()
+    try:
+        bc_integration.get_platform_run_config()
+    except Exception:
+        if not config.include_all_checkov_policies:
+            # stack trace gets printed in the exception handlers above
+            # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
+            print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                  'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                  'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                  '(but note that this will not include any custom platform configurations or policy metadata).',
+                  file=sys.stderr)
+            exit(2)
+
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
@@ -235,6 +308,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    if config.use_enforcement_rules:
+        runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
@@ -250,7 +326,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     url = None
     created_baseline_path = None
 
-    git_configuration_folders = [os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf'),
+    default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'github_conf')
+    git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                  os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
     if config.directory:
@@ -268,6 +345,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
+                bc_integration.persist_run_metadata(run_metadata)
                 url = bc_integration.commit_repository(config.branch)
 
             if config.create_baseline:
@@ -294,14 +372,26 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
-        result = runner.run(root_folder='', image_id=config.docker_image,
-                            dockerfile_path=config.dockerfile_path, runner_filter=runner_filter)
+        result = runner.run(
+            root_folder='',
+            image_id=config.docker_image,
+            dockerfile_path=config.dockerfile_path,
+            runner_filter=runner_filter,
+        )
+
+        results = result if isinstance(result, list) else [result]
+        if len(results) > 1:
+            # this shouldn't happen, but if it happens, then it is intended or something is broke
+            logger.error(f"SCA image runner returned {len(results)} reports; expected 1")
+
+        integration_feature_registry.run_post_runner(results[0])
         bc_integration.persist_repository(os.path.dirname(config.dockerfile_path), files=files)
-        bc_integration.persist_scan_results([result])
+        bc_integration.persist_scan_results(results)
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
+        bc_integration.persist_run_metadata(run_metadata)
         url = bc_integration.commit_repository(config.branch)
-        exit_code = runner_registry.print_reports([result], config, url=url)
+        exit_code = runner_registry.print_reports(results, config, url=url)
         return exit_code
     elif config.file:
         runner_registry.filter_runners_for_files(config.file)
@@ -324,6 +414,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_repository(root_folder, files, excluded_paths=runner_filter.excluded_paths)
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
+            bc_integration.persist_run_metadata(run_metadata)
             url = bc_integration.commit_repository(config.branch)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
@@ -359,7 +450,11 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=None,
                help='Report output format. Add multiple outputs by using the flag multiple times (-o sarif -o cli)')
     parser.add('--output-file-path', default=None,
-               help='Name for output file. The first selected output via output flag will be saved to the file (default output is cli)')
+               help='Name of the output folder to save the chosen output formats. '
+                    'Advanced usage: '
+                    'By using -o cli -o junitxml --output-file-path console,results.xml the CLI output will be printed '
+                    'to the console and the JunitXML output to the file results.xml.'
+               )
     parser.add('--output-bc-ids', action='store_true',
                help='Print Bridgecrew platform IDs (BC...) instead of Checkov IDs (CKV...), if the check exists in the platform')
     parser.add('--include-all-checkov-policies', action='store_true',
@@ -382,9 +477,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                env_var='CKV_FRAMEWORK',
                nargs="+")
     parser.add('--skip-framework',
-               help='Filter scan to skip specific infrastructure code frameworks. \n'
-                    'will be included automatically for some frameworks if system dependencies '
-                    'are missing.',
+               help='Filter scan to skip specific infrastructure as code frameworks.'
+                    'This will be included automatically for some frameworks if system dependencies '
+                    'are missing. Add multiple frameworks using spaces. For example, '
+                    '--skip-framework terraform sca_package.',
                choices=checkov_runners,
                default=None,
                nargs="+")
@@ -393,10 +489,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'Each item may be either a Checkov check ID (CKV_AWS_123), a BC check ID (BC_AWS_GENERAL_123), or '
                     'a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a severity, then all checks equal to or '
                     'above the lowest severity in the list will be included. This option can be combined with '
-                    '--skip-check. If it is, priority is given to checks explicitly listed by ID or wildcard over '
-                    'checks listed by severity. For example, if you use --check CKV_123 and --skip-check LOW, then '
-                    'CKV_123 will run even if it is a LOW severity. In the case of a tie (e.g., --check MEDIUM and '
-                    '--skip-check HIGH for a medium severity check), then the check will be skipped. If you use a '
+                    '--skip-check. If it is, then the logic is to first take all checks that match this list, and then '
+                    'remove all checks that match the skip list. For example, if you use --check CKV_123 and '
+                    '--skip-check LOW, then CKV_123 will not run if it is a LOW severity. Similarly, if you use '
+                    '--check CKV_789 --skip-check MEDIUM, then CKV_789 will run if it is a HIGH severity. If you use a '
                     'check ID here along with an API key, and the check is not part of the BC / PC platform, then the '
                     'check will still be run (see --include-all-checkov-policies for more info).',
                action='append', default=None,
@@ -421,26 +517,26 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'overrides this option, except for the case when a result does not match either of the soft fail '
                     'or hard fail criteria, in which case this flag determines the result.', action='store_true')
     parser.add('--soft-fail-on',
-                        help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use '
-                             'a severity, then any severity equal to or less than the highest severity in the list '
-                             'will result in a soft fail. This option may be used with --hard-fail-on, using the same '
-                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
-                             'taking precedence in a tie. If a given result does not meet the --soft-fail-on nor '
-                             'the --hard-fail-on criteria, then the default is to hard fail',
-                        action='append',
-                        default=None)
+               help='Exits with a 0 exit code if only the specified items fail. Enter one or more items '
+                    'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                    'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use '
+                    'a severity, then any severity equal to or less than the highest severity in the list '
+                    'will result in a soft fail. This option may be used with --hard-fail-on, using the same '
+                    'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                    'taking precedence in a tie. If a given result does not meet the --soft-fail-on nor '
+                    'the --hard-fail-on criteria, then the default is to hard fail',
+               action='append',
+               default=None)
     parser.add('--hard-fail-on',
-                        help='Exits with a non-zero exit code for specified checks. Enter one or more items '
-                             'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
-                             'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a '
-                             'severity, then any severity equal to or greater than the lowest severity in the list will '
-                             'result in a hard fail. This option can be used with --soft-fail-on, using the same '
-                             'priority logic described in --check and --skip-check options above, with --hard-fail-on '
-                             'taking precedence in a tie.',
-                        action='append',
-                        default=None)
+               help='Exits with a non-zero exit code for specified checks. Enter one or more items '
+                    'separated by commas. Each item may be either a Checkov check ID (CKV_AWS_123), a BC '
+                    'check ID (BC_AWS_GENERAL_123), or a severity (LOW, MEDIUM, HIGH, CRITICAL). If you use a '
+                    'severity, then any severity equal to or greater than the lowest severity in the list will '
+                    'result in a hard fail. This option can be used with --soft-fail-on, using the same '
+                    'priority logic described in --check and --skip-check options above, with --hard-fail-on '
+                    'taking precedence in a tie.',
+               action='append',
+               default=None)
     parser.add('--bc-api-key', env_var='BC_API_KEY', sanitize=True,
                help='Bridgecrew API key or Prisma Cloud Access Key (see --prisma-api-url)')
     parser.add('--prisma-api-url', env_var='PRISMA_API_URL', default=None,
@@ -458,6 +554,17 @@ def add_parser_args(parser: ArgumentParser) -> None:
                     'custom policies and suppressions if using an API token. Note: it will prevent BC platform IDs from '
                     'being available in Checkov.',
                action='store_true')
+    parser.add('--use-enforcement-rules', action='store_true',
+               help='Use the Enforcement rules configured in the platform for hard / soft fail logic. With this option, '
+                    'the enforcement rule matching this repo, or the default rule if there is no match, will determine '
+                    'this behavior: any check with a severity below the selected rule\'s soft-fail threshold will be '
+                    'skipped; any check with a severity equal to or greater than the rule\'s hard-fail threshold will '
+                    'be part of the hard-fail list, and any check in between will be part of the soft-fail list. For '
+                    'example, if the given enforcement rule has a hard-fail value of HIGH and a soft-fail value of MEDIUM,'
+                    'this is the equivalent of using the flags `--skip-check LOW --hard-fail-on HIGH`. You can use --check, '
+                    '--skip-check, --soft-fail, --soft-fail-on, or --hard-fail-on to override portions of an enforcement rule. '
+                    'Note, however, that the logic of applying the --check list and then the --skip-check list (as described '
+                    'above under --check) still applies here. Requires a BC or PC platform API key.')
     parser.add('--no-guide', action='store_true',
                default=False,
                help='Deprecated - use --skip-download')
@@ -476,7 +583,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
     parser.add('--var-file', action='append',
                help='Variable files to load in addition to the default files (see '
                     'https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files).'
-                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.' 
+                    'Currently only supported for source Terraform (.tf file), and Helm chart scans.'
                     'Requires using --directory, not --file.')
     parser.add('--external-modules-download-path',
                help="set the path for the download external terraform modules",
@@ -507,9 +614,12 @@ def add_parser_args(parser: ArgumentParser) -> None:
         ),
         default=None,
     )
-    parser.add('--output-baseline-as-skipped',
+    parser.add(
+        '--output-baseline-as-skipped',
         help="output checks that are skipped due to baseline file presence",
-        action='store_true', default=False)
+        action='store_true',
+        default=False,
+    )
     parser.add('--skip-cve-package',
                help='filter scan to run on all packages but a specific package identifier (denylist), You can '
                     'specify this argument multiple times to skip multiple packages', action='append', default=None)
@@ -517,6 +627,28 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='comma separated key:value string to filter policies based on Prisma Cloud policy metadata. '
                     'See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for '
                     'information on allowed filters. Format: policy.label=test,cloud.type=aws ', default=None)
+    parser.add('--secrets-scan-file-type',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_FILE_TYPE',
+               action='append',
+               help='not in use')
+    parser.add('--enable-secret-scan-all-files',
+               default=False,
+               env_var='CKV_SECRETS_SCAN_ENABLE_ALL',
+               action='store_true',
+               help='enable secret scan for all files')
+    parser.add('--block-list-secret-scan',
+               default=[],
+               env_var='CKV_SECRETS_SCAN_BLOCK_LIST',
+               action='append',
+               help='List of files to filter out from the secret scanner')
+    parser.add('--summary-position', default='top', choices=SUMMARY_POSITIONS,
+               help='Chose whether the summary will be appended on top (before the checks results) or on bottom '
+                    '(after check results), default is on top.')
+    parser.add('--skip-resources-without-violations',
+               help="exclude extra resources (resources without violations) from report output",
+               action='store_true',
+               env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
 
 
 def get_external_checks_dir(config: Any) -> Any:
@@ -528,7 +660,7 @@ def get_external_checks_dir(config: Any) -> Any:
     return external_checks_dir
 
 
-def normalize_config(config: Namespace) -> None:
+def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
     if config.no_guide:
         logger.warning('--no-guide is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
@@ -539,14 +671,13 @@ def normalize_config(config: Namespace) -> None:
         logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
 
-    if config.bc_api_key and not config.include_all_checkov_policies:
-        # info because we expect this to be the standard usage
-        logger.info('You are using an API key and did not set the --include-all-checkov-policies flag, so policies '
-                    'that only exist in Checkov, and not the BC / PC platform, will be skipped.')
     elif not config.bc_api_key and not config.include_all_checkov_policies:
         # makes it easier to pick out policies later if we can just always rely on this flag without other context
         logger.debug('No API key present; setting include_all_checkov_policies to True')
         config.include_all_checkov_policies = True
+
+    if config.use_enforcement_rules and not config.bc_api_key:
+        parser.error('Must specify an API key with --use-enforcement-rules')
 
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
         logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')

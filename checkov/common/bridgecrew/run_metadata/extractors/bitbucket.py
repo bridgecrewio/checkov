@@ -4,18 +4,18 @@ from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor impo
 
 
 class BitbucketRunMetadataExtractor(RunMetaDataExtractor):
-    def is_current_ci(self):
+    def is_current_ci(self) -> bool:
         if os.getenv("BITBUCKET_BUILD_NUMBER", "") and os.getenv("CI", ""):
             return True
         return False
 
-    def __init__(self):
+    def __init__(self) -> None:
         from_branch = os.getenv('BITBUCKET_BRANCH', "master")
         to_branch = os.getenv('BITBUCKET_PR_DESTINATION_BRANCH', "")
         pr_id = os.getenv("BITBUCKET_PR_ID", "")
         pr_url = ""
         commit_hash = os.getenv("BITBUCKET_COMMIT", "")
-        repository_url = os.getenv("BITBUCKET_GIT_HTTP_ORIGIN","")
+        repository_url = os.getenv("BITBUCKET_GIT_HTTP_ORIGIN", "")
         commit_url = ""
         author_name = ""
         author_url = ""

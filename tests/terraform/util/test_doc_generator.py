@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.docs_generator import get_checks
 
 
@@ -29,6 +29,7 @@ def test_get_checks_returned_check_number():
             {
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",
@@ -40,6 +41,7 @@ def test_get_checks_returned_check_number():
                 "gitlab_configuration",
                 "bitbucket_configuration",
                 "bitbucket_pipelines",
+                "circleci_pipelines",
                 "github_actions",
                 "OpenAPI",
                 "gitlab_ci",
@@ -50,6 +52,7 @@ def test_get_checks_returned_check_number():
             {
                 "Argo Workflows",
                 "arm",
+                "Azure Pipelines",
                 "Bicep",
                 "Cloudformation",
                 "dockerfile",
@@ -59,6 +62,7 @@ def test_get_checks_returned_check_number():
                 "Terraform",
                 "github_configuration",
                 "bitbucket_pipelines",
+                "circleci_pipelines",
                 "gitlab_configuration",
                 "bitbucket_configuration",
                 "github_actions",

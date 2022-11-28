@@ -163,3 +163,61 @@ resource "aws_ecr_repository_policy" "fail_conditional" {
     }
 POLICY
 }
+
+resource "aws_ecr_repository_policy" "cond_any_pass" {
+  repository = "example"
+
+  policy = jsonencode(
+    {
+      Version   = "2008-10-17",
+      Statement = [
+        {
+          Effect    = "Allow",
+          Principal = "*",
+          Action    = [
+            "ecr:BatchGetImage",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:DescribeImages",
+            "ecr:DescribeRepositories",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:ListImages"
+          ],
+          Condition = {
+            "ForAnyValue:StringEquals" = {
+              "aws:PrincipalOrgID" = local.org_ids
+            }
+          }
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_ecr_repository_policy" "cond_equals_pass" {
+  repository = "example"
+
+  policy = jsonencode(
+    {
+      Version   = "2008-10-17",
+      Statement = [
+        {
+          Effect    = "Allow",
+          Principal = "*",
+          Action    = [
+            "ecr:BatchGetImage",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:DescribeImages",
+            "ecr:DescribeRepositories",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:ListImages"
+          ],
+          Condition = {
+            "StringEquals" = {
+              "aws:PrincipalOrgID" = "o-xxxxxxxxxxx"
+            }
+          }
+        }
+      ]
+    }
+  )
+}

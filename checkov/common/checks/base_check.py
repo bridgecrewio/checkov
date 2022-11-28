@@ -12,19 +12,12 @@ from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
 
 class BaseCheck(metaclass=MultiSignatureMeta):
-    id = ""
-    name = ""
-    categories: "Iterable[CheckCategories]" = ()
-    supported_entities: "Iterable[str]" = ()
-    block_type: str
-    path: Optional[str]
-
     def __init__(
         self,
         name: str,
         id: str,
-        categories: "Iterable[CheckCategories]",
-        supported_entities: "Iterable[str]",
+        categories: Iterable[CheckCategories],
+        supported_entities: Iterable[str],
         block_type: str,
         bc_id: Optional[str] = None,
         guideline: Optional[str] = None,
@@ -34,6 +27,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.bc_id = bc_id
         self.categories = categories
         self.block_type = block_type
+        self.path: str | None = None
         self.supported_entities = supported_entities
         self.logger = logging.getLogger("{}".format(self.__module__))
         self.evaluated_keys: List[str] = []
@@ -45,6 +39,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.bc_category = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
+        self.details: List[str] = []
 
     def run(
         self,
@@ -54,6 +49,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         entity_type: str,
         skip_info: _SkippedCheck,
     ) -> _CheckResult:
+        self.details = []
         check_result: _CheckResult = {}
         if skip_info:
             check_result["result"] = CheckResult.SKIPPED

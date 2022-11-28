@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PodTemplate
+metadata:
+  name: pod-test
+  namespace: default
+template:
+  metadata:
+    name: pod-template
+  spec:
+    containers:
+    - name: container
+      image: alpine
+      command: ["/bin/sh"]
+      args: ["-c", "sleep 100"]

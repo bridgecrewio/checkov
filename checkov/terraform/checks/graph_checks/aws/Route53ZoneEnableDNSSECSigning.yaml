@@ -1,0 +1,18 @@
+metadata:
+  name: "Ensure Domain Name System Security Extensions (DNSSEC) signing is enabled for Amazon Route 53 public hosted zones"
+  id: "CKV2_AWS_38"
+  category: "NETWORKING"
+definition:
+ and :
+    - cond_type: filter
+      attribute: resource_type
+      value:
+      - aws_route53_zone
+      operator: within
+    - cond_type: connection
+      resource_types:
+      - aws_route53_zone
+      connected_resource_types:
+      - aws_route53_hosted_zone_dnssec
+      - aws_route53_key_signing_key
+      operator: exists

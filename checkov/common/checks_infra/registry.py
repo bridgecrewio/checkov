@@ -21,10 +21,11 @@ CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
 
 
 class Registry(BaseRegistry):
-    def __init__(self, checks_dir: str, parser: BaseGraphCheckParser = BaseGraphCheckParser()) -> None:
+    def __init__(self, checks_dir: str, parser: BaseGraphCheckParser | None = None) -> None:
+        parser = parser or BaseGraphCheckParser()
+
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
-        self.parser = parser
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
 
@@ -70,6 +71,8 @@ _registry_instances: dict[str, Registry] = {}
 
 def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
-        _registry_instances[check_type] = Registry(parser=NXGraphCheckParser(),
-                             checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")
+        _registry_instances[check_type] = Registry(
+            parser=NXGraphCheckParser(),
+            checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
+        )
     return _registry_instances[check_type]

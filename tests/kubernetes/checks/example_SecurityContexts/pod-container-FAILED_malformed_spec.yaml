@@ -1,0 +1,26 @@
+# Source: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-demo
+spec:
+  - securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  - volumes:
+  - name: sec-ctx-vol
+    emptyDir: {}
+  - containers:
+  - name: sec-ctx-demo
+    image: busybox
+    command: [ "sh", "-c", "sleep 1h" ]
+    volumeMounts:
+    - name: sec-ctx-vol
+      mountPath: /data/demo
+    securityContext:
+      allowPrivilegeEscalation: false
+# https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+# cat /proc/1/status
+# allowPrivilegeEscalation: false means NoNewPrivs = 1
+# https://www.kernel.org/doc/html/latest/userspace-api/no_new_privs.html

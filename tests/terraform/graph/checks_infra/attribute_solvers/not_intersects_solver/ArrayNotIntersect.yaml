@@ -1,0 +1,12 @@
+metadata:
+  id: "ArrayNotIntersect"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_xyz"
+  attribute: "arr"
+  operator: "not_intersects"
+  value:
+    - "notallowed"

@@ -1,17 +1,21 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_list
 
 
 class GlueSecurityConfiguration(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Glue Security Configuration Encryption is enabled"
         id = "CKV_AWS_99"
-        supported_resources = ['AWS::Glue::SecurityConfiguration']
-        categories = [CheckCategories.LOGGING]
+        supported_resources = ('AWS::Glue::SecurityConfiguration',)
+        categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         s3_enc = False
         cw_enc = False
         book_enc = False
@@ -35,7 +39,6 @@ class GlueSecurityConfiguration(BaseResourceCheck):
                             if s3_encryption['S3EncryptionMode'] != 'DISABLED':
                                 s3_enc = True
                                 break
-
 
         if s3_enc and cw_enc and book_enc:
             return CheckResult.PASSED

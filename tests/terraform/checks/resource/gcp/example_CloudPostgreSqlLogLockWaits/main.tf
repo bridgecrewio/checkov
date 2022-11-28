@@ -41,7 +41,7 @@ resource "google_sql_database_instance" "fail" {
   }
 }
 
-resource "google_sql_database_instance" "pass2" {
+resource "google_sql_database_instance" "fail2" {
   database_version = "POSTGRES_12"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
@@ -66,10 +66,6 @@ resource "google_sql_database_instance" "pass2" {
       value = "debug6"
     }
     database_flags {
-      name  = "log_lock_waits"
-      value = "on"
-    }
-    database_flags {
       name  = "log_temp_files"
       value = "10"
     }
@@ -91,6 +87,10 @@ resource "google_sql_database_instance" "pass" {
   settings {
     activation_policy = "ALWAYS"
     availability_type = "ZONAL"
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
     database_flags {
       name  = "log_min_messages"
       value = "debug6"
@@ -118,6 +118,19 @@ resource "google_sql_database_instance" "unknown" {
       name  = "local_infile"
       value = "on"
     }
+    tier = "db-custom-1-3840"
+  }
+}
+
+resource "google_sql_database_instance" "unknown_var" {
+  database_version = "POSTGRES_12"
+  name             = "general-pos121"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+    database_flags = ["${var.test_var}"]
     tier = "db-custom-1-3840"
   }
 }

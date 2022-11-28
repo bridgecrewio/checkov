@@ -1,0 +1,12 @@
+metadata:
+  id: "NoneAttribute"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_subnet"
+  attribute: "foo"
+  operator: "intersects"
+  value:
+    - "bar"

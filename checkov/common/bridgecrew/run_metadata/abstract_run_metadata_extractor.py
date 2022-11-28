@@ -16,29 +16,20 @@ from checkov.common.bridgecrew.run_metadata.ci_variables import (
 
 
 class RunMetaDataExtractor:
-    from_branch = ""
-    to_branch = ""
-    pr_id = ""
-    pr_url = ""
-    commit_hash = ""
-    commit_url = ""
-    author_name = ""
-    author_url = ""
-    run_id = ""
-    run_url = ""
-    repository_url = ""
-
-    def __init__(self, from_branch,
-                 to_branch,
-                 pr_id,
-                 pr_url,
-                 commit_hash,
-                 commit_url,
-                 author_name,
-                 author_url,
-                 run_id,
-                 run_url,
-                 repository_url):
+    def __init__(
+        self,
+        from_branch: str,
+        to_branch: str,
+        pr_id: str,
+        pr_url: str,
+        commit_hash: str,
+        commit_url: str,
+        author_name: str,
+        author_url: str,
+        run_id: str,
+        run_url: str,
+        repository_url: str,
+    ):
         self.from_branch = from_branch
         self.to_branch = to_branch
         self.pr_id = pr_id
@@ -53,7 +44,7 @@ class RunMetaDataExtractor:
         self.override_metadata_from_env_variables()
         registry.register(extractor=self)
 
-    def override_metadata_from_env_variables(self):
+    def override_metadata_from_env_variables(self) -> None:
         if BC_FROM_BRANCH:
             self.from_branch = BC_FROM_BRANCH
         if BC_TO_BRANCH:
@@ -78,5 +69,5 @@ class RunMetaDataExtractor:
             self.repository_url = BC_REPOSITORY_URL
 
     @abstractmethod
-    def is_current_ci(self):
+    def is_current_ci(self) -> bool:
         pass

@@ -11,8 +11,8 @@ from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:  # TODO set default to JSON
+        super().__init__(report_type=report_type)
         self._scanner: Dict[str, Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None]] = {
             BlockType.ARRAY: self._scan_json_array,
             BlockType.OBJECT: self._scan_json_object,
@@ -74,7 +74,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner: Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None] = self._scanner.get(check.block_type, self._scan_json_document)
                 if check.path:
                     target = entity
@@ -183,4 +183,4 @@ class Registry(BaseCheckRegistry):
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}

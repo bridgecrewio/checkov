@@ -43,7 +43,7 @@ resource "google_sql_database_instance" "fail" {
 }
 
 
-resource "google_sql_database_instance" "pass2" {
+resource "google_sql_database_instance" "fail2" {
   database_version = "POSTGRES_12"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
@@ -54,10 +54,6 @@ resource "google_sql_database_instance" "pass2" {
     database_flags {
       name  = "log_checkpoints"
       value = "off"
-    }
-    database_flags {
-      name  = "log_connections"
-      value = "on"
     }
     database_flags {
       name  = "log_disconnections"
@@ -93,6 +89,10 @@ resource "google_sql_database_instance" "pass" {
     activation_policy = "ALWAYS"
     availability_type = "ZONAL"
     database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+    database_flags {
       name  = "log_disconnections"
       value = "on"
     }
@@ -126,6 +126,19 @@ resource "google_sql_database_instance" "unknown" {
       name  = "local_infile"
       value = "on"
     }
+    tier = "db-custom-1-3840"
+  }
+}
+
+resource "google_sql_database_instance" "unknown_var" {
+  database_version = "POSTGRES_12"
+  name             = "general-pos121"
+  project          = "gcp-bridgecrew-deployment"
+  region           = "us-central1"
+  settings {
+    activation_policy = "ALWAYS"
+    availability_type = "ZONAL"
+    database_flags = ["${var.test_var}"]
     tier = "db-custom-1-3840"
   }
 }

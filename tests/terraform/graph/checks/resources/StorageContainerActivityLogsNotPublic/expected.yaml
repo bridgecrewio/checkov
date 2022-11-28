@@ -1,5 +1,12 @@
 pass:
-  - "azurerm_storage_account.ok_account_1"
-  - "azurerm_storage_account.ok_account_2"
+  - "azurerm_storage_container.ok_container_log_enabled_by_default"
+  - "azurerm_storage_container.ok_container_log_enabled"
+  - "azurerm_storage_container.ok_container_log_disabled"
+  - "azurerm_storage_container.ok_container_log_enabled_by_default_2"
+  - "azurerm_storage_container.ok_container_log_enabled_2"
+  - "azurerm_storage_container.ok_container_log_disabled_2"
+  - "azurerm_storage_container.ok_container_log_disabled_3"
+  - "azurerm_storage_container.ok_container_4"
 fail:
-  - "azurerm_storage_account.not_ok_account"
+  - "azurerm_storage_container.not_ok_container_log_enabled_by_default"
+  - "azurerm_storage_container.not_ok_container_log_enabled"

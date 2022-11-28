@@ -8,18 +8,18 @@ tests/terraform/checks/resource/aws/example_LambdaEnvironmentCredentials/main.tf
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/FAIL.yaml
 tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
-tests/secrets/resources/cfn/secret.yml
-tests/secrets/resources/terraform_failed/main.tf
-tests/secrets/resources/terraform_skip/main.tf
+tests/secrets/.*
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
 tests/terraform/checks/provider/aws/test_credentials.py
 tests/terraform/checks/resource/aws/test_EC2Credentials.py
+tests/terraform/checks/provider/ncp/test_credentials.py
 tests/terraform/checks/provider/openstack/test_credentials.py
 tests/terraform/module_loading/test_registry.py
 tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json
+tests/helm/runner/resources/schema-registry
 .*Scans.md
 docs/5.Contribution/New-Provider.md
 docs/2.Basics/Scanning Credentials and Secrets.md
@@ -27,3 +27,4 @@ tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-F
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
 checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
+tests/common/utils/conftest.py

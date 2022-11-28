@@ -18,16 +18,22 @@ class TestELBPolicyUsesSecureProtocols(unittest.TestCase):
         passing_resources = {
             "aws_load_balancer_policy.pass",
             "aws_load_balancer_policy.pass2",
+            "aws_load_balancer_policy.pass3",
         }
         failing_resources = {
             "aws_load_balancer_policy.fail",
+            "aws_load_balancer_policy.fail2",
+            "aws_load_balancer_policy.fail3",
+            "aws_load_balancer_policy.fail4",
+            "aws_load_balancer_policy.fail5",
+            "aws_load_balancer_policy.fail6",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 3)
+        self.assertEqual(summary["failed"], 6)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

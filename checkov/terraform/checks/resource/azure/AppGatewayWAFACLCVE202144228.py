@@ -32,7 +32,7 @@ class AppGatewayWAFACLCVE202144228(BaseResourceCheck):
                                 f"managed_rules/[0]/managed_rule_set[{idx_rule_set}]/rule_group_override/[{idx_override}]/disabled_rules",
                             ]
                         )
-                        if rule_override.get("rule_group_name") == ["REQUEST-944-APPLICATION-ATTACK-JAVA"]:
+                        if isinstance(rule_override, dict) and rule_override.get("rule_group_name") == ["REQUEST-944-APPLICATION-ATTACK-JAVA"]:
                             disabled_rules = rule_override.get("disabled_rules") or []
                             if isinstance(disabled_rules, list) and "944240" in force_list(disabled_rules[0]):
                                 return CheckResult.FAILED

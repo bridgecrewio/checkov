@@ -19,17 +19,23 @@ class TestReadinessProbe(unittest.TestCase):
 
         passing_resources = {
             "kubernetes_pod.pass",
+            "kubernetes_pod_v1.pass",
+            "kubernetes_deployment.pass",
+            "kubernetes_deployment_v1.pass",
         }
 
         failing_resources = {
             "kubernetes_pod.fail",
+            "kubernetes_pod_v1.fail",
+            "kubernetes_deployment.fail",
+            "kubernetes_deployment_v1.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 2 * 2)
+        self.assertEqual(summary["failed"], 2 * 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

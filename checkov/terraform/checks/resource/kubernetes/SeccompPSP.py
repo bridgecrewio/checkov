@@ -18,12 +18,13 @@ class SeccompPSP(BaseResourceCheck):
                 metadata = conf["metadata"][0]
                 if metadata.get("annotations"):
                     annotations = metadata["annotations"][0]
-                    for annotation in annotations:
-                        annotation = ''.join(annotation.split())
-                        if annotation == "seccomp.security.alpha.kubernetes.io/defaultProfileName":
-                            my_value = str(annotations.get(annotation))
-                            if "docker/default" in my_value or "runtime/default" in my_value:
-                                return CheckResult.PASSED
+                    if annotations is not None:
+                        for annotation in annotations:
+                            annotation = ''.join(annotation.split())
+                            if annotation == "seccomp.security.alpha.kubernetes.io/defaultProfileName":
+                                my_value = str(annotations.get(annotation))
+                                if "docker/default" in my_value or "runtime/default" in my_value:
+                                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 

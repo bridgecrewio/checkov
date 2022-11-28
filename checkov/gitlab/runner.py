@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab.dal import Gitlab
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
@@ -26,17 +25,21 @@ class Runner(JsonRunner):
         files: list[str] | None = None,
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
         self.prepare_data()
 
-        report = super().run(root_folder=self.gitlab.gitlab_conf_dir_path, external_checks_dir=external_checks_dir,
-                             files=files,
-                             runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        JsonRunner._change_files_path_to_relative(report)
+        report = super().run(
+            root_folder=self.gitlab.gitlab_conf_dir_path,
+            external_checks_dir=external_checks_dir,
+            files=None,  # ignore file scans
+            runner_filter=runner_filter,
+            collect_skip_comments=collect_skip_comments,
+        )
+        JsonRunner._change_files_path_to_relative(report)  # type:ignore[arg-type]  # report can only be of type Report, not a list
         return report
 
     def prepare_data(self) -> None:

@@ -7,15 +7,6 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload
 
 from pycep.transformer import BicepElement
-from pycep.typing import (
-    BicepJson,
-    ResourceAttributes,
-    GlobalsAttributes,
-    ParameterAttributes,
-    VariableAttributes,
-    OutputAttributes,
-    ModuleAttributes,
-)
 from typing_extensions import Literal, TypeAlias
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
@@ -29,6 +20,15 @@ from checkov.common.util.type_forcers import force_int
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
+    from pycep.typing import (
+        BicepJson,
+        ResourceAttributes,
+        GlobalsAttributes,
+        ParameterAttributes,
+        VariableAttributes,
+        OutputAttributes,
+        ModuleAttributes,
+    )
 
 
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
@@ -43,7 +43,7 @@ class BicepElements(str, Enum):
     OUTPUTS: Literal["outputs"] = "outputs"
 
 
-class BicepLocalGraph(LocalGraph):
+class BicepLocalGraph(LocalGraph[BicepBlock]):
     def __init__(self, definitions: dict[Path, BicepJson]) -> None:
         super().__init__()
         self.vertices: list[BicepBlock] = []
@@ -251,7 +251,7 @@ class BicepLocalGraph(LocalGraph):
             self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any]) -> None:
+    def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False) -> None:
         if not changed_attributes:
             # skip, if there is no change
             return
@@ -334,4 +334,4 @@ class BicepLocalGraph(LocalGraph):
         return key, key_parts
 
     def get_resources_types_in_graph(self) -> list[str]:
-        pass
+        return []

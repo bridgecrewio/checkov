@@ -15,12 +15,13 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 API_VERSION_PATTERN = re.compile(r"^apiVersion:\s*argoproj.io/", re.MULTILINE)
+KIND_PATTERN = re.compile(r"^kind:\s*Workflow", re.MULTILINE)
 
 
 class Runner(YamlRunner, ImageReferencer):
-    check_type = CheckType.ARGO_WORKFLOWS  # noqa: CCE003
+    check_type = CheckType.ARGO_WORKFLOWS  # noqa: CCE003  # a static attribute
 
-    block_type_registries = {  # noqa: CCE003
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         "template": template_registry,
     }
 
@@ -44,9 +45,12 @@ class Runner(YamlRunner, ImageReferencer):
             return None
 
         content = Path(file_path).read_text()
-        match = re.search(API_VERSION_PATTERN, content)
-        if match:
-            return content
+        match_api = re.search(API_VERSION_PATTERN, content)
+        if match_api:
+            match_kind = re.search(KIND_PATTERN, content)
+            if match_kind:
+                # only scan Argo Workflows
+                return content
 
         return None
 
@@ -128,14 +132,11 @@ class Runner(YamlRunner, ImageReferencer):
         if image_name and isinstance(image_name, str):
             start_line = container.get("__startline__", 0)
             end_line = container.get("__endline__", 0)
-            image_id = self.inspect(image_name)
-            if image_id:
-                return Image(
-                    file_path=file_path,
-                    name=image_name,
-                    image_id=image_id,
-                    start_line=start_line,
-                    end_line=end_line,
-                )
+            return Image(
+                file_path=file_path,
+                name=image_name,
+                start_line=start_line,
+                end_line=end_line,
+            )
 
         return None

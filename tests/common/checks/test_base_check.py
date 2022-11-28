@@ -28,11 +28,39 @@ class TestCheckTypeNotInSignature(BaseCheck):
         return CheckResult.PASSED
 
 
+class TestCheckDetails(BaseCheck):
+    # for pytest not to collect this class as tests
+    __test__ = False
+
+    def __init__(self):
+        name = "Another Example check"
+        categories = []
+        id = "CKV_T_2"
+        supported_entities = ["my_resource_type"]
+        block_type = "resource"
+        super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
+                         block_type=block_type)
+
+    # noinspection PyMethodOverriding
+    def scan_entity_conf(self, conf):
+        """
+        My documentation
+        :param conf:
+        :return:
+        """
+        if conf.get("value")[0]:
+            self.details.append("This check PASSED...")
+            return CheckResult.PASSED
+        else:
+            self.details.append("This check FAILED...")
+            return CheckResult.FAILED
+
+
 # noinspection DuplicatedCode
 class TestBaseCheck(unittest.TestCase):
 
     def test_entity_type_is_not_required_in_signature(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry(report_type='')
         check = TestCheckTypeNotInSignature()
         registry.register(check)
 
@@ -67,6 +95,18 @@ class TestBaseCheck(unittest.TestCase):
             "is not supported.",
             context.exception.args[0]
         )
+
+    def test_details_reinitializing_after_execution(self):
+        check = TestCheckDetails()
+        self.assertEqual(0, len(check.details))
+        result = check.run("test.tf", {"value": ["True"]}, "my_resource", "resource", {})
+        self.assertEqual(CheckResult.PASSED, result["result"])
+        self.assertEqual(1, len(check.details))
+        self.assertIn("This check PASSED...", check.details)
+        result = check.run("test.tf", {"value": [""]}, "my_resource_2", "resource", {})
+        self.assertEqual(CheckResult.FAILED, result["result"])
+        self.assertEqual(1, len(check.details))
+        self.assertIn("This check FAILED...", check.details)
 
 
 if __name__ == '__main__':

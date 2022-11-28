@@ -1,7 +1,9 @@
-import re
+from __future__ import annotations
 
-DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from typing_extensions import Literal
 
-def is_docker_file(file: str) -> bool:
-    return re.fullmatch(DOCKER_FILE_MASK, file) is not None
+DOCKERFILE_STARTLINE: Literal["startline"] = "startline"
+DOCKERFILE_ENDLINE: Literal["endline"] = "endline"

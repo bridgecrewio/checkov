@@ -11,8 +11,9 @@ class DropCapabilities(BaseResourceCheck):
         name = "Minimize the admission of containers with the NET_RAW capability"
         id = "CKV_K8S_28"
 
-        supported_resources = ['kubernetes_pod']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('kubernetes_pod', 'kubernetes_pod_v1',
+                               'kubernetes_deployment', 'kubernetes_deployment_v1', )
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
@@ -20,6 +21,16 @@ class DropCapabilities(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        evaluated_keys_path = "spec"
+
+        template = spec.get("template")
+        if template and isinstance(template, list):
+            template = template[0]
+            template_spec = template.get("spec")
+            if template_spec and isinstance(template_spec, list):
+                spec = template_spec[0]
+                evaluated_keys_path = f'{evaluated_keys_path}/[0]/template/[0]/spec'
+
         if spec.get("container"):
             containers = spec.get("container")
 
@@ -39,13 +50,13 @@ class DropCapabilities(BaseResourceCheck):
                             if not dropped:
                                 return CheckResult.FAILED
                         else:
-                            self.evaluated_keys = ["spec/[0]/container/{idx}/security_context/[0]/capabilities"]
+                            self.evaluated_keys = [f"{evaluated_keys_path}/[0]/container/{idx}/security_context/[0]/capabilities"]
                             return CheckResult.FAILED
                     else:
-                        self.evaluated_keys = ["spec/[0]/container/{idx}/security_context"]
+                        self.evaluated_keys = [f"{evaluated_keys_path}/[0]/container/{idx}/security_context"]
                         return CheckResult.FAILED
                 else:
-                    self.evaluated_keys = ["spec/[0]/container/{idx}"]
+                    self.evaluated_keys = [f"{evaluated_keys_path}/[0]/container/{idx}"]
                     return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.FAILED

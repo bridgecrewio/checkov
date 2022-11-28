@@ -8,15 +8,13 @@ from collections.abc import Sequence
 from copy import deepcopy
 from json import dumps, loads
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type, TYPE_CHECKING
 
 import deep_merge
 import hcl2
 from lark import Tree
-from typing_extensions import TypeAlias
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
-from checkov.common.util.config_utils import should_scan_hcl_files
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.variables.context import EvaluationContext
@@ -29,6 +27,10 @@ from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import eval_string, find_var_blocks
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
 
 _Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
 
@@ -75,7 +77,6 @@ class Parser:
         self.external_modules_source_map = {}
         self.module_address_map = {}
         self.tf_var_files = tf_var_files
-        self.scan_hcl = should_scan_hcl_files()
         self.dirname_cache = {}
 
         if self.out_evaluations_context is None:
@@ -112,10 +113,8 @@ class Parser:
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
 
-    def parse_file(
-        self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None, scan_hcl: bool = False
-    ) -> Optional[Dict[str, Any]]:
-        if file.endswith(".tf") or file.endswith(".tf.json") or (scan_hcl and file.endswith(".hcl")):
+    def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
+        if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
             parse_result = _load_or_die_quietly(file, parsing_errors)
             if parse_result:
                 parse_result = self._serialize_definitions(parse_result)
@@ -155,7 +154,7 @@ class Parser:
         keys_referenced_as_modules: Set[str] = set()
 
         if include_sub_dirs:
-            for sub_dir, d_names, f_names in os.walk(self.directory):
+            for sub_dir, d_names, _ in os.walk(self.directory):
                 # filter subdirectories for future iterations (we filter files while iterating the directory)
                 _filter_ignored_paths(sub_dir, d_names, self.excluded_paths)
                 if dir_filter(os.path.abspath(sub_dir)):
@@ -228,7 +227,7 @@ class Parser:
                 explicit_var_files.append(file)
 
             # Resource files
-            elif file.name.endswith(".tf") or (self.scan_hcl and file.name.endswith('.hcl')):  # TODO: add support for .tf.json
+            elif file.name.endswith(".tf") or file.name.endswith('.hcl'):  # TODO: add support for .tf.json
                 tf_files_to_load.append(file)
 
         files_to_data = self._load_files(tf_files_to_load)
@@ -545,7 +544,7 @@ class Parser:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
                 except Exception as e:
                     logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.warning(e, exc_info=True)
+                    logging.warning(e, exc_info=False)
         return module, tf_definitions
 
     @staticmethod
@@ -735,7 +734,7 @@ Load JSON or HCL, depending on filename.
     try:
         logging.debug(f"Parsing {file_path}")
 
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8-sig") as f:
             if file_name.endswith(".json"):
                 return json.load(f)
             else:
@@ -777,9 +776,7 @@ def clean_bad_definitions(tf_definition_list: _Hcl2Payload) -> _Hcl2Payload:
         block_type: [
             definition
             for definition in definition_list
-            if block_type in GOOD_BLOCK_TYPES
-               or not isinstance(definition, dict)
-               or len(definition) == 1
+            if block_type in GOOD_BLOCK_TYPES or not isinstance(definition, dict) or len(definition) == 1
         ]
         for block_type, definition_list in tf_definition_list.items()
     }

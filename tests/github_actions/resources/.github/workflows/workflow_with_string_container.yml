@@ -1,0 +1,23 @@
+name: Name
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+
+jobs:
+  destroy_cert:
+    runs-on: ubuntu-latest
+    name: Name
+    container: node:14.16
+    steps:
+      - name: Checkout codebase
+        uses: actions/checkout@v3
+      - name: infrastructure
+        working-directory: terraform
+        shell: bash
+        env:
+          TF_INPUT: 0
+        run: |
+          terragrunt init
+          terragrunt destroy -auto-approve -var-file devl.tfvars
