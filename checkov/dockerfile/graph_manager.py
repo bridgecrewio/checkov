@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[str, list[_Instruction]]]"]):
-    def __init__(self, db_connector: DBConnector[DiGraph], source: str) -> None:
+    def __init__(self, db_connector: DBConnector[DiGraph], source: str = "Dockerfile") -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
