@@ -630,7 +630,8 @@ class Parser:
         if not nested_data:
             return f'{file}'
         nested_str = self.get_file_key(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested = f'{file}[{nested_str}#{nested_data.get("module_index")}]'
+        nested_str = f"{nested_str[:nested_str.index('[')]}#{nested_data.get('module_index')}{nested_str[nested_str.index('['):]}" if '[' in nested_str else f"{nested_str}#{nested_data.get('module_index')}"
+        nested = f'{file}[{nested_str}]'
         return nested
 
     def get_new_key(self, key, file, module_index, nested_data) -> str:
