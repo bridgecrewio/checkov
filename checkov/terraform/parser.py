@@ -690,9 +690,12 @@ class Parser:
         """
         next_level, unevaluated, do_not_eval_yet = [], [], []
         for key in unevaluated_files:
+            if '[' not in key:
+                continue
+            module = key[key.index('.tf[') + len('.tf['):]
             found = False
             for eval_key in evaluated_files:
-                if eval_key in key:
+                if module.startswith(eval_key):
                     found = True
                     break
             if not found:
