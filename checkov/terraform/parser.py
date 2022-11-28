@@ -14,7 +14,7 @@ import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
+from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.variables.context import EvaluationContext
@@ -86,7 +86,7 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
-        self.enable_nested_modules = os.getenv('ENABLE_NESTED_MODULES', 'True') == 'True'
+        self.enable_nested_modules = strtobool(os.getenv('ENABLE_NESTED_MODULES', 'True'))
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
 
