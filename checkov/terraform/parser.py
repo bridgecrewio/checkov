@@ -317,6 +317,8 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
+            # Add directory to self._parsed_directories to avoid loading it as sub dir
+            dir_filter(directory)
             has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
                                                   keys_referenced_as_modules, force_final_module_load,
                                                   nested_modules_data=nested_modules_data)
@@ -494,7 +496,12 @@ class Parser:
                                 continue
                             keys_referenced_as_modules.add(key)
                             if self.enable_nested_modules:
+                                if key == '/Users/arosenfeld/Desktop/tf_module/module3/main.tf':
+                                    a = 0
                                 new_key = self.get_new_key(key, file, module_index, nested_modules_data)
+                                if new_key == '/Users/arosenfeld/Desktop/tf_module/module3/main.tf[/Users/arosenfeld/Desktop/tf_module/module2/main.tf#0[/Users/arosenfeld/Desktop/tf_module/module/main.tf#0]]':
+                                    a = 0
+                                    new_key = self.get_new_key(key, file, module_index, nested_modules_data)
                                 if new_key in self.visited_definition_keys:
                                     del module_definitions[key]
                                     del self.out_definitions[key]
