@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from checkov.common.typing import _BaseRunner
 
 
-LICENSE_KEY = 'license'
+LICENSE_KEY = 'platformLicense'
 GIT_CLONE_ENABLED_KEY = 'gitCloneEnabled'
 MODULES_KEY = 'modules'
 
