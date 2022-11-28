@@ -16,8 +16,15 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         categories: "Iterable[CheckCategories]",
         supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
+        guideline: Optional[str] = None,
     ) -> None:
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            guideline=guideline,
+        )
         self.missing_block_result = missing_block_result
 
     def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
