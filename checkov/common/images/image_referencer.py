@@ -43,6 +43,16 @@ def enable_image_referencer(
     return False
 
 
+def fix_related_resource_ids(report: Report | None, tmp_dir: str) -> None:
+    """Remove tmp dir prefix from 'relatedResourceId'"""
+
+    if report and report.image_cached_results:
+        for cached_result in report.image_cached_results:
+            related_resource_id = cached_result.get("relatedResourceId")
+            if related_resource_id and isinstance(related_resource_id, str):
+                cached_result["relatedResourceId"] = related_resource_id.replace(tmp_dir, "", 1)
+
+
 class Image:
     def __init__(self, file_path: str, name: str, start_line: int, end_line: int,
                  related_resource_id: str | None = None) -> None:
