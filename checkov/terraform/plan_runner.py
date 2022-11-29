@@ -77,8 +77,6 @@ class Runner(TerraformRunner):
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
-            if not root_folder:
-                root_folder = os.path.split(os.path.commonprefix(files))[0]
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
@@ -91,6 +89,8 @@ class Runner(TerraformRunner):
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
+        if not root_folder:
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
         self.check_tf_definition(report, root_folder, runner_filter)
         report.add_parsing_errors(parsing_errors.keys())
 
