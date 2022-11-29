@@ -94,13 +94,13 @@ class TestRendererScenarios(TestCase):
         expected = expected.replace(resources_dir, '')
         assert result == expected
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_nested_modules_instances_disable(self):
         dir_name = 'nested_modules_instances_disable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
         from checkov.terraform.parser import Parser
         parser = Parser()
-        parser.enable_nested_modules = False
         tf_definitions = {}
         parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
 
