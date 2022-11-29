@@ -12,7 +12,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.sca.commons import UNFIXABLE_VERSION
+from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
 
 
@@ -88,7 +88,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             continue
 
         group_by_file_path_package_map[record.file_path].setdefault(
-            record.vulnerability_details["package_name"], []
+            record.vulnerability_details["root_package_alias"], []
         ).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
@@ -96,10 +96,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
         package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
         package_licenses_details_map = defaultdict(list)
         should_print_licenses_table = False
-        for package_name, records in packages.items():
-            package_version = None
-            fix_versions_lists = []
 
+        for root_package_alias, records in packages.items():
+            fix_versions_lists = []
             for record in records:
                 if not record.vulnerability_details:
                     #  this shouldn't happen
@@ -120,39 +119,41 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     severity_str = record.severity.name.lower() if record.severity else BcSeverities.NONE.lower()
                     setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
+                    package_name = record.vulnerability_details["package_name"]
+                    package_version = record.vulnerability_details["package_version"]
+
                     if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
                         cve_count.has_fix += 1
+                    if root_package_alias == get_package_alias(package_name, package_version):
+                        fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
 
-                    fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
-                    if package_version is None:
-                        package_version = record.vulnerability_details["package_version"]
-
-                    package_cves_details_map[package_name].setdefault("cves", []).append(
+                    package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
                             "id": record.vulnerability_details["id"],
                             "severity": severity_str,
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
-                            "group_id": record.vulnerability_details["group_id"]
+                            "root_package_name": record.vulnerability_details["root_package_name"],
+                            "root_package_version": record.vulnerability_details["root_package_version"],
+                            "package_name": record.vulnerability_details["package_name"],
+                            "package_version": package_version,
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
                     if record.check_result["result"] == CheckResult.SKIPPED:
                         continue
                     should_print_licenses_table = True
-                    package_licenses_details_map[package_name].append(
-                        _LicenseStatus(package_name=package_name,
+                    package_licenses_details_map[record.vulnerability_details["package_name"]].append(
+                        _LicenseStatus(package_name=record.vulnerability_details["package_name"],
                                        package_version=record.vulnerability_details["package_version"],
                                        policy=record.vulnerability_details["policy"],
                                        license=record.vulnerability_details["license"],
                                        status=record.vulnerability_details["status"])
                     )
 
-            if package_name in package_cves_details_map:
-                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
-                package_cves_details_map[package_name]["current_version"] = package_version
-                package_cves_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
-                    fix_versions_lists
-                )
+            if root_package_alias in package_cves_details_map:
+                package_cves_details_map[root_package_alias]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[root_package_alias]["compliant_version"] = calculate_lowest_compliant_version(
+                    fix_versions_lists)
 
         if cve_count.total > 0:
             cli_outputs.append(
@@ -176,7 +177,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 def create_cli_license_violations_table(file_path: str, package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
     package_table_lines: List[str] = []
     columns = 5
-    table_width = 120.0
+    table_width = 130.0
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
@@ -235,8 +236,8 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
-    table_width = 120
-    column_width = int(120 / columns)
+    table_width = 130
+    column_width = int(table_width / columns)
 
     cve_table_lines = create_cve_summary_table_part(
         table_width=table_width, column_width=column_width, cve_count=cve_count
@@ -308,14 +309,10 @@ def create_fixable_cve_summary_table_part(
 
 def create_package_overview_table_part(
         table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
-) -> List[str]:
-
-
+) -> str | Any:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
-    symbols = package_table.bottom_left_junction_char
-    symbols_2 = package_table.vertical_char
     package_table.field_names = [
         "Package",
         "CVE ID",
@@ -324,55 +321,62 @@ def create_package_overview_table_part(
         "Root fixed version",
         "Compliant version",
     ]
-    group_id = None
-    for package_idx, (package_name, details) in enumerate(package_details_map.items()):
+    for package_idx, (root_package_alias, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
             package_table.header = False
             package_table.clear_rows()
 
+        details["cves"].sort(key=lambda x: "" if x["root_package_name"] == x['package_name'] else x['package_name'])
+        last_package_alias = get_package_alias(details['cves'][-1]['package_name'], details['cves'][-1]['package_version'])
+        previous_package = ""
         for cve_idx, cve in enumerate(details["cves"]):
-            col_package = ""
-            col_current_version = ""
-            col_compliant_version = ""
-            current_group_id = cve["group_id"]
+            compliant_version = ""
+            package_name = cve["package_name"]
+            package_version = cve["package_version"]
+            package_alias = get_package_alias(package_name, package_version)
+            is_root = package_alias == root_package_alias
             if cve_idx == 0:
-                col_package = package_name
-                col_current_version = details["current_version"]
-                col_compliant_version = details["compliant_version"]
+                if not is_root:  # no cves on root package
+                    package_table.add_row(
+                        [
+                            cve["root_package_name"],
+                            "",
+                            "",
+                            cve["root_package_version"],
+                            "",
+                            "",
+                        ]
+                    )
+                else:
+                    compliant_version = details["compliant_version"]
+
+            is_sub_dep_changed = previous_package != package_alias
+            dep_sign = ""
+            if not is_root:
+                if is_sub_dep_changed:
+                    if last_package_alias == package_alias:
+                        dep_sign = package_table.bottom_left_junction_char
+                    else:
+                        dep_sign = package_table.left_junction_char
+                else:
+                    if last_package_alias == package_alias:
+                        dep_sign = ""
+                    else:
+                        dep_sign = package_table.vertical_char
 
             package_table.add_row(
                 [
-                    col_package,
+                    " ".join([dep_sign, package_name if is_sub_dep_changed else ""]),
                     cve["id"],
                     cve["severity"],
-                    col_current_version,
-                    cve["fixed_version"],
-                    col_compliant_version,
-                ]
-            )
-            package_table.add_row(
-                [
-                    "".join([symbols, ' xxx']),
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
-                ]
-            )
-            package_table.add_row(
-                [
-                    "".join([symbols_2, ' xxx']),
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
-                    'xxxxx',
+                    package_version if is_sub_dep_changed else "",
+                    cve["fixed_version"] if is_root else "",
+                    compliant_version
                 ]
             )
 
-        #check for dependencies and if we have add them + adjustment
+            previous_package = package_alias
 
         package_table.align = "l"
         package_table.min_width = column_width
