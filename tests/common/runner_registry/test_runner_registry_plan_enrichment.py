@@ -124,7 +124,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
             [(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks]
         )
         expected_enriched_data = {
-            (f"/{Path.relative_to(valid_plan_path, Path.cwd())}", (16, 16), (),),
+            (f"/{Path.relative_to(valid_plan_path, repo_root)}", (16, 16), (),),
             (
                 "log_group/main.tf",
                 (1, 2),
