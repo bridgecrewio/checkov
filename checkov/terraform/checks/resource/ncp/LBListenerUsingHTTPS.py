@@ -17,7 +17,7 @@ class LBListenerUsingHTTPS(BaseResourceValueCheck):
         return 'protocol'
 
     def get_expected_value(self):
-        return ['HTTPS']
+        return 'HTTPS'
 
 
 check = LBListenerUsingHTTPS()
