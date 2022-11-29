@@ -437,7 +437,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
-            self.assertEqual(record.repo_file_path, '/resources/plan/tfplan.json')
+            self.assertEqual(record.repo_file_path, f'/{os.path.join(os.path.relpath(scan_dir_path, current_dir), record.file_path.lstrip("/"))}')
 
     def test_record_relative_path_with_relative_file(self):
         # this is just constructing the scan dir as normal
@@ -482,7 +482,7 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
             # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, r'/resources/plan/tfplan.json')
+            self.assertEqual(record.repo_file_path, f'/{os.path.join(os.path.relpath(scan_file_path, current_dir))}')
 
     def test_runner_unexpected_eks_node_group_remote_access(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
