@@ -622,19 +622,24 @@ class Parser:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_str = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}#{nested_data.get('module_index')}{nested_str[nested_str.index('.tf') + len('.tf'):]}"
-        nested = f'{file}[{nested_str}]'
-        return nested
+        nested_module_name = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}"
+        nested_module_index = nested_data.get('module_index')
+        new_nested_str = f"{nested_module_name}#{nested_module_index}{nested_str[nested_str.index('.tf') + len('.tf'):]}"
+        return f'{file}[{new_nested_str}]'
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
-            return f"{key}[{file}#{module_index}]"
+            return self.get_tf_definition_key(key, file, module_index)
         self.visited_definition_keys.add(f"{key}[{file}#{module_index}]")
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
-        new_key = f"{key}[{file}#{module_index}{nested_key}]"
+        new_key = self.get_tf_definition_key(key, file, module_index, nested_key)
         return new_key
+
+    @staticmethod
+    def get_tf_definition_key(nested_module, module_name, module_index, nested_key=''):
+        return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
