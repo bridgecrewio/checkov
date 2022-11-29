@@ -148,10 +148,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 path_to_module_str = unify_dependency_path(path_to_module)
                 if block_dirs_to_modules.get((dir_name, path_to_module_str)):
                     continue
-                module_list = self.map_path_to_module.get(path_to_module[-1], [])
+                hello = path_to_module_str
+                if '[' in hello:
+                    hello = hello[0:hello.index('[')]
+                module_list = self.map_path_to_module.get(hello, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
-                    if module_vertex.module_dependency == unify_dependency_path(path_to_module[:-1]):
+                    if get_path_with_nested_modules(module_vertex) == path_to_module_str:
                         module_vertex_dir = self.get_dirname(module_vertex.path)
                         module_source = module_vertex.attributes.get("source", [""])[0]
                         module_version = module_vertex.attributes.get("version", ["latest"])[0]
@@ -598,5 +601,5 @@ def update_list_attribute(
 def get_path_with_nested_modules(block: TerraformBlock) -> str:
     if not block.module_dependency:
         return block.path
-    nested_module = f"{block.module_dependency[:block.module_dependency.index('.tf') + len('.tf')]}#{block.module_dependency_num}"
+    nested_module = f"{block.module_dependency[:block.module_dependency.index('.tf') + len('.tf')]}#{block.module_dependency_num}{block.module_dependency[block.module_dependency.index('.tf') + len('.tf'):]}"
     return f"{block.path}[{nested_module}]"
