@@ -501,7 +501,7 @@ class Parser:
                                     del self.out_definitions[key]
                                     continue
                             else:
-                                new_key = f"{key}[{file}#{module_index}]"
+                                new_key = self.get_tf_definition_key(key, file, module_index)
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
@@ -624,8 +624,8 @@ class Parser:
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
         nested_module_name = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}"
         nested_module_index = nested_data.get('module_index')
-        new_nested_str = f"{nested_module_name}#{nested_module_index}{nested_str[nested_str.index('.tf') + len('.tf'):]}"
-        return f'{file}[{new_nested_str}]'
+        nested_key = nested_str[nested_str.index('.tf') + len('.tf'):]
+        return self.get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
