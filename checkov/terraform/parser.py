@@ -86,7 +86,7 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
-        self.enable_nested_modules = strtobool(os.getenv('ENABLE_NESTED_MODULES', 'True'))
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
 
@@ -404,11 +404,10 @@ class Parser:
                         file_key = self.get_file_key_with_nested_data(file, nested_modules_data)
                         current_nested_data = (file_key, module_index, module_call_name)
 
+                        resolved_loc_list = []
                         if current_nested_data in self.module_to_resolved:
                             resolved_loc_list = self.module_to_resolved[current_nested_data]
-                        else:
-                            resolved_loc_list = []
-                            self.module_to_resolved[current_nested_data] = resolved_loc_list
+                        self.module_to_resolved[current_nested_data] = resolved_loc_list
 
                     module_address = (file, module_index, module_call_name)
                     if not self.enable_nested_modules:
@@ -559,9 +558,7 @@ class Parser:
 
     def _update_resolved_modules(self):
         for key, resolved_list in self.module_to_resolved.items():
-            file_key = key[0]
-            module_index = key[1]
-            module_name = key[2]
+            file_key, module_index, module_name = key
             if file_key not in self.out_definitions:
                 continue
             self.out_definitions[file_key]['module'][module_index][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
@@ -623,7 +620,7 @@ class Parser:
 
     def get_file_key_with_nested_data(self, file, nested_data):
         if not nested_data:
-            return f'{file}'
+            return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
         nested_str = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}#{nested_data.get('module_index')}{nested_str[nested_str.index('.tf') + len('.tf'):]}"
         nested = f'{file}[{nested_str}]'
