@@ -233,9 +233,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
                 and isinstance(vertex.attributes.get('source')[0], str):
-            target_path = vertex.path
-            if vertex.module_dependency != "":
-                target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+            target_path = get_path_with_nested_modules(vertex)
             dest_module_path = self._get_dest_module_path(
                 curr_module_dir=self.get_dirname(vertex.path),
                 dest_module_source=vertex.attributes["source"][0],
