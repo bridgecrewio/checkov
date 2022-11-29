@@ -630,7 +630,8 @@ class Parser:
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
             return self.get_tf_definition_key(key, file, module_index)
-        self.visited_definition_keys.add(f"{key}[{file}#{module_index}]")
+        visited_key_to_add = self.get_tf_definition_key(key, file, module_index)
+        self.visited_definition_keys.add(visited_key_to_add)
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
