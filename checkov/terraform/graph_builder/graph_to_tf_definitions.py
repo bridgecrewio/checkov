@@ -21,7 +21,7 @@ def convert_graph_vertices_to_tf_definitions(
 
         tf_path = block_path
         if vertex.module_dependency:
-            tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
+            tf_path = f"{block_path}[{vertex.module_dependency[:vertex.module_dependency.index('.tf') + len('.tf')]}#{vertex.module_dependency_num}{vertex.module_dependency[vertex.module_dependency.index('.tf') + len('.tf'):]}]"
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
