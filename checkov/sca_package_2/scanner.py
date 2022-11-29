@@ -61,4 +61,4 @@ class Scanner:
         return True
 
     def poll_scan_result(self) -> dict[str, Any]:
-        pass
+        return {}

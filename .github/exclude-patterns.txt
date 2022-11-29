@@ -10,6 +10,7 @@ tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
 tests/secrets/resources/.*
 tests/secrets/yml_multiline/.*
+tests/secrets/json_multiline/.*
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
 tests/terraform/checks/provider/aws/test_credentials.py

@@ -14,8 +14,8 @@ resource "aws_security_group" "list_example" {
  dynamic "egress" {
    for_each = var.dynamic.outbound_ports
    content {
-     from_port   = egress.value
-     to_port     = egress.value
+     from_port   = egress["value"]
+     to_port     = egress["value"]
      protocol    = "tcp"
      cidr_blocks = ["0.0.0.0/0"]
    }
