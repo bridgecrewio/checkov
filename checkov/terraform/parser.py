@@ -401,7 +401,7 @@ class Parser:
                         continue
 
                     if self.enable_nested_modules:
-                        file_key = self.get_file_key(file, nested_modules_data)
+                        file_key = self.get_file_key_with_nested_data(file, nested_modules_data)
                         current_nested_data = (file_key, module_index, module_call_name)
 
                         if current_nested_data in self.module_to_resolved:
@@ -496,12 +496,7 @@ class Parser:
                                 continue
                             keys_referenced_as_modules.add(key)
                             if self.enable_nested_modules:
-                                if key == '/Users/arosenfeld/Desktop/tf_module/module3/main.tf':
-                                    a = 0
-                                new_key = self.get_new_key(key, file, module_index, nested_modules_data)
-                                if new_key == '/Users/arosenfeld/Desktop/tf_module/module3/main.tf[/Users/arosenfeld/Desktop/tf_module/module2/main.tf#0[/Users/arosenfeld/Desktop/tf_module/module/main.tf#0]]':
-                                    a = 0
-                                    new_key = self.get_new_key(key, file, module_index, nested_modules_data)
+                                new_key = self.get_new_nested_module_key(key, file, module_index, nested_modules_data)
                                 if new_key in self.visited_definition_keys:
                                     del module_definitions[key]
                                     del self.out_definitions[key]
@@ -626,19 +621,21 @@ class Parser:
                 sorted_conf[attribute] = str(values)
         return sorted_conf
 
-    def get_file_key(self, file, nested_data):
+    def get_file_key_with_nested_data(self, file, nested_data):
         if not nested_data:
             return f'{file}'
-        nested_str = self.get_file_key(nested_data.get("file"), nested_data.get('nested_modules_data'))
+        nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
         nested_str = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}#{nested_data.get('module_index')}{nested_str[nested_str.index('.tf') + len('.tf'):]}"
         nested = f'{file}[{nested_str}]'
         return nested
 
-    def get_new_key(self, key, file, module_index, nested_data) -> str:
+    def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
             return f"{key}[{file}#{module_index}]"
         self.visited_definition_keys.add(f"{key}[{file}#{module_index}]")
-        nested_key = self.get_new_key('', nested_data.get('file'), nested_data.get('module_index'), nested_data.get('nested_modules_data'))
+        nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
+                                                    nested_data.get('module_index'),
+                                                    nested_data.get('nested_modules_data'))
         new_key = f"{key}[{file}#{module_index}{nested_key}]"
         return new_key
 
