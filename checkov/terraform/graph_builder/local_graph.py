@@ -593,3 +593,10 @@ def update_list_attribute(
         config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
+
+
+def get_path_with_nested_modules(block: TerraformBlock) -> str:
+    if not block.module_dependency:
+        return block.path
+    nested_module = f"{block.module_dependency[:block.module_dependency.index('.tf') + len('.tf')]}#{block.module_dependency_num}"
+    return f"{block.path}[{nested_module}]"
