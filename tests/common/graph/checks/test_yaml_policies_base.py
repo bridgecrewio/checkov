@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 import itertools
 import json
 import os
+from pathlib import Path
+
 import yaml
 from abc import abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Any
 from unittest import TestCase
 
 from checkov.cloudformation.runner import Runner
@@ -95,7 +99,7 @@ class TestYamlPoliciesBase(TestCase):
         pass
 
 
-def load_yaml_data(source_file_name, dir_path):
+def load_yaml_data(source_file_name: str | Path, dir_path: str | Path) -> Any:
     expected_path = os.path.join(dir_path, source_file_name)
     if not os.path.exists(expected_path):
         return None

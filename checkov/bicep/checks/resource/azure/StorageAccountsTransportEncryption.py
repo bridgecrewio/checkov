@@ -19,6 +19,9 @@ class StorageAccountsTransportEncryption(BaseResourceCheck):
         self.evaluated_keys = ["properties/supportsHttpsTrafficOnly"]
         properties = conf.get("properties")
         if properties:
+            if not isinstance(properties, dict):
+                return CheckResult.UNKNOWN
+
             https_only = properties.get("supportsHttpsTrafficOnly")
             if https_only is True:
                 return CheckResult.PASSED
