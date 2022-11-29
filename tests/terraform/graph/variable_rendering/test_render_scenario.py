@@ -2,6 +2,7 @@ import json
 import os
 import re
 from unittest.case import TestCase
+from unittest import mock
 
 import jmespath
 
@@ -76,13 +77,13 @@ class TestRendererScenarios(TestCase):
     def test_module_simple_up_dir_ref(self):
         self.go("module_simple_up_dir_ref")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_nested_modules_instances_enable(self):
         dir_name = 'nested_modules_instances_enable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
         from checkov.terraform.parser import Parser
         parser = Parser()
-        parser.enable_nested_modules = True
         tf_definitions = {}
         parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
 

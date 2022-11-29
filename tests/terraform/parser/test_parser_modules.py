@@ -46,11 +46,11 @@ class TestParserInternals(unittest.TestCase):
         external_aws_modules_path = os.path.join(self.external_module_path, 'github.com/terraform-aws-modules/terraform-aws-security-group/v3.18.0')
         assert os.path.exists(external_aws_modules_path)
 
-    @mock.patch.dict(os.environ, {"ENABLE_NESTED_MODULES": "True"})
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_load_inner_registry_module_with_nested_modules(self):
         self.load_inner_registry_module(True)
 
-    @mock.patch.dict(os.environ, {"ENABLE_NESTED_MODULES": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_load_inner_registry_module_without_nested_modules(self):
         self.load_inner_registry_module(False)
 

@@ -318,7 +318,8 @@ class Parser:
 
             # Stage 4a: Load eligible modules
             # Add directory to self._parsed_directories to avoid loading it as sub dir
-            dir_filter(directory)
+            if self.enable_nested_modules:
+                dir_filter(directory)
             has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
                                                   keys_referenced_as_modules, force_final_module_load,
                                                   nested_modules_data=nested_modules_data)
