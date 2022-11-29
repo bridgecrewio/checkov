@@ -1,15 +1,9 @@
-import os
 import time
 import unittest
 from pathlib import Path
 
-from detect_secrets.util.code_snippet import CodeSnippet
-from detect_secrets.util.filetype import FileType
-
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
-from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_KEYWORD_BY_FILETYPE
-from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_SECRET_BY_FILETYPE
 from checkov.secrets.runner import Runner
 
 
