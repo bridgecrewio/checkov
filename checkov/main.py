@@ -251,7 +251,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            #should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            should_run_contributor_metrics = True
             logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
             if should_run_contributor_metrics:
                 try:        # collect contributor info and upload
