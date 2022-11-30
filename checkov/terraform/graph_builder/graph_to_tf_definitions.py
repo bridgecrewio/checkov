@@ -1,6 +1,8 @@
 import os
 from typing import List, Dict, Any, Tuple
 
+from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
@@ -34,4 +36,5 @@ def convert_graph_vertices_to_tf_definitions(
 def add_breadcrumbs(vertex: TerraformBlock, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
     vertex_breadcrumbs = vertex.breadcrumbs
     if vertex_breadcrumbs:
-        breadcrumbs.setdefault(relative_block_path, {})[vertex.name] = vertex_breadcrumbs
+        vartex_key = vertex.name if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')) else vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, vertex.name)
+        breadcrumbs.setdefault(relative_block_path, {})[vartex_key] = vertex_breadcrumbs
