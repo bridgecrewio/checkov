@@ -5,10 +5,12 @@ import logging
 import os
 import re
 from collections.abc import Sequence
+from collections import defaultdict
 from copy import deepcopy
 from json import dumps, loads
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type, TYPE_CHECKING
+import itertools
 
 import deep_merge
 import hcl2
@@ -571,7 +573,10 @@ class Parser:
         source_dir: str,
         source: str,
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
-        module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
+        if self.enable_nested_modules:
+            module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map_support_nested_modules(tf_definitions)
+        else:
+            module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
         module = self.get_new_module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
@@ -694,27 +699,65 @@ class Parser:
         for key in unevaluated_files:
             if '[' not in key:
                 continue
-            module = key[key.index('.tf[') + len('.tf['):-1]
-            if '[' in module:
-                module = module[:module.index('.tf') + len('.tf')] + module[module.index('['):]
-            else:
-                module = module[:module.index('.tf') + len('.tf')]
+            module = key[key.index('.tf[') + len('.tf['):]
             found = False
             for eval_key in evaluated_files:
-                if module == eval_key:
+                if module.startswith(eval_key):
                     found = True
                     break
             if not found:
-                # do_not_eval_yet.append(key.split('[')[0])
+                do_not_eval_yet.append(key.split('[')[0])
                 unevaluated.append(key)
             else:
                 next_level.append(key)
 
-        # move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
-        # for k in move_to_uneval:
-        #     next_level.remove(k)
-        #     unevaluated.append(k)
+        move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
+        for k in move_to_uneval:
+            next_level.remove(k)
+            unevaluated.append(k)
         return next_level, unevaluated
+
+    @staticmethod
+    def get_nested_modules_data_as_list(file_path):
+        path = file_path[:file_path.index('.tf') + len('.tf')]
+        modules_list = []
+        file_path = file_path[len(path):]
+        while '[' in file_path:
+            file_path = file_path[1:-1]
+            if '[' in file_path:
+                module = file_path[:file_path.index('.tf') + len('.tf')] + file_path[file_path.index('['):]
+                index = file_path[file_path.index('#') + 1:file_path.index('[')]
+            else:
+                module = file_path[:file_path.index('.tf') + len('.tf')]
+                index = file_path[file_path.index('#') + 1:]
+            modules_list.append((module, index))
+            if '[' in file_path:
+                file_path = file_path[file_path.index('['):]
+            else:
+                file_path = ''
+        return list(reversed(modules_list)), path
+
+    @staticmethod
+    def get_module_dependency_map_support_nested_modules(tf_definitions):
+        module_dependency_map = defaultdict(list)
+        copy_of_tf_definitions = {}
+        dep_index_mapping = defaultdict(list)
+        for tf_definition_key in tf_definitions.keys():
+            if '[' not in tf_definition_key:
+                dir_name = os.path.dirname(tf_definition_key)
+                module_dependency_map[dir_name].append([])
+                copy_of_tf_definitions[tf_definition_key] = deepcopy(tf_definitions[tf_definition_key])
+                continue
+            modules_list, path = Parser.get_nested_modules_data_as_list(tf_definition_key)
+            dir_name = os.path.dirname(path)
+            module_dependency_map[dir_name].append([m for m, i in modules_list])
+            dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
+            copy_of_tf_definitions[path] = deepcopy(tf_definitions[tf_definition_key])
+
+        for key, dir_list in module_dependency_map.items():
+            dir_list.sort()
+            module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
+        return dict(module_dependency_map), copy_of_tf_definitions, dict(dep_index_mapping)
 
     @staticmethod
     def get_module_dependency_map(tf_definitions):
@@ -748,7 +791,7 @@ class Parser:
                 elif current_deps not in module_dependency_map[dir_name]:
                     module_dependency_map[dir_name] += current_deps
                 copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
-                origin_keys.append(file_path)
+                origin_keys.append(path)
                 dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
             next_level, unevaluated_keys = Parser.get_next_vertices(origin_keys, unevaluated_keys)
         for key, dep_trails in module_dependency_map.items():
