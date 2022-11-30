@@ -694,22 +694,26 @@ class Parser:
         for key in unevaluated_files:
             if '[' not in key:
                 continue
-            module = key[key.index('.tf[') + len('.tf['):]
+            module = key[key.index('.tf[') + len('.tf['):-1]
+            if '[' in module:
+                module = module[:module.index('.tf') + len('.tf')] + module[module.index('['):]
+            else:
+                module = module[:module.index('.tf') + len('.tf')]
             found = False
             for eval_key in evaluated_files:
-                if module.startswith(eval_key):
+                if module == eval_key:
                     found = True
                     break
             if not found:
-                do_not_eval_yet.append(key.split('[')[0])
+                # do_not_eval_yet.append(key.split('[')[0])
                 unevaluated.append(key)
             else:
                 next_level.append(key)
 
-        move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
-        for k in move_to_uneval:
-            next_level.remove(k)
-            unevaluated.append(k)
+        # move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
+        # for k in move_to_uneval:
+        #     next_level.remove(k)
+        #     unevaluated.append(k)
         return next_level, unevaluated
 
     @staticmethod
@@ -744,7 +748,7 @@ class Parser:
                 elif current_deps not in module_dependency_map[dir_name]:
                     module_dependency_map[dir_name] += current_deps
                 copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
-                origin_keys.append(path)
+                origin_keys.append(file_path)
                 dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
             next_level, unevaluated_keys = Parser.get_next_vertices(origin_keys, unevaluated_keys)
         for key, dep_trails in module_dependency_map.items():
