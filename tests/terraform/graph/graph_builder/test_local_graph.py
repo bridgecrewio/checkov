@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from unittest import TestCase
 
+import mock
+
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.common.graph.graph_builder.utils import calculate_hash
@@ -138,6 +140,7 @@ class TestLocalGraph(TestCase):
         self.assertIsNotNone(tf_definitions)
         self.assertIsNotNone(breadcrumbs)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_module_dependencies(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
@@ -155,6 +158,46 @@ class TestLocalGraph(TestCase):
         self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'],
                          list(map(lambda dep_list: dep_list + [f'{os.path.dirname(resources_dir)}/s3_inner_modules/main.tf'],
                                   expected_inner_modules)))
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_module_dependencies_nested_module_enable(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/stage'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/test'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod/sub-prod'], [[f'{resources_dir}/prod/main.tf']])
+        expected_inner_modules = [
+            [
+                f'{resources_dir}/prod/main.tf',
+                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
+            ],
+            [
+                f'{resources_dir}/stage/main.tf'
+            ],
+            [
+                f'{resources_dir}/test/main.tf'
+            ],
+        ]
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
+        expected_inner_modules = [
+            [
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf",
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/sub-prod/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf#0]",
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/sub-prod/main.tf#0[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf#0]]",
+            ],
+            [
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/stage/main.tf",
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/stage/main.tf#0]",
+            ],
+            [
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/test/main.tf",
+                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/test/main.tf#0]",
+            ],
+        ]
+
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'], expected_inner_modules)
 
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
