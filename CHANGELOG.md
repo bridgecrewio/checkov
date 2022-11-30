@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.105...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.106...HEAD)
+
+## [2.2.106](https://github.com/bridgecrewio/checkov/compare/2.2.105...2.2.106) - 2022-11-30
+
+- no noteworthy changes
 
 ## [2.2.105](https://github.com/bridgecrewio/checkov/compare/2.2.99...2.2.105) - 2022-11-29
 
