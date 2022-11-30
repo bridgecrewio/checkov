@@ -249,7 +249,7 @@ class TestLicensingIntegration(unittest.TestCase):
             runner_registry.run(root_folder=scan_dir)
             raise AssertionError('Runner registry should hard fail because a single framework was used')
         except Exception as e:
-            self.assertTrue(isinstance(e, ModuleNotEnabledError))
+            self.assertIsInstance(e, ModuleNotEnabledError)
 
     def test_runner_registry_multiple_runners(self):
         instance = BcPlatformIntegration()

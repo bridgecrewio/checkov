@@ -48,7 +48,7 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
             self.billing_plan = BillingPlan(license_details[BILLING_PLAN_KEY])
 
-    def is_runner_valid(self, runner: str):
+    def is_runner_valid(self, runner: str) -> bool:
         logging.debug(f'Checking if {runner} is valid for license')
         if self.open_source_only:
             enabled = CodeCategoryMapping[runner] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
@@ -60,11 +60,11 @@ class LicensingIntegration(BaseIntegrationFeature):
 
         return enabled
 
-    def should_run_image_referencer(self):
+    def should_run_image_referencer(self) -> bool:
         return not self.open_source_only and CustomerSubscription.SCA in self.enabled_modules
 
     @staticmethod
-    def get_subscription_for_runner(runner: str):
+    def get_subscription_for_runner(runner: str) -> CustomerSubscription:
         return CategoryToSubscriptionMapping.get(CodeCategoryMapping[runner])
 
     def post_runner(self, scan_report: Report) -> None:
