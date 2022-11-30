@@ -36,5 +36,5 @@ def convert_graph_vertices_to_tf_definitions(
 def add_breadcrumbs(vertex: TerraformBlock, breadcrumbs: Dict[str, Dict[str, Any]], relative_block_path: str) -> None:
     vertex_breadcrumbs = vertex.breadcrumbs
     if vertex_breadcrumbs:
-        vartex_key = vertex.name if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')) else vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, vertex.name)
+        vartex_key = vertex.name if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')) else vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, vertex.name)
         breadcrumbs.setdefault(relative_block_path, {})[vartex_key] = vertex_breadcrumbs

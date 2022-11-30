@@ -57,7 +57,7 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     index = module_dependency[module_dependency.index('.tf#') + len('.tf#'):]
 
     # if its nested module dependency
-    if '[' in module_dependency and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
+    if '[' in module_dependency and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
         module = module_dependency[:module_dependency.index('.tf#') + len('.tf')] + module_dependency[module_dependency.index('['):]
         index = module_dependency[module_dependency.index('.tf#') + len('.tf#'):module_dependency.index('[')]
 
