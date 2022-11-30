@@ -30,7 +30,7 @@ from cyclonedx.model.vulnerability import (
     VulnerabilityScoreSource,
     VulnerabilitySeverity,
 )
-from cyclonedx.output import get_instance
+from cyclonedx.output import get_instance, OutputFormat
 from packageurl import PackageURL
 
 from checkov.common.output.common import ImageDetails
@@ -390,13 +390,29 @@ class CycloneDX:
         )
         return vulnerability
 
-    def get_xml_output(self) -> str:
+    def get_output(self, output_format: OutputFormat) -> str:
+        """Returns the SBOM as a formatted string"""
+
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(bom=self.bom, schema_version=schema_version).output_as_string()  # type:ignore[arg-type]
+        output = get_instance(
+            bom=self.bom,
+            output_format=output_format,
+            schema_version=schema_version,
+        ).output_as_string()
 
         return output
+
+    def get_xml_output(self) -> str:
+        """Returns the SBOM as a XML formatted string"""
+
+        return self.get_output(output_format=OutputFormat.XML)
+
+    def get_json_output(self) -> str:
+        """Returns the SBOM as a JSON formatted string"""
+
+        return self.get_output(output_format=OutputFormat.JSON)
 
     def update_tool_external_references(self, tool: Tool) -> None:
         tool.external_references.update(

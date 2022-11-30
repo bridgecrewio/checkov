@@ -22,6 +22,7 @@ class CustomAttributes:
     MODULE_DEPENDENCY_NUM = "module_dependency_num_"
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
+    TF_RESOURCE_ADDRESS = "__address__"
 
 
 def props(cls: Any) -> List[str]:
