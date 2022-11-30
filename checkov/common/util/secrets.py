@@ -210,5 +210,6 @@ def get_secrets_from_string(s: str, *categories: str) -> list[str]:
             secrets.extend(matches)
     return secrets
 
+
 def parse_multiline_secret_strings(secret: str):
     return secret.replace('\n', '\\n') if re.match(MULTILINE_REGEX, secret) else secret
