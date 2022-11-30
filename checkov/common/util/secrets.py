@@ -23,7 +23,7 @@ GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
 
-MULTILINE_REGEX = re.compile('.*\n.*')
+NEWLINE_REGEX = re.compile('\n')
 
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
@@ -212,4 +212,4 @@ def get_secrets_from_string(s: str, *categories: str) -> list[str]:
 
 
 def parse_multiline_secret_strings(secret: str) -> str:
-    return secret.replace('\n', '\\n') if re.match(MULTILINE_REGEX, secret) else secret
+    return re.sub(NEWLINE_REGEX, '\\\\n', secret)
