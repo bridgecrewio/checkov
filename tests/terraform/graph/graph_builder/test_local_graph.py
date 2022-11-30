@@ -208,6 +208,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 's3', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'sub-module', module.blocks))), 1)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_vertices_from_local_graph_module(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")
@@ -336,6 +337,141 @@ class TestLocalGraph(TestCase):
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
                         "idx": 6
+                    },
+                ],
+            },
+            bucket_vertex_3.breadcrumbs,
+        )
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_vertices_from_local_graph_module_nested_module_enable(self):
+        parent_dir = Path(TEST_DIRNAME).parent
+        resources_dir = str(parent_dir / "resources/modules/stacks")
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        self.assertEqual(12, len(local_graph.edges))
+
+        # check vertex breadcrumbs
+        bucket_vertex_1 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {6}
+        )
+        bucket_vertex_2 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {7}
+        )
+        bucket_vertex_3 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {8}
+        )
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "sub-module",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
+                        "idx": 12
+                    },
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
+                        "idx": 13
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 6
+                    },
+                ],
+            },
+            bucket_vertex_1.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
+                        "idx": 14
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 7
+                    },
+                ],
+            },
+            bucket_vertex_2.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
+                        "idx": 15
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 8
                     },
                 ],
             },
