@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
-from checkov.common.bridgecrew.licensing import SubscriptionCategoryMapping, \
+from checkov.common.bridgecrew.licensing import BillingPlan, \
     CategoryToSubscriptionMapping, CustomerSubscription
 from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -16,16 +16,16 @@ if TYPE_CHECKING:
 
 
 LICENSE_KEY = 'platformLicense'
-GIT_CLONE_ENABLED_KEY = 'gitCloneEnabled'
 MODULES_KEY = 'modules'
+BILLING_PLAN_KEY = 'billingPlan'
 
 
 class LicensingIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=6)
         self.enabled_modules: List[CustomerSubscription] = []
+        self.billing_plan: Optional[BillingPlan] = None
         self.open_source_only: bool = True
-        self.git_clone_enabled: bool = False
 
     def is_valid(self) -> bool:
         # We will always use this integration to determine what runs or not
@@ -44,8 +44,9 @@ class LicensingIntegration(BaseIntegrationFeature):
             logging.debug(f'User license details: {license_details}')
 
             self.open_source_only = False
+            # the API will return True for all modules if they are on resource mode, so we don't actually need the billing plan explicitly here
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
-            self.git_clone_enabled = license_details[GIT_CLONE_ENABLED_KEY]
+            self.billing_plan = BillingPlan(license_details[BILLING_PLAN_KEY])
 
     def is_runner_valid(self, runner: str):
         logging.debug(f'Checking if {runner} is valid for license')
@@ -58,12 +59,6 @@ class LicensingIntegration(BaseIntegrationFeature):
             logging.debug(f'Customer mode - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
 
         return enabled
-
-    def include_old_secrets(self):
-        return self.open_source_only or CustomerSubscription.SECRETS in self.enabled_modules
-
-    def include_new_secrets(self):
-        return self.git_clone_enabled and CustomerSubscription.SECRETS in self.enabled_modules
 
     def should_run_image_referencer(self):
         return not self.open_source_only and CustomerSubscription.SCA in self.enabled_modules
