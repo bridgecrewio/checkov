@@ -181,22 +181,22 @@ class TestLocalGraph(TestCase):
             ],
         ]
         self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
+        resources_dir_no_stacks = resources_dir.replace('/stacks', '')
         expected_inner_modules = [
             [
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf",
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/sub-prod/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf#0]",
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/sub-prod/main.tf#0[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/prod/main.tf#0]]",
+                f'{resources_dir}/prod/main.tf',
+                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/prod/sub-prod/main.tf#0[{resources_dir}/prod/main.tf#0]]',
             ],
             [
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/stage/main.tf",
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/stage/main.tf#0]",
+                f'{resources_dir}/stage/main.tf',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/stage/main.tf#0]',
             ],
             [
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/test/main.tf",
-                "/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/s3_inner_modules/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/modules/stacks/test/main.tf#0]",
+                f'{resources_dir}/test/main.tf',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/test/main.tf#0]',
             ],
         ]
-
         self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'], expected_inner_modules)
 
     def test_blocks_from_local_graph_module(self):
