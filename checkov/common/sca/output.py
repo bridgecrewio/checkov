@@ -264,7 +264,6 @@ def add_to_reports_cves_and_packages(
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
 
-    # todo check the file type if in supported types
     vulnerable_packages: dict[str, list[dict[str, Any]]] = {}
     root_packages_list: list[int] = []
 
