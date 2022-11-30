@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Any, List
+from typing import Any, List
 
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
@@ -32,7 +32,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             excluded_file_names: set[str] | None = None,
-    ) -> Sequence[dict[str, Any]] | None:
+    ) -> dict[str, Any] | None:
         runner_filter = runner_filter or RunnerFilter()
         excluded_file_names = excluded_file_names or set()
 
@@ -84,10 +84,10 @@ class Runner(BaseRunner[None]):
         if scan_results is None:
             return report
 
-        for result in scan_results:
+        for path, result in scan_results.items():
             if not result:
                 continue
-            package_file_path = Path(result["repository"])
+            package_file_path = Path(path)
             if self._code_repo_path:
                 try:
                     package_file_path = package_file_path.relative_to(self._code_repo_path)
@@ -113,6 +113,7 @@ class Runner(BaseRunner[None]):
                 packages=packages,
                 license_statuses=license_statuses,
                 report_type=self.report_type,
+                dependencies=result.get("dependencies", None)
             )
 
         return report

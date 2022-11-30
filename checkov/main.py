@@ -248,7 +248,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
             if should_run_contributor_metrics:
                 try:        # collect contributor info and upload
-                    report_contributor_metrics(config.repo_id, bc_integration)
+                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
                 except Exception as e:
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 

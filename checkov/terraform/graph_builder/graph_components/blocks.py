@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import Union, Dict, Any, List, Optional, Set
 import dpath.util
@@ -16,10 +18,12 @@ class TerraformBlock(Block):
         "module_dependency",
         "module_dependency_num",
         "source_module",
-        "has_dynamic_block")
+        "has_dynamic_block",
+        "dynamic_attributes",
+    )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
-                 id: str = "", source: str = "", has_dynamic_block: bool = False) -> None:
+                 id: str = "", source: str = "", has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None,) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -27,7 +31,7 @@ class TerraformBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source)
+        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source, has_dynamic_block, dynamic_attributes)
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:
@@ -139,8 +143,7 @@ class TerraformBlock(Block):
         strip_list: bool = True
     ) -> Dict[str, Any]:
         if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
-            if not isinstance(attribute_value[0], str) or isinstance(attribute_value[0], str) and 'lookup' not in attribute_value[0]:
-                attribute_value = attribute_value[0]
+            attribute_value = attribute_value[0]
 
         return super().get_inner_attributes(
             attribute_key=attribute_key,

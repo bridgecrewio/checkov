@@ -62,6 +62,7 @@ class _CicdDetails(TypedDict, total=False):
     commit: str | None
     pr: str | None
     runId: str | None
+    scaCliScanId: str | None
 
 
 class _ExitCodeThresholds(TypedDict):

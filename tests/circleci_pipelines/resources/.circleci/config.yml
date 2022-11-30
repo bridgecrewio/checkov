@@ -3,6 +3,11 @@ orbs:
   new-orb: "whatever/orbname@goodorb"
   some-orb: "orbs/orbname@dev:blah"
 
+executors:
+  image-executor:
+    docker:
+      - "image": "mongo:2.6.8"
+
 jobs:
   test-docker-hash-img:
     docker:

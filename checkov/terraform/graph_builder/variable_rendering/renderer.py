@@ -301,7 +301,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
                     except Exception:
                         logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
-                                     f' for blocks: {dynamic_blocks}')
+                                     f' for blocks: {dynamic_blocks}', exc_info=True)
                         continue
                     changed_attributes = []
 
@@ -309,7 +309,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
                         changed_attributes.append(block_name)
 
-                    self.local_graph.update_vertex_config(vertex, changed_attributes)
+                    self.local_graph.update_vertex_config(vertex, changed_attributes, True)
 
     @staticmethod
     def _extract_dynamic_arguments(block_name: str, block_content: Dict[str, Any], dynamic_arguments: List[str],
@@ -327,7 +327,7 @@ class TerraformVariableRenderer(VariableRenderer):
     @staticmethod
     def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
             str, list[dict[str, Any]]]:
-        rendered_blocks: dict[str, list[dict[str, Any]]] = {}
+        rendered_blocks: dict[str, list[dict[str, Any]] | dict[str, Any]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
             logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
@@ -355,17 +355,21 @@ class TerraformVariableRenderer(VariableRenderer):
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:
                             if not isinstance(dynamic_value, dict):
                                 continue
-                            dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
-                                dpath.get(block_content, dynamic_argument, separator='.')
+                            TerraformVariableRenderer._assign_dynamic_value_for_list(
+                                dynamic_value=dynamic_value,
+                                dynamic_argument=dynamic_argument,
+                                block_conf=block_conf,
+                                block_content=block_content,
+                                block_name=block_name
                             )
-                            if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
-                                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map],
-                                          separator='.')
-                            else:
-                                dpath.set(block_conf, dynamic_argument,
-                                          dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
+
                         else:
-                            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
+                            TerraformVariableRenderer._assign_dynamic_value_for_map(
+                                dynamic_value=dynamic_value,
+                                dynamic_argument=dynamic_argument,
+                                block_conf=block_conf,
+                                block_content=block_content,
+                            )
 
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
@@ -376,9 +380,53 @@ class TerraformVariableRenderer(VariableRenderer):
                 except (StopIteration, AttributeError):
                     continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
-                rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+
+                flatten_key = next(iter(rendered_blocks.keys()))
+                if next_key in rendered_blocks[flatten_key]:
+                    rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                else:
+                    rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
         return rendered_blocks
+
+    @staticmethod
+    def _assign_dynamic_value_for_list(
+            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, Any]]],
+            dynamic_argument: str,
+            block_conf: dict[str, Any],
+            block_content: dict[str, Any],
+            block_name: str,
+    ):
+        dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
+            dpath.get(block_content, dynamic_argument, separator='.')
+        )
+        if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
+            dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator='.')
+        else:
+            dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
+
+    @staticmethod
+    def _assign_dynamic_value_for_map(
+            dynamic_value: str | dict[str, Any],
+            dynamic_argument: str,
+            block_conf: dict[str, Any],
+            block_content: dict[str, Any],
+    ):
+        if isinstance(dynamic_value, dict):
+            if dynamic_argument in dynamic_value:
+                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator='.')
+            else:
+                if isinstance(block_content, dict) and dynamic_argument in block_content and isinstance(block_content[dynamic_argument], str):
+                    lookup_value: str = ''
+                    if 'None' in block_content[dynamic_argument]:
+                        lookup_value = 'null'
+                    elif 'False' in block_content[dynamic_argument]:
+                        lookup_value = 'false'
+                    elif 'True' in block_content[dynamic_argument]:
+                        lookup_value = 'true'
+                    dpath.set(block_conf, dynamic_argument, lookup_value, separator='.')
+        else:
+            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
 
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
