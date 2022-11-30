@@ -23,6 +23,8 @@ GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
 
+MULTILINE_REGEX = re.compile('.*\n.*')
+
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
 # https://github.com/awslabs/git-secrets
@@ -142,13 +144,14 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
     censored_code_lines = []
 
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
-        secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
+        secrets.update([parse_multiline_secret_strings(str(secret)) for key, secret in entity_config.items() if
+                        key.startswith(f'{check.id}_secret')])
 
     if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
             resource_attributes_to_omit.get(check.entity_type) in entity_config:
         secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, ''), [])
         if isinstance(secret, list) and secret:
-            secrets.add(secret[0])
+            secrets.add(parse_multiline_secret_strings(secret[0]))
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
@@ -206,3 +209,6 @@ def get_secrets_from_string(s: str, *categories: str) -> list[str]:
         if matches:
             secrets.extend(matches)
     return secrets
+
+def parse_multiline_secret_strings(secret: str):
+    return secret.replace('\n', '\\n') if re.match(MULTILINE_REGEX, secret) else secret
