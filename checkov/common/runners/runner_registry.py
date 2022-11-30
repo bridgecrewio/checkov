@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING
 
 from typing_extensions import Literal
 

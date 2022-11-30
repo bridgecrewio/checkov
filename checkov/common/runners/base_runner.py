@@ -60,7 +60,6 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        self.enabled = True
 
     @abstractmethod
     def run(
