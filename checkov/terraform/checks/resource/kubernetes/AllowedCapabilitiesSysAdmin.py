@@ -37,7 +37,7 @@ class AllowedCapabilitiesSysAdmin(BaseResourceCheck):
                     context = container.get("security_context")[0]
                     if context.get("capabilities") and isinstance(context.get("capabilities"), list):
                         capabilities = context.get("capabilities")[0]
-                        if capabilities.get("add") and isinstance(capabilities.get("add"), list):
+                        if isinstance(capabilities, dict) and capabilities.get("add") and isinstance(capabilities.get("add"), list):
                             add = capabilities.get("add")[0]
                             if "SYS_ADMIN" in add:
                                 self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/'

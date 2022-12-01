@@ -47,7 +47,6 @@ class TestMinimiseCapabilities(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
-
     def test_terraform_plan(self):
         resource_conf = {'spec': [{'template': [{'spec': [{'container': [{'security_context': [{'capabilities': [[]]}]}]}]}]}]}
         scan_result = check.scan_resource_conf(conf=resource_conf)
