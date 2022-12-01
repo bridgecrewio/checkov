@@ -68,6 +68,24 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VAconfiguredToSendReports(self):
         self.go("VAconfiguredToSendReports")
 
+    def test_AWSConfigRecorderEnabled():
+        self.go("AWSConfigRecorderEnabled")
+
+    def test_CLoudFrontS3OriginConfigWithOAI():
+        self.go("CLoudFrontS3OriginConfigWithOAI")
+
+    def test_CloudFrontWebACLConfiguredWIthLog4jVulnerability():
+        self.go("CloudFrontWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_ConfigRecorderRecordsAllGlobalResources():
+        self.go("ConfigRecorderRecordsAllGlobalResources")
+
+    def test_DMSEndpointHaveSSLConfigured():
+        self.go("DMSEndpointHaveSSLConfigured")
+
+    def test_ElastiCacheRedisConfiguredAutomaticFailOver():
+        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")  
+
     def test_VAconfiguredToSendReportsToAdmins(self):
         self.go("VAconfiguredToSendReportsToAdmins")
 

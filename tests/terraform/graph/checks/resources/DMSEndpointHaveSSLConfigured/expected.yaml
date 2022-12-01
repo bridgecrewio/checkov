@@ -1,0 +1,8 @@
+fail:
+  - "aws_dms_endpoint.fail_source"
+  - "aws_dms_endpoint.fail_target"
+pass:
+  - "aws_dms_endpoint.pass_source_1"
+  - "aws_dms_endpoint.pass_source_2"
+  - "aws_dms_endpoint.pass_target_1"
+  - "aws_dms_endpoint.pass_target_2"

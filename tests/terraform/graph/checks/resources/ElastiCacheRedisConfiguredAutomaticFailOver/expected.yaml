@@ -1,0 +1,5 @@
+fail:
+  - "aws_elasticache_replication_group.fail_1"
+  - "aws_elasticache_replication_group.fail_2"
+pass:
+  - "aws_elasticache_replication_group.pass"
