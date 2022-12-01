@@ -397,9 +397,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_record_relative_path_with_relative_dir(self):
-
-        # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
-
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_dir_path = os.path.join(current_dir, "resources", "plan")
@@ -417,36 +414,9 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
-            # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
-
-    def test_record_relative_path_with_abs_dir(self):
-
-        # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
-
-        # this is just constructing the scan dir as normal
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "resources", "plan")
-
-        dir_abs_path = os.path.abspath(scan_dir_path)
-
-        runner = Runner()
-        checks_allowlist = ["CKV_AWS_6"]
-        report = runner.run(
-            root_folder=dir_abs_path,
-            external_checks_dir=None,
-            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
-        )
-
-        all_checks = report.failed_checks + report.passed_checks
-        for record in all_checks:
-            # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
+            self.assertEqual(record.repo_file_path, f'/{os.path.join(dir_rel_path, record.file_path.lstrip("/"))}')
 
     def test_record_relative_path_with_relative_file(self):
-
-        # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
-
         # this is just constructing the scan dir as normal
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "plan", "tfplan.json")
@@ -465,32 +435,7 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         for record in all_checks:
-            # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
-
-    def test_record_relative_path_with_abs_file(self):
-
-        # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
-
-        # this is just constructing the scan dir as normal
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_file_path = os.path.join(current_dir, "resources", "plan", "tfplan.json")
-
-        file_abs_path = os.path.abspath(scan_file_path)
-
-        runner = Runner()
-        checks_allowlist = ["CKV_AWS_20"]
-        report = runner.run(
-            root_folder=None,
-            external_checks_dir=None,
-            files=[file_abs_path],
-            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist),
-        )
-
-        all_checks = report.failed_checks + report.passed_checks
-        for record in all_checks:
-            # The plan runner sets file_path to be relative from the CWD already, so this is easy
-            self.assertEqual(record.repo_file_path, record.file_path.replace("\\", "/"))
+            self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
     def test_runner_unexpected_eks_node_group_remote_access(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
