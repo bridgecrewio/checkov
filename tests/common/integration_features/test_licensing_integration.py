@@ -16,7 +16,7 @@ from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
 
-
+# limited set for shorter testing
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
     secrets_runner(),
@@ -298,7 +298,7 @@ class TestLicensingIntegration(unittest.TestCase):
         except Exception as e:
             self.assertIsInstance(e, ModuleNotEnabledError)
 
-    def test_runner_registry_multiple_runners(self):
+    def test_runner_registry_multiple_runners_with_framework(self):
         instance = BcPlatformIntegration()
         instance.bc_api_key = '1234'
         licensing_integration = LicensingIntegration(instance)
@@ -320,8 +320,69 @@ class TestLicensingIntegration(unittest.TestCase):
         runner_filter = RunnerFilter(framework=['terraform', 'bitbucket_configuration', 'sca_package', 'secrets'], runners=checkov_runners)
         runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
         runner_registry.licensing_integration = licensing_integration
-        reports = runner_registry.run(root_folder=scan_dir)
-        self.assertEqual(len(reports), 2)  # terraform and bitbucket
+        with self.assertLogs(level='INFO') as log:
+            reports = runner_registry.run(root_folder=scan_dir)
+            self.assertEqual(len(reports), 2)  # terraform and bitbucket
+            # we are specifically verifying the log level here
+            self.assertIn('WARNING:root:The framework "secrets" is part of the "SECRETS" module, which is not enabled in the platform', log.output)
+            self.assertIn('WARNING:root:The framework "secrets" is part of the "SECRETS" module, which is not enabled in the platform', log.output)
+
+    def test_runner_registry_multiple_runners_without_framework(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+        licensing_integration = LicensingIntegration(instance)
+        instance.customer_run_config_response = {
+            'platformLicense': {
+                'modules': {
+                    'IAC': True,
+                    'SECRETS': False,
+                    'SCA': False
+                },
+                'billingPlan': 'DEVELOPER_BASED'
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        scan_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+
+        runner_filter = RunnerFilter(runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.licensing_integration = licensing_integration
+        with self.assertLogs(level='INFO') as log:
+            reports = runner_registry.run(root_folder=scan_dir)
+            self.assertEqual(len(reports), 2)  # terraform and bitbucket
+            # we are specifically verifying the log level here
+            self.assertIn('INFO:root:The framework "secrets" is part of the "SECRETS" module, which is not enabled in the platform', log.output)
+            self.assertIn('INFO:root:The framework "secrets" is part of the "SECRETS" module, which is not enabled in the platform', log.output)
+
+    def test_runner_registry_multiple_runners_all_disabled(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+        licensing_integration = LicensingIntegration(instance)
+        instance.customer_run_config_response = {
+            'platformLicense': {
+                'modules': {
+                    'IAC': False,
+                    'SECRETS': False,
+                    'SCA': False
+                },
+                'billingPlan': 'DEVELOPER_BASED'
+            }
+        }
+
+        licensing_integration.pre_scan()
+
+        scan_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+
+        runner_filter = RunnerFilter(framework=['terraform', 'bitbucket_configuration', 'sca_package', 'secrets'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.licensing_integration = licensing_integration
+        try:
+            runner_registry.run(root_folder=scan_dir)
+            raise AssertionError('Runner registry should hard fail because a single framework was used')
+        except Exception as e:
+            self.assertIsInstance(e, ModuleNotEnabledError)
 
 
 if __name__ == '__main__':

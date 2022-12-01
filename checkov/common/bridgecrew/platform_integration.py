@@ -570,6 +570,16 @@ class BcPlatformIntegration:
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+
+            self.customer_run_config_response['platformLicense'] = {
+                'billingPlan': 'DEVELOPER_BASED',
+                'modules': {
+                    'IAC': False,
+                    'SCA': False,
+                    'SECRETS': False
+                }
+            }
+
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
