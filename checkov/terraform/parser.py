@@ -28,7 +28,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index, is_nested, \
+    get_tf_definition_key
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -504,7 +505,7 @@ class Parser:
                                     del self.out_definitions[key]
                                     continue
                             else:
-                                new_key = self.get_tf_definition_key(key, file, module_index)
+                                new_key = get_tf_definition_key(key, file, module_index)
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
@@ -632,22 +633,18 @@ class Parser:
         nested_module_name = f"{nested_str[:module_index]}"
         nested_module_index = nested_data.get('module_index')
         nested_key = nested_str[module_index:]
-        return self.get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
+        return get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
-            return self.get_tf_definition_key(key, file, module_index)
-        visited_key_to_add = self.get_tf_definition_key(key, file, module_index)
+            return get_tf_definition_key(key, file, module_index)
+        visited_key_to_add = get_tf_definition_key(key, file, module_index)
         self.visited_definition_keys.add(visited_key_to_add)
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
-        new_key = self.get_tf_definition_key(key, file, module_index, nested_key)
+        new_key = get_tf_definition_key(key, file, module_index, nested_key)
         return new_key
-
-    @staticmethod
-    def get_tf_definition_key(nested_module, module_name, module_index, nested_key=''):
-        return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
@@ -697,7 +694,7 @@ class Parser:
         """
         next_level, unevaluated, do_not_eval_yet = [], [], []
         for key in unevaluated_files:
-            if '[' not in key:
+            if not is_nested(key):
                 continue
             module = key[key.index('.tf[') + len('.tf['):]
             found = False
@@ -723,17 +720,17 @@ class Parser:
         path = file_path[:module_index]
         modules_list = []
         file_path = file_path[len(path):]
-        while '[' in file_path:
+        while is_nested(file_path):
             file_path = file_path[1:-1]
             module_index = get_current_module_index(file_path)
-            if '[' in file_path:
+            if is_nested(file_path):
                 module = file_path[:module_index] + file_path[file_path.index('['):]
                 index = file_path[file_path.index('#') + 1:file_path.index('[')]
             else:
                 module = file_path[:module_index]
                 index = file_path[file_path.index('#') + 1:]
             modules_list.append((module, index))
-            if '[' in file_path:
+            if is_nested(file_path):
                 file_path = file_path[file_path.index('['):]
             else:
                 file_path = ''
@@ -745,7 +742,7 @@ class Parser:
         copy_of_tf_definitions = {}
         dep_index_mapping = defaultdict(list)
         for tf_definition_key in tf_definitions.keys():
-            if '[' not in tf_definition_key:
+            if not is_nested(tf_definition_key):
                 dir_name = os.path.dirname(tf_definition_key)
                 module_dependency_map[dir_name].append([])
                 copy_of_tf_definitions[tf_definition_key] = deepcopy(tf_definitions[tf_definition_key])

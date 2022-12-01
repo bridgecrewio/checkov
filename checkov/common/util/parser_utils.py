@@ -305,3 +305,11 @@ def to_string(value: Any) -> str:
 
 def get_current_module_index(full_path: str) -> int:
     return full_path.index('.tf') + len('.tf')
+
+
+def is_nested(full_path: str) -> bool:
+    return '[' in full_path
+
+
+def get_tf_definition_key(nested_module, module_name, module_index, nested_key=''):
+    return f"{nested_module}[{module_name}#{module_index}{nested_key}]"

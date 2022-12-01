@@ -6,6 +6,8 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
 
+from checkov.common.util.parser_utils import is_nested
+
 if TYPE_CHECKING:
     from networkx import DiGraph
 
@@ -58,7 +60,8 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     index = module_dependency[module_index:]
 
     # if its nested module dependency
-    if '[' in module_dependency and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
+
+    if is_nested(module_dependency) and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
         module += module_dependency[module_dependency.index('['):]
         index = module_dependency[module_index:module_dependency.index('[')]
 
