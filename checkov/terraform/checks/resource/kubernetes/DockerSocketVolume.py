@@ -42,7 +42,7 @@ class DockerSocketVolume(BaseResourceCheck):
                 if "volume" in temp_spec and temp_spec.get("volume"):
                     volumes = temp_spec.get("volume")
                     for idx, v in enumerate(volumes):
-                        if v.get("host_path"):
+                        if isinstance(v, dict) and v.get("host_path"):
                             if "path" in v["host_path"][0]:
                                 path = v["host_path"][0]["path"]
                                 if path == ["/var/run/docker.sock"]:
