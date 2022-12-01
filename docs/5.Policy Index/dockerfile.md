@@ -19,6 +19,7 @@ nav_order: 1
 |  8 | CKV_DOCKER_9  | dockerfile | RUN        | Ensure that APT isn't used                                               | dockerfile | https://github.com/bridgecrewio/checkov/tree/master/checkov |
 |  9 | CKV_DOCKER_10 | dockerfile | WORKDIR    | Ensure that WORKDIR values are absolute paths                            | dockerfile | https://github.com/bridgecrewio/checkov/tree/master/checkov |
 | 10 | CKV_DOCKER_11 | dockerfile | FROM       | Ensure From Alias are unique for multistage builds.                      | dockerfile | https://github.com/bridgecrewio/checkov/tree/master/checkov |
+| 11 | CKV2_DOCKER_1 | resource   | RUN        | Ensure that sudo isn't used                                              | dockerfile | https://github.com/bridgecrewio/checkov/tree/master/checkov |
 
 
 ---
