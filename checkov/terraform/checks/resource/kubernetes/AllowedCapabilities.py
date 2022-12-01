@@ -39,7 +39,7 @@ class AllowedCapabilities(BaseResourceCheck):
                     context = container.get("security_context")[0]
                     if context.get("capabilities"):
                         capabilities = context.get("capabilities")[0]
-                        if capabilities.get("add"):
+                        if isinstance(capabilities, dict) and capabilities.get("add"):
                             add = capabilities.get("add")[0]
                             if add:
                                 self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/'
