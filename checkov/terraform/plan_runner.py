@@ -89,6 +89,8 @@ class Runner(TerraformRunner):
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
+        if not root_folder:
+            root_folder = os.path.split(os.path.commonprefix(files))[0]
         self.check_tf_definition(report, root_folder, runner_filter)
         report.add_parsing_errors(parsing_errors.keys())
 
@@ -103,7 +105,7 @@ class Runner(TerraformRunner):
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
             else:
-                scanned_file = f"/{os.path.relpath(full_file_path)}"
+                scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
