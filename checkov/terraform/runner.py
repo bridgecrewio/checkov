@@ -40,6 +40,7 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+from checkov.common.runners.base_runner import strtobool
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -79,6 +80,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -220,9 +222,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     module_dependency = entity.get("module_dependency_")
                     module_dependency_num = entity.get("module_dependency_num_")
                     if module_dependency and module_dependency_num:
-                        referrer_id = self._find_id_for_referrer(f'{full_file_path}[{module_dependency}#{module_dependency_num}]')
-                        if referrer_id:
-                            resource = f'{referrer_id}.{resource_id}'
+                        if self.enable_nested_modules:
+                            resource = entity.get('__address__')
+                        else:
+                            referrer_id = self._find_id_for_referrer(f'{full_file_path}[{module_dependency}#{module_dependency_num}]')
+                            if referrer_id:
+                                resource = f'{referrer_id}.{resource_id}'
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -244,7 +249,10 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         connected_node=connected_node_data
                     )
                     if self.breadcrumbs:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
+                        if self.enable_nested_modules:
+                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
+                        else:
+                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)
