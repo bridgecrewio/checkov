@@ -121,7 +121,7 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     secret_length = len(secret)
-    secret_len_to_expose = secret_length // 4 if secret_length < 50 else secret_length // 10
+    secret_len_to_expose = secret_length // 4 if secret_length < 100 else secret_length // 10
 
     try:
         secret_index = line_text.index(secret)
