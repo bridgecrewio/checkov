@@ -148,8 +148,8 @@ class BaseCheckRegistry:
                 skip_info=skip_info,
             )
             return result
-        except Exception as e:
-            logging.error(f'Failed to run check {check.id} on {scanned_file}:{entity_type}.{entity_name} due to {e}',
+        except Exception:
+            logging.error(f'Failed to run check {check.id} on {scanned_file}:{entity_type}.{entity_name}',
                           exc_info=True)
             logging.info(f'Entity configuration: {entity_configuration}')
             return _CheckResult(
