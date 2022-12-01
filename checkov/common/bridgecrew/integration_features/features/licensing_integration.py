@@ -48,13 +48,13 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
             self.billing_plan = BillingPlan(license_details[BILLING_PLAN_KEY])
 
-    def is_runner_valid(self, runner: str) -> bool:
-        logging.debug(f'Checking if {runner} is valid for license')
+    def is_runner_valid(self, runner_check_type: str) -> bool:
+        logging.debug(f'Checking if {runner_check_type} is valid for license')
         if self.open_source_only:
-            enabled = CodeCategoryMapping[runner] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
+            enabled = CodeCategoryMapping[runner_check_type] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
             logging.debug('Open source mode - the runner is {"en" if enabled else "dis"}abled')
         else:
-            sub_type = LicensingIntegration.get_subscription_for_runner(runner)
+            sub_type = LicensingIntegration.get_subscription_for_runner(runner_check_type)
             enabled = sub_type in self.enabled_modules
             logging.debug(f'Customer mode - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
 
@@ -64,8 +64,8 @@ class LicensingIntegration(BaseIntegrationFeature):
         return not self.open_source_only and CustomerSubscription.SCA in self.enabled_modules
 
     @staticmethod
-    def get_subscription_for_runner(runner: str) -> CustomerSubscription:
-        return CategoryToSubscriptionMapping[CodeCategoryMapping[runner]]
+    def get_subscription_for_runner(runner_check_type: str) -> CustomerSubscription:
+        return CategoryToSubscriptionMapping[CodeCategoryMapping[runner_check_type]]
 
     def post_runner(self, scan_report: Report) -> None:
         pass

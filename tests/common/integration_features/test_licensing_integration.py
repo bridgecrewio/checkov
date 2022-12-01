@@ -141,8 +141,8 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertTrue(licensing_integration.open_source_only)  # no customer run config
 
         # IAC and secrets are valid, SCA is not
-        for runner in checkov_runners:
-            self.assertEqual(licensing_integration.is_runner_valid(runner), runner_to_subscription_map[runner] != CustomerSubscription.SCA)
+        for runner_check_type in checkov_runners:
+            self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_to_subscription_map[runner_check_type] != CustomerSubscription.SCA)
 
         instance.customer_run_config_response = {
             'platformLicense': {
@@ -179,8 +179,8 @@ class TestLicensingIntegration(unittest.TestCase):
 
         licensing_integration.pre_scan()
 
-        for runner in checkov_runners:
-            self.assertTrue(licensing_integration.is_runner_valid(runner))
+        for runner_check_type in checkov_runners:
+            self.assertTrue(licensing_integration.is_runner_valid(runner_check_type))
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
     def test_developer_mode(self):
@@ -200,8 +200,8 @@ class TestLicensingIntegration(unittest.TestCase):
 
         licensing_integration.pre_scan()
 
-        for runner in checkov_runners:
-            self.assertTrue(licensing_integration.is_runner_valid(runner))
+        for runner_check_type in checkov_runners:
+            self.assertTrue(licensing_integration.is_runner_valid(runner_check_type))
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
         instance.customer_run_config_response = {
@@ -214,8 +214,8 @@ class TestLicensingIntegration(unittest.TestCase):
         licensing_integration.pre_scan()
 
         # test all disabled
-        for runner in checkov_runners:
-            self.assertFalse(licensing_integration.is_runner_valid(runner))
+        for runner_check_type in checkov_runners:
+            self.assertFalse(licensing_integration.is_runner_valid(runner_check_type))
         self.assertFalse(licensing_integration.should_run_image_referencer())
 
         # test one module at a time
@@ -227,8 +227,8 @@ class TestLicensingIntegration(unittest.TestCase):
                 }
             }
             licensing_integration.pre_scan()
-            for runner in checkov_runners:
-                self.assertEqual(licensing_integration.is_runner_valid(runner), runner in subscription_to_runner_map[CustomerSubscription(module)])
+            for runner_check_type in checkov_runners:
+                self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_check_type in subscription_to_runner_map[CustomerSubscription(module)])
             self.assertEqual(licensing_integration.should_run_image_referencer(), module == 'SCA')
 
     def test_runner_registry_single_runner(self):

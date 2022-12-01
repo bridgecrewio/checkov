@@ -77,15 +77,15 @@ class RunnerRegistry:
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
         if len(self.runners) == 1:
-            runner_name = self.runners[0].check_type
-            if self.licensing_integration.is_runner_valid(runner_name):
+            runner_check_type = self.runners[0].check_type
+            if self.licensing_integration.is_runner_valid(runner_check_type):
                 reports: Iterable[Report | list[Report]] = [
                     self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
                                         runner_filter=self.runner_filter,
                                         collect_skip_comments=collect_skip_comments)]
             else:
                 # This is the only runner, so raise a clear indication of failure
-                raise ModuleNotEnabledError(f'The framework {runner_name} is part of the {self.licensing_integration.get_subscription_for_runner(runner_name).name} module, which is not enabled in the platform')
+                raise ModuleNotEnabledError(f'The framework {runner_check_type} is part of the {self.licensing_integration.get_subscription_for_runner(runner_check_type).name} module, which is not enabled in the platform')
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
                 report = runner.run(
