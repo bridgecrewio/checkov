@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -162,8 +161,7 @@ def create_report_cve_record(
         "vector": vulnerability_details.get("vector"),
         "description": description,
         "risk_factors": vulnerability_details.get("riskFactors"),
-        "published_date": vulnerability_details.get("publishedDate")
-                          or (datetime.now() - timedelta(
+        "published_date": vulnerability_details.get("publishedDate") or (datetime.now() - timedelta(
             days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "licenses": licenses,
         "root_package_name": root_package_name,
@@ -211,8 +209,7 @@ def _add_to_report_licenses_statuses(
             license_status["package_version"],
             license_status["license"],
         )
-        package_alias = get_package_alias(package_name, package_version)
-        licenses_per_package_map[package_alias].append(license)
+        licenses_per_package_map[get_package_alias(package_name, package_version)].append(license)
 
         policy = license_status["policy"]
 
@@ -334,8 +331,7 @@ def add_cve_record_to_report(vulnerability_details, package, rootless_file_path,
         else:
             cve_record.check_result = {
                 "result": CheckResult.SKIPPED,
-                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"
-            }
+                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"}
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)

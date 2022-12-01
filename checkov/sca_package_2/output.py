@@ -181,7 +181,7 @@ def create_cli_license_violations_table(file_path: str,
                                         package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
     package_table_lines: List[str] = []
     columns = 5
-    table_width = 120.0
+    table_width = 130.0
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
@@ -240,7 +240,7 @@ def create_cli_license_violations_table(file_path: str,
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
-    table_width = 120
+    table_width = 130
     column_width = int(table_width / columns)
 
     cve_table_lines = create_cve_summary_table_part(
