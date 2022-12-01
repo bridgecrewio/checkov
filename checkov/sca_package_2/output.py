@@ -40,7 +40,7 @@ class CveCount:
 
 
 def calculate_lowest_compliant_version(
-    fix_versions_lists: List[List[Union[packaging_version.Version, packaging_version.LegacyVersion]]]
+        fix_versions_lists: List[List[Union[packaging_version.Version, packaging_version.LegacyVersion]]]
 ) -> str:
     """A best effort approach to find the lowest compliant version"""
 
@@ -56,7 +56,7 @@ def calculate_lowest_compliant_version(
         package_max_version = max(package_min_versions)
 
         if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
-            package_max_version, packaging_version.LegacyVersion
+                package_max_version, packaging_version.LegacyVersion
         ):
             return str(package_max_version)
         elif package_min_version.major == package_max_version.major:
@@ -86,10 +86,13 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             #  this shouldn't happen
             logging.error(f"'vulnerability_details' is not set for {record.check_id}")
             continue
+        package_alias = get_package_alias(
+            record.vulnerability_details.get("root_package_name", record.vulnerability_details["package_name"]),
+            record.vulnerability_details.get("root_package_version", record.vulnerability_details["package_version"])
+        )
 
         group_by_file_path_package_map[record.file_path].setdefault(
-            record.vulnerability_details["root_package_alias"], []
-        ).append(record)
+            package_alias, []).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
         cve_count = CveCount(fixable=fixable)
@@ -134,7 +137,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                             "root_package_name": record.vulnerability_details["root_package_name"],
                             "root_package_version": record.vulnerability_details["root_package_version"],
-                            "package_name": record.vulnerability_details["package_name"],
+                            "package_name": package_name,
                             "package_version": package_version,
                         }
                     )
@@ -174,7 +177,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
     return "\n".join(cli_outputs)
 
 
-def create_cli_license_violations_table(file_path: str, package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
+def create_cli_license_violations_table(file_path: str,
+                                        package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
     package_table_lines: List[str] = []
     columns = 5
     table_width = 120.0
@@ -277,8 +281,8 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
     # hack to make multiple tables look like one
     cve_table_bottom_line = (
         cve_table_lines[-1]
-        .replace(cve_table.bottom_left_junction_char, cve_table.left_junction_char)
-        .replace(cve_table.bottom_right_junction_char, cve_table.right_junction_char)
+            .replace(cve_table.bottom_left_junction_char, cve_table.left_junction_char)
+            .replace(cve_table.bottom_right_junction_char, cve_table.right_junction_char)
     )
     cve_table_lines[-1] = cve_table_bottom_line
 
@@ -328,7 +332,8 @@ def create_package_overview_table_part(
             package_table.clear_rows()
 
         details["cves"].sort(key=lambda x: "" if x["root_package_name"] == x['package_name'] else x['package_name'])
-        last_package_alias = get_package_alias(details['cves'][-1]['package_name'], details['cves'][-1]['package_version'])
+        last_package_alias = get_package_alias(details['cves'][-1]['package_name'],
+                                               details['cves'][-1]['package_version'])
         previous_package = ""
         for cve_idx, cve in enumerate(details["cves"]):
             compliant_version = ""
