@@ -25,6 +25,8 @@ DEFAULT_RUNNERS = (
 )
 
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+
+# pycharm gives false positive "unresolved reference" - ignore https://youtrack.jetbrains.com/issue/PY-36205
 module_keys = [e.value for e in CustomerSubscription]
 
 runner_to_subscription_map = {runner: CategoryToSubscriptionMapping.get(CodeCategoryMapping[runner]) for runner in checkov_runners}
@@ -44,9 +46,9 @@ class TestLicensingIntegration(unittest.TestCase):
             'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan'
         })
 
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), [CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN])
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), [CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES])
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SECRETS), [CodeCategoryType.SECRETS])
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), (CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SECRETS), (CodeCategoryType.SECRETS,))
 
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.IAC], CustomerSubscription.IAC)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SUPPLY_CHAIN], CustomerSubscription.IAC)
@@ -128,7 +130,7 @@ class TestLicensingIntegration(unittest.TestCase):
         licensing_integration.integration_feature_failures = True
         self.assertTrue(licensing_integration.is_valid())
 
-    def test_oss_mode(self):
+    def test_oss_mode_enabled(self):
         instance = BcPlatformIntegration()
 
         licensing_integration = LicensingIntegration(instance)
@@ -144,6 +146,12 @@ class TestLicensingIntegration(unittest.TestCase):
         for runner_check_type in checkov_runners:
             self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_to_subscription_map[runner_check_type] != CustomerSubscription.SCA)
 
+    def test_oss_mode_resource_plan(self):
+        instance = BcPlatformIntegration()
+        licensing_integration = LicensingIntegration(instance)
+        instance.bc_api_key = '1234'
+        licensing_integration.pre_scan()
+
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: True for m in module_keys},
@@ -152,6 +160,12 @@ class TestLicensingIntegration(unittest.TestCase):
         }
         licensing_integration.pre_scan()
         self.assertFalse(licensing_integration.open_source_only)
+
+    def test_oss_mode_dev_plan(self):
+        instance = BcPlatformIntegration()
+        licensing_integration = LicensingIntegration(instance)
+        instance.bc_api_key = '1234'
+        licensing_integration.pre_scan()
 
         instance.customer_run_config_response = {
             'platformLicense': {
@@ -163,8 +177,6 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertFalse(licensing_integration.open_source_only)
 
     def test_resource_mode(self):
-        # tests for return values that can occur when the user is in resource pricing
-
         instance = BcPlatformIntegration()
         instance.bc_api_key = '1234'
 
@@ -183,14 +195,12 @@ class TestLicensingIntegration(unittest.TestCase):
             self.assertTrue(licensing_integration.is_runner_valid(runner_check_type))
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
-    def test_developer_mode(self):
-        # tests for return values that can occur when the user is in dev pricing
+    def test_developer_mode_all_enabled(self):
         instance = BcPlatformIntegration()
         instance.bc_api_key = '1234'
 
         licensing_integration = LicensingIntegration(instance)
 
-        # test all enabled
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {key: True for key in module_keys},
@@ -204,6 +214,12 @@ class TestLicensingIntegration(unittest.TestCase):
             self.assertTrue(licensing_integration.is_runner_valid(runner_check_type))
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
+    def test_developer_mode_all_disabled(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+
+        licensing_integration = LicensingIntegration(instance)
+
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {key: False for key in module_keys},
@@ -213,10 +229,15 @@ class TestLicensingIntegration(unittest.TestCase):
 
         licensing_integration.pre_scan()
 
-        # test all disabled
         for runner_check_type in checkov_runners:
             self.assertFalse(licensing_integration.is_runner_valid(runner_check_type))
         self.assertFalse(licensing_integration.should_run_image_referencer())
+
+    def test_developer_mode_each_enabled(self):
+        instance = BcPlatformIntegration()
+        instance.bc_api_key = '1234'
+
+        licensing_integration = LicensingIntegration(instance)
 
         # test one module at a time
         for module in module_keys:
