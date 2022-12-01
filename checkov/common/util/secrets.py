@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import itertools
+import json
 import logging
 import re
 
@@ -120,7 +121,7 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     secret_length = len(secret)
-    secret_len_to_expose = secret_length // 4
+    secret_len_to_expose = secret_length // 4 if secret_length < 30 else secret_length // 10
 
     try:
         secret_index = line_text.index(secret)
@@ -149,6 +150,7 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
         secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, ''), [])
         if isinstance(secret, list) and secret:
             secrets.add(secret[0])
+            secrets.add(json.dumps(secret[0]))
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
