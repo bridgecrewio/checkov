@@ -210,7 +210,7 @@ class TestRenderer(TestCase):
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         module_vertices = list(filter(lambda v: v.block_type == BlockType.MODULE, local_graph.vertices))
         existing = set()
-        self.assertEqual(6, len(local_graph.edges))
+        self.assertEqual(4, len(local_graph.edges))
         for e in local_graph.edges:
             if e in existing:
                 self.fail("No 2 edges should be aimed at the same vertex in this example")
