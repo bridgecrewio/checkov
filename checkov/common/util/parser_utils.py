@@ -311,5 +311,5 @@ def is_nested(full_path: str) -> bool:
     return '[' in full_path
 
 
-def get_tf_definition_key(nested_module: str, module_name: str, module_index: any, nested_key: str = '') -> str:
+def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
     return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
