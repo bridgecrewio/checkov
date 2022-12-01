@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import itertools
+import json
 import logging
 import re
 
@@ -122,12 +123,15 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     secret_length = len(secret)
-    secret_len_to_expose = secret_length // 4
+    secret_len_to_expose = secret_length // 4 if secret_length < 100 else secret_length // 10
 
     try:
         secret_index = line_text.index(secret)
     except ValueError:
-        return line_text
+        try:
+            secret_index = line_text.index(json.dumps(secret))
+        except ValueError:
+            return line_text
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
                     f'{"*" * (secret_length - secret_len_to_expose)}' \
