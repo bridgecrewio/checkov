@@ -3,13 +3,13 @@ from enum import Enum
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 
 
-class CustomerSubscription(Enum):
+class CustomerSubscription(str, Enum):
     IAC = "IAC"
     SCA = "SCA"
     SECRETS = "SECRETS"
 
 
-class BillingPlan(Enum):
+class BillingPlan(str, Enum):
     DEVELOPER_BASED = "DEVELOPER_BASED"
     RESOURCE_BASED = "RESOURCE_BASED"
 
