@@ -6,6 +6,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.gitlab_ci.checks.base_gitlab_ci_check import BaseGitlabCICheck
 from checkov.yaml_doc.enums import BlockType
 
+PIPELINE_SOURCES = ('$CI_PIPELINE_SOURCE == "merge_request_event"', '$CI_PIPELINE_SOURCE == "push"')
+
 
 class AvoidDoublePipelines(BaseGitlabCICheck):
     def __init__(self) -> None:
@@ -20,13 +22,14 @@ class AvoidDoublePipelines(BaseGitlabCICheck):
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         c = 0
+
         for rule in conf:
             if isinstance(rule, dict) and "if" in rule:
                 value = rule['if']
-                if value.startswith('$CI_PIPELINE_SOURCE'):
+                if value.startswith(PIPELINE_SOURCES):
                     c += 1
-                if c > 1:
-                    return CheckResult.FAILED, conf
+                    if c > 1:
+                        return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
         
 

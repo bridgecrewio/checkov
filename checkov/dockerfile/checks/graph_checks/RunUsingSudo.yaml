@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_DOCKER_1"
+  name: "Ensure that sudo isn't used"
+  category: "CONVENTION"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_contains
+      value: " sudo "
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_starting_with
+      value: "sudo "

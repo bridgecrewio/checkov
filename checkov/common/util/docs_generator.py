@@ -115,6 +115,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     if any(x in framework_list for x in ("all", "serverless")):
         add_from_repository(sls_registry, "resource", "serverless")
     if any(x in framework_list for x in ("all", "dockerfile")):
+        graph_registry = get_graph_checks_registry("dockerfile")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "dockerfile")
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if any(x in framework_list for x in ("all", "github_configuration")):
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")

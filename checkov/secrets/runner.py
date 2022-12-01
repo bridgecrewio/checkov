@@ -5,13 +5,13 @@ import linecache
 import logging
 import os
 import re
-from os.path import exists
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
+
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -95,18 +95,15 @@ class Runner(BaseRunner[None]):
             {'name': 'TwilioKeyDetector'},
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
-        custom_plugins = os.getenv("CHECKOV_CUSTOM_DETECTOR_PLUGINS_PATH")
-        logging.info(f"Custom detector flag set to {custom_plugins}")
-        if custom_plugins:
-            detector_path = f"{custom_plugins}/custom_regex_detector.py"
-            if exists(detector_path):
-                logging.info(f"Custom detector found at {detector_path}. Loading...")
-                plugins_used.append({
-                    'name': 'CustomRegexDetector',
-                    'path': f'file://{detector_path}'
-                })
-            else:
-                logging.info(f"Custom detector not found at path {detector_path}. Skipping...")
+
+        detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
+        logging.info(f"Custom detector found at {detector_path}. Loading...")
+        enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
+        if enable_secret_scan_all_files:
+            plugins_used.append({
+                'name': 'CustomRegexDetector',
+                'path': f'file://{detector_path}'
+            })
         with transient_settings({
             # Only run scans with only these plugins.
             'plugins_used': plugins_used
@@ -119,7 +116,6 @@ class Runner(BaseRunner[None]):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
-                enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
                 block_list_secret_scan = runner_filter.block_list_secret_scan or []
                 block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
                 for root, d_names, f_names in os.walk(root_folder):
@@ -228,9 +224,9 @@ class Runner(BaseRunner[None]):
             if run_time > datetime.timedelta(seconds=10):
                 logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
             return file_path, file_results
-        except Exception:
-            logging.warning(f"Secret scanning:could not process file {full_file_path}")
-            logging.debug("Complete trace:", exc_info=True)
+        except Exception as e:
+            logging.warning(f"Secret scanning: could not process file {full_file_path}")
+            logging.debug(e, exc_info=True)
             return file_path, []
 
     @staticmethod
