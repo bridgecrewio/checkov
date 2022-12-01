@@ -15,9 +15,9 @@ class BillingPlan(Enum):
 
 
 SubscriptionCategoryMapping = {
-    CustomerSubscription.IAC: [CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN],
-    CustomerSubscription.SCA: [CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES],
-    CustomerSubscription.SECRETS: [CodeCategoryType.SECRETS]
+    CustomerSubscription.IAC: (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN),
+    CustomerSubscription.SCA: (CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES),
+    CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS,)
 }
 
 CategoryToSubscriptionMapping = {}
