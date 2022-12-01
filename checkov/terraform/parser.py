@@ -28,7 +28,7 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -628,9 +628,10 @@ class Parser:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_module_name = f"{nested_str[:nested_str.index('.tf') + len('.tf')]}"
+        module_index = get_current_module_index(nested_str)
+        nested_module_name = f"{nested_str[:module_index]}"
         nested_module_index = nested_data.get('module_index')
-        nested_key = nested_str[nested_str.index('.tf') + len('.tf'):]
+        nested_key = nested_str[module_index:]
         return self.get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
@@ -718,16 +719,18 @@ class Parser:
 
     @staticmethod
     def get_nested_modules_data_as_list(file_path):
-        path = file_path[:file_path.index('.tf') + len('.tf')]
+        module_index = get_current_module_index(file_path)
+        path = file_path[:module_index]
         modules_list = []
         file_path = file_path[len(path):]
         while '[' in file_path:
             file_path = file_path[1:-1]
+            module_index = get_current_module_index(file_path)
             if '[' in file_path:
-                module = file_path[:file_path.index('.tf') + len('.tf')] + file_path[file_path.index('['):]
+                module = file_path[:module_index] + file_path[file_path.index('['):]
                 index = file_path[file_path.index('#') + 1:file_path.index('[')]
             else:
-                module = file_path[:file_path.index('.tf') + len('.tf')]
+                module = file_path[:module_index]
                 index = file_path[file_path.index('#') + 1:]
             modules_list.append((module, index))
             if '[' in file_path:

@@ -48,33 +48,7 @@ class TestGraphBuilder(TestCase):
         self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(len(report.skipped_checks), 0)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_module_and_variables(self):
-        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "modules-and-vars")
-        runner = Runner()
-        report = runner.run(root_folder=resources_path)
-        self.assertLessEqual(2, len(report.failed_checks))
-        self.assertLessEqual(12, len(report.passed_checks))
-        self.assertEqual(0, len(report.skipped_checks))
-
-        found_versioning_failure = False
-
-        for record in report.failed_checks:
-            if record.check_id != 'CKV_AWS_40':
-                self.assertIsNotNone(record.breadcrumbs)
-            if record.check_id == 'CKV_AWS_21':
-                found_versioning_failure = True
-                bc = record.breadcrumbs.get('versioning.enabled')
-                self.assertEqual(len(bc), 2)
-                bc = bc[0]
-                self.assertEqual(bc.get('type'), 'module')
-                self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'examples/complete/main.tf')
-                self.assertEqual(record.resource, 'module.s3_bucket.aws_s3_bucket.default')
-
-        self.assertTrue(found_versioning_failure)
-
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
-    def test_module_and_variables_nested_module_enable(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "modules-and-vars")
         runner = Runner()
         report = runner.run(root_folder=resources_path)

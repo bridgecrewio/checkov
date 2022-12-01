@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Tuple
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.parser_utils import get_current_module_index
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
@@ -26,7 +27,8 @@ def convert_graph_vertices_to_tf_definitions(
             if '[' not in vertex.module_dependency:
                 tf_path = f"{block_path}[{vertex.module_dependency}#{vertex.module_dependency_num}]"
             else:
-                tf_path = f"{block_path}[{vertex.module_dependency[:vertex.module_dependency.index('.tf') + len('.tf')]}#{vertex.module_dependency_num}{vertex.module_dependency[vertex.module_dependency.index('.tf') + len('.tf'):]}]"
+                module_index = get_current_module_index(vertex.module_dependency)
+                tf_path = f"{block_path}[{vertex.module_dependency[:module_index]}#{vertex.module_dependency_num}{vertex.module_dependency[module_index:]}]"
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)

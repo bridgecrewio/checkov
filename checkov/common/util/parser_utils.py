@@ -301,3 +301,7 @@ def to_string(value: Any) -> str:
     elif value is False:
         return "false"
     return str(value)
+
+
+def get_current_module_index(full_path: str) -> int:
+    return full_path.index('.tf') + len('.tf')
