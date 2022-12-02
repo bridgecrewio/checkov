@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.WinVMEncryptionAtHost import check
+from checkov.terraform.checks.resource.azure.VMAgentIsInstalled import check
 from checkov.terraform.runner import Runner
 
 
-class TestWinVMEncryptionAtHost(unittest.TestCase):
+class TestVMAgentIsInstalled(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_WinVMEncryptionAtHost"
+        test_files_dir = Path(__file__).parent / "example_VMAgentIsInstalled"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,11 +18,18 @@ class TestWinVMEncryptionAtHost(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
+            "azurerm_linux_virtual_machine.pass",
             "azurerm_windows_virtual_machine.pass",
+            "azurerm_linux_virtual_machine_scale_set.pass",
+            "azurerm_windows_virtual_machine_scale_set.pass",
         }
         failing_resources = {
+            "azurerm_linux_virtual_machine.fail",
+            "azurerm_linux_virtual_machine.fail2",
             "azurerm_windows_virtual_machine.fail",
             "azurerm_windows_virtual_machine.fail2",
+            "azurerm_linux_virtual_machine_scale_set.fail",
+            "azurerm_windows_virtual_machine_scale_set.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
