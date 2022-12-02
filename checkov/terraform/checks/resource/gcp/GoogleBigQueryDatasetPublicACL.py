@@ -25,7 +25,7 @@ class GoogleBigQueryDatasetPublicACL(BaseResourceCheck):
                         return CheckResult.FAILED
                 # access block with only the role key found in the statefile
                 # when manually adding "allUsers" to the dataset
-                elif not any(key in access for key in ["user_by_email", "group_by_email", "domain", "view"]):
+                elif not any(key in access for key in ["user_by_email", "group_by_email", "domain", "view", "routine", "dataset", "iam_member"]):
                     self.evaluated_keys = [f'access/[{conf["access"].index(access)}]']
                     return CheckResult.FAILED
             self.evaluated_keys = ['access']
