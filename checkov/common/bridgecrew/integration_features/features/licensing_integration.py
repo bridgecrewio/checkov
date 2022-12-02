@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, List, Optional
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.licensing import BillingPlan, \
     CategoryToSubscriptionMapping, CustomerSubscription, open_source_categories
