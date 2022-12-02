@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, List, Optional
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.licensing import BillingPlan, \
-    CategoryToSubscriptionMapping, CustomerSubscription
+    CategoryToSubscriptionMapping, CustomerSubscription, open_source_categories
 from checkov.common.bridgecrew.platform_integration import bc_integration
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ class LicensingIntegration(BaseIntegrationFeature):
     def is_runner_valid(self, runner_check_type: str) -> bool:
         logging.debug(f'Checking if {runner_check_type} is valid for license')
         if self.open_source_only:
-            enabled = CodeCategoryMapping[runner_check_type] in [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN]  # new secrets are disabled, but the runner is valid
+            enabled = CodeCategoryMapping[runner_check_type] in open_source_categories  # new secrets are disabled, but the runner is valid
             logging.debug('Open source mode - the runner is {"en" if enabled else "dis"}abled')
         else:
             sub_type = LicensingIntegration.get_subscription_for_runner(runner_check_type)

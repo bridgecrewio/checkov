@@ -5,7 +5,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryMapping
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import LicensingIntegration
 from checkov.common.bridgecrew.licensing import CustomerSubscription, SubscriptionCategoryMapping, \
-    CategoryToSubscriptionMapping
+    CategoryToSubscriptionMapping, open_source_categories
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.runners.runner_registry import RunnerRegistry
@@ -107,6 +107,8 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.TERRAFORM), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.TERRAFORM_PLAN), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARGO_WORKFLOWS), CustomerSubscription.IAC)
+
+        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN])
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
