@@ -9,7 +9,7 @@ import pytest
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.common.output.report import Report
-from checkov.sca_package.runner import Runner
+from checkov.sca_package_2.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
@@ -644,11 +644,11 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope='package')
-def sca_package_report(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
+def sca_package_2_report(package_mocker: MockerFixture, scan_result: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result
-    package_mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
 
     return Runner().run(root_folder=EXAMPLES_DIR)
 
