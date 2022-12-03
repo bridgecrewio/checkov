@@ -899,8 +899,19 @@ def get_vulnerabilities_details() -> list[dict[str, Any]]:
         },
     ]
 
-def get_vulnerabilities_details_requirements_txt() -> list[dict[str, Any]]:
-    return [
-
+def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
+    return [{'cveId': 'PRISMA-2021-0013', 'status': 'fixed in 1.1.1', 'severity': 'medium', 'packageName': 'marked', 'packageVersion': '0.3.9', 'link': None, 'cvss': None, 'vector': None, 'description': 'marked package prior to 1.1.1 are vulnerable to  Regular Expression Denial of Service (ReDoS). The regex within src/rules.js file have multiple unused capture groups which could lead to a denial of service attack if user input is reachable.  Origin: https://github.com/markedjs/marked/commit/bd4f8c464befad2b304d51e33e89e567326e62e0', 'riskFactors': ['DoS', 'Has fix', 'Medium severity'], 'publishedDate': '2021-01-14T10:29:35Z'},
+            {'cveId': 'CVE-2022-21681', 'status': 'fixed in 4.0.10', 'severity': 'high', 'packageName': 'marked',
+             'packageVersion': '0.3.9', 'link': 'https://github.com/advisories/GHSA-5v2h-r2cx-5xgj', 'cvss': 7.5,
+             'vector': 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H',
+             'description': 'Marked is a markdown parser and compiler. Prior to version 4.0.10, the regular expression `inline.reflinkSearch` may cause catastrophic backtracking against some strings and lead to a denial of service (DoS). Anyone who runs untrusted markdown through a vulnerable version of marked and does not use a worker with a time limit may be affected. This issue is patched in version 4.0.10. As a workaround, avoid running untrusted markdown through marked or run marked on a worker thread and set a reasonable time limit to prevent draining resources.',
+             'riskFactors': ['DoS', 'Has fix', 'High severity', 'Recent vulnerability', 'Attack complexity: low',
+                             'Attack vector: network'], 'publishedDate': '2022-01-14T17:15:00Z'},
+            {'cveId': 'CVE-2022-21680', 'status': 'fixed in 4.0.10', 'severity': 'high', 'packageName': 'marked',
+             'packageVersion': '0.3.9', 'link': 'https://github.com/advisories/GHSA-rrrm-qjm4-v8hf', 'cvss': 7.5,
+             'vector': 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H',
+             'description': 'Marked is a markdown parser and compiler. Prior to version 4.0.10, the regular expression `block.def` may cause catastrophic backtracking against some strings and lead to a regular expression denial of service (ReDoS). Anyone who runs untrusted markdown through a vulnerable version of marked and does not use a worker with a time limit may be affected. This issue is patched in version 4.0.10. As a workaround, avoid running untrusted markdown through marked or run marked on a worker thread and set a reasonable time limit to prevent draining resources.',
+             'riskFactors': ['Has fix', 'High severity', 'Recent vulnerability', 'Attack complexity: low',
+                             'Attack vector: network', 'DoS'], 'publishedDate': '2022-01-14T17:15:00Z'}
     ]
 

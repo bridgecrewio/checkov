@@ -14,7 +14,8 @@ from checkov.sca_package_2.output import (
     compare_cve_severity,
     CveCount,
 )
-from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details
+from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
+    get_vulnerabilities_details_no_deps
 
 
 def test_create_report_cve_record():
@@ -663,97 +664,6 @@ def test_compare_cve_severity():
     ]
 
 
-# def test_create_vulnerable_packages_dict():
-#     vulnerable_packages = {}
-#     vulnerabilities = [
-#         {
-#             "cveId": "CVE-2015-6420",
-#             "status": "fixed in 3.2.2",
-#             "severity": "high",
-#             "packageName": "package_1",
-#             "packageVersion": "3.0",
-#             "link": "",
-#             "cvss": 7,
-#             "vector": "",
-#             "description": "",
-#             "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                             "Attack vector: network"],
-#             "publishedDate": ""
-#         },
-#         {
-#             "cveId": "CVE-2015-6520",
-#             "status": "fixed in 3.2.2",
-#             "severity": "high",
-#             "packageName": "package_1",
-#             "packageVersion": "3.0",
-#             "link": "",
-#             "cvss": 7,
-#             "vector": "",
-#             "description": "",
-#             "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                             "Attack vector: network"],
-#             "publishedDate": ""
-#         },
-#         {
-#             "cveId": "CVE-2015-3333",
-#             "status": "fixed in 3.2.2",
-#             "severity": "high",
-#             "packageName": "package_2",
-#             "packageVersion": "2.0",
-#             "link": "",
-#             "cvss": 7,
-#             "vector": "",
-#             "description": "",
-#             "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                             "Attack vector: network"],
-#             "publishedDate": ""
-#         }]
-#
-#     create_vulnerable_packages_dict(vulnerable_packages, vulnerabilities)
-#     assert vulnerable_packages == {"package_2@2.0": [{
-#         "cveId": "CVE-2015-3333",
-#         "status": "fixed in 3.2.2",
-#         "severity": "high",
-#         "packageName": "package_2",
-#         "packageVersion": "2.0",
-#         "link": "",
-#         "cvss": 7,
-#         "vector": "",
-#         "description": "",
-#         "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                         "Attack vector: network"],
-#         "publishedDate": ""
-#     }],
-#         "package_1@3.0": [{
-#             "cveId": "CVE-2015-6420",
-#             "status": "fixed in 3.2.2",
-#             "severity": "high",
-#             "packageName": "package_1",
-#             "packageVersion": "3.0",
-#             "link": "",
-#             "cvss": 7,
-#             "vector": "",
-#             "description": "",
-#             "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                             "Attack vector: network"],
-#             "publishedDate": ""
-#         },
-#             {
-#                 "cveId": "CVE-2015-6520",
-#                 "status": "fixed in 3.2.2",
-#                 "severity": "high",
-#                 "packageName": "package_1",
-#                 "packageVersion": "3.0",
-#                 "link": "",
-#                 "cvss": 7,
-#                 "vector": "",
-#                 "description": "",
-#                 "riskFactors": ["Has fix", "High severity", "Remote execution", "Attack complexity: low",
-#                                 "Attack vector: network"],
-#                 "publishedDate": ""
-#             }]}
-
-
 def test_create_cli_table_for_sca_package_with_dependencies():
     # given
     rootless_file_path = "package-lock.json"
@@ -823,7 +733,41 @@ def test_create_cli_table_for_sca_package_with_dependencies():
         '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘'])
 
 
-
 def test_create_cli_output_without_dependencies():
+    # given
+    rootless_file_path = "package.json"
+    file_abs_path = "/path/to/package.json"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
+    # when
+    cves_records = [
+        create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            vulnerability_details=details,
+            licenses='Unknown',
+            root_package_name=details["packageName"],
+            root_package_version=details["packageVersion"]
+        )
+        for details in get_vulnerabilities_details_no_deps()
+    ]
 
-    pass
+    cli_output = create_cli_output(True, cves_records)
+    # then
+
+    assert cli_output == "".join(
+        [   "\t/package.json - CVEs Summary:\n",
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 3        │ critical: 0          │ high: 2              │ medium: 1            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            '\t│ To fix 3/3 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            '\t│       Package        │        CVE ID        │       Severity       │   Current version    │  Root fixed version  │  Compliant version   │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  marked              │ CVE-2022-21681       │ high                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
+            '\t│                      │ CVE-2022-21680       │ high                 │                      │ 4.0.10               │                      │\n',
+            '\t│                      │ PRISMA-2021-0013     │ medium               │                      │ 1.1.1                │                      │\n',
+            '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘'
+
+            ]
+    )
