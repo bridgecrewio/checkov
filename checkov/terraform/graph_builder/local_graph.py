@@ -538,16 +538,20 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
-            if not source_module:
-                address = self.get_current_address(vertex)
-                vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
-                continue
+
             address_prefix = ''
-            for module in source_module:
-                address_prefix += f"{module.get('type')}.{module.get('name')}."
+            if source_module:
+                for module in source_module:
+                    address_prefix += f"{module.get('type')}.{module.get('name')}."
 
             address = self.get_current_address(vertex, address_prefix)
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
+
+            if vertex.block_type == BlockType.RESOURCE:
+                resource_type, resource_name = vertex.name.split('.')
+                vertex.config[resource_type][resource_name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
+            else:
+                vertex.config[vertex.name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
 def to_list(data):
