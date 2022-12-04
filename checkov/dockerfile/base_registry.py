@@ -39,7 +39,7 @@ class Registry(BaseCheckRegistry):
         for instruction, checks in self.checks.items():
             if instruction in entity:
                 for check in checks:
-                    skip_info = {}
+                    skip_info: "_SkippedCheck" = {}
                     if skipped_check_ids:
                         if check.id in skipped_check_ids:
                             skip_info = skipped_check_ids[check.id]
