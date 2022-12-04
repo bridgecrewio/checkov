@@ -46,7 +46,7 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[0].metadata.name == 'myapp'
         assert local_graph.vertices[0].metadata.selector.match_labels.get('app') == 'myapp'
         assert local_graph.vertices[0].metadata.labels is None
-        assert local_graph.vertices[1].id == "Pod.default.{'app': 'myapp'}"
+        assert local_graph.vertices[1].id == "Pod.default.app-myapp"
         assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1
         assert local_graph.vertices[1].metadata.name is None
         assert local_graph.vertices[1].metadata.selector.match_labels is None
