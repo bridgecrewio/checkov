@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 
 import mock
+import json
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
@@ -508,3 +509,20 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_nested_modules_instances(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        vertices = [vertex.to_dict() for vertex in local_graph.vertices]
+        edges = [edge.to_dict() for edge in local_graph.edges]
+
+        with open(os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances/expected_local_graph.json')), 'r') as f:
+            expected = json.load(f)
+
+        assert json.dumps(vertices) == json.dumps(expected.get('vertices'))
+        assert json.dumps(edges) == json.dumps(expected.get('edges'))

@@ -20,3 +20,10 @@ class Edge:
 
     def __hash__(self) -> int:
         return hash(str(self))
+
+    def to_dict(self):
+        return {
+            'origin': self.origin,
+            'dest': self.dest,
+            'label': self.label
+        }

@@ -149,3 +149,19 @@ class TerraformBlock(Block):
             attribute_key=attribute_key,
             attribute_value=attribute_value,
         )
+
+    def to_dict(self):
+        return {
+            'attributes': self.attributes,
+            'block_type': self.block_type,
+            'breadcrumbs': self.breadcrumbs,
+            'config': self.config,
+            'id': self.id,
+            'module_connections': self.module_connections,
+            'module_dependency': self.module_dependency,
+            'module_dependency_num': self.module_dependency_num,
+            'name': self.name,
+            'path': self.path,
+            'source': self.source,
+            'source_module': list(self.source_module)
+        }
