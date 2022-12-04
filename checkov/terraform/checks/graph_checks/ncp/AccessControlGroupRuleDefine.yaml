@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV_NCP_26"
+  name: "Ensure Access Control Group has Access Control Group Rule attached"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - ncloud_access_control_group
+      operator: within
+    - resource_types:
+        - ncloud_access_control_group
+      connected_resource_types:
+        - ncloud_access_control_group_rule
+      operator: exists
+      cond_type: connection
