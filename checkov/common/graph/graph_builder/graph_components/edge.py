@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 
 class Edge:
@@ -21,7 +21,7 @@ class Edge:
     def __hash__(self) -> int:
         return hash(str(self))
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             'origin': self.origin,
             'dest': self.dest,
