@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from typing import Any
+os.environ['CHECKOV_RUN_SCA_PACKAGE_SCAN_V2'] = 'true'
 
 import pytest
 from unittest import mock

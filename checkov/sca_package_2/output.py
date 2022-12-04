@@ -173,7 +173,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     package_licenses_details_map=package_licenses_details_map
                 )
             )
-
+    print("a")
     return "\n".join(cli_outputs)
 
 

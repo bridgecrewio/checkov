@@ -29,118 +29,114 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
                 filtered_list.append(line)
     return filtered_list
 
-
-def test_console_output(sca_package_report):
-    console_output = sca_package_report.print_console(False, False, None, None, False)
+def test_console_output(sca_package_2_report):
+    console_output = sca_package_2_report.print_console(False, False, None, None, False)
 
     # then
-    assert console_output == "\n".join(
+
+    assert console_output == "".join(
         [
-            "sca_package scan results:",
-            "",
-            "Failed checks: 9, Skipped checks: 0",
-            "",
-            "\t/path/to/requirements.txt - CVEs Summary:",
-            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐",
-            "\t│ Total CVEs: 6      │ critical: 1        │ high: 3            │ medium: 2          │ low: 0             │ skipped: 0         │",
-            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤",
-            "\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                        │",
-            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤\n",
-            "\t│      Package       │       CVE ID       │      Severity      │  Current version   │ Root fixed version │ Compliant version  │\n",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤\n",
-            "\t│  flask             │ CVE-2019-1010083   │ high               │ 0.6                │ 1.0                │ 1.0                │",
-            "\t│                    │ CVE-2018-1000656   │ high               │                    │ 0.12.3             │                    │",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
-            "\t│  django            │ CVE-2019-19844     │ critical           │ 1.2                │ 1.11.27            │ 2.2.24             │",
-            "\t│                    │ CVE-2016-7401      │ high               │                    │ 1.8.15             │                    │",
-            "\t│                    │ CVE-2016-6186      │ medium             │                    │ 1.8.14             │                    │",
-            "\t│                    │ CVE-2021-33203     │ medium             │                    │ 2.2.24             │                    │",
-            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘",
-            "",
-            "\t/path/to/requirements.txt - Licenses Statuses:",
-            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐\n",
-            "\t│      Package name      │    Package version     │       Policy ID        │        License         │         Status          │\n",
-            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤\n",
-            "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ FAILED                  │",
-            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘",
-            "",
-            "\t/path/to/go.sum - CVEs Summary:",
-            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐",
-            "\t│ Total CVEs: 2      │ critical: 0        │ high: 2            │ medium: 0          │ low: 0             │ skipped: 0         │",
-            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤",
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                        │",
-            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤\n",
-            "\t│      Package       │       CVE ID       │      Severity      │  Current version   │ Root fixed version │ Compliant version  │\n",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤\n",
-            "\t│ golang.org/x/crypt │ CVE-2020-29652     │ high               │ v0.0.1             │ 0.0.2              │ 0.0.2              │",
-            "\t│ o                  │                    │                    │                    │                    │                    │",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
-            "\t│ github.com/dgrijal │ CVE-2020-26160     │ high               │ v3.2.0             │ 4.0.0rc1           │ 4.0.0rc1           │",
-            "\t│ va/jwt-go          │                    │                    │                    │                    │                    │",
-            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘",
-            "",
+            '\x1b[34msca_package scan results:\n',
+             '\x1b[0m\x1b[36m\n',
+            'Failed checks: 9, Skipped checks: 0\n',
+            '\n',
+            '\x1b[0m\t/path/to/requirements.txt - CVEs Summary:\n',
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 6        │ critical: 1          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            '\t│       Package        │        CVE ID        │       Severity       │   Current version    │  Root fixed version  │  Compliant version   │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  flask               │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
+            '\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  django              │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
+            '\t│                      │ CVE-2016-7401        │ high                 │                      │ 1.8.15               │                      │\n',
+            '\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n',
+            '\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n',
+            '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
+            "\n",
+            "\t/path/to/requirements.txt - Licenses Statuses:\n",
+            '\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n',
+            '\t│       Package name       │     Package version      │        Policy ID         │         License          │          Status           │\n',
+            '\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n',
+            '\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_OTHER_LICENSE      │ FAILED                    │\n',
+            '\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n',
+            "\n",
+            "\t/path/to/go.sum - CVEs Summary:\n",
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 2        │ critical: 0          │ high: 2              │ medium: 0            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            '\t│       Package        │        CVE ID        │       Severity       │   Current version    │  Root fixed version  │  Compliant version   │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  golang.org/x/crypto │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  github.com/dgrijalv │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
+            '\t│ a/jwt-go             │                      │                      │                      │                      │                      │\n',
+            '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
+
         ]
     )
 
 
-def test_console_output_in_tty(mocker: MockerFixture, sca_package_report):
+def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
     # simulate a tty call by enforcing color
     mocker.patch.dict(os.environ, {"FORCE_COLOR": "True"})
 
-    console_output = sca_package_report.print_console(False, False, None, None, False)
+    console_output = sca_package_2_report.print_console(False, False, None, None, False)
 
     # then
-    assert console_output == "\n".join(
+    assert console_output == "".join(
         [
-            "\x1b[34msca_package scan results:",
-            "\x1b[0m\x1b[36m",
-            "Failed checks: 9, Skipped checks: 0",
-            "",
-            "\x1b[0m\t/path/to/requirements.txt - CVEs Summary:",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐",
-            "\t│ Total CVEs: 6        │ critical: 1          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 0           │",
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤",
-            "\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │",
-            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤",
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤",
-            "\t│ flask                │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │",
-            "\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤",
-            "\t│ django               │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │",
-            "\t│                      │ CVE-2016-7401        │ high                 │                      │ 1.8.15               │                      │",
-            "\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │",
-            "\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │",
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘",
-            "",
-            "\t/path/to/requirements.txt - Licenses Statuses:",
-            "\t┌────────────────────────┬────────────────────────┬────────────────────────┬────────────────────────┬─────────────────────────┐",
-            "\t│ Package name           │ Package version        │ Policy ID              │ License                │ Status                  │",
-            "\t├────────────────────────┼────────────────────────┼────────────────────────┼────────────────────────┼─────────────────────────┤",
-            "\t│ flask                  │ 0.6                    │ BC_LIC_1               │ DUMMY_OTHER_LICENSE    │ FAILED                  │",
-            "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘",
-            "",
-            "\t/path/to/go.sum - CVEs Summary:",
-            "\t┌────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┐",
-            "\t│ Total CVEs: 2      │ critical: 0        │ high: 2            │ medium: 0          │ low: 0             │ skipped: 0         │",
-            "\t├────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┤",
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                        │",
-            "\t├────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┬────────────────────┤",
-            "\t│ Package            │ CVE ID             │ Severity           │ Current version    │ Root fixed version      │ Compliant version  │",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
-            "\t│ golang.org/x/crypt │ CVE-2020-29652     │ high               │ v0.0.1             │ 0.0.2              │ 0.0.2              │",
-            "\t│ o                  │                    │                    │                    │                    │                    │",
-            "\t├────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┼────────────────────┤",
-            "\t│ github.com/dgrijal │ CVE-2020-26160     │ high               │ v3.2.0             │ 4.0.0rc1           │ 4.0.0rc1           │",
-            "\t│ va/jwt-go          │                    │                    │                    │                    │                    │",
-            "\t└────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┴────────────────────┘",
-            "",
+            '\x1b[34msca_package scan results:\n',
+            '\x1b[0m\x1b[36m\n',
+            'Failed checks: 9, Skipped checks: 0\n',
+            '\n',
+            '\x1b[0m\t/path/to/requirements.txt - CVEs Summary:\n',
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 6        │ critical: 1          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            '\t│       Package        │        CVE ID        │       Severity       │   Current version    │  Root fixed version  │  Compliant version   │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  flask               │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
+            '\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  django              │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
+            '\t│                      │ CVE-2016-7401        │ high                 │                      │ 1.8.15               │                      │\n',
+            '\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n',
+            '\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n',
+            '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
+            "\n",
+            "\t/path/to/requirements.txt - Licenses Statuses:\n",
+            '\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n',
+            '\t│       Package name       │     Package version      │        Policy ID         │         License          │          Status           │\n',
+            '\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n',
+            '\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_OTHER_LICENSE      │ FAILED                    │\n',
+            '\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n',
+            "\n",
+            "\t/path/to/go.sum - CVEs Summary:\n",
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 2        │ critical: 0          │ high: 2              │ medium: 0            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            '\t│       Package        │        CVE ID        │       Severity       │   Current version    │  Root fixed version  │  Compliant version   │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  golang.org/x/crypto │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
+            '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+            '\t│  github.com/dgrijalv │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
+            '\t│ a/jwt-go             │                      │                      │                      │                      │                      │\n',
+            '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
         ]
     )
 
-
-def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
-    cyclonedx_reports = [sca_package_report]
+def test_get_cyclonedx_report(sca_package_2_report, tmp_path: Path):
+    cyclonedx_reports = [sca_package_2_report]
     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
     cyclonedx_output = cyclonedx.get_xml_output()
     pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
@@ -152,9 +148,8 @@ def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
 
     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
-
-def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_with_comma_in_licenses, tmp_path: Path):
-    cyclonedx_reports = [sca_package_report_with_comma_in_licenses]
+def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_2_with_comma_in_licenses, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report_2_with_comma_in_licenses]
     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
     cyclonedx_output = cyclonedx.get_xml_output()
 
@@ -169,9 +164,9 @@ def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_with_c
     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
 
 
-def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path, sca_package_report_with_comma_in_licenses):
+def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path, sca_package_report_2_with_comma_in_licenses):
     # given
-    cyclonedx_reports = [sca_package_report_with_comma_in_licenses]
+    cyclonedx_reports = [sca_package_report_2_with_comma_in_licenses]
     cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
 
     #  when
@@ -254,9 +249,9 @@ def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path, sca_
     ], key=itemgetter("purl"))
 
 
-def test_get_csv_report(sca_package_report, tmp_path: Path):
+def test_get_csv_report(sca_package_2_report, tmp_path: Path):
     csv_sbom_report = CSVSBOM()
-    csv_sbom_report.add_report(report=sca_package_report, git_org="acme", git_repository="bridgecrewio/example")
+    csv_sbom_report.add_report(report=sca_package_2_report, git_org="acme", git_repository="bridgecrewio/example")
     csv_sbom_report.persist_report_oss_packages(file_name=FILE_NAME_OSS_PACKAGES, is_api_key=True, output_path=str(tmp_path))
     output_file_path = tmp_path / FILE_NAME_OSS_PACKAGES
     csv_output = output_file_path.read_text()
@@ -298,12 +293,12 @@ def test_get_csv_report(sca_package_report, tmp_path: Path):
     assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(sca_package_report_with_skip_scope_function):
+def test_get_sarif_json(sca_package_report_2_with_skip_scope_function):
     # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
     # a report that is unique for the scope of the function
 
     # given
-    report = sca_package_report_with_skip_scope_function
+    report = sca_package_report_2_with_skip_scope_function
 
     # when
     sarif_output = report.get_sarif_json("Checkov")
@@ -580,9 +575,9 @@ def test_get_sarif_json(sca_package_report_with_skip_scope_function):
     }
 
 
-def test_get_junit_xml_string(sca_package_report_with_skip):
+def test_get_junit_xml_string(sca_package_2_report_with_skip):
     # given
-    report = sca_package_report_with_skip
+    report = sca_package_2_report_with_skip
 
     # when
     test_suites = [report.get_test_suite()]
