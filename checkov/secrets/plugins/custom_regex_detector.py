@@ -21,8 +21,9 @@ def load_detectors() -> list[dict[str, Any]]:
     try:
         customer_run_config_response = bc_integration.customer_run_config_response
         policies_list: List[dict[str, Any]] = []
-        if customer_run_config_response['secretsPolicies']:  # type: ignore
-            policies_list = customer_run_config_response['secretsPolicies']  # type: ignore
+        if customer_run_config_response:
+            if 'secretsPolicies' in customer_run_config_response:
+                policies_list = customer_run_config_response['secretsPolicies']
     except Exception as e:
         logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
         return []
