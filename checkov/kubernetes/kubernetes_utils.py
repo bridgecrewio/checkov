@@ -213,12 +213,16 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return f'{resource_type}.{namespace}.{name}'
     labels = deepcopy(metadata.get("labels"))
     if labels:
-        labels.pop('__startline__', None)
-        labels.pop('__endline__', None)
-        labels_list = [f"{k}-{v}" for k, v in labels.items()]
-        labels_string = ".".join(labels_list)
-        return f'{resource_type}.{namespace}.{labels_string}'
+        return build_resource_id_from_labels(resource_type, namespace, labels)
     return None
+
+
+def build_resource_id_from_labels(resource_type: str, namespace: str, labels: dict[str, str]) -> str:
+    labels.pop('__startline__', None)
+    labels.pop('__endline__', None)
+    labels_list = [f"{k}-{v}" for k, v in labels.items()]
+    labels_string = ".".join(labels_list) if labels_list else "default"
+    return f'{resource_type}.{namespace}.{labels_string}'
 
 
 def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
