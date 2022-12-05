@@ -94,7 +94,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 
         else:  # in case it's license record
             _root_package_alias = get_package_alias(record.vulnerability_details["package_name"],
-                                              record.vulnerability_details["package_version"])
+                                                    record.vulnerability_details["package_version"])
 
         group_by_file_path_package_map[record.file_path].setdefault(
             _root_package_alias, []).append(record)
@@ -134,7 +134,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                         cve_count.has_fix += 1
 
                     is_root_package = root_package_alias == get_package_alias(package_name, package_version)
-                    if is_root_package:   # we want fixed versions just for root packages
+                    if is_root_package:  # we want fixed versions just for root packages
                         fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(

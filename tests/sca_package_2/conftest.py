@@ -34,7 +34,8 @@ def mock_bc_integration() -> BcPlatformIntegration:
 
 
 @pytest.fixture(scope='package')
-def scan_result() -> Dict[str, Dict[str, Any]]:
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
+def scan_result_2() -> Dict[str, Dict[str, Any]]:
     return {
         "/path/to/requirements.txt": {
             "repository": "/path/to/requirements.txt",
@@ -321,11 +322,11 @@ def scan_result() -> Dict[str, Dict[str, Any]]:
     }
 
 
-
 @pytest.fixture(scope='package')
-def scan_result_with_comma_in_licenses() -> List[Dict[str, Any]]:
-    return [
-        {
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
+def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
+    return {
+        "/path/to/requirements.txt":{
             "repository": "/path/to/requirements.txt",
             "passed": True,
             "packages": [
@@ -508,7 +509,7 @@ def scan_result_with_comma_in_licenses() -> List[Dict[str, Any]]:
                 }
             ],
         },
-        {
+        "/path/to/sub/requirements.txt":{
             "repository": "/path/to/sub/requirements.txt",
             "passed": True,
             "packages": [
@@ -534,7 +535,7 @@ def scan_result_with_comma_in_licenses() -> List[Dict[str, Any]]:
                 }
             ],
         },
-        {
+        "/path/to/go.sum":{
             "repository": "/path/to/go.sum",
             "passed": True,
             "packages": [
@@ -606,11 +607,12 @@ def scan_result_with_comma_in_licenses() -> List[Dict[str, Any]]:
                 },
             ],
             "vulnerabilityDistribution": {"critical": 0, "high": 2, "medium": 0, "low": 0, "total": 2},
-        },
-    ]
+        },}
+
 
 
 @pytest.fixture()
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_success_response() -> Dict[str, Any]:
     return {'outputType': 'Result',
      'outputData': "H4sIAN22X2IC/8WY23LbOBKGX6VLN5tUWRQp"
@@ -650,28 +652,28 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 @pytest.fixture(scope='package')
 @mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
-def sca_package_2_report(package_mocker: MockerFixture, scan_result: Dict[str, Any]) -> Report:
+def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
+    scanner_mock.return_value.scan.return_value = scan_result_2
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
 
     return Runner().run(root_folder=EXAMPLES_DIR)
 
 @pytest.fixture(scope='package')
-def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture, scan_result_with_comma_in_licenses: List[Dict[str, Any]]) -> Report:
+def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture, scan_result_2_with_comma_in_licenses: List[Dict[str, Any]]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result_with_comma_in_licenses
+    scanner_mock.return_value.scan.return_value = scan_result_2_with_comma_in_licenses
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
     package_mocker.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
     return Runner().run(root_folder=EXAMPLES_DIR)
 
 
-def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
+def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
-    scanner_mock.return_value.scan.return_value = scan_result
+    scanner_mock.return_value.scan.return_value = scan_result_2
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
 
@@ -679,13 +681,13 @@ def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_resul
 
 
 @pytest.fixture(scope='package')
-def sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
-    return get_sca_package_2_report_with_skip(package_mocker, scan_result)
+def sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
+    return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
 @pytest.fixture(scope='function')
-def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
-    return get_sca_package_2_report_with_skip(package_mocker, scan_result)
+def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
+    return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
 def get_vulnerabilities_details_package_json() -> list[dict[str, Any]]:
@@ -905,6 +907,7 @@ def get_vulnerabilities_details() -> list[dict[str, Any]]:
         },
     ]
 
+
 def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
     return [{'cveId': 'PRISMA-2021-0013', 'status': 'fixed in 1.1.1', 'severity': 'medium', 'packageName': 'marked', 'packageVersion': '0.3.9', 'link': None, 'cvss': None, 'vector': None, 'description': 'marked package prior to 1.1.1 are vulnerable to  Regular Expression Denial of Service (ReDoS). The regex within src/rules.js file have multiple unused capture groups which could lead to a denial of service attack if user input is reachable.  Origin: https://github.com/markedjs/marked/commit/bd4f8c464befad2b304d51e33e89e567326e62e0', 'riskFactors': ['DoS', 'Has fix', 'Medium severity'], 'publishedDate': '2021-01-14T10:29:35Z'},
             {'cveId': 'CVE-2022-21681', 'status': 'fixed in 4.0.10', 'severity': 'high', 'packageName': 'marked',
@@ -920,4 +923,3 @@ def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
              'riskFactors': ['Has fix', 'High severity', 'Recent vulnerability', 'Attack complexity: low',
                              'Attack vector: network', 'DoS'], 'publishedDate': '2022-01-14T17:15:00Z'}
     ]
-
