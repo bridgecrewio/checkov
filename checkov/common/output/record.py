@@ -50,7 +50,8 @@ class Record:
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = None
+        details: Optional[List[str]] = None,
+        check_len: int | None = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -84,6 +85,7 @@ class Record:
         self.connected_node = connected_node
         self.guideline: str | None = None
         self.details: List[str] = details or []
+        self.check_len = check_len
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
