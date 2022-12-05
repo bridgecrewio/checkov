@@ -28,7 +28,7 @@ def report_contributor_metrics(repository: str, source: str,
                 break
             else:
                 failed_attempt = {
-                    'massage': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
+                    'message': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
                     'timestamp': str(datetime.datetime.now())}
                 request_body['failedAttempts'].append(failed_attempt)
                 logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
@@ -43,7 +43,7 @@ def parse_gitlog(repository: str, source: str) -> dict[str, Any] | None:
         return {"repository": repository, "source": source,
                 "contributors": [],
                 "failedAttempts": [{
-                    'massage': f"Failed to collect contributor metrics due to: {err}",  # type: ignore
+                    'message': f"Failed to collect contributor metrics due to: {err}",  # type: ignore
                     'timestamp': str(datetime.datetime.now())}]
                 }
     # split per contributor
