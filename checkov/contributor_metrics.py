@@ -25,7 +25,7 @@ def report_contributor_metrics(repository: str, source: str,
             if response.status_code < 300:
                 logging.info(
                     f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")
-                number_of_attempts = 4
+                break
             else:
                 failed_attempt = {
                     'massage': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
