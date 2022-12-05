@@ -663,7 +663,7 @@ def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture, s
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_with_comma_in_licenses
-    package_mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
     package_mocker.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
     return Runner().run(root_folder=EXAMPLES_DIR)
 
@@ -672,7 +672,7 @@ def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_resul
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result
-    package_mocker.patch("checkov.sca_package.runner.Scanner", side_effect=scanner_mock)
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
 
     return Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
@@ -685,7 +685,7 @@ def sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result: L
 
 @pytest.fixture(scope='function')
 def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture, scan_result: List[Dict[str, Any]]) -> Report:
-    return get_sca_package_report_with_skip(package_mocker, scan_result)
+    return get_sca_package_2_report_with_skip(package_mocker, scan_result)
 
 
 def get_vulnerabilities_details_package_json() -> list[dict[str, Any]]:
