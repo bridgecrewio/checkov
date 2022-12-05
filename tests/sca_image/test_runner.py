@@ -6,7 +6,6 @@ from urllib.parse import quote_plus
 import responses
 from unittest import mock
 
-from checkov.common.output.report import Report
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
