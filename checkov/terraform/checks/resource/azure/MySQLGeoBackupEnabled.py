@@ -6,7 +6,7 @@ class MySQLGeoBackupEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that My SQL server enables geo-redundant backups"
         id = "CKV_AZURE_94"
-        supported_resources = ['azurerm_mysql_server']
+        supported_resources = ['azurerm_mysql_server', 'azurerm_mysql_flexible_server']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

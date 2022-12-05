@@ -2,30 +2,22 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.MySQLGeoBackupEnabled import check
+from checkov.terraform.checks.resource.azure.DataExplorerServiceIdentity import check
 from checkov.terraform.runner import Runner
 
 
-class TestMySQLGeoBackupEnabled(unittest.TestCase):
+class TestDataExplorerServiceIdentity(unittest.TestCase):
     def test(self):
-        # given
-        test_files_dir = Path(__file__).parent / "example_MySQLGeoBackupEnabled"
+        test_files_dir = Path(__file__).parent / "example_DataExplorerServiceIdentity"
 
-        # when
-        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
-
-        # then
+        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_mysql_flexible_server.pass",
-            "azurerm_mysql_server.pass",
+            "azurerm_kusto_cluster.pass",
         }
         failing_resources = {
-            "azurerm_mysql_flexible_server.fail",
-            "azurerm_mysql_flexible_server.fail2",
-            "azurerm_mysql_server.fail",
-            "azurerm_mysql_server.fail2",
+            "azurerm_kusto_cluster.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -42,4 +34,3 @@ class TestMySQLGeoBackupEnabled(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
