@@ -177,13 +177,14 @@ class Runner(BaseRunner[None]):
                     severity=severity,
                     check_name=secret.type,
                     check_result=result,
-                    code_block=[(secret.line_number, line_text_censored, len(cast(str, secret.secret_value)))],
+                    code_block=[(secret.line_number, line_text_censored)],
                     file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
+                    check_len=len(cast(str, secret.secret_value)),
                 ))
             return report
 
