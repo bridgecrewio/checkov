@@ -4,7 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List
+from typing import Any, List, Optional, Tuple
 
 import hcl2
 
@@ -313,3 +313,17 @@ def is_nested(full_path: str) -> bool:
 
 def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
     return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
+
+
+def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[str]]:
+    if not is_nested(file_path):
+        return None, None
+    tmp_path = file_path[file_path.index('[') + 1: -1]
+    module_index = get_current_module_index(tmp_path)
+    if is_nested(tmp_path):
+        module = tmp_path[:module_index] + tmp_path[tmp_path.index('['):]
+        index = tmp_path[tmp_path.index('#') + 1:tmp_path.index('[')]
+    else:
+        module = tmp_path[:module_index]
+        index = tmp_path[tmp_path.index('#') + 1:]
+    return module, index

@@ -29,7 +29,7 @@ from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index, is_nested, \
-    get_tf_definition_key
+    get_tf_definition_key, get_module_from_full_path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -716,21 +716,11 @@ class Parser:
         module_index = get_current_module_index(file_path)
         path = file_path[:module_index]
         modules_list = []
-        file_path = file_path[len(path):]
+
         while is_nested(file_path):
-            file_path = file_path[1:-1]
-            module_index = get_current_module_index(file_path)
-            if is_nested(file_path):
-                module = file_path[:module_index] + file_path[file_path.index('['):]
-                index = file_path[file_path.index('#') + 1:file_path.index('[')]
-            else:
-                module = file_path[:module_index]
-                index = file_path[file_path.index('#') + 1:]
+            module, index = get_module_from_full_path(file_path)
             modules_list.append((module, index))
-            if is_nested(file_path):
-                file_path = file_path[file_path.index('['):]
-            else:
-                file_path = ''
+            file_path = module
         return list(reversed(modules_list)), path
 
     @staticmethod
