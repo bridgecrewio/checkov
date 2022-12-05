@@ -725,24 +725,21 @@ class Parser:
     @staticmethod
     def get_module_dependency_map_support_nested_modules(tf_definitions):
         module_dependency_map = defaultdict(list)
-        copy_of_tf_definitions = {}
         dep_index_mapping = defaultdict(list)
         for tf_definition_key in tf_definitions.keys():
             if not is_nested(tf_definition_key):
                 dir_name = os.path.dirname(tf_definition_key)
                 module_dependency_map[dir_name].append([])
-                copy_of_tf_definitions[tf_definition_key] = deepcopy(tf_definitions[tf_definition_key])
                 continue
             modules_list, path = Parser.get_nested_modules_data_as_list(tf_definition_key)
             dir_name = os.path.dirname(path)
             module_dependency_map[dir_name].append([m for m, i in modules_list])
             dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
-            copy_of_tf_definitions[path] = deepcopy(tf_definitions[tf_definition_key])
 
         for key, dir_list in module_dependency_map.items():
             dir_list.sort()
             module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
-        return dict(module_dependency_map), copy_of_tf_definitions, dict(dep_index_mapping)
+        return dict(module_dependency_map), tf_definitions, dict(dep_index_mapping)
 
     @staticmethod
     def get_module_dependency_map(tf_definitions):

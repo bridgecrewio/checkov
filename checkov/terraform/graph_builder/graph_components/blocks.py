@@ -5,6 +5,7 @@ from typing import Union, Dict, Any, List, Optional, Set
 import dpath.util
 import re
 
+from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
@@ -35,11 +36,14 @@ class TerraformBlock(Block):
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:
-            self.path, module_dependency, num = remove_module_dependency_in_path(path)
-            self.path = os.path.realpath(self.path)
-            if module_dependency:
-                self.module_dependency = module_dependency
-                self.module_dependency_num = num
+            if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
+                self.path = path
+            else:
+                self.path, module_dependency, num = remove_module_dependency_in_path(path)
+                self.path = os.path.realpath(self.path)
+                if module_dependency:
+                    self.module_dependency = module_dependency
+                    self.module_dependency_num = num
         if attributes.get(RESOLVED_MODULE_ENTRY_NAME):
             del attributes[RESOLVED_MODULE_ENTRY_NAME]
         self.attributes = attributes
