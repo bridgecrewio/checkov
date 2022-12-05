@@ -86,13 +86,18 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             #  this shouldn't happen
             logging.error(f"'vulnerability_details' is not set for {record.check_id}")
             continue
-        package_alias = get_package_alias(
-            record.vulnerability_details.get("root_package_name", record.vulnerability_details["package_name"]),
-            record.vulnerability_details.get("root_package_version", record.vulnerability_details["package_version"])
-        )
+
+        if record.vulnerability_details.get("root_package_name"):
+            _root_package_alias = get_package_alias(
+                record.vulnerability_details["root_package_name"],
+                record.vulnerability_details["root_package_version"])
+
+        else:  # in case it's license record
+            _root_package_alias = get_package_alias(record.vulnerability_details["package_name"],
+                                              record.vulnerability_details["package_version"])
 
         group_by_file_path_package_map[record.file_path].setdefault(
-            package_alias, []).append(record)
+            _root_package_alias, []).append(record)
 
     for file_path, packages in group_by_file_path_package_map.items():
         cve_count = CveCount(fixable=fixable)
@@ -108,6 +113,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     logging.error(f"'vulnerability_details' is not set for {record.check_id}")
                     continue
 
+                package_name = record.vulnerability_details["package_name"]
+                package_version = record.vulnerability_details["package_version"]
+
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 
@@ -122,12 +130,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     severity_str = record.severity.name.lower() if record.severity else BcSeverities.NONE.lower()
                     setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
 
-                    package_name = record.vulnerability_details["package_name"]
-                    package_version = record.vulnerability_details["package_version"]
-
                     if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
                         cve_count.has_fix += 1
-                    if root_package_alias == get_package_alias(package_name, package_version):
+
+                    is_root_package = root_package_alias == get_package_alias(package_name, package_version)
+                    if is_root_package:   # we want fixed versions just for root packages
                         fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
@@ -145,9 +152,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     if record.check_result["result"] == CheckResult.SKIPPED:
                         continue
                     should_print_licenses_table = True
-                    package_licenses_details_map[record.vulnerability_details["package_name"]].append(
-                        _LicenseStatus(package_name=record.vulnerability_details["package_name"],
-                                       package_version=record.vulnerability_details["package_version"],
+                    package_licenses_details_map[package_name].append(
+                        _LicenseStatus(package_name=package_name,
+                                       package_version=package_version,
                                        policy=record.vulnerability_details["policy"],
                                        license=record.vulnerability_details["license"],
                                        status=record.vulnerability_details["status"])
@@ -173,7 +180,6 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     package_licenses_details_map=package_licenses_details_map
                 )
             )
-    print("a")
     return "\n".join(cli_outputs)
 
 
