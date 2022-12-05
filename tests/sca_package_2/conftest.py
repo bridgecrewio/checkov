@@ -863,7 +863,7 @@ def get_vulnerabilities_details_package_json() -> List[Dict[str, Any]]:
     ]
 
 
-def get_vulnerabilities_details() -> list[dict[str, Any]]:
+def get_vulnerabilities_details() -> List[Dict[str, Any]]:
     return [
         {
             "id": "CVE-2019-19844",
@@ -911,7 +911,7 @@ def get_vulnerabilities_details() -> list[dict[str, Any]]:
     ]
 
 
-def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
+def get_vulnerabilities_details_no_deps() -> List[Dict[str, Any]]:
     return [{'cveId': 'PRISMA-2021-0013', 'status': 'fixed in 1.1.1', 'severity': 'medium', 'packageName': 'marked',
              'packageVersion': '0.3.9', 'link': None, 'cvss': None, 'vector': None,
              'description': 'marked package prior to 1.1.1 are vulnerable to  Regular Expression Denial of Service (ReDoS). The regex within src/rules.js file have multiple unused capture groups which could lead to a denial of service attack if user input is reachable.  Origin: https://github.com/markedjs/marked/commit/bd4f8c464befad2b304d51e33e89e567326e62e0',
