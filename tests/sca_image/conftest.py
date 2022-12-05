@@ -17,12 +17,6 @@ from .mocks import mock_scan
 DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
 
 
-@pytest.fixture(autouse=True)
-def mock_sca_package_2(mocker):
-    from checkov.sca_package_2.output import create_cli_output
-    mocker.patch("checkov.common.output.report.create_cli_output", side_effect=create_cli_output)
-
-
 @pytest.fixture()
 def image_id() -> str:
     return "sha256:6fd085fc6410"

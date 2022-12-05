@@ -34,7 +34,6 @@ def mock_bc_integration() -> BcPlatformIntegration:
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_2() -> Dict[str, Dict[str, Any]]:
     return {
         "/path/to/requirements.txt": {
@@ -324,7 +323,6 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
     return {
         "/path/to/requirements.txt": {

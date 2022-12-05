@@ -26,7 +26,8 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     return filtered_list
 
 
-def test_console_output(sca_image_report):
+def test_console_output(mocker, sca_image_report):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     console_output = sca_image_report.print_console(False, False, None, None, False)
     assert console_output == "".join(
         [
@@ -57,6 +58,7 @@ def test_console_output(sca_image_report):
 
 
 def test_console_output_in_tty(mocker: MockerFixture, sca_image_report):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # simulate a tty call by enforcing color
     mocker.patch.dict(os.environ, {"FORCE_COLOR": "True"})
 
