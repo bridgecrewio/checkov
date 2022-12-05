@@ -37,4 +37,5 @@ def test_parse_gitlog(mock_subproc_popen):
                       "source": "jenkins",
                       "contributors": ["Fake User <fake1@paloaltonetworks.com> 1666516907",
                                                                 "dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com> 1667819806",
-                                                                "Fake User <fake2@paloaltonetworks.com> 1667216980"]}
+                                                                "Fake User <fake2@paloaltonetworks.com> 1667216980"],
+                      'failedAttempts': []}
