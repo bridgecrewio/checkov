@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import datetime
 import logging
 import json
 import subprocess  # nosec
@@ -9,32 +11,50 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-def report_contributor_metrics(repository: str, source: str, bc_integration: BcPlatformIntegration) -> None:  # ignore: type
+def report_contributor_metrics(repository: str, source: str,
+                               bc_integration: BcPlatformIntegration) -> None:  # ignore: type
     logging.debug(f"Attempting to get log history for repository {repository} under source {source}")
     request_body = parse_gitlog(repository, source)
+    number_of_attempts = 1
     if request_body:
-        response = request_wrapper(
-            "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
-            headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
-        )
-        if response.status_code < 300:
-            logging.info(f"Successfully uploaded contributor metrics with status: {response.status_code}")
-        else:
-            logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
+        while number_of_attempts <= 3:
+            response = request_wrapper(
+                "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
+                headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
+            )
+            if response.status_code < 300:
+                logging.info(
+                    f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")
+                number_of_attempts = 4
+            else:
+                failed_attempt = {
+                    'massage': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
+                    'timestamp': str(datetime.datetime.now())}
+                request_body['failedAttempts'].append(failed_attempt)
+                logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
+                number_of_attempts += 1
 
 
 def parse_gitlog(repository: str, source: str) -> dict[str, Any] | None:
-    process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+    process = subprocess.Popen(
+        ['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
     out, err = process.communicate()
     if err:
-        logger.info(f"Failed to collect contributor metrics due to: {err}")     # type: ignore
-        return None
+        logger.info(f"Failed to collect contributor metrics due to: {err}")  # type: ignore
+        return {"repository": repository, "source": source,
+                "contributors": [],
+                "failedAttempts": [{
+                    'massage': f"Failed to collect contributor metrics due to: {err}",  # type: ignore
+                    'timestamp': str(datetime.datetime.now())}]
+                }
     # split per contributor
     list_of_contributors = out.decode('utf-8').split('\n\n')
     return {"repository": repository, "source": source,
             "contributors": list(map(lambda contributor: process_contributor(contributor),
                                      list(filter(lambda x: x, list_of_contributors))
-                                     ))
+                                     )),
+            "failedAttempts": []
             }
 
 
