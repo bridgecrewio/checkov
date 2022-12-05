@@ -693,7 +693,7 @@ def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture,
     return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
-def get_vulnerabilities_details_package_json() -> list[dict[str, Any]]:
+def get_vulnerabilities_details_package_json() -> list[Any]:
     return [
         {'details': {'cveId': 'PRISMA-2021-0070', 'severity': 'medium', 'packageName': 'cypress',
                      'packageVersion': '3.8.3', 'link': '', 'cvss': 0, 'vector': '',
