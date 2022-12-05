@@ -374,7 +374,7 @@ def create_vulnerable_packages_dict(vulnerable_packages: dict[str, list[dict[str
 def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootless_file_path: str,
                                   package_name: str, package_version: str, package_alias: str,
                                   licenses_per_package_map: dict[str, list[str]],
-                                  sca_details:Optional[SCADetails] ) -> None:
+                                  sca_details: Optional[SCADetails]) -> None:
     report.extra_resources.add(
         ExtraResource(
             file_abs_path=scanned_file_path,
