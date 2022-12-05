@@ -206,7 +206,8 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
                     "packageName": "flask",
                     "packageVersion": "0.6",
                     "packageLang": "python",
-                    "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
+                    "license": "DUMMY_OTHER_LICENSE",
+                    # not a real license. it is just for test a package with 2 licenses
                     "status": "OPEN",
                     "policy": "BC_LIC_1"
                 },
@@ -326,7 +327,7 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
 @mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
     return {
-        "/path/to/requirements.txt":{
+        "/path/to/requirements.txt": {
             "repository": "/path/to/requirements.txt",
             "passed": True,
             "packages": [
@@ -495,7 +496,7 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
                     "packageName": "flask",
                     "packageVersion": "0.6",
                     "packageLang": "python",
-                    "license": 'DUMMY_OTHER_LICENSE, ANOTHER_DOMMY_LICENSE', # for testing a comma inside licenses
+                    "license": 'DUMMY_OTHER_LICENSE, ANOTHER_DOMMY_LICENSE',  # for testing a comma inside licenses
                     "status": "OPEN",
                     "policy": "BC_LIC_1"
                 },
@@ -509,7 +510,7 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
                 }
             ],
         },
-        "/path/to/sub/requirements.txt":{
+        "/path/to/sub/requirements.txt": {
             "repository": "/path/to/sub/requirements.txt",
             "passed": True,
             "packages": [
@@ -535,7 +536,7 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
                 }
             ],
         },
-        "/path/to/go.sum":{
+        "/path/to/go.sum": {
             "repository": "/path/to/go.sum",
             "passed": True,
             "packages": [
@@ -607,47 +608,46 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
                 },
             ],
             "vulnerabilityDistribution": {"critical": 0, "high": 2, "medium": 0, "low": 0, "total": 2},
-        },}
-
+        }, }
 
 
 @pytest.fixture()
 @mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_success_response() -> Dict[str, Any]:
     return {'outputType': 'Result',
-     'outputData': "H4sIAN22X2IC/8WY23LbOBKGX6VLN5tUWRQp"
-                   "+SCrZi88drL2VqKkLMUzNZu5gEjIQkwSXAKUrU3l3fdvgDofnNS4MheJKbIJdAP"
-                   "/193g10YpC22U1eWs0aNGy2ZFq5SmSq3B3/9WqpSZzK0J7JNtHFGjEMbIBKa2rKT7HT"
-                   "+Ie2lw5z9fG3ZWSB6mmNmJztk+F5m7k3wR+b3mO1NZGoWHuBkFbT+mnTw"
-                   "/+bcjOjTBOBXmYWP8MDh9sfHZXhprNqZoB+3TIPyBWf6EaayzIlUij"
-                   "+WNMZVbvLxK07UnV8rYUo0q6yf62ohLZVUsUvwIYTlR95P6MpOJqrL6R6of6yurrbf+xi5XaS5LMVIpRplvl"
-                   "+KNbFzevWm2w+i0eRp13XoZK2xl3KKqJ5mQyikKzoPuEf50g+iYbeKpYYvTIHLrEUNAfqzBoNcJwtbFXa"
-                   "/furjsvWt9vMXVp5vebWvQu2zxnRv8u+j1eZhEGsRV1EE2LkttTBNylFTfz+/p1e"
-                   "+DwWtaDWDGLtmJpESZTBlzOYG45K1MhZXJh9EXuPNRF1VB4yqPeWy2j3XOC9oSSabyFseo4vrHF1NfrA3x"
-                   "TuuHqjDBF8OvXzkB00iOdSnrhThy6/K0vOkWSeQJLqNw9UEUlnFEIsXuGIIeNCIU1gIeSImsxgw8JYlypGw"
-                   "pyhk9ylG9BqRLuh6+f0dTJcgvNXs01emUl6fKjRhLqgwwJD2mN6mTW6ByrBe/F7g9lRAtVo5XudbLkt7+Fq"
-                   "T1g7stVlOVP/DPibWF6bVa+TQJckg1uNfTFu9RK5FWqLS1papSmYe3wnnP6mtcuPDJKV4+wbUesXZhWT/xoQ"
-                   "INaR916dh+81SkWlmCfY3itTAElfLlexcWLSJl0lSGSLCjdSB+5l/+6bav4yyKapQqM5HJFXbeEc1Oh91meD"
-                   "KMTnon570w/MNJVZlYY+jnLeHPQROXaTbYOzsOowPsRWEN38kKfGfByffC1wd8nwBfH/Bd74FvCKBiaF5JKgS"
-                   "WC9qKdSL3iP+k1vmG/tnRx4nMoUd4D/IEOZwflZ3Qv7S+TyVd5CKdgT5zdIiI0YxrDWaBA1bmCYa7HNy+paKE"
-                   "qac6kzHIRw6AMfbdunSxRMgHY7b071LnT1L/fF9fQv0rWr9GCN+v9OMDSo/CZtgZRt3nlb7DclPpmybbSj9vR"
-                   "ufd4+M9Uod4uaCgqAbnLPgI6362oniXX7cVHx1Q/HWt+Osdit+UtZuOp19IuvaEpd5Z3nVuzrUr4lhXuSUrHi"
-                   "SvWkAXZCplxSiFBEsxxqaQzKAKEkmCxsDQKzsRlpQhdAciZbFD5S6nuYRuZPn58z/Mxks8UEmxMBK9l8gNPMmE"
-                   "wwBJ/1OuHKvgoWQZlOY1PeoqTbyXPP4cLscW6itqBOBkxqCvBAgCIDx7ALsY2pVXjB9DL86jeZwBvfqQ4xHaiH"
-                   "sxr61snMtHDJJKOGg4NkyDOZKdMxhkBqwOTPjNUt4jdNabn2kt7uD1Jr6LRuinILwi2Jdg+LJ2fgnvCtj7OZ6js"
-                   "I9jeNluRt1hdN5DnTnE8U7LdY63TbY4bkfNTqcddvZy3A7QHYHMIGp7nturbeMxQ/Usx9ebHPf3VK51jv1sR+vA"
-                   "ekc8x+3VB3CUJlh/oIC6kluFvUnQsrNrMyaNm33c4+bLyyuoO8nA9YyJjk1AAyvGY9SjbMTVK3bkVUwq5D2U0Ad"
-                   "W98rp6k6Bkyn/B/WDLsiEjRz9En0/07wsYWOVooDRRZIoDhYwz45IjekVR+IYUuPXvhWWY4EjBy2cIlvPaxDfVC"
-                   "JikB1XxupM/Q/bhJIpChw2Yk9xAj2muqiLr0gN8J0gc7AHrnfmI8wRT5VTrm0N8JrnOKz4F/n22nt1Llr6IZ9w6p"
-                   "RJQDdIXzAviVOEHx/bgvSxaw90ZY1K3BLxFPMAqdRwaP7Cror/EzveVTJeuOhvNri4dStjzuNrh6MDaaQGcU8Wge"
-                   "shd6tcwA9nkd2Wa1lkh8l2N9BFxxCGpyf7jp0os+2g89db3v6eBoBb3o+ASkKiH0vtjmDuQwLVR3z61ecJ74jTs1"
-                   "A5Z4vL3ziCHt1kaEiBDZRcQP93IlWJJ2rrxOpHdrU/RkH23wj4wTtR4uwmMtdHaJdHWPj+SAdQjOJeAqU14f4AeC"
-                   "Yy5zwFU9TLqYplQMMJoPE1nrmWYl7opT8zoR2RLoldzPsA+D0FTYb+PfjQJzgt2BeVx7pkkghMa56wHns9HD+Fyx"
-                   "VLqjf2LaD+h+GbHiLG65mYEcsoFQUtS2uI/e92vrdDX3zj2Ya1/tTzo9V9TYB7cN0B5ZUeHGzIl0Rvsr6fzVrr+y"
-                   "p8l4+R7ZCLcic6WOF3Wq5X+G2TnZ263529x9Lw54L51uGzaNZDrhKoupKXEtWsR1UOrfufqwSxflFS3KLjnd5ueu"
-                   "anz3q7neGie2cS8HcBin/BL8U8U/AL0XOSX+jt75P82r6+RIV6DoZDXW14oKMNz5rR2TA6fr6j3WG52dFumrjvsG"
-                   "sp7dAH12j5wbWz+sG1vfOD6+m3b/8HQd/FwVgXAAA=",
-     'compressionMethod': 'gzip'}
+            'outputData': "H4sIAN22X2IC/8WY23LbOBKGX6VLN5tUWRQp"
+                          "+SCrZi88drL2VqKkLMUzNZu5gEjIQkwSXAKUrU3l3fdvgDofnNS4MheJKbIJdAP"
+                          "/193g10YpC22U1eWs0aNGy2ZFq5SmSq3B3/9WqpSZzK0J7JNtHFGjEMbIBKa2rKT7HT"
+                          "+Ie2lw5z9fG3ZWSB6mmNmJztk+F5m7k3wR+b3mO1NZGoWHuBkFbT+mnTw"
+                          "/+bcjOjTBOBXmYWP8MDh9sfHZXhprNqZoB+3TIPyBWf6EaayzIlUij"
+                          "+WNMZVbvLxK07UnV8rYUo0q6yf62ohLZVUsUvwIYTlR95P6MpOJqrL6R6of6yurrbf+xi5XaS5LMVIpRplvl"
+                          "+KNbFzevWm2w+i0eRp13XoZK2xl3KKqJ5mQyikKzoPuEf50g+iYbeKpYYvTIHLrEUNAfqzBoNcJwtbFXa"
+                          "/furjsvWt9vMXVp5vebWvQu2zxnRv8u+j1eZhEGsRV1EE2LkttTBNylFTfz+/p1e"
+                          "+DwWtaDWDGLtmJpESZTBlzOYG45K1MhZXJh9EXuPNRF1VB4yqPeWy2j3XOC9oSSabyFseo4vrHF1NfrA3x"
+                          "TuuHqjDBF8OvXzkB00iOdSnrhThy6/K0vOkWSeQJLqNw9UEUlnFEIsXuGIIeNCIU1gIeSImsxgw8JYlypGw"
+                          "pyhk9ylG9BqRLuh6+f0dTJcgvNXs01emUl6fKjRhLqgwwJD2mN6mTW6ByrBe/F7g9lRAtVo5XudbLkt7+Fq"
+                          "T1g7stVlOVP/DPibWF6bVa+TQJckg1uNfTFu9RK5FWqLS1papSmYe3wnnP6mtcuPDJKV4+wbUesXZhWT/xoQ"
+                          "INaR916dh+81SkWlmCfY3itTAElfLlexcWLSJl0lSGSLCjdSB+5l/+6bav4yyKapQqM5HJFXbeEc1Oh91meD"
+                          "KMTnon570w/MNJVZlYY+jnLeHPQROXaTbYOzsOowPsRWEN38kKfGfByffC1wd8nwBfH/Bd74FvCKBiaF5JKgS"
+                          "WC9qKdSL3iP+k1vmG/tnRx4nMoUd4D/IEOZwflZ3Qv7S+TyVd5CKdgT5zdIiI0YxrDWaBA1bmCYa7HNy+paKE"
+                          "qac6kzHIRw6AMfbdunSxRMgHY7b071LnT1L/fF9fQv0rWr9GCN+v9OMDSo/CZtgZRt3nlb7DclPpmybbSj9vR"
+                          "ufd4+M9Uod4uaCgqAbnLPgI6362oniXX7cVHx1Q/HWt+Osdit+UtZuOp19IuvaEpd5Z3nVuzrUr4lhXuSUrHi"
+                          "SvWkAXZCplxSiFBEsxxqaQzKAKEkmCxsDQKzsRlpQhdAciZbFD5S6nuYRuZPn58z/Mxks8UEmxMBK9l8gNPMmE"
+                          "wwBJ/1OuHKvgoWQZlOY1PeoqTbyXPP4cLscW6itqBOBkxqCvBAgCIDx7ALsY2pVXjB9DL86jeZwBvfqQ4xHaiH"
+                          "sxr61snMtHDJJKOGg4NkyDOZKdMxhkBqwOTPjNUt4jdNabn2kt7uD1Jr6LRuinILwi2Jdg+LJ2fgnvCtj7OZ6js"
+                          "I9jeNluRt1hdN5DnTnE8U7LdY63TbY4bkfNTqcddvZy3A7QHYHMIGp7nturbeMxQ/Usx9ebHPf3VK51jv1sR+vA"
+                          "ekc8x+3VB3CUJlh/oIC6kluFvUnQsrNrMyaNm33c4+bLyyuoO8nA9YyJjk1AAyvGY9SjbMTVK3bkVUwq5D2U0Ad"
+                          "W98rp6k6Bkyn/B/WDLsiEjRz9En0/07wsYWOVooDRRZIoDhYwz45IjekVR+IYUuPXvhWWY4EjBy2cIlvPaxDfVC"
+                          "JikB1XxupM/Q/bhJIpChw2Yk9xAj2muqiLr0gN8J0gc7AHrnfmI8wRT5VTrm0N8JrnOKz4F/n22nt1Llr6IZ9w6p"
+                          "RJQDdIXzAviVOEHx/bgvSxaw90ZY1K3BLxFPMAqdRwaP7Cror/EzveVTJeuOhvNri4dStjzuNrh6MDaaQGcU8Wge"
+                          "shd6tcwA9nkd2Wa1lkh8l2N9BFxxCGpyf7jp0os+2g89db3v6eBoBb3o+ASkKiH0vtjmDuQwLVR3z61ecJ74jTs1"
+                          "A5Z4vL3ziCHt1kaEiBDZRcQP93IlWJJ2rrxOpHdrU/RkH23wj4wTtR4uwmMtdHaJdHWPj+SAdQjOJeAqU14f4AeC"
+                          "Yy5zwFU9TLqYplQMMJoPE1nrmWYl7opT8zoR2RLoldzPsA+D0FTYb+PfjQJzgt2BeVx7pkkghMa56wHns9HD+Fyx"
+                          "VLqjf2LaD+h+GbHiLG65mYEcsoFQUtS2uI/e92vrdDX3zj2Ya1/tTzo9V9TYB7cN0B5ZUeHGzIl0Rvsr6fzVrr+y"
+                          "p8l4+R7ZCLcic6WOF3Wq5X+G2TnZ263529x9Lw54L51uGzaNZDrhKoupKXEtWsR1UOrfufqwSxflFS3KLjnd5ueu"
+                          "anz3q7neGie2cS8HcBin/BL8U8U/AL0XOSX+jt75P82r6+RIV6DoZDXW14oKMNz5rR2TA6fr6j3WG52dFumrjvsG"
+                          "sp7dAH12j5wbWz+sG1vfOD6+m3b/8HQd/FwVgXAAA=",
+            'compressionMethod': 'gzip'}
 
 
 @pytest.fixture(scope='package')
@@ -660,8 +660,10 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
 
     return Runner().run(root_folder=EXAMPLES_DIR)
 
+
 @pytest.fixture(scope='package')
-def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture, scan_result_2_with_comma_in_licenses: List[Dict[str, Any]]) -> Report:
+def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture,
+                                                scan_result_2_with_comma_in_licenses: List[Dict[str, Any]]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2_with_comma_in_licenses
@@ -686,176 +688,178 @@ def sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2:
 
 
 @pytest.fixture(scope='function')
-def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
+def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture,
+                                                  scan_result_2: List[Dict[str, Any]]) -> Report:
     return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
 def get_vulnerabilities_details_package_json() -> list[dict[str, Any]]:
+    # root_package_name and root_package_version shouldn't be part of the vulnerabilities, it's just for the test
     return [
-        {'details': {'cveId': 'PRISMA-2021-0070', 'severity': 'medium', 'packageName': 'cypress',
-                     'packageVersion': '3.8.3', 'link': '', 'cvss': 0, 'vector': '',
-                     'description': '', 'riskFactors': {}, 'publishedDate': '',
-                     'status': 'fixed in 7.2.0', 'lowest_fixed_version': '7.2.0'},
+        {'cveId': 'PRISMA-2021-0070', 'severity': 'medium', 'packageName': 'cypress',
+         'packageVersion': '3.8.3', 'link': '', 'cvss': 0, 'vector': '',
+         'description': '', 'riskFactors': {}, 'publishedDate': '',
+         'status': 'fixed in 7.2.0', 'lowest_fixed_version': '7.2.0',
          'root_package_version': '3.8.3', 'root_package_name': 'cypress'},
-        {'details': {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
-                     'packageVersion': '1.2.5',
-                     'link': '', 'cvss': 9.8,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.2.6'}, 'root_package_name': 'forever',
+        {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
+         'packageVersion': '1.2.5',
+         'link': '', 'cvss': 9.8,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.2.6', 'root_package_name': 'forever',
          'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2022-21803', 'severity': 'high', 'packageName': 'nconf', 'packageVersion': '0.6.9',
-                     'link': '', 'cvss': 7.5, 'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 0.11.4'}, 'root_package_name': 'forever',
+        {'cveId': 'CVE-2022-21803', 'severity': 'high', 'packageName': 'nconf', 'packageVersion': '0.6.9',
+         'link': '', 'cvss': 7.5, 'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 0.11.4', 'root_package_name': 'forever',
          'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2020-7598', 'severity': 'medium', 'packageName': 'minimist',
-                     'packageVersion': '0.0.10',
-                     'link': '', 'cvss': 5.6,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.2.2',
-                     }, 'root_package_name': 'forever', 'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
-                     'packageVersion': '0.0.10',
-                     'link': '', 'cvss': 9.8,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.2.6'}, 'root_package_name': 'forever',
-         'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'PRISMA-2022-0049', 'severity': 'high', 'packageName': 'unset-value',
-                     'packageVersion': '1.0.0',
-                     'link': '',
-                     'cvss': 8, 'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'status': 'fixed in 2.0.1',
-                     'publishedDate': ''}, 'root_package_name': 'forever',
-         'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2020-28469', 'severity': 'high', 'packageName': 'glob-parent',
-                     'packageVersion': '3.1.0',
-                     'link': '', 'cvss': 7.5,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 5.1.2'},
+        {'cveId': 'CVE-2020-7598', 'severity': 'medium', 'packageName': 'minimist',
+         'packageVersion': '0.0.10',
+         'link': '', 'cvss': 5.6,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.2.2',
          'root_package_name': 'forever', 'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2022-38900', 'severity': 'low', 'packageName': 'decode-uri-component',
-                     'packageVersion': '0.2.0',
-                     'link': '', 'cvss': 1,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 0.2.1'},
-         'root_package_name': 'forever', 'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2022-21803', 'severity': 'high', 'packageName': 'nconf', 'packageVersion': '0.10.0',
-                     'link': '', 'cvss': 7.5,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 0.11.4'}, 'root_package_name': 'forever',
+        {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
+         'packageVersion': '0.0.10',
+         'link': '', 'cvss': 9.8,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.2.6', 'root_package_name': 'forever',
          'root_package_version': '2.0.0'},
-        {'details': {'cveId': 'CVE-2022-1537', 'severity': 'high', 'packageName': 'grunt', 'packageVersion': '1.4.1',
-                     'link': '', 'cvss': 7,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.5.3'}, 'root_package_name': 'grunt',
+        {'cveId': 'PRISMA-2022-0049', 'severity': 'high', 'packageName': 'unset-value',
+         'packageVersion': '1.0.0',
+         'link': '',
+         'cvss': 8, 'vector': '',
+         'description': '',
+         'riskFactors': {}, 'status': 'fixed in 2.0.1',
+         'publishedDate': '', 'root_package_name': 'forever',
+         'root_package_version': '2.0.0'},
+        {'cveId': 'CVE-2020-28469', 'severity': 'high', 'packageName': 'glob-parent',
+         'packageVersion': '3.1.0',
+         'link': '', 'cvss': 7.5,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 5.1.2',
+         'root_package_name': 'forever', 'root_package_version': '2.0.0'},
+        {'cveId': 'CVE-2022-38900', 'severity': 'low', 'packageName': 'decode-uri-component',
+         'packageVersion': '0.2.0',
+         'link': '', 'cvss': 1,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 0.2.1',
+         'root_package_name': 'forever', 'root_package_version': '2.0.0'},
+        {'cveId': 'CVE-2022-21803', 'severity': 'high', 'packageName': 'nconf', 'packageVersion': '0.10.0',
+         'link': '', 'cvss': 7.5,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 0.11.4', 'root_package_name': 'forever',
+         'root_package_version': '2.0.0'},
+        {'cveId': 'CVE-2022-1537', 'severity': 'high', 'packageName': 'grunt', 'packageVersion': '1.4.1',
+         'link': '', 'cvss': 7,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.5.3', 'root_package_name': 'grunt',
          'root_package_version': '1.4.1'},
-        {'details': {'cveId': 'CVE-2022-0436', 'severity': 'medium', 'packageName': 'grunt', 'packageVersion': '1.4.1',
-                     'link': '', 'cvss': 5.5,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.5.2'},
+        {'cveId': 'CVE-2022-0436', 'severity': 'medium', 'packageName': 'grunt', 'packageVersion': '1.4.1',
+         'link': '', 'cvss': 5.5,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.5.2',
          'root_package_name': 'grunt', 'root_package_version': '1.4.1'},
-        {'details': {'cveId': 'CVE-2017-16137', 'severity': 'medium', 'packageName': 'debug', 'packageVersion': '2.2.0',
-                     'link': '', 'cvss': 5.3,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 3.1.0, 2.6.9'},
+        {'cveId': 'CVE-2017-16137', 'severity': 'medium', 'packageName': 'debug', 'packageVersion': '2.2.0',
+         'link': '', 'cvss': 5.3,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 3.1.0, 2.6.9',
          'root_package_name': 'helmet', 'root_package_version': '2.3.0'},
-        {'details': {'cveId': 'GHSA-C3M8-X3CG-QM2C', 'severity': 'medium', 'packageName': 'helmet-csp',
-                     'packageVersion': '1.2.2', 'link': '', 'cvss': 4, 'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 2.9.1'},
+        {'cveId': 'GHSA-C3M8-X3CG-QM2C', 'severity': 'medium', 'packageName': 'helmet-csp',
+         'packageVersion': '1.2.2', 'link': '', 'cvss': 4, 'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 2.9.1',
          'root_package_name': 'helmet', 'root_package_version': '2.3.0'},
-        {'details': {'cveId': 'PRISMA-2021-0013', 'severity': 'medium', 'packageName': 'marked',
-                     'packageVersion': '0.3.9',
-                     'link': '', 'cvss': 0, 'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.1.1'}, 'root_package_name': 'marked',
+        {'cveId': 'PRISMA-2021-0013', 'severity': 'medium', 'packageName': 'marked',
+         'packageVersion': '0.3.9',
+         'link': '', 'cvss': 0, 'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.1.1', 'root_package_name': 'marked',
          'root_package_version': '0.3.9'},
-        {'details': {'cveId': 'CVE-2022-21681', 'severity': 'high', 'packageName': 'marked', 'packageVersion': '0.3.9',
-                     'link': '', 'cvss': 7.5,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 4.0.10'}, 'root_package_name': 'marked',
+        {'cveId': 'CVE-2022-21681', 'severity': 'high', 'packageName': 'marked', 'packageVersion': '0.3.9',
+         'link': '', 'cvss': 7.5,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 4.0.10', 'root_package_name': 'marked',
          'root_package_version': '0.3.9'},
-        {'details': {'cveId': 'CVE-2022-21680', 'severity': 'high', 'packageName': 'marked', 'packageVersion': '0.3.9',
-                     'link': '', 'cvss': 7.5,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 4.0.10'}, 'root_package_name': 'marked',
+        {'cveId': 'CVE-2022-21680', 'severity': 'high', 'packageName': 'marked', 'packageVersion': '0.3.9',
+         'link': '', 'cvss': 7.5,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 4.0.10', 'root_package_name': 'marked',
          'root_package_version': '0.3.9'},
-        {'details': {'cveId': 'PRISMA-2022-0230', 'severity': 'high', 'packageName': 'mocha', 'packageVersion': '2.5.3',
-                     'link': '', 'cvss': 7.5, 'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'open'},
+        {'cveId': 'PRISMA-2022-0230', 'severity': 'high', 'packageName': 'mocha', 'packageVersion': '2.5.3',
+         'link': '', 'cvss': 7.5, 'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'open',
          'root_package_name': 'mocha', 'root_package_version': '2.5.3'},
-        {'details': {'cveId': 'PRISMA-2022-0335', 'severity': 'medium', 'packageName': 'mocha',
-                     'packageVersion': '2.5.3',
-                     'link': '',
-                     'cvss': 5.3, 'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'open'},
+        {'cveId': 'PRISMA-2022-0335', 'severity': 'medium', 'packageName': 'mocha',
+         'packageVersion': '2.5.3',
+         'link': '',
+         'cvss': 5.3, 'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'open',
          'root_package_name': 'mocha', 'root_package_version': '2.5.3'},
-        {'details': {'cveId': 'GHSA-MH5C-679W-HH4R', 'severity': 'high', 'packageName': 'mongodb',
-                     'packageVersion': '2.2.36',
-                     'link': '', 'cvss': 7, 'vector': '', 'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 3.1.13'}, 'root_package_name': 'mongodb',
+        {'cveId': 'GHSA-MH5C-679W-HH4R', 'severity': 'high', 'packageName': 'mongodb',
+         'packageVersion': '2.2.36',
+         'link': '', 'cvss': 7, 'vector': '', 'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 3.1.13', 'root_package_name': 'mongodb',
          'root_package_version': '2.2.36'},
-        {'details': {'cveId': 'CVE-2019-2391', 'severity': 'medium', 'packageName': 'bson', 'packageVersion': '1.0.9',
-                     'link': '', 'cvss': 4, 'vector': '', 'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.1.4'
-                     }, 'root_package_name': 'mongodb', 'root_package_version': '2.2.36'},
-        {'details': {'cveId': 'CVE-2020-7610', 'severity': 'critical', 'packageName': 'bson', 'packageVersion': '1.0.9',
-                     'link': '', 'cvss': 9.8,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.1.4'
-                     }, 'root_package_name': 'mongodb', 'root_package_version': '2.2.36'},
-        {'details': {'cveId': 'CVE-2020-7598', 'severity': 'medium', 'packageName': 'minimist',
-                     'packageVersion': '0.0.10',
-                     'link': '', 'cvss': 5.6, 'vector': '', 'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.2.2'}, 'root_package_name': 'swig',
+        {'cveId': 'CVE-2019-2391', 'severity': 'medium', 'packageName': 'bson', 'packageVersion': '1.0.9',
+         'link': '', 'cvss': 4, 'vector': '', 'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.1.4'
+            , 'root_package_name': 'mongodb', 'root_package_version': '2.2.36'},
+        {'cveId': 'CVE-2020-7610', 'severity': 'critical', 'packageName': 'bson', 'packageVersion': '1.0.9',
+         'link': '', 'cvss': 9.8,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 1.1.4'
+            , 'root_package_name': 'mongodb', 'root_package_version': '2.2.36'},
+        {'cveId': 'CVE-2020-7598', 'severity': 'medium', 'packageName': 'minimist',
+         'packageVersion': '0.0.10',
+         'link': '', 'cvss': 5.6, 'vector': '', 'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.2.2', 'root_package_name': 'swig',
          'root_package_version': '1.4.2'},
-        {'details': {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
-                     'packageVersion': '0.0.10',
-                     'link': '', 'cvss': 9.8,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 1.2.6'}, 'root_package_name': 'swig',
+        {'cveId': 'CVE-2021-44906', 'severity': 'critical', 'packageName': 'minimist',
+         'packageVersion': '0.0.10',
+         'link': '', 'cvss': 9.8,
+         'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 1.2.6', 'root_package_name': 'swig',
          'root_package_version': '1.4.2'},
-        {'details': {'cveId': 'PRISMA-2021-0169', 'severity': 'medium', 'packageName': 'uglify-js',
-                     'packageVersion': '2.4.24', 'link': '',
-                     'cvss': 5.3, 'vector': '',
-                     'description': '',
-                     'riskFactors': {},
-                     'publishedDate': '', 'status': 'fixed in 3.14.3'}, 'root_package_name': 'swig',
+        {'cveId': 'PRISMA-2021-0169', 'severity': 'medium', 'packageName': 'uglify-js',
+         'packageVersion': '2.4.24', 'link': '',
+         'cvss': 5.3, 'vector': '',
+         'description': '',
+         'riskFactors': {},
+         'publishedDate': '', 'status': 'fixed in 3.14.3', 'root_package_name': 'swig',
          'root_package_version': '1.4.2'},
-        {'details': {'cveId': 'CVE-2015-8858', 'severity': 'high', 'packageName': 'uglify-js',
-                     'packageVersion': '2.4.24',
-                     'link': '', 'cvss': 7,
-                     'vector': '',
-                     'description': '',
-                     'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 2.6.0'},
+        {'cveId': 'CVE-2015-8858', 'severity': 'high', 'packageName': 'uglify-js',
+         'packageVersion': '2.4.24',
+         'link': '', 'cvss': 7,
+         'vector': '',
+         'description': '',
+         'riskFactors': {}, 'publishedDate': '', 'status': 'fixed in 2.6.0',
          'root_package_name': 'swig', 'root_package_version': '1.4.2'}
     ]
 
@@ -909,7 +913,10 @@ def get_vulnerabilities_details() -> list[dict[str, Any]]:
 
 
 def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
-    return [{'cveId': 'PRISMA-2021-0013', 'status': 'fixed in 1.1.1', 'severity': 'medium', 'packageName': 'marked', 'packageVersion': '0.3.9', 'link': None, 'cvss': None, 'vector': None, 'description': 'marked package prior to 1.1.1 are vulnerable to  Regular Expression Denial of Service (ReDoS). The regex within src/rules.js file have multiple unused capture groups which could lead to a denial of service attack if user input is reachable.  Origin: https://github.com/markedjs/marked/commit/bd4f8c464befad2b304d51e33e89e567326e62e0', 'riskFactors': ['DoS', 'Has fix', 'Medium severity'], 'publishedDate': '2021-01-14T10:29:35Z'},
+    return [{'cveId': 'PRISMA-2021-0013', 'status': 'fixed in 1.1.1', 'severity': 'medium', 'packageName': 'marked',
+             'packageVersion': '0.3.9', 'link': None, 'cvss': None, 'vector': None,
+             'description': 'marked package prior to 1.1.1 are vulnerable to  Regular Expression Denial of Service (ReDoS). The regex within src/rules.js file have multiple unused capture groups which could lead to a denial of service attack if user input is reachable.  Origin: https://github.com/markedjs/marked/commit/bd4f8c464befad2b304d51e33e89e567326e62e0',
+             'riskFactors': ['DoS', 'Has fix', 'Medium severity'], 'publishedDate': '2021-01-14T10:29:35Z'},
             {'cveId': 'CVE-2022-21681', 'status': 'fixed in 4.0.10', 'severity': 'high', 'packageName': 'marked',
              'packageVersion': '0.3.9', 'link': 'https://github.com/advisories/GHSA-5v2h-r2cx-5xgj', 'cvss': 7.5,
              'vector': 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H',
@@ -922,4 +929,4 @@ def get_vulnerabilities_details_no_deps() -> list[dict[str, Any]]:
              'description': 'Marked is a markdown parser and compiler. Prior to version 4.0.10, the regular expression `block.def` may cause catastrophic backtracking against some strings and lead to a regular expression denial of service (ReDoS). Anyone who runs untrusted markdown through a vulnerable version of marked and does not use a worker with a time limit may be affected. This issue is patched in version 4.0.10. As a workaround, avoid running untrusted markdown through marked or run marked on a worker thread and set a reasonable time limit to prevent draining resources.',
              'riskFactors': ['Has fix', 'High severity', 'Recent vulnerability', 'Attack complexity: low',
                              'Attack vector: network', 'DoS'], 'publishedDate': '2022-01-14T17:15:00Z'}
-    ]
+            ]

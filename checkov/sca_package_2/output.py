@@ -286,9 +286,9 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
     cve_table_lines = [f"\t{line}" for line in cve_table.get_string().splitlines(keepends=True)]
     # hack to make multiple tables look like one
     cve_table_bottom_line = (
-        cve_table_lines[-1]
-            .replace(cve_table.bottom_left_junction_char, cve_table.left_junction_char)
-            .replace(cve_table.bottom_right_junction_char, cve_table.right_junction_char)
+        cve_table_lines[-1].replace(cve_table.bottom_left_junction_char,
+                                    cve_table.left_junction_char).replace(cve_table.bottom_right_junction_char,
+                                                                          cve_table.right_junction_char)
     )
     cve_table_lines[-1] = cve_table_bottom_line
 

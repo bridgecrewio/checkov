@@ -675,7 +675,7 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             rootless_file_path=rootless_file_path,
             file_abs_path=file_abs_path,
             check_class=check_class,
-            vulnerability_details=details["details"],
+            vulnerability_details=details,
             licenses='Unknown',
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"]

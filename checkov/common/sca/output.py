@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
 from packaging import version as packaging_version
 
@@ -250,7 +250,7 @@ def add_to_reports_cves_and_packages(
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         licenses_per_package_map: dict[str, list[str]],
-        dependencies: dict[str, list[int]] | None,
+        dependencies: dict[str, List[int]] | None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
@@ -304,9 +304,12 @@ def add_to_reports_cves_and_packages(
                                          root_package_name=root_package["name"])
 
 
-def add_cve_record_to_report(vulnerability_details, package, rootless_file_path, scanned_file_path,
-                             check_class, licenses_per_package_map, runner_filter, sca_details, scan_data_format,
-                             report_type, report, root_package_version, root_package_name) -> None:
+def add_cve_record_to_report(vulnerability_details: dict[str, Any], package: dict[str, Any], rootless_file_path: str,
+                             scanned_file_path: str, check_class: Optional[str],
+                             licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
+                             sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
+                             report_type: Optional[str], report: Report,
+                             root_package_version: str, root_package_name: str) -> None:
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=scanned_file_path,
@@ -337,7 +340,8 @@ def add_cve_record_to_report(vulnerability_details, package, rootless_file_path,
     report.add_record(cve_record)
 
 
-def find_vulnerable_dependencies(vulnerable_dependencies, dependencies, root_package_index, packages) -> None:
+def find_vulnerable_dependencies(vulnerable_dependencies: list[dict[str, Any]], dependencies: dict[str, list[int]],
+                                 root_package_index: int, packages: list[dict[str, Any]]) -> None:
     visited_dependencies: set[int] = set()  # Set to keep track of visited_dependencies nodes.
     dfs(visited=visited_dependencies, graph=dependencies, root=root_package_index)
     if len(visited_dependencies) > 0:
@@ -347,7 +351,8 @@ def find_vulnerable_dependencies(vulnerable_dependencies, dependencies, root_pac
                 vulnerable_dependencies.append(package)
 
 
-def create_root_packages_list(root_packages_list, packages, package, dependencies) -> None:
+def create_root_packages_list(root_packages_list: list[int], packages: list[dict[str, Any]], package: dict[str, Any],
+                              dependencies: Optional[Dict[str, List[int]]]) -> None:
     if dependencies:
         if package.get("root", ""):
             root_packages_list.append(packages.index(package))
@@ -356,7 +361,8 @@ def create_root_packages_list(root_packages_list, packages, package, dependencie
         root_packages_list.append(packages.index(package))
 
 
-def create_vulnerable_packages_dict(vulnerable_packages, vulnerabilities) -> None:
+def create_vulnerable_packages_dict(vulnerable_packages: dict[str, list[dict[str, Any]]],
+                                    vulnerabilities: list[dict[str, Any]]) -> None:
     for vulnerability in vulnerabilities:
         package_alias = get_package_alias(vulnerability["packageName"], vulnerability["packageVersion"])
         if package_alias not in vulnerable_packages:
@@ -365,9 +371,10 @@ def create_vulnerable_packages_dict(vulnerable_packages, vulnerabilities) -> Non
         vulnerable_packages[package_alias].append(vulnerability)
 
 
-def add_extra_resources_to_report(report, scanned_file_path, rootless_file_path,
-                                  package_name, package_version, package_alias,
-                                  licenses_per_package_map, sca_details) -> None:
+def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootless_file_path: str,
+                                  package_name: str, package_version: str, package_alias: str,
+                                  licenses_per_package_map: dict[str, list[str]],
+                                  sca_details:Optional[SCADetails] ) -> None:
     report.extra_resources.add(
         ExtraResource(
             file_abs_path=scanned_file_path,
@@ -384,7 +391,7 @@ def add_extra_resources_to_report(report, scanned_file_path, rootless_file_path,
     )
 
 
-def dfs(root: int, visited: set[int], graph: dict[str, list[int]]):
+def dfs(root: int, visited: set[int], graph: dict[str, list[int]]) -> None:
     root_str = str(root)
     if root_str not in graph:
         return
