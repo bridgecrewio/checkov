@@ -15,7 +15,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.util.parser_utils import get_current_module_index
+from checkov.common.util.parser_utils import get_current_module_index, get_abs_path
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -152,8 +152,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 path_to_module_str = unify_dependency_path(path_to_module)
                 if block_dirs_to_modules.get((dir_name, path_to_module_str)):
                     continue
-                module_index = get_current_module_index(path_to_module[-1])
-                module_file = path_to_module[-1][:module_index]
+                module_file = get_abs_path(path_to_module[-1])
                 module_list = self.map_path_to_module.get(module_file, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]

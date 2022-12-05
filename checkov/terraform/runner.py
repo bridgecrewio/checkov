@@ -23,6 +23,7 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -294,7 +295,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
         for full_file_path, definition in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
-            abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
+            if self.enable_nested_modules:
+                abs_scanned_file = get_abs_path(full_file_path)
+                abs_referrer = None
+            else:
+                abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
@@ -327,12 +332,22 @@ class Runner(ImageReferencerMixin, BaseRunner):
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
+            (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             entity_id = ".".join(definition_path)  # example: aws_s3_bucket.my_bucket
 
             caller_file_path = None
             caller_file_line_range = None
 
-            if module_referrer is not None:
+            if self.enable_nested_modules:
+                entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS, entity_id)
+                module, _ = get_module_from_full_path(full_file_path)
+                if module:
+                    module_name = entity_id.split('.')[-3]
+                    caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
+                    caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
+                    abs_caller_file = get_abs_path(module)
+                    caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
+            elif module_referrer is not None:
                 referrer_id = self._find_id_for_referrer(full_file_path)
 
                 if referrer_id:
@@ -384,7 +399,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
-            (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             if results:
                 for check, check_result in results.items():
@@ -411,8 +425,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         details=check.details
                     )
                     if CHECKOV_CREATE_GRAPH:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
-                            '.'.join([entity_type, entity_name]))
+                        if self.enable_nested_modules:
+                            entity_key = entity_id
+                        else:
+                            entity_key = '.'.join([entity_type, entity_name])
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
 

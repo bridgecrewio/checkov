@@ -319,11 +319,14 @@ def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[s
     if not is_nested(file_path):
         return None, None
     tmp_path = file_path[file_path.index('[') + 1: -1]
-    module_index = get_current_module_index(tmp_path)
     if is_nested(tmp_path):
-        module = tmp_path[:module_index] + tmp_path[tmp_path.index('['):]
+        module = get_abs_path(tmp_path) + tmp_path[tmp_path.index('['):]
         index = tmp_path[tmp_path.index('#') + 1:tmp_path.index('[')]
     else:
-        module = tmp_path[:module_index]
+        module = get_abs_path(tmp_path)
         index = tmp_path[tmp_path.index('#') + 1:]
     return module, index
+
+
+def get_abs_path(file_path: str) -> str:
+    return file_path[:get_current_module_index(file_path)]
