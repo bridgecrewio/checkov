@@ -36,9 +36,7 @@ def report_contributor_metrics(repository: str, source: str,
 
 
 def parse_gitlog(repository: str, source: str) -> dict[str, Any] | None:
-    process = subprocess.Popen(
-        ['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct'],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+    process = subprocess.Popen(['git', 'shortlog', '-ne', '--all', '--since', '"90 days ago"', '--pretty=commit-%ct', '--reverse'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
     out, err = process.communicate()
     if err:
         logger.info(f"Failed to collect contributor metrics due to: {err}")  # type: ignore
