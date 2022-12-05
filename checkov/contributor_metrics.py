@@ -23,7 +23,7 @@ def report_contributor_metrics(repository: str, source: str,
                 headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
             )
             if response.status_code < 300:
-                logging.info(
+                logging.debug(
                     f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")
                 break
             else:
