@@ -669,8 +669,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
     rootless_file_path = "package-lock.json"
     file_abs_path = "/path/to/package-lock.json"
     check_class = "checkov.sca_package_2.scanner.Scanner"
-    vulnerabilities = get_vulnerabilities_details_package_json()
     # when
+
     cves_records = [
         create_report_cve_record(
             rootless_file_path=rootless_file_path,
@@ -681,7 +681,7 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"]
         )
-        for details in vulnerabilities
+        for details in get_vulnerabilities_details_package_json()
     ]
 
     cli_output = create_cli_output(True, cves_records)
