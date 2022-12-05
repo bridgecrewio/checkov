@@ -234,7 +234,7 @@ jobs:
         run: |
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@37f50c210e3d2f9450da2cd423303d6a14a6e29f  # v1
+        uses: pypa/gh-action-pypi-publish@5d1679fa6b895587c6eb10c3fe82205b440a580e  # v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
