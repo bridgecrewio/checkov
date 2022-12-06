@@ -2,27 +2,28 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.DataExplorerUsesDiskEncryption import check
+from checkov.terraform.checks.data.aws.IAMPublichActionsPolicy import check
 from checkov.terraform.runner import Runner
 
 
-class TestDataExplorerUsesDiskEncryption(unittest.TestCase):
+class TestIAMPublicActionsPolicy(unittest.TestCase):
     def test(self):
-        test_files_dir = Path(__file__).parent / "example_DataExplorerUsesDiskEncryption"
+        test_files_dir = Path(__file__).parent / "example_IAMPublichActionsPolicy"
 
-        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_kusto_cluster.pass",
+            "aws_iam_policy_document.pass",
+            "aws_iam_policy_document.pass2"
         }
         failing_resources = {
-            "azurerm_kusto_cluster.fail",
-            "azurerm_kusto_cluster.fail2",
+            "aws_iam_policy_document.fail",
+            "aws_iam_policy_document.fail2"
         }
 
-        passed_check_resources = {c.resource for c in report.passed_checks}
-        failed_check_resources = {c.resource for c in report.failed_checks}
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
