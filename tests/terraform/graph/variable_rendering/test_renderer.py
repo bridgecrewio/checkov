@@ -373,12 +373,15 @@ class TestRenderer(TestCase):
             local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
             end_time = time.time()
             assert end_time - start_time < 1
-            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
-
-            # Should fail after implementing dynamic for_each with lookup
-            for resource_vertex in resources_vertex:
-                if resource_vertex.has_dynamic_block:
-                    assert resource_vertex.attributes.get('stage', [{}])[0].get('name') == ['stage.value.name']
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE and v.has_dynamic_block, local_graph.vertices))
+            assert resources_vertex[0].attributes['stage'] == [
+                {'name': 'Source',
+                 'action': {'category': 'Source', 'configuration': {'BranchName': 'master', 'PollForSourceChanges': 'false', 'RepositoryName': 'cron-poll'}, 'input_artifacts': [], 'name': 'Source', 'output_artifacts': ['SourceArtifact'], 'owner': 'AWS', 'provider': 'CodeCommit', 'region': '', 'role_arn': 'null', 'run_order': 1, 'version': '1'}},
+                {'name': 'Build',
+                 'action': {'category': 'Build', 'configuration': {'ProjectName': 'cron-poll'}, 'input_artifacts': ['SourceArtifact'], 'name': 'Build', 'output_artifacts': ['BuildArtifact'], 'owner': 'AWS', 'provider': 'CodeBuild', 'region': '', 'role_arn': 'null', 'run_order': 2, 'version': '1'}},
+                {'name': 'Deploy',
+                 'action': {'category': 'Deploy', 'configuration': {'ClusterName': 'test', 'ServiceName': 'cron-poll'}, 'input_artifacts': ['BuildArtifact'], 'name': 'Deploy', 'output_artifacts': [], 'owner': 'AWS', 'provider': 'ECS', 'region': '', 'role_arn': 'null', 'run_order': 4, 'version': '1'}}
+            ]
 
     def test_dynamic_blocks_null_lookup(self):
         graph_manager = TerraformGraphManager('m', ['m'])
