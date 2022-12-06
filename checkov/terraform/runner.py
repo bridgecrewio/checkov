@@ -24,7 +24,8 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_current_module_index, \
+    get_tf_definition_key
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -221,15 +222,16 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context['definition_path'])
                     resource = resource_id
-                    module_dependency = entity.get("module_dependency_")
-                    module_dependency_num = entity.get("module_dependency_num_")
+                    module_dependency = entity.get(CustomAttributes.MODULE_DEPENDENCY)
+                    module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
                     if module_dependency and module_dependency_num:
-                        if self.enable_nested_modules:
-                            resource = entity.get('__address__')
-                        else:
-                            referrer_id = self._find_id_for_referrer(f'{full_file_path}[{module_dependency}#{module_dependency_num}]')
-                            if referrer_id:
-                                resource = f'{referrer_id}.{resource_id}'
+                        module_index = get_current_module_index(module_dependency)
+                        tf_path = get_tf_definition_key(full_file_path, module_dependency[:module_index],
+                                                        module_dependency_num,
+                                                        module_dependency[module_index:])
+                        referrer_id = self._find_id_for_referrer(tf_path)
+                        if referrer_id:
+                            resource = f'{referrer_id}.{resource_id}'
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
