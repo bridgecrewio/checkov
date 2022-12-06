@@ -34,5 +34,5 @@ resource "aws_config_configuration_recorder" "fail_recorder_2" {
 
 resource "aws_config_configuration_recorder_status" "fail_2" {
   name       = aws_config_configuration_recorder.fail_recorder_2.name
-  is_enabled = false
+  is_enabled = true
 }
