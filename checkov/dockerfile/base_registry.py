@@ -33,13 +33,16 @@ class Registry(BaseCheckRegistry):
         results: "dict[BaseCheck, _CheckResult]" = {}
         if not entity:
             return results
-        for instruction, checks in self.checks.items():
-            skip_info: _SkippedCheck = {}
-            if instruction in entity:
 
+        skipped_check_ids = {skipped_check["id"]: skipped_check for skipped_check in skipped_checks}
+
+        for instruction, checks in self.checks.items():
+            if instruction in entity:
                 for check in checks:
-                    if check.id in [x['id'] for x in skipped_checks]:
-                        skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
+                    skip_info: "_SkippedCheck" = {}
+                    if skipped_check_ids:
+                        if check.id in skipped_check_ids:
+                            skip_info = skipped_check_ids[check.id]
 
                     if runner_filter.should_run_check(check, report_type=CheckType.DOCKERFILE):
                         self.update_result(
@@ -54,9 +57,9 @@ class Registry(BaseCheckRegistry):
 
         for check in self.wildcard_checks["*"]:
             skip_info = {}
-            if skipped_checks:
-                if check.id in [x['id'] for x in skipped_checks]:
-                    skip_info = [x for x in skipped_checks if x['id'] == check.id][0]
+            if skipped_check_ids:
+                if check.id in skipped_check_ids:
+                    skip_info = skipped_check_ids[check.id]
 
             if runner_filter.should_run_check(check, report_type=CheckType.DOCKERFILE):
                 self.update_result(
