@@ -16,7 +16,10 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def __init__(self, args):
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        super().__init__(graph_manager, "checkov/kubernetes/checks/graph_checks",
+        real_graph_checks_relative_path = "checkov/kubernetes/checks/graph_checks"
+        real_graph_checks_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..',
+                                              real_graph_checks_relative_path)
+        super().__init__(graph_manager, real_graph_checks_path,
                          os.path.dirname(__file__) + "/test_checks", 'kubernetes', __file__, args)
 
     def test_AllowedCapabilities(self):
