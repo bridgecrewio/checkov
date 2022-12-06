@@ -8,7 +8,6 @@ from checkov.terraform.runner import Runner
 
 
 class TestAKSSecretStoreRotation(unittest.TestCase):
-
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -26,8 +25,8 @@ class TestAKSSecretStoreRotation(unittest.TestCase):
             'azurerm_kubernetes_cluster.fail2',
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))

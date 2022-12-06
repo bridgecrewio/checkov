@@ -7,7 +7,6 @@ from checkov.terraform.checks.resource.azure.AKSPoolTypeIsScaleSet import check
 
 
 class TestAKSPoolTypeIsScaleSet(unittest.TestCase):
-
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -26,8 +25,8 @@ class TestAKSPoolTypeIsScaleSet(unittest.TestCase):
         }
         skipped_resources = {}
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
