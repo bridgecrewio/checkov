@@ -32,10 +32,10 @@ def test_console_output(mocker, sca_image_report):
     assert console_output == "".join(
         [
             "sca_image scan results:\n",
-            "",
+            "\n",
             "Passed checks: 1, Failed checks: 3, Skipped checks: 1\n",
             "\n",
-            "/path/to/Dockerfile (sha256:123456) - CVEs Summary:\n",
+            "\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:\n",
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 3        │ critical: 0          │ high: 0              │ medium: 1            │ low: 1               │ skipped: 1           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
