@@ -9,7 +9,8 @@
             "acl": ["public-read"],
             "force_destroy": [true],
             "__start_line__": 1,
-            "__end_line__": 6
+            "__end_line__": 6,
+            "__address__": "aws_s3_bucket.my_bucket"
           }
         }
       }

@@ -159,7 +159,7 @@ class TestRendererScenarios(TestCase):
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_bad_tf_nested_modules_enable(self):
         # Note: this hits the _clean_bad_definitions internal function
-        self.go("bad_tf_nested_module_enable")
+        self.go("bad_tf_nested_modules_enable")
 
     def test_colon(self):
         # Note: this hits the _clean_bad_definitions internal function
