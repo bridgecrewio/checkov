@@ -16,6 +16,7 @@ from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -103,7 +104,8 @@ class RunnerRegistry:
         merged_reports = self._merge_reports(reports)
         logging.debug(f"got {len(merged_reports)} reports")
         start = time.time()
-        SecretsOmitter(merged_reports).omit()
+        if bc_integration.bc_api_key:
+            SecretsOmitter(merged_reports).omit()
         logging.debug(f"Omitting secrets took {time.time() - start}")
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)

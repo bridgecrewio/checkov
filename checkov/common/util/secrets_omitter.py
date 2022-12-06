@@ -1,8 +1,16 @@
+import logging
+from enum import Enum
 from typing import Iterator
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
+
+
+class SecretsOmitterStatus(Enum):
+    Success = 0
+    InsufficientReports = 1
+    Failed = 2
 
 
 class SecretsOmitter:
@@ -22,10 +30,10 @@ class SecretsOmitter:
                 yield check
 
     @staticmethod
-    def get_secret_lines(check: Record) -> tuple[list[int], list[str]]:
+    def get_secret_lines(code_block: list[tuple[int, str]]) -> tuple[list[int], list[str]]:
         secret_lines_range = [-1, -1]
         secrets_lines = []
-        for idx, line in check.code_block:
+        for idx, line in code_block:
             if '*' in line:
                 secrets_lines.append(line)
                 if secret_lines_range[0] == -1:
@@ -41,13 +49,14 @@ class SecretsOmitter:
     def _line_range_overlaps(r1: list[int], r2: list[int]) -> bool:
         return r1[0] <= r2[1] and r1[1] >= r2[0]
 
-    def omit(self) -> None:
+    def omit(self) -> SecretsOmitterStatus:
         if not self.reports or not self.secrets_report:
-            return
+            logging.debug(f"Insufficient reports to omit secrets")
+            return SecretsOmitterStatus.InsufficientReports
 
         for secret_check in self._secret_check():
             secret_check_file_path = secret_check.file_path
-            secret_check_line_range, secrets_check_lines = SecretsOmitter.get_secret_lines(secret_check)
+            secret_check_line_range, secrets_check_lines = SecretsOmitter.get_secret_lines(secret_check.code_block)
             if secret_check_line_range == [-1, -1]:
                 continue
 
@@ -64,4 +73,6 @@ class SecretsOmitter:
                     for entry_index, (line_index, _) in enumerate(check.code_block):
                         if secret_line_index == line_index:
                             check.code_block[entry_index] = (line_index, omitted_line)
+
+        return SecretsOmitterStatus.Success
 
