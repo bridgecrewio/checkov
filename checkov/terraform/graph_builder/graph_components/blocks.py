@@ -167,5 +167,5 @@ class TerraformBlock(Block):
             'name': self.name,
             'path': self.path,
             'source': self.source,
-            'source_module': list(self.source_module)
+            'source_module': self.source_module
         }

@@ -55,8 +55,8 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
 
     module_dependency = module_dependency[1:-1]
 
-    module = module_dependency[:module_dependency.index('.tf#') + len('.tf')]
-    module_index = module_dependency.index('.tf#') + len('.tf#')
+    module = module_dependency[:module_dependency.index('.tf#') + 3]   # len('.tf')
+    module_index = module_dependency.index('.tf#') + 4    # len('.tf#')
     index = module_dependency[module_index:]
 
     # if its nested module dependency

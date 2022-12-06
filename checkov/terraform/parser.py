@@ -739,7 +739,7 @@ class Parser:
         for key, dir_list in module_dependency_map.items():
             dir_list.sort()
             module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
-        return dict(module_dependency_map), tf_definitions, dict(dep_index_mapping)
+        return module_dependency_map, tf_definitions, dep_index_mapping
 
     @staticmethod
     def get_module_dependency_map(tf_definitions):
