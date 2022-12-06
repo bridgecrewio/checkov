@@ -1,3 +1,5 @@
+import logging
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
@@ -20,6 +22,13 @@ class AbsRDSParameter(BaseResourceCheck):
         params = conf.get("parameters")
         if params and isinstance(params, list):
             for param in params:
-                if param['name'][0] == self.parameter and (param['value'][0]).lower() == 'on':
+                if not isinstance(param, dict):
+                    logging.warning(f'GOT NON-DICT {param}')
+                    return CheckResult.UNKNOWN
+                param_name = param['name']
+                param_value = param['value']
+                if len(param_name) == 0 or len(param_value) == 0:
+                    return CheckResult.UNKNOWN
+                if param_name[0] == self.parameter and (param_value[0]).lower() == 'on':
                     return CheckResult.PASSED
         return CheckResult.FAILED

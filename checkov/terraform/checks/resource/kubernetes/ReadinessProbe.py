@@ -22,6 +22,9 @@ class ReadinessProbe(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
+        if not spec:
+            return CheckResult.UNKNOWN
+
         evaluated_keys_path = "spec"
 
         template = spec.get("template")

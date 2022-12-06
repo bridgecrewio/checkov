@@ -33,6 +33,8 @@ class TillerService(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        if not spec:
+            return CheckResult.UNKNOWN
 
         if spec.get('selector') and isinstance(spec.get('selector'), list):
             selector = spec.get('selector')[0]

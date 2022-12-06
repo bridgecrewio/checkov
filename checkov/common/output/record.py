@@ -137,7 +137,7 @@ class Record:
         elif self.check_result["result"] == CheckResult.SKIPPED:
             status = CheckResult.SKIPPED.name
             status_color = "blue"
-            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
+            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result.get("suppress_comment", ""))
 
         check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ""
