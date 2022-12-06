@@ -6,7 +6,7 @@ from typing import List, Any
 class AppConfigLocalAuth(BaseResourceNegativeValueCheck):
     def __init__(self) -> None:
         """
-        very request to an Azure App Configuration resource must be authenticated.
+        Every request to an Azure App Configuration resource must be authenticated.
         By default, requests can be authenticated with either Azure Active Directory (Azure AD) credentials,
         or by using an access key. Of these two types of authentication schemes,
         Azure AD provides superior security and ease of use over access keys, and is recommended by Microsoft.
