@@ -16,9 +16,21 @@ definition:
         - ClusterRole
       connected_resource_types:
         - ClusterRoleBinding
-    - cond_type: attribute  # Make sure ClusterRole does not contain `clusterrolebindings` in `rule.resources`
-      operator: not_contains
-      attribute: rules.resources
-      value: 'clusterrolebindings'
-      resource_types:
-        - ClusterRole
+    - and:  # ClusterRole does not contain `clusterrolebindings/rolebinding/*` in `rule.resources` and `bind/*` in `rule.verbs`
+      - cond_type: attribute
+        attribute: rules.resources
+        operator: not_intersects
+        value:
+          - 'clusterrolebindings'
+          - 'rolebindings'
+          - '*'
+        resource_types:
+          - ClusterRole
+      - cond_type: attribute
+        attribute: rules.verbs
+        operator: not_contains
+        value:
+          - 'bind'
+          - '*'
+        resource_types:
+          - ClusterRole
