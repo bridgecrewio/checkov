@@ -234,7 +234,7 @@ jobs:
         run: |
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@37f50c210e3d2f9450da2cd423303d6a14a6e29f  # v1
+        uses: pypa/gh-action-pypi-publish@5d1679fa6b895587c6eb10c3fe82205b440a580e  # v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
@@ -333,7 +333,7 @@ jobs:
           echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -355,7 +355,7 @@ jobs:
           echo "version=$checkov_version" >> $GITHUB_OUTPUT
           echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -391,7 +391,7 @@ jobs:
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
