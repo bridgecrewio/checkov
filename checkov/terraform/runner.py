@@ -33,6 +33,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -139,7 +140,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if CHECKOV_CREATE_GRAPH and local_graph:
                 for vertex in local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
-                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                        if self.enable_nested_modules:
+                            vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        else:
+                            vertex_id = vertex.id
+                        report.add_resource(f'{vertex.path}:{vertex_id}')
                 self.graph_manager.save_graph(local_graph)
                 self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
                     local_graph.vertices,
@@ -225,10 +230,14 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     module_dependency = entity.get(CustomAttributes.MODULE_DEPENDENCY)
                     module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
                     if module_dependency and module_dependency_num:
-                        module_index = get_current_module_index(module_dependency)
-                        tf_path = get_tf_definition_key(full_file_path, module_dependency[:module_index],
-                                                        module_dependency_num,
-                                                        module_dependency[module_index:])
+                        if self.enable_nested_modules:
+                            module_index = get_current_module_index(module_dependency)
+                            tf_path = get_tf_definition_key(full_file_path, module_dependency[:module_index],
+                                                            module_dependency_num,
+                                                            module_dependency[module_index:])
+                        else:
+                            module_dependency_path = module_dependency.split(PATH_SEPARATOR)[-1]
+                            tf_path = get_tf_definition_key(full_file_path, module_dependency_path, module_dependency_num)
                         referrer_id = self._find_id_for_referrer(tf_path)
                         if referrer_id:
                             resource = f'{referrer_id}.{resource_id}'
