@@ -2,3 +2,5 @@ pass:
   - "ClusterRoleBinding.default.passing-crb1"
 fail:
   - "ClusterRoleBinding.default.failing-crb1"
+  - "ClusterRoleBinding.default.failing-crb2"
+  - "ClusterRoleBinding.default.failing-crb3"
