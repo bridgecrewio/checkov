@@ -101,11 +101,9 @@ class RunnerRegistry:
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         merged_reports = self._merge_reports(reports)
-        logging.debug(f"got {len(merged_reports)} reports")
-        start = time.time()
         if bc_integration.bc_api_key:
             SecretsOmitter(merged_reports).omit()
-        logging.debug(f"Omitting secrets took {time.time() - start}")
+
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports

@@ -23,7 +23,6 @@ class AbsRDSParameter(BaseResourceCheck):
         if params and isinstance(params, list):
             for param in params:
                 if not isinstance(param, dict):
-                    logging.warning(f'GOT NON-DICT {param}')
                     return CheckResult.UNKNOWN
                 param_name = param['name']
                 param_value = param['value']
