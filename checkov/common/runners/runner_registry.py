@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import time
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -30,6 +31,7 @@ from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -99,7 +101,10 @@ class RunnerRegistry:
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         merged_reports = self._merge_reports(reports)
-
+        logging.debug(f"got {len(merged_reports)} reports")
+        start = time.time()
+        SecretsOmitter(merged_reports).omit()
+        logging.debug(f"Omitting secrets took {time.time() - start}")
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
         return self.scan_reports
