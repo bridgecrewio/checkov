@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_49"
-  name: "Ensure AWS Database Migration Service endpoint have SSL configured"
+  name: "Ensure AWS Database Migration Service endpoints have SSL configured"
   category: "NETWORKING"
 definition:
   or:
