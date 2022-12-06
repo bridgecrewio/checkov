@@ -106,7 +106,7 @@ class CycloneDX:
                 if bom.has_component(component=component):
                     component = (
                         bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl  # type:ignore[arg-type]  # fix https://github.com/CycloneDX/cyclonedx-python-lib/pull/310
+                            purl=component.purl
                         )
                     )
 
