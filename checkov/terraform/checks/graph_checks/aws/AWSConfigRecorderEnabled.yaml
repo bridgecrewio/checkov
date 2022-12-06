@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_45"
-  name: "Ensure AWS Config recorder is enabled"
+  name: "Ensure AWS Config recorder is enabled to record all supported resources"
   category: "LOGGING"
 definition:
   and:
