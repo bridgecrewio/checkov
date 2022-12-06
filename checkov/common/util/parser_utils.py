@@ -304,7 +304,18 @@ def to_string(value: Any) -> str:
 
 
 def get_current_module_index(full_path: str) -> int:
-    return full_path.index('.tf') + len('.tf')
+    hcl_index = None
+    tf_index = None
+    if '.hcl' in full_path:
+        hcl_index = full_path.index('.hcl') + 4  # len('.hcl')
+    if '.tf' in full_path:
+        tf_index = full_path.index('.tf') + 3    # len('.tf')
+    if hcl_index and tf_index:
+        # returning the index of the first file
+        return min(hcl_index, tf_index)
+    if hcl_index:
+        return hcl_index
+    return tf_index
 
 
 def is_nested(full_path: str) -> bool:
