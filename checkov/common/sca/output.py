@@ -250,6 +250,71 @@ def add_to_reports_cves_and_packages(
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         licenses_per_package_map: dict[str, list[str]],
+        sca_details: SCADetails | None = None,
+        report_type: str | None = None,
+        scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+) -> None:
+    vulnerable_packages = []
+
+    for vulnerability in vulnerabilities:
+        package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
+        cve_record = create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=scanned_file_path,
+            check_class=check_class or "",
+            vulnerability_details=vulnerability,
+            licenses=format_licenses_to_string(
+                licenses_per_package_map[get_package_alias(package_name, package_version)]),
+            runner_filter=runner_filter,
+            sca_details=sca_details,
+            scan_data_format=scan_data_format,
+        )
+        if not runner_filter.should_run_check(
+                check_id=cve_record.check_id,
+                bc_check_id=cve_record.bc_check_id,
+                severity=cve_record.severity,
+                report_type=report_type,
+        ):
+            if runner_filter.checks:
+                continue
+            else:
+                cve_record.check_result = {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": f"{vulnerability['id']} is skipped",
+                }
+
+        report.add_resource(cve_record.resource)
+        report.add_record(cve_record)
+        vulnerable_packages.append(get_package_alias(package_name, package_version))
+
+    for package in packages:
+        if get_package_alias(package["name"], package["version"]) not in vulnerable_packages:
+            # adding resources without cves for adding them also in the output-bom-repors
+            report.extra_resources.add(
+                ExtraResource(
+                    file_abs_path=scanned_file_path,
+                    file_path=get_file_path_for_record(rootless_file_path),
+                    resource=get_resource_for_record(rootless_file_path, package["name"]),
+                    vulnerability_details={
+                        "package_name": package["name"],
+                        "package_version": package["version"],
+                        "licenses": format_licenses_to_string(
+                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
+                        "package_type": get_package_type(package["name"], package["version"], sca_details),
+                    },
+                )
+            )
+
+
+def add_to_reports_cves_and_packages_with_dependencies(
+        report: Report,
+        check_class: str | None,
+        scanned_file_path: str,
+        rootless_file_path: str,
+        runner_filter: RunnerFilter,
+        vulnerabilities: list[dict[str, Any]],
+        packages: list[dict[str, Any]],
+        licenses_per_package_map: dict[str, list[str]],
         dependencies: dict[str, List[int]] | None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
@@ -418,14 +483,26 @@ def add_to_report_sca_data(
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                          license_statuses, sca_details, report_type)
-
-    add_to_reports_cves_and_packages(report=report, check_class=check_class, scanned_file_path=scanned_file_path,
-                                     rootless_file_path=rootless_file_path, runner_filter=runner_filter,
-                                     vulnerabilities=vulnerabilities, packages=packages,
-                                     licenses_per_package_map=licenses_per_package_map, sca_details=sca_details,
-                                     report_type=report_type,
-                                     scan_data_format=ScanDataFormat.TWISTCLI if dependencies is None
-                                     else ScanDataFormat.DEPENDENCY_TREE, dependencies=dependencies)
+    if dependencies is not None:
+        # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
+        add_to_reports_cves_and_packages_with_dependencies(report=report, check_class=check_class,
+                                                           scanned_file_path=scanned_file_path,
+                                                           rootless_file_path=rootless_file_path,
+                                                           runner_filter=runner_filter,
+                                                           vulnerabilities=vulnerabilities,
+                                                           packages=packages,
+                                                           licenses_per_package_map=licenses_per_package_map,
+                                                           sca_details=sca_details,
+                                                           report_type=report_type,
+                                                           scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
+                                                           dependencies=dependencies)
+    else:
+        add_to_reports_cves_and_packages(report=report, check_class=check_class, scanned_file_path=scanned_file_path,
+                                         rootless_file_path=rootless_file_path, runner_filter=runner_filter,
+                                         vulnerabilities=vulnerabilities, packages=packages,
+                                         licenses_per_package_map=licenses_per_package_map, sca_details=sca_details,
+                                         report_type=report_type,
+                                         scan_data_format=ScanDataFormat.TWISTCLI)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
