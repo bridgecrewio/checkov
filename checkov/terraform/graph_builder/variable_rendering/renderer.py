@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from ast import literal_eval
 import logging
 import os
@@ -37,9 +38,13 @@ VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
 DYNAMIC_STRING = 'dynamic'
 DYNAMIC_BLOCKS_LISTS = 'list'
 DYNAMIC_BLOCKS_MAPS = 'map'
+FOR_LOOP = 'for'
+LOOKUP = 'lookup'
+DOT_SEPERATOR = '.'
 LEFT_BRACKET_WITH_QUOTATION = '["'
 RIGHT_BRACKET_WITH_QUOTATION = '"]'
 LEFT_BRACKET = '['
+RIGHT_BRACKET = ']'
 
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)

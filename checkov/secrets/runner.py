@@ -184,7 +184,6 @@ class Runner(BaseRunner[None]):
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
-                    check_len=len(cast(str, secret.secret_value)),
                 ))
             return report
 
