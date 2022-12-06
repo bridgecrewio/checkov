@@ -256,9 +256,17 @@ def add_to_reports_cves_and_packages(
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
     vulnerable_packages: dict[str, list[dict[str, Any]]] = {}
+    vulnerable_packages_1: dict[str, list[dict[str, Any]]] = {}
     root_packages_list: list[int] = []
 
     create_vulnerable_packages_dict(vulnerable_packages, vulnerabilities)
+    for package in packages:
+        package_alias = get_package_alias(package["name"], package["version"])
+        for cve_idx in package.get('cves_index', []):
+            if package_alias not in vulnerable_packages_1:
+                vulnerable_packages_1[package_alias] = []
+            vulnerability = vulnerabilities[cve_idx]
+            vulnerable_packages_1[package_alias].append(vulnerability)
 
     for package in packages:
         package_name, package_version = package["name"], package["version"]
@@ -277,8 +285,10 @@ def add_to_reports_cves_and_packages(
 
     for root_package_index in root_packages_list:
         vulnerable_dependencies: list[dict[str, Any]] = []
+        vulnerable_dependencies_1: list[dict[str, Any]] = []
         if dependencies:
             find_vulnerable_dependencies(vulnerable_dependencies, dependencies, root_package_index, packages)
+            find_vulnerable_dependencies_1(vulnerable_dependencies_1, root_package_index, packages)
 
         root_package = packages[root_package_index]
         if len(root_package["cves"]) > 0 or len(vulnerable_dependencies) > 0:
@@ -349,6 +359,11 @@ def find_vulnerable_dependencies(vulnerable_dependencies: list[dict[str, Any]], 
             package = packages[package_idx]
             if len(package["cves"]) > 0:
                 vulnerable_dependencies.append(package)
+
+def find_vulnerable_dependencies_1(vulnerable_dependencies: list[dict[str, Any]],
+                                 root_package_index: int, packages: list[dict[str, Any]]) -> None:
+    for vulnerable_dependency_idx in packages[root_package_index].get('vulnerable_dependencies', []):
+        vulnerable_dependencies.append(packages[vulnerable_dependency_idx])
 
 
 def create_root_packages_list(root_packages_list: list[int], packages: list[dict[str, Any]], package: dict[str, Any],
