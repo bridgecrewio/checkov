@@ -48,6 +48,7 @@ definition:
         - aws_vpc_endpoint
         - aws_mq_broker
         - aws_memorydb_cluster
+        - aws_route53_resolver_endpoint
       operator:  exists
       attribute: networking
       cond_type: connection
