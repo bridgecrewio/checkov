@@ -426,7 +426,7 @@ class TerraformVariableRenderer(VariableRenderer):
         if not isinstance(dynamic_values, str):
             return dynamic_values
 
-        if dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) and dynamic_values.endswith(RIGHT_BRACKET):
+        if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
             dynamic_values = dynamic_values[1:-1]
             start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
             end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
@@ -537,11 +537,11 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
             pstack.append(i)
         elif c == RIGHT_BRACKET:
             if len(pstack) == 0:
-                raise IndexError("No matching closing parens at: " + str(i))
+                raise IndexError("No matching closing brackets at: " + str(i))
             res[pstack.pop()] = i
 
     if len(pstack) > 0:
-        raise IndexError("No matching opening parens at: " + str(pstack.pop()))
+        raise IndexError("No matching opening brackets at: " + str(pstack.pop()))
 
     return res[open_bracket_idx]
 
