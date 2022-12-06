@@ -303,7 +303,7 @@ def to_string(value: Any) -> str:
     return str(value)
 
 
-def get_current_module_index(full_path: str) -> int:
+def get_current_module_index(full_path: str) -> Optional[int]:
     hcl_index = None
     tf_index = None
     if '.hcl' in full_path:
