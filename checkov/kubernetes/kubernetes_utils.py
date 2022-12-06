@@ -213,10 +213,16 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return f'{resource_type}.{namespace}.{name}'
     labels = deepcopy(metadata.get("labels"))
     if labels:
-        labels.pop('__startline__', None)
-        labels.pop('__endline__', None)
-        return f'{resource_type}.{namespace}.{str(labels)}'
+        return build_resource_id_from_labels(resource_type, namespace, labels)
     return None
+
+
+def build_resource_id_from_labels(resource_type: str, namespace: str, labels: dict[str, str]) -> str:
+    labels.pop('__startline__', None)
+    labels.pop('__endline__', None)
+    labels_list = [f"{k}-{v}" for k, v in labels.items()]
+    labels_string = ".".join(labels_list) if labels_list else "default"
+    return f'{resource_type}.{namespace}.{labels_string}'
 
 
 def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
@@ -231,5 +237,7 @@ class K8sGraphFlags:
     create_edges: bool
 
     def __init__(self, create_complex_vertices: bool = False, create_edges: bool = False) -> None:
-        self.create_complex_vertices = create_complex_vertices or False
-        self.create_edges = create_edges or False
+        create_complex_vertices_env_var: bool = bool(os.environ.get('CREATE_COMPLEX_VERTICES'))
+        create_edges_env_var: bool = bool(os.environ.get('CREATE_EDGES'))
+        self.create_complex_vertices = create_complex_vertices or create_complex_vertices_env_var
+        self.create_edges = create_edges or create_edges_env_var
