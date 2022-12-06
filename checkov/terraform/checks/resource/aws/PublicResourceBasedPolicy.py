@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class PublicResourceBasedPolicy(BaseResourceCheck):
     def __init__(self):
         name = "Ensure resource-based policies don't allow public actions on resource"
-        id = "CKV_AWS_261"
+        id = "CKV_AWS_283"
         supported_resources = ('aws_sns_topic_policy', 'aws_sqs_queue_policy', 'aws_s3_bucket_policy')
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, supported_resources=supported_resources, categories=categories)
