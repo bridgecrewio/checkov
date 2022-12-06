@@ -7,7 +7,7 @@ from checkov.terraform.checks.data.base_check import BaseDataCheck
 
 class IAMPublicActionsPolicy(BaseDataCheck):
     def __init__(self):
-        name = 'Ensure no IAM policies documents allow "*" as a statement\'s actions'
+        name = 'Ensure no IAM policies documents allow ALL or any AWS principal permissions to the resource'
         id = "CKV_AWS_283"
         supported_data = ["aws_iam_policy_document"]
         categories = [CheckCategories.IAM]
