@@ -23,6 +23,7 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
@@ -293,6 +294,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
             self.context = definitions_context
             logging.debug('Created definitions context')
 
+        self.push_skipped_checks_down_from_modules(self.context)
         for full_file_path, definition in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
             if self.enable_nested_modules:
@@ -388,9 +390,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 entity_code_lines = None
                 skipped_checks = None
 
-            if block_type == "module":
-                self.push_skipped_checks_down(self, definition_context, full_file_path, skipped_checks)
-
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
                 for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
@@ -467,28 +466,22 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
 
-    @staticmethod
-    def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):
+    def push_skipped_checks_down_from_modules(self, definition_context):
+        module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
+        for full_file_path, definition in self.definitions.items():
+            definition_modules_context = definition_context.get(full_file_path).get(BlockType.MODULE)
+            for entity in definition.get(BlockType.MODULE, []):
+                module_name = module_context_parser.get_entity_context_path(entity)[0]
+                skipped_checks = definition_modules_context.get(module_name).get('skipped_checks')
+                resolved_paths = entity.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
+                self.push_skipped_checks_down(definition_context, skipped_checks, resolved_paths)
+
+    def push_skipped_checks_down(self, definition_context, skipped_checks, resolved_paths):
         # this method pushes the skipped_checks down the 1 level to all resource types.
-
-        if skipped_checks is None:
+        if not skipped_checks:
             return
 
-        if len(skipped_checks) == 0:
-            return
-
-        # iterate over definitions to find those that reference the module path
-        # definition is in the format <file>[<referrer>#<index>]
-        # where referrer could be a path, or path1->path2, etc
-
-        for definition in definition_context:
-            _, mod_ref = self._strip_module_referrer(definition)
-            if mod_ref is None:
-                continue
-
-            if module_path not in mod_ref:
-                continue
-
+        for definition in resolved_paths:
             for block_type, block_configs in definition_context[definition].items():
                 # skip if type is not a Terraform resource
                 if block_type not in CHECK_BLOCK_TYPES:
@@ -496,9 +489,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
 
                 if block_type == "module":
                     # modules don't have a type, just a name
-                    for resource_config in block_configs.values():
+                    for module_name, module_config in block_configs.items():
                         # append the skipped checks also from a module to another module
-                        resource_config["skipped_checks"] += skipped_checks
+                        module_config["skipped_checks"] += skipped_checks
+                        module_context = next(m for m in self.definitions.get(definition).get(block_type) if module_name in m)
+                        recursive_resolved_paths = module_context.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
+                        self.push_skipped_checks_down(definition_context, skipped_checks, recursive_resolved_paths)
                 else:
                     # there may be multiple resource types - aws_bucket, etc
                     for resource_configs in block_configs.values():
@@ -531,10 +527,10 @@ class Runner(ImageReferencerMixin, BaseRunner):
         for file_content in self.definitions_with_modules.values():
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
-                    if "__resolved__" not in module_content:
+                    if RESOLVED_MODULE_ENTRY_NAME not in module_content:
                         continue
 
-                    if full_file_path in module_content["__resolved__"]:
+                    if full_file_path in module_content[RESOLVED_MODULE_ENTRY_NAME]:
                         if self.enable_nested_modules:
                             id_referrer = module_content.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                         else:
@@ -549,7 +545,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         def __cache_file_content(file_name: str, file_modules: list[dict[str, Any]]) -> None:
             for modules in file_modules:
                 for module_content in modules.values():
-                    if "__resolved__" in module_content:
+                    if RESOLVED_MODULE_ENTRY_NAME in module_content:
                         self.definitions_with_modules[file_name] = file_content
                         return
 
