@@ -16,11 +16,15 @@ class SecretsOmitterStatus(Enum):
 
 class SecretsOmitter:
     def __init__(self, reports: list[Report]):
-        self.reports = [report for report in reports if report.check_type != CheckType.SECRETS]
+        self.reports: list[Report] = [report for report in reports if report.check_type != CheckType.SECRETS]
         secrets_report = [report for report in reports if report.check_type == CheckType.SECRETS]
-        self.secrets_report = secrets_report[0] if len(secrets_report) == 1 else []
+        self.secrets_report: Report | None = secrets_report[0] if len(secrets_report) == 1 else None
 
     def _secret_check(self) -> Iterator[Record]:
+        if not self.secrets_report:
+            # Should not reach here, used for typing
+            return
+
         for check in self.secrets_report.failed_checks:
             yield check
 
@@ -52,7 +56,7 @@ class SecretsOmitter:
 
     def omit(self) -> SecretsOmitterStatus:
         if not self.reports or not self.secrets_report:
-            logging.debug(f"Insufficient reports to omit secrets")
+            logging.debug("Insufficient reports to omit secrets")
             return SecretsOmitterStatus.InsufficientReports
 
         for secret_check in self._secret_check():
@@ -76,4 +80,3 @@ class SecretsOmitter:
                             check.code_block[entry_index] = (line_index, omitted_line)
 
         return SecretsOmitterStatus.Success
-
