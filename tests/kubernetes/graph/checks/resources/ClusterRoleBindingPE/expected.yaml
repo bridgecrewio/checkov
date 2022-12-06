@@ -3,4 +3,4 @@ pass:
 fail:
   - "ClusterRoleBinding.default.failing-crb1"
   - "ClusterRoleBinding.default.failing-crb2"
-  - "ClusterRoleBinding.default.failing-crb3"
+  - "RoleBinding.kube-system.failing-rb3"

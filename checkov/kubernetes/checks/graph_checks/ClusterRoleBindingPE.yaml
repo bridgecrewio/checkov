@@ -8,14 +8,17 @@ definition:
     - cond_type: filter
       value:
         - ClusterRoleBinding
+        - RoleBinding
       operator: within
       attribute: kind
     - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
       operator: exists
       resource_types:
         - ClusterRole
+        - Role
       connected_resource_types:
         - ClusterRoleBinding
+        - RoleBinding
     - and:  # ClusterRole does not contain `clusterrolebindings/rolebinding/*` in `rule.resources` and `bind/*` in `rule.verbs`
       - cond_type: attribute
         attribute: rules.resources
@@ -26,6 +29,7 @@ definition:
           - '*'
         resource_types:
           - ClusterRole
+          - Role
       - cond_type: attribute
         attribute: rules.verbs
         operator: not_contains
@@ -34,3 +38,4 @@ definition:
           - '*'
         resource_types:
           - ClusterRole
+          - Role
