@@ -25,6 +25,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_AllowPrivilegeEscalation(self):
         self.go('AllowPrivilegeEscalation')
 
+    def test_ClusterRoleBindingPE(self) -> None:
+        self.go('ClusterRoleBindingPE')
+
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
         first_results_key = list(checks_results.keys())[0]

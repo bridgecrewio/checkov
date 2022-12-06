@@ -1,0 +1,4 @@
+pass:
+  - "ClusterRoleBinding.default.passing-crb1"
+fail:
+  - "ClusterRoleBinding.default.failing-crb1"
