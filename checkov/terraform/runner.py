@@ -480,7 +480,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
     def push_skipped_checks_down_from_modules(self, definition_context):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for full_file_path, definition in self.definitions.items():
-            definition_modules_context = definition_context.get(full_file_path).get(BlockType.MODULE)
+            definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
                 skipped_checks = definition_modules_context.get(module_name).get('skipped_checks')
