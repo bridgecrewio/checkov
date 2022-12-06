@@ -201,7 +201,8 @@ class TestRendererScenarios(TestCase):
                     "hello-nimrodIsCöol-${nine}-${dev}-abc-xyz-qwerty"
                 ],
                 "__start_line__": 17,
-                "__end_line__": 19
+                "__end_line__": 19,
+                "__address__": "aws_s3_bucket.my_bucket"
             }
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
