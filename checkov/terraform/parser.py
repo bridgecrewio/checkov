@@ -643,8 +643,7 @@ class Parser:
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
-        new_key = get_tf_definition_key(key, file, module_index, nested_key)
-        return new_key
+        return get_tf_definition_key(key, file, module_index, nested_key)
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
@@ -720,7 +719,8 @@ class Parser:
             module, index = get_module_from_full_path(file_path)
             modules_list.append((module, index))
             file_path = module
-        return list(reversed(modules_list)), path
+        modules_list.reverse()
+        return modules_list, path
 
     @staticmethod
     def get_module_dependency_map_support_nested_modules(tf_definitions):
