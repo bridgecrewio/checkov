@@ -3,27 +3,9 @@ metadata:
   name: "Ensure AWS Config must record all possible resources"
   category: "LOGGING"
 definition:
-  and:
-    - cond_type: filter
-      attribute: resource_type
-      operator: within
-      value:
-        - aws_config_configuration_recorder_status
-    - cond_type: connection
-      resource_types:
-        - aws_config_configuration_recorder_status
-      connected_resource_types:
-        - aws_config_configuration_recorder
-      operator: exists
-    - cond_type: attribute
-      resource_types:
-        - aws_config_configuration_recorder
-      attribute: recording_group.include_global_resource_types
-      operator: equals
-      value: "true"
-    - cond_type: attribute
-      resource_types:
-        - aws_config_configuration_recorder_status
-      attribute: is_enabled
-      operator: equals
-      value: "true"
+  cond_type: attribute
+  resource_types:
+    - aws_config_configuration_recorder
+  attribute: recording_group.include_global_resource_types
+  operator: equals
+  value: "true"
