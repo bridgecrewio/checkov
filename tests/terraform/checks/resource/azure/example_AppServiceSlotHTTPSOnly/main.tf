@@ -6,9 +6,9 @@ resource "azurerm_app_service_slot" "fail" {
   resource_group_name = azurerm_resource_group.example.name
   app_service_plan_id = azurerm_app_service_plan.example.id
 
-  https_only = false #thedefault
-  min_tls_version="1.1" #the default is 1.2
-  remote_debugging_enabled=true #default is false
+  https_only               = false #thedefault
+  min_tls_version          = "1.1" #the default is 1.2
+  remote_debugging_enabled = true  #default is false
 
   site_config {
     dotnet_framework_version = "v4.0"
@@ -33,9 +33,9 @@ resource "azurerm_app_service_slot" "fail2" {
   resource_group_name = azurerm_resource_group.example.name
   app_service_plan_id = azurerm_app_service_plan.example.id
 
-#  https_only = false #thedefault
-  min_tls_version="1.1" #the default is 1.2
-  remote_debugging_enabled=true #default is false
+  #  https_only = false #thedefault
+  min_tls_version          = "1.1" #the default is 1.2
+  remote_debugging_enabled = true  #default is false
 
   site_config {
     dotnet_framework_version = "v4.0"
@@ -59,9 +59,9 @@ resource "azurerm_app_service_slot" "pass" {
   resource_group_name = azurerm_resource_group.example.name
   app_service_plan_id = azurerm_app_service_plan.example.id
 
-  https_only = true #thedefault
-  min_tls_version="1.1" #the default is 1.2
-  remote_debugging_enabled=true #default is false
+  https_only               = true  #thedefault
+  min_tls_version          = "1.1" #the default is 1.2
+  remote_debugging_enabled = true  #default is false
 
   site_config {
     dotnet_framework_version = "v4.0"

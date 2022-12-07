@@ -207,7 +207,7 @@ resource "azurerm_linux_web_app" "pass" {
     enabled = true
   }
   site_config {
-        ftps_state = "FtpsOnly"
+    ftps_state = "FtpsOnly"
   }
 }
 
@@ -227,9 +227,9 @@ resource "azurerm_windows_web_app" "pass" {
     }
   }
   site_config {
-        ftps_state = "FtpsOnly"
-        cors {
-        allowed_origins = ["192.0.0.1"]
+    ftps_state = "FtpsOnly"
+    cors {
+      allowed_origins = ["192.0.0.1"]
     }
   }
 }
@@ -248,7 +248,7 @@ resource "azurerm_linux_web_app" "fail" {
     enabled = true
   }
   site_config {
-        ftps_state = "FtpsOnly"
+    ftps_state = "FtpsOnly"
   }
 }
 
@@ -262,9 +262,9 @@ resource "azurerm_windows_web_app" "fail" {
     failed_request_tracing_enabled = true
   }
   site_config {
-        ftps_state = "FtpsOnly"
-        cors {
-        allowed_origins = ["192.0.0.1"]
+    ftps_state = "FtpsOnly"
+    cors {
+      allowed_origins = ["192.0.0.1"]
     }
   }
 }

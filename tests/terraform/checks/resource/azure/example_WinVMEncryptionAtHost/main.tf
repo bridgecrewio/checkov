@@ -49,7 +49,7 @@ resource "azurerm_windows_virtual_machine" "fail2" {
     version   = "latest"
   }
 
-   encryption_at_host_enabled=false
+  encryption_at_host_enabled = false
 }
 
 resource "azurerm_windows_virtual_machine" "pass" {
@@ -76,5 +76,5 @@ resource "azurerm_windows_virtual_machine" "pass" {
     version   = "latest"
   }
 
-   encryption_at_host_enabled=true
+  encryption_at_host_enabled = true
 }

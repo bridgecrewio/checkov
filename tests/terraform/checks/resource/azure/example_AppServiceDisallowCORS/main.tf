@@ -8,7 +8,7 @@ resource "azurerm_app_service" "fail" {
     dotnet_framework_version = "v4.0"
     scm_type                 = "LocalGit"
     cors {
-        allowed_origins = ["*"]
+      allowed_origins = ["*"]
     }
   }
 
@@ -33,7 +33,7 @@ resource "azurerm_app_service" "pass" {
     dotnet_framework_version = "v4.0"
     scm_type                 = "LocalGit"
     cors {
-        allowed_origins = ["192.0.0.1"]
+      allowed_origins = ["192.0.0.1"]
     }
   }
 
@@ -85,7 +85,7 @@ resource "azurerm_linux_web_app" "pass" {
   }
   site_config {
     cors {
-        allowed_origins = ["192.0.0.1"]
+      allowed_origins = ["192.0.0.1"]
     }
   }
 }
@@ -104,7 +104,7 @@ resource "azurerm_linux_web_app" "fail" {
   }
   site_config {
     cors {
-        allowed_origins = ["*"]
+      allowed_origins = ["*"]
     }
   }
 }
@@ -132,8 +132,8 @@ resource "azurerm_windows_web_app" "pass" {
     detailed_error_messages = true
   }
   site_config {
-        cors {
-        allowed_origins = ["192.0.0.1"]
+    cors {
+      allowed_origins = ["192.0.0.1"]
     }
   }
 }
@@ -149,7 +149,7 @@ resource "azurerm_windows_web_app" "fail" {
   }
   site_config {
     cors {
-        allowed_origins = ["*"]
+      allowed_origins = ["*"]
     }
   }
 }

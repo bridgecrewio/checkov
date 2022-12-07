@@ -14,11 +14,11 @@ resource "azurerm_spring_cloud_api_portal" "fail" {
 }
 
 resource "azurerm_spring_cloud_api_portal" "pass" {
-  name                          = "default"
-  spring_cloud_service_id       = azurerm_spring_cloud_service.example.id
-  gateway_ids                   = [azurerm_spring_cloud_gateway.example.id]
-  https_only_enabled            = false
-  instance_count                = 1
+  name                    = "default"
+  spring_cloud_service_id = azurerm_spring_cloud_service.example.id
+  gateway_ids             = [azurerm_spring_cloud_gateway.example.id]
+  https_only_enabled      = false
+  instance_count          = 1
   sso {
     client_id     = "test"
     client_secret = "secret"
@@ -27,7 +27,7 @@ resource "azurerm_spring_cloud_api_portal" "pass" {
   }
 }
 
- resource "azurerm_spring_cloud_api_portal" "pass2" {
+resource "azurerm_spring_cloud_api_portal" "pass2" {
   name                          = "default"
   spring_cloud_service_id       = azurerm_spring_cloud_service.example.id
   gateway_ids                   = [azurerm_spring_cloud_gateway.example.id]

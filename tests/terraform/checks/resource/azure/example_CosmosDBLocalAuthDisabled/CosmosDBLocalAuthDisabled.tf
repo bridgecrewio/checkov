@@ -49,13 +49,13 @@ resource "azurerm_cosmosdb_account" "fail" {
 }
 
 resource "azurerm_cosmosdb_account" "fail2" {
-  name                          = "pike-sql"
-  location                      = "uksouth"
-  resource_group_name           = "pike"
-  offer_type                    = "Standard"
-  kind                          = "GlobalDocumentDB"
+  name                = "pike-sql"
+  location            = "uksouth"
+  resource_group_name = "pike"
+  offer_type          = "Standard"
+  kind                = "GlobalDocumentDB"
   //local_authentication_disabled = false
-  enable_free_tier              = true
+  enable_free_tier = true
 
   consistency_policy {
     consistency_level       = "Session"

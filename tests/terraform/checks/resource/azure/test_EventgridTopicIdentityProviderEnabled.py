@@ -2,23 +2,22 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.EventgridDomainNetworkAccess import check
+from checkov.terraform.checks.resource.azure.EventgridTopicIdentityProviderEnabled import check
 from checkov.terraform.runner import Runner
 
 
-class TestEventgridDomainNetworkAccess(unittest.TestCase):
+class TestEventgridTopicIdentityProviderEnabled(unittest.TestCase):
     def test(self):
-        test_files_dir = Path(__file__).parent / "example_EventgridDomainNetworkAccess"
+        test_files_dir = Path(__file__).parent / "example_EventgridTopicIdentityProviderEnabled"
 
         report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_eventgrid_domain.pass",
+            "azurerm_eventgrid_topic.pass",
         }
         failing_resources = {
-            "azurerm_eventgrid_domain.fail",
-            "azurerm_eventgrid_domain.fail2",
+            "azurerm_eventgrid_topic.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
