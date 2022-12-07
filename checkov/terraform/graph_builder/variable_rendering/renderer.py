@@ -548,6 +548,7 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
             if len(pstack) == 0:
                 logging.debug("No matching closing brackets at: " + str(i))
                 return -1
+            res[pstack.pop()] = i
 
     if len(pstack) > 0:
         logging.debug("No matching opening brackets at: " + str(pstack.pop()))
