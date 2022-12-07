@@ -15,6 +15,8 @@ class PrivilegedContainersPSP(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
+        if not spec:
+            return CheckResult.UNKNOWN
         # for psp
         if isinstance(spec, dict) and spec.get("privileged") == [True]:
             self.evaluated_keys = ["spec/[0]/privileged"]
