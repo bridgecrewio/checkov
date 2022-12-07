@@ -6,15 +6,13 @@ from urllib.parse import quote_plus
 import responses
 from unittest import mock
 
-from checkov.common.output.report import Report
-
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
 from checkov.github_actions.runner import Runner as GHA_Runner
 from checkov.common.models.enums import CheckResult
-from .mocks import mock_scan, mock_scan_empty, mock_scan_image, mock_get_images
+from .mocks import mock_scan_empty, mock_scan_image
 
 WORKFLOW_EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
 WORKFLOW_IMAGE_EXAMPLES_DIR = Path(__file__).parent / "examples/example/.github/workflows"
