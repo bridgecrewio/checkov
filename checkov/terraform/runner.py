@@ -23,6 +23,9 @@ from checkov.common.output.report import Report, merge_reports, remove_duplicate
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_current_module_index, \
+    get_tf_definition_key
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -30,6 +33,7 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -40,6 +44,7 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tag_providers import get_resource_tags
+from checkov.common.runners.base_runner import strtobool
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -79,6 +84,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -134,7 +140,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
             if CHECKOV_CREATE_GRAPH and local_graph:
                 for vertex in local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
-                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                        if self.enable_nested_modules:
+                            vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        else:
+                            vertex_id = vertex.id
+                        report.add_resource(f'{vertex.path}:{vertex_id}')
                 self.graph_manager.save_graph(local_graph)
                 self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
                     local_graph.vertices,
@@ -217,10 +227,18 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         root_folder = os.path.split(full_file_path)[0]
                     resource_id = ".".join(entity_context['definition_path'])
                     resource = resource_id
-                    module_dependency = entity.get("module_dependency_")
-                    module_dependency_num = entity.get("module_dependency_num_")
+                    module_dependency = entity.get(CustomAttributes.MODULE_DEPENDENCY)
+                    module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
                     if module_dependency and module_dependency_num:
-                        referrer_id = self._find_id_for_referrer(f'{full_file_path}[{module_dependency}#{module_dependency_num}]')
+                        if self.enable_nested_modules:
+                            module_index = get_current_module_index(module_dependency)
+                            tf_path = get_tf_definition_key(full_file_path, module_dependency[:module_index],
+                                                            module_dependency_num,
+                                                            module_dependency[module_index:])
+                        else:
+                            module_dependency_path = module_dependency.split(PATH_SEPARATOR)[-1]
+                            tf_path = get_tf_definition_key(full_file_path, module_dependency_path, module_dependency_num)
+                        referrer_id = self._find_id_for_referrer(tf_path)
                         if referrer_id:
                             resource = f'{referrer_id}.{resource_id}'
                     record = Record(
@@ -244,7 +262,10 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         connected_node=connected_node_data
                     )
                     if self.breadcrumbs:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
+                        if self.enable_nested_modules:
+                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
+                        else:
+                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)
@@ -284,9 +305,15 @@ class Runner(ImageReferencerMixin, BaseRunner):
             self.context = definitions_context
             logging.debug('Created definitions context')
 
+        if self.enable_nested_modules:
+            self.push_skipped_checks_down_from_modules(self.context)
         for full_file_path, definition in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
-            abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
+            if self.enable_nested_modules:
+                abs_scanned_file = get_abs_path(full_file_path)
+                abs_referrer = None
+            else:
+                abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
@@ -319,12 +346,23 @@ class Runner(ImageReferencerMixin, BaseRunner):
             entity_evaluations = None
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
+            (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             entity_id = ".".join(definition_path)  # example: aws_s3_bucket.my_bucket
 
             caller_file_path = None
             caller_file_line_range = None
 
-            if module_referrer is not None:
+            if self.enable_nested_modules:
+                module, _ = get_module_from_full_path(full_file_path)
+                if module:
+                    referrer_id = self._find_id_for_referrer(full_file_path)
+                    entity_id = f"{referrer_id}.{entity_id}"
+                    module_name = referrer_id.split('.')[-1]
+                    caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
+                    caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
+                    abs_caller_file = get_abs_path(module)
+                    caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
+            elif module_referrer is not None:
                 referrer_id = self._find_id_for_referrer(full_file_path)
 
                 if referrer_id:
@@ -364,8 +402,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 entity_code_lines = None
                 skipped_checks = None
 
-            if block_type == "module":
-                self.push_skipped_checks_down(self, definition_context, full_file_path, skipped_checks)
+            if not self.enable_nested_modules and block_type == "module":
+                self.push_skipped_checks_down_old(definition_context, full_file_path, skipped_checks)
 
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
@@ -376,7 +414,6 @@ class Runner(ImageReferencerMixin, BaseRunner):
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
-            (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
             tags = get_resource_tags(entity_type, entity_config)
             if results:
                 for check, check_result in results.items():
@@ -403,8 +440,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         details=check.details
                     )
                     if CHECKOV_CREATE_GRAPH:
-                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(
-                            '.'.join([entity_type, entity_name]))
+                        if self.enable_nested_modules:
+                            entity_key = entity_id
+                        else:
+                            entity_key = f"{entity_type}.{entity_name}"
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
 
@@ -442,7 +482,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     parsing_errors.update(file_parsing_errors)
 
     @staticmethod
-    def push_skipped_checks_down(self, definition_context, module_path, skipped_checks):
+    def push_skipped_checks_down_old(definition_context, module_path, skipped_checks):
         # this method pushes the skipped_checks down the 1 level to all resource types.
 
         if skipped_checks is None:
@@ -456,7 +496,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         # where referrer could be a path, or path1->path2, etc
 
         for definition in definition_context:
-            _, mod_ref = self._strip_module_referrer(definition)
+            _, mod_ref = Runner._strip_module_referrer(definition)
             if mod_ref is None:
                 continue
 
@@ -473,6 +513,43 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     for resource_config in block_configs.values():
                         # append the skipped checks also from a module to another module
                         resource_config["skipped_checks"] += skipped_checks
+                else:
+                    # there may be multiple resource types - aws_bucket, etc
+                    for resource_configs in block_configs.values():
+                        # there may be multiple names for each resource type
+                        for resource_config in resource_configs.values():
+                            # append the skipped checks from the module to the other resources.
+                            resource_config["skipped_checks"] += skipped_checks
+
+    def push_skipped_checks_down_from_modules(self, definition_context):
+        module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
+        for full_file_path, definition in self.definitions.items():
+            definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
+            for entity in definition.get(BlockType.MODULE, []):
+                module_name = module_context_parser.get_entity_context_path(entity)[0]
+                skipped_checks = definition_modules_context.get(module_name).get('skipped_checks')
+                resolved_paths = entity.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
+                self.push_skipped_checks_down(definition_context, skipped_checks, resolved_paths)
+
+    def push_skipped_checks_down(self, definition_context, skipped_checks, resolved_paths):
+        # this method pushes the skipped_checks down the 1 level to all resource types.
+        if not skipped_checks:
+            return
+
+        for definition in resolved_paths:
+            for block_type, block_configs in definition_context[definition].items():
+                # skip if type is not a Terraform resource
+                if block_type not in CHECK_BLOCK_TYPES:
+                    continue
+
+                if block_type == "module":
+                    # modules don't have a type, just a name
+                    for module_name, module_config in block_configs.items():
+                        # append the skipped checks also from a module to another module
+                        module_config["skipped_checks"] += skipped_checks
+                        module_context = next(m for m in self.definitions.get(definition).get(block_type) if module_name in m)
+                        recursive_resolved_paths = module_context.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
+                        self.push_skipped_checks_down(definition_context, skipped_checks, recursive_resolved_paths)
                 else:
                     # there may be multiple resource types - aws_bucket, etc
                     for resource_configs in block_configs.values():
@@ -505,11 +582,14 @@ class Runner(ImageReferencerMixin, BaseRunner):
         for file_content in self.definitions_with_modules.values():
             for modules in file_content["module"]:
                 for module_name, module_content in modules.items():
-                    if "__resolved__" not in module_content:
+                    if RESOLVED_MODULE_ENTRY_NAME not in module_content:
                         continue
 
-                    if full_file_path in module_content["__resolved__"]:
-                        id_referrer = f"module.{module_name}"
+                    if full_file_path in module_content[RESOLVED_MODULE_ENTRY_NAME]:
+                        if self.enable_nested_modules:
+                            id_referrer = module_content.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        else:
+                            id_referrer = f"module.{module_name}"
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
 
@@ -520,7 +600,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         def __cache_file_content(file_name: str, file_modules: list[dict[str, Any]]) -> None:
             for modules in file_modules:
                 for module_content in modules.values():
-                    if "__resolved__" in module_content:
+                    if RESOLVED_MODULE_ENTRY_NAME in module_content:
                         self.definitions_with_modules[file_name] = file_content
                         return
 

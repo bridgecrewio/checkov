@@ -679,43 +679,41 @@ class TestRunnerValid(unittest.TestCase):
                     }
                 },
                 "module": {
-                    "module": {
-                        "new_relic": {
-                            "start_line": 57,
-                            "end_line": 67,
-                            "code_lines": [
-                                (57, 'module "new_relic" {\n'),
-                                (
-                                    58,
-                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
-                                ),
-                                (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
-                                (
-                                    60,
-                                    "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
-                                ),
-                                (
-                                    61,
-                                    "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
-                                ),
-                                (
-                                    62,
-                                    "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
-                                ),
-                                (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
-                                (
-                                    64,
-                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
-                                ),
-                                (
-                                    65,
-                                    "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
-                                ),
-                                (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
-                                (67, "}"),
-                            ],
-                            "skipped_checks": [],
-                        }
+                    "new_relic": {
+                        "start_line": 57,
+                        "end_line": 67,
+                        "code_lines": [
+                            (57, 'module "new_relic" {\n'),
+                            (
+                                58,
+                                'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
+                            ),
+                            (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
+                            (
+                                60,
+                                "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                            ),
+                            (
+                                61,
+                                "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                            ),
+                            (
+                                62,
+                                "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                            ),
+                            (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
+                            (
+                                64,
+                                'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
+                            ),
+                            (
+                                65,
+                                "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
+                            ),
+                            (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
+                            (67, "}"),
+                        ],
+                        "skipped_checks": [],
                     }
                 },
             },
@@ -768,7 +766,7 @@ class TestRunnerValid(unittest.TestCase):
             },
         }
         tf_definitions = {
-            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf": {
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example.tf": {
                 "resource": [
                     {
                         "aws_s3_bucket": {
@@ -838,7 +836,7 @@ class TestRunnerValid(unittest.TestCase):
                     }
                 ],
             },
-            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
                 "resource": [
                     {
                         "aws_s3_bucket": {
