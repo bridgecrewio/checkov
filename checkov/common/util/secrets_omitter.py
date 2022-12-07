@@ -83,7 +83,7 @@ class SecretsOmitter:
                     continue
 
                 for secret_line_index, omitted_line in \
-                        zip(list(range(secret_check_line_range[0], secret_check_line_range[1] + 1)),
+                        zip(list(range(secret_check_line_range[0], secret_check_line_range[1] + 1)),  # noqa: B905
                             secrets_check_lines):
                     for entry_index, (line_index, _) in enumerate(check.code_block):
                         if secret_line_index == line_index:
