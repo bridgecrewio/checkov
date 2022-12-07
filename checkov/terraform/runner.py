@@ -443,7 +443,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         if self.enable_nested_modules:
                             entity_key = entity_id
                         else:
-                            entity_key = '.'.join([entity_type, entity_name])
+                            entity_key = f"{entity_type}.{entity_name}"
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
