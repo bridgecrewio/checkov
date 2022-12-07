@@ -1,17 +1,18 @@
 from __future__ import annotations
 import logging
 from enum import Enum
-from typing import Iterator
+from typing import Iterator, TYPE_CHECKING
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.output.record import Record
-from checkov.common.output.report import Report
+
+if TYPE_CHECKING:
+    from checkov.common.output.record import Record
+    from checkov.common.output.report import Report
 
 
 class SecretsOmitterStatus(Enum):
-    Success = 0
-    InsufficientReports = 1
-    Failed = 2
+    SUCCESS = 0
+    INSUFFICIENT_REPORTS = 1
 
 
 class SecretsOmitter:
@@ -57,7 +58,7 @@ class SecretsOmitter:
     def omit(self) -> SecretsOmitterStatus:
         if not self.reports or not self.secrets_report:
             logging.debug("Insufficient reports to omit secrets")
-            return SecretsOmitterStatus.InsufficientReports
+            return SecretsOmitterStatus.INSUFFICIENT_REPORTS
 
         files_with_secrets: set[str] = {secret_check.file_path for secret_check in self._secret_check()}
         for check in self._non_secret_check():
@@ -83,4 +84,4 @@ class SecretsOmitter:
                         if secret_line_index == line_index:
                             check.code_block[entry_index] = (line_index, omitted_line)
 
-        return SecretsOmitterStatus.Success
+        return SecretsOmitterStatus.SUCCESS

@@ -43,7 +43,7 @@ def test_get_secret_lines(code_block, expected_range, expected_lines):
     ],
 )
 def test_omit_insufficient_reports(reports):
-    assert SecretsOmitter(reports).omit() == SecretsOmitterStatus.InsufficientReports
+    assert SecretsOmitter(reports).omit() == SecretsOmitterStatus.INSUFFICIENT_REPORTS
 
 
 def test_omit():
@@ -66,5 +66,5 @@ def test_omit():
 
     res = SecretsOmitter([secrets_report, report]).omit()
 
-    assert res == SecretsOmitterStatus.Success
+    assert res == SecretsOmitterStatus.SUCCESS
     assert report.passed_checks[0].code_block == [(2, 'bc*'), (3, 'efg******'), (4, 'abcd'), (5, 'abc')]
