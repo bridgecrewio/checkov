@@ -59,15 +59,19 @@ class SecretsOmitter:
             logging.debug("Insufficient reports to omit secrets")
             return SecretsOmitterStatus.InsufficientReports
 
-        for secret_check in self._secret_check():
-            secret_check_file_path = secret_check.file_path
-            secret_check_line_range, secrets_check_lines = SecretsOmitter.get_secret_lines(secret_check.code_block)
-            if secret_check_line_range == [-1, -1]:
+        files_with_secrets: set[str] = {secret_check.file_path for secret_check in self._secret_check()}
+        for check in self._non_secret_check():
+            check_file_path = check.file_path
+            check_line_range = check.file_line_range
+
+            if check_file_path not in files_with_secrets:
                 continue
 
-            for check in self._non_secret_check():
-                check_file_path = check.file_path
-                check_line_range = check.file_line_range
+            for secret_check in self._secret_check():
+                secret_check_file_path = secret_check.file_path
+                secret_check_line_range, secrets_check_lines = SecretsOmitter.get_secret_lines(secret_check.code_block)
+                if secret_check_line_range == [-1, -1]:
+                    continue
 
                 if secret_check_file_path != check_file_path or \
                         not SecretsOmitter._line_range_overlaps(secret_check_line_range, check_line_range):
