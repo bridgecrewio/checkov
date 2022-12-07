@@ -7,6 +7,8 @@ import os
 import re
 from collections.abc import Hashable
 from copy import deepcopy
+from json import JSONDecodeError
+
 import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
@@ -387,10 +389,13 @@ class TerraformVariableRenderer(VariableRenderer):
                     continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
 
-                flatten_key = next(iter(rendered_blocks.keys()))
-                if next_key in rendered_blocks[flatten_key]:
+                try:
+                    flatten_key = next(iter(rendered_blocks.keys()))
+                except StopIteration:
+                    flatten_key = ''
+                if rendered_blocks.get(flatten_key) and next_key in rendered_blocks[flatten_key]:
                     rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
-                elif isinstance(rendered_blocks[flatten_key], list):
+                elif isinstance(rendered_blocks.get(flatten_key), list):
                     for i in range(len(rendered_blocks[flatten_key])):
                         block_content[DYNAMIC_STRING][next_key]['for_each'] = [dynamic_values[i]]
                         rendered_blocks[flatten_key][i].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
@@ -419,7 +424,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
                     block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
                 else:
-                    block_conf[dynamic_argument] = block_conf[dynamic_argument]
+                    block_conf[dynamic_argument] = block_content[dynamic_argument]
 
     @staticmethod
     def _handle_for_loop_in_dynamic_values(dynamic_values: str | dict[str, Any]) -> str | dict[str, Any] | list[dict[str, Any]]:
@@ -429,9 +434,13 @@ class TerraformVariableRenderer(VariableRenderer):
         if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
             dynamic_values = dynamic_values[1:-1]
             start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
-            end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
-            dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
-            return json.loads(dynamic_values)
+            if start_bracket_idx != -1:
+                end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
+                dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
+            try:
+                return json.loads(dynamic_values)
+            except JSONDecodeError:
+                return dynamic_values
         return dynamic_values
 
     @staticmethod
