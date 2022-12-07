@@ -31,8 +31,7 @@ class SecretsOmitter:
 
     def _non_secret_check(self) -> Iterator[Record]:
         for report in self.reports:
-            checks = report.failed_checks + report.passed_checks
-            for check in checks:
+            for check in itertools.chain(report.failed_checks, report.passed_checks):
                 yield check
 
     @staticmethod
