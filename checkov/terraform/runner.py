@@ -305,7 +305,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
             self.context = definitions_context
             logging.debug('Created definitions context')
 
-        self.push_skipped_checks_down_from_modules(self.context)
+        if self.enable_nested_modules:
+            self.push_skipped_checks_down_from_modules(self.context)
         for full_file_path, definition in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
             if self.enable_nested_modules:
@@ -401,6 +402,9 @@ class Runner(ImageReferencerMixin, BaseRunner):
                 entity_code_lines = None
                 skipped_checks = None
 
+            if not self.enable_nested_modules and block_type == "module":
+                self.push_skipped_checks_down_old(definition_context, full_file_path, skipped_checks)
+
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
                 for var_name, context_info in self.evaluations_context.get(full_file_path, {}).items():
@@ -476,6 +480,46 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     self.definitions[file] = parse_result
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
+
+    @staticmethod
+    def push_skipped_checks_down_old(definition_context, module_path, skipped_checks):
+        # this method pushes the skipped_checks down the 1 level to all resource types.
+
+        if skipped_checks is None:
+            return
+
+        if len(skipped_checks) == 0:
+            return
+
+        # iterate over definitions to find those that reference the module path
+        # definition is in the format <file>[<referrer>#<index>]
+        # where referrer could be a path, or path1->path2, etc
+
+        for definition in definition_context:
+            _, mod_ref = Runner._strip_module_referrer(definition)
+            if mod_ref is None:
+                continue
+
+            if module_path not in mod_ref:
+                continue
+
+            for block_type, block_configs in definition_context[definition].items():
+                # skip if type is not a Terraform resource
+                if block_type not in CHECK_BLOCK_TYPES:
+                    continue
+
+                if block_type == "module":
+                    # modules don't have a type, just a name
+                    for resource_config in block_configs.values():
+                        # append the skipped checks also from a module to another module
+                        resource_config["skipped_checks"] += skipped_checks
+                else:
+                    # there may be multiple resource types - aws_bucket, etc
+                    for resource_configs in block_configs.values():
+                        # there may be multiple names for each resource type
+                        for resource_config in resource_configs.values():
+                            # append the skipped checks from the module to the other resources.
+                            resource_config["skipped_checks"] += skipped_checks
 
     def push_skipped_checks_down_from_modules(self, definition_context):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
