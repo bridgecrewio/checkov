@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING, cast
 
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
+    integration as metadata_integration
 import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -11,6 +13,9 @@ from detect_secrets.util.inject import call_function_with_arguments
 import re
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
+
+MIN_CHARACTERS = 5
+MAX_CHARACTERS = 100
 
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
@@ -55,7 +60,10 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
                             secret_policy['incidentId']
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
-                                                 'Regex': regex})
+                                                 'Regex': regex,
+                                                 'isCustom': secret_policy['isCustom']})
+                        if secret_policy['isCustom']:
+                            metadata_integration.check_metadata[check_id] = {'id': check_id}
         if not_parsed:
             logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
@@ -91,11 +99,14 @@ class CustomRegexDetector(RegexBasedDetector):
                 is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
             except Exception:
                 is_verified = False
-
-            ps = PotentialSecret(type=self.regex_to_metadata[regex.pattern]["Name"], filename=filename, secret=match,
+            regex_data = self.regex_to_metadata[regex.pattern]
+            ps = PotentialSecret(type=regex_data["Name"], filename=filename, secret=match,
                                  line_number=line_number, is_verified=is_verified)
             ps.check_id = self.regex_to_metadata[regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
-            output.add(ps)
+            if len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data['isCustom']:
+                output.add(ps)
+            else:
+                logging.info(f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
         return output
 
