@@ -382,7 +382,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
 
-            if DYNAMIC_STRING in block_content:
+            if DYNAMIC_STRING in block_content and dynamic_values:
                 try:
                     next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
                 except (StopIteration, AttributeError):
@@ -434,8 +434,8 @@ class TerraformVariableRenderer(VariableRenderer):
         if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
             dynamic_values = dynamic_values[1:-1]
             start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
-            if start_bracket_idx != -1:
-                end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
+            end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
+            if start_bracket_idx != -1 and end_bracket_idx != -1:
                 dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
             try:
                 return json.loads(dynamic_values)
@@ -546,13 +546,13 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
             pstack.append(i)
         elif c == RIGHT_BRACKET:
             if len(pstack) == 0:
-                raise IndexError("No matching closing brackets at: " + str(i))
+                logging.debug("No matching closing brackets at: " + str(i))
             res[pstack.pop()] = i
 
     if len(pstack) > 0:
-        raise IndexError("No matching opening brackets at: " + str(pstack.pop()))
+        logging.debug("No matching opening brackets at: " + str(pstack.pop()))
 
-    return res[open_bracket_idx]
+    return res.get(open_bracket_idx) or -1
 
 
 def get_lookup_value(block_content, dynamic_argument) -> str:
