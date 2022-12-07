@@ -6,8 +6,6 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
 
-from checkov.common.util.parser_utils import is_nested
-
 if TYPE_CHECKING:
     from networkx import DiGraph
 
@@ -15,7 +13,6 @@ from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
-from checkov.common.runners.base_runner import strtobool
 
 MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\[.+\#.+\]")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
@@ -52,20 +49,10 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
         return ["", ""]
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
-
-    module_dependency = module_dependency[1:-1]
-
-    module = module_dependency[:module_dependency.index('.tf#') + 3]   # len('.tf')
-    module_index = module_dependency.index('.tf#') + 4    # len('.tf#')
-    index = module_dependency[module_index:]
-
-    # if its nested module dependency
-
-    if is_nested(module_dependency) and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
-        module += module_dependency[module_dependency.index('['):]
-        index = module_dependency[module_index:module_dependency.index('[')]
-
-    return [module, index]
+    return [
+        module_dependency[1:module_dependency.index('.tf#') + len('.tf')],
+        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-1]
+    ]
 
 
 BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
