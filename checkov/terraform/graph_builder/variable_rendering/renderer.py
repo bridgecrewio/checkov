@@ -432,13 +432,13 @@ class TerraformVariableRenderer(VariableRenderer):
             return dynamic_values
 
         if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
-            dynamic_values = dynamic_values[1:-1]
-            start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
-            end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
+            rendered_dynamic_values = dynamic_values[1:-1]
+            start_bracket_idx = rendered_dynamic_values.find(LEFT_BRACKET)
+            end_bracket_idx = find_match_bracket_index(rendered_dynamic_values, start_bracket_idx)
             if start_bracket_idx != -1 and end_bracket_idx != -1:
-                dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
+                rendered_dynamic_values = rendered_dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
             try:
-                return json.loads(dynamic_values)
+                return json.loads(rendered_dynamic_values)
             except JSONDecodeError:
                 return dynamic_values
         return dynamic_values
