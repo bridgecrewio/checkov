@@ -78,8 +78,13 @@ class SecretsOmitter:
                         not SecretsOmitter._line_range_overlaps(secret_check_line_range, check_line_range):
                     continue
 
+                if len(secrets_check_lines) != secret_check_line_range[1] - secret_check_line_range[0] + 1:
+                    logging.error("Secrets lines does not match the length of the line range, sanity check failed")
+                    continue
+
                 for secret_line_index, omitted_line in \
-                        zip(range(secret_check_line_range[0], secret_check_line_range[1] + 1), secrets_check_lines):
+                        zip(range(secret_check_line_range[0], secret_check_line_range[1] + 1), secrets_check_lines,
+                            strict=True):
                     for entry_index, (line_index, _) in enumerate(check.code_block):
                         if secret_line_index == line_index:
                             check.code_block[entry_index] = (line_index, omitted_line)
