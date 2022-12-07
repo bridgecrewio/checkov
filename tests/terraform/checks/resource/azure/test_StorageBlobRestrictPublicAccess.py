@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.StorageAccountDisablePublicAccess import check
+from checkov.terraform.checks.resource.azure.StorageBlobRestrictPublicAccess import check
 from checkov.terraform.runner import Runner
 
 
-class TestStorageAccountDisablePublicAccess(unittest.TestCase):
+class TestStorageBlobRestrictPublicAccess(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_StorageAccountDisablePublicAccess"
+        test_files_dir = Path(__file__).parent / "example_StorageBlobRestrictPublicAccess"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
