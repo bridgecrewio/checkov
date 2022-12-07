@@ -36,8 +36,9 @@ class NegativeBranchSecurity(BaseGithubCheck):
                 return self.missing_attribute_result
 
             if matches:
-                if ANY_VALUE in self.get_forbidden_values() or all(
-                    match.value not in self.get_forbidden_values() for match in matches
+                forbidden_values = self.get_forbidden_values()
+                if ANY_VALUE in forbidden_values or any(
+                    match.value in self.get_forbidden_values() for match in matches
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
                     return CheckResult.FAILED

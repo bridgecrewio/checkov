@@ -21,6 +21,7 @@ class BaseVCSDAL:
         self.current_repository = ""
         self.current_branch = ""
         self.repo_owner = ""
+        self.org = ""
         self.default_branch_cache: dict[str, Any] = {}
 
         self.request_lib_http = None

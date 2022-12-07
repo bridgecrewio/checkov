@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchCommitSignature(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection rules requires signed commits"
+        name = "Ensure GitHub branch protection rules requires signed commits - CIS 1.1.12"
         id = "CKV_GITHUB_4"
         super().__init__(
             name=name,

@@ -5,7 +5,7 @@ from checkov.github.base_github_org_security import OrgSecurity
 
 class Github2FA(OrgSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub organization security settings require 2FA"
+        name = "Ensure GitHub organization security settings require 2FA - CIS 1.3.5"
         id = "CKV_GITHUB_1"
         super().__init__(
             name=name,
