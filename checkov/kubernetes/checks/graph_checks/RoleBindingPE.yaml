@@ -12,6 +12,14 @@ definition:
       operator: within
       attribute: kind
     - or:
+        - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
+          operator: not_exists
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+          connected_resource_types:
+            - ClusterRole
+            - Role
         - cond_type: attribute
           attribute: 'subjects.*.kind'
           operator: not_within
