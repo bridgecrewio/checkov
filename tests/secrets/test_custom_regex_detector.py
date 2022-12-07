@@ -237,7 +237,7 @@ class TestCustomRegexDetector(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path,
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
-        self.assertEqual(len(report.failed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 1)
 
     def test_test_custom_regex_detector_out_custom_limit_characters(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
