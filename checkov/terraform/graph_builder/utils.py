@@ -61,7 +61,7 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
 
     # if its nested module dependency
 
-    if is_nested(module_dependency) and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
+    if is_nested(module_dependency) and strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
         module += module_dependency[module_dependency.index('['):]
         index = module_dependency[module_index:module_dependency.index('[')]
 

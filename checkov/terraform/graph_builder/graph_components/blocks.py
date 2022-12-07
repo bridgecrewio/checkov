@@ -36,7 +36,7 @@ class TerraformBlock(Block):
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:
-            if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
+            if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
                 self.path = path
             else:
                 self.path, module_dependency, num = remove_module_dependency_in_path(path)
