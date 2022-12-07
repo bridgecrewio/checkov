@@ -21,10 +21,9 @@ from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PA
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
 
-if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
-    from checkov.sca_package_2.output import create_cli_output
-else:
-    from checkov.sca_package.output import create_cli_output
+from checkov.sca_package_2.output import create_cli_output as create_cli_output_v2
+
+from checkov.sca_package.output import create_cli_output as create_cli_output_v1
 
 from checkov.version import version
 
@@ -204,8 +203,10 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
+                create_cli_output = create_cli_output_v2 if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else create_cli_output_v1
                 output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
                                                  self.skipped_checks)
+
         else:
             if not is_quiet:
                 for record in self.passed_checks:
