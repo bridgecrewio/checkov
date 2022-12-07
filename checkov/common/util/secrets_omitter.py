@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import itertools
 import logging
 from enum import Enum
 from typing import Iterator, TYPE_CHECKING
