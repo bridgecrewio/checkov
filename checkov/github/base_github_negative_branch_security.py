@@ -38,7 +38,7 @@ class NegativeBranchSecurity(BaseGithubCheck):
             if matches:
                 forbidden_values = self.get_forbidden_values()
                 if ANY_VALUE in forbidden_values or any(
-                    match.value in self.get_forbidden_values() for match in matches
+                    match.value in forbidden_values for match in matches
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
                     return CheckResult.FAILED
