@@ -3,7 +3,7 @@ import os
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
-from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
+from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
