@@ -21,33 +21,7 @@ resource "ncloud_route" "pass" {
   target_no              = ncloud_nat_gateway.nat_gateway.id
 }
 
-resource "ncloud_route" "pass2" {
-  route_table_no         = ncloud_route_table.route_table.id
-  destination_cidr_block = "0.0.0.1/0"
-  target_type            = "VPCPEERING"
-  // NATGW (NAT Gateway) | VPCPEERING (VPC Peering) | VGW (Virtual Private Gateway).
-  target_name            = ncloud_nat_gateway.nat_gateway.name
-  target_no              = ncloud_nat_gateway.nat_gateway.id
-}
-
 resource "ncloud_route" "fail" {
-  route_table_no         = ncloud_route_table.route_table.id
-  destination_cidr_block = "0.0.0.0/0"
-  target_type            = "VPCPEERING"
-  // NATGW (NAT Gateway) | VPCPEERING (VPC Peering) | VGW (Virtual Private Gateway).
-  target_name            = ncloud_nat_gateway.nat_gateway.name
-  target_no              = ncloud_nat_gateway.nat_gateway.id
-}
-
-resource "ncloud_route" "fail2" {
-  route_table_no         = ncloud_route_table.route_table.id
-  destination_cidr_block = "0.0.0.0/0"
-  target_type            = "VGW"  // NATGW (NAT Gateway) | VPCPEERING (VPC Peering) | VGW (Virtual Private Gateway).
-  target_name            = ncloud_nat_gateway.nat_gateway.name
-  target_no              = ncloud_nat_gateway.nat_gateway.id
-}
-
-resource "ncloud_route" "fail3" {
   route_table_no         = ncloud_route_table.route_table.id
   destination_cidr_block = "0.0.0.1/0"
   target_type            = "NATGW"  // NATGW (NAT Gateway) | VPCPEERING (VPC Peering) | VGW (Virtual Private Gateway).

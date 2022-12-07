@@ -19,19 +19,16 @@ class TestRouteTableNATGatewayDefault(unittest.TestCase):
 
         passing_resources = {
             "ncloud_route.pass",
-            "ncloud_route.pass2",
         }
         failing_resources = {
             "ncloud_route.fail",
-            "ncloud_route.fail2",
-            "ncloud_route.fail3",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

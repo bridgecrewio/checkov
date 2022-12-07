@@ -13,10 +13,12 @@ class RouteTableNATGatewayDefault(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if "destination_cidr_block" in conf.keys() and "target_type" in conf.keys():
-            if conf.get("destination_cidr_block") == ["0.0.0.0/0"] \
-                    and conf.get("target_type") == ["NATGW"]:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+            if conf.get("target_type") == ["NATGW"]:
+                if conf.get("destination_cidr_block") == ["0.0.0.0/0"]:
+                    return CheckResult.PASSED
+                else:
+                    return CheckResult.FAILED
+        return CheckResult.UNKNOWN
 
 
 check = RouteTableNATGatewayDefault()
