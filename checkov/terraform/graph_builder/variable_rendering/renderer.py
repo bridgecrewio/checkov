@@ -324,7 +324,7 @@ class TerraformVariableRenderer(VariableRenderer):
         dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
         for argument, value in block_content.items():
             if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value:
-                dynamic_arguments.append('.'.join(filter(None, [*path_accumulator, argument])))
+                dynamic_arguments.append(DOT_SEPERATOR.join(filter(None, [*path_accumulator, argument])))
             elif isinstance(value, dict):
                 TerraformVariableRenderer._extract_dynamic_arguments(block_name, value, dynamic_arguments,
                                                                      path_accumulator + [argument])
@@ -346,6 +346,7 @@ class TerraformVariableRenderer(VariableRenderer):
             block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
             block_content = block_values.get("content")
             dynamic_values = block_values.get("for_each")
+            dynamic_values = TerraformVariableRenderer._handle_for_loop_in_dynamic_values(dynamic_values)
             if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
@@ -389,6 +390,10 @@ class TerraformVariableRenderer(VariableRenderer):
                 flatten_key = next(iter(rendered_blocks.keys()))
                 if next_key in rendered_blocks[flatten_key]:
                     rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                elif isinstance(rendered_blocks[flatten_key], list):
+                    for i in range(len(rendered_blocks[flatten_key])):
+                        block_content[DYNAMIC_STRING][next_key]['for_each'] = [dynamic_values[i]]
+                        rendered_blocks[flatten_key][i].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
                 else:
                     rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
@@ -403,12 +408,31 @@ class TerraformVariableRenderer(VariableRenderer):
             block_name: str,
     ):
         dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
-            dpath.get(block_content, dynamic_argument, separator='.')
+            dpath.get(block_content, dynamic_argument, separator=DOT_SEPERATOR), dynamic_argument
         )
         if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
-            dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator='.')
+            dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator=DOT_SEPERATOR)
         else:
-            dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
+            try:
+                dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
+            except KeyError:
+                if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
+                    block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
+                else:
+                    block_conf[dynamic_argument] = block_conf[dynamic_argument]
+
+    @staticmethod
+    def _handle_for_loop_in_dynamic_values(dynamic_values: str | dict[str, Any]) -> str | dict[str, Any] | list[dict[str, Any]]:
+        if not isinstance(dynamic_values, str):
+            return dynamic_values
+
+        if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
+            dynamic_values = dynamic_values[1:-1]
+            start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
+            end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
+            dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
+            return json.loads(dynamic_values)
+        return dynamic_values
 
     @staticmethod
     def _assign_dynamic_value_for_map(
@@ -419,19 +443,13 @@ class TerraformVariableRenderer(VariableRenderer):
     ):
         if isinstance(dynamic_value, dict):
             if dynamic_argument in dynamic_value:
-                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator='.')
+                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator=DOT_SEPERATOR)
             else:
                 if isinstance(block_content, dict) and dynamic_argument in block_content and isinstance(block_content[dynamic_argument], str):
-                    lookup_value: str = ''
-                    if 'None' in block_content[dynamic_argument]:
-                        lookup_value = 'null'
-                    elif 'False' in block_content[dynamic_argument]:
-                        lookup_value = 'false'
-                    elif 'True' in block_content[dynamic_argument]:
-                        lookup_value = 'true'
-                    dpath.set(block_conf, dynamic_argument, lookup_value, separator='.')
+                    lookup_value = get_lookup_value(block_content, dynamic_argument)
+                    dpath.set(block_conf, dynamic_argument, lookup_value, separator=DOT_SEPERATOR)
         else:
-            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
+            dpath.set(block_conf, dynamic_argument, dynamic_value, separator=DOT_SEPERATOR)
 
     def evaluate_non_rendered_values(self) -> None:
         for index, vertex in enumerate(self.local_graph.vertices):
@@ -471,8 +489,11 @@ class TerraformVariableRenderer(VariableRenderer):
             self.local_graph.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def extract_dynamic_value_in_map(dynamic_value: str) -> str:
-        dynamic_value_in_map = dynamic_value.split('.')[-1]
+    def extract_dynamic_value_in_map(dynamic_value: str, dynamic_argument: str = '') -> str:
+        if LOOKUP in dynamic_value and dynamic_argument in dynamic_value:
+            return dynamic_argument
+
+        dynamic_value_in_map = dynamic_value.split(DOT_SEPERATOR)[-1]
         if LEFT_BRACKET not in dynamic_value_in_map:
             return dynamic_value_in_map
         return dynamic_value_in_map.split(LEFT_BRACKET_WITH_QUOTATION)[-1].replace(RIGHT_BRACKET_WITH_QUOTATION, '')
@@ -506,3 +527,31 @@ class TerraformVariableRenderer(VariableRenderer):
                 evaluated_key = self.evaluate_value(k)
                 evaluated_val[evaluated_key] = self.evaluate_value(v)
         return evaluated_val
+
+
+def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
+    res = {}
+    pstack = []
+    for i, c in enumerate(s):
+        if c == LEFT_BRACKET:
+            pstack.append(i)
+        elif c == RIGHT_BRACKET:
+            if len(pstack) == 0:
+                raise IndexError("No matching closing brackets at: " + str(i))
+            res[pstack.pop()] = i
+
+    if len(pstack) > 0:
+        raise IndexError("No matching opening brackets at: " + str(pstack.pop()))
+
+    return res[open_bracket_idx]
+
+
+def get_lookup_value(block_content, dynamic_argument) -> str:
+    lookup_value: str = ''
+    if 'None' in block_content[dynamic_argument]:
+        lookup_value = 'null'
+    elif 'False' in block_content[dynamic_argument]:
+        lookup_value = 'false'
+    elif 'True' in block_content[dynamic_argument]:
+        lookup_value = 'true'
+    return lookup_value

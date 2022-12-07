@@ -27,6 +27,9 @@ class DockerSocketVolume(BaseResourceCheck):
             return CheckResult.FAILED
 
         spec = conf['spec'][0]
+        if not spec:
+            return CheckResult.UNKNOWN
+
         if "volume" in spec and spec.get("volume"):
             volumes = spec.get("volume")
             for idx, v in enumerate(volumes):

@@ -16,7 +16,10 @@ class PrivilegedContainers(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        spec = conf['spec'][0]
+        spec = conf.get('spec', [None])[0]
+        if not spec:
+            return CheckResult.UNKNOWN
+        
         evaluated_keys_path = "spec"
 
         template = spec.get("template")
