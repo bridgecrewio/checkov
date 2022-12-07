@@ -24,8 +24,10 @@ class AKSMaxPodsMinimum(BaseResourceCheck):
         if "default_node_pool" in conf.keys():
             self.evaluated_keys = ["default_node_pool/max_pods"]
             pool = conf["default_node_pool"][0]
-            if "max_pods" in pool.keys() and isinstance(pool["max_pods"][0], int):
-                max_pods = pool["max_pods"][0]
+            if "max_pods" in pool.keys():
+                max_pods_list = pool["max_pods"]
+                if max_pods_list and isinstance(max_pods_list, list) and isinstance(max_pods_list[0], int):
+                    max_pods = max_pods_list[0]
 
         if max_pods < 50:
             return CheckResult.FAILED

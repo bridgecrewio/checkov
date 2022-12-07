@@ -23,6 +23,7 @@ class TestAKSMaxPodsMinimum(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_kubernetes_cluster.fail',
+            'azurerm_kubernetes_cluster.failed_empty_max_pods',
             'azurerm_kubernetes_cluster_node_pool.fail',
             'azurerm_kubernetes_cluster.fail2',
             'azurerm_kubernetes_cluster_node_pool.fail2',
