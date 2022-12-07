@@ -11,31 +11,42 @@ definition:
         - RoleBinding
       operator: within
       attribute: kind
-    - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
-      operator: exists
-      resource_types:
-        - ClusterRole
-        - Role
-      connected_resource_types:
-        - ClusterRoleBinding
-        - RoleBinding
-    - and:  # ClusterRole does not contain `clusterrolebindings/rolebinding/*` in `rule.resources` and `bind/*` in `rule.verbs`
-      - cond_type: attribute
-        attribute: rules.resources
-        operator: not_intersects
-        value:
-          - 'clusterrolebindings'
-          - 'rolebindings'
-          - '*'
-        resource_types:
-          - ClusterRole
-          - Role
-      - cond_type: attribute
-        attribute: rules.verbs
-        operator: not_contains
-        value:
-          - 'bind'
-          - '*'
-        resource_types:
-          - ClusterRole
-          - Role
+    - or:
+        - cond_type: attribute
+          attribute: 'subjects.*.kind'
+          operator: not_within
+          value:
+            - 'Node'
+            - 'ServiceAccount'
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+        - and:
+            - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
+              operator: exists
+              resource_types:
+                - ClusterRoleBinding
+                - RoleBinding
+              connected_resource_types:
+                - ClusterRole
+                - Role
+            - or:
+              - cond_type: attribute
+                attribute: rules.resources
+                operator: not_intersects
+                value:
+                  - 'clusterrolebindings'
+                  - 'rolebindings'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role
+              - cond_type: attribute
+                attribute: rules.verbs
+                operator: not_intersects
+                value:
+                  - 'bind'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role

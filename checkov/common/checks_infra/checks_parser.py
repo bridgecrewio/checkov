@@ -53,6 +53,7 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsGreaterThanOrEqualAttributeSolver,
     NumberOfWordsLessThanAttributeSolver,
     NumberOfWordsLessThanOrEqualAttributeSolver,
+    NotWithinAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -80,6 +81,7 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "contains": ContainsAttributeSolver,
     "not_exists": NotExistsAttributeSolver,
     "within": WithinAttributeSolver,
+    "not_within": NotWithinAttributeSolver,
     "not_contains": NotContainsAttributeSolver,
     "starting_with": StartingWithAttributeSolver,
     "not_starting_with": NotStartingWithAttributeSolver,
