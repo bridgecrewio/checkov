@@ -1,8 +1,7 @@
 metadata:
-  id: "CKV_K8S_XXX"
-  name: "ClusterRoleBinding should not allow privilege escalation to a ServiceAccount or Node on other ClusterRoleBinding"
+  id: "CKV2_K8S_1"
+  name: "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding"
   category: "KUBERNETES"
-  # TODO fill
 definition:
   and:
     - cond_type: filter
