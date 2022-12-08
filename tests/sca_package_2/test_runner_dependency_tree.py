@@ -12,39 +12,9 @@ def test_run(sca_package_report_dt):
     # then
     assert report.check_type == "sca_package"
 
-    assert report.resources == {'package-lock.json.mocha', 'requirements.txt.pyyaml', 'package-lock.json.grunt',
-                                'package-lock.json.nconf', 'requirements.txt.pyramid',
-                                'package-files/yarn/package.json.bcrypt-nodejs', 'requirements.txt.gevent',
-                                'requirements.txt.psycopg', 'requirements.txt.streamlit',
-                                'package-files/yarn/package.json.node-esapi', 'package-lock.json.marked',
-                                'package-lock.json.cypress',
-                                'package-files/java/gradle/normal/build.gradle.commons-beanutils_commons-beanutils',
-                                'requirements.txt.aiohttp',
-                                'package-files/java/gradle/normal/build.gradle.org.apache.httpcomponents_httpclient',
-                                'requirements.txt.yarl', 'requirements.txt.grpcio_tools',
-                                'package-lock.json.unset-value',
-                                'package-files/java/maven/normal/pom.xml.org.apache.logging.log4j_log4j-core',
-                                'requirements.txt.pymysql', 'requirements.txt.contextvars',
-                                'package-lock.json.minimist', 'requirements.txt.pika', 'requirements.txt.requests',
-                                'requirements.txt.wrapt', 'package-files/yarn/package.json.marked',
-                                'requirements.txt.werkzeug', 'requirements.txt.celery', 'requirements.txt.protobuf',
-                                'package-lock.json.decode-uri-component', 'requirements.txt.flask',
-                                'requirements.txt.uvicorn',
-                                'package-files/java/maven/normal/pom.xml.commons-collections_commons-collections',
-                                'requirements.txt.multidict', 'requirements.txt.elasticsearch',
-                                'package-lock.json.helmet', 'package-files/java/maven/normal/pom.xml.junit_junit',
-                                'requirements.txt.sanic', 'requirements.txt.mysqlclient',
-                                'package-lock.json.glob-parent', 'requirements.txt.kafka-python',
-                                'requirements.txt.tornado', 'requirements.txt.testcontainers',
-                                'package-lock.json.helmet-csp',
-                                'package-files/java/gradle/normal/build.gradle.com.fasterxml.jackson.core_jackson-databind',
-                                'requirements.txt.hug', 'package-lock.json.debug', 'requirements.txt.pymongo',
-                                'requirements.txt.fastapi', 'package-lock.json.mongodb', 'requirements.txt.packaging',
-                                'requirements.txt.django', 'package-lock.json.bson', 'requirements.txt.redis',
-                                'requirements.txt.urllib3', 'package-lock.json.uglify-js',
-                                'package-files/yarn/package.json.needle', 'requirements.txt.gunicorn'}
+    assert report.resources == {'requirements.txt.django', 'package-lock.json.marked', 'requirements.txt.protobuf', 'requirements.txt.grpcio_tools', 'package-lock.json.decode-uri-component', 'package-lock.json.nconf', 'package-lock.json.minimist', 'package-lock.json.mocha', 'requirements.txt.requests', 'requirements.txt.flask', 'requirements.txt.gevent', 'requirements.txt.streamlit', 'requirements.txt.mysqlclient', 'package-files/java/maven/normal/pom.xml.org.apache.logging.log4j_log4j-core', 'requirements.txt.testcontainers', 'requirements.txt.pymongo', 'requirements.txt.pymysql', 'package-lock.json.debug', 'requirements.txt.elasticsearch', 'requirements.txt.werkzeug', 'package-lock.json.helmet-csp', 'requirements.txt.kafka-python', 'requirements.txt.urllib3', 'package-lock.json.uglify-js', 'requirements.txt.fastapi', 'package-files/java/maven/normal/pom.xml.junit_junit', 'requirements.txt.contextvars', 'requirements.txt.yarl', 'requirements.txt.uvicorn', 'package-files/yarn/package.json.needle', 'package-lock.json.unset-value', 'requirements.txt.pyramid', 'requirements.txt.gunicorn', 'package-files/yarn/package.json.marked', 'package-lock.json.glob-parent', 'package-lock.json.grunt', 'requirements.txt.psycopg', 'requirements.txt.pyyaml', 'package-lock.json.helmet', 'package-files/java/maven/normal/pom.xml.commons-collections_commons-collections', 'requirements.txt.multidict', 'requirements.txt.tornado', 'requirements.txt.aiohttp', 'package-lock.json.cypress', 'requirements.txt.packaging', 'package-files/yarn/package.json.bcrypt-nodejs', 'package-files/yarn/package.json.node-esapi', 'requirements.txt.celery', 'requirements.txt.pika', 'requirements.txt.hug', 'package-lock.json.mongodb', 'requirements.txt.sanic', 'requirements.txt.wrapt', 'requirements.txt.redis', 'package-lock.json.bson'}
     assert len(report.passed_checks) == 34
-    assert len(report.failed_checks) == 67
+    assert len(report.failed_checks) == 60
     assert len(report.skipped_checks) == 0
     assert len(report.parsing_errors) == 0
 

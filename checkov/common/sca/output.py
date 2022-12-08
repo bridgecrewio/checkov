@@ -351,7 +351,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, licenses_per_pa
                                         packages: list[dict[str, Any]], report: Report, root_packages_list: list[int],
                                         rootless_file_path: str, runner_filter: RunnerFilter, scanned_file_path: str,
                                         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
-                                        sca_details: SCADetails | None = None, report_type: str | None = None):
+                                        sca_details: SCADetails | None = None, report_type: str | None = None) -> None:
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
