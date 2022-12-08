@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchDisallowForcePushes(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection rules does not allow force pushes"
+        name = "Ensure GitHub branch protection rules does not allow force pushes - CIS 1.1.16"
         id = "CKV_GITHUB_5"
         super().__init__(
             name=name,

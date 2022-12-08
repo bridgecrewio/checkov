@@ -11,7 +11,7 @@ from checkov.json_doc.enums import BlockType
 
 class WebhookHttpsOrg(BaseGithubCheck):
     def __init__(self) -> None:
-        name = "Ensure GitHub organization webhooks are using HTTPS"
+        name = "Ensure GitHub organization webhooks are using HTTPS - CIS 4.3.4"
         id = "CKV_GITHUB_6"
         categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(

@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchLinearHistory(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection rules requires linear history"
+        name = "Ensure GitHub branch protection rules requires linear history - CIS 1.1.13"
         id = "CKV_GITHUB_8"
         super().__init__(
             name=name,
