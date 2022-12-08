@@ -99,7 +99,7 @@ class RunnerFilter(object):
         self.run_image_referencer = run_image_referencer
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
         self.block_list_secret_scan = block_list_secret_scan
-        self.suppressed_policies = []
+        self.suppressed_policies: List[str] = []
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
