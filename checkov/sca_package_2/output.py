@@ -40,7 +40,7 @@ class CveCount:
 
 
 def calculate_lowest_compliant_version(
-        fix_versions_lists: List[List[Union[packaging_version.Version, packaging_version.LegacyVersion]]]
+        fix_versions_lists: List[List[packaging_version.Version]]
 ) -> str:
     """A best effort approach to find the lowest compliant version"""
 
@@ -55,11 +55,7 @@ def calculate_lowest_compliant_version(
         package_min_version = min(package_min_versions)
         package_max_version = max(package_min_versions)
 
-        if isinstance(package_min_version, packaging_version.LegacyVersion) or isinstance(
-                package_max_version, packaging_version.LegacyVersion
-        ):
-            return str(package_max_version)
-        elif package_min_version.major == package_max_version.major:
+        if package_min_version.major == package_max_version.major:
             return str(package_max_version)
         else:
             lowest_version = max(
