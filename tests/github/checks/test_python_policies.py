@@ -44,8 +44,8 @@ def test_GithubRequire2Approvals():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubRequire2Approvals")
 
 
-def test_GithubDisallowInactiveBranch():
-    run_check(base_path=BASE_DIR / "branch_security", check="GithubDisallowInactiveBranch")
+def test_GithubDisallowInactiveBranch60Days():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubDisallowInactiveBranch60Days")
 
 
 def test_GithubRequireUpdatedBranch():

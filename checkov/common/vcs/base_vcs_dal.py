@@ -110,7 +110,7 @@ class BaseVCSDAL:
             logging.debug(f"Query failed {query}", exc_info=True)
 
     @staticmethod
-    def persist(path: str | Path, conf: dict[str, Any]) -> None:
+    def persist(path: str | Path, conf: dict[str, Any] | list[dict[str, Any]]) -> None:
         BaseVCSDAL.ensure_dir(path)
         with open(path, "w+", encoding='utf-8') as f:
             logging.debug(f"Persisting to {path}")

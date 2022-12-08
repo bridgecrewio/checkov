@@ -67,9 +67,11 @@ class Github(BaseVCSDAL):
             return data
         return None
 
-    def get_organization_webhooks(self) -> dict[str, Any] | None:
+    def get_organization_webhooks(self) -> list[dict[str, Any]] | None:
         data = self._request(endpoint=f"orgs/{self.org}/hooks", allowed_status_codes=[200])
-        return data
+        if isinstance(data, list):
+            return data
+        return None
 
     def get_repository_collaborators(self) -> dict[str, Any] | None:
         data = self._request(
@@ -78,11 +80,13 @@ class Github(BaseVCSDAL):
         )
         return data
 
-    def get_repository_webhooks(self) -> dict[str, Any] | None:
+    def get_repository_webhooks(self) -> list[dict[str, Any]] | None:
         data = self._request(
             endpoint=f"repos/{self.repo_owner}/{self.current_repository}/hooks",
             allowed_status_codes=[200])
-        return data
+        if isinstance(data, list):
+            return data
+        return None
 
     def get_organization_security(self) -> dict[str, str] | None:
         if not self._organization_security:
@@ -132,7 +136,7 @@ class Github(BaseVCSDAL):
             for idx, item in enumerate(organization_webhooks):
                 path = Path(self.github_conf_dir_path) / f"org_webhooks{idx+1}.json"
                 self.github_conf_file_paths["org_webhooks"].append(path)
-                BaseVCSDAL.persist(path=path, conf=[item])    # type: ignore
+                BaseVCSDAL.persist(path=path, conf=[item])
 
     def persist_repository_collaborators(self) -> None:
         repository_collaborators = self.get_repository_collaborators()
@@ -147,7 +151,7 @@ class Github(BaseVCSDAL):
             for idx, item in enumerate(repository_webhooks):
                 path = Path(self.github_conf_dir_path) / f"repository_webhooks{idx + 1}.json"
                 self.github_conf_file_paths["repository_webhooks"].append(path)
-                BaseVCSDAL.persist(path=path, conf=[item])  # type: ignore
+                BaseVCSDAL.persist(path=path, conf=[item])
 
     def persist_branch_metadata(self) -> None:
         branch_metadata = self.get_branch_metadata()

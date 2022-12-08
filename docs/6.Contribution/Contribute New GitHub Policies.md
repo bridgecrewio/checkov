@@ -58,7 +58,8 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchEnforceAdmins(BranchSecurity):
     def __init__(self):
-        name = "Ensure GitHub branch protection rules is enforced on admins - CIS 0.0.0"  # if it's a CIS check- fill the currect numbering
+        name = "Ensure GitHub branch protection rules is enforced on admins - CIS 0.0.0"  
+        # if it's a CIS check - add the corresponding number of policy.
          id = "CKV_GITHUB_8"
         super().__init__(
             name=name,

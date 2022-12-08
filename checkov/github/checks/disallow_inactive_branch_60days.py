@@ -11,7 +11,7 @@ from checkov.github.schemas.branch import schema as branch_schema
 from checkov.json_doc.enums import BlockType
 
 
-class GithubDisallowInactiveBranch(BaseGithubCheck):
+class GithubDisallowInactiveBranch60Days(BaseGithubCheck):
     def __init__(self) -> None:
         name = "Ensure inactive branches are reviewed and removed periodically - CIS 1.1.8"
         id = "CKV_GITHUB_15"
@@ -26,7 +26,8 @@ class GithubDisallowInactiveBranch(BaseGithubCheck):
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if branch_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if matches:
                 last_commit = matches[0].value.get('date', '')
@@ -42,4 +43,4 @@ class GithubDisallowInactiveBranch(BaseGithubCheck):
         return ['commit/commit/author']
 
 
-check = GithubDisallowInactiveBranch()
+check = GithubDisallowInactiveBranch60Days()
