@@ -4,7 +4,7 @@ import itertools
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import List, Union, Dict, Any
+from typing import List, Dict, Any
 
 from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
