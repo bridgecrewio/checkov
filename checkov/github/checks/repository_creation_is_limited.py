@@ -11,7 +11,7 @@ from checkov.json_doc.enums import BlockType
 
 class GithubRepositoryCreationIsLimited(BaseGithubCheck):
     def __init__(self) -> None:
-        name = "Ensure repository creation is limited to specific members - CIS 1.2.2"
+        name = "Ensure repository creation is limited to specific members"
         # see https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#update-an-organization
         # https://developer.github.com/changes/2019-12-03-internal-visibility-changes/
         # members_allowed_repository_creation_type is deprecated.
