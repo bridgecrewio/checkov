@@ -144,6 +144,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                             "root_package_name": record.vulnerability_details["root_package_name"],
                             "root_package_version": record.vulnerability_details["root_package_version"],
+                            "root_package_fix_version": record.vulnerability_details.get("root_package_fix_version", ""),
                             "package_name": package_name,
                             "package_version": package_version,
                         }
@@ -299,12 +300,12 @@ def create_fixable_cve_summary_table_part(
         table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
+        header=False, min_table_width=table_width + (column_count + 1) * 2, max_table_width=table_width + (column_count + 1) * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
         fixable_table.add_row(
-            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/  "])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -355,7 +356,7 @@ def create_package_overview_table_part(
                             "",
                             "",
                             cve["root_package_version"],
-                            "", #TODO add root fixed version here
+                            "",
                             "",
                         ]
                     )
@@ -382,7 +383,7 @@ def create_package_overview_table_part(
                     cve["id"],
                     cve["severity"],
                     package_version if is_sub_dep_changed else "",
-                    cve["fixed_version"] if is_root else "",
+                    cve["fixed_version"] if is_root else cve.get("root_package_fix_version", ""),
                     compliant_version
                 ]
             )
