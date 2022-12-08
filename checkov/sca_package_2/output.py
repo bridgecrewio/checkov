@@ -355,7 +355,7 @@ def create_package_overview_table_part(
                             "",
                             "",
                             cve["root_package_version"],
-                            "",
+                            "", #TODO add root fixed version here
                             "",
                         ]
                     )

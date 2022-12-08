@@ -167,6 +167,10 @@ def create_report_cve_record(
         "root_package_name": root_package_name,
         "root_package_version": root_package_version
     }
+
+    if 'rootPackageFixedVersion' in vulnerability_details:  # TODO change default type
+        details['root_package_fix_version'] = vulnerability_details["rootPackageFixedVersion"]
+
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
 
     record = Record(
@@ -258,33 +262,18 @@ def add_to_reports_cves_and_packages(
 
     for vulnerability in vulnerabilities:
         package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
-        cve_record = create_report_cve_record(
-            rootless_file_path=rootless_file_path,
-            file_abs_path=scanned_file_path,
-            check_class=check_class or "",
-            vulnerability_details=vulnerability,
-            licenses=format_licenses_to_string(
-                licenses_per_package_map[get_package_alias(package_name, package_version)]),
-            runner_filter=runner_filter,
-            sca_details=sca_details,
-            scan_data_format=scan_data_format,
-        )
-        if not runner_filter.should_run_check(
-                check_id=cve_record.check_id,
-                bc_check_id=cve_record.bc_check_id,
-                severity=cve_record.severity,
-                report_type=report_type,
-        ):
-            if runner_filter.checks:
-                continue
-            else:
-                cve_record.check_result = {
-                    "result": CheckResult.SKIPPED,
-                    "suppress_comment": f"{vulnerability['id']} is skipped",
-                }
-
-        report.add_resource(cve_record.resource)
-        report.add_record(cve_record)
+        add_cve_record_to_report(vulnerability_details=vulnerability,
+                                 package_name=package_name,
+                                 package_version=package_version,
+                                 rootless_file_path=rootless_file_path,
+                                 scanned_file_path=scanned_file_path,
+                                 check_class=check_class or "",
+                                 licenses_per_package_map=licenses_per_package_map,
+                                 runner_filter=runner_filter,
+                                 sca_details=sca_details,
+                                 scan_data_format=scan_data_format,
+                                 report_type=report_type,
+                                 report=report)
         vulnerable_packages.append(get_package_alias(package_name, package_version))
 
     for package in packages:
@@ -320,16 +309,14 @@ def add_to_reports_cves_and_packages_with_dependencies(
         report_type: str | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
-    vulnerable_packages: dict[str, list[dict[str, Any]]] = {}
-    root_packages_list: list[int] = []
+    is_dependency_tree_flow = bool(dependencies)
 
-    create_vulnerable_packages_dict(vulnerable_packages, vulnerabilities)
+    vulnerable_packages, root_packages_list = create_vulnerable_packages_dict(vulnerabilities, packages,
+                                                                              is_dependency_tree_flow)
 
     for package in packages:
         package_name, package_version = package["name"], package["version"]
         package_alias = get_package_alias(package_name, package_version)
-
-        create_root_packages_list(root_packages_list, packages, package, dependencies)
 
         if package_alias in vulnerable_packages:
             package["cves"] = vulnerable_packages[package_alias]
@@ -340,27 +327,22 @@ def add_to_reports_cves_and_packages_with_dependencies(
                                           package_name, package_version, package_alias,
                                           licenses_per_package_map, sca_details)
 
-    for root_package_index in root_packages_list:
-        vulnerable_dependencies: list[dict[str, Any]] = []
-        if dependencies:
-            find_vulnerable_dependencies(vulnerable_dependencies, dependencies, root_package_index, packages)
+    if is_dependency_tree_flow:
+        for root_package_index in root_packages_list:
+            vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
-        root_package = packages[root_package_index]
-        if len(root_package["cves"]) > 0 or len(vulnerable_dependencies) > 0:
-            root_package["vulnerable_dependencies"] = vulnerable_dependencies
+            root_package = packages[root_package_index]
+            if len(root_package["cves"]) > 0 or len(vulnerable_dependencies) > 0:
+                root_package["vulnerable_dependencies"] = vulnerable_dependencies
 
-        for cve in root_package["cves"]:
-            add_cve_record_to_report(vulnerability_details=cve, package=root_package,
-                                     rootless_file_path=rootless_file_path, scanned_file_path=scanned_file_path,
-                                     check_class=check_class, licenses_per_package_map=licenses_per_package_map,
-                                     runner_filter=runner_filter, sca_details=sca_details,
-                                     scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                     root_package_version=root_package["version"],
-                                     root_package_name=root_package["name"])
+            indirect_packages: dict[str, Any] = dict()
+            for cve in root_package["cves"]:
+                if 'causePackageName' in cve:
+                    cve_alias = f'{cve["cveId"]}@{cve["causePackageName"]}@{cve["causePackageVersion"]}'
+                    indirect_packages[cve_alias] = cve
 
-        for dep in root_package.get("vulnerable_dependencies", []):
-            for dep_cve in dep["cves"]:
-                add_cve_record_to_report(vulnerability_details=dep_cve, package=dep,
+                add_cve_record_to_report(vulnerability_details=cve, package_name=root_package['name'],
+                                         package_version=root_package['version'],
                                          rootless_file_path=rootless_file_path, scanned_file_path=scanned_file_path,
                                          check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                          runner_filter=runner_filter, sca_details=sca_details,
@@ -368,20 +350,51 @@ def add_to_reports_cves_and_packages_with_dependencies(
                                          root_package_version=root_package["version"],
                                          root_package_name=root_package["name"])
 
+            for dep in root_package.get("vulnerable_dependencies", []):
+                for dep_cve in dep["cves"]:
+                    cve_alias = f'{dep_cve["cveId"]}@{dep_cve["packageName"]}@{dep_cve["packageVersion"]}'
+                    if cve_alias in indirect_packages:
+                        dep_cve['rootPackageFixedVersion'] = indirect_packages[cve_alias]['fixVersion']
+                    add_cve_record_to_report(vulnerability_details=dep_cve, package_name=dep['name'],
+                                             package_version=dep['version'],
+                                             rootless_file_path=rootless_file_path, scanned_file_path=scanned_file_path,
+                                             check_class=check_class, licenses_per_package_map=licenses_per_package_map,
+                                             runner_filter=runner_filter, sca_details=sca_details,
+                                             scan_data_format=scan_data_format, report_type=report_type, report=report,
+                                             root_package_version=root_package["version"],
+                                             root_package_name=root_package["name"])
 
-def add_cve_record_to_report(vulnerability_details: dict[str, Any], package: dict[str, Any], rootless_file_path: str,
+    else:
+        for vulnerability in vulnerabilities:
+            package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
+            add_cve_record_to_report(vulnerability_details=vulnerability,
+                                     package_name=package_name,
+                                     package_version=package_version,
+                                     rootless_file_path=rootless_file_path,
+                                     scanned_file_path=scanned_file_path,
+                                     check_class=check_class or "",
+                                     licenses_per_package_map=licenses_per_package_map,
+                                     runner_filter=runner_filter,
+                                     sca_details=sca_details,
+                                     scan_data_format=scan_data_format,
+                                     report_type=report_type,
+                                     report=report)
+
+
+def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
+                             rootless_file_path: str,
                              scanned_file_path: str, check_class: Optional[str],
                              licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report,
-                             root_package_version: str, root_package_name: str) -> None:
+                             root_package_version: str = None, root_package_name: str = None) -> None:
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=scanned_file_path,
         check_class=check_class or "",
         vulnerability_details=vulnerability_details,
         licenses=format_licenses_to_string(
-            licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
+            licenses_per_package_map[get_package_alias(package_name, package_version)]),
         runner_filter=runner_filter,
         sca_details=sca_details,
         scan_data_format=scan_data_format,
@@ -405,15 +418,11 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package: dic
     report.add_record(cve_record)
 
 
-def find_vulnerable_dependencies(vulnerable_dependencies: list[dict[str, Any]], dependencies: dict[str, list[int]],
-                                 root_package_index: int, packages: list[dict[str, Any]]) -> None:
-    visited_dependencies: set[int] = set()  # Set to keep track of visited_dependencies nodes.
-    dfs(visited=visited_dependencies, graph=dependencies, root=root_package_index)
-    if len(visited_dependencies) > 0:
-        for package_idx in visited_dependencies:
-            package = packages[package_idx]
-            if len(package["cves"]) > 0:
-                vulnerable_dependencies.append(package)
+def find_vulnerable_dependencies(root_package_index: int, packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    vulnerable_dependencies: list[dict[str, Any]] = []
+    for vulnerable_dependency_idx in packages[root_package_index].get('vulnerable_dependencies', []):
+        vulnerable_dependencies.append(packages[vulnerable_dependency_idx])
+    return vulnerable_dependencies
 
 
 def create_root_packages_list(root_packages_list: list[int], packages: list[dict[str, Any]], package: dict[str, Any],
@@ -426,14 +435,29 @@ def create_root_packages_list(root_packages_list: list[int], packages: list[dict
         root_packages_list.append(packages.index(package))
 
 
-def create_vulnerable_packages_dict(vulnerable_packages: dict[str, list[dict[str, Any]]],
-                                    vulnerabilities: list[dict[str, Any]]) -> None:
-    for vulnerability in vulnerabilities:
-        package_alias = get_package_alias(vulnerability["packageName"], vulnerability["packageVersion"])
-        if package_alias not in vulnerable_packages:
-            vulnerable_packages[package_alias] = []
+def create_vulnerable_packages_dict(vulnerabilities: list[dict[str, Any]], packages: list[dict[str, Any]],
+                                    is_dependency_tree_flow: bool) -> tuple[dict[str, list[dict[str, Any]]], list[int]]:
+    vulnerable_packages: dict[str, list[dict[str, Any]]] = dict()
+    root_packages_list: list[int] = []
+    if is_dependency_tree_flow:
+        for package_idx, package in enumerate(packages):
+            if package.get("root", False):
+                root_packages_list.append(package_idx)
 
-        vulnerable_packages[package_alias].append(vulnerability)
+            package_alias = get_package_alias(package["name"], package["version"])
+            for cve_idx in package.get('cves_index', []):
+                if package_alias not in vulnerable_packages:
+                    vulnerable_packages[package_alias] = []
+                vulnerable_packages[package_alias].append(vulnerabilities[cve_idx])
+    else:
+        for vulnerability in vulnerabilities:
+            package_alias = get_package_alias(vulnerability["packageName"], vulnerability["packageVersion"])
+            if package_alias not in vulnerable_packages:
+                vulnerable_packages[package_alias] = []
+
+            vulnerable_packages[package_alias].append(vulnerability)
+
+    return vulnerable_packages, root_packages_list
 
 
 def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootless_file_path: str,
@@ -483,26 +507,26 @@ def add_to_report_sca_data(
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                          license_statuses, sca_details, report_type)
-    if dependencies is not None:
-        # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
-        add_to_reports_cves_and_packages_with_dependencies(report=report, check_class=check_class,
-                                                           scanned_file_path=scanned_file_path,
-                                                           rootless_file_path=rootless_file_path,
-                                                           runner_filter=runner_filter,
-                                                           vulnerabilities=vulnerabilities,
-                                                           packages=packages,
-                                                           licenses_per_package_map=licenses_per_package_map,
-                                                           sca_details=sca_details,
-                                                           report_type=report_type,
-                                                           scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
-                                                           dependencies=dependencies)
-    else:
-        add_to_reports_cves_and_packages(report=report, check_class=check_class, scanned_file_path=scanned_file_path,
-                                         rootless_file_path=rootless_file_path, runner_filter=runner_filter,
-                                         vulnerabilities=vulnerabilities, packages=packages,
-                                         licenses_per_package_map=licenses_per_package_map, sca_details=sca_details,
-                                         report_type=report_type,
-                                         scan_data_format=ScanDataFormat.TWISTCLI)
+    # if dependencies is not None:
+    # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
+    add_to_reports_cves_and_packages_with_dependencies(report=report, check_class=check_class,
+                                                       scanned_file_path=scanned_file_path,
+                                                       rootless_file_path=rootless_file_path,
+                                                       runner_filter=runner_filter,
+                                                       vulnerabilities=vulnerabilities,
+                                                       packages=packages,
+                                                       licenses_per_package_map=licenses_per_package_map,
+                                                       sca_details=sca_details,
+                                                       report_type=report_type,
+                                                       scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
+                                                       dependencies=dependencies)
+    # else:
+    #     add_to_reports_cves_and_packages(report=report, check_class=check_class, scanned_file_path=scanned_file_path,
+    #                                      rootless_file_path=rootless_file_path, runner_filter=runner_filter,
+    #                                      vulnerabilities=vulnerabilities, packages=packages,
+    #                                      licenses_per_package_map=licenses_per_package_map, sca_details=sca_details,
+    #                                      report_type=report_type,
+    #                                      scan_data_format=ScanDataFormat.TWISTCLI)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
