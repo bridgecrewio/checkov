@@ -7,6 +7,8 @@ import os
 import re
 from collections.abc import Hashable
 from copy import deepcopy
+from json import JSONDecodeError
+
 import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
@@ -380,17 +382,20 @@ class TerraformVariableRenderer(VariableRenderer):
                     block_confs.append(block_conf)
                 rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
 
-            if DYNAMIC_STRING in block_content:
+            if DYNAMIC_STRING in block_content and dynamic_values:
                 try:
                     next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
                 except (StopIteration, AttributeError):
                     continue
                 block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
 
-                flatten_key = next(iter(rendered_blocks.keys()))
-                if next_key in rendered_blocks[flatten_key]:
+                try:
+                    flatten_key = next(iter(rendered_blocks.keys()))
+                except StopIteration:
+                    flatten_key = ''
+                if rendered_blocks.get(flatten_key) and next_key in rendered_blocks[flatten_key]:
                     rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
-                elif isinstance(rendered_blocks[flatten_key], list):
+                elif isinstance(rendered_blocks.get(flatten_key), list) and isinstance(dynamic_values, list):
                     for i in range(len(rendered_blocks[flatten_key])):
                         block_content[DYNAMIC_STRING][next_key]['for_each'] = [dynamic_values[i]]
                         rendered_blocks[flatten_key][i].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
@@ -419,7 +424,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
                     block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
                 else:
-                    block_conf[dynamic_argument] = block_conf[dynamic_argument]
+                    block_conf[dynamic_argument] = block_content[dynamic_argument]
 
     @staticmethod
     def _handle_for_loop_in_dynamic_values(dynamic_values: str | dict[str, Any]) -> str | dict[str, Any] | list[dict[str, Any]]:
@@ -427,11 +432,15 @@ class TerraformVariableRenderer(VariableRenderer):
             return dynamic_values
 
         if (dynamic_values.startswith(LEFT_BRACKET + FOR_LOOP) or dynamic_values.startswith(LEFT_BRACKET + " " + FOR_LOOP)) and dynamic_values.endswith(RIGHT_BRACKET):
-            dynamic_values = dynamic_values[1:-1]
-            start_bracket_idx = dynamic_values.find(LEFT_BRACKET)
-            end_bracket_idx = find_match_bracket_index(dynamic_values, start_bracket_idx)
-            dynamic_values = dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
-            return json.loads(dynamic_values)
+            rendered_dynamic_values = dynamic_values[1:-1]
+            start_bracket_idx = rendered_dynamic_values.find(LEFT_BRACKET)
+            end_bracket_idx = find_match_bracket_index(rendered_dynamic_values, start_bracket_idx)
+            if start_bracket_idx != -1 and end_bracket_idx != -1:
+                rendered_dynamic_values = rendered_dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
+            try:
+                return json.loads(rendered_dynamic_values)
+            except JSONDecodeError:
+                return dynamic_values
         return dynamic_values
 
     @staticmethod
@@ -537,13 +546,14 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
             pstack.append(i)
         elif c == RIGHT_BRACKET:
             if len(pstack) == 0:
-                raise IndexError("No matching closing brackets at: " + str(i))
+                logging.debug("No matching closing brackets at: " + str(i))
+                return -1
             res[pstack.pop()] = i
 
     if len(pstack) > 0:
-        raise IndexError("No matching opening brackets at: " + str(pstack.pop()))
+        logging.debug("No matching opening brackets at: " + str(pstack.pop()))
 
-    return res[open_bracket_idx]
+    return res.get(open_bracket_idx) or -1
 
 
 def get_lookup_value(block_content, dynamic_argument) -> str:

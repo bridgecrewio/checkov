@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.116...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.124...HEAD)
+
+## [2.2.124](https://github.com/bridgecrewio/checkov/compare/2.2.116...2.2.124) - 2022-12-07
+
+### Feature
+
+- **sca:** change sca packages output to include dependencies structure - [#3957](https://github.com/bridgecrewio/checkov/pull/3957)
+- **secrets:** Adding check length for secret - [#3985](https://github.com/bridgecrewio/checkov/pull/3985)
+- **terraform:** nested modules support in graph - [#3935](https://github.com/bridgecrewio/checkov/pull/3935)
+
+### Bug Fix
+
+- **circleci:** fix executors in resource_id - [#4008](https://github.com/bridgecrewio/checkov/pull/4008)
+- **secrets:** Bump detect secrets version - [#3997](https://github.com/bridgecrewio/checkov/pull/3997)
+- **terraform:** Fix an issue in dynamic blocks - [#4006](https://github.com/bridgecrewio/checkov/pull/4006)
+- **terraform:** fix CKV_AWS_283 check - [#4005](https://github.com/bridgecrewio/checkov/pull/4005)
+- **terraform:** Fix CKV_AZURE_168 check - [#4000](https://github.com/bridgecrewio/checkov/pull/4000)
+- **terraform:** Fix some issues in dynamic blocks flow - [#4002](https://github.com/bridgecrewio/checkov/pull/4002)
+- **terraform:** Fix TF checks crashes - [#3992](https://github.com/bridgecrewio/checkov/pull/3992)
 
 ## [2.2.116](https://github.com/bridgecrewio/checkov/compare/2.2.114...2.2.116) - 2022-12-06
 

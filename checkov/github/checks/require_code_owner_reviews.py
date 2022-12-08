@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchRequireCodeOwnerReviews(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection requires CODEOWNER reviews - CIS 1.1.6"
+        name = "Ensure GitHub branch protection requires CODEOWNER reviews"
         id = "CKV_GITHUB_13"
         super().__init__(name=name, id=id)
 
