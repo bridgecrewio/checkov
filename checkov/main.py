@@ -28,6 +28,8 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
+    integration as suppressions_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
@@ -308,6 +310,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
