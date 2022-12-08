@@ -48,7 +48,7 @@ setup(
         "tqdm",
         "update-checker",
         "semantic-version",
-        "packaging",
+        "packaging==21.3",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "dockerfile-parse",
