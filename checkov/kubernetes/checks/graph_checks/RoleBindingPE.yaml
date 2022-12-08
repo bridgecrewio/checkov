@@ -19,15 +19,16 @@ definition:
           connected_resource_types:
             - ClusterRole
             - Role
-        - cond_type: attribute
-          attribute: 'subjects.*.kind'
-          operator: not_within
-          value:
-            - 'Node'
-            - 'ServiceAccount'
-          resource_types:
-            - ClusterRoleBinding
-            - RoleBinding
+        - not:
+            cond_type: attribute
+            attribute: 'subjects.*.kind'
+            operator: within
+            value:
+              - 'Node'
+              - 'ServiceAccount'
+            resource_types:
+              - ClusterRoleBinding
+              - RoleBinding
         - and:
             - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
               operator: exists
