@@ -200,3 +200,79 @@ class TestCustomRegexDetector(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
+
+    def test_test_custom_regex_detector_in_custom_limit_characters(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?i)(?:test)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 1)
+
+    def test_test_custom_regex_detector_out_custom_limit_characters(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?i)(?:out)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 0)

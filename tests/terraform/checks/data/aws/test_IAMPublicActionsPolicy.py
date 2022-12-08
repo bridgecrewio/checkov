@@ -15,6 +15,7 @@ class TestIAMPublicActionsPolicy(unittest.TestCase):
 
         passing_resources = {
             "aws_iam_policy_document.pass",
+            'aws_iam_policy_document.pass1',
             "aws_iam_policy_document.pass2"
         }
         failing_resources = {
