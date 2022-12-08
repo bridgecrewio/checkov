@@ -3,7 +3,7 @@ import json
 from typing import Any
 
 from lark import Tree
-from packaging.version import LegacyVersion, Version
+from packaging.version import Version
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
@@ -17,7 +17,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, datetime.date):
             return str(o)
-        elif isinstance(o, (Version, LegacyVersion)):
+        elif isinstance(o, Version):
             return str(o)
         elif isinstance(o, Severity):
             return o.name

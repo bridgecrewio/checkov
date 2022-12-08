@@ -91,7 +91,7 @@ def _update_details_by_scan_data_format(
     if scan_data_format in {ScanDataFormat.TWISTCLI, ScanDataFormat.DEPENDENCY_TREE}:
         lowest_fixed_version = UNFIXABLE_VERSION
         package_version = vulnerability_details["packageVersion"]
-        fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
+        fixed_versions: list[packaging_version.Version] = []
         status = vulnerability_details.get("status") or "open"
         if status != "open":
             parsed_current_version = packaging_version.parse(package_version)
