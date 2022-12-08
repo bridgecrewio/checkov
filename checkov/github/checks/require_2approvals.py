@@ -6,7 +6,7 @@ from checkov.github.base_github_negative_branch_security import NegativeBranchSe
 
 class GithubRequire2Approvals(NegativeBranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure any change to code receives approval of two strongly authenticated users - CIS 1.1.3"
+        name = "Ensure any change to code receives approval of two strongly authenticated users"
         id = "CKV_GITHUB_19"
         super().__init__(name=name, id=id, missing_attribute_result=CheckResult.FAILED)
 

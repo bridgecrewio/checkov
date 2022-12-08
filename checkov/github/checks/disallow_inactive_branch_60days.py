@@ -13,7 +13,7 @@ from checkov.json_doc.enums import BlockType
 
 class GithubDisallowInactiveBranch60Days(BaseGithubCheck):
     def __init__(self) -> None:
-        name = "Ensure inactive branches are reviewed and removed periodically - CIS 1.1.8"
+        name = "Ensure inactive branches are reviewed and removed periodically"
         id = "CKV_GITHUB_15"
         categories = (CheckCategories.SUPPLY_CHAIN,)
         super().__init__(
