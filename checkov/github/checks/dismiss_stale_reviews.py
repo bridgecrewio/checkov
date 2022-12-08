@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchDismissStaleReviews(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection dismisses stale review on new commit - CIS 1.1.4"
+        name = "Ensure GitHub branch protection dismisses stale review on new commit"
         id = "CKV_GITHUB_11"
         super().__init__(name=name, id=id)
 

@@ -14,7 +14,7 @@ class GithubSSO(BaseGithubCheck):
     def __init__(self) -> None:
         name = "Ensure GitHub organization security settings require SSO"
         id = "CKV_GITHUB_2"
-        categories = [CheckCategories.SUPPLY_CHAIN]
+        categories = (CheckCategories.SUPPLY_CHAIN, )
         super().__init__(
             id=id,
             name=name,
