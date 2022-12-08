@@ -52,6 +52,18 @@ def test_GithubRequireUpdatedBranch():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubRequireUpdatedBranch")
 
 
+def test_GithubRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryCreationIsLimited")
+
+
+def test_GithubIssueDeletionIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubIssueDeletionIsLimited")
+
+
+def test_GithubRepositoryDeletionIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryDeletionIsLimited")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP
