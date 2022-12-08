@@ -63,7 +63,8 @@ class Runner(BaseRunner[None]):
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan()
 
-        # logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        if scan_results:
+            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
