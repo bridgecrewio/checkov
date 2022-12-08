@@ -66,7 +66,7 @@ class SecretsOmitter:
             check_file_path = check.file_path
             check_line_range = check.file_line_range
 
-            if check_file_path not in files_with_secrets:
+            if check_file_path not in files_with_secrets or not check_line_range or None in check_line_range:
                 continue
 
             for secret_check in self._secret_check():

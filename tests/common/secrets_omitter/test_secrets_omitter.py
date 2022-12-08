@@ -68,3 +68,31 @@ def test_omit():
 
     assert res == SecretsOmitterStatus.SUCCESS
     assert report.passed_checks[0].code_block == [(2, 'bc*'), (3, 'efg******'), (4, 'abcd'), (5, 'abc')]
+
+
+def test_omit_should_skip():
+    """
+    This test verifies that records containing None in file_line_range will be skipped
+    """
+    file_path = 'filepath'
+    failed_secrets_record = Record(check_id='a', check_name='a', check_result={"result": CheckResult.FAILED},
+                                   code_block=[(1, 'ab***'), (2, 'bc*'), (3, 'efg******'), (4, 'abcd'), (5, 'abc')],
+                                   file_path=file_path, file_line_range=[], resource='', evaluations={}, check_class='',
+                                   file_abs_path=''
+                                   )
+    secrets_report = Report(CheckType.SECRETS)
+    secrets_report.add_record(failed_secrets_record)
+
+    record = Record(check_id='b', check_name='b', check_result={"result": CheckResult.PASSED},
+                    code_block=[(2, 'SECRET'), (3, 'SECRET'), (4, 'abcd'), (5, 'abc')],
+                    file_path=file_path, file_line_range=[2, None], resource='', evaluations={}, check_class='',
+                    file_abs_path=''
+                    )
+    report = Report(CheckType.GITHUB_ACTIONS)
+    report.add_record(record)
+
+    res = SecretsOmitter([secrets_report, report]).omit()
+    assert res == SecretsOmitterStatus.SUCCESS
+
+    # Asserting code block is unchanged
+    assert report.passed_checks[0].code_block == [(2, 'SECRET'), (3, 'SECRET'), (4, 'abcd'), (5, 'abc')]
