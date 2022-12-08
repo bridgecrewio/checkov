@@ -10,7 +10,7 @@ from checkov.json_doc.enums import BlockType
 
 class RepositoryCollaborators(BaseGithubCheck):
     def __init__(self) -> None:
-        name = "Ensure 2 admins are set for each repository - CIS 1.3.7"
+        name = "Ensure 2 admins are set for each repository"
         id = "CKV_GITHUB_9"
         categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(

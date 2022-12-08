@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchAdminEnforcement(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure branch protection rules are enforced on administrators - CIS 1.1.14"
+        name = "Ensure branch protection rules are enforced on administrators"
         id = "CKV_GITHUB_10"
         super().__init__(
             name=name,

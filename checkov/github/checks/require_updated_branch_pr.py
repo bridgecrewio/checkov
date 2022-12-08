@@ -8,7 +8,7 @@ from checkov.github.base_github_negative_branch_security import NegativeBranchSe
 
 class GithubRequireUpdatedBranch(NegativeBranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure open git branches are up to date before they can be merged into codebase - CIS 1.1.10"
+        name = "Ensure open git branches are up to date before they can be merged into codebase"
         id = "CKV_GITHUB_20"
         super().__init__(name=name, id=id, missing_attribute_result=CheckResult.FAILED)
 
