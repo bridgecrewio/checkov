@@ -327,9 +327,9 @@ def add_to_reports_cves_and_packages(
                                           licenses_per_package_map, sca_details)
 
     if is_dependency_tree_flow:
-        add_to_reports_dependency_tree_cves(check_class, licenses_per_package_map, packages, report, report_type,
-                                            root_packages_list, rootless_file_path, runner_filter, sca_details,
-                                            scan_data_format, scanned_file_path)
+        add_to_reports_dependency_tree_cves(check_class, licenses_per_package_map, packages, report,
+                                            root_packages_list, rootless_file_path, runner_filter,
+                                            scanned_file_path, scan_data_format, sca_details, report_type)
     else:  # twistlock scan results.
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
@@ -347,9 +347,11 @@ def add_to_reports_cves_and_packages(
                                      report=report)
 
 
-def add_to_reports_dependency_tree_cves(check_class, licenses_per_package_map, packages, report, report_type,
-                                        root_packages_list, rootless_file_path, runner_filter, sca_details,
-                                        scan_data_format, scanned_file_path):
+def add_to_reports_dependency_tree_cves(check_class: str | None, licenses_per_package_map: dict[str, list[str]],
+                                        packages: list[dict[str, Any]], report: Report, root_packages_list: list[int],
+                                        rootless_file_path: str, runner_filter: RunnerFilter, scanned_file_path: str,
+                                        scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+                                        sca_details: SCADetails | None = None, report_type: str | None = None):
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
@@ -517,16 +519,16 @@ def add_to_report_sca_data(
     # if dependencies is not None:
     # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
     add_to_reports_cves_and_packages(report=report, check_class=check_class,
-                                                       scanned_file_path=scanned_file_path,
-                                                       rootless_file_path=rootless_file_path,
-                                                       runner_filter=runner_filter,
-                                                       vulnerabilities=vulnerabilities,
-                                                       packages=packages,
-                                                       licenses_per_package_map=licenses_per_package_map,
-                                                       sca_details=sca_details,
-                                                       report_type=report_type,
-                                                       scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
-                                                       dependencies=dependencies)
+                                     scanned_file_path=scanned_file_path,
+                                     rootless_file_path=rootless_file_path,
+                                     runner_filter=runner_filter,
+                                     vulnerabilities=vulnerabilities,
+                                     packages=packages,
+                                     licenses_per_package_map=licenses_per_package_map,
+                                     sca_details=sca_details,
+                                     report_type=report_type,
+                                     scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
+                                     dependencies=dependencies)
     # else:
     #     add_to_reports_cves_and_packages(report=report, check_class=check_class, scanned_file_path=scanned_file_path,
     #                                      rootless_file_path=rootless_file_path, runner_filter=runner_filter,
