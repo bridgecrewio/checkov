@@ -169,7 +169,7 @@ class Github(BaseVCSDAL):
         if branch_metadata:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["branch_metadata"][0], conf=branch_metadata)
 
-    def persist_organization_metadata(self):
+    def persist_organization_metadata(self) -> None:
         org_metadata = self.get_organization_metadata()
         if org_metadata:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_metadata"][0], conf=org_metadata)
