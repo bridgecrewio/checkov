@@ -29,15 +29,17 @@ class NegativeBranchSecurity(BaseGithubCheck):
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if branch_security_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if not matches:
                 # attribute doesn't exists
                 return self.missing_attribute_result
 
             if matches:
-                if ANY_VALUE in self.get_forbidden_values() or all(
-                    match.value not in self.get_forbidden_values() for match in matches
+                forbidden_values = self.get_forbidden_values()
+                if ANY_VALUE in forbidden_values or any(
+                    match.value in forbidden_values for match in matches
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
                     return CheckResult.FAILED
