@@ -547,7 +547,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
             if vertex.block_type == BlockType.RESOURCE:
-                resource_type, resource_name = vertex.name.split('.')
+                resource_type = vertex.name.split('.')[0]
+                resource_name = '.'.join(vertex.name.split('.')[1:])
                 vertex.config[resource_type][resource_name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
             else:
                 vertex.config[vertex.name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
