@@ -24,8 +24,6 @@ GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
 
-MULTILINE_REGEX = re.compile('.*\n.*')
-
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
 # https://github.com/awslabs/git-secrets
