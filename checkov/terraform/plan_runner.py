@@ -33,11 +33,28 @@ TF_LIFECYCLE_CHECK_IDS = {
 }
 
 RESOURCE_ATTRIBUTES_TO_OMIT = {
-    'azurerm_key_vault_secret': 'value',
-    'aws_secretsmanager_secret_version': 'secret_string',
-    'google_kms_secret_ciphertext': 'plaintext',
-    'aws_ssm_parameter': 'value',
-    'aws_db_instance': 'password'
+    'azurerm_key_vault_secret': ['value'],
+    'azurerm_storage_account': ['primary_access_key', 'secondary_access_key', 'primary_blob_connection_string',
+                                'secondary_blob_connection_string', 'primary_blob_endpoint', 'primary_blob_host',
+                                'secondary_blob_endpoint', 'secondary_blob_host', 'primary_connection_string',
+                                'secondary_connection_string'],
+    'azurerm_redis_cache': ['primary_access_key', 'secondary_access_key', 'primary_connection_string',
+                            'secondary_connection_string'],
+    'azurerm_sql_server': ['administrator_login_password'],
+    'azurerm_mssql_server': ['administrator_login_password'],
+    'azurerm_sql_managed_instance': ['administrator_login_password'],
+    'azurerm_mssql_server_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_synapse_workspace_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_synapse_sql_pool_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_mssql_managed_instance_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_linux_virtual_machine': ['admin_password'],
+    'azurerm_virtual_machine': ['admin_password'],
+    'azurerm_windows_virtual_machine': ['admin_password'],
+    'azurerm_container_registry': ['admin_password'],
+    'aws_secretsmanager_secret_version': ['secret_string'],
+    'google_kms_secret_ciphertext': ['plaintext'],
+    'aws_ssm_parameter': ['value'],
+    'aws_db_instance': ['password']
 }
 
 
