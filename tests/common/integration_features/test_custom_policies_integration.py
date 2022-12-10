@@ -43,6 +43,24 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         custom_policies_integration.integration_feature_failures = True
         self.assertFalse(custom_policies_integration.is_valid())
 
+    def test_pre_scan_with_cloned_checks(self):
+        instance = BcPlatformIntegration()
+        instance.skip_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        instance.customer_run_config_response = mock_custom_policies_response()
+
+        custom_policies_integration.pre_scan()
+        cfn_registry = get_graph_checks_registry("cloudformation").checks
+        tf_registry = get_graph_checks_registry("terraform").checks
+        k8s_registry = get_graph_checks_registry("kubernetes").checks
+        self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
+        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
+        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
+
     def test_policy_load(self):
         # response from API
         policies = [
@@ -205,23 +223,6 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_3']), 0)
         self.assertEqual(len([r for r in report.failed_checks if r.check_id == 'policy_id_4']), 2)
 
-    def test_pre_scan_with_cloned_checks(self):
-        instance = BcPlatformIntegration()
-        instance.skip_download = False
-        instance.platform_integration_configured = True
-        custom_policies_integration = CustomPoliciesIntegration(instance)
-
-        instance.customer_run_config_response = mock_custom_policies_response()
-
-        custom_policies_integration.pre_scan()
-        cfn_registry = get_graph_checks_registry("cloudformation").checks
-        tf_registry = get_graph_checks_registry("terraform").checks
-        k8s_registry = get_graph_checks_registry("kubernetes").checks
-        self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
-        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
-        self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
-        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
-        self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
