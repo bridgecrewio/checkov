@@ -1,0 +1,46 @@
+metadata:
+  id: "CKV_OPENSTACK_6"
+  name: "Ensure HTTP HTTPS Pool defines Healthcheck"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - openstack_lb_pool_v2
+      operator: within
+    - or:
+        - and:
+            - cond_type: connection
+              resource_types:
+                - openstack_lb_pool_v2
+              connected_resource_types:
+                - openstack_lb_monitor_v2
+              operator: exists
+            - or:
+                - cond_type: attribute
+                  resource_types:
+                    - openstack_lb_pool_v2
+                  attribute: protocol
+                  operator: equals
+                  value: "HTTP"
+                - cond_type: attribute
+                  resource_types:
+                    - openstack_lb_pool_v2
+                  attribute: protocol
+                  operator: equals
+                  value: "HTTPS"
+        - and:
+            - and:
+                - cond_type: attribute
+                  resource_types:
+                    - openstack_lb_pool_v2
+                  attribute: protocol
+                  operator: not_equals
+                  value: "HTTP"
+                - cond_type: attribute
+                  resource_types:
+                    - openstack_lb_pool_v2
+                  attribute: protocol
+                  operator: not_equals
+                  value: "HTTPS"

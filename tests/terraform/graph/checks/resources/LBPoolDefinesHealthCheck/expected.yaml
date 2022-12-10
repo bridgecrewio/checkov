@@ -1,0 +1,6 @@
+pass:
+  - "openstack_lb_pool_v2.pass"
+  - "openstack_lb_pool_v2.pass2"
+fail:
+  - "openstack_lb_pool_v2.fail"
+  - "openstack_lb_pool_v2.fail2"

@@ -33,7 +33,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("S3NotAllowAccessToAllAuthenticatedUsers")
 
     def test_CloudFrontHasCustomSSLCertificate(self):
-        self.go("CloudFrontHasCustomSSLCertificate")            
+        self.go("CloudFrontHasCustomSSLCertificate")
 
     def test_CodecommitApprovalRulesAttached(self):
         self.go("CodecommitApprovalRulesAttached")
@@ -57,7 +57,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("SGAttachedToResource")
 
     def test_EC2InstanceHasIAMRoleAttached(self):
-        self.go("EC2InstanceHasIAMRoleAttached") 
+        self.go("EC2InstanceHasIAMRoleAttached")
 
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
@@ -99,7 +99,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPProjectHasNoLegacyNetworks")
 
     def test_GCRContainerVulnerabilityScanningEnabled(self):
-        self.go("GCRContainerVulnerabilityScanningEnabled")    
+        self.go("GCRContainerVulnerabilityScanningEnabled")
 
     def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
         self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
@@ -120,7 +120,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPLogBucketsConfiguredUsingLock")
 
     def test_CloudFunctionSecureHTTPTrigger(self):
-        self.go("CloudFunctionSecureHTTPTrigger")    
+        self.go("CloudFunctionSecureHTTPTrigger")
 
     def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
         self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
@@ -220,6 +220,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_ALBProtectedByWAF(self):
         self.go("ALBProtectedByWAF")
+
+    def test_LBPoolDefinesHealthCheck(self):
+        self.go("LBPoolDefinesHealthCheck")
 
     def test_APIProtectedByWAF(self):
         self.go("APIProtectedByWAF")
