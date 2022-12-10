@@ -5,7 +5,7 @@ import logging
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
-from jsonpath_ng.ext import parse
+from bc_jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -118,7 +118,7 @@ class BaseAttributeSolver(BaseSolver):
 
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         attribute_matches: List[str] = []
-        if self.is_jsonpath_check:
+        if self.is_jsonpath_check and self.attribute is not None:
             parsed_attr = self.parsed_attributes.get(self.attribute)
             if parsed_attr is None:
                 try:
