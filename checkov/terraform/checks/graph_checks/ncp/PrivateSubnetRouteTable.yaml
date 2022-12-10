@@ -1,0 +1,29 @@
+metadata:
+  id: "CKV_NCP_28"
+  name: "Ensure a route table for the private subnets is created"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - ncloud_route_table
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - ncloud_subnet
+      attribute: subnet_type
+      operator: equals
+      value: "PRIVATE"
+    - cond_type: connection
+      resource_types:
+        - ncloud_vpc
+      connected_resource_types:
+        - ncloud_subnet
+      operator: exists
+    - cond_type: connection
+      resource_types:
+        - ncloud_vpc
+      connected_resource_types:
+        - ncloud_route_table
+      operator: exists

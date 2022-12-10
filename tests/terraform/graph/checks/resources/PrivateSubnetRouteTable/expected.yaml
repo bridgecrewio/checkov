@@ -1,0 +1,7 @@
+pass:
+  - "ncloud_route_table.pass"
+  - "ncloud_route_table.pass2"
+  - "ncloud_route_table.pass3"
+fail:
+  - "ncloud_route_table.fail"
+  - "ncloud_route_table.fail2"

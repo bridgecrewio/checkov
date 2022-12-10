@@ -33,7 +33,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("S3NotAllowAccessToAllAuthenticatedUsers")
 
     def test_CloudFrontHasCustomSSLCertificate(self):
-        self.go("CloudFrontHasCustomSSLCertificate")            
+        self.go("CloudFrontHasCustomSSLCertificate")
 
     def test_CodecommitApprovalRulesAttached(self):
         self.go("CodecommitApprovalRulesAttached")
@@ -57,7 +57,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("SGAttachedToResource")
 
     def test_EC2InstanceHasIAMRoleAttached(self):
-        self.go("EC2InstanceHasIAMRoleAttached") 
+        self.go("EC2InstanceHasIAMRoleAttached")
 
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
@@ -76,6 +76,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_VAsetPeriodicScansOnSQL(self):
         self.go("VAsetPeriodicScansOnSQL")
+
+    def test_PrivateSubnetRouteTable(self):
+        self.go("PrivateSubnetRouteTable")
 
     def test_CloudFrontHasResponseHeadersPolicy(self):
         self.go("CloudFrontHasResponseHeadersPolicy")
@@ -99,7 +102,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPProjectHasNoLegacyNetworks")
 
     def test_GCRContainerVulnerabilityScanningEnabled(self):
-        self.go("GCRContainerVulnerabilityScanningEnabled")    
+        self.go("GCRContainerVulnerabilityScanningEnabled")
 
     def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
         self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
@@ -120,7 +123,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPLogBucketsConfiguredUsingLock")
 
     def test_CloudFunctionSecureHTTPTrigger(self):
-        self.go("CloudFunctionSecureHTTPTrigger")    
+        self.go("CloudFunctionSecureHTTPTrigger")
 
     def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
         self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
