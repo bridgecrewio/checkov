@@ -1,6 +1,8 @@
+import json
 import xml
 import xml.dom.minidom
 import os
+from operator import itemgetter
 from pathlib import Path
 from typing import List
 
@@ -19,9 +21,10 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     # timestamp). so we skip these lines by the first 'if when checking whether we get the expected results
     # in addition also the line that display the checkov version may be changeable, so we skip it as well
     # (in the second 'if')
+    black_list_words = ["bom-ref", "serialNumber", "timestamp", "bom", "xml"]
     filtered_list = []
     for i, line in enumerate(pretty_xml_as_list):
-        if "bom-ref" not in line and "serialNumber" not in line and "timestamp" not in line:
+        if not any(word in line for word in black_list_words):
             if i == 0 or not any(tool_name in pretty_xml_as_list[i-1] for tool_name in ("<name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
                 filtered_list.append(line)
     return filtered_list
@@ -148,6 +151,107 @@ def test_get_cyclonedx_report(sca_package_report, tmp_path: Path):
     expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
 
     assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+
+def test_get_cyclonedx_report_with_licenses_with_comma(sca_package_report_with_comma_in_licenses, tmp_path: Path):
+    cyclonedx_reports = [sca_package_report_with_comma_in_licenses]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+    cyclonedx_output = cyclonedx.get_xml_output()
+
+    pretty_xml_as_string = str(xml.dom.minidom.parseString(cyclonedx_output).toprettyxml())
+
+    with open(os.path.join(OUTPUTS_DIR, "results_cyclonedx_with_comma_in_licenses.xml")) as f_xml:
+        expected_pretty_xml = f_xml.read()
+
+    actual_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(pretty_xml_as_string.split("\n"))
+    expected_pretty_xml_as_list = _get_deterministic_items_in_cyclonedx(expected_pretty_xml.split("\n"))
+
+    assert actual_pretty_xml_as_list == expected_pretty_xml_as_list
+
+
+def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path, sca_package_report_with_comma_in_licenses):
+    # given
+    cyclonedx_reports = [sca_package_report_with_comma_in_licenses]
+    cyclonedx = CycloneDX(repo_id="bridgecrewio/example", reports=cyclonedx_reports)
+
+    #  when
+    output = json.loads(cyclonedx.get_json_output())
+
+    # then
+    assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
+    assert len(output["components"]) == 8
+    assert len(output["dependencies"]) == 8
+    assert len(output["vulnerabilities"]) == 8
+
+    assert sorted(output["components"], key=itemgetter("purl")) == sorted([
+        {
+            "type": "library",
+            "bom-ref": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/django@1.2",
+            "name": "django",
+            "version": "1.2",
+            "licenses": [{"license": {"name": "OSI_BDS"}}],
+            "purl": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/django@1.2",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/flask@0.6",
+            "name": "flask",
+            "version": "0.6",
+            "licenses": [
+                {"license": {"name": "DUMMY_OTHER_LICENSE, ANOTHER_DOMMY_LICENSE"}},
+                {"license": {"name": "OSI_APACHE"}},
+            ],
+            "purl": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/flask@0.6",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0",
+            "name": "github.com/dgrijalva/jwt-go",
+            "version": "v3.2.0",
+            "licenses": [{"license": {"name": "Unknown"}}],
+            "purl": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41",
+            "name": "github.com/miekg/dns",
+            "version": "v1.1.41",
+            "licenses": [{"license": {"name": "Unknown"}}],
+            "purl": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90",
+            "name": "github.com/prometheus/client_model",
+            "version": "v0.0.0-20190129233127-fd36f4220a90",
+            "licenses": [{"license": {"name": "Unknown"}}],
+            "purl": "pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1",
+            "name": "golang.org/x/crypto",
+            "version": "v0.0.1",
+            "licenses": [{"license": {"name": "Unknown"}}],
+            "purl": "pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/requests@2.26.0",
+            "name": "requests",
+            "version": "2.26.0",
+            "licenses": [{"license": {"name": "OSI_APACHE"}}],
+            "purl": "pkg:pypi/bridgecrewio/example/path/to/requirements.txt/requests@2.26.0",
+        },
+        {
+            "type": "library",
+            "bom-ref": "pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0",
+            "name": "requests",
+            "version": "2.26.0",
+            "licenses": [{"license": {"name": "OSI_APACHE"}}],
+            "purl": "pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0",
+        },
+    ], key=itemgetter("purl"))
 
 
 def test_get_csv_report(sca_package_report, tmp_path: Path):

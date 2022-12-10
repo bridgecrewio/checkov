@@ -15,6 +15,7 @@ from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -30,6 +31,7 @@ from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -45,7 +47,8 @@ _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif", "csv"]
+CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
+OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "sarif", "csv"]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
@@ -98,6 +101,8 @@ class RunnerRegistry:
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         merged_reports = self._merge_reports(reports)
+        if bc_integration.bc_api_key:
+            SecretsOmitter(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
@@ -128,7 +133,10 @@ class RunnerRegistry:
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
         if repo_root_for_plan_enrichment:
-            enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+            enriched_resources = RunnerRegistry.get_enriched_resources(
+                repo_roots=repo_root_for_plan_enrichment,
+                download_external_modules=self.runner_filter.download_external_modules,
+            )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
@@ -253,7 +261,7 @@ class RunnerRegistry:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
-                if "cyclonedx" in config.output:
+                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
@@ -372,17 +380,30 @@ class RunnerRegistry:
             )
 
             data_outputs['junitxml'] = junit_output
-        if "cyclonedx" in config.output:
+        if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
             cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
-            cyclonedx_output = cyclonedx.get_xml_output()
 
-            self._print_to_console(
-                output_formats=output_formats,
-                output_format="cyclonedx",
-                output=cyclonedx_output,
-            )
+            for cyclonedx_format in CYCLONEDX_OUTPUTS:
+                if cyclonedx_format not in config.output:
+                    # only the XML or JSON format was chosen
+                    continue
 
-            data_outputs["cyclonedx"] = cyclonedx_output
+                if cyclonedx_format == "cyclonedx":
+                    cyclonedx_output = cyclonedx.get_xml_output()
+                elif cyclonedx_format == "cyclonedx_json":
+                    cyclonedx_output = cyclonedx.get_json_output()
+                else:
+                    # this shouldn't happen
+                    logging.error(f"CycloneDX output format '{cyclonedx_format}' not supported")
+                    continue
+
+                self._print_to_console(
+                    output_formats=output_formats,
+                    output_format=cyclonedx_format,
+                    output=cyclonedx_output,
+                )
+
+                data_outputs[cyclonedx_format] = cyclonedx_output
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -390,12 +411,16 @@ class RunnerRegistry:
             csv_sbom_report.persist_report(is_api_key=is_api_key, output_path=config.output_file_path)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt',
-                      'github_failed_only': 'results_github_failed_only.md',
-                      'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json',
-                      'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml'}
+        file_names = {
+            'cli': 'results_cli.txt',
+            'github_failed_only': 'results_github_failed_only.md',
+            'sarif': 'results_sarif.sarif',
+            'json': 'results_json.json',
+            'junitxml': 'results_junitxml.xml',
+            'cyclonedx': 'results_cyclonedx.xml',
+            'cyclonedx_json': 'results_cyclonedx.json',
+        }
+
         if config.output_file_path:
             if output_formats:
                 for output_format, output_path in output_formats.items():
@@ -488,7 +513,9 @@ class RunnerRegistry:
                 record.set_guideline(guideline)
 
     @staticmethod
-    def get_enriched_resources(repo_roots: list[str | Path]) -> dict[str, dict[str, Any]]:
+    def get_enriched_resources(
+        repo_roots: list[str | Path], download_external_modules: bool
+    ) -> dict[str, dict[str, Any]]:
         repo_definitions = {}
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
@@ -497,6 +524,7 @@ class RunnerRegistry:
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
+                download_external_modules=download_external_modules,
             )
             repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 

@@ -1,3 +1,4 @@
+#checkov:skip=CKV_DOCKER_5: no need to skip
 FROM gliderlabs/alpine:3.3
 RUN apk --no-cache add nginx
 EXPOSE 3000 80 443 22

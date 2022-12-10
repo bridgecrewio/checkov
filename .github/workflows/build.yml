@@ -15,7 +15,7 @@ on:
 
   push:
     branches:
-      - master
+      - main
     paths-ignore:
       - 'docs/**'
       - 'INTHEWILD.md'
@@ -181,6 +181,10 @@ jobs:
 
           echo "new tag: $new_tag"
           echo "version=$new_tag" >> $GITHUB_OUTPUT
+          
+          # grab major version for later image tag usage         
+          major_version=$(echo "${new_tag}" | head -c1)
+          echo "major_version=$major_version" >> $GITHUB_OUTPUT
         id: calculateVersion
       - name: version
         env:
@@ -230,7 +234,7 @@ jobs:
         run: |
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@37f50c210e3d2f9450da2cd423303d6a14a6e29f  # v1
+        uses: pypa/gh-action-pypi-publish@5d1679fa6b895587c6eb10c3fe82205b440a580e  # v1
         with:
           password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
@@ -238,27 +242,83 @@ jobs:
           sleep 2m
     outputs:
       version: ${{ steps.calculateVersion.outputs.version }}
+      major_version: ${{ steps.calculateVersion.outputs.major_version }}
   publish-checkov-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: bump-version
     environment: release
+    permissions:
+      packages: write
+      id-token: write  # Enable OIDC
+    env:
+      DH_IMAGE_NAME: bridgecrew/checkov
+      GHCR_IMAGE_NAME: ghcr.io/${{ github.repository }}
+      FULL_IMAGE_TAG: ${{ needs.bump-version.outputs.version }}
+      SHORT_IMAGE_TAG: ${{ needs.bump-version.outputs.major_version }}
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - name: Get release version
-        id: versions
-        run: |
-          checkov_version=${{ needs.bump-version.outputs.version }}
-          checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> $GITHUB_OUTPUT
-          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+      - uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b  # v2
+      - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325  # v2  # needed for self-hosted builds
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
         with:
-          name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          buildoptions: "--no-cache"
-          tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and export image to Docker
+        # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
+        # so it is built and loaded to Docker and in the next step pushed to the registry
+        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5  # v3
+        with:
+          context: .
+          no-cache: true
+          load: true
+          tags: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+      - name: Push Docker image
+        id: docker_push
+        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5  # v3
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DH_IMAGE_NAME }}:latest
+            ${{ env.DH_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}
+            ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+            ${{ env.GHCR_IMAGE_NAME }}:latest
+            ${{ env.GHCR_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}
+            ${{ env.GHCR_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+      - name: Generate SBOM
+        continue-on-error: true
+        uses: bridgecrewio/checkov-action@master  # use latest and greatest
+        with:
+          api-key: ${{ secrets.BC_API_KEY }}
+          docker_image: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+          dockerfile_path: Dockerfile
+          output_format: cyclonedx_json
+          output_file_path: cyclonedx.json,
+      - name: Sign and attest image
+        run: |
+          # sign image
+          cosign sign ${{ env.DH_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          cosign sign -f ${{ env.GHCR_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          
+          # attest SBOM
+          cosign attest \
+            --type cyclonedx \
+            --predicate cyclonedx.json \
+            ${{ env.DH_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          cosign attest -f \
+            --type cyclonedx \
+            --predicate cyclonedx.json \
+            ${{ env.GHCR_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1  # needed for keyless signing
   publish-checkov-k8s-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     needs: bump-version
@@ -273,7 +333,7 @@ jobs:
           echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
         id: versions
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/checkov-k8s
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -295,7 +355,7 @@ jobs:
           echo "version=$checkov_version" >> $GITHUB_OUTPUT
           echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
       - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/checkov
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -316,11 +376,12 @@ jobs:
   publish-checkov-admissioncontroller-dockerhub:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
-    needs: update-bridgecrew-projects
+    needs: bump-version
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
+          ref: main
       - name: get versions
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
@@ -330,7 +391,7 @@ jobs:
         id: versions
       - name: Publish to Registry
         id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@742a180fa47f3adfb5115902ae4955acc6ad769b  # v4
+        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
           name: bridgecrew/whorf
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -348,6 +409,5 @@ jobs:
           include: "admissioncontroller/k8s/deployment.yaml"
       - name: commit changes to deployment
         run: |
-          git pull
           git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
           git push origin

@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "bc-detect-secrets==1.3.14",
+        "bc-detect-secrets==1.4.5",
         "deep-merge",
         "tabulate",
         "colorama",
@@ -48,7 +48,7 @@ setup(
         "tqdm",
         "update-checker",
         "semantic-version",
-        "packaging",
+        "packaging==21.3",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "dockerfile-parse",
@@ -59,7 +59,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib<4.0.0,>=2.4.0",
+        "cyclonedx-python-lib>=2.4.0,<4.0.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
@@ -89,6 +89,7 @@ setup(
     package_dir={
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
+        "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
         "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
     },
@@ -96,6 +97,7 @@ setup(
         "checkov": ["py.typed"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
+        "checkov.dockerfile.checks.graph_checks": ["*.yaml"],
         "checkov.github_actions.checks.graph_checks": ["*.yaml"],
         "checkov.terraform.checks.graph_checks": [
             "aws/*.yaml",

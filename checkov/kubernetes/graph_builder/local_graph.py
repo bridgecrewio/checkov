@@ -9,7 +9,9 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags, remove_metadata_from_attribute
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
+    remove_metadata_from_attribute
+from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
@@ -154,7 +156,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         return None
 
     @staticmethod
-    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any]) -> None:
+    def update_vertex_config(vertex: KubernetesBlock, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False) -> None:
         # not used
         return None
 

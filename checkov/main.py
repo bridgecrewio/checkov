@@ -28,6 +28,8 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
+    integration as suppressions_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.goget.github.get_git import GitGetter
@@ -43,6 +45,7 @@ from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
@@ -249,6 +252,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
+
+            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+            if should_run_contributor_metrics:
+                try:        # collect contributor info and upload
+                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
+                except Exception as e:
+                    logger.warning(f"Unable to report contributor metrics due to: {e}")
+
         except MaxRetryError:
             return None
         except Exception:
@@ -298,6 +310,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)

@@ -23,8 +23,20 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_AccessControlGroupRuleDefine(self):
+        self.go("AccessControlGroupRuleDefine")
+
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
+
+    def test_VPCPeeringRouteTableOverlyPermissive(self):
+        self.go("VPCPeeringRouteTableOverlyPermissive")
+
+    def test_S3NotAllowAccessToAllAuthenticatedUsers(self):
+        self.go("S3NotAllowAccessToAllAuthenticatedUsers")
+
+    def test_CloudFrontHasCustomSSLCertificate(self):
+        self.go("CloudFrontHasCustomSSLCertificate")            
 
     def test_CodecommitApprovalRulesAttached(self):
         self.go("CodecommitApprovalRulesAttached")

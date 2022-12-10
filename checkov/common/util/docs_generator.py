@@ -63,7 +63,12 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
 
 
 def get_check_link(absolute_path: str) -> str:
-    return f'{CODE_LINK_BASE}{absolute_path.split("/checkov")[1]}'
+    # this will do nothing unless it's a windows path
+    absolute_path = absolute_path.replace('\\', '/')
+    temp = absolute_path.split("checkov")
+    # this will even work in the likely event that you're running checkov from a folder called checkov
+    link = f'{CODE_LINK_BASE}{temp[len(temp)-1]}'
+    return link
 
 
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
@@ -115,6 +120,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     if any(x in framework_list for x in ("all", "serverless")):
         add_from_repository(sls_registry, "resource", "serverless")
     if any(x in framework_list for x in ("all", "dockerfile")):
+        graph_registry = get_graph_checks_registry("dockerfile")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "dockerfile")
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if any(x in framework_list for x in ("all", "github_configuration")):
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")

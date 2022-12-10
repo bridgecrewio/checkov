@@ -5,7 +5,7 @@ title: Terraform Plan Scanning
 nav_order: 8
 ---
 
-# Terraform Plan and External Terraform Module Scanning
+# Terraform Plan Scanning
 
 ## Evaluate Checkov Policies on Terraform Plan
 Checkov supports the evaluation of policies on resources declared in `.tf` files. It can also be used to evaluate `terraform plan` expressed in a json file. Plan evaluation provides Checkov additional dependencies and context that can result in a more complete scan result. Since Terraform plan files may contain arguments (like secrets) that are injected dynamically, it is advised to run a plan evaluation using Checkov in a secure CI/CD pipeline setting.
@@ -76,52 +76,3 @@ Ex. YAML
   operator: not_contains
   value: delete
 ```
-
-## Scanning Third-Party Terraform Modules
-Third-party Terraform modules often reduce complexity for deploying services made up of many objects.
-
-For example, the third-party EKS module by howdio reduces the terraform required to the nine lines below, however, in doing so abstracts the terraform configuration away from a regular Checkov scan on the current directory.
-
-```python
-module "eks" {
-  source = "howdio/eks/aws"
-
-  name        = "examplecluster"
-  default_vpc = true
-
-  enable_kubectl   = true
-  enable_dashboard = true
-}
-```
-
-To ensure coverage of objects within these modules, you can instruct Checkov to scan the `.terraform` directory, after a `terraform init`, which will have retrieved the third-party modules and any associated `.tf` files:
-
-```python
-terraform init
-checkov -d . # Your TF files.
-checkov -d .terraform # Module TF files.
-```
-
-![](terraform-module-scanning)
-
-It is worth noting however, that when scanning the `.terraform` directory, Checkov cannot differentiate between third-party and internally written modules. That said, you will benefit from scanning coverage across all of them.
-
-### Scanning Private Terraform Modules
-
-In case third-party modules are stored in a private repository or a private Terraform Cloud registry, you can provide access tokens as environment variables for checkov to attempt to clone those modules. 
-
-| Variable Name          | Description                                                                |
-|------------------------|----------------------------------------------------------------------------|
-| GITHUB_PAT             | Github personal access token with read access to the private repository    |
-| BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository |
-| TFC_TOKEN              | Terraform Cloud token which can access the private registry                |
-| BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD         |
-| BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)        |
-
-For self-hosted VCS repositories, use the following environment variables:
-
-| Variable Name | Description                                          |
-|---------------|------------------------------------------------------|
-| VCS_BASE_URL  | Base URL of the self-hosted VCS: https://example.com |
-| VCS_USERNAME  | Username for basic authentication                    |
-| VCS_TOKEN     | Password for basic authentication                    |
