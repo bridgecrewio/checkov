@@ -1,4 +1,4 @@
 fail:
   - "ClusterRoleBinding.default.failing-crb1"
   - "ClusterRoleBinding.default.failing-crb2"
-  - "RoleBinding.dev.RoleBinding.sa-escalate"
+  - "RoleBinding.default.sa-escalate"
