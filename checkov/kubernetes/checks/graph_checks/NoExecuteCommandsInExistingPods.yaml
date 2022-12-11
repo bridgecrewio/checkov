@@ -43,8 +43,6 @@ definition:
                 attribute: rules.resources
                 operator: not_intersects
                 value:
-                  - 'pods'
-                  - 'nodes'
                   - 'pods/exec'
                   - 'nodes/proxy'
                   - '*'

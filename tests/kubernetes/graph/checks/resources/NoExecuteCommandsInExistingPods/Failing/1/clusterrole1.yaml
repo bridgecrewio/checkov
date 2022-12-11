@@ -6,6 +6,6 @@ rules:
 - apiGroups:
     - "*"
   resources:
-    - "pods"
+    - "pods/exec"
   verbs:
     - "*"
