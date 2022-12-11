@@ -142,7 +142,6 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             parsed_version = packaging_version.parse(root_package_fix_version.strip())
                             fix_versions_lists.append([parsed_version])
 
-
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
                             "id": record.vulnerability_details["id"],
