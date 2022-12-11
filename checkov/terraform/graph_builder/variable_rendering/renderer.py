@@ -406,7 +406,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     @staticmethod
     def _assign_dynamic_value_for_list(
-            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, dict]]],
+            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, dict[str, Any]]]],
             dynamic_argument: str,
             block_conf: dict[str, Any],
             block_content: dict[str, Any],
