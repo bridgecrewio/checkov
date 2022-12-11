@@ -55,9 +55,11 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
             if 'definition' in code_dict:
                 if 'value' in code_dict['definition']:
                     not_parsed = False
+                    check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
+                        secret_policy['incidentId']
+                    if type(code_dict['definition']['value']) is str:
+                        code_dict['definition']['value'] = [code_dict['definition']['value']]
                     for regex in code_dict['definition']['value']:
-                        check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
-                            secret_policy['incidentId']
                         custom_detectors.append({'Name': secret_policy['title'],
                                                  'Check_ID': check_id,
                                                  'Regex': regex,
@@ -106,7 +108,8 @@ class CustomRegexDetector(RegexBasedDetector):
             if len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data['isCustom']:
                 output.add(ps)
             else:
-                logging.info(f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
+                logging.info(
+                    f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
         return output
 
