@@ -4,10 +4,12 @@ import logging
 import os
 import json
 import itertools
-from typing import Any, TYPE_CHECKING
+from json import JSONDecodeError
+from typing import Any, TYPE_CHECKING, cast
 from collections import defaultdict
 
 import dpath.util
+from botocore.exceptions import ClientError
 
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
@@ -35,6 +37,27 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
     except Exception:
         logging.error(f"failed to persist object {json_obj} into S3 bucket {bucket}", exc_info=True)
         raise
+
+
+def _get_json_object(
+    s3_client: BaseClient, bucket: str, object_path: str, throw_json_error: bool = True
+) -> dict[str, Any] | None:
+    try:
+        result_body = s3_client.get_object(Bucket=bucket, Key=object_path)['Body'].read().decode('utf-8')
+        return cast("dict[str, Any]", json.loads(result_body))
+    except ClientError as e:
+        logging.warning(e)
+    except JSONDecodeError as e:
+        if throw_json_error:
+            logging.error(e)
+            raise e
+        else:
+            logging.warning(f'Failed to get json object due to {str(e)}')
+    except Exception as e:
+        logging.error(e)
+        raise e
+
+    return None
 
 
 def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
