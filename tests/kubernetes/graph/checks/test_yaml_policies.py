@@ -49,6 +49,10 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     @with_k8s_graph_flags()
     def test_NoCreateNodesProxyOrPodsExec(self) -> None:
         self.go('NoCreateNodesProxyOrPodsExec')
+    
+    @with_k8s_graph_flags()
+    def test_ImpersonatePermissions(self) -> None:
+        self.go("ImpersonatePermissions")
 
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
