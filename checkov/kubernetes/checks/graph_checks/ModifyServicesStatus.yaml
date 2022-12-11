@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_K8S_4"
-  name: "SAs and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit 
+  name: "ServiceAccounts and nodes that can modify services/status may set the `status.loadBalancer.ingress.ip` field to exploit 
   the unfixed CVE-2020-8554 and launch MiTM attacks against the cluster."
   category: "KUBERNETES"
 definition:
