@@ -406,7 +406,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     @staticmethod
     def _assign_dynamic_value_for_list(
-            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, Any]]],
+            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, dict]]],
             dynamic_argument: str,
             block_conf: dict[str, Any],
             block_content: dict[str, Any],
@@ -419,7 +419,11 @@ class TerraformVariableRenderer(VariableRenderer):
             dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator=DOT_SEPERATOR)
         else:
             try:
-                dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
+                if DOT_SEPERATOR in dynamic_argument:
+                    dynamic_args = dynamic_argument.split(DOT_SEPERATOR)
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_args[0]][dynamic_args[1]], separator=DOT_SEPERATOR)
+                else:
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
             except KeyError:
                 if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
                     block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
