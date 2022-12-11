@@ -9,7 +9,6 @@ from typing import Any, TYPE_CHECKING, cast
 from collections import defaultdict
 
 import dpath.util
-from botocore.exceptions import ClientError
 
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
@@ -17,6 +16,7 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
     from botocore.client import BaseClient  # type:ignore[import]
+    from botocore.exceptions import ClientError # type:ignore[import]
     from checkov.common.output.report import Report
 
 checkov_results_prefix = 'checkov_results'
@@ -45,16 +45,16 @@ def _get_json_object(
     try:
         result_body = s3_client.get_object(Bucket=bucket, Key=object_path)['Body'].read().decode('utf-8')
         return cast("dict[str, Any]", json.loads(result_body))
-    except ClientError as e:
-        logging.warning(e)
+    except ClientError:
+        logging.warning("failed to download json object", exc_info=True)
     except JSONDecodeError as e:
         if throw_json_error:
-            logging.error(e)
+            logging.error("Unable to decode downloaded JSON", exc_info=True)
             raise e
         else:
-            logging.warning(f'Failed to get json object due to {str(e)}')
+            logging.warning("Failed to get json object", exc_info=True)
     except Exception as e:
-        logging.error(e)
+        logging.error("Failed to get json object", exc_info=True)
         raise e
 
     return None

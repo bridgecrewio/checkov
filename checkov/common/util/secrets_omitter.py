@@ -23,7 +23,7 @@ class SecretsOmitterStatus(Enum):
 class SecretsOmitter:
     def __init__(self, reports: list[Report]):
         self.reports: list[Report] = [report for report in reports if report.check_type != CheckType.SECRETS]
-        self.secrets_report: Report | dict[str, Any] | None = self._get_secrets_report(reports)
+        self.secrets_report: dict[str, Any] | None = self._get_secrets_report(reports)
 
     @staticmethod
     def _get_secrets_report(reports: list[Report]) -> dict[str, Any] | None:
@@ -33,7 +33,7 @@ class SecretsOmitter:
         secrets_report_list = [report for report in reports if report.check_type == CheckType.SECRETS]
         runner_secrets_report: Report | None = secrets_report_list[0] if len(secrets_report_list) == 1 else None
 
-        secrets_report: dict[str, Any] = {}
+        secrets_report: dict[str, Any] | None = {}
 
         if runner_secrets_report:
             secrets_report = runner_secrets_report.get_dict(full_report=True)
@@ -43,8 +43,8 @@ class SecretsOmitter:
             if secrets_report_s3_path and bucket:
                 try:
                     secrets_report = _get_json_object(bc_integration.s3_client, bucket, secrets_report_s3_path)
-                except Exception as e:
-                    logging.error(e)
+                except Exception:
+                    logging.error("failed to download secrets report from bucket", exc_info=True)
 
         return secrets_report
 
