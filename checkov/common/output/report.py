@@ -99,6 +99,16 @@ class Report:
                 },
                 "summary": self.get_summary(),
             }
+        if full_report:
+            return {
+                "check_type": self.check_type,
+                "checks": {
+                    "passed_checks": [check.__dict__ for check in self.passed_checks],
+                    "failed_checks": [check.__dict__ for check in self.failed_checks],
+                    "skipped_checks": [check.__dict__ for check in self.skipped_checks]
+                },
+                "image_cached_results": [res.__dict__ for res in self.image_cached_results]
+            }
         else:
             return {
                 "check_type": self.check_type,

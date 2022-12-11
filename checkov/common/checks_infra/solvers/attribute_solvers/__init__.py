@@ -12,6 +12,7 @@ from checkov.common.checks_infra.solvers.attribute_solvers.not_exists_attribute_
 from checkov.common.checks_infra.solvers.attribute_solvers.not_starting_with_attribute_solver import NotStartingWithAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.starting_with_attribute_solver import StartingWithAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.within_attribute_solver import WithinAttributeSolver  # noqa
+from checkov.common.checks_infra.solvers.attribute_solvers.not_within_attribute_solver import NotWithinAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_attribute_solver import GreaterThanAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.greater_than_or_equal_attribute_solver import GreaterThanOrEqualAttributeSolver  # noqa
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_attribute_solver import LessThanAttributeSolver  # noqa
