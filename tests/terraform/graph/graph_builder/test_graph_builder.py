@@ -91,6 +91,7 @@ class TestGraphBuilder(TestCase):
                     ],
                     "__start_line__": 1,
                     "__end_line__": 10,
+                    "__address__": "aws_s3_bucket.default"
                 }
             }
         }

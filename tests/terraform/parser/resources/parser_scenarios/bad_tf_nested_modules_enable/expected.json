@@ -1,0 +1,33 @@
+{
+  "skip_bad_tf_example.tf": {
+    "module": [
+      {
+        "bar": {
+          "memory": ["1G"],
+          "source": ["baz"],
+          "__start_line__": 11,
+          "__end_line__": 14,
+          "__resolved__": [],
+          "__address__": "module.bar"
+        }
+      },
+      {
+        "okay": {
+          "source": ["./okay", "baz2"],
+          "__start_line__": 16,
+          "__end_line__": 19,
+          "__resolved__": [],
+          "__address__": "module.okay"
+        }
+      }
+    ],
+    "variable": [
+      {
+        "okay": {
+          "__start_line__": 1,
+          "__end_line__": 2
+        }
+      }
+    ]
+  }
+}

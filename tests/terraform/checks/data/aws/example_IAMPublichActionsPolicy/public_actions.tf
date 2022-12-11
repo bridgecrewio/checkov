@@ -27,6 +27,19 @@ data "aws_iam_policy_document" "pass" {
   }
 }
 
+data "aws_iam_policy_document" "pass1" {
+  statement {
+
+    actions = ["sns:Publish"]
+
+    principals {
+      type        = "AWS"
+      identifiers = []
+    }
+    resources = [aws_sns_topic.some-topic.arn]
+  }
+}
+
 data "aws_iam_policy_document" "pass2" {
   statement {
 

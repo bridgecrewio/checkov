@@ -12,7 +12,8 @@
             "modules/db/variables.tf[envs/myaccount/us-east-1/main.tf#0]"
           ],
           "__start_line__": 1,
-          "__end_line__": 6
+          "__end_line__": 6,
+          "__address__": "module.mydb"
         }
       }
     ]
@@ -83,7 +84,8 @@
             "deletion_protection": [true],
             "storage_encrypted": [true],
             "__start_line__": 1,
-            "__end_line__": 9
+            "__end_line__": 9,
+            "__address__": "module.mydb.aws_db_instance.db"
           }
         }
       }
@@ -102,7 +104,8 @@
             "modules/db/variables.tf[envs/myotheraccount/us-east-1/main.tf#0]"
           ],
           "__start_line__": 1,
-          "__end_line__": 6
+          "__end_line__": 6,
+          "__address__": "module.mydb"
         }
       }
     ]
@@ -173,7 +176,8 @@
             "deletion_protection": [true],
             "storage_encrypted": [true],
             "__start_line__": 1,
-            "__end_line__": 9
+            "__end_line__": 9,
+            "__address__": "module.mydb.aws_db_instance.db"
           }
         }
       }
