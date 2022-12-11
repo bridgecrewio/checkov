@@ -3,6 +3,9 @@ kind: ClusterRole
 metadata:
   name: failing-cr1
 rules:
-- apiGroups: [""]
-  resources: ["serviceaccounts"]
-  verbs: ["*"]
+- apiGroups:
+    - ""
+  resources:
+    - "serviceaccounts"
+  verbs:
+    - "*"
