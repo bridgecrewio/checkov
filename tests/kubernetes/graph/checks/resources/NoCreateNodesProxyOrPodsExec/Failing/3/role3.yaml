@@ -5,9 +5,10 @@ metadata:
   namespace: kube-system
 rules:
 - apiGroups:
-    - "rbac.authorization.k8s.io"
+    - ""
   resources:
-    - "rolebindings"
+    - "nodes/proxy"
+    - "pods"
   verbs:
-    - "bind"
     - "create"
+    - "list"

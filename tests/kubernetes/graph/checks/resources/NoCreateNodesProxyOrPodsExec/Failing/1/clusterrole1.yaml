@@ -4,8 +4,8 @@ metadata:
   name: failing-cr1
 rules:
 - apiGroups:
-    - "rbac.authorization.k8s.io"
+    - "*"
   resources:
-    - "clusterrolebindings"
+    - "pods/exec"
   verbs:
     - "*"
