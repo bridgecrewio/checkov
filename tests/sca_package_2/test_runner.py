@@ -36,7 +36,7 @@ def test_upload_scannable_files():
     }
 
     # then
-    assert len(input_paths) == 4
+    assert len(input_paths) == 5
 
     assert set(input_paths) == expected_output
 
@@ -58,7 +58,7 @@ def test_upload_scannable_files_exclude_go_and_requirements():
     }
 
     # then
-    assert len(input_output_paths) == 2
+    assert len(input_output_paths) == 3
 
     assert set(input_output_paths) == expected_output
 
@@ -90,7 +90,7 @@ def test_upload_scannable_files_file_config():
     }
 
     # then
-    assert len(input_output_paths) == 4
+    assert len(input_output_paths) == 5
 
     assert set(input_output_paths) == expected_output
 

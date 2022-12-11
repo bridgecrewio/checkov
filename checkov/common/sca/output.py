@@ -314,6 +314,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, licenses_per_pa
             if 'causePackageName' in cve:
                 cve_alias = f'{cve["cveId"]}@{cve["causePackageName"]}@{cve["causePackageVersion"]}'
                 indirect_packages[cve_alias] = cve
+                continue
 
             add_cve_record_to_report(vulnerability_details=cve, package_name=root_package['name'],
                                      package_version=root_package['version'],

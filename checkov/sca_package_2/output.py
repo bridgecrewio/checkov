@@ -136,6 +136,12 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     is_root_package = root_package_alias == get_package_alias(package_name, package_version)
                     if is_root_package:  # we want fixed versions just for root packages
                         fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
+                    else:
+                        root_package_fix_version = record.vulnerability_details.get("root_package_fix_version")
+                        if root_package_fix_version:
+                            parsed_version = packaging_version.parse(root_package_fix_version.strip())
+                            fix_versions_lists.append([parsed_version])
+
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
@@ -357,7 +363,7 @@ def create_package_overview_table_part(
                             "",
                             cve["root_package_version"],
                             "",
-                            "",
+                            details.get("compliant_version", ""),
                         ]
                     )
                 else:
