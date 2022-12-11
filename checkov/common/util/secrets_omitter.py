@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import itertools
 import logging
+import os
 from enum import Enum
-from typing import Iterator, TYPE_CHECKING
+from typing import Iterator, TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.wrapper import _get_json_object
 
 if TYPE_CHECKING:
     from checkov.common.output.record import Record
@@ -20,15 +23,37 @@ class SecretsOmitterStatus(Enum):
 class SecretsOmitter:
     def __init__(self, reports: list[Report]):
         self.reports: list[Report] = [report for report in reports if report.check_type != CheckType.SECRETS]
-        secrets_report = [report for report in reports if report.check_type == CheckType.SECRETS]
-        self.secrets_report: Report | None = secrets_report[0] if len(secrets_report) == 1 else None
+        self.secrets_report: dict[str, Any] | None = self._get_secrets_report(reports)
 
-    def _secret_check(self) -> Iterator[Record]:
+    @staticmethod
+    def _get_secrets_report(reports: list[Report]) -> dict[str, Any] | None:
+        """
+        Setting the secrets report from checkov runner or bucket
+        """
+        secrets_report_list = [report for report in reports if report.check_type == CheckType.SECRETS]
+        runner_secrets_report: Report | None = secrets_report_list[0] if len(secrets_report_list) == 1 else None
+
+        secrets_report: dict[str, Any] | None = {}
+
+        if runner_secrets_report:
+            secrets_report = runner_secrets_report.get_dict(full_report=True)
+        else:
+            secrets_report_s3_path = os.getenv("CKV_SECRETS_REPORT_S3_PATH")
+            bucket = os.getenv("RESULT_BUCKET")
+            if secrets_report_s3_path and bucket:
+                try:
+                    secrets_report = _get_json_object(bc_integration.s3_client, bucket, secrets_report_s3_path)
+                except Exception:
+                    logging.error("failed to download secrets report from bucket", exc_info=True)
+
+        return secrets_report
+
+    def _secret_check(self) -> Iterator[dict[str, Any]]:
         if not self.secrets_report:
             # Should not reach here, used for typing
             return
 
-        for check in self.secrets_report.failed_checks:
+        for check in self.secrets_report.get("checks", {}).get("failed_checks"):
             yield check
 
     def _non_secret_check(self) -> Iterator[Record]:
@@ -37,9 +62,18 @@ class SecretsOmitter:
                 yield check
 
     @staticmethod
-    def get_secret_lines(code_block: list[tuple[int, str]]) -> tuple[list[int], list[str]]:
+    def get_secret_lines(code_block: list[tuple[int, str]] | None) -> tuple[list[int], list[str]]:
+        """
+        Given a code block object, returns the lines containing asteriks including the line range
+        :param code_block: list of tuples containing line number and the line itself
+        :return: list of size 2, representing the range of lines containing secrets from code_block,
+         and a list containing the lines from the range.
+        """
         secret_lines_range = [-1, -1]
-        secrets_lines = []
+        secrets_lines: list[str] = []
+        if not code_block:
+            return secret_lines_range, secrets_lines
+
         for idx, line in code_block:
             if '*' in line:
                 secrets_lines.append(line)
@@ -61,7 +95,7 @@ class SecretsOmitter:
             logging.debug("Insufficient reports to omit secrets")
             return SecretsOmitterStatus.INSUFFICIENT_REPORTS
 
-        files_with_secrets: set[str] = {secret_check.file_path for secret_check in self._secret_check()}
+        files_with_secrets: set[str] = {secret_check.get("file_path", "") for secret_check in self._secret_check()}
         for check in self._non_secret_check():
             check_file_path = check.file_path
             check_line_range = check.file_line_range
@@ -70,13 +104,13 @@ class SecretsOmitter:
                 continue
 
             for secret_check in self._secret_check():
-                secret_check_file_path = secret_check.file_path
-                secret_check_line_range, secrets_check_lines = SecretsOmitter.get_secret_lines(secret_check.code_block)
+                secret_check_file_path = secret_check.get("file_path", "")
+                secret_check_line_range, secrets_check_lines = self.get_secret_lines(secret_check.get("code_block"))
                 if secret_check_line_range == [-1, -1]:
                     continue
 
                 if secret_check_file_path != check_file_path or \
-                        not SecretsOmitter._line_range_overlaps(secret_check_line_range, check_line_range):
+                        not self._line_range_overlaps(secret_check_line_range, check_line_range):
                     continue
 
                 if len(secrets_check_lines) != secret_check_line_range[1] - secret_check_line_range[0] + 1:
