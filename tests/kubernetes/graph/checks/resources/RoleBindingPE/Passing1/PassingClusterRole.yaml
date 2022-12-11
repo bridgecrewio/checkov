@@ -3,6 +3,9 @@ kind: ClusterRole
 metadata:
   name: passing-cr1
 rules:
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["pods"]
-  verbs: ["*"]
+- apiGroups:
+    - "rbac.authorization.k8s.io"
+  resources:
+    - "pods"
+  verbs:
+    - "*"

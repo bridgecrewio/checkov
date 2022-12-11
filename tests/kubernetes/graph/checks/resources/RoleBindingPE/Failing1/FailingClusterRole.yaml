@@ -3,6 +3,9 @@ kind: ClusterRole
 metadata:
   name: failing-cr1
 rules:
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["clusterrolebindings"]
-  verbs: ["*"]
+- apiGroups:
+    - "rbac.authorization.k8s.io"
+  resources:
+    - "clusterrolebindings"
+  verbs:
+    - "*"

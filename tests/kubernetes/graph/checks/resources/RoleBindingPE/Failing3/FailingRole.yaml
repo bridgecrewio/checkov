@@ -4,6 +4,10 @@ metadata:
   name: failing-role3
   namespace: kube-system
 rules:
-- apiGroups: ["rbac.authorization.k8s.io"]
-  resources: ["rolebindings"]
-  verbs: ["bind", "create"]
+- apiGroups:
+    - "rbac.authorization.k8s.io"
+  resources:
+    - "rolebindings"
+  verbs:
+    - "bind"
+    - "create"
