@@ -10,10 +10,10 @@ from checkov.json_doc.enums import BlockType
 
 class GithubIssueDeletionIsLimited(BaseGithubCheck):
     def __init__(self) -> None:
-        name = "Ensure issue deletion is limited to specific users - CIS 1.2.3"
+        name = "Ensure issue deletion is limited to specific users"
         # see https://docs.github.com/en/repositories/creating-and-managing-repositories/deleting-a-repository
         # in GitHub only owners can remove a repo, and that's what the check require
-        id = "CKV_GITHUB_23"
+        id = "CKV_GITHUB_25"
         categories = (CheckCategories.SUPPLY_CHAIN,)
         super().__init__(
             id=id,

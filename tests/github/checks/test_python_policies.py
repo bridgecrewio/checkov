@@ -52,8 +52,16 @@ def test_GithubRequireUpdatedBranch():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubRequireUpdatedBranch")
 
 
-def test_GithubRepositoryCreationIsLimited():
-    run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryCreationIsLimited")
+def test_GithubPublicRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubPublicRepositoryCreationIsLimited")
+
+
+def test_GithubInternalRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubInternalRepositoryCreationIsLimited")
+
+
+def test_GithubPrivateRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubPrivateRepositoryCreationIsLimited")
 
 
 def test_GithubIssueDeletionIsLimited():
