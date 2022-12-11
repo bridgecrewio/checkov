@@ -32,7 +32,9 @@ def test_upload_scannable_files():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
                       s3_file_key='package-lock.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
-                      s3_file_key='package.json')
+                      s3_file_key='package.json'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
+                      s3_file_key='go.mod')
     }
 
     # then
@@ -54,7 +56,9 @@ def test_upload_scannable_files_exclude_go_and_requirements():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
                       s3_file_key='requirements.txt'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
-                      s3_file_key='package.json')
+                      s3_file_key='package.json'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
+                      s3_file_key='go.mod')
     }
 
     # then
@@ -86,7 +90,9 @@ def test_upload_scannable_files_file_config():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
                       s3_file_key='package-lock.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
-                      s3_file_key='package.json')
+                      s3_file_key='package.json'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
+                      s3_file_key='go.mod')
     }
 
     # then
