@@ -1,13 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: failing-role3
-  namespace: kube-system
+  name: failing-cr4
 rules:
 - apiGroups:
     - "rbac.authorization.k8s.io"
   resources:
-    - "rolebindings"
+    - "*"
   verbs:
     - "bind"
     - "create"
