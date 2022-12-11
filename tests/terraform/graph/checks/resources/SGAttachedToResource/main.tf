@@ -833,3 +833,24 @@ resource "aws_memorydb_cluster" "pass_memorydb_cluster" {
   security_group_ids       = [aws_security_group.pass_memorydb_cluster.id]
   depends_on               = [ aws_security_group.pass_memorydb_cluster ]
 }
+
+# Route 53
+
+resource "aws_security_group" "pass_route53_resolver_endpoint" {
+  ingress {
+    description = "DNS UDP"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = 0.0.0.0/0
+  }
+}
+
+resource "aws_route53_resolver_endpoint" "pass_route53_resolver_endpoint" {
+  direction = "OUTBOUND"
+  security_group_ids = [aws_security_group.pass_route53_resolver_endpoint.id]
+
+  ip_address {
+    subnet_id = var.subnet_id
+  }
+}
