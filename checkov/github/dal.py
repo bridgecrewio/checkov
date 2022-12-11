@@ -116,6 +116,26 @@ class Github(BaseVCSDAL):
                 self._organization_security = data
         return self._organization_security
 
+    def get_default_branch(self) -> dict[str, Any] | None:
+        # still not used - for future implementations
+        default_branch = self.repo_properties.get("default_branch")
+        if not default_branch:
+            data = self._request_graphql(query="""
+                query ($owner: String!, $name: String!){
+                  repository(owner: $owner, name: $name) {
+                    defaultBranchRef {
+                      name
+                    }
+                  }
+                }
+                """, variables={'owner': self.repo_owner, 'name': self.current_repository})
+            if not data:
+                return None
+            if org_security_schema.validate(data):
+                default_branch = self.repo_properties["default_branch"] = \
+                    data.get('data', {}).get('repository', {}).get('defaultBranchRef', {}).get('name')
+        return default_branch
+
     def get_branch_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
         data = self._request(
@@ -127,6 +147,14 @@ class Github(BaseVCSDAL):
     def get_organization_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
         data = self._request(endpoint=f"orgs/{self.org}", allowed_status_codes=[200])
+        return data
+
+    def get_repository_metadata(self) -> dict[str, Any] | None:
+        # still not used - for future implementations
+        data = self._request(
+            endpoint=f"repos/{self.repo_owner}/{self.current_repository}",
+            allowed_status_codes=[200]
+        )
         return data
 
     # --------------------------------------------------------------------------- #
@@ -176,6 +204,16 @@ class Github(BaseVCSDAL):
 
     def persist_github_default_empty_file(self) -> None:
         BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={})
+
+    def persist_repository_metadata(self):
+        # still not used - for future implementations
+        repository_metadata = self.get_repository_metadata()
+        if repository_metadata:
+            BaseVCSDAL.persist(
+                path=self.github_conf_file_paths["repository_metadata"][0],
+                conf=repository_metadata
+            )
+            self.organization_properties["is_private_repo"] = repository_metadata.get('private')
 
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
