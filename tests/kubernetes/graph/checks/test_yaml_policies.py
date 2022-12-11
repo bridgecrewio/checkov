@@ -58,6 +58,10 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_ModifyServicesStatus(self) -> None:
         self.go('ModifyServicesStatus')
 
+    @with_k8s_graph_flags()
+    def test_ReadAllSecrets(self) -> None:
+        self.go('ReadAllSecrets')
+
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
         first_results_key = list(checks_results.keys())[0]
