@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_K8S_2"
-  name: "RoleBinding should not allow a ServiceAccount or Node to execute commands in existing pods"
+  name: "Granting `create` permissions to `nodes/proxy` or `pods/exec` sub resources allows potential privilege escalation"
   category: "KUBERNETES"
 definition:
   and:

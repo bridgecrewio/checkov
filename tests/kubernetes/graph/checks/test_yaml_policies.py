@@ -47,8 +47,8 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         self.go('RoleBindingPE')
 
     @with_k8s_graph_flags()
-    def test_NoExecuteCommandsInExistingPods(self) -> None:
-        self.go('NoExecuteCommandsInExistingPods')
+    def test_NoCreateNodesProxyOrPodsExec(self) -> None:
+        self.go('NoCreateNodesProxyOrPodsExec')
 
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
