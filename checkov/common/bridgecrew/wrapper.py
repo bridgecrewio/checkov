@@ -13,10 +13,11 @@ import dpath.util
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
 from checkov.common.util.json_utils import CustomJSONEncoder
+from botocore.exceptions import ClientError  # type:ignore[import]
 
 if TYPE_CHECKING:
     from botocore.client import BaseClient  # type:ignore[import]
-    from botocore.exceptions import ClientError # type:ignore[import]
+
     from checkov.common.output.report import Report
 
 checkov_results_prefix = 'checkov_results'
