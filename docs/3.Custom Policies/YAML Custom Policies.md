@@ -101,6 +101,7 @@ definition:
 | Contains                     | `contains`                     |
 | Not Contains                 | `not_contains`                 |
 | Within                       | `within`                       |
+| Not Within                   | `not_within`                   |
 | Starts With                  | `starting_with`                |
 | Not Starts With              | `not_starting_with`            |
 | Ends With                    | `ending_with`                  |
