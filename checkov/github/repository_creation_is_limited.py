@@ -25,8 +25,8 @@ class RepositoryCreationIsLimited(BaseGithubCheck):
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if org_schema.validate(conf):
-            evaluated_key = self.get_evaluated_keys()[0]
-            jsonpath_expression = parse("$..{}".format(evaluated_key.replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if matches and not matches[0].value:
                 return CheckResult.PASSED
