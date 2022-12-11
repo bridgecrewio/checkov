@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import abstractmethod
 from typing import Any
 from jsonpath_ng import parse
 
@@ -34,5 +35,6 @@ class RepositoryCreationIsLimited(BaseGithubCheck):
             return CheckResult.FAILED
         return None
 
+    @abstractmethod
     def get_evaluated_keys(self) -> list[str]:
         pass
