@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pods-reader
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+  verbs:
+    - "get"
+    - "watch"
+    - "list"
