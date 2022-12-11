@@ -34,7 +34,3 @@ class RepositoryCreationIsLimited(BaseGithubCheck):
             # default value for all 3 public, internal and private is true.
             return CheckResult.FAILED
         return None
-
-    @abstractmethod
-    def get_evaluated_keys(self) -> list[str]:
-        pass
