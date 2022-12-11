@@ -10,7 +10,7 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
-    remove_metadata_from_attribute
+    remove_metadata_from_attribute, PARENT_RESOURCE_KEY_NAME
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
@@ -149,7 +149,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
             return
         if conf.get('kind', {}) == 'Deployment':
             # means this is a Pod resource nested in a Deployment resource
-            template["_parent_resource"] = conf.get('metadata', {}).get('name', "")
+            template[PARENT_RESOURCE_KEY_NAME] = conf.get('metadata', {}).get('name', "")
         spec.pop('template', None)
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)

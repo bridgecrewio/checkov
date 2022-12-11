@@ -18,6 +18,7 @@ from checkov.kubernetes.parser.parser import parse
 
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
+PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
@@ -224,7 +225,7 @@ def build_resource_id_from_labels(resource_type: str,
     labels.pop('__endline__', None)
     labels_list = [f"{k}-{v}" for k, v in labels.items()]
     labels_string = ".".join(labels_list) if labels_list else "default"
-    parent_resource = resource.get("_parent_resource")
+    parent_resource = resource.get(PARENT_RESOURCE_KEY_NAME)
     if parent_resource:
         resource_id = f'{resource_type}.{namespace}.{parent_resource}.{labels_string}'
     else:
