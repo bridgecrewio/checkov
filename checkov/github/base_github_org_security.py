@@ -24,7 +24,8 @@ class OrgSecurity(BaseGithubCheck):
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if org_security_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             if all(match.value == self.get_expected_value() for match in jsonpath_expression.find(conf)):
                 return CheckResult.PASSED
             else:

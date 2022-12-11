@@ -17,6 +17,8 @@ class CPURequests(BaseResourceCheck):
             return CheckResult.FAILED
         spec = conf['spec'][0]
         evaluated_keys_path = "spec"
+        if not spec:
+            return CheckResult.UNKNOWN
 
         template = spec.get("template")
         if template and isinstance(template, list):

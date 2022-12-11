@@ -15,6 +15,7 @@ from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -30,6 +31,7 @@ from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -99,6 +101,8 @@ class RunnerRegistry:
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         merged_reports = self._merge_reports(reports)
+        if bc_integration.bc_api_key:
+            SecretsOmitter(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)

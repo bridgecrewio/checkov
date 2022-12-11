@@ -40,6 +40,18 @@ def test_GithubBranchRequireStatusChecks():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubBranchRequireStatusChecks")
 
 
+def test_GithubRequire2Approvals():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubRequire2Approvals")
+
+
+def test_GithubDisallowInactiveBranch60Days():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubDisallowInactiveBranch60Days")
+
+
+def test_GithubRequireUpdatedBranch():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubRequireUpdatedBranch")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP

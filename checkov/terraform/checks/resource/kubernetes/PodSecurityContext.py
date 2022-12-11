@@ -21,6 +21,9 @@ class PodSecurityContext(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        if not spec:
+            return CheckResult.UNKNOWN
+
         if spec.get("container"):
             containers = spec.get("container")
 

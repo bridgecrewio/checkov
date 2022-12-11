@@ -5,7 +5,7 @@ from checkov.github.base_github_branch_security import BranchSecurity
 
 class GithubBranchDisallowDeletions(BranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection rules does not allow deletions - CIS 1.1.17"
+        name = "Ensure GitHub branch protection rules does not allow deletions"
         id = "CKV_GITHUB_18"
         super().__init__(
             name=name,

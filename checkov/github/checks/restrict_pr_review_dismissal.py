@@ -8,7 +8,7 @@ from checkov.github.base_github_negative_branch_security import NegativeBranchSe
 
 class GithubBranchDismissalRestrictions(NegativeBranchSecurity):
     def __init__(self) -> None:
-        name = "Ensure GitHub branch protection restricts who can dismiss PR reviews - CIS 1.1.5"
+        name = "Ensure GitHub branch protection restricts who can dismiss PR reviews"
         id = "CKV_GITHUB_12"
         super().__init__(name=name, id=id)
 

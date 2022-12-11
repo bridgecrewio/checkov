@@ -5,7 +5,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
-from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
+from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
