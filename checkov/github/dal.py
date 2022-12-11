@@ -175,7 +175,7 @@ class Github(BaseVCSDAL):
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_metadata"][0], conf=org_metadata)
 
     def persist_github_default_empty_file(self) -> None:
-        BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={CKV_GITHUB_DEFAULT: None})
+        BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={})
 
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
