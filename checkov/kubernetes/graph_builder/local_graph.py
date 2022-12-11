@@ -147,6 +147,9 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         if not template or not isinstance(template, dict):
             all_resources.append(conf)
             return
+        if conf.get('kind', {}) == 'Deployment':
+            # means this is a Pod resource nested in a Deployment resource
+            template["_parent_resource"] = conf.get('metadata', {}).get('name', "")
         spec.pop('template', None)
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)

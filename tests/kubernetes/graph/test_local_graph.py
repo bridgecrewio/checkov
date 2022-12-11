@@ -41,12 +41,12 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
-        assert local_graph.vertices[0].id == 'Deployment.default.myapp'
+        assert local_graph.vertices[0].id == 'Deployment.default.deployment_name'
         assert local_graph.vertices[0].attributes.get('spec').get('template') is None
-        assert local_graph.vertices[0].metadata.name == 'myapp'
+        assert local_graph.vertices[0].metadata.name == 'deployment_name'
         assert local_graph.vertices[0].metadata.selector.match_labels.get('app') == 'myapp'
         assert local_graph.vertices[0].metadata.labels is None
-        assert local_graph.vertices[1].id == "Pod.default.app-myapp"
+        assert local_graph.vertices[1].id == 'Pod.default.deployment_name.app-myapp'
         assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1
         assert local_graph.vertices[1].metadata.name is None
         assert local_graph.vertices[1].metadata.selector.match_labels is None
