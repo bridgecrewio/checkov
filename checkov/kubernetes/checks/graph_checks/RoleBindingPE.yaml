@@ -1,0 +1,59 @@
+metadata:
+  id: "CKV2_K8S_1"
+  name: "RoleBinding should not allow privilege escalation to a ServiceAccount or Node on other RoleBinding"
+  category: "KUBERNETES"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - ClusterRoleBinding
+        - RoleBinding
+      operator: within
+      attribute: kind
+    - or:
+        - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
+          operator: not_exists
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+          connected_resource_types:
+            - ClusterRole
+            - Role
+        - cond_type: attribute
+          attribute: 'subjects.*.kind'
+          operator: not_within
+          value:
+            - 'Node'
+            - 'ServiceAccount'
+          resource_types:
+            - ClusterRoleBinding
+            - RoleBinding
+        - and:
+            - cond_type: connection  # Filter ClusterRoleBiding with connection to ClusterRole
+              operator: exists
+              resource_types:
+                - ClusterRoleBinding
+                - RoleBinding
+              connected_resource_types:
+                - ClusterRole
+                - Role
+            - or:
+              - cond_type: attribute
+                attribute: rules.resources
+                operator: not_intersects
+                value:
+                  - 'clusterrolebindings'
+                  - 'rolebindings'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role
+              - cond_type: attribute
+                attribute: rules.verbs
+                operator: not_intersects
+                value:
+                  - 'bind'
+                  - '*'
+                resource_types:
+                  - ClusterRole
+                  - Role
