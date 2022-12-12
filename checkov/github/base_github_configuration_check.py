@@ -24,7 +24,7 @@ class BaseGithubCheck(BaseCheck):
         registry.register(self)
 
     @staticmethod
-    def resolve_ckv_metadata_conf(conf: dict[str, Any]) -> tuple[dict, dict[str, Any]]:
+    def resolve_ckv_metadata_conf(conf: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
         if isinstance(conf, list) and len(conf) > 0:
             ckv_metadata = conf[-1]
             new_conf = conf[:-1]

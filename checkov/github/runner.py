@@ -65,11 +65,11 @@ class Runner(JsonRunner):
         for file_path, definition in self.definitions.items():
             file_name = Path(file_path).stem
             ckv_metadata = {
-                    'file_name': file_name,
-                    'org_complementary_metadata': self.github.org_complementary_metadata,
-                    'repo_complementary_metadata': self.github.repo_complementary_metadata,
-                }
-            if isinstance(self.definitions[file_path], dict):
-                self.definitions[file_path][CKV_METADATA] = ckv_metadata
-            elif isinstance(self.definitions[file_path], list):
-                self.definitions[file_path].append(ckv_metadata)
+                'file_name': file_name,
+                'org_complementary_metadata': self.github.org_complementary_metadata,
+                'repo_complementary_metadata': self.github.repo_complementary_metadata,
+            }
+            if isinstance(definition, dict):
+                definition[CKV_METADATA] = ckv_metadata
+            elif isinstance(definition, list):
+                definition.append(ckv_metadata)

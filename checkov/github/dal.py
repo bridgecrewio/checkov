@@ -124,7 +124,7 @@ class Github(BaseVCSDAL):
                 self._organization_security = data
         return self._organization_security
 
-    def get_default_branch(self) -> dict[str, Any] | None:
+    def set_default_branch(self) -> None:
         # still not used - for future implementations
         default_branch = self.repo_complementary_metadata.get("default_branch")
         if not default_branch:
@@ -140,9 +140,8 @@ class Github(BaseVCSDAL):
             if not data:
                 return None
             if org_security_schema.validate(data):
-                default_branch = self.repo_complementary_metadata["default_branch"] = \
+                self.repo_complementary_metadata["default_branch"] = \
                     data.get('data', {}).get('repository', {}).get('defaultBranchRef', {}).get('name')
-        return default_branch
 
     def get_branch_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
@@ -218,7 +217,7 @@ class Github(BaseVCSDAL):
     def persist_github_default_empty_file(self) -> None:
         BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={})
 
-    def persist_repository_metadata(self):
+    def persist_repository_metadata(self) -> None:
         # still not used - for future implementations
         repository_metadata = self.get_repository_metadata()
         if repository_metadata:
@@ -228,7 +227,7 @@ class Github(BaseVCSDAL):
             )
             self.org_complementary_metadata["is_private_repo"] = repository_metadata.get('private')
 
-    def persist_organization_admins(self):
+    def persist_organization_admins(self) -> None:
         org_members = self.get_organization_admins()
         if org_members:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_admins"][0], conf=org_members)
