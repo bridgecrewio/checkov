@@ -13,6 +13,7 @@ TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 
 RESOURCE_TYPES_JSONIFY = {
+    "aws_ecs_task_definition": "container_definitions",
     "aws_iam_policy": "policy",
     "aws_iam_role_policy": "policy",
     "aws_iam_group_policy": "policy",
@@ -74,6 +75,10 @@ def _hclify(
         if _is_list_of_dicts(value):
             child_list = []
             conf_val = conf.get(key, []) if conf else []
+            if not isinstance(conf_val, list):
+                # this occurs, when a resource in the current state has no value for that argument
+                conf_val = [conf_val]
+
             for internal_val, internal_conf_val in itertools.zip_longest(value, conf_val):
                 if isinstance(internal_val, dict):
                     child_list.append(_hclify(internal_val, internal_conf_val, parent_key=key))

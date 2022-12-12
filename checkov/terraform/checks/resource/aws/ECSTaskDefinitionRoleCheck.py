@@ -17,6 +17,11 @@ class ECSTaskDefinitionRoleCheck(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         self.evaluated_keys = ["execution_role_arn", "task_role_arn"]
         if "execution_role_arn" in conf.keys() and "task_role_arn" in conf.keys():
+            execution_role_arn = conf["execution_role_arn"]
+            if not execution_role_arn or execution_role_arn == [None]:
+                # this occurs in TF plan files, when no role was set, very unlikely
+                return CheckResult.PASSED
+
             if conf["execution_role_arn"] == conf["task_role_arn"]:
                 return CheckResult.FAILED
         return CheckResult.PASSED

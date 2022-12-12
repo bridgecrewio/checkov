@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from pytest_mock import MockerFixture
@@ -17,7 +16,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     # given
     file_name = "apprunner.tf"
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
-    code_lines = "1-23"
+    code_lines = "1-18"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type('disabled')
