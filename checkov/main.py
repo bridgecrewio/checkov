@@ -44,7 +44,6 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, CHECKOV_RUN
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
-from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
@@ -201,7 +200,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         runner_registry.runner_filter = runner_filter
         runner_registry.filter_runner_framework()
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_omitter_class=SecretsOmitter)
+        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
 
     runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
     runnerDependencyHandler.validate_runner_deps()
