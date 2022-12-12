@@ -34,7 +34,6 @@ class Github(BaseVCSDAL):
             "repository_collaborators": [Path(self.github_conf_dir_path) / "repository_collaborators.json"],
             "branch_metadata": [Path(self.github_conf_dir_path) / "branch_metadata.json"],
             "org_metadata": [Path(self.github_conf_dir_path) / "org_metadata.json"],
-            "default_github": [Path(self.github_conf_dir_path) / "default_github.json"],
         }
 
     def discover(self) -> None:
@@ -171,9 +170,6 @@ class Github(BaseVCSDAL):
         if org_metadata:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_metadata"][0], conf=org_metadata)
 
-    def persist_github_default_empty_file(self) -> None:
-        BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={})
-
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
             self.persist_organization_security()
@@ -183,4 +179,3 @@ class Github(BaseVCSDAL):
             self.persist_repository_collaborators()
             self.persist_branch_metadata()
             self.persist_organization_metadata()
-            self.persist_github_default_empty_file()
