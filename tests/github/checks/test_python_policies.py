@@ -72,6 +72,14 @@ def test_GithubRepositoryDeletionIsLimited():
     run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryDeletionIsLimited")
 
 
+def test_GithubMinimumAdminsInOrganization():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubMinimumAdminsInOrganization")
+
+
+def test_GithubRequireStrictBasePermissionsRepository():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubRequireStrictBasePermissionsRepository")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.github.dal import Github
+from checkov.github.dal import Github, CKV_METADATA
 from checkov.json_doc.runner import Runner as JsonRunner
 from checkov.runner_filter import RunnerFilter
 
@@ -53,3 +54,22 @@ class Runner(JsonRunner):
     def import_registry(self) -> BaseCheckRegistry:
         from checkov.github.registry import registry
         return registry
+
+    def _load_files(
+            self,
+            files_to_load: list[str],
+            filename_fn: Callable[[str], str] | None = None,
+    ) -> None:
+        super(Runner, self)._load_files(files_to_load=files_to_load, filename_fn=filename_fn)
+
+        for file_path, definition in self.definitions.items():
+            file_name = Path(file_path).stem
+            ckv_metadata = {
+                    'file_name': file_name,
+                    'org_complementary_metadata': self.github.org_complementary_metadata,
+                    'repo_complementary_metadata': self.github.repo_complementary_metadata,
+                }
+            if isinstance(self.definitions[file_path], dict):
+                self.definitions[file_path][CKV_METADATA] = ckv_metadata
+            elif isinstance(self.definitions[file_path], list):
+                self.definitions[file_path].append(ckv_metadata)

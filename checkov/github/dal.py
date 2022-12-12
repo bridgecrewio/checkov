@@ -11,6 +11,7 @@ from checkov.github.schemas.org_security import schema as org_security_schema
 
 
 CKV_GITHUB_DEFAULT = 'CKV_GITHUB_DEFAULT'
+CKV_METADATA = 'CKV_METADATA'
 
 
 class Github(BaseVCSDAL):
@@ -29,6 +30,7 @@ class Github(BaseVCSDAL):
         if os.path.isdir(self.github_conf_dir_path):
             shutil.rmtree(self.github_conf_dir_path)
 
+        # files to run checks on
         self.github_conf_file_paths = {
             "org_security": [Path(self.github_conf_dir_path) / "org_security.json"],
             "branch_protection_rules": [Path(self.github_conf_dir_path) / "branch_protection_rules.json"],
@@ -37,6 +39,7 @@ class Github(BaseVCSDAL):
             "repository_collaborators": [Path(self.github_conf_dir_path) / "repository_collaborators.json"],
             "branch_metadata": [Path(self.github_conf_dir_path) / "branch_metadata.json"],
             "org_metadata": [Path(self.github_conf_dir_path) / "org_metadata.json"],
+            "org_admins": [Path(self.github_conf_dir_path) / "org_admins.json"],
             "default_github": [Path(self.github_conf_dir_path) / "default_github.json"],
         }
 
@@ -57,6 +60,11 @@ class Github(BaseVCSDAL):
 
         self.default_branch_cache = {}
         self.org = os.getenv('GITHUB_ORG', '')
+
+        self.discover_optional_variables()
+
+    def discover_optional_variables(self) -> None:
+        self.org_complementary_metadata['max_admins_count'] = os.getenv('GITHUB_MAX_ADMINS_ORG', 2)
 
     def _headers(self) -> dict[str, str]:
         return {"Accept": "application/vnd.github.v3+json",
@@ -118,7 +126,7 @@ class Github(BaseVCSDAL):
 
     def get_default_branch(self) -> dict[str, Any] | None:
         # still not used - for future implementations
-        default_branch = self.repo_properties.get("default_branch")
+        default_branch = self.repo_complementary_metadata.get("default_branch")
         if not default_branch:
             data = self._request_graphql(query="""
                 query ($owner: String!, $name: String!){
@@ -132,7 +140,7 @@ class Github(BaseVCSDAL):
             if not data:
                 return None
             if org_security_schema.validate(data):
-                default_branch = self.repo_properties["default_branch"] = \
+                default_branch = self.repo_complementary_metadata["default_branch"] = \
                     data.get('data', {}).get('repository', {}).get('defaultBranchRef', {}).get('name')
         return default_branch
 
@@ -147,6 +155,11 @@ class Github(BaseVCSDAL):
     def get_organization_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
         data = self._request(endpoint=f"orgs/{self.org}", allowed_status_codes=[200])
+        return data
+
+    def get_organization_admins(self) -> dict[str, Any] | None:
+        # new endpoint since Dec22
+        data = self._request(endpoint=f"orgs/{self.org}/members?role=admin", allowed_status_codes=[200])
         return data
 
     def get_repository_metadata(self) -> dict[str, Any] | None:
@@ -213,7 +226,12 @@ class Github(BaseVCSDAL):
                 path=self.github_conf_file_paths["repository_metadata"][0],
                 conf=repository_metadata
             )
-            self.organization_properties["is_private_repo"] = repository_metadata.get('private')
+            self.org_complementary_metadata["is_private_repo"] = repository_metadata.get('private')
+
+    def persist_organization_admins(self):
+        org_members = self.get_organization_admins()
+        if org_members:
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["org_admins"][0], conf=org_members)
 
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
@@ -225,3 +243,4 @@ class Github(BaseVCSDAL):
             self.persist_branch_metadata()
             self.persist_organization_metadata()
             self.persist_github_default_empty_file()
+            self.persist_organization_admins()

@@ -26,8 +26,8 @@ class BaseVCSDAL:
 
         self.request_lib_http = None
         self._organization_security = None
-        self.organization_properties = {}
-        self.repo_properties = {}
+        self.org_complementary_metadata = {}
+        self.repo_complementary_metadata = {}
         self.http: urllib3.PoolManager | None = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
