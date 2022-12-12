@@ -651,10 +651,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help="exclude extra resources (resources without violations) from report output",
                action='store_true',
                env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
-    parser.add('--deep-analysis',
-               default=False,
-               action='store_true',
-               help='Enable combine tf graph and rf plan graph')
+    # parser.add('--deep-analysis',
+    #            default=False,
+    #            action='store_true',
+    #            help='Enable combine tf graph and rf plan graph')
 
 
 def get_external_checks_dir(config: Any) -> Any:
