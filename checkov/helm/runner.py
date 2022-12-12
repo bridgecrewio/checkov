@@ -137,7 +137,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         return self.check_type
 
     @staticmethod
-    def _parse_output(target_dir: str, output: bytes) -> None:
+    def _parse_output(target_dir: str, output: bytes, chart_name: str) -> None:
         output_str = str(output, 'utf-8')
         reader = io.StringIO(output_str)
         cur_source_file = None
@@ -156,7 +156,15 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
                 if not s.startswith('# Source: '):
                     raise Exception(f'Line {line_num}: Expected line to start with # Source: {s}')
+
                 source = s[10:]
+
+                if source.startswith(chart_name):
+                    # We also want to remove the chart name including '/' so we report the correct file path even
+                    # in a case when the chart name and the directory are different. For example,
+                    # ingress-nginx/templates/controller-deployment.yaml => templates/controller-deployment.yaml
+                    source = source[len(chart_name) + 1:]
+
                 if source != cur_source_file:
                     if cur_writer:
                         cur_writer.close()
@@ -185,21 +193,13 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             cur_writer.close()
 
     @staticmethod
-    def _get_target_dir(chart_item: tuple[str, dict[str, Any]], root_folder: str, target_folder_path: str) -> str | None:
-        (chart_dir, chart_meta) = chart_item
+    def _get_target_dir(chart_dir: str, root_folder: str, target_folder_path: str) -> str:
         target_dir = chart_dir.replace(root_folder, f'{target_folder_path}/')
         target_dir.replace("//", "/")
-        chart_name = chart_meta.get('name', chart_meta.get('Name'))
-        if not chart_name:
-            logging.info(
-                f"Error parsing chart located {chart_dir}, chart has no name available",
-                exc_info=True,
-            )
-            return None
+
         if target_dir.endswith('/'):
             target_dir = target_dir[:-1]
-        if target_dir.endswith(chart_name):
-            target_dir = target_dir[:-len(chart_name)]
+
         return target_dir
 
     @staticmethod
@@ -278,19 +278,24 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         helm_command: str,
         runner_filter: RunnerFilter,
     ) -> None:
-        target_dir = Runner._get_target_dir(chart_item, root_folder, target_folder_path)
-        if not target_dir:
-            return
+        (chart_dir, chart_meta) = chart_item
+        chart_name = chart_meta.get('name', chart_meta.get('Name'))
+        if not chart_name:
+            logging.info(
+                f"Error parsing chart located {chart_dir}, chart has no name available",
+                exc_info=True,
+            )
+            return None
 
         o, _ = Runner.get_binary_output(chart_item, target_folder_path, helm_command, runner_filter)
         if o is None:
             return
 
+        target_dir = Runner._get_target_dir(chart_dir, root_folder, target_folder_path)
+
         try:
-            Runner._parse_output(target_dir, o)
+            Runner._parse_output(target_dir, o, chart_name)
         except Exception:
-            (chart_dir, chart_meta) = chart_item
-            chart_name = chart_meta.get('name', chart_meta.get('Name'))
             logging.info(
                 f"Error parsing output {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
                 exc_info=True,

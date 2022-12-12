@@ -78,7 +78,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "hello-world/templates/deployment.yaml"
+    file_name = "templates/deployment.yaml"
     image_name = "nginx:1.16.0"
     code_lines = "3-42"
     test_folder = RESOURCES_PATH / "image_referencer"
@@ -122,7 +122,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (
         sca_image_report.image_cached_results[0]["relatedResourceId"]
-        == "/hello-world/templates/deployment.yaml:Deployment.default.release-name-hello-world"
+        == "/templates/deployment.yaml:Deployment.default.release-name-hello-world"
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
