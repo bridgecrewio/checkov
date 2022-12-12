@@ -254,7 +254,7 @@ def add_to_reports_cves_and_packages(
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         licenses_per_package_map: dict[str, list[str]],
-        dependencies: dict[str, List[int]] | None,
+        dependencies: dict[str, List[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
