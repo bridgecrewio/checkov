@@ -365,7 +365,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if 'Non-relative patterns are unsupported' in str(e):
                     return ""
                 raise e
-        return os.path.realpath(dest_module_path)
+        return os.path.abspath(dest_module_path)
 
     def _find_vertex_index_relative_to_path(
         self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None
