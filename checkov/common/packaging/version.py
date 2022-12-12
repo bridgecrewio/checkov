@@ -25,7 +25,7 @@ def parse(version: str) -> packaging_version.Version | LegacyVersion:
     a valid PEP 440 version or a legacy version.
     """
     try:
-        return cast("packaging_version.Version", packaging_version.parse(version))
+        return packaging_version.parse(version)
     except packaging_version.InvalidVersion:
         return LegacyVersion(version)
 
@@ -33,7 +33,7 @@ def parse(version: str) -> packaging_version.Version | LegacyVersion:
 class LegacyVersion(packaging_version._BaseVersion):
     def __init__(self, version: str) -> None:
         self._version = str(version)
-        self._key = _legacy_cmpkey(self._version)
+        self._key = _legacy_cmpkey(self._version)  # type:ignore[assignment]
 
     def __str__(self) -> str:
         return self._version
