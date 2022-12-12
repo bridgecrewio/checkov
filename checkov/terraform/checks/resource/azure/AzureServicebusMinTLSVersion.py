@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class AzureServicebusMinTLSVersion(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Azure Servicebus is using the latest version of TLS encryption"
-        id = "CKV_AZURE_52"
+        id = "CKV_AZURE_205"
         supported_resources = ['azurerm_servicebus_namespace']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
