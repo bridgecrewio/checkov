@@ -16,6 +16,9 @@ SUPPORTED_PACKAGE_FILES = {
 }
 SUPPORTED_FILES = SUPPORTED_PACKAGE_FILES.union({"Dockerfile"})
 
+DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.mod"}
+SCANNABLE_PACKAGE_FILES = SUPPORTED_PACKAGE_FILES | DEPENDENCY_TREE_SUPPORTED_FILES
+
 ANY_VALUE = "CKV_ANY"
 DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+\/)?([^\s:]+):?([^\s]*)')
 access_key_pattern = re.compile("(?<![A-Z0-9])[A-Z0-9]{20}(?![A-Z0-9])")  # nosec
