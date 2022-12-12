@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import itertools
 import logging
-import os
 from enum import Enum
 from typing import Iterator, TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.wrapper import _get_json_object
 
 if TYPE_CHECKING:
     from checkov.common.output.record import Record
@@ -31,22 +28,7 @@ class SecretsOmitter:
         Setting the secrets report from checkov runner or bucket
         """
         secrets_report_list = [report for report in reports if report.check_type == CheckType.SECRETS]
-        runner_secrets_report: Report | None = secrets_report_list[0] if len(secrets_report_list) == 1 else None
-
-        secrets_report: dict[str, Any] | None = {}
-
-        if runner_secrets_report:
-            secrets_report = runner_secrets_report.get_dict(full_report=True)
-        else:
-            secrets_report_s3_path = os.getenv("CKV_SECRETS_REPORT_S3_PATH")
-            bucket = os.getenv("RESULT_BUCKET")
-            if secrets_report_s3_path and bucket:
-                try:
-                    secrets_report = _get_json_object(bc_integration.s3_client, bucket, secrets_report_s3_path)
-                except Exception:
-                    logging.error("failed to download secrets report from bucket", exc_info=True)
-
-        return secrets_report
+        return secrets_report_list[0].get_dict(full_report=True) if len(secrets_report_list) == 1 else None
 
     def _secret_check(self) -> Iterator[dict[str, Any]]:
         if not self.secrets_report:
