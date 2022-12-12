@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: failing-cr2
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - "nodes/proxy"
+  verbs:
+    - "create"
