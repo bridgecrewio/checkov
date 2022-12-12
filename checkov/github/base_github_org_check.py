@@ -43,4 +43,3 @@ class BaseOrganizationCheck(BaseGithubCheck):
     @abstractmethod
     def get_allowed_values(self) -> list[Any]:
         pass
-
