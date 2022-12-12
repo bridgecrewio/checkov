@@ -621,6 +621,39 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+    def test_runner_with_iam_policies(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_iam_policies/tfplan.json"
+
+        passing_resources = {
+            "aws_iam_policy.policy_pass",
+        }
+        failing_resources = {
+            "aws_iam_role_policy.fail_1",
+            "aws_iam_group_policy.fail_2",
+            "aws_iam_user_policy.fail_3",
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 3)
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
 

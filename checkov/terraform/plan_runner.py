@@ -33,11 +33,28 @@ TF_LIFECYCLE_CHECK_IDS = {
 }
 
 RESOURCE_ATTRIBUTES_TO_OMIT = {
-    'azurerm_key_vault_secret': 'value',
-    'aws_secretsmanager_secret_version': 'secret_string',
-    'google_kms_secret_ciphertext': 'plaintext',
-    'aws_ssm_parameter': 'value',
-    'aws_db_instance': 'password'
+    'aws_db_instance': ['password'],
+    'aws_secretsmanager_secret_version': ['secret_string'],
+    'aws_ssm_parameter': ['value'],
+    'azurerm_container_registry': ['admin_password'],
+    'azurerm_key_vault_secret': ['value'],
+    'azurerm_linux_virtual_machine': ['admin_password'],
+    'azurerm_mssql_managed_instance_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_mssql_server': ['administrator_login_password'],
+    'azurerm_mssql_server_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_redis_cache': ['primary_access_key', 'secondary_access_key', 'primary_connection_string',
+                            'secondary_connection_string'],
+    'azurerm_sql_server': ['administrator_login_password'],
+    'azurerm_sql_managed_instance': ['administrator_login_password'],
+    'azurerm_storage_account': ['primary_access_key', 'secondary_access_key', 'primary_blob_connection_string',
+                                'secondary_blob_connection_string', 'primary_blob_endpoint', 'primary_blob_host',
+                                'secondary_blob_endpoint', 'secondary_blob_host', 'primary_connection_string',
+                                'secondary_connection_string'],
+    'azurerm_synapse_workspace_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_synapse_sql_pool_vulnerability_assessment': ['storage_container_path'],
+    'azurerm_virtual_machine': ['admin_password'],
+    'azurerm_windows_virtual_machine': ['admin_password'],
+    'google_kms_secret_ciphertext': ['plaintext']
 }
 
 
@@ -60,6 +77,8 @@ class Runner(TerraformRunner):
         self.definitions = None
         self.context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.deep_analysis = False
+        self.repo_root_for_plan_enrichment = []
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -74,6 +93,8 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
+        self.deep_analysis = runner_filter.deep_analysis
+        self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
