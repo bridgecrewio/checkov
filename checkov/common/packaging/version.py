@@ -86,7 +86,7 @@ class LegacyVersion(packaging_version._BaseVersion):
         return False
 
 
-_legacy_version_component_re = re.compile(r"(\d+ | [a-z]+ | \.| -)", re.VERBOSE)
+_legacy_version_component_re = re.compile(r"(\d+ | [a-z]+ | \.| -)", re.VERBOSE | re.IGNORECASE)
 
 _legacy_version_replacement_map = {
     "pre": "c",
