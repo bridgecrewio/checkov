@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar, Type
 
 from typing_extensions import Literal
 
@@ -31,6 +31,7 @@ from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -54,7 +55,7 @@ OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 class RunnerRegistry:
     def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
-                 secrets_omitter_class_name: str | None = None) -> None:
+                 secrets_omitter_class: Type[SecretsOmitter] | None = SecretsOmitter) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
@@ -64,7 +65,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool_name
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
-        self.secrets_omitter_class_name = secrets_omitter_class_name
+        self.secrets_omitter_class = secrets_omitter_class
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -103,10 +104,8 @@ class RunnerRegistry:
 
         merged_reports = self._merge_reports(reports)
 
-        if self.secrets_omitter_class_name and bc_integration.bc_api_key:
-            secrets_omitter_class_obj = globals().get(self.secrets_omitter_class_name)
-            if secrets_omitter_class_obj:
-                secrets_omitter_class_obj(merged_reports).omit()
+        if self.secrets_omitter_class and bc_integration.bc_api_key:
+            self.secrets_omitter_class(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)

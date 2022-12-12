@@ -201,9 +201,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         runner_registry.runner_filter = runner_filter
         runner_registry.filter_runner_framework()
     else:
-        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS)
+        runner_registry = RunnerRegistry(banner, runner_filter, *DEFAULT_RUNNERS, secrets_omitter_class=SecretsOmitter)
 
-    runner_registry.secrets_omitter_class_name = SecretsOmitter.__name__
     runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
     runnerDependencyHandler.validate_runner_deps()
 
