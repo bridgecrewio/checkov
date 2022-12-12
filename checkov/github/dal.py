@@ -10,9 +10,6 @@ from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 from checkov.github.schemas.org_security import schema as org_security_schema
 
 
-CKV_GITHUB_DEFAULT = 'CKV_GITHUB_DEFAULT'
-
-
 class Github(BaseVCSDAL):
     github_conf_dir_path: str  # noqa: CCE003  # a static attribute
     github_conf_file_paths: dict[str, list[Path]]  # noqa: CCE003  # a static attribute

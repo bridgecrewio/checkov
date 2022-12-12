@@ -64,14 +64,6 @@ def test_GithubPrivateRepositoryCreationIsLimited():
     run_check(base_path=BASE_DIR / "repo_management", check="GithubPrivateRepositoryCreationIsLimited")
 
 
-def test_GithubIssueDeletionIsLimited():
-    run_check(base_path=BASE_DIR / "repo_management", check="GithubIssueDeletionIsLimited")
-
-
-def test_GithubRepositoryDeletionIsLimited():
-    run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryDeletionIsLimited")
-
-
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP
