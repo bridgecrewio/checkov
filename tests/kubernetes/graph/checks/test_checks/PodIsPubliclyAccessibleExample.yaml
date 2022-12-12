@@ -16,6 +16,18 @@ definition:
             - Pod
           connected_resource_types:
             - Service
-        - cond_type: attribute
-          attribute: spec.ports.*.targePort
-          operator: exists
+        - and:
+          - cond_type: connection
+            operator: exists
+            resource_types:
+              - Pod
+            connected_resource_types:
+              - Service
+          - cond_type: attribute
+            attribute: 'spec.type'
+            operator: not_within
+            value:
+              - 'LoadBalancer'
+              - 'NodePort'
+            resource_types:
+              - Service
