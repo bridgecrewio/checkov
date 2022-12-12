@@ -106,7 +106,6 @@ class RunnerRegistry:
         if self.secrets_omitter_class_name and bc_integration.bc_api_key:
             secrets_omitter_class_obj = globals().get(self.secrets_omitter_class_name)
             if secrets_omitter_class_obj:
-                logging.info(f"Omitting secrets using {secrets_omitter_class_obj} class")
                 secrets_omitter_class_obj(merged_reports).omit()
 
         for scan_report in merged_reports:
