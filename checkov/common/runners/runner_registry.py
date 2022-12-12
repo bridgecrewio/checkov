@@ -55,7 +55,7 @@ OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 class RunnerRegistry:
     def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
-                 secrets_omitter_class: Type[SecretsOmitter] | None = SecretsOmitter) -> None:
+                 secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
@@ -104,7 +104,7 @@ class RunnerRegistry:
 
         merged_reports = self._merge_reports(reports)
 
-        if self.secrets_omitter_class and bc_integration.bc_api_key:
+        if bc_integration.bc_api_key:
             self.secrets_omitter_class(merged_reports).omit()
 
         for scan_report in merged_reports:
