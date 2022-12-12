@@ -10,11 +10,12 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar, Type
 
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -30,6 +31,7 @@ from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -52,7 +54,8 @@ OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
 class RunnerRegistry:
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner) -> None:
+    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
+                 secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
@@ -62,6 +65,7 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool_name
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
+        self.secrets_omitter_class = secrets_omitter_class
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -99,6 +103,9 @@ class RunnerRegistry:
             reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
 
         merged_reports = self._merge_reports(reports)
+
+        if bc_integration.bc_api_key:
+            self.secrets_omitter_class(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import itertools
+import json
 import logging
 import re
 
@@ -120,12 +121,15 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     secret_length = len(secret)
-    secret_len_to_expose = secret_length // 4
+    secret_len_to_expose = secret_length // 4 if secret_length < 100 else secret_length // 10
 
     try:
         secret_index = line_text.index(secret)
     except ValueError:
-        return line_text
+        try:
+            secret_index = line_text.index(json.dumps(secret))
+        except ValueError:
+            return line_text
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
                     f'{"*" * (secret_length - secret_len_to_expose)}' \
@@ -142,13 +146,14 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
     censored_code_lines = []
 
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
-        secrets.update([str(secret) for key, secret in entity_config.items() if key.startswith(f'{check.id}_secret')])
+        secrets.update([str(secret) for key, secret in entity_config.items() if
+                        key.startswith(f'{check.id}_secret')])
 
-    if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit and \
-            resource_attributes_to_omit.get(check.entity_type) in entity_config:
-        secret = entity_config.get(resource_attributes_to_omit.get(check.entity_type, ''), [])
-        if isinstance(secret, list) and secret:
-            secrets.add(secret[0])
+    if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit:
+        for attribute_to_omit in [attr for attr in resource_attributes_to_omit.get(check.entity_type) if attr in entity_config]:  # type:ignore[union-attr]
+            secret = entity_config.get(attribute_to_omit)
+            if isinstance(secret, list) and secret:
+                secrets.add(secret[0])
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
@@ -174,7 +179,7 @@ def omit_secret_value_from_definitions(definitions: Dict[str, DictNode],
             for resource_type in [r_type for r_type in resource if r_type in resource_attributes_to_omit]:
                 for resource_name, resource_config in resource[resource_type].items():
                     for attribute in [attribute for attribute in resource_config if
-                                      attribute == resource_attributes_to_omit[resource_type]]:
+                                      attribute in resource_attributes_to_omit[resource_type]]:
                         if not found_secrets:
                             found_secrets = True
                             # The values in self.definitions shouldn't be changed so that checks' results

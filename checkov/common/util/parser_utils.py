@@ -4,7 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List
+from typing import Any, List, Optional, Tuple
 
 import hcl2
 
@@ -301,3 +301,43 @@ def to_string(value: Any) -> str:
     elif value is False:
         return "false"
     return str(value)
+
+
+def get_current_module_index(full_path: str) -> Optional[int]:
+    hcl_index = None
+    tf_index = None
+    if '.hcl' in full_path:
+        hcl_index = full_path.index('.hcl') + 4  # len('.hcl')
+    if '.tf' in full_path:
+        tf_index = full_path.index('.tf') + 3    # len('.tf')
+    if hcl_index and tf_index:
+        # returning the index of the first file
+        return min(hcl_index, tf_index)
+    if hcl_index:
+        return hcl_index
+    return tf_index
+
+
+def is_nested(full_path: str) -> bool:
+    return '[' in full_path
+
+
+def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
+    return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
+
+
+def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[str]]:
+    if not is_nested(file_path):
+        return None, None
+    tmp_path = file_path[file_path.index('[') + 1: -1]
+    if is_nested(tmp_path):
+        module = get_abs_path(tmp_path) + tmp_path[tmp_path.index('['):]
+        index = tmp_path[tmp_path.index('#') + 1:tmp_path.index('[')]
+    else:
+        module = get_abs_path(tmp_path)
+        index = tmp_path[tmp_path.index('#') + 1:]
+    return module, index
+
+
+def get_abs_path(file_path: str) -> str:
+    return file_path[:get_current_module_index(file_path)]

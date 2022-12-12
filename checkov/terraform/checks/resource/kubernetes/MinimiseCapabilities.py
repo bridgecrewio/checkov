@@ -17,6 +17,8 @@ class MinimiseCapabilities(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
         evaluated_keys_path = "spec"
+        if not spec:
+            return CheckResult.UNKNOWN
 
         template = spec.get("template")
         if template and isinstance(template, list):
@@ -36,7 +38,7 @@ class MinimiseCapabilities(BaseResourceCheck):
                     context = container.get("security_context")[0]
                     if context.get("capabilities"):
                         capabilities = context.get("capabilities")[0]
-                        if capabilities.get("drop") and isinstance(capabilities.get("drop"), list):
+                        if isinstance(capabilities, dict) and capabilities.get("drop") and isinstance(capabilities.get("drop"), list):
                             drop = capabilities.get("drop")[0]
                             if not any(item in ("ALL", "all") for item in drop):
                                 self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/'
