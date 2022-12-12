@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import re
-from typing import Iterator, TYPE_CHECKING, cast
+from typing import Iterator, TYPE_CHECKING
 
 from packaging import version as packaging_version
 
