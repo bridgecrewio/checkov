@@ -124,7 +124,7 @@ class Github(BaseVCSDAL):
                 self._organization_security = data
         return self._organization_security
 
-    def set_default_branch(self) -> None:
+    def get_default_branch(self) -> None:
         # still not used - for future implementations
         default_branch = self.repo_complementary_metadata.get("default_branch")
         if not default_branch:
