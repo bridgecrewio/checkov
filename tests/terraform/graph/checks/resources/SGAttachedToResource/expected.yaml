@@ -33,6 +33,7 @@ pass:
   - "aws_security_group.pass_rds_cluster"
   - "aws_security_group.pass_rds"
   - "aws_security_group.pass_redshift"
+  - "aws_security_group.pass_route53_resolver_endpoint"
   - "aws_security_group.pass_sagemaker"
   - "aws_security_group.pass_vpc_endpoint"
 fail:
