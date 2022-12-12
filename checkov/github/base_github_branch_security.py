@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from abc import abstractmethod
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.github.base_github_configuration_check import BaseGithubCheck
