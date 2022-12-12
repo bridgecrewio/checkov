@@ -1,0 +1,558 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_iam_group.fail_2",
+          "mode": "managed",
+          "type": "aws_iam_group",
+          "name": "fail_2",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "name": "example",
+            "path": "/"
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_iam_group_policy.fail_2",
+          "mode": "managed",
+          "type": "aws_iam_group_policy",
+          "name": "fail_2",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "group": "example",
+            "name": "example",
+            "name_prefix": null,
+            "policy": "{\r\n  \"Version\": \"2012-10-17\",\r\n  \"Statement\": [\r\n    {\r\n      \"Action\": [\r\n        \"s3:Get*\",\r\n        \"iam:*\"\r\n      ],\r\n      \"Effect\": \"Allow\",\r\n      \"Resource\": \"*\"\r\n    }\r\n  ]\r\n}\r\n"
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_iam_policy.policy_pass",
+          "mode": "managed",
+          "type": "aws_iam_policy",
+          "name": "policy_pass",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "description": null,
+            "name": "policy_pass",
+            "name_prefix": null,
+            "path": "/",
+            "policy": "{\"Statement\":[{\"Action\":\"s3:*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+            "tags": null
+          },
+          "sensitive_values": {
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_iam_role.example",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "description": null,
+            "force_detach_policies": false,
+            "max_session_duration": 3600,
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": null
+          },
+          "sensitive_values": {
+            "inline_policy": [],
+            "managed_policy_arns": [],
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_iam_role_policy.fail_1",
+          "mode": "managed",
+          "type": "aws_iam_role_policy",
+          "name": "fail_1",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "name": "example",
+            "name_prefix": null,
+            "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"iam:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}"
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "aws_iam_user.fail_3",
+          "mode": "managed",
+          "type": "aws_iam_user",
+          "name": "fail_3",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "force_destroy": false,
+            "name": "example",
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": null
+          },
+          "sensitive_values": {
+            "tags_all": {}
+          }
+        },
+        {
+          "address": "aws_iam_user_policy.fail_3",
+          "mode": "managed",
+          "type": "aws_iam_user_policy",
+          "name": "fail_3",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "name": "example",
+            "name_prefix": null,
+            "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"iam:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}",
+            "user": "example"
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_iam_group.fail_2",
+      "mode": "managed",
+      "type": "aws_iam_group",
+      "name": "fail_2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "example",
+          "path": "/"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_group_policy.fail_2",
+      "mode": "managed",
+      "type": "aws_iam_group_policy",
+      "name": "fail_2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "group": "example",
+          "name": "example",
+          "name_prefix": null,
+          "policy": "{\r\n  \"Version\": \"2012-10-17\",\r\n  \"Statement\": [\r\n    {\r\n      \"Action\": [\r\n        \"s3:Get*\",\r\n        \"iam:*\"\r\n      ],\r\n      \"Effect\": \"Allow\",\r\n      \"Resource\": \"*\"\r\n    }\r\n  ]\r\n}\r\n"
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_policy.policy_pass",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "policy_pass",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "name": "policy_pass",
+          "name_prefix": null,
+          "path": "/",
+          "policy": "{\"Statement\":[{\"Action\":\"s3:*\",\"Effect\":\"Allow\",\"Resource\":\"*\"}],\"Version\":\"2012-10-17\"}",
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "policy_id": true,
+          "tags_all": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role.example",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+          "description": null,
+          "force_detach_policies": false,
+          "max_session_duration": 3600,
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": true,
+          "managed_policy_arns": true,
+          "name": true,
+          "name_prefix": true,
+          "tags_all": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.fail_1",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "fail_1",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "example",
+          "name_prefix": null,
+          "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"iam:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}"
+        },
+        "after_unknown": {
+          "id": true,
+          "role": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "aws_iam_user.fail_3",
+      "mode": "managed",
+      "type": "aws_iam_user",
+      "name": "fail_3",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "force_destroy": false,
+          "name": "example",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "tags_all": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "aws_iam_user_policy.fail_3",
+      "mode": "managed",
+      "type": "aws_iam_user_policy",
+      "name": "fail_3",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "example",
+          "name_prefix": null,
+          "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"iam:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}",
+          "user": "example"
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "prior_state": {
+    "format_version": "1.0",
+    "terraform_version": "1.1.5",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "data.aws_iam_policy_document.fail_1",
+            "mode": "data",
+            "type": "aws_iam_policy_document",
+            "name": "fail_1",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "schema_version": 0,
+            "values": {
+              "id": "3380463433",
+              "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"iam:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n}",
+              "override_json": null,
+              "override_policy_documents": null,
+              "policy_id": null,
+              "source_json": null,
+              "source_policy_documents": null,
+              "statement": [
+                {
+                  "actions": [
+                    "iam:*"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [],
+                  "resources": [
+                    "*"
+                  ],
+                  "sid": ""
+                }
+              ],
+              "version": "2012-10-17"
+            },
+            "sensitive_values": {
+              "statement": [
+                {
+                  "actions": [
+                    false
+                  ],
+                  "condition": [],
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [],
+                  "resources": [
+                    false
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_iam_group.fail_2",
+          "mode": "managed",
+          "type": "aws_iam_group",
+          "name": "fail_2",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "example"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_group_policy.fail_2",
+          "mode": "managed",
+          "type": "aws_iam_group_policy",
+          "name": "fail_2",
+          "provider_config_key": "aws",
+          "expressions": {
+            "group": {
+              "references": [
+                "aws_iam_group.fail_2.name",
+                "aws_iam_group.fail_2"
+              ]
+            },
+            "name": {
+              "constant_value": "example"
+            },
+            "policy": {
+              "constant_value": "{\r\n  \"Version\": \"2012-10-17\",\r\n  \"Statement\": [\r\n    {\r\n      \"Action\": [\r\n        \"s3:Get*\",\r\n        \"iam:*\"\r\n      ],\r\n      \"Effect\": \"Allow\",\r\n      \"Resource\": \"*\"\r\n    }\r\n  ]\r\n}\r\n"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_policy.policy_pass",
+          "mode": "managed",
+          "type": "aws_iam_policy",
+          "name": "policy_pass",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "policy_pass"
+            },
+            "path": {
+              "constant_value": "/"
+            },
+            "policy": {}
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_role.example",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "assume_role_policy": {}
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_role_policy.fail_1",
+          "mode": "managed",
+          "type": "aws_iam_role_policy",
+          "name": "fail_1",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "example"
+            },
+            "policy": {
+              "references": [
+                "data.aws_iam_policy_document.fail_1.json",
+                "data.aws_iam_policy_document.fail_1"
+              ]
+            },
+            "role": {
+              "references": [
+                "aws_iam_role.example.id",
+                "aws_iam_role.example"
+              ]
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_user.fail_3",
+          "mode": "managed",
+          "type": "aws_iam_user",
+          "name": "fail_3",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "example"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_user_policy.fail_3",
+          "mode": "managed",
+          "type": "aws_iam_user_policy",
+          "name": "fail_3",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "example"
+            },
+            "policy": {
+              "references": [
+                "data.aws_iam_policy_document.fail_1.json",
+                "data.aws_iam_policy_document.fail_1"
+              ]
+            },
+            "user": {
+              "references": [
+                "aws_iam_user.fail_3.name",
+                "aws_iam_user.fail_3"
+              ]
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "data.aws_iam_policy_document.fail_1",
+          "mode": "data",
+          "type": "aws_iam_policy_document",
+          "name": "fail_1",
+          "provider_config_key": "aws",
+          "expressions": {
+            "statement": [
+              {
+                "actions": {
+                  "constant_value": [
+                    "iam:*"
+                  ]
+                },
+                "effect": {
+                  "constant_value": "Allow"
+                },
+                "resources": {
+                  "constant_value": [
+                    "*"
+                  ]
+                }
+              }
+            ]
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}
