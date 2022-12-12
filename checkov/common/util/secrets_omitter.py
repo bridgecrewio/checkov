@@ -28,10 +28,7 @@ class SecretsOmitter:
         Setting the secrets report from checkov runner or bucket
         """
         secrets_report_list = [report for report in reports if report.check_type == CheckType.SECRETS]
-        secrets_report: Report | None = \
-            secrets_report_list[0].get_dict(full_report=True) if len(secrets_report_list) == 1 else None
-
-        return secrets_report
+        return secrets_report_list[0].get_dict(full_report=True) if len(secrets_report_list) == 1 else None
 
     def _secret_check(self) -> Iterator[dict[str, Any]]:
         if not self.secrets_report:
