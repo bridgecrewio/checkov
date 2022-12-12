@@ -38,7 +38,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         source: str = "GitHubActions",
         graph_class: type[ObjectLocalGraph] = GitHubActionsLocalGraph,
         graph_manager: ObjectGraphManager | None = None,
-        external_registries: dict[str, Any] | None =None
+        external_registries: dict[str, Any] | None = None
     ) -> None:
         super().__init__(
             db_connector=db_connector,
