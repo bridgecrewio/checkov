@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Tuple
 import dpath.util
 
 import yaml
@@ -75,10 +75,10 @@ def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
 
 
 def get_gha_files_definitions(root_folder: str | Path,
-                              files: "List[Path] | None" = None,
-                              runner_filter: RunnerFilter | None = None,) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
-    definitions: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
-    definitions_raw: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
+                              files: "list[Path] | None" = None,
+                              runner_filter: RunnerFilter | None = None,) -> tuple[dict[str, Any], dict[str, Any]]:
+    definitions = {}
+    definitions_raw = {}
     file_paths = get_scannable_file_paths(root_folder=root_folder)
 
     for file_path in file_paths:
@@ -90,10 +90,8 @@ def get_gha_files_definitions(root_folder: str | Path,
     return definitions, definitions_raw
 
 
-def build_gha_definitions_context(
-        definitions: Dict[str, Dict], definitions_raw: Dict[str, List[Tuple[int, str]]]
-) -> Dict[str, Dict[str, Any]]:
-    definitions_context: Dict[str, Dict[str, Any]] = {}
+def build_gha_definitions_context(definitions: dict[str, dict[str, Any]], definitions_raw: dict[str, list[Tuple[int, str]]]) -> dict[str, dict[str, Any]]:
+    definitions_context: dict[str, dict[str, Any]] = {}
     resources = [e.value for e in ResourceType]
     # iterate on the files
     for file_path, file_path_definitions in definitions.items():
@@ -104,8 +102,8 @@ def build_gha_definitions_context(
                 if isinstance(definition, dict):
                     for attribute, attr_value in definition.items():
                         if isinstance(attr_value, dict) or isinstance(attr_value, str):
-                            start_line = attr_value['__startline__']
-                            end_line = attr_value['__endline__']
+                            start_line: int = attr_value['__startline__']        # type: ignore
+                            end_line: int = attr_value['__endline__']            # type: ignore
 
                             code_lines = definitions_raw[file_path][start_line - 1: end_line]
                             dpath.new(
