@@ -60,6 +60,8 @@ class Runner(TerraformRunner):
         self.definitions = None
         self.context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.deep_analysis = False
+        self.repo_root_for_plan_enrichment = []
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -74,6 +76,8 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
+        self.deep_analysis = runner_filter.deep_analysis
+        self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
