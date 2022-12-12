@@ -50,7 +50,8 @@ class Record:
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = None
+        details: Optional[List[str]] = None,
+        check_len: int | None = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -84,6 +85,7 @@ class Record:
         self.connected_node = connected_node
         self.guideline: str | None = None
         self.details: List[str] = details or []
+        self.check_len = check_len
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -137,7 +139,7 @@ class Record:
         elif self.check_result["result"] == CheckResult.SKIPPED:
             status = CheckResult.SKIPPED.name
             status_color = "blue"
-            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
+            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result.get("suppress_comment", ""))
 
         check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ""

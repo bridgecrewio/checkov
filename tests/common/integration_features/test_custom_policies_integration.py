@@ -20,6 +20,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
     def tearDown(self) -> None:
         get_graph_checks_registry("cloudformation").checks = []
         get_graph_checks_registry("terraform").checks = []
+        get_graph_checks_registry("kubernetes").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()

@@ -28,6 +28,8 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
+    integration as suppressions_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
@@ -182,7 +184,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
                                  use_enforcement_rules=config.use_enforcement_rules,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
-                                 block_list_secret_scan=config.block_list_secret_scan)
+                                 block_list_secret_scan=config.block_list_secret_scan,
+                                 deep_analysis=False,
+                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
 
     if outer_registry:
         runner_registry = outer_registry
@@ -303,6 +307,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -644,6 +650,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help="exclude extra resources (resources without violations) from report output",
                action='store_true',
                env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
+    # parser.add('--deep-analysis',
+    #            default=False,
+    #            action='store_true',
+    #            help='Enable combine tf graph and rf plan graph')
 
 
 def get_external_checks_dir(config: Any) -> Any:

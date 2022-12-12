@@ -35,8 +35,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
-        report.print_console()
-    
+
     def test_runner_name_variations(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/name_variations"
@@ -46,7 +45,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.resources), 2)
         self.assertEqual(len([file for file in report.resources if 'Dockerfile.prod' in file]), 1)
         self.assertEqual(len([file for file in report.resources if 'prod.dockerfile' in file]), 1)
-        report.print_console()
 
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -58,7 +56,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
-        report.print_console()
 
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -74,7 +71,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.parsing_errors), 0)
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
-        report.print_console()
 
     def test_runner_failing_check_with_file_path(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -89,7 +85,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
-        report.print_console()
 
     def test_runner_passing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -101,19 +96,31 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
-        report.print_console()
 
     def test_runner_skip_check(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/expose_port/skip"
-        runner = Runner()
-        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
-        self.assertEqual(len(report.skipped_checks), 1)
-        self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(report.failed_checks, [])
-        self.assertEqual(report.passed_checks, [])
-        report.print_console()
+        #  given
+        valid_dir_path = Path(__file__).parent / "resources/expose_port/skip"
+
+        # when
+        report = Runner().run(
+            root_folder=str(valid_dir_path),
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(
+                framework=["dockerfile"],
+                checks=["CKV_DOCKER_1", "CKV_DOCKER_5", "CKV_DOCKER_9"],
+            ),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 2)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        expected_skipped_cehcks = [record.check_id for record in report.skipped_checks]
+        self.assertCountEqual(["CKV_DOCKER_1", "CKV_DOCKER_5"], expected_skipped_cehcks)
 
     def test_record_has_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"

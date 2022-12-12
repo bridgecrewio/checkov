@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: failing-crb1
+subjects:
+- kind: ServiceAccount
+  name: over-privileged-sa1
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: failing-cr1
+  apiGroup: rbac.authorization.k8s.io

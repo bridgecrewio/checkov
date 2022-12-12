@@ -6,7 +6,8 @@
           "source": ["./common"],
           "__resolved__": ["common/common.tf[main.tf#0]"],
           "__start_line__": 1,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "module.common"
         }
       },
       {
@@ -20,7 +21,8 @@
           ],
           "__resolved__": ["bucket/bucket.tf[main.tf#1]"],
           "__start_line__": 4,
-          "__end_line__": 7
+          "__end_line__": 7,
+          "__address__": "module.bucket"
         }
       }
     ]
@@ -47,7 +49,8 @@
               }
             ],
             "__start_line__": 4,
-            "__end_line__": 8
+            "__end_line__": 8,
+            "__address__": "module.bucket.aws_s3_bucket.bucket"
           }
         }
       }

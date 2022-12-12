@@ -1,6 +1,7 @@
 import unittest
 from pathlib import Path
 
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.kubernetes.AllowedCapabilities import check
 from checkov.terraform.runner import Runner
@@ -45,6 +46,11 @@ class TestAllowedCapabilities(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_terraform_plan(self):
+        resource_conf = {'spec': [{'template': [{'spec': [{'container': [{'security_context': [{'capabilities': [[]]}]}]}]}]}]}
+        scan_result = check.scan_resource_conf(conf=resource_conf)
+        assert scan_result == CheckResult.PASSED
 
 
 if __name__ == '__main__':
