@@ -104,9 +104,10 @@ class RunnerRegistry:
         merged_reports = self._merge_reports(reports)
 
         if self.secrets_omitter_class_name and bc_integration.bc_api_key:
-            secrets_omitter_class_obj = globals()[self.secrets_omitter_class_name]
-            logging.info(f"FOUND CLASS OBJ {secrets_omitter_class_obj}")
-            secrets_omitter_class_obj(merged_reports).omit()
+            secrets_omitter_class_obj = globals().get(self.secrets_omitter_class_name)
+            if secrets_omitter_class_obj:
+                logging.info(f"Omitting secrets using {secrets_omitter_class_obj} class")
+                secrets_omitter_class_obj(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
