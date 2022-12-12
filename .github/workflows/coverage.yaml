@@ -24,7 +24,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v4
         with:
           python-version: 3.7
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
