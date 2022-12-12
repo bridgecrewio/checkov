@@ -74,8 +74,9 @@ def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
     return False
 
 
-def get_gha_files_definitions(root_folder: str | Path, files: "Collection[Path] | None" = None,
-        runner_filter: RunnerFilter | None = None,) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
+def get_gha_files_definitions(root_folder: str | Path,
+                              files: "List[Path] | None" = None,
+                              runner_filter: RunnerFilter | None = None,) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
     definitions: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
     definitions_raw: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
     file_paths = get_scannable_file_paths(root_folder=root_folder)
@@ -115,11 +116,11 @@ def build_gha_definitions_context(
                 elif isinstance(definition, str):
                     for line_tuple in definitions_raw[file_path]:
                         if file_path_definition in line_tuple[1] and definition in line_tuple[1]:
-                            code_lines = definitions_raw[file_path][line_tuple[0]-1:line_tuple[0]]
+                            code_lines = definitions_raw[file_path][line_tuple[0] - 1:line_tuple[0]]
                             dpath.new(
                                 definitions_context,
                                 [file_path, str(file_path_definition), definition],
-                                {"start_line": line_tuple[0], "end_line": line_tuple[0]+1, "code_lines": code_lines},
+                                {"start_line": line_tuple[0], "end_line": line_tuple[0] + 1, "code_lines": code_lines},
                             )
                             break
 
