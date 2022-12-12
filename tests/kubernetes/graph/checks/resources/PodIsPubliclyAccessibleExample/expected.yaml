@@ -1,0 +1,2 @@
+fail:
+  - Pod.default.app-nginx-pod
