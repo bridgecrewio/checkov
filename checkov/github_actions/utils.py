@@ -4,7 +4,8 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Tuple
+import dpath.util
 
 import yaml
 from jsonschema import validate, ValidationError
@@ -12,7 +13,9 @@ from jsonschema import validate, ValidationError
 from checkov.common.parsers.yaml.loader import SafeLineLoaderGhaSchema
 from checkov.common.parsers.yaml.parser import parse
 from checkov.common.util.type_forcers import force_dict
+from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 from checkov.github_actions.schemas import gha_schema, gha_workflow
+from checkov.runner_filter import RunnerFilter
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
 
@@ -69,3 +72,55 @@ def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
             )
 
     return False
+
+
+def get_gha_files_definitions(root_folder: str | Path, files: "Collection[Path] | None" = None,
+        runner_filter: RunnerFilter | None = None,) -> dict[str | Path, dict[str, Any] | list[dict[str, Any]]]:
+    definitions: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
+    definitions_raw: "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]" = {}
+    file_paths = get_scannable_file_paths(root_folder=root_folder)
+
+    for file_path in file_paths:
+        result = parse_file(f=file_path)
+        if result is not None:
+            definitions[str(file_path)] = result[0]
+            definitions_raw[str(file_path)] = result[1]
+
+    return definitions, definitions_raw
+
+
+def build_gha_definitions_context(
+        definitions: Dict[str, Dict], definitions_raw: Dict[str, List[Tuple[int, str]]]
+) -> Dict[str, Dict[str, Any]]:
+    definitions_context: Dict[str, Dict[str, Any]] = {}
+    resources = [e.value for e in ResourceType]
+    # iterate on the files
+    for file_path, file_path_definitions in definitions.items():
+        # iterate on the definitions (Parameters, Resources, Outputs...)
+        for file_path_definition, definition in file_path_definitions.items():
+            if isinstance(file_path_definition, str) and file_path_definition in resources:
+                # iterate on the actual objects of each definition
+                if isinstance(definition, dict):
+                    for attribute, attr_value in definition.items():
+                        if isinstance(attr_value, dict) or isinstance(attr_value, str):
+                            start_line = attr_value['__startline__']
+                            end_line = attr_value['__endline__']
+
+                            code_lines = definitions_raw[file_path][start_line - 1: end_line]
+                            dpath.new(
+                                definitions_context,
+                                [file_path, str(file_path_definition), str(attribute)],
+                                {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
+                            )
+                elif isinstance(definition, str):
+                    for line_tuple in definitions_raw[file_path]:
+                        if file_path_definition in line_tuple[1] and definition in line_tuple[1]:
+                            code_lines = definitions_raw[file_path][line_tuple[0]-1:line_tuple[0]]
+                            dpath.new(
+                                definitions_context,
+                                [file_path, str(file_path_definition), definition],
+                                {"start_line": line_tuple[0], "end_line": line_tuple[0]+1, "code_lines": code_lines},
+                            )
+                            break
+
+    return definitions_context
