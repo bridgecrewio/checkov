@@ -192,7 +192,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  run_image_referencer=run_image_referencer,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
-                                 deep_analysis=config.deep_analysis,
+                                 deep_analysis=False,
                                  repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
 
     if outer_registry:
