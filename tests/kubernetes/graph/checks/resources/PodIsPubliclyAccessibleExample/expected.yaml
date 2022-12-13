@@ -1,0 +1,4 @@
+pass:
+  - Pod.default.app-no-service-attached
+fail:
+  - Pod.default.app-nginx-pod
