@@ -79,7 +79,8 @@ class Runner(TerraformRunner):
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         self.deep_analysis = runner_filter.deep_analysis
-        self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
+        if runner_filter.repo_root_for_plan_enrichment:
+            self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         if self.definitions is None or self.context is None:
