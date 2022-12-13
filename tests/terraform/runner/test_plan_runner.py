@@ -674,8 +674,9 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(len(report.failed_checks), 0)
 
-        self.assertEqual(report.passed_checks[0].resource_address, 'aws_s3_bucket.example')
-        self.assertEqual(report.passed_checks[1].resource_address, 'aws_s3_bucket.example_2')
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.passed_checks[0].resource_address, report.passed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
         assert report.passed_checks[0].file_path.endswith('.json')
         assert report.passed_checks[1].file_path.endswith('.json')
 
