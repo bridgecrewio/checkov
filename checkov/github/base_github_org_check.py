@@ -22,7 +22,7 @@ class BaseOrganizationCheck(BaseGithubCheck):
         )
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'org_metadata' in ckv_metadata.get('file_name', ''):
             if org_schema.validate(conf):
@@ -34,7 +34,7 @@ class BaseOrganizationCheck(BaseGithubCheck):
                         return CheckResult.PASSED
                     return CheckResult.FAILED
                 return self.missing_attribute_result
-        return None
+        return CheckResult.UNKNOWN
 
     @abstractmethod
     def get_evaluated_keys(self) -> list[str]:
