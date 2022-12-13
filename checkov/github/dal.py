@@ -275,7 +275,7 @@ class Github(BaseVCSDAL):
                 for workflow in workflows['workflows']:
                     workflow_filename = workflow['path']
                     workflow_content = self.get_content_file(file_name=workflow_filename)
-                    if file_content_schema.validate(workflow_content):
+                    if workflow_content and file_content_schema.validate(workflow_content):
                         decoded_content = base64.b64decode(workflow_content["content"]).decode('utf-8')
                         workflow_parsed_content = yml_loader.loads(decoded_content)
                         workflow['parsed_content'] = workflow_parsed_content
@@ -286,13 +286,14 @@ class Github(BaseVCSDAL):
         security_md_possible_names = ('SECURITY.md', 'security.md', 'Security.md', )
         possible_dir = ('.github/', 'docs/', '', )
         paths_to_check = (p1 + p2 for p2 in security_md_possible_names for p1 in possible_dir)
-        content_not_available = {}
+        content_not_available: dict[str, Any] = {}
         for filename in paths_to_check:
             security_md = self.get_content_file(file_name=filename)
-            if security_md.get('name'):
+            if isinstance(security_md, dict) and security_md.get('name'):
                 BaseVCSDAL.persist(path=self.github_conf_file_paths["security_md"][0], conf=security_md)
                 return
-            content_not_available = security_md
+            if security_md is not None:
+                content_not_available = security_md
         BaseVCSDAL.persist(path=self.github_conf_file_paths["security_md"][0], conf=content_not_available)
         # else - didn't get any security file - save the error and let the check fail on that file later.
 

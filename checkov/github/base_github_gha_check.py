@@ -24,17 +24,19 @@ class BaseGHACheck(BaseGithubCheck):
 
     @staticmethod
     def is_gha_enabled(ckv_metadata: dict[str, Any]) -> bool:
-        return ckv_metadata['repo_complementary_metadata'].get('gha', {}).get('enabled') and \
-           ckv_metadata['repo_complementary_metadata'].get('gha', {}).get('total_count')
+        return bool(
+            ckv_metadata['repo_complementary_metadata'].get('gha', {}).get('enabled') and
+            ckv_metadata['repo_complementary_metadata'].get('gha', {}).get('total_count')
+        )
 
     @staticmethod
     def is_build_workflow(workflow_name: str) -> bool:
         return 'build' in workflow_name
 
     @staticmethod
-    def workflow_contain_build(workflow_content: list) -> bool:
+    def workflow_contain_build(workflow_content: list[dict[str, Any]]) -> bool:
         for content in workflow_content:
-            for job_name, job_data in content.get('jobs', {}).items():
+            for _, job_data in content.get('jobs', {}).items():
                 if not isinstance(job_data, dict):
                     continue
                 for step in job_data.get('steps', []):
@@ -46,4 +48,3 @@ class BaseGHACheck(BaseGithubCheck):
                                 if any(build_cmd in command for build_cmd in buildcmds):
                                     return True
         return False
-

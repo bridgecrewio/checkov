@@ -6,7 +6,6 @@ from checkov.common.models.enums import CheckResult
 from checkov.github.base_github_gha_check import BaseGHACheck
 
 
-
 class GithubWorkflowsRequireBuildStep(BaseGHACheck):
     def __init__(self) -> None:
         name = "Ensure all build steps are defined as code"
@@ -24,7 +23,7 @@ class GithubWorkflowsRequireBuildStep(BaseGHACheck):
                         return CheckResult.PASSED
                 # didn't find any build job
                 return CheckResult.FAILED
-            return None
+        return None
 
 
 check = GithubWorkflowsRequireBuildStep()

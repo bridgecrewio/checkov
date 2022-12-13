@@ -30,7 +30,7 @@ class GithubAccessWorkflowsMinimized(BaseGHACheck):
                             return CheckResult.PASSED
                         return CheckResult.FAILED
                     return CheckResult.PASSED  # default is read
-            return None
+        return None
 
     def get_evaluated_keys(self) -> list[str]:
         return ["default_repository_permission"]
