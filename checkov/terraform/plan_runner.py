@@ -134,7 +134,7 @@ class Runner(TerraformRunner):
             return graph_report
         return self.get_graph_checks_report(root_folder, runner_filter)
 
-    def _create_terraform_graph(self):
+    def _create_terraform_graph(self) -> TerraformLocalGraph:
         graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(self.repo_root_for_plan_enrichment,
                                                                             render_variables=True)
