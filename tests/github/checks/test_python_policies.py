@@ -64,14 +64,6 @@ def test_GithubPrivateRepositoryCreationIsLimited():
     run_check(base_path=BASE_DIR / "repo_management", check="GithubPrivateRepositoryCreationIsLimited")
 
 
-def test_GithubIssueDeletionIsLimited():
-    run_check(base_path=BASE_DIR / "repo_management", check="GithubIssueDeletionIsLimited")
-
-
-def test_GithubRepositoryDeletionIsLimited():
-    run_check(base_path=BASE_DIR / "repo_management", check="GithubRepositoryDeletionIsLimited")
-
-
 def test_GithubMinimumAdminsInOrganization():
     run_check(base_path=BASE_DIR / "contribution_access", check="GithubMinimumAdminsInOrganization")
 

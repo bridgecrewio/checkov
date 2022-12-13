@@ -5,8 +5,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
-from packaging import version as packaging_version
-
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
 )
@@ -15,6 +13,7 @@ from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import (
     get_file_path_for_record,
     get_resource_for_record,

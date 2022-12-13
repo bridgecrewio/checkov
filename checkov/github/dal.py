@@ -10,7 +10,6 @@ from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 from checkov.github.schemas.org_security import schema as org_security_schema
 
 
-CKV_GITHUB_DEFAULT = 'CKV_GITHUB_DEFAULT'
 CKV_METADATA = 'CKV_METADATA'
 
 
@@ -30,7 +29,6 @@ class Github(BaseVCSDAL):
         if os.path.isdir(self.github_conf_dir_path):
             shutil.rmtree(self.github_conf_dir_path)
 
-        # files to run checks on
         self.github_conf_file_paths = {
             "org_security": [Path(self.github_conf_dir_path) / "org_security.json"],
             "branch_protection_rules": [Path(self.github_conf_dir_path) / "branch_protection_rules.json"],
@@ -40,7 +38,6 @@ class Github(BaseVCSDAL):
             "branch_metadata": [Path(self.github_conf_dir_path) / "branch_metadata.json"],
             "org_metadata": [Path(self.github_conf_dir_path) / "org_metadata.json"],
             "org_admins": [Path(self.github_conf_dir_path) / "org_admins.json"],
-            "default_github": [Path(self.github_conf_dir_path) / "default_github.json"],
         }
 
     def discover(self) -> None:
@@ -214,9 +211,6 @@ class Github(BaseVCSDAL):
         if org_metadata:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_metadata"][0], conf=org_metadata)
 
-    def persist_github_default_empty_file(self) -> None:
-        BaseVCSDAL.persist(path=self.github_conf_file_paths["default_github"][0], conf={})
-
     def persist_repository_metadata(self) -> None:
         # still not used - for future implementations
         repository_metadata = self.get_repository_metadata()
@@ -241,5 +235,4 @@ class Github(BaseVCSDAL):
             self.persist_repository_collaborators()
             self.persist_branch_metadata()
             self.persist_organization_metadata()
-            self.persist_github_default_empty_file()
             self.persist_organization_admins()

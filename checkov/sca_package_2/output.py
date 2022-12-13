@@ -6,12 +6,12 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
 
-from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
 
