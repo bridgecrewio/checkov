@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import os
 import shutil
 from typing import Any
@@ -8,7 +9,9 @@ from pathlib import Path
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 from checkov.github.schemas.org_security import schema as org_security_schema
-
+from checkov.github.schemas.workflows import schema as workflows_schema
+from checkov.github.schemas.file_content import schema as file_content_schema
+from checkov.common.parsers.yaml import loader as yml_loader
 
 CKV_GITHUB_DEFAULT = 'CKV_GITHUB_DEFAULT'
 CKV_METADATA = 'CKV_METADATA'
@@ -41,6 +44,9 @@ class Github(BaseVCSDAL):
             "org_metadata": [Path(self.github_conf_dir_path) / "org_metadata.json"],
             "org_admins": [Path(self.github_conf_dir_path) / "org_admins.json"],
             "default_github": [Path(self.github_conf_dir_path) / "default_github.json"],
+            "workflows": [Path(self.github_conf_dir_path) / "workflows.json"],
+            "gha_permissions": [Path(self.github_conf_dir_path) / "gha_permissions.json"],
+            "security_md": [Path(self.github_conf_dir_path) / "security_md.json"],
         }
 
     def discover(self) -> None:
@@ -125,7 +131,7 @@ class Github(BaseVCSDAL):
         return self._organization_security
 
     def get_default_branch(self) -> None:
-        # still not used - for future implementations
+        # new endpoint since Dec22
         default_branch = self.repo_complementary_metadata.get("default_branch")
         if not default_branch:
             data = self._request_graphql(query="""
@@ -165,6 +171,30 @@ class Github(BaseVCSDAL):
         # still not used - for future implementations
         data = self._request(
             endpoint=f"repos/{self.repo_owner}/{self.current_repository}",
+            allowed_status_codes=[200]
+        )
+        return data
+
+    def get_content_file(self, file_name: str) -> dict[str, Any] | None:
+        # new endpoint since Dec22
+        data = self._request(
+            endpoint=f"repos/{self.repo_owner}/{self.current_repository}/contents/{file_name}",
+            allowed_status_codes=[200, 302, 403, 404]
+        )
+        return data
+
+    def get_gha_permissions(self) -> dict[str, Any] | None:
+        # new endpoint since Dec22
+        data = self._request(
+            endpoint=f"repos/{self.repo_owner}/{self.current_repository}/actions/permissions",
+            allowed_status_codes=[200]
+        )
+        return data
+
+    def get_workflows(self) -> dict[str, Any] | None:
+        # new endpoint since Dec22
+        data = self._request(
+            endpoint=f"repos/{self.repo_owner}/{self.current_repository}/actions/workflows",
             allowed_status_codes=[200]
         )
         return data
@@ -232,6 +262,40 @@ class Github(BaseVCSDAL):
         if org_members:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_admins"][0], conf=org_members)
 
+    def persist_workflows(self) -> None:
+        gha_permissions = self.get_gha_permissions()
+        if gha_permissions:
+            self.repo_complementary_metadata["gha"] = {}
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["gha_permissions"][0], conf=gha_permissions)
+            self.repo_complementary_metadata["gha"]["enabled"] = gha_permissions['enabled']
+
+            workflows = self.get_workflows()
+            if workflows and workflows_schema.validate(workflows):
+                self.repo_complementary_metadata["gha"]["total_count"] = workflows['total_count']
+                for workflow in workflows['workflows']:
+                    workflow_filename = workflow['path']
+                    workflow_content = self.get_content_file(file_name=workflow_filename)
+                    if file_content_schema.validate(workflow_content):
+                        decoded_content = base64.b64decode(workflow_content["content"]).decode('utf-8')
+                        workflow_parsed_content = yml_loader.loads(decoded_content)
+                        workflow['parsed_content'] = workflow_parsed_content
+                BaseVCSDAL.persist(path=self.github_conf_file_paths["workflows"][0], conf=workflows)
+
+    def persist_security_md_file(self) -> None:
+        self.get_default_branch()
+        security_md_possible_names = ('SECURITY.md', 'security.md', 'Security.md', )
+        possible_dir = ('.github/', 'docs/', '', )
+        paths_to_check = (p1 + p2 for p2 in security_md_possible_names for p1 in possible_dir)
+        content_not_available = {}
+        for filename in paths_to_check:
+            security_md = self.get_content_file(file_name=filename)
+            if security_md.get('name'):
+                BaseVCSDAL.persist(path=self.github_conf_file_paths["security_md"][0], conf=security_md)
+                return
+            content_not_available = security_md
+        BaseVCSDAL.persist(path=self.github_conf_file_paths["security_md"][0], conf=content_not_available)
+        # else - didn't get any security file - save the error and let the check fail on that file later.
+
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
             self.persist_organization_security()
@@ -243,3 +307,5 @@ class Github(BaseVCSDAL):
             self.persist_organization_metadata()
             self.persist_github_default_empty_file()
             self.persist_organization_admins()
+            self.persist_workflows()
+            self.persist_security_md_file()
