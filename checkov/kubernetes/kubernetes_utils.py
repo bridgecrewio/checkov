@@ -19,6 +19,7 @@ from checkov.kubernetes.parser.parser import parse
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
 PARENT_RESOURCE_KEY_NAME = "_parent_resource"
+PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
