@@ -72,6 +72,10 @@ def test_GithubRequireStrictBasePermissionsRepository():
     run_check(base_path=BASE_DIR / "contribution_access", check="GithubRequireStrictBasePermissionsRepository")
 
 
+def test_GithubRequireOrganizationIsVerified():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubRequireOrganizationIsVerified")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP
