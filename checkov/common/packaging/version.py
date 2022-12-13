@@ -25,7 +25,7 @@ def parse(version: str) -> packaging_version.Version | LegacyVersion:
     a valid PEP 440 version or a legacy version.
     """
     try:
-        return packaging_version.parse(version)
+        return packaging_version.Version(version)
     except packaging_version.InvalidVersion:
         return LegacyVersion(version)
 
