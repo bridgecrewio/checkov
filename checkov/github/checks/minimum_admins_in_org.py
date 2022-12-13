@@ -8,6 +8,8 @@ from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.org_members import schema as org_members
 from checkov.json_doc.enums import BlockType
 
+MAX_ADMIN_COUNT = 3
+
 
 class GithubMinimumAdminsInOrganization(BaseGithubCheck):
     def __init__(self) -> None:
@@ -26,7 +28,7 @@ class GithubMinimumAdminsInOrganization(BaseGithubCheck):
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'org_admins' in ckv_metadata.get('file_name', ''):
             if org_members.validate(conf):
-                if len(conf) <= ckv_metadata['org_complementary_metadata']['max_admins_count']:
+                if len(conf) <= MAX_ADMIN_COUNT:
                     return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED

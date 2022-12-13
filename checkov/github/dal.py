@@ -58,11 +58,6 @@ class Github(BaseVCSDAL):
         self.default_branch_cache = {}
         self.org = os.getenv('GITHUB_ORG', '')
 
-        self.discover_optional_variables()
-
-    def discover_optional_variables(self) -> None:
-        self.org_complementary_metadata['max_admins_count'] = os.getenv('GITHUB_MAX_ADMINS_ORG', 2)
-
     def _headers(self) -> dict[str, str]:
         return {"Accept": "application/vnd.github.v3+json",
                 "Authorization": "token {}".format(self.token)}
