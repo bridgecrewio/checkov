@@ -350,7 +350,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report,
                              root_package_version: str | None = None, root_package_name: str | None = None,
-                             root_package_fixed_version: str | None =None) -> None:
+                             root_package_fixed_version: str | None = None) -> None:
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=scanned_file_path,
