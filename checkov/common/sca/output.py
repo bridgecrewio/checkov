@@ -376,7 +376,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         else:
             cve_record.check_result = {
                 "result": CheckResult.SKIPPED,
-                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"}
+                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"
+            }
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)
