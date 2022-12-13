@@ -23,6 +23,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
+from .deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -57,11 +58,12 @@ class Runner(TerraformRunner):
             source=source,
         )
         self.file_extensions = ['.json']  # override what gets set from the TF runner
-        self.definitions = None
-        self.context = None
+        self.tf_plan_definitions = None
+        self.tf_plan_context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
         self.deep_analysis = False
         self.repo_root_for_plan_enrichment = []
+        self.tf_plan_local_graph = None
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -77,17 +79,17 @@ class Runner(TerraformRunner):
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         self.deep_analysis = runner_filter.deep_analysis
-        self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment
+        self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
-        if self.definitions is None or self.context is None:
-            self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
-            self.context = build_definitions_context(self.definitions, definitions_raw)
+        if self.tf_plan_definitions is None or self.tf_plan_context is None:
+            self.tf_plan_definitions, tf_plan_definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            self.tf_plan_context = build_definitions_context(self.tf_plan_definitions, tf_plan_definitions_raw)
             if CHECKOV_CREATE_GRAPH:
-                censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
+                censored_definitions = omit_secret_value_from_definitions(definitions=self.tf_plan_definitions,
                                                                           resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
-                graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
-                self.graph_manager.save_graph(graph)
+                self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
+                self.graph_manager.save_graph(self.tf_plan_local_graph)
 
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -98,13 +100,28 @@ class Runner(TerraformRunner):
         self.check_tf_definition(report, root_folder, runner_filter)
         report.add_parsing_errors(parsing_errors.keys())
 
-        if self.definitions:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        if self.tf_plan_definitions:
+            if self.deep_analysis and self.repo_root_for_plan_enrichment and self.tf_plan_local_graph:
+                tf_local_graph = self._create_terraform_graph()
+                deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
+                deep_analysis_graph_manager.enrich_tf_graph_attributes()
+                self.graph_manager.save_graph(tf_local_graph)
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+                deep_analysis_graph_manager.filter_report(graph_report)
+            else:
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
         return report
 
+    def _create_terraform_graph(self):
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        tf_local_graph, _ = graph_manager.build_graph_from_source_directory(self.repo_root_for_plan_enrichment,
+                                                                            render_variables=True)
+        self.graph_manager = graph_manager
+        return tf_local_graph
+
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
-        for full_file_path, definition in self.definitions.items():
+        for full_file_path, definition in self.tf_plan_definitions.items():
             if platform.system() == "Windows":
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
@@ -162,4 +179,4 @@ class Runner(TerraformRunner):
 
     def get_entity_context(self, definition_path, full_file_path):
         entity_id = ".".join(definition_path)
-        return self.context.get(full_file_path, {}).get(entity_id)
+        return self.tf_plan_context.get(full_file_path, {}).get(entity_id)
