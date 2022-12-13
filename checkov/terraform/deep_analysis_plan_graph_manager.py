@@ -2,6 +2,7 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.common.output.report import Report
+from .plan_parser import TF_PLAN_RESOURCE_ADDRESS
 from typing import Dict
 
 
@@ -16,11 +17,11 @@ class DeepAnalysisGraphManager:
     def _apply_address_mapping(self):
         for vertex in self.tf_graph.vertices:
             if vertex.block_type == BlockType.RESOURCE:
-                self._address_to_tf_vertex_map[vertex.attributes['__address__']] = vertex
+                self._address_to_tf_vertex_map[vertex.attributes[TF_PLAN_RESOURCE_ADDRESS]] = vertex
 
         for vertex in self.tf_plan_graph.vertices:
             if vertex.block_type == BlockType.RESOURCE:
-                self._address_to_tf_plan_vertex_map[vertex.attributes['__address__']] = vertex
+                self._address_to_tf_plan_vertex_map[vertex.attributes[TF_PLAN_RESOURCE_ADDRESS]] = vertex
 
     def enrich_tf_graph_attributes(self) -> None:
         for address, tf_vertex in self._address_to_tf_vertex_map.items():
