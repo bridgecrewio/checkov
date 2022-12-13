@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.github.base_github_configuration_check import BaseGithubCheck
+from checkov.github.base_github_configuration_check import BaseGithubCheck, HTTP
 from checkov.github.schemas.org_webhooks import schema as org_webhooks_schema
 from checkov.json_doc.enums import BlockType
 
@@ -34,7 +34,9 @@ class WebhookHttpsOrg(BaseGithubCheck):
                         url = item_config.get('url', '')
                         insecure_ssl = item_config.get('insecure_ssl', '0')
                         secret = item_config.get('secret', '')
-                        if re.match("^http://", url) or insecure_ssl != '0' and secret != '********':  # nosec
+                        if re.match(HTTP, url):
+                            return CheckResult.FAILED, item_config
+                        if insecure_ssl != '0' and secret != '********':  # nosec
                             return CheckResult.FAILED, item_config
                 return CheckResult.PASSED, conf
         return CheckResult.UNKNOWN, conf
