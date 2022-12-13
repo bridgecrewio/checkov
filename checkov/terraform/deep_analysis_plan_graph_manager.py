@@ -7,14 +7,14 @@ from typing import Dict
 
 
 class DeepAnalysisGraphManager:
-    def __init__(self, tf_graph: TerraformLocalGraph, tf_plan_graph: TerraformLocalGraph):
+    def __init__(self, tf_graph: TerraformLocalGraph, tf_plan_graph: TerraformLocalGraph) -> None:
         self.tf_graph: TerraformLocalGraph = tf_graph
         self.tf_plan_graph: TerraformLocalGraph = tf_plan_graph
         self._address_to_tf_vertex_map: Dict[str, TerraformBlock] = {}
         self._address_to_tf_plan_vertex_map: Dict[str, TerraformBlock] = {}
         self._apply_address_mapping()
 
-    def _apply_address_mapping(self):
+    def _apply_address_mapping(self) -> None:
         for vertex in self.tf_graph.vertices:
             if vertex.block_type == BlockType.RESOURCE:
                 self._address_to_tf_vertex_map[vertex.attributes[TF_PLAN_RESOURCE_ADDRESS]] = vertex
