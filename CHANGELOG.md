@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.139...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.148...HEAD)
+
+## [2.2.148](https://github.com/bridgecrewio/checkov/compare/2.2.139...2.2.148) - 2022-12-12
+
+### Feature
+
+- **gha:** Add gha graph infra - [#4058](https://github.com/bridgecrewio/checkov/pull/4058)
+- **gha:** add infra for gha graphs - [#4052](https://github.com/bridgecrewio/checkov/pull/4052)
+- **sca:**  fixed dependencies default value - [#4056](https://github.com/bridgecrewio/checkov/pull/4056)
+- **sca:** added indirect cves fix versions - [#4023](https://github.com/bridgecrewio/checkov/pull/4023)
+- **secrets:** Inject secrets omitter to runner registry - [#4054](https://github.com/bridgecrewio/checkov/pull/4054)
+- **terraform_plan:** support jsonpath queries in AWS IAM policy strings for Terraform plan - [#4033](https://github.com/bridgecrewio/checkov/pull/4033)
+- **terraform:** Extend secret attributes to omit mapping - [#4028](https://github.com/bridgecrewio/checkov/pull/4028)
+- **terraform:** tf plan combine graphs pass params - [#4051](https://github.com/bridgecrewio/checkov/pull/4051)
+
+### Bug Fix
+
+- **terraform:** add missing resource aws_route53_resolver_endpoint #3968 - [#3995](https://github.com/bridgecrewio/checkov/pull/3995)
+- **terraform:** fix getting local dest module path - [#4055](https://github.com/bridgecrewio/checkov/pull/4055)
+- **terraform:** Fix some errors in Dynamic Blocks rendering - [#4050](https://github.com/bridgecrewio/checkov/pull/4050)
 
 ## [2.2.139](https://github.com/bridgecrewio/checkov/compare/2.2.130...2.2.139) - 2022-12-11
 
