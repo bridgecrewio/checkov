@@ -13,7 +13,7 @@ class GithubPrivateRepositoryCreationIsLimited(BaseOrganizationCheck):
         super().__init__(id=id, name=name, missing_attribute_result=CheckResult.FAILED)
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["members_can_create_public_repositories"]
+        return ["members_can_create_private_repositories"]
 
     def get_allowed_values(self) -> list[Any]:
         return [False]

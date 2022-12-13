@@ -21,7 +21,7 @@ class GithubRepositoryCollaborators(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'repository_collaborators' in ckv_metadata.get('file_name', ''):
             if repository_collaborators_schema.validate(conf):
@@ -36,7 +36,7 @@ class GithubRepositoryCollaborators(BaseGithubCheck):
                     return CheckResult.PASSED
                 else:
                     return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
 
 check = GithubRepositoryCollaborators()

@@ -45,7 +45,7 @@ class Runner(ObjectRunner):
         return parse(filename=f, file_content=file_content)
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
-        if not (isinstance(result_config, DictNode) or isinstance(result_config, ListNode)):
+        if not isinstance(result_config, (DictNode, ListNode)):
             # shouldn't happen
             return 0, 0
 
