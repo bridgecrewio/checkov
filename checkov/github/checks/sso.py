@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -14,7 +14,7 @@ class GithubSSO(BaseGithubCheck):
     def __init__(self) -> None:
         name = "Ensure GitHub organization security settings require SSO"
         id = "CKV_GITHUB_2"
-        categories = [CheckCategories.SUPPLY_CHAIN]
+        categories = (CheckCategories.SUPPLY_CHAIN, )
         super().__init__(
             id=id,
             name=name,

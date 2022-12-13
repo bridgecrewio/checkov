@@ -8,7 +8,8 @@
               "this-is-my-default"
             ],
             "__start_line__": 6,
-            "__end_line__": 8
+            "__end_line__": 8,
+            "__address__": "aws_s3_bucket.test"
           }
         }
       }

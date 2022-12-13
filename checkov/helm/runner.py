@@ -207,6 +207,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         chart_item: tuple[str, dict[str, Any]], target_dir: str, helm_command: str, runner_filter: RunnerFilter, timeout: int = 3600
     ) -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
         (chart_dir, chart_meta) = chart_item
+        if not isinstance(chart_meta, dict):
+            logging.error(f"invalid chart meta {chart_meta}")
+            return None, None
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
         logging.info(

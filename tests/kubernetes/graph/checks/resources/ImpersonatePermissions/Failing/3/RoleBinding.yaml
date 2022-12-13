@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sa-escalate
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: escalating-sa
+  namespace: dev
+roleRef:
+  kind: Role
+  name: risky-impersonate-role
+  apiGroup: rbac.authorization.k8s.io

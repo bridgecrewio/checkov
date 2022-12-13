@@ -216,7 +216,7 @@ class Runner(PackageRunner):
             packages=packages,
             license_statuses=license_statuses,
             sca_details=image_details,
-            report_type=self.report_type,
+            report_type=self.report_type
         )
         return report
 

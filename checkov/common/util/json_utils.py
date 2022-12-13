@@ -3,10 +3,10 @@ import json
 from typing import Any
 
 from lark import Tree
-from packaging.version import LegacyVersion, Version
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
+from checkov.common.packaging.version import LegacyVersion, Version
 
 
 class CustomJSONEncoder(json.JSONEncoder):

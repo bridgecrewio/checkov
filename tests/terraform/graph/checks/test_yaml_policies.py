@@ -23,6 +23,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_AccessControlGroupRuleDefine(self):
+        self.go("AccessControlGroupRuleDefine")
+
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
 
@@ -208,6 +211,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_Route53ARecordAttachedResource(self):
         self.go("Route53ARecordAttachedResource")
+
+    def test_RouteTablePublicSubnetConnection(self):
+        self.go("RouteTablePublicSubnetConnection")
 
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")

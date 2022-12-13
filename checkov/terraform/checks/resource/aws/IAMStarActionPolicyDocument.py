@@ -29,12 +29,22 @@ class IAMStarActionPolicyDocument(BaseResourceCheck):
                 policy_block = extract_policy_dict(conf["inline_policy"][0])
             if policy_block and "Statement" in policy_block.keys():
                 for statement in force_list(policy_block["Statement"]):
-                    if (
-                        "Action" in statement
-                        and statement.get("Effect", ["Allow"]) == "Allow"
-                        and "*" in force_list(statement["Action"])
-                    ):
-                        return CheckResult.FAILED
+                    if "Action" in statement:
+                        actions = force_list(statement["Action"])
+                        if (
+                            isinstance(actions[0], str)
+                            and statement.get("Effect", "Allow") == "Allow"
+                            and "*" in actions
+                        ):
+                            # scanning a HCL file
+                            return CheckResult.FAILED
+                        elif (
+                            isinstance(actions[0], list)
+                            and statement.get("Effect", ["Allow"]) == ["Allow"]
+                            and "*" in actions[0]
+                        ):
+                            # scanning a TF plan file
+                            return CheckResult.FAILED
         except Exception:  # nosec
             pass
         return CheckResult.PASSED

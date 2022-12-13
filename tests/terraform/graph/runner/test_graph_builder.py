@@ -1,6 +1,7 @@
 import json
 import os
 from unittest import TestCase
+import mock
 
 from checkov.terraform.runner import Runner
 
