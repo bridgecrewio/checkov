@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import itertools
+import json
+import logging
 from typing import Optional, Tuple, Dict, List, Any
 
 from checkov.common.parsers.node import DictNode, ListNode
@@ -9,6 +11,14 @@ from checkov.terraform.context_parsers.tf_plan import parse
 SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
+
+RESOURCE_TYPES_JSONIFY = {
+    "aws_iam_policy": "policy",
+    "aws_iam_role_policy": "policy",
+    "aws_iam_group_policy": "policy",
+    "aws_iam_user_policy": "policy",
+    "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
+}
 
 
 def _is_simple_type(obj: Any) -> bool:
@@ -37,10 +47,20 @@ def _is_list_of_dicts(obj: Any) -> bool:
     return False
 
 
-def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional[str] = None) -> Dict[str, List[Any]]:
+def _hclify(
+    obj: dict[str, Any],
+    conf: dict[str, Any] | None = None,
+    parent_key: str | None = None,
+    resource_type: str | None = None,
+) -> dict[str, list[Any]]:
     ret_dict = {}
+
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
+
+    if resource_type and resource_type in RESOURCE_TYPES_JSONIFY:
+        jsonify(obj=obj, resource_type=resource_type)
+
     if hasattr(obj, "start_mark") and hasattr(obj, "end_mark"):
         obj["start_line"] = obj.start_mark.line
         obj["end_line"] = obj.end_mark.line
@@ -86,6 +106,19 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
     return ret_dict
 
 
+def jsonify(obj: dict[str, Any], resource_type: str) -> None:
+    """Tries to create a dict from a string of a supported resource type attribute"""
+
+    jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
+    if jsonify_key in obj:
+        try:
+            obj[jsonify_key] = json.loads(obj[jsonify_key])
+        except json.JSONDecodeError:
+            logging.debug(
+                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
+            )
+
+
 def _prepare_resource_block(
     resource: DictNode, conf: Optional[DictNode], resource_changes: dict[str, dict[str, Any]]
 ) -> tuple[dict[str, dict[str, Any]], bool]:
@@ -111,7 +144,11 @@ def _prepare_resource_block(
     if mode == "managed":
         expressions = conf.get("expressions") if conf else None
 
-        resource_conf = _hclify(resource.get("values", {"start_line": 0, "end_line": 0}), expressions)
+        resource_conf = _hclify(
+            obj=resource.get("values", {"start_line": 0, "end_line": 0}),
+            conf=expressions,
+            resource_type=resource.get("type"),
+        )
         resource_address = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
 

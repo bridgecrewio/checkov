@@ -23,7 +23,7 @@ class IAMPublicActionsPolicy(BaseDataCheck):
                         if isinstance(principal, dict):
                             principal_type = principal.get('type', [''])[0]
                             principal_identifiers = principal.get('identifiers', [])
-                            if principal_type == 'AWS' and principal_identifiers and '*' in principal_identifiers[0]:
+                            if principal_type == 'AWS' and principal_identifiers and isinstance(principal_identifiers[0], list) and '*' in principal_identifiers[0]:
                                 return CheckResult.FAILED
 
         return CheckResult.PASSED
