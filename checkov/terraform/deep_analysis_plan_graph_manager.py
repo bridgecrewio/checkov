@@ -44,3 +44,7 @@ class DeepAnalysisGraphManager:
                                 check.resource_address in self._address_to_tf_plan_vertex_map]
         report.skipped_checks = [check for check in report.skipped_checks if
                                  check.resource_address in self._address_to_tf_plan_vertex_map]
+        # No need to filter other fields for now
+        report.resources = set()
+        report.extra_resources = set()
+        report.parsing_errors = []
