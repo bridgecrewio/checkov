@@ -1,0 +1,30 @@
+metadata:
+  id: "CKV2_AWS_46"
+  name: "Ensure AWS Cloudfront Distribution with S3 have Origin Access set to enabled"
+  category: "IAM"
+definition:
+  or:
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          operator: within
+          value:
+            - aws_cloudfront_distribution
+        - cond_type: connection
+          resource_types:
+            - aws_cloudfront_distribution
+          connected_resource_types:
+            - aws_s3_bucket
+          operator: not_exists
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_distribution
+      attribute: "origin.*.s3_origin_config"
+      operator: "exists"
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_distribution
+      attribute: "origin.*.origin_access_control_id"
+      operator: "exists"         
+        
+    

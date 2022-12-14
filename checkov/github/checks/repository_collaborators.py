@@ -8,7 +8,7 @@ from checkov.github.schemas.repository_collaborators import schema as repository
 from checkov.json_doc.enums import BlockType
 
 
-class RepositoryCollaborators(BaseGithubCheck):
+class GithubRepositoryCollaborators(BaseGithubCheck):
     def __init__(self) -> None:
         name = "Ensure 2 admins are set for each repository"
         id = "CKV_GITHUB_9"
@@ -21,21 +21,22 @@ class RepositoryCollaborators(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]] | None:  # type:ignore[override]
-        admin_collaborators = 0
-        if repository_collaborators_schema.validate(conf):
-            for item in conf:
-                if isinstance(item, dict):
-                    permissions = item.get("permissions", {})
-                    admin = permissions.get('admin', False)
-                    if admin:
-                        admin_collaborators += 1
-            if admin_collaborators >= 2:
-                return CheckResult.PASSED, conf
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+        ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
+        if 'repository_collaborators' in ckv_metadata.get('file_name', ''):
+            if repository_collaborators_schema.validate(conf):
+                admin_collaborators = 0
+                for item in conf:
+                    if isinstance(item, dict):
+                        permissions = item.get("permissions", {})
+                        admin = permissions.get('admin', False)
+                        if admin:
+                            admin_collaborators += 1
+                if admin_collaborators >= 2:
+                    return CheckResult.PASSED
+                else:
+                    return CheckResult.FAILED
+        return CheckResult.UNKNOWN
 
-            else:
-                return CheckResult.FAILED, conf
-        return None
 
-
-check = RepositoryCollaborators()
+check = GithubRepositoryCollaborators()
