@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_AWS_48"
+  name: "Ensure AWS Config must record all possible resources"
+  category: "LOGGING"
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_config_configuration_recorder
+  attribute: recording_group.include_global_resource_types
+  operator: equals
+  value: "true"
