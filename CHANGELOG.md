@@ -1,6 +1,27 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.148...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.155...HEAD)
+
+## [2.2.155](https://github.com/bridgecrewio/checkov/compare/2.2.148...2.2.155) - 2022-12-13
+
+### Feature
+
+- **github:**  more CIS checks- part2 - [#4017](https://github.com/bridgecrewio/checkov/pull/4017)
+- **kubernetes:** added CKV2_K8S_EXAMPLE_1 only in tests as an example for k8s graph check for pod which is publicly accessible - [#4060](https://github.com/bridgecrewio/checkov/pull/4060)
+- **kubernetes:** added deployment name to pod resource id - [#4040](https://github.com/bridgecrewio/checkov/pull/4040)
+- **sca:** fix root packages fixed version - [#4070](https://github.com/bridgecrewio/checkov/pull/4070)
+
+### Bug Fix
+
+- **sca:** invoke packaging.Version instead of parse - [#4065](https://github.com/bridgecrewio/checkov/pull/4065)
+- **secrets:** fix error when secret is None - [#4071](https://github.com/bridgecrewio/checkov/pull/4071)
+- **terraform:** checkov fix as resource container_group modified - [#4061](https://github.com/bridgecrewio/checkov/pull/4061)
+- **terraform:** fixed unexpected data for IAMPublicActionsPolicy - [#4067](https://github.com/bridgecrewio/checkov/pull/4067)
+- **terraform:** fixed unexpected data for MonitorLogProfileRetentionDays - [#4068](https://github.com/bridgecrewio/checkov/pull/4068)
+
+### Platform
+
+- **general:** Apply licensing from platform - [#3961](https://github.com/bridgecrewio/checkov/pull/3961)
 
 ## [2.2.148](https://github.com/bridgecrewio/checkov/compare/2.2.139...2.2.148) - 2022-12-12
 
