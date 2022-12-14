@@ -13,8 +13,10 @@ TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 
 RESOURCE_TYPES_JSONIFY = {
+    "aws_batch_job_definition": "container_properties",
     "aws_ecs_task_definition": "container_definitions",
     "aws_iam_policy": "policy",
+    "aws_iam_role": "assume_role_policy",
     "aws_iam_role_policy": "policy",
     "aws_iam_group_policy": "policy",
     "aws_iam_user_policy": "policy",
