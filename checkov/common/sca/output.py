@@ -5,8 +5,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
-from packaging import version as packaging_version
-
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
 )
@@ -15,6 +13,7 @@ from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import (
     get_file_path_for_record,
     get_resource_for_record,
@@ -118,6 +117,7 @@ def create_report_cve_record(
         licenses: str,
         root_package_version: str | None = None,
         root_package_name: str | None = None,
+        root_package_fixed_version: str | None = None,
         runner_filter: RunnerFilter | None = None,
         sca_details: SCADetails | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
@@ -168,8 +168,8 @@ def create_report_cve_record(
         "root_package_version": root_package_version
     }
 
-    if 'rootPackageFixedVersion' in vulnerability_details:
-        details['root_package_fix_version'] = vulnerability_details["rootPackageFixedVersion"]
+    if root_package_fixed_version:
+        details['root_package_fix_version'] = root_package_fixed_version
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
 
@@ -328,8 +328,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, licenses_per_pa
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
                 cve_alias = f'{dep_cve["cveId"]}@{dep_cve["packageName"]}@{dep_cve["packageVersion"]}'
+                root_package_fixed_version = None
                 if cve_alias in indirect_packages:
-                    dep_cve['rootPackageFixedVersion'] = indirect_packages[cve_alias]['fixVersion']
+                    root_package_fixed_version = indirect_packages[cve_alias]['fixVersion']
 
                 add_cve_record_to_report(vulnerability_details=dep_cve, package_name=dep['name'],
                                          package_version=dep['version'],
@@ -338,7 +339,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, licenses_per_pa
                                          runner_filter=runner_filter, sca_details=sca_details,
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package_version=root_package["version"],
-                                         root_package_name=root_package["name"])
+                                         root_package_name=root_package["name"],
+                                         root_package_fixed_version=root_package_fixed_version)
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
@@ -347,7 +349,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report,
-                             root_package_version: str | None = None, root_package_name: str | None = None) -> None:
+                             root_package_version: str | None = None, root_package_name: str | None = None,
+                             root_package_fixed_version: str | None = None) -> None:
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=scanned_file_path,
@@ -359,7 +362,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         sca_details=sca_details,
         scan_data_format=scan_data_format,
         root_package_version=root_package_version,
-        root_package_name=root_package_name
+        root_package_name=root_package_name,
+        root_package_fixed_version=root_package_fixed_version
     )
     if not runner_filter.should_run_check(
             check_id=cve_record.check_id,
@@ -372,7 +376,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         else:
             cve_record.check_result = {
                 "result": CheckResult.SKIPPED,
-                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"}
+                "suppress_comment": f"{vulnerability_details.get('cveId', vulnerability_details.get('id', ''))} is skipped"
+            }
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)

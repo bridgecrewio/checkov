@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 
@@ -125,7 +126,7 @@ class FixesIntegration(BaseIntegrationFeature):
         # not used
         pass
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
         pass
 
