@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 import logging
 
 from typing import Any, TYPE_CHECKING
@@ -30,11 +29,13 @@ class BaseRegistry:
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
 
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            concurrent.futures.wait(
-                [executor.submit(self.run_check_parallel, check, check_results, graph_connector)
-                 for check in checks_to_run]
+        for check in checks_to_run:
+            self.run_check_parallel(
+                check=check,
+                check_results=check_results,
+                graph_connector=graph_connector,
             )
+
         return check_results
 
     def run_check_parallel(

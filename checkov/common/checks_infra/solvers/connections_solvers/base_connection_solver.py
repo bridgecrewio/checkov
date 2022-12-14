@@ -3,6 +3,8 @@ from __future__ import annotations
 import itertools
 from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
+from igraph import Graph
+
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -48,12 +50,25 @@ class BaseConnectionSolver(BaseSolver):
         return vertex_type in itertools.chain(self.resource_types, self.connected_resources_types)
 
     def set_vertices(self, graph_connector: DiGraph, exclude_vertices: List[Dict[str, Any]], unknown_vertices: List[Dict[str, Any]]) -> None:
-        self.vertices_under_resource_types = [
-            v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
-        ]
-        self.vertices_under_connected_resources_types = [
-            v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.connected_resources_types)
-        ]
+        if isinstance(graph_connector, Graph):
+            select_kwargs = {}
+            if self.resource_types:
+                select_kwargs = {"resource_type_in": self.resource_types}
+
+            self.vertices_under_resource_types = [
+                data for data in graph_connector.vs.select(**select_kwargs)["attr"]
+            ]
+            self.vertices_under_connected_resources_types = [
+                data for data in graph_connector.vs.select(resource_type_in=self.connected_resources_types)["attr"]
+            ]
+        else:
+            self.vertices_under_resource_types = [
+                v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
+            ]
+            self.vertices_under_connected_resources_types = [
+                v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.connected_resources_types)
+            ]
+
         self.excluded_vertices = [
             v
             for v in itertools.chain(self.vertices_under_resource_types, self.vertices_under_connected_resources_types)
@@ -70,18 +85,27 @@ class BaseConnectionSolver(BaseSolver):
         if not self.vertices_under_resource_types:
             return graph_connector
 
-        resource_nodes = {
-            node
-            for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
-            if resource_type in self.targeted_resources_types
-        }
+        if isinstance(graph_connector, Graph):
+            resource_nodes = {
+                vertex for vertex in graph_connector.vs.select(resource_type_in=self.targeted_resources_types)
+            }
+            connection_nodes = {
+                vertex for vertex in graph_connector.vs.select(block_type__in=BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES)
+            }
+        else:
+            resource_nodes = {
+                node
+                for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
+                if resource_type in self.targeted_resources_types
+            }
 
-        # tuple needs to be adjusted, if more connection block types are supported
-        connection_nodes = {
-            node
-            for node, block_type in graph_connector.nodes(data=CustomAttributes.BLOCK_TYPE)
-            if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
-        }
+            # tuple needs to be adjusted, if more connection block types are supported
+            connection_nodes = {
+                node
+                for node, block_type in graph_connector.nodes(data=CustomAttributes.BLOCK_TYPE)
+                if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
+            }
+
         resource_nodes.update(connection_nodes)
 
         return graph_connector.subgraph(resource_nodes)

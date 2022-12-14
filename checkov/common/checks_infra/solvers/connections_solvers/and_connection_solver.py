@@ -22,14 +22,14 @@ class AndConnectionSolver(ComplexConnectionSolver):
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         if not self.vertices_under_resource_types:
             return [], [], []
-        subgraph = graph_connector.subgraph(graph_connector)
-        passed, failed, unknown = self.run_attribute_solvers(subgraph)
+
+        passed, failed, unknown = self.run_attribute_solvers(graph_connector)
         failed_or_unknown_ids = [f[CustomAttributes.ID] for f in itertools.chain(failed, unknown)]
         passed = [p for p in passed if p[CustomAttributes.ID] not in failed_or_unknown_ids]
 
         for connection_solver in self.get_sorted_connection_solvers():
-            connection_solver.set_vertices(subgraph, failed, unknown)
-            passed_solver, failed_solver, unknown_solver = connection_solver.get_operation(subgraph)
+            connection_solver.set_vertices(graph_connector, failed, unknown)
+            passed_solver, failed_solver, unknown_solver = connection_solver.get_operation(graph_connector)
             passed.extend(passed_solver)
             failed.extend(failed_solver)
             unknown.extend(unknown_solver)
