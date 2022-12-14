@@ -662,24 +662,8 @@ class TestRunnerValid(unittest.TestCase):
         tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph/tfplan.json"
 
         repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph"
-        # when
-        report = Runner().run(
-            root_folder=None,
-            files=[str(tf_file_path)],
-            external_checks_dir=None,
-            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=True, repo_root_for_plan_enrichment=[repo_path])
-        )
 
-        # then
-        self.assertEqual(len(report.passed_checks), 2)
-        self.assertEqual(len(report.failed_checks), 0)
-
-        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
-        report_addresses = [report.passed_checks[0].resource_address, report.passed_checks[1].resource_address]
-        assert sorted(expected_addresses) == sorted(report_addresses)
-        assert report.passed_checks[0].file_path.endswith('.json')
-        assert report.passed_checks[1].file_path.endswith('.json')
-
+        # deep_analysis disabled
         report = Runner().run(
             root_folder=None,
             files=[str(tf_file_path)],
@@ -690,6 +674,23 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.failed_checks), 2)
+
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=True, repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.passed_checks[0].resource_address, report.passed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+        assert report.passed_checks[0].file_path.endswith('.json')
+        assert report.passed_checks[1].file_path.endswith('.json')
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks

@@ -1,3 +1,5 @@
+import logging
+
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -24,9 +26,10 @@ class DeepAnalysisGraphManager:
                 self._address_to_tf_plan_vertex_map[vertex.attributes[TF_PLAN_RESOURCE_ADDRESS]] = vertex
 
     def enrich_tf_graph_attributes(self) -> None:
-        for address, tf_vertex in self._address_to_tf_vertex_map.items():
-            tf_plan_vertex = self._address_to_tf_plan_vertex_map.get(address)
-            if not tf_plan_vertex:
+        for address, tf_plan_vertex in self._address_to_tf_plan_vertex_map.items():
+            tf_vertex = self._address_to_tf_vertex_map.get(address)
+            if not tf_vertex:
+                logging.warning(f'Cant find this address: {address} in tf graph')
                 continue
             tf_vertex.attributes = {**tf_vertex.attributes, **tf_plan_vertex.attributes}
             tf_vertex.path = tf_plan_vertex.path
