@@ -49,6 +49,7 @@ definition:
         - aws_mq_broker
         - aws_memorydb_cluster
         - aws_route53_resolver_endpoint
+        - aws_ec2_client_vpn_endpoint
       operator:  exists
       attribute: networking
       cond_type: connection
