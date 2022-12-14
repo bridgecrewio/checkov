@@ -1,5 +1,6 @@
 from checkov.common.models.enums import CheckResult
-from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_definitions
+from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
+from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.terraform.checks.provider.aws.credentials import AWSCredentials
 from checkov.terraform.checks.resource.azure.SecretExpirationDate import SecretExpirationDate
 
@@ -25,14 +26,6 @@ def test_omit_secret_value_from_checks_by_secret(aws_provider_lines_with_secrets
     assert omit_secret_value_from_checks(check, check_result, aws_provider_lines_with_secrets,
                                          aws_provider_config_with_secrets
                                          ) == aws_provider_lines_without_secrets
-
-
-def test_omit_secret_value_from_definitions_by_attribute(tfplan_definitions_with_secrets,
-                                                         tfplan_definitions_without_secrets):
-    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
-    censored_definitions = omit_secret_value_from_definitions(tfplan_definitions_with_secrets,
-                                                              resource_attributes_to_omit)
-    assert censored_definitions == tfplan_definitions_without_secrets
 
 
 def test_omit_secret_value_from_checks_by_secret_2():
@@ -77,3 +70,17 @@ def test_omit_secret_value_from_checks_by_secret_2():
                                            resource_attributes_to_omit)
 
     assert result == entity_lines_without_secrets
+
+def test_omit_secret_value_from_graph_checks_by_attribute(tfplan_resource_lines_with_secrets,
+                                                          tfplan_resource_config_with_secrets,
+                                                          tfplan_resource_lines_without_secrets):
+    check = BaseGraphCheck()
+    check.resource_types = ['azurerm_key_vault_secret']
+    check_result = {'result': CheckResult.FAILED}
+    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
+
+    result = omit_secret_value_from_graph_checks(check, check_result, tfplan_resource_lines_with_secrets, tfplan_resource_config_with_secrets,
+                                           resource_attributes_to_omit)
+
+    assert result == tfplan_resource_lines_without_secrets
+

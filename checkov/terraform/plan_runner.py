@@ -13,7 +13,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_definitions
+from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
@@ -101,9 +101,7 @@ class Runner(TerraformRunner):
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
-                censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
-                                                                          resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
-                graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
+                graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 self.graph_manager.save_graph(graph)
 
         if external_checks_dir:
@@ -116,7 +114,8 @@ class Runner(TerraformRunner):
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.definitions:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            graph_report = self.get_graph_checks_report(root_folder=root_folder, runner_filter=runner_filter,
+                                                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
             merge_reports(report, graph_report)
         return report
 

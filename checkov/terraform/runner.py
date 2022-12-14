@@ -26,7 +26,7 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_current_module_index, \
     get_tf_definition_key
-from checkov.common.util.secrets import omit_secret_value_from_checks
+from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -49,6 +49,7 @@ from checkov.common.runners.base_runner import strtobool
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.images.image_referencer import Image
+    from checkov.common.typing import ResourceAttributesToOmit
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -205,7 +206,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter,
+                                resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
@@ -241,12 +243,18 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         referrer_id = self._find_id_for_referrer(tf_path)
                         if referrer_id:
                             resource = f'{referrer_id}.{resource_id}'
+                    entity_config = self.get_graph_resource_entity_config(entity, entity_context)
+                    censored_code_lines = entity_context.get('code_lines') if not resource_attributes_to_omit else \
+                        omit_secret_value_from_graph_checks(check=check, check_result=check_result,
+                                                      entity_code_lines=entity_context.get('code_lines'),
+                                                      entity_config=entity_config,
+                                                      resource_attributes_to_omit=resource_attributes_to_omit)
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=copy_of_check_result,
-                        code_block=entity_context.get('code_lines'),
+                        code_block=censored_code_lines,
                         file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
                         file_line_range=[entity_context.get('start_line'),
                                          entity_context.get('end_line')],
@@ -622,3 +630,10 @@ class Runner(ImageReferencerMixin, BaseRunner):
         images = manager.extract_images_from_resources()
 
         return images
+
+    def get_graph_resource_entity_config(self, entity, entity_context):
+        definition_path = entity_context.get('definition_path', [])
+        entity_config = entity['config_']
+        for path in definition_path:
+            entity_config = entity_config[path]
+        return entity_config
