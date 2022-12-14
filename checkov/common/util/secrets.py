@@ -120,7 +120,7 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 
 def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
-    if not secret:
+    if not secret or not isinstance(secret, str):
         return line_text
 
     secret_length = len(secret)
