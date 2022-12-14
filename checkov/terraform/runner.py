@@ -246,9 +246,9 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     entity_config = self.get_graph_resource_entity_config(entity, entity_context)
                     censored_code_lines = entity_context.get('code_lines') if not resource_attributes_to_omit else \
                         omit_secret_value_from_graph_checks(check=check, check_result=check_result,
-                                                      entity_code_lines=entity_context.get('code_lines'),
-                                                      entity_config=entity_config,
-                                                      resource_attributes_to_omit=resource_attributes_to_omit)
+                                                            entity_code_lines=entity_context.get('code_lines'),
+                                                            entity_config=entity_config,
+                                                            resource_attributes_to_omit=resource_attributes_to_omit)
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

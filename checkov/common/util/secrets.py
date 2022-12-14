@@ -164,10 +164,11 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
 
     return censored_code_lines
 
+
 def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dict[str, CheckResult] | _CheckResult,
-                                  entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
-                                  resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
+                                        entity_code_lines: list[tuple[int, str]],
+                                        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+                                        resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
         list[tuple[int, str]]:
     secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
     censored_code_lines = []
