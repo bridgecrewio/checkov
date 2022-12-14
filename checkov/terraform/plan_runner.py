@@ -95,7 +95,7 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
-        self.deep_analysis = True
+        self.deep_analysis = runner_filter.deep_analysis
         if runner_filter.repo_root_for_plan_enrichment:
             self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
         report = Report(self.check_type)
