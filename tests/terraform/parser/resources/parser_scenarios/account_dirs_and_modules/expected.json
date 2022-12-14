@@ -13,7 +13,7 @@
           ],
           "__start_line__": 1,
           "__end_line__": 6,
-          "__address__": "module.mydb"
+          "__address__": "mydb"
         }
       }
     ]
@@ -23,19 +23,22 @@
       {
         "ENGINE_VERSION": {
           "__start_line__": 1,
-          "__end_line__": 1
+          "__end_line__": 1,
+          "__address__": "ENGINE_VERSION"
         }
       },
       {
         "DB_INSTANCE_TYPE": {
           "__start_line__": 2,
-          "__end_line__": 2
+          "__end_line__": 2,
+          "__address__": "DB_INSTANCE_TYPE"
         }
       },
       {
         "ENCRYPTED": {
           "__start_line__": 3,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "ENCRYPTED"
         }
       }
     ]
@@ -46,27 +49,31 @@
         "DB_DELETION_PROTECTION": {
           "default": [true],
           "__start_line__": 1,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "module.mydb.DB_DELETION_PROTECTION"
         }
       },
       {
         "ENGINE_VERSION": {
           "default": [11],
           "__start_line__": 5,
-          "__end_line__": 7
+          "__end_line__": 7,
+          "__address__": "module.mydb.ENGINE_VERSION"
         }
       },
       {
         "DB_INSTANCE_TYPE": {
           "default": ["db.t3.small"],
           "__start_line__": 9,
-          "__end_line__": 11
+          "__end_line__": 11,
+          "__address__": "module.mydb.DB_INSTANCE_TYPE"
         }
       },
       {
         "ENCRYPTED": {
           "__start_line__": 13,
-          "__end_line__": 13
+          "__end_line__": 13,
+          "__address__": "module.mydb.ENCRYPTED"
         }
       }
     ]
@@ -105,7 +112,7 @@
           ],
           "__start_line__": 1,
           "__end_line__": 6,
-          "__address__": "module.mydb"
+          "__address__": "mydb"
         }
       }
     ]
@@ -115,19 +122,22 @@
       {
         "ENGINE_VERSION": {
           "__start_line__": 1,
-          "__end_line__": 1
+          "__end_line__": 1,
+          "__address__": "ENGINE_VERSION"
         }
       },
       {
         "DB_INSTANCE_TYPE": {
           "__start_line__": 2,
-          "__end_line__": 2
+          "__end_line__": 2,
+          "__address__": "DB_INSTANCE_TYPE"
         }
       },
       {
         "ENCRYPTED": {
           "__start_line__": 3,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "ENCRYPTED"
         }
       }
     ]
@@ -138,27 +148,31 @@
         "DB_DELETION_PROTECTION": {
           "default": [true],
           "__start_line__": 1,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "module.mydb.DB_DELETION_PROTECTION"
         }
       },
       {
         "ENGINE_VERSION": {
           "default": [11],
           "__start_line__": 5,
-          "__end_line__": 7
+          "__end_line__": 7,
+          "__address__": "module.mydb.ENGINE_VERSION"
         }
       },
       {
         "DB_INSTANCE_TYPE": {
           "default": ["db.t9.mega"],
           "__start_line__": 9,
-          "__end_line__": 11
+          "__end_line__": 11,
+          "__address__": "module.mydb.DB_INSTANCE_TYPE"
         }
       },
       {
         "ENCRYPTED": {
           "__start_line__": 13,
-          "__end_line__": 13
+          "__end_line__": 13,
+          "__address__": "module.mydb.ENCRYPTED"
         }
       }
     ]
