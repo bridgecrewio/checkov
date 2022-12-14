@@ -1,0 +1,5 @@
+fail:
+  - "aws_config_configuration_recorder.fail_recorder_1"
+  - "aws_config_configuration_recorder.fail_recorder_2"
+pass:
+  - "aws_config_configuration_recorder.pass_recorder"

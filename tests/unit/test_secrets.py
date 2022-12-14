@@ -45,6 +45,10 @@ class TestSecrets(unittest.TestCase):
 
         self.assertEqual(censored_line, 'access_key: "AKIAI***************"')
 
+    def test_omit_none_secret_from_line(self):
+        line = 'text'
+        self.assertEqual(line, omit_secret_value_from_line(secret=None, line_text=line))
+
     def test_get_secrets_from_secrets(self):
         s = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
 

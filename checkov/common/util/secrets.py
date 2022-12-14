@@ -118,7 +118,10 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
     return censored_line
 
 
-def omit_secret_value_from_line(secret: str, line_text: str) -> str:
+def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
+    if not secret:
+        return line_text
+
     secret_length = len(secret)
     secret_len_to_expose = secret_length // 4 if secret_length < 100 else secret_length // 10
 
