@@ -679,7 +679,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             vulnerability_details=details["details"],
             licenses='Unknown',
             root_package_version=details["root_package_version"],
-            root_package_name=details["root_package_name"]
+            root_package_name=details["root_package_name"],
+            root_package_fixed_version=details.get('root_package_fix_version', None)
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -712,8 +713,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
         '\t│                      │ CVE-2022-0436        │ medium               │                      │ 1.5.2                │                      │\n',
         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
         '\t│  helmet              │ GHSA-C3M8-X3CG-QM2C  │ medium               │ 2.3.0                │ 2.4.0                │ 2.4.0                │\n',
-        '\t│ ├─ debug             │ CVE-2017-16137       │ medium               │ 2.2.0                │                      │                      │\n',
-        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ medium               │ 1.2.2                │ 2.4.0                │                      │\n',
+        '\t│ ├─ debug             │ CVE-2017-16137       │ medium               │ 2.2.0                │ 2.4.0                │                      │\n',
+        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ medium               │ 1.2.2                │                      │                      │\n',
         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
         '\t│  marked              │ CVE-2022-21681       │ high                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
         '\t│                      │ CVE-2022-21680       │ high                 │                      │ 4.0.10               │                      │\n',
