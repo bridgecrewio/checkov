@@ -23,7 +23,7 @@ from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
-from .deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
+from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -95,7 +95,7 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
-        self.deep_analysis = runner_filter.deep_analysis
+        self.deep_analysis = True
         if runner_filter.repo_root_for_plan_enrichment:
             self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
         report = Report(self.check_type)
