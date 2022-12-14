@@ -4,7 +4,7 @@ import logging
 import os
 import platform
 
-from typing import Type
+from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -100,6 +100,7 @@ class Runner(TerraformRunner):
             self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
+        tf_local_graph: Optional[TerraformLocalGraph] = None
         if self.definitions is None or self.context is None:
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
@@ -108,6 +109,8 @@ class Runner(TerraformRunner):
                                                                           resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
                 self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
+                if self._should_run_deep_analysis:
+                    tf_local_graph = self._create_terraform_graph()
 
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -119,13 +122,12 @@ class Runner(TerraformRunner):
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.definitions:
-            graph_report = self._get_graph_report(root_folder, runner_filter)
+            graph_report = self._get_graph_report(root_folder, runner_filter, tf_local_graph)
             merge_reports(report, graph_report)
         return report
 
-    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
-        if self.deep_analysis and self.repo_root_for_plan_enrichment and self.tf_plan_local_graph:
-            tf_local_graph = self._create_terraform_graph()
+    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter, tf_local_graph: Optional[TerraformLocalGraph]) -> Report:
+        if self._should_run_deep_analysis and tf_local_graph:
             deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
@@ -201,3 +203,7 @@ class Runner(TerraformRunner):
     def get_entity_context(self, definition_path, full_file_path):
         entity_id = ".".join(definition_path)
         return self.context.get(full_file_path, {}).get(entity_id)
+
+    @property
+    def _should_run_deep_analysis(self) -> bool:
+        return self.deep_analysis and self.repo_root_for_plan_enrichment and self.tf_plan_local_graph
