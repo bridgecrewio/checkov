@@ -61,13 +61,13 @@ class Runner(ImageReferencerMixin, BaseRunner):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
-        self,
-        parser: Parser | None = None,
-        db_connector: NetworkxConnector | None = None,
-        external_registries: list[BaseRegistry] | None = None,
-        source: str = "Terraform",
-        graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
-        graph_manager: TerraformGraphManager | None = None
+            self,
+            parser: Parser | None = None,
+            db_connector: NetworkxConnector | None = None,
+            external_registries: list[BaseRegistry] | None = None,
+            source: str = "Terraform",
+            graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+            graph_manager: TerraformGraphManager | None = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
@@ -244,11 +244,11 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         if referrer_id:
                             resource = f'{referrer_id}.{resource_id}'
                     entity_config = self.get_graph_resource_entity_config(entity, entity_context)
-                    censored_code_lines = entity_context.get('code_lines') if not resource_attributes_to_omit else \
-                        omit_secret_value_from_graph_checks(check=check, check_result=check_result,
-                                                            entity_code_lines=entity_context.get('code_lines'),
-                                                            entity_config=entity_config,
-                                                            resource_attributes_to_omit=resource_attributes_to_omit)
+                    censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
+                                                                              entity_code_lines=entity_context.get(
+                                                                                  'code_lines'),
+                                                                              entity_config=entity_config,
+                                                                              resource_attributes_to_omit=resource_attributes_to_omit)
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

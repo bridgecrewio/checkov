@@ -180,11 +180,13 @@ def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dic
         }
 
     if resource_attributes_to_omit:
-        for resource_type_to_omit in [resource for resource in check.resource_types if resource in resource_attributes_to_omit]:
-            for attribute_to_omit in [attr for attr in resource_attributes_to_omit.get(resource_type_to_omit) if attr in entity_config]:  # type:ignore[union-attr]
-                secret = entity_config.get(attribute_to_omit)
-                if isinstance(secret, list) and secret:
-                    secrets.add(secret[0])
+        for resource in check.resource_types:
+            if resource in resource_attributes_to_omit:
+                for attribute in resource_attributes_to_omit.get(resource):
+                    if attribute in entity_config:  # type:ignore[union-attr]
+                        secret = entity_config.get(attribute)
+                        if isinstance(secret, list) and secret:
+                            secrets.add(secret[0])
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
