@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING, cast
 
@@ -45,28 +46,55 @@ def modify_secrets_policy_to_detectors(policies_list: List[dict[str, Any]]) -> L
     return secrets_list
 
 
+def add_to_custom_detectors(custom_detectors: List[Dict[str, Any]], name: str, check_id: str, regex: str, is_custom: str) -> None:
+    custom_detectors.append({'Name': name,
+                             'Check_ID': check_id,
+                             'Regex': regex,
+                             'isCustom': is_custom})
+    if is_custom:
+        metadata_integration.check_metadata[check_id] = {'id': check_id}
+
+
+def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], condition_query: Dict[str, Any], secret_policy: Dict[str, Any], check_id: str) -> bool:
+    parsed = False
+    cond_type = condition_query['cond_type']
+    if cond_type == 'secrets':
+        value = condition_query['value']
+        for regex in value:
+            parsed = True
+            add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex, secret_policy['isCustom'])
+            logging.info(f"Regex : {regex} added to custom_detectors")
+    return parsed
+
+
+def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, secret_policy: Dict[str, Any], check_id: str) -> bool:
+    parsed = False
+    code_dict = yaml.safe_load(code)
+    if 'definition' in code_dict:
+        if 'value' in code_dict['definition']:
+            parsed = True
+            if type(code_dict['definition']['value']) is str:
+                code_dict['definition']['value'] = [code_dict['definition']['value']]
+            for regex in code_dict['definition']['value']:
+                add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
+                                        secret_policy['isCustom'])
+                logging.info(f"Regex : {regex} added to custom_detectors")
+    return parsed
+
+
 def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     custom_detectors: List[Dict[str, Any]] = []
     for secret_policy in custom_secrets:
-        not_parsed = True
+        parsed = False
+        check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
+            secret_policy['incidentId']
         code = secret_policy['code']
+        condition_query = secret_policy['conditionQuery']
         if code:
-            code_dict = yaml.safe_load(secret_policy['code'])
-            if 'definition' in code_dict:
-                if 'value' in code_dict['definition']:
-                    not_parsed = False
-                    check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
-                        secret_policy['incidentId']
-                    if type(code_dict['definition']['value']) is str:
-                        code_dict['definition']['value'] = [code_dict['definition']['value']]
-                    for regex in code_dict['definition']['value']:
-                        custom_detectors.append({'Name': secret_policy['title'],
-                                                 'Check_ID': check_id,
-                                                 'Regex': regex,
-                                                 'isCustom': secret_policy['isCustom']})
-                        if secret_policy['isCustom']:
-                            metadata_integration.check_metadata[check_id] = {'id': check_id}
-        if not_parsed:
+            parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
+        elif condition_query:
+            parsed = add_detectors_from_condition_query(custom_detectors, condition_query, secret_policy, check_id)
+        if not parsed:
             logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
 
