@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import Any
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -24,7 +24,7 @@ class GithubDisallowInactiveBranch60Days(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if branch_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
             jsonpath_expression = parse(f"$..{evaluated_key}")

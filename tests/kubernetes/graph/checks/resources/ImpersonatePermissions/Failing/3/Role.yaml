@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: risky-impersonate-role
+rules:
+  - apiGroups:
+      - "*"
+    resources:
+      - "groups"
+      - "users"
+      - "serviceccounts"
+      - "*"
+    verbs:
+      - "impersonate"

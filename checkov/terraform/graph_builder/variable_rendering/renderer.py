@@ -354,7 +354,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
             dynamic_arguments = []
             TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
-            if dynamic_arguments:
+            if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
                 for dynamic_value in dynamic_values:
                     block_conf = deepcopy(block_content)
@@ -406,7 +406,7 @@ class TerraformVariableRenderer(VariableRenderer):
 
     @staticmethod
     def _assign_dynamic_value_for_list(
-            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, Any]]],
+            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, dict[str, Any]]]],
             dynamic_argument: str,
             block_conf: dict[str, Any],
             block_content: dict[str, Any],
@@ -419,12 +419,16 @@ class TerraformVariableRenderer(VariableRenderer):
             dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator=DOT_SEPERATOR)
         else:
             try:
-                dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
-            except KeyError:
+                if DOT_SEPERATOR in dynamic_argument:
+                    dynamic_args = dynamic_argument.split(DOT_SEPERATOR)
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_args[0]][dynamic_args[1]], separator=DOT_SEPERATOR)
+                else:
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
+            except (KeyError, IndexError):
                 if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
                     block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
                 else:
-                    block_conf[dynamic_argument] = block_content[dynamic_argument]
+                    return
 
     @staticmethod
     def _handle_for_loop_in_dynamic_values(dynamic_values: str | dict[str, Any]) -> str | dict[str, Any] | list[dict[str, Any]]:
