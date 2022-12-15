@@ -33,9 +33,9 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.47",
+        "bc-python-hcl2==0.3.51",
         "bc-detect-secrets==1.4.5",
-        "bc-jsonpath-ng==1.5.6",
+        "bc-jsonpath-ng==1.5.8",
         "deep-merge",
         "tabulate",
         "colorama",
@@ -49,7 +49,7 @@ setup(
         "tqdm",
         "update-checker",
         "semantic-version",
-        "packaging==21.3",
+        "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "dockerfile-parse",
@@ -92,6 +92,7 @@ setup(
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
         "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
+        "checkov.kubernetes.checks.graph_checks": "checkov/kubernetes/checks/graph_checks"
     },
     package_data={
         "checkov": ["py.typed"],
@@ -104,6 +105,7 @@ setup(
             "gcp/*.yaml",
             "azure/*.yaml",
         ],
+        "checkov.kubernetes.checks.graph_checks": ["*.yaml"]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,

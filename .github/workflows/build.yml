@@ -22,8 +22,6 @@ on:
       - 'README.md'
       - 'CHANGELOG.md'
       - '.github/**'
-      - 'admissioncontroller/checkov-requirements.txt'
-      - admissioncontroller/k8s/deployment.yaml
       - checkov/version.py
       - kubernetes/requirements.txt
       - coverage.svg
@@ -222,9 +220,8 @@ jobs:
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
-          echo "checkov==$new_tag" > 'admissioncontroller/checkov-requirements.txt'
 
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt admissioncontroller/checkov-requirements.txt || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push --tags
@@ -372,42 +369,9 @@ jobs:
       - name: update checkov release
         run: |
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
+
+          # trigger checkov-action update
           curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
-  publish-checkov-admissioncontroller-dockerhub:
-    runs-on: [self-hosted, public, linux, x64]
-    environment: release
-    needs: bump-version
-    steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-        with:
-          token: ${{ secrets.GH_PAT_SECRET }}
-          ref: main
-      - name: get versions
-        run: |
-          checkov_version=${{ needs.bump-version.outputs.version }}
-          checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> $GITHUB_OUTPUT
-          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
-        id: versions
-      - name: Publish to Registry
-        id: docker_publish
-        uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
-        with:
-          name: bridgecrew/whorf
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
-          dockerfile: admissioncontroller/Dockerfile
-          buildoptions: "--no-cache"
-      - name: Image digest
-        run: echo ${{ steps.docker_publish.outputs.digest }}
-      - name: Update deployment
-        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3  # v2
-        with:
-          find: "image: bridgecrew/whorf@sha256:[a-f0-9]{64}"
-          replace: "image: ${{ steps.docker_publish.outputs.digest }}"
-          include: "admissioncontroller/k8s/deployment.yaml"
-      - name: commit changes to deployment
-        run: |
-          git commit --reuse-message=HEAD@{1} admissioncontroller/k8s/deployment.yaml || echo "No changes to commit"
-          git push origin
+
+          # trigger whorf update
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/whorf/dispatches --data '{"event_type": "release"}'
