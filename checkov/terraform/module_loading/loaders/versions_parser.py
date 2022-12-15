@@ -1,7 +1,7 @@
 import re
 from typing import List, Dict, Optional
 
-from packaging import version
+from checkov.common.packaging import version
 
 VERSION_REGEX = re.compile(r"^(?P<operator>=|!=|>=|>|<=|<|~>)?\s*(?P<version>[\d.]+-?\w*)$")
 

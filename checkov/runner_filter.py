@@ -41,7 +41,9 @@ class RunnerFilter(object):
             show_progress_bar: Optional[bool] = True,
             run_image_referencer: bool = False,
             enable_secret_scan_all_files: bool = False,
-            block_list_secret_scan: Optional[List[str]] = None
+            block_list_secret_scan: Optional[List[str]] = None,
+            deep_analysis: bool = False,
+            repo_root_for_plan_enrichment: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -100,6 +102,8 @@ class RunnerFilter(object):
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
         self.block_list_secret_scan = block_list_secret_scan
         self.suppressed_policies: List[str] = []
+        self.deep_analysis = deep_analysis
+        self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
