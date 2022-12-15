@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_AWS_50"
+  name: "Ensure AWS ElastiCache Redis cluster with Multi-AZ Automatic Failover feature set to enabled"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_elasticache_replication_group"
+  attribute: "automatic_failover_enabled"
+  operator: "equals"
+  value: "true"
