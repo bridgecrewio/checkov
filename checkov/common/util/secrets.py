@@ -174,8 +174,10 @@ def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dic
     censored_code_lines = []
 
     if check.category == CheckCategories.SECRETS.name and check_result.get('result') == CheckResult.FAILED:
-        secrets.update([str(secret) for key, secret in entity_config.items() if
-                        key.startswith(f'{check.id}_secret')])
+        secrets = {
+            str(secret) for key, secret in entity_config.items()
+            if key.startswith(f'{check.id}_secret')
+        }
 
     if resource_attributes_to_omit:
         for resource_type_to_omit in [resource for resource in check.resource_types if resource in resource_attributes_to_omit]:
