@@ -6,7 +6,7 @@ import logging
 import os
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Type, Any, Set, TYPE_CHECKING
+from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
@@ -57,17 +57,17 @@ dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
-class Runner(ImageReferencerMixin, BaseRunner):
+class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
-            self,
-            parser: Parser | None = None,
-            db_connector: NetworkxConnector | None = None,
-            external_registries: list[BaseRegistry] | None = None,
-            source: str = "Terraform",
-            graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
-            graph_manager: TerraformGraphManager | None = None
+        self,
+        parser: Parser | None = None,
+        db_connector: NetworkxConnector | None = None,
+        external_registries: list[BaseRegistry] | None = None,
+        source: str = "Terraform",
+        graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
+        graph_manager: TerraformGraphManager | None = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
