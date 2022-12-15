@@ -1,11 +1,6 @@
 resource "aws_apprunner_service" "example" {
   service_name = "example"
 
-  observability_configuration {
-    observability_configuration_arn = aws_apprunner_observability_configuration.example.arn
-    observability_enabled           = true
-  }
-
   source_configuration {
     image_repository {
       image_configuration {

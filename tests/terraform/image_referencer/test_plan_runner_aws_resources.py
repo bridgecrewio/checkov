@@ -5,7 +5,7 @@ from pytest_mock import MockerFixture
 from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.runner import Runner
+from checkov.terraform.plan_runner import Runner
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
@@ -14,12 +14,12 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "apprunner.tf"
+    file_name = "apprunner_tfplan.json"
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
-    code_lines = "1-18"
+    code_lines = "14-44"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
-    bc_integration.bc_source = get_source_type('disabled')
+    bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
@@ -36,7 +36,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     # then
     assert len(reports) == 2
 
-    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM_PLAN)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
@@ -51,12 +51,16 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
         f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).openssl",
         f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
     }
-    assert sca_image_report.image_cached_results[0]['dockerImageName'] == \
-           'public.ecr.aws/aws-containers/hello-app-runner:latest'
-    assert 'terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example' in \
-           sca_image_report.image_cached_results[0]['relatedResourceId']
-    assert sca_image_report.image_cached_results[0]['packages'] == [
-        {'type': 'os', 'name': 'zlib', 'version': '1.2.12-r1', 'licenses': ['Zlib']}
+    assert (
+        sca_image_report.image_cached_results[0]["dockerImageName"]
+        == "public.ecr.aws/aws-containers/hello-app-runner:latest"
+    )
+    assert (
+        "terraform/image_referencer/resources/aws/apprunner_tfplan.json:aws_apprunner_service.example"
+        in sca_image_report.image_cached_results[0]["relatedResourceId"]
+    )
+    assert sca_image_report.image_cached_results[0]["packages"] == [
+        {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
     ]
 
     assert len(sca_image_report.passed_checks) == 1
@@ -68,9 +72,9 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
 
 def test_batch_resources(mocker: MockerFixture, image_cached_result):
     # given
-    file_name = "batch.tf"
+    file_name = "batch_tfplan.json"
     image_name = "busybox"
-    code_lines = "1-38"
+    code_lines = "14-24"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -89,7 +93,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     # then
     assert len(reports) == 2
 
-    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM_PLAN)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
@@ -108,9 +112,9 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
 
 def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     # given
-    file_name = "codebuild.tf"
+    file_name = "codebuild_tfplan.json"
     image_name = "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0"
-    code_lines = "36-69"
+    code_lines = "122-191"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -129,7 +133,7 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     # then
     assert len(reports) == 2
 
-    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM_PLAN)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 3
@@ -148,11 +152,11 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
 
 def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     # given
-    file_name = "ecs.tf"
+    file_name = "ecs_tfplan.json"
     image_name_1 = "nginx"
     image_name_2 = "python:3.9-alpine"
-    code_lines_1 = "1-31"
-    code_lines_2 = "1-31"
+    code_lines_1 = "14-32"
+    code_lines_2 = "14-32"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -171,7 +175,7 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     # then
     assert len(reports) == 2
 
-    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM_PLAN)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
@@ -193,9 +197,9 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
 
 def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     # given
-    file_name = "lightsail.tf"
+    file_name = "lightsail_tfplan.json"
     image_name = "amazon/amazon-lightsail:hello-world"
-    code_lines = "8-39"
+    code_lines = "36-68"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -214,7 +218,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     # then
     assert len(reports) == 2
 
-    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM_PLAN)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
