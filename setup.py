@@ -92,6 +92,7 @@ setup(
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
         "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
         "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
+        "checkov.kubernetes.checks.graph_checks": "checkov/kubernetes/checks/graph_checks"
     },
     package_data={
         "checkov": ["py.typed"],
@@ -104,6 +105,7 @@ setup(
             "gcp/*.yaml",
             "azure/*.yaml",
         ],
+        "checkov.kubernetes.checks.graph_checks": ["*.yaml"]
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,

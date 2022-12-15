@@ -10,6 +10,9 @@ from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 from checkov.github.schemas.org_security import schema as org_security_schema
 
 
+CKV_METADATA = 'CKV_METADATA'
+
+
 class Github(BaseVCSDAL):
     github_conf_dir_path: str  # noqa: CCE003  # a static attribute
     github_conf_file_paths: dict[str, list[Path]]  # noqa: CCE003  # a static attribute
@@ -34,6 +37,7 @@ class Github(BaseVCSDAL):
             "repository_collaborators": [Path(self.github_conf_dir_path) / "repository_collaborators.json"],
             "branch_metadata": [Path(self.github_conf_dir_path) / "branch_metadata.json"],
             "org_metadata": [Path(self.github_conf_dir_path) / "org_metadata.json"],
+            "org_admins": [Path(self.github_conf_dir_path) / "org_admins.json"],
         }
 
     def discover(self) -> None:
@@ -112,6 +116,25 @@ class Github(BaseVCSDAL):
                 self._organization_security = data
         return self._organization_security
 
+    def get_default_branch(self) -> None:
+        # still not used - for future implementations
+        default_branch = self.repo_complementary_metadata.get("default_branch")
+        if not default_branch:
+            data = self._request_graphql(query="""
+                query ($owner: String!, $name: String!){
+                  repository(owner: $owner, name: $name) {
+                    defaultBranchRef {
+                      name
+                    }
+                  }
+                }
+                """, variables={'owner': self.repo_owner, 'name': self.current_repository})
+            if not data:
+                return None
+            if org_security_schema.validate(data):
+                self.repo_complementary_metadata["default_branch"] = \
+                    data.get('data', {}).get('repository', {}).get('defaultBranchRef', {}).get('name')
+
     def get_branch_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
         data = self._request(
@@ -123,6 +146,19 @@ class Github(BaseVCSDAL):
     def get_organization_metadata(self) -> dict[str, Any] | None:
         # new endpoint since Dec22
         data = self._request(endpoint=f"orgs/{self.org}", allowed_status_codes=[200])
+        return data
+
+    def get_organization_admins(self) -> dict[str, Any] | None:
+        # new endpoint since Dec22
+        data = self._request(endpoint=f"orgs/{self.org}/members?role=admin", allowed_status_codes=[200])
+        return data
+
+    def get_repository_metadata(self) -> dict[str, Any] | None:
+        # still not used - for future implementations
+        data = self._request(
+            endpoint=f"repos/{self.repo_owner}/{self.current_repository}",
+            allowed_status_codes=[200]
+        )
         return data
 
     # --------------------------------------------------------------------------- #
@@ -170,6 +206,21 @@ class Github(BaseVCSDAL):
         if org_metadata:
             BaseVCSDAL.persist(path=self.github_conf_file_paths["org_metadata"][0], conf=org_metadata)
 
+    def persist_repository_metadata(self) -> None:
+        # still not used - for future implementations
+        repository_metadata = self.get_repository_metadata()
+        if repository_metadata:
+            BaseVCSDAL.persist(
+                path=self.github_conf_file_paths["repository_metadata"][0],
+                conf=repository_metadata
+            )
+            self.org_complementary_metadata["is_private_repo"] = repository_metadata.get('private')
+
+    def persist_organization_admins(self) -> None:
+        org_members = self.get_organization_admins()
+        if org_members:
+            BaseVCSDAL.persist(path=self.github_conf_file_paths["org_admins"][0], conf=org_members)
+
     def persist_all_confs(self) -> None:
         if strtobool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", "True")):
             self.persist_organization_security()
@@ -179,3 +230,4 @@ class Github(BaseVCSDAL):
             self.persist_repository_collaborators()
             self.persist_branch_metadata()
             self.persist_organization_metadata()
+            self.persist_organization_admins()
