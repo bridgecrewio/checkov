@@ -2,14 +2,15 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.WinVMEncryptionAtHost import check
+from checkov.terraform.checks.resource.azure.PubsubSKUSLA import check
 from checkov.terraform.runner import Runner
 
 
-class TestWinVMEncryptionAtHost(unittest.TestCase):
+class TestPubsubSKUSLA(unittest.TestCase):
+
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_WinVMEncryptionAtHost"
+        test_files_dir = Path(__file__).parent / "example_PubsubSKUSLA"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,11 +19,10 @@ class TestWinVMEncryptionAtHost(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_windows_virtual_machine.pass",
+            "azurerm_web_pubsub.pass",
         }
         failing_resources = {
-            "azurerm_windows_virtual_machine.fail",
-            "azurerm_windows_virtual_machine.fail2",
+            "azurerm_web_pubsub.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -37,5 +37,5 @@ class TestWinVMEncryptionAtHost(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
