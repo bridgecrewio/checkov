@@ -166,7 +166,7 @@ class RunnerRegistry:
         integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment:
+        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
