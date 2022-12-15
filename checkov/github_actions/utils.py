@@ -9,10 +9,6 @@ import dpath.util
 
 import yaml
 from jsonschema import validate, ValidationError
-import dpath.util
-
-from checkov.runner_filter import RunnerFilter
-from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 
 from checkov.common.parsers.yaml.loader import SafeLineLoaderGhaSchema
 from checkov.common.parsers.yaml.parser import parse
