@@ -5,6 +5,9 @@ from pathlib import Path
 
 
 from typing import Dict, Any
+
+import mock
+
 # do not remove - prevents circular import
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
@@ -620,6 +623,74 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_runner_with_iam_policies(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_iam_policies/tfplan.json"
+
+        passing_resources = {
+            "aws_iam_policy.policy_pass",
+        }
+        failing_resources = {
+            "aws_iam_role_policy.fail_1",
+            "aws_iam_group_policy.fail_2",
+            "aws_iam_user_policy.fail_3",
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 3)
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True', 'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
+    def test_plan_and_tf_combine_graph(self):
+        tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph/tfplan.json"
+
+        repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph"
+
+        # deep_analysis disabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=False,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=True, repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.passed_checks[0].resource_address, report.passed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+        assert report.passed_checks[0].file_path.endswith('.json')
+        assert report.passed_checks[1].file_path.endswith('.json')
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
