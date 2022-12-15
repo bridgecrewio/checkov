@@ -13,10 +13,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: [ main ]
   schedule:
     - cron: '17 4 * * 2'
   workflow_dispatch:
@@ -35,7 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python
-        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -53,11 +53,11 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2
+        uses: github/codeql-action/init@a669cc5936cc5e1b6a362ec1ff9e410dc570d190  # v2
         with:
           languages: python
           setup-python-dependencies: false
       - name: Autobuild
-        uses: github/codeql-action/autobuild@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2
+        uses: github/codeql-action/autobuild@a669cc5936cc5e1b6a362ec1ff9e410dc570d190  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2
+        uses: github/codeql-action/analyze@a669cc5936cc5e1b6a362ec1ff9e410dc570d190  # v2

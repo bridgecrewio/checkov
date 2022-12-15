@@ -101,6 +101,7 @@ definition:
 | Contains                     | `contains`                     |
 | Not Contains                 | `not_contains`                 |
 | Within                       | `within`                       |
+| Not Within                   | `not_within`                   |
 | Starts With                  | `starting_with`                |
 | Not Starts With              | `not_starting_with`            |
 | Ends With                    | `ending_with`                  |
@@ -323,6 +324,27 @@ Any kind of connection between resources is supported
 ### CloudFormation
 All resources can be referenced under `resource_types`.
 Any kind of connection between resources is supported
+
+### Dockerfile
+All official Docker instructions can be referenced under `resource_types`.
+Currently, no support for connections.
+
+#### Note
+Following attribute values are supported
+
+- `content` stores the raw data for an instruction
+- `value` stores the sanitized data for an instruction
+
+ex.
+```dockerfile
+RUN apt-get update \
+ && sudo apt-get install vim
+```
+->
+```yaml
+content: "RUN apt-get update \\\n && sudo apt-get install vim\n"
+value: "apt-get update  && sudo apt-get install vim"
+```
 
 ### GitHub Actions
 Following `resource_types` are supported

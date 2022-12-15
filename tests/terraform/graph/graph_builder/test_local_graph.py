@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from unittest import TestCase
 
+import mock
+import json
+
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.common.graph.graph_builder.utils import calculate_hash
@@ -138,6 +141,7 @@ class TestLocalGraph(TestCase):
         self.assertIsNotNone(tf_definitions)
         self.assertIsNotNone(breadcrumbs)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_module_dependencies(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
@@ -156,6 +160,46 @@ class TestLocalGraph(TestCase):
                          list(map(lambda dep_list: dep_list + [f'{os.path.dirname(resources_dir)}/s3_inner_modules/main.tf'],
                                   expected_inner_modules)))
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_module_dependencies_nested_module_enable(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/stage'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/test'], [[]])
+        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod/sub-prod'], [[f'{resources_dir}/prod/main.tf']])
+        expected_inner_modules = [
+            [
+                f'{resources_dir}/prod/main.tf',
+                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
+            ],
+            [
+                f'{resources_dir}/stage/main.tf'
+            ],
+            [
+                f'{resources_dir}/test/main.tf'
+            ],
+        ]
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
+        resources_dir_no_stacks = resources_dir.replace('/stacks', '')
+        expected_inner_modules = [
+            [
+                f'{resources_dir}/prod/main.tf',
+                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/prod/sub-prod/main.tf#0[{resources_dir}/prod/main.tf#0]]',
+            ],
+            [
+                f'{resources_dir}/stage/main.tf',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/stage/main.tf#0]',
+            ],
+            [
+                f'{resources_dir}/test/main.tf',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/test/main.tf#0]',
+            ],
+        ]
+        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'], expected_inner_modules)
+
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = Parser()
@@ -165,6 +209,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 's3', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'sub-module', module.blocks))), 1)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_vertices_from_local_graph_module(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")
@@ -212,16 +257,19 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "sub-module",
                         "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
+                        "idx": 0
                     },
                     {
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
+                        "idx": 3
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 4
                     },
                 ],
             },
@@ -249,11 +297,13 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
+                        "idx": 1
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 5
                     },
                 ],
             },
@@ -281,11 +331,148 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
+                        "idx": 2
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 6
+                    },
+                ],
+            },
+            bucket_vertex_3.breadcrumbs,
+        )
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_vertices_from_local_graph_module_nested_module_enable(self):
+        parent_dir = Path(TEST_DIRNAME).parent
+        resources_dir = str(parent_dir / "resources/modules/stacks")
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        self.assertEqual(12, len(local_graph.edges))
+
+        # check vertex breadcrumbs
+        bucket_vertex_1 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {6}
+        )
+        bucket_vertex_2 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {7}
+        )
+        bucket_vertex_3 = next(
+            vertex
+            for vertex in local_graph.vertices
+            if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {8}
+        )
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "sub-module",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
+                        "idx": 12
+                    },
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
+                        "idx": 13
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 6
+                    },
+                ],
+            },
+            bucket_vertex_1.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
+                        "idx": 14
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 7
+                    },
+                ],
+            },
+            bucket_vertex_2.breadcrumbs,
+        )
+
+        self.assertDictEqual(
+            {
+                "versioning.enabled": [
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
+                    },
+                ],
+                "source_module_": [
+                    {
+                        "type": "module",
+                        "name": "s3",
+                        "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
+                        "idx": 15
+                    },
+                    {
+                        "type": "module",
+                        "name": "inner_module_call",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 8
                     },
                 ],
             },
@@ -322,3 +509,20 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_nested_modules_instances(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        vertices = [vertex.to_dict() for vertex in local_graph.vertices]
+        edges = [edge.to_dict() for edge in local_graph.edges]
+
+        with open(os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances/expected_local_graph.json')), 'r') as f:
+            expected = json.load(f)
+
+        assert json.dumps(vertices).replace(resources_dir, '') == json.dumps(expected.get('vertices')).replace(resources_dir, '')
+        assert json.dumps(edges) == json.dumps(expected.get('edges'))

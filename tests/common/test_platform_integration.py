@@ -151,8 +151,6 @@ class TestBCApiUrl(unittest.TestCase):
                                                         valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': 'CODE', 'not': 'allowed'},
                                                         valid_filters=mock_prisma_policy_filter_response()))
-        self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']},
-                                                         valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={},
                                                          valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))

@@ -35,7 +35,13 @@ class BaseK8sRootContainerCheck(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf and "jobTemplate" in conf["spec"] and "spec" in conf["spec"]["jobTemplate"] and conf["spec"]["jobTemplate"]["spec"] and "template" in conf["spec"]["jobTemplate"]["spec"] and "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
+            if "spec" in conf and \
+                    isinstance(conf["spec"], dict) and \
+                    "jobTemplate" in conf["spec"] and \
+                    "spec" in conf["spec"]["jobTemplate"] and \
+                    conf["spec"]["jobTemplate"]["spec"] and \
+                    "template" in conf["spec"]["jobTemplate"]["spec"] and \
+                    "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
         else:
             inner_spec = self.get_inner_entry(conf, "spec")

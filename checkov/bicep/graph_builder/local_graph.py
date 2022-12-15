@@ -251,7 +251,7 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             self.update_vertex_config(vertex, changed_attributes)
 
     @staticmethod
-    def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any]) -> None:
+    def update_vertex_config(vertex: Block, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False) -> None:
         if not changed_attributes:
             # skip, if there is no change
             return

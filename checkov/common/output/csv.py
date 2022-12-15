@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
 
@@ -75,6 +76,7 @@ class CSVSBOM:
             CheckType.SCA_PACKAGE: self.package_rows,
             CheckType.SCA_IMAGE: self.container_rows
         }
+
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -158,7 +160,21 @@ class CSVSBOM:
         )
 
     @staticmethod
+    def arrange_rows(rows: list[dict[str, Any]]) -> None:
+        # we search for formatted rows and convert them back into csv formatted file.
+        for row in rows:
+            for key, value in row.items():
+                val = str(value)
+
+                if is_raw_formatted(val):
+                    val = ', '.join(format_string_to_licenses(val))
+                val = val[1:-1] if val.startswith('"') and val.endswith('"') else val
+                row[key] = '' if val == 'None' else val
+
+    @staticmethod
     def write_section(file: str, header: list[str], rows: list[dict[str, Any]], is_api_key: bool) -> None:
+        CSVSBOM.arrange_rows(rows)
+
         with open(file, "w", newline="") as f:
             print(f"Persisting SBOM to {os.path.abspath(file)}")
             if is_api_key:
@@ -184,6 +200,8 @@ class CSVSBOM:
                 if header == 'Package':
                     csv_output += f'\"{field}\"'
                 elif header == 'Licenses':
+                    field = str(field).replace('","', ", ")
+                    field = field[1:-1] if field.startswith('"') and field.endswith('"') else field
                     csv_output += f',\"{field}\"'
                 else:
                     csv_output += f',{field}'

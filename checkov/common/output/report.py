@@ -17,10 +17,14 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
-from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.output import create_cli_output
+
+from checkov.sca_package_2.output import create_cli_output as create_cli_output_v2
+
+from checkov.sca_package.output import create_cli_output as create_cli_output_v1
+
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -94,6 +98,16 @@ class Report:
                     "failed_checks": [check.__dict__ for check in self.failed_checks]
                 },
                 "summary": self.get_summary(),
+            }
+        if full_report:
+            return {
+                "check_type": self.check_type,
+                "checks": {
+                    "passed_checks": [check.__dict__ for check in self.passed_checks],
+                    "failed_checks": [check.__dict__ for check in self.failed_checks],
+                    "skipped_checks": [check.__dict__ for check in self.skipped_checks]
+                },
+                "image_cached_results": [res.__dict__ for res in self.image_cached_results]
             }
         else:
             return {
@@ -172,13 +186,13 @@ class Report:
         return checks_count == 0
 
     def print_console(
-        self,
-        is_quiet: bool = False,
-        is_compact: bool = False,
-        created_baseline_path: str | None = None,
-        baseline: Baseline | None = None,
-        use_bc_ids: bool = False,
-        summary_position: str = 'top'
+            self,
+            is_quiet: bool = False,
+            is_compact: bool = False,
+            created_baseline_path: str | None = None,
+            baseline: Baseline | None = None,
+            use_bc_ids: bool = False,
+            summary_position: str = 'top'
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -199,7 +213,10 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks, self.skipped_checks)
+                create_cli_output = create_cli_output_v2 if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else create_cli_output_v1
+                output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
+                                                 self.skipped_checks)
+
         else:
             if not is_quiet:
                 for record in self.passed_checks:

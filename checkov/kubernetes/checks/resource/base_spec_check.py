@@ -50,6 +50,6 @@ class BaseK8Check(BaseCheck):
     @staticmethod
     def get_inner_entry(conf: Dict[str, Any], entry_name: str) -> Dict[str, Any]:
         spec = {}
-        if conf.get("spec") and conf.get("spec").get("template"):
+        if conf.get("spec") and isinstance(conf["spec"], dict) and conf.get("spec").get("template"):
             spec = conf.get("spec").get("template").get(entry_name, {})
         return spec

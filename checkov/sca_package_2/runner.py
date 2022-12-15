@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
-from typing import Sequence, Any, List
+from typing import Any, List
 
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
-from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
+from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
@@ -21,7 +21,7 @@ class Runner(BaseRunner[None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self, report_type: str = check_type) -> None:
-        super().__init__(file_names=SUPPORTED_PACKAGE_FILES)
+        super().__init__(file_names=SCANNABLE_PACKAGE_FILES)
         self._check_class: str | None = None
         self._code_repo_path: Path | None = None
         self.report_type = report_type
@@ -32,7 +32,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             excluded_file_names: set[str] | None = None,
-    ) -> Sequence[dict[str, Any]] | None:
+    ) -> dict[str, Any] | None:
         runner_filter = runner_filter or RunnerFilter()
         excluded_file_names = excluded_file_names or set()
 
@@ -63,7 +63,8 @@ class Runner(BaseRunner[None]):
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
         scan_results = scanner.scan()
 
-        # logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        if scan_results:
+            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -84,10 +85,10 @@ class Runner(BaseRunner[None]):
         if scan_results is None:
             return report
 
-        for result in scan_results:
+        for path, result in scan_results.items():
             if not result:
                 continue
-            package_file_path = Path(result["repository"])
+            package_file_path = Path(path)
             if self._code_repo_path:
                 try:
                     package_file_path = package_file_path.relative_to(self._code_repo_path)
@@ -113,6 +114,7 @@ class Runner(BaseRunner[None]):
                 packages=packages,
                 license_statuses=license_statuses,
                 report_type=self.report_type,
+                dependencies=result.get("dependencies", None)
             )
 
         return report
@@ -130,7 +132,7 @@ class Runner(BaseRunner[None]):
         package_files_to_persist: List[FileToPersist] = []
         if root_path:
             for file_path in root_path.glob("**/*"):
-                if file_path.name in SUPPORTED_PACKAGE_FILES and not any(
+                if file_path.name in SCANNABLE_PACKAGE_FILES and not any(
                         p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
                     file_path_str = str(file_path)
                     package_files_to_persist.append(
@@ -143,7 +145,7 @@ class Runner(BaseRunner[None]):
                 if not file_path.exists():
                     logging.warning(f"File {file_path} doesn't exist")
                     continue
-                if file_path.name in SUPPORTED_PACKAGE_FILES:
+                if file_path.name in SCANNABLE_PACKAGE_FILES:
                     package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")

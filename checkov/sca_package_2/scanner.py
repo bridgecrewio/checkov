@@ -1,19 +1,17 @@
 from __future__ import annotations
 
 import logging
-import os
-from collections.abc import Sequence
+import time
 from pathlib import Path
 from typing import Any
 
-from checkov.common.util.http_utils import request_wrapper
-
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.util.http_utils import request_wrapper
 
 from checkov.common.util.tqdm_utils import ProgressBar
 
-SLEEP_DURATION = 2
-MAX_SLEEP_DURATION = 60
+SLEEP_DURATION = 5
+MAX_SLEEP_DURATION = 240
 
 
 class Scanner:
@@ -27,12 +25,11 @@ class Scanner:
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
-    def scan(self) -> Sequence[dict[str, Any]] | None:
+    def scan(self) -> dict[str, Any] | None:
         """run SCA package scan and poll scan results"""
         if not self.run_scan():
             return None
-        self.poll_scan_result()
-        return []
+        return self.poll_scan_result()
 
     def run_scan(self) -> bool:
         logging.info("Start to scan package files.")
@@ -40,7 +37,7 @@ class Scanner:
         request_body = {
             "branch": "",
             "commit": "",
-            "path": os.path.join(bc_integration.repo_path, '') if bc_integration.repo_path else "",
+            "path": bc_integration.repo_path,
             "repoId": bc_integration.repo_id,
             "id": bc_integration.timestamp,
             "repositoryId": ""
@@ -61,4 +58,32 @@ class Scanner:
         return True
 
     def poll_scan_result(self) -> dict[str, Any]:
+        total_sleeping_time = 0
+
+        while total_sleeping_time < MAX_SLEEP_DURATION:
+            response = request_wrapper(
+                "GET", f"{self.bc_cli_scan_api_url}/{bc_integration.timestamp}",
+                headers=bc_integration.get_default_headers("GET"),
+                params={"repoId": bc_integration.repo_id}
+            )
+            response_json = response.json()
+            current_state = response_json.get("status", "")
+            if not current_state:
+                logging.error("Failed to poll scan results.")
+                return {}
+
+            if current_state == "COMPLETED":
+                logging.info(response_json)
+                report_url = response_json['reportUrl']
+                report_response = request_wrapper("GET", report_url, headers={'Accept': 'application/json'})
+                return report_response.json()  # type: ignore
+
+            if current_state == "FAILED":
+                logging.error(response_json)
+                return {}
+
+            time.sleep(SLEEP_DURATION)
+            total_sleeping_time += SLEEP_DURATION
+
+        logging.info(f"Timeout, slept for {total_sleeping_time}")
         return {}

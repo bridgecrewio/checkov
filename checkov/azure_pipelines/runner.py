@@ -34,10 +34,9 @@ class Runner(YamlRunner):
         return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None) -> str:
+                     start_line: int = -1, end_line: int = -1) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
-        start_line, end_line = self.get_start_and_end_lines(key)
         resource_name = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
         return resource_name if resource_name else key
 

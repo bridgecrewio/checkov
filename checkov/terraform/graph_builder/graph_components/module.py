@@ -5,6 +5,8 @@ import os
 from copy import deepcopy
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING
 
+from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.parser_utils import get_abs_path, get_module_from_full_path
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -38,6 +40,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -47,6 +50,12 @@ class Module:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
+        if self.enable_nested_modules:
+            block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
+            block.path = get_abs_path(block.path)
+            self.blocks.append(block)
+            return
+
         dependencies = self.module_dependency_map.get(os.path.dirname(block.path), [])
         module_dependency_num = ""
         if not dependencies:
@@ -150,12 +159,15 @@ class Module:
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
                     attributes = self.clean_bad_characters(resource_conf)
+                    dynamic_attributes = None
                     if not isinstance(attributes, dict):
                         continue
                     if self.render_dynamic_blocks_env_var.lower() == 'false':
                         has_dynamic_block = False
                     else:
+                        old_attributes = deepcopy(attributes)
                         has_dynamic_block = handle_dynamic_values(attributes)
+                        dynamic_attributes = {k: attributes[k] for k in set(attributes) - set(old_attributes)}
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
@@ -169,7 +181,8 @@ class Module:
                         attributes=attributes,
                         id=block_name,
                         source=self.source,
-                        has_dynamic_block=has_dynamic_block
+                        has_dynamic_block=has_dynamic_block,
+                        dynamic_attributes=dynamic_attributes
                     )
                     self._add_to_blocks(resource_block)
 

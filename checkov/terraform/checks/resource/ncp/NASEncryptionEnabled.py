@@ -3,14 +3,14 @@ from checkov.common.models.enums import CheckCategories
 
 
 class EFSEncryptionEnabled(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure NAS is securely encrypted"
         id = "CKV_NCP_14"
-        supported_resources = ('ncloud_nas_volume',)
+        supported_resources = ("ncloud_nas_volume",)
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "is_encrypted_volume"
 
 

@@ -18,6 +18,7 @@ class TestNSGRuleSSHAccessRestricted(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
+            'azurerm_network_security_group.dynamic_nsg_pass',
             "azurerm_network_security_rule.https",
             "azurerm_network_security_rule.http_restricted_prefixes",
             "azurerm_network_security_group.http_restricted",
@@ -28,13 +29,14 @@ class TestNSGRuleSSHAccessRestricted(unittest.TestCase):
             "azurerm_network_security_rule.ranges_prefixes",
             "azurerm_network_security_rule.http",
             "azurerm_network_security_group.ranges",
+            'azurerm_network_security_group.dynamic_nsg_fail',
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 3)
-        self.assertEqual(summary["failed"], 5)
+        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["failed"], 6)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
