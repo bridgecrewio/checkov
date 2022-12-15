@@ -185,7 +185,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  use_enforcement_rules=config.use_enforcement_rules,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
-                                 deep_analysis=False,
+                                 deep_analysis=config.deep_analysis,
                                  repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
 
     if outer_registry:
@@ -650,10 +650,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help="exclude extra resources (resources without violations) from report output",
                action='store_true',
                env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
-    # parser.add('--deep-analysis',
-    #            default=False,
-    #            action='store_true',
-    #            help='Enable combine tf graph and rf plan graph')
+    parser.add('--deep-analysis',
+               default=False,
+               action='store_true',
+               help='Enable combine tf graph and rf plan graph')
 
 
 def get_external_checks_dir(config: Any) -> Any:
