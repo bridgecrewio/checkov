@@ -103,11 +103,11 @@ def build_gha_definitions_context(definitions: dict[str, dict[str, Any]], defini
                 if isinstance(definition, dict):
                     for attribute, attr_value in definition.items():
                         if isinstance(attr_value, dict):
-                            start_line: int = attr_value['__startline__']
-                            end_line: int = attr_value['__endline__']
+                            start_line = attr_value['__startline__']
+                            end_line = attr_value['__endline__']
                         elif isinstance(attr_value, str) and '__startline__' in definition and '__endline__' in definition:
-                            start_line: int = definition['__startline__']
-                            end_line: int = definition['__endline__']
+                            start_line = definition['__startline__']
+                            end_line = definition['__endline__']
                         else:
                             continue
 
