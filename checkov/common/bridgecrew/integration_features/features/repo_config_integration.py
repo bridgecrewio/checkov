@@ -12,6 +12,7 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 
 class RepoConfigIntegration(BaseIntegrationFeature):
@@ -119,7 +120,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             return True
         return False
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
         pass
 
