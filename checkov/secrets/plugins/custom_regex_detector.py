@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING, cast
 
