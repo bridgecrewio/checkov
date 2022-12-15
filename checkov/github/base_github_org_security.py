@@ -22,7 +22,7 @@ class OrgSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if org_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
             jsonpath_expression = parse(f"$..{evaluated_key}")
@@ -30,7 +30,7 @@ class OrgSecurity(BaseGithubCheck):
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
     def get_expected_value(self) -> int | bool | str:
         return True

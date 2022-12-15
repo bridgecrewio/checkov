@@ -4,7 +4,7 @@ from typing import Any, TYPE_CHECKING
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.json import parse
-from checkov.common.parsers.node import DictNode
+from checkov.common.parsers.node import DictNode, ListNode
 from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ class Runner(ObjectRunner):
         return parse(filename=f, file_content=file_content)
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
-        if not isinstance(result_config, DictNode):
+        if not isinstance(result_config, (DictNode, ListNode)):
             # shouldn't happen
             return 0, 0
 
