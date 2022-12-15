@@ -8,6 +8,7 @@ from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -93,7 +94,7 @@ class Runner(TerraformRunner):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
-    ) -> Report:
+    ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         self.deep_analysis = runner_filter.deep_analysis
         if runner_filter.repo_root_for_plan_enrichment:
@@ -108,6 +109,9 @@ class Runner(TerraformRunner):
                 censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
                                                                           resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
                 self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
+                for vertex in self.tf_plan_local_graph.vertices:
+                    if vertex.block_type == BlockType.RESOURCE:
+                        report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph()
@@ -124,6 +128,18 @@ class Runner(TerraformRunner):
         if self.definitions:
             graph_report = self._get_graph_report(root_folder, runner_filter, tf_local_graph)
             merge_reports(report, graph_report)
+
+        if runner_filter.run_image_referencer:
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
+
         return report
 
     def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter, tf_local_graph: Optional[TerraformLocalGraph]) -> Report:
