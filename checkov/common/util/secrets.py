@@ -173,7 +173,7 @@ def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dic
     secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
     censored_code_lines = []
 
-    if check.category == CheckCategories.SECRETS and check_result.get('result') == CheckResult.FAILED:  # type:ignore[comparison-overlap]
+    if check.category == CheckCategories.SECRETS.name and check_result.get('result') == CheckResult.FAILED:
         secrets.update([str(secret) for key, secret in entity_config.items() if
                         key.startswith(f'{check.id}_secret')])
 
