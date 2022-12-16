@@ -195,18 +195,30 @@ class Runner(TerraformRunner):
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
                         continue
-                    censored_code_lines = omit_secret_value_from_checks(check=check,
-                                                                        check_result=check_result,
-                                                                        entity_code_lines=entity_code_lines,
-                                                                        entity_config=entity_config,
-                                                                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                                    check_result=check_result,
-                                    code_block=censored_code_lines, file_path=scanned_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=entity_id, resource_address=entity_address, evaluations=None,
-                                    check_class=check.__class__.__module__, file_abs_path=full_file_path,
-                                    severity=check.severity)
+
+                    censored_code_lines = omit_secret_value_from_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_code_lines,
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT
+                    )
+                    record = Record(
+                        check_id=check.id,
+                        bc_check_id=check.bc_id,
+                        check_name=check.name,
+                        check_result=check_result,
+                        code_block=censored_code_lines,
+                        file_path=scanned_file,
+                        file_line_range=entity_lines_range,
+                        resource=entity_id,
+                        resource_address=entity_address,
+                        evaluations=None,
+                        check_class=check.__class__.__module__,
+                        file_abs_path=full_file_path,
+                        severity=check.severity,
+                        details=check.details,
+                    )
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
