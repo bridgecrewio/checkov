@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, cast
 
 import jmespath
 
@@ -112,7 +112,7 @@ class Runner(YamlRunner, ImageReferencer):
             "pipelines.*.[*][][][].step.{image: image, __startline__: __startline__, __endline__:__endline__}",
         ]
         for keyword in keywords:
-            results = jmespath.search(keyword, workflow)
+            results = cast("list[dict[str, Any]]", jmespath.search(keyword, workflow))
             for result in results:
                 image_name = result.get("image", None)
                 if image_name:
