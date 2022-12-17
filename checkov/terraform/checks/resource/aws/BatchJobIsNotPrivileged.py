@@ -22,8 +22,7 @@ class BatchJobIsNotPrivileged(BaseResourceCheck):
             if isinstance(container_properties[0], str):
                 try:
                     container = json.loads(container_properties[0])
-                except json.JSONDecodeError as e:
-                    logging.error(e)
+                except json.JSONDecodeError:
                     return CheckResult.UNKNOWN
             else:
                 container = container_properties[0]
