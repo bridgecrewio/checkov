@@ -27,14 +27,13 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
         excluded_paths: list[str] | None = None
     ) -> tuple[KubernetesLocalGraph, dict[str, list[dict[str, Any]]]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)
-        local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False, graph_flags=self.graph_flags)
+        local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False)
         return local_graph, definitions
 
     def build_graph_from_definitions(
-        self, definitions: dict[str, list[dict[str, Any]]], render_variables: bool = True, graph_flags: K8sGraphFlags | None = None
-    ) -> KubernetesLocalGraph:
+        self, definitions: dict[str, list[dict[str, Any]]], render_variables: bool = True) -> KubernetesLocalGraph:
         local_graph = KubernetesLocalGraph(definitions)
-        if graph_flags is None:
-            graph_flags = K8sGraphFlags()
-        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        if self.graph_flags is None:
+            self.graph_flags = K8sGraphFlags()
+        local_graph.build_graph(render_variables=False, graph_flags=self.graph_flags)
         return local_graph
