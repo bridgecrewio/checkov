@@ -6,6 +6,7 @@ from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, Set, Tuple
+from hcl2 import START_LINE, END_LINE
 
 from typing_extensions import TypedDict
 
@@ -542,7 +543,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
             context_parser = parser_registry.context_parsers[vertex.block_type]
             vertex_context = vertex.config
-            definition_path = context_parser.get_entity_context_path(vertex.config)
+            definition_path = context_parser.get_entity_definition_path(vertex.config)
             for path in definition_path:
                 vertex_context = vertex_context.get(path, vertex_context)
             vertex_context[CustomAttributes.TF_RESOURCE_ADDRESS] = address
