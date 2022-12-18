@@ -68,21 +68,6 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
     return parsed
 
 
-def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, secret_policy: Dict[str, Any], check_id: str) -> bool:
-    parsed = False
-    code_dict = yaml.safe_load(code)
-    if 'definition' in code_dict:
-        if 'value' in code_dict['definition']:
-            parsed = True
-            if type(code_dict['definition']['value']) is str:
-                code_dict['definition']['value'] = [code_dict['definition']['value']]
-            for regex in code_dict['definition']['value']:
-                add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
-                                        secret_policy['isCustom'])
-                logging.info(f"Regex : {secret_policy['title']} added to custom_detectors")
-    return parsed
-
-
 def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     custom_detectors: List[Dict[str, Any]] = []
     condition_query = None
