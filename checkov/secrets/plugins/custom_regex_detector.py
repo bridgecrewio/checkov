@@ -5,7 +5,6 @@ from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TY
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
-import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
