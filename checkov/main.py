@@ -45,6 +45,7 @@ from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.sca.errors import TwistcliDownloadingError
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
@@ -338,8 +339,11 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 logger.error(f'Directory {root_folder} does not exist; skipping it')
                 continue
             file = config.file
-            scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                               files=file)
+            try:
+                scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
+                                                   files=file)
+            except TwistcliDownloadingError:
+                return 2
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
@@ -396,8 +400,11 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         return exit_code
     elif config.file:
         runner_registry.filter_runners_for_files(config.file)
-        scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
-                                           repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        try:
+            scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
+                                               repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        except TwistcliDownloadingError:
+            return 2
         if baseline:
             baseline.compare_and_reduce_reports(scan_reports)
         if config.create_baseline:
