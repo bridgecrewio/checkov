@@ -29,6 +29,7 @@ def extract_images_from_google_cloudbuild_trigger(resource: dict[str, Any]) -> l
 
     return image_names
 
+
 def extract_images_from_google_cloud_run_service(resource: dict[str, Any]) -> list[str]:
     image_names: list[str] = []
 
