@@ -137,6 +137,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         check.action()
         return None
 
+    no_fail_on_crash = config.no_fail_on_crash or os.getenv("CHECKOV_NO_FAIL_ON_CRASH")
+
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
@@ -149,7 +151,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
                   '--external-checks-dir options.',
                   file=sys.stderr)
-            exit(2)
+            exit(0) if no_fail_on_crash else exit(2)
         elif config.skip_download:
             print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
                   'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
@@ -295,7 +297,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
                   '(but note that this will not include any custom platform configurations or policy metadata).',
                   file=sys.stderr)
-            exit(2)
+            exit(0) if no_fail_on_crash else exit(2)
 
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
@@ -654,6 +656,10 @@ def add_parser_args(parser: ArgumentParser) -> None:
                default=False,
                action='store_true',
                help='Enable combine tf graph and rf plan graph')
+    parser.add('--no-fail-on-crash',
+               default=False,
+               action='store_true',
+               help='Return exit code 0 instead of 2')
 
 
 def get_external_checks_dir(config: Any) -> Any:
