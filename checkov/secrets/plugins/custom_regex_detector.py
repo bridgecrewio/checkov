@@ -5,6 +5,7 @@ from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TY
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
+import yaml
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
@@ -67,6 +68,21 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
     return parsed
 
 
+def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, secret_policy: Dict[str, Any], check_id: str) -> bool:
+    parsed = False
+    code_dict = yaml.safe_load(code)
+    if 'definition' in code_dict:
+        if 'value' in code_dict['definition']:
+            parsed = True
+            if type(code_dict['definition']['value']) is str:
+                code_dict['definition']['value'] = [code_dict['definition']['value']]
+            for regex in code_dict['definition']['value']:
+                add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
+                                        secret_policy['isCustom'])
+                logging.info(f"Regex : {secret_policy['title']} added to custom_detectors")
+    return parsed
+
+
 def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     custom_detectors: List[Dict[str, Any]] = []
     condition_query = None
@@ -74,10 +90,13 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
         parsed = False
         check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
             secret_policy['incidentId']
+        code = secret_policy['code']
         if 'conditionQuery' in secret_policy:
             condition_query = secret_policy['conditionQuery']
         if condition_query:
             parsed = add_detectors_from_condition_query(custom_detectors, condition_query, secret_policy, check_id)
+        elif code:
+            parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
         if not parsed:
             logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
