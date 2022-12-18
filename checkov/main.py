@@ -137,7 +137,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         check.action()
         return None
 
-    no_fail_on_crash = config.no_fail_on_crash or os.getenv("CHECKOV_NO_FAIL_ON_CRASH")
+    no_fail_on_crash = config.no_fail_on_crash or os.getenv("CHECKOV_NO_FAIL_ON_CRASH", "False").lower() == "true"
 
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
@@ -288,6 +288,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     try:
         bc_integration.get_platform_run_config()
+        raise Exception
     except Exception:
         if not config.include_all_checkov_policies:
             # stack trace gets printed in the exception handlers above
