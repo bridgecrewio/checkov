@@ -59,6 +59,8 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
     cond_type = condition_query['cond_type']
     if cond_type == 'secrets':
         value = condition_query['value']
+        if type(value) is str:
+            value = [value]
         for regex in value:
             parsed = True
             add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex, secret_policy['isCustom'])
