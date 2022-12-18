@@ -130,24 +130,29 @@ class Runner(BaseRunner[None]):
         logging.info("SCA package scanning upload for package files")
         excluded_file_names = excluded_file_names or set()
         package_files_to_persist: List[FileToPersist] = []
-        if root_path:
-            for file_path in root_path.glob("**/*"):
-                if file_path.name in SCANNABLE_PACKAGE_FILES and not any(
-                        p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
-                    file_path_str = str(file_path)
-                    package_files_to_persist.append(
-                        FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
+        try:
+            if root_path:
+                for file_path in root_path.glob("**/*"):
+                    if file_path.name in SCANNABLE_PACKAGE_FILES and not any(
+                            p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
+                        file_path_str = str(file_path)
+                        package_files_to_persist.append(
+                            FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
 
-        if files:
-            root_folder = os.path.split(os.path.commonprefix(files))[0]
-            for file in files:
-                file_path = Path(file)
-                if not file_path.exists():
-                    logging.warning(f"File {file_path} doesn't exist")
-                    continue
-                if file_path.name in SCANNABLE_PACKAGE_FILES:
-                    package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
+            if files:
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+                for file in files:
+                    file_path = Path(file)
+                    if not file_path.exists():
+                        logging.warning(f"File {file_path} doesn't exist")
+                        continue
+                    if file_path.name in SCANNABLE_PACKAGE_FILES:
+                        package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
-        logging.info(f"{len(package_files_to_persist)} sca package files found.")
-        bc_integration.persist_files(package_files_to_persist)
-        return package_files_to_persist
+            logging.info(f"{len(package_files_to_persist)} sca package files found.")
+            bc_integration.persist_files(package_files_to_persist)
+            return package_files_to_persist
+        except Exception:
+            logging.error("(upload_package_files) Failure when trying to upload files", exc_info=True)
+            return []
+
