@@ -109,7 +109,7 @@ DEFAULT_RUNNERS = (
 )
 
 
-def exit_run(no_fail_on_crash: bool):
+def exit_run(no_fail_on_crash: bool) -> None:
     exit(0) if no_fail_on_crash else exit(2)
 
 
@@ -335,12 +335,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                  os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
-    def commit_repository() -> str:
+    def commit_repository() -> Optional[str]:
         try:
             return bc_integration.commit_repository(config.branch)
         except Exception as e:
             logging.debug(f"commit_repository failed, exiting: {e}")
             exit_run(config.no_fail_on_crash)
+            return ""
 
     if config.directory:
         exit_codes = []
