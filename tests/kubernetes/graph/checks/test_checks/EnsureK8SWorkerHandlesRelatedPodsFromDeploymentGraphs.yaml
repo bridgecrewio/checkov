@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_K8S_6"
+  name: "Minimize the admission of pods which lack an associated NetworkPolicy"
+  # This test is to check functionality of the k8s runner looking up "virtual/related pods" from K8s Deployments for the graph edges. Rather than the policy itself
+  category: "KUBERNETES"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - Pod
+    - cond_type: connection
+      operator: exists
+      resource_types:
+        - Pod
+      connected_resource_types:
+        - NetworkPolicy
