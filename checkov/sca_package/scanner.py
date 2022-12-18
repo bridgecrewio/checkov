@@ -113,7 +113,8 @@ class Scanner:
             return self.run_scan_busy_wait(input_path, response_json['id'])
         except Exception:
             logging.error(
-                "[sca_package] - Unexpected failure happened during package scanning. details are below.\n"
+                "[sca_package] - Unexpected failure happened during package scanning.\n"
+                "the scanning is terminating. details are below.\n"
                 "please try again. if it is repeated, please report.", exc_info=True)
             return {}
 
