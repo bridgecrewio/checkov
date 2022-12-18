@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories

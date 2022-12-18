@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
-from _pytest.logging import LogCaptureFixture
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
+
+if TYPE_CHECKING:
+    from _pytest.logging import LogCaptureFixture
+
 
 TESTS_DIR = Path(__file__).parent.parent / "tests"
 
