@@ -542,7 +542,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
             context_parser = parser_registry.context_parsers[vertex.block_type]
             vertex_context = vertex.config
-            definition_path = context_parser.get_entity_context_path(vertex.config)
+            definition_path = context_parser.get_entity_definition_path(vertex.config)
             for path in definition_path:
                 vertex_context = vertex_context.get(path, vertex_context)
             vertex_context[CustomAttributes.TF_RESOURCE_ADDRESS] = address
