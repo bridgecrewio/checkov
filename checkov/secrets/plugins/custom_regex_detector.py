@@ -88,12 +88,9 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
         parsed = False
         check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
             secret_policy['incidentId']
-        code = secret_policy['code']
         if 'conditionQuery' in secret_policy:
             condition_query = secret_policy['conditionQuery']
-        if code:
-            parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
-        elif condition_query:
+        if condition_query:
             parsed = add_detectors_from_condition_query(custom_detectors, condition_query, secret_policy, check_id)
         if not parsed:
             logging.info(f"policy : {secret_policy} could not be parsed")
