@@ -73,6 +73,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": None,
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -100,6 +101,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": None,
                 "resourceTypes":
                     [
                         "aws_instance"

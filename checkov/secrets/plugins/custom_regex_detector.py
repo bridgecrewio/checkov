@@ -83,12 +83,14 @@ def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, s
 
 def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     custom_detectors: List[Dict[str, Any]] = []
+    condition_query = None
     for secret_policy in custom_secrets:
         parsed = False
         check_id = secret_policy['checkovCheckId'] if secret_policy['checkovCheckId'] else \
             secret_policy['incidentId']
         code = secret_policy['code']
-        condition_query = secret_policy['conditionQuery']
+        if 'conditionQuery' in secret_policy:
+            condition_query = secret_policy['conditionQuery']
         if code:
             parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
         elif condition_query:
