@@ -149,7 +149,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
                   '--external-checks-dir options.',
                   file=sys.stderr)
-            exit(0) if no_fail_on_crash else exit(2)
+            exit(0) if config.no_fail_on_crash else exit(2)
         elif config.skip_download:
             print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
                   'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
