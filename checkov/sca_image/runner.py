@@ -66,14 +66,11 @@ class Runner(PackageRunner):
             return cached_results
 
         image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
-        try:
-            output_path = Path(f'results-{image_id}.json')
-            scan_result = asyncio.run(self.execute_scan(image_id, output_path))
-            self.upload_results_to_cache(output_path, image_id)
-            logging.info(f"SCA image scanning successfully scanned the image {image_id}")
-            return scan_result
-        except Exception:
-            raise
+        output_path = Path(f'results-{image_id}.json')
+        scan_result = asyncio.run(self.execute_scan(image_id, output_path))
+        self.upload_results_to_cache(output_path, image_id)
+        logging.info(f"SCA image scanning successfully scanned the image {image_id}")
+        return scan_result
 
     async def execute_scan(
             self,
@@ -107,24 +104,29 @@ class Runner(PackageRunner):
         return scan_result
 
     def upload_results_to_cache(self, output_path: Path, image_id: str) -> None:
-        image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
+        try:
+            image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
-        request_body = {
-            "compressedResult": compress_file_gzip_base64(str(output_path)),
-            "compressionMethod": "gzip",
-            "id": image_id_sha
-        }
-        response = request_wrapper(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-            headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
-        )
+            request_body = {
+                "compressedResult": compress_file_gzip_base64(str(output_path)),
+                "compressionMethod": "gzip",
+                "id": image_id_sha
+            }
+            response = request_wrapper(
+                "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
+                headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
+            )
 
-        if response.ok:
-            logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
-        else:
-            logging.info(f"Failed to upload scan results to cache with id={image_id}")
+            if response.ok:
+                logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+            else:
+                logging.info(f"Failed to upload scan results to cache with id={image_id}")
 
-        output_path.unlink()
+            output_path.unlink()
+        except Exception:
+            logging.error(
+                "Unexpected failure happened during uploading results to cache. details are below.\n"
+                "Note that the scan is still running. if this is repeated, please report.", exc_info=True)
 
     def run(
             self,
