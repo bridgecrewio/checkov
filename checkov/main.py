@@ -109,6 +109,10 @@ DEFAULT_RUNNERS = (
 )
 
 
+def exit_run(no_fail_on_crash: bool):
+    exit(0) if no_fail_on_crash else exit(2)
+
+
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
@@ -149,7 +153,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
                   '--external-checks-dir options.',
                   file=sys.stderr)
-            exit(0) if config.no_fail_on_crash else exit(2)
+            exit_run(config.no_fail_on_crash)
         elif config.skip_download:
             print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
                   'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
@@ -257,7 +261,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 
         except MaxRetryError:
-            return None
+            exit_run(config.no_fail_on_crash)
         except Exception:
             if bc_integration.prisma_api_url:
                 message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
@@ -270,7 +274,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             else:
                 logger.error(message)
                 logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
-            return None
+            exit_run(config.no_fail_on_crash)
     else:
         logger.debug('No API key found. Scanning locally only.')
         config.include_all_checkov_policies = True
@@ -295,7 +299,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
                   '(but note that this will not include any custom platform configurations or policy metadata).',
                   file=sys.stderr)
-            exit(0) if config.no_fail_on_crash else exit(2)
+            exit_run(config.no_fail_on_crash)
 
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
@@ -331,6 +335,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                  os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
+    def commit_repository() -> str:
+        try:
+            return bc_integration.commit_repository(config.branch)
+        except Exception as e:
+            logging.debug(f"commit_repository failed, exiting: {e}")
+            exit_run(config.no_fail_on_crash)
+
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -347,7 +358,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.persist_run_metadata(run_metadata)
-                url = bc_integration.commit_repository(config.branch)
+                url = commit_repository()
 
             if config.create_baseline:
                 overall_baseline = Baseline()
@@ -391,7 +402,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
         bc_integration.persist_run_metadata(run_metadata)
-        url = bc_integration.commit_repository(config.branch)
+        url = commit_repository()
         exit_code = runner_registry.print_reports(results, config, url=url)
         return exit_code
     elif config.file:
@@ -416,7 +427,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
             bc_integration.persist_run_metadata(run_metadata)
-            url = bc_integration.commit_repository(config.branch)
+            url = commit_repository()
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
     elif not config.quiet:
