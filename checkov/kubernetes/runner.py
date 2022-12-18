@@ -256,7 +256,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 # (Consider them 'virtual' objects created for the sake of graph lookups)
                 if '_parent_resource' in entity:
                     if entity['resource_type'] == "Pod":
-                        entity_context = self.context[entity_file_path][entity['_parent_resource_id']]  
+                        entity_context = self.context[entity_file_path][entity['_parent_resource_id']]
                     else:
                         logging.INFO(f"Unsupported nested resource type for Kubernetes graph edges. Type: {entity['resource_type']} Parent: {entity['_parent_resource']}")
                 else:
