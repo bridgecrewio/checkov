@@ -296,7 +296,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
                   '(but note that this will not include any custom platform configurations or policy metadata).',
                   file=sys.stderr)
-            exit(0) if no_fail_on_crash else exit(2)
+            exit(0) if config.no_fail_on_crash else exit(2)
 
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
