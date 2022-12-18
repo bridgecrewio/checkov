@@ -87,29 +87,35 @@ class Scanner:
         return scan_results
 
     async def run_scan(self, input_path: Path) -> dict[str, Any]:
-        self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
-        logging.info(f"Start to scan package file {input_path}")
+        try:
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
+            logging.info(f"Start to scan package file {input_path}")
 
-        request_body = {
-            "compressedFileBody": compress_file_gzip_base64(str(input_path)),
-            "compressionMethod": "gzip",
-            "fileName": input_path.name
-        }
+            request_body = {
+                "compressedFileBody": compress_file_gzip_base64(str(input_path)),
+                "compressionMethod": "gzip",
+                "fileName": input_path.name
+            }
 
-        response = request_wrapper(
-            "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
-            headers=bc_integration.get_default_headers("POST"),
-            json=request_body,
-            should_call_raise_for_status=True
-        )
+            response = request_wrapper(
+                "POST", f"{self._base_url}/api/v1/vulnerabilities/scan",
+                headers=bc_integration.get_default_headers("POST"),
+                json=request_body,
+                should_call_raise_for_status=True
+            )
 
-        response_json = response.json()
+            response_json = response.json()
 
-        if response_json["status"] == "already_exist":
-            logging.info(f"result for {input_path} exists in the cache")
-            return self.parse_api_result(input_path, response_json["outputData"])
+            if response_json["status"] == "already_exist":
+                logging.info(f"result for {input_path} exists in the cache")
+                return self.parse_api_result(input_path, response_json["outputData"])
 
-        return self.run_scan_busy_wait(input_path, response_json['id'])
+            return self.run_scan_busy_wait(input_path, response_json['id'])
+        except Exception:
+            logging.error(
+                "[sca_package] - Unexpected failure happened during package scanning. details are below.\n"
+                "please try again. if it is repeated, please report.", exc_info=True)
+            return {}
 
     def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict[str, Any]:
         current_state = "Empty"

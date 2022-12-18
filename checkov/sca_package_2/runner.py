@@ -153,6 +153,8 @@ class Runner(BaseRunner[None]):
             bc_integration.persist_files(package_files_to_persist)
             return package_files_to_persist
         except Exception:
-            logging.error("(upload_package_files) Failure when trying to upload files", exc_info=True)
+            logging.error("Unexpected failure happened during uploading files for package scanning. "
+                          "details are below.\n"
+                          "please try again. if it is repeated, please report.", exc_info=True)
             return []
 
