@@ -9,7 +9,7 @@ class AppConfigPurgeProtection(BaseResourceValueCheck):
         name = "Ensure App configuration pruge protection is enabled"
         id = "CKV_AZURE_187"
         supported_resources = ("azurerm_app_configuration",)
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.FAILED)
 

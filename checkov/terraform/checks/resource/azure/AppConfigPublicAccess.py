@@ -8,7 +8,7 @@ class AppConfigPublicAccess(BaseResourceNegativeValueCheck):
         name = "Ensure 'Public Access' is not Enabled for App configuration"
         id = "CKV_AZURE_185"
         supported_resources = ("azurerm_app_configuration",)
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:

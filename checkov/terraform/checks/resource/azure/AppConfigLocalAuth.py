@@ -14,7 +14,7 @@ class AppConfigLocalAuth(BaseResourceNegativeValueCheck):
         name = "Ensure 'local_auth_enabled' is set to 'False'"
         id = "CKV_AZURE_184"
         supported_resources = ("azurerm_app_configuration",)
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_attribute_result=CheckResult.FAILED)
 

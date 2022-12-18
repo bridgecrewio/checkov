@@ -10,7 +10,7 @@ class AppConfigEncryption(BaseResourceValueCheck):
         name = "Ensure App configuration encryption block is set."
         id = "CKV_AZURE_186"
         supported_resources = ("azurerm_app_configuration",)
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
