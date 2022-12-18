@@ -286,7 +286,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
 
     try:
         bc_integration.get_platform_run_config()
-        raise Exception
     except Exception:
         if not config.include_all_checkov_policies:
             # stack trace gets printed in the exception handlers above
