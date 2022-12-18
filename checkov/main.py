@@ -137,8 +137,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         check.action()
         return None
 
-    no_fail_on_crash = config.no_fail_on_crash or os.getenv("CHECKOV_NO_FAIL_ON_CRASH", "False").lower() == "true"
-
     # Check if --output value is None. If so, replace with ['cli'] for default cli output.
     if config.output is None:
         config.output = ['cli']
