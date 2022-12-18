@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[dict[str, Any]]]"]):
     def __init__(self, db_connector: DBConnector[DiGraph], source: str = "Kubernetes") -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
+        self.graph_flags: K8sGraphFlags | None = None
 
     def build_graph_from_source_directory(
         self,
@@ -23,11 +24,10 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
         render_variables: bool = True,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
-        excluded_paths: list[str] | None = None,
-        graph_flags: K8sGraphFlags | None = None
+        excluded_paths: list[str] | None = None
     ) -> tuple[KubernetesLocalGraph, dict[str, list[dict[str, Any]]]]:
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths)
-        local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False, graph_flags=graph_flags)
+        local_graph = self.build_graph_from_definitions(definitions=definitions, render_variables=False, graph_flags=self.graph_flags)
         return local_graph, definitions
 
     def build_graph_from_definitions(
