@@ -1,0 +1,2 @@
+class TwistcliDownloadingError(Exception):
+    pass
