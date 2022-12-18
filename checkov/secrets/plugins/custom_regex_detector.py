@@ -62,7 +62,7 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
         for regex in value:
             parsed = True
             add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex, secret_policy['isCustom'])
-            logging.info(f"Regex : {regex} added to custom_detectors")
+            logging.info(f"Regex : {secret_policy['title']} added to custom_detectors")
     return parsed
 
 
@@ -77,7 +77,7 @@ def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, s
             for regex in code_dict['definition']['value']:
                 add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
                                         secret_policy['isCustom'])
-                logging.info(f"Regex : {regex} added to custom_detectors")
+                logging.info(f"Regex : {secret_policy['title']} added to custom_detectors")
     return parsed
 
 
