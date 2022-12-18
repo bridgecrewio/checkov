@@ -659,6 +659,7 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help='Enable combine tf graph and rf plan graph')
     parser.add('--no-fail-on-crash',
                default=False,
+               env_var='CHECKOV_NO_FAIL_ON_CRASH',
                action='store_true',
                help='Return exit code 0 instead of 2')
 
