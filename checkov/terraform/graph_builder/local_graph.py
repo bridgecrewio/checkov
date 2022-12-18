@@ -6,7 +6,6 @@ from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, Set, Tuple
-from hcl2 import START_LINE, END_LINE
 
 from typing_extensions import TypedDict
 
