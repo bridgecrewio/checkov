@@ -12,7 +12,6 @@ class Oauth2SecurityPasswordFlow(BaseOpenapiCheckV2):
         name = "Ensure that security is not using 'password' flow in OAuth2 authentication - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["security"]
-        self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(
             name=name,
             id=id,
@@ -31,7 +30,7 @@ class Oauth2SecurityPasswordFlow(BaseOpenapiCheckV2):
             if not isinstance(auth_dict, dict):
                 return CheckResult.UNKNOWN, conf
             for auth_key, auth_list in auth_dict.items():
-                if auth_key in self.irrelevant_keys:
+                if self.is_start_end_line(auth_key):
                     continue
                 auth_definition = security_definitions.get(auth_key, {})
                 auth_type = auth_definition.get('type', '')
