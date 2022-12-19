@@ -20,10 +20,10 @@ class VnetLocalDNS(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        if "dns_servers" in conf and conf["dns_servers"]:
+        if "dns_servers" in conf and conf["dns_servers"] and isinstance(conf["dns_servers"], list):
             dns_servers = conf["dns_servers"][0]
             for ip in dns_servers:
-                if "address_space" in conf and conf["address_space"]:
+                if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list):
                     address_spaces = conf["address_space"][0]
                     for address_range in address_spaces:
                         net = ip_network(address_range)
