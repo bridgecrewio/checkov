@@ -45,7 +45,6 @@ from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.common.sca.errors import TwistcliDownloadingError
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
 from checkov.github.runner import Runner as github_configuration_runner
