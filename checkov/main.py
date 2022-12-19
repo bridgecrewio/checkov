@@ -377,15 +377,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
-        try:
-            result = runner.run(
-                root_folder='',
-                image_id=config.docker_image,
-                dockerfile_path=config.dockerfile_path,
-                runner_filter=runner_filter,
-            )
-        except TwistcliDownloadingError:
-            return 2
+        result = runner.run(
+            root_folder='',
+            image_id=config.docker_image,
+            dockerfile_path=config.dockerfile_path,
+            runner_filter=runner_filter,
+        )
 
         results = result if isinstance(result, list) else [result]
         if len(results) > 1:
