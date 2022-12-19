@@ -176,7 +176,7 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        scan_data_format=ScanDataFormat.FROM_PLATFORM
+        scan_data_format=ScanDataFormat.PLATFORM
     )
 
     # then
@@ -362,7 +362,8 @@ def test_calculate_lowest_compliant_version():
     assert compliant_version == "2.2.24"
 
 
-def test_create_cli_cves_table():
+def test_create_cli_cves_table(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
@@ -415,7 +416,9 @@ def test_create_cli_cves_table():
     )
 
 
-def test_create_cli_license_violations_table():
+def test_create_cli_license_violations_table(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+
     # given
     file_path = "/requirements.txt"
 
@@ -469,7 +472,9 @@ def test_create_cli_license_violations_table():
     )
 
 
-def test_create_cli_cves_table_with_no_found_vulnerabilities():
+def test_create_cli_cves_table_with_no_found_vulnerabilities(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
@@ -495,7 +500,8 @@ def test_create_cli_cves_table_with_no_found_vulnerabilities():
     )
 
 
-def test_create_cli_output():
+def test_create_cli_output(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -565,7 +571,8 @@ def test_create_cli_output():
     )
 
 
-def test_create_cli_output_without_license_records():
+def test_create_cli_output_without_license_records(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -601,7 +608,8 @@ def test_create_cli_output_without_license_records():
     )
 
 
-def test_create_cli_output_without_cve_records():
+def test_create_cli_output_without_cve_records(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"

@@ -1,0 +1,29 @@
+metadata:
+  id: "CKV2_AWS_45"
+  name: "Ensure AWS Config recorder is enabled to record all supported resources"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - aws_config_configuration_recorder_status
+    - cond_type: connection
+      resource_types:
+        - aws_config_configuration_recorder_status
+      connected_resource_types:
+        - aws_config_configuration_recorder
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - aws_config_configuration_recorder
+      attribute: recording_group.all_supported
+      operator: not_equals
+      value: "false"
+    - cond_type: attribute
+      resource_types:
+        - aws_config_configuration_recorder_status
+      attribute: is_enabled
+      operator: equals
+      value: "true"

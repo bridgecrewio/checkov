@@ -21,10 +21,13 @@ class BaseVCSDAL:
         self.current_repository = ""
         self.current_branch = ""
         self.repo_owner = ""
+        self.org = ""
         self.default_branch_cache: dict[str, Any] = {}
 
         self.request_lib_http = None
         self._organization_security = None
+        self.org_complementary_metadata: dict[str, Any] = {}
+        self.repo_complementary_metadata: dict[str, Any] = {}
         self.http: urllib3.PoolManager | None = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
@@ -109,7 +112,7 @@ class BaseVCSDAL:
             logging.debug(f"Query failed {query}", exc_info=True)
 
     @staticmethod
-    def persist(path: str | Path, conf: dict[str, Any]) -> None:
+    def persist(path: str | Path, conf: dict[str, Any] | list[dict[str, Any]]) -> None:
         BaseVCSDAL.ensure_dir(path)
         with open(path, "w+", encoding='utf-8') as f:
             logging.debug(f"Persisting to {path}")

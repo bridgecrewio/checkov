@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -11,7 +12,6 @@ from pytest_mock import MockerFixture
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.sca.output import create_report_cve_record
-from checkov.common.output.report import Report
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
 
@@ -259,3 +259,20 @@ def test_create_library_component_maven_package_without_group_name() -> None:
     assert component.purl.name == 'bcpkix-jdk15on'
     assert component.purl.version == '1.69.00'
     assert component.purl.namespace == '12345/Dockerfile'
+
+
+def test_create_json_output():
+    # given
+    test_file = Path(__file__).parent / "fixtures/main.tf"
+    repo_id = "acme/example"
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    # when
+    cyclonedx = CycloneDX(repo_id=repo_id, reports=[report])
+    output = json.loads(cyclonedx.get_json_output())
+
+    # then
+    assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
+    assert len(output["components"]) == 1
+    assert len(output["dependencies"]) == 1
+    assert len(output["vulnerabilities"]) == 4
