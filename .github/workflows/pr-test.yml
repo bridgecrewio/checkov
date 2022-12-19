@@ -88,7 +88,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -136,7 +136,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
