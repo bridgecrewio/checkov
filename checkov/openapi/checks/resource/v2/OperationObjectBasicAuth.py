@@ -12,7 +12,6 @@ class OperationObjectBasicAuth(BaseOpenapiCheckV2):
         name = "Ensure that operation objects do not use basic auth - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["paths"]
-        self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(
             name=name,
             id=id,
@@ -28,15 +27,15 @@ class OperationObjectBasicAuth(BaseOpenapiCheckV2):
         security_definitions = conf.get('securityDefinitions', {}) or {}
 
         for path, path_dict in paths.items():
-            if path in self.irrelevant_keys:
+            if self.is_start_end_line(path):
                 continue
             for operation, operation_dict in path_dict.items():
-                if operation in self.irrelevant_keys:
+                if self.is_start_end_line(operation):
                     continue
                 security = operation_dict.get('security', [])
                 for security_definition in security:
                     for auth_key in security_definition:
-                        if auth_key in self.irrelevant_keys:
+                        if self.is_start_end_line(auth_key):
                             continue
                         auth_definition = security_definitions.get(auth_key, {})
                         auth_type = auth_definition.get('type', '')

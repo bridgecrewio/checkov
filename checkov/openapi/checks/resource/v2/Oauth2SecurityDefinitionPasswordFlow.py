@@ -12,7 +12,6 @@ class Oauth2SecurityDefinitionPasswordFlow(BaseOpenapiCheckV2):
         name = "Ensure that operation object does not use 'password' flow in OAuth2 authentication - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["securityDefinitions"]
-        self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(
             name=name,
             id=id,
@@ -27,7 +26,7 @@ class Oauth2SecurityDefinitionPasswordFlow(BaseOpenapiCheckV2):
         security_definitions = conf.get('securityDefinitions', {}) or {}
 
         for auth_key, auth_dict in security_definitions.items():
-            if auth_key in self.irrelevant_keys:
+            if self.is_start_end_line(auth_key):
                 continue
             auth_type = auth_dict.get('type')
             if auth_type.lower() == 'oauth2':

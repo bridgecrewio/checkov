@@ -12,7 +12,6 @@ class OperationObjectProducesUndefined(BaseOpenapiCheckV2):
         name = "Ensure that operation objects have 'produces' field defined for GET operations - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["paths"]
-        self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(
             name=name,
             id=id,
@@ -27,10 +26,10 @@ class OperationObjectProducesUndefined(BaseOpenapiCheckV2):
         paths = conf.get('paths', {}) or {}
 
         for path, path_dict in paths.items():
-            if path in self.irrelevant_keys:
+            if self.is_start_end_line(path):
                 continue
             for operation, operation_dict in path_dict.items():
-                if operation in self.irrelevant_keys:
+                if self.is_start_end_line(operation):
                     continue
                 if operation.lower() == 'get':
                     if not operation_dict.get('produces'):
