@@ -1209,6 +1209,22 @@ class TestRunnerValid(unittest.TestCase):
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_resource_ids_nested_modules(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_ids_nested_modules")
+        checks_allow_list = ['CKV_AWS_20']
+        expected_resources_ids = ['aws_s3_bucket.example', 'module.s3_module.aws_s3_bucket.example2',
+                                  'module.s3_module.module.inner_s3_module.aws_s3_bucket.example3']
+
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        resources_ids = [f.resource for f in report.failed_checks]
+        self.assertEqual(len(resources_ids), 3)
+        self.assertEqual(expected_resources_ids.sort(), resources_ids.sort())
+
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
