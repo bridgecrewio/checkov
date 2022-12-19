@@ -25,6 +25,7 @@ from checkov.kubernetes.kubernetes_utils import (
     get_skipped_checks,
     get_resource_id,
     K8_POSSIBLE_ENDINGS,
+    PARENT_RESOURCE_ID_KEY_NAME,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -254,11 +255,14 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 # Deal with nested pods within a deployment.
                 # May have K8S graph adjacencies, but will not be in the self.context map of objects.
                 # (Consider them 'virtual' objects created for the sake of graph lookups)
-                if '_parent_resource' in entity:
-                    if entity['resource_type'] == "Pod":
-                        entity_context = self.context[entity_file_path][entity['_parent_resource_id']]
+                if PARENT_RESOURCE_ID_KEY_NAME in entity:
+                    if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
+                        entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]
                     else:
-                        logging.INFO(f"Unsupported nested resource type for Kubernetes graph edges. Type: {entity['resource_type']} Parent: {entity['_parent_resource']}")
+                        logging.info(
+                            "Unsupported nested resource type for Kubernetes graph edges. "
+                            f"Type: {entity[CustomAttributes.RESOURCE_TYPE]} Parent: {entity[PARENT_RESOURCE_ID_KEY_NAME]}"
+                        )
                 else:
                     entity_context = self.context[entity_file_path][entity_id]
 
