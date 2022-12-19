@@ -40,10 +40,10 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'SCA'})
 
         self.assertEqual(set(checkov_runners), {
-            'bitbucket_pipelines', 'circleci_pipelines', 'argo_workflows', 'arm', 'azure_devops', 'azure_pipelines',
-            'bicep', 'cloudformation', 'dockerfile', 'github_configuration', 'github_actions', 'gitlab_configuration',
-            'gitlab_ci', 'bitbucket_configuration', 'helm', 'json', 'yaml', 'kubernetes', 'kustomize', 'openapi',
-            'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan'
+            'bitbucket_pipelines', 'circleci_pipelines', 'argo_workflows', 'arm', 'azure_devops_configuration',
+            'azure_pipelines', 'bicep', 'cloudformation', 'dockerfile', 'github_configuration', 'github_actions',
+            'gitlab_configuration', 'gitlab_ci', 'bitbucket_configuration', 'helm', 'json', 'yaml', 'kubernetes',
+            'kustomize', 'openapi', 'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan'
         })
 
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN))
