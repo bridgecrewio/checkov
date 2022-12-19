@@ -121,3 +121,13 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     assert len(sca_image_report.failed_checks) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
+    assert len(sca_image_report.image_cached_results) == 1
+
+    assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
+    assert (
+        sca_image_report.image_cached_results[0]["relatedResourceId"]
+        == "/image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml:Deployment.default.prod-wordpress"
+    )
+    assert sca_image_report.image_cached_results[0]["packages"] == [
+        {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
+    ]

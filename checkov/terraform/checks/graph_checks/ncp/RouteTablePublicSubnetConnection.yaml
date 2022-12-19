@@ -1,0 +1,35 @@
+metadata:
+  id: "CKV_NCP_22"
+  name: "Ensure a route table for the public subnets is created."
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - ncloud_route_table_association
+      operator: within
+    - cond_type: attribute
+      resource_types:
+        - ncloud_subnet
+      attribute: subnet_type
+      operator: equals
+      value: "PUBLIC"
+    - resource_types:
+        - ncloud_subnet
+      connected_resource_types:
+        - ncloud_route_table_association
+      operator: exists
+      cond_type: connection
+    - resource_types:
+        - ncloud_route_table
+      connected_resource_types:
+        - ncloud_route_table_association
+      operator: exists
+      cond_type: connection
+    - cond_type: attribute
+      resource_types:
+        - ncloud_route_table
+      attribute: supported_subnet_type
+      operator: equals
+      value: "PUBLIC"

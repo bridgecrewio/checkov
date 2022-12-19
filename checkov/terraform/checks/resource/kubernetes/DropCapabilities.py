@@ -21,6 +21,9 @@ class DropCapabilities(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        if not spec:
+            return CheckResult.UNKNOWN
+
         evaluated_keys_path = "spec"
 
         template = spec.get("template")
@@ -42,7 +45,7 @@ class DropCapabilities(BaseResourceCheck):
                     context = container.get("security_context")[0]
                     if context.get("capabilities") and isinstance(context.get("capabilities"), list):
                         capabilities = context.get("capabilities")[0]
-                        if capabilities.get("drop") and isinstance(capabilities.get("drop"), list):
+                        if isinstance(capabilities, dict) and capabilities.get("drop") and isinstance(capabilities.get("drop"), list):
                             drops = capabilities.get("drop")[0]
                             for drop in drops:
                                 if drop in ["ALL", "NET_RAW"]:

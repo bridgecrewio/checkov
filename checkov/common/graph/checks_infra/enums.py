@@ -43,6 +43,7 @@ class Operators:
     SUBSET = 'subset'
     NOT_SUBSET = 'not_subset'
     WITHIN = 'within'
+    NOT_WITHIN = 'not_within'
     AND = 'and'
     OR = 'or'
     NOT = 'not'

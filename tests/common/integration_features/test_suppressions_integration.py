@@ -1018,6 +1018,43 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.passed_checks[0].check_id, 'CKV_AWS_2')
         self.assertEqual(len(report.skipped_checks), 2)
+    
+    def test_get_policy_level_suppressions(self):
+        instance = BcPlatformIntegration()
+
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration.suppressions = {
+            'CKV_AWS_252': [{'suppressionType': 'Policy', 'id': '404088ed-4251-41ac-8dc1-45264af0c461',
+                             'policyId': 'BC_AWS_GENERAL_175', 'creationDate': '2022-11-09T16:27:36.413Z',
+                             'comment': 'Test2', 'checkovPolicyId': 'CKV_AWS_252'}], 
+            'CKV_AWS_36': [
+                {'suppressionType': 'Policy', 'id': 'b68013bc-2908-4c9a-969d-f1640d4aca11',
+                 'policyId': 'BC_AWS_LOGGING_2',
+                 'creationDate': '2022-11-09T16:11:58.435Z', 'comment': 'Testing', 'checkovPolicyId': 'CKV_AWS_36'}],
+            'CKV_K8S_27': [
+                {'suppressionType': 'Policy', 'id': '271c1a79-2333-4a12-bf7d-55ec78468b94', 'policyId': 'BC_K8S_26',
+                 'creationDate': '2022-12-08T08:00:04.561Z', 'comment': 'test checkov suppressions',
+                 'checkovPolicyId': 'CKV_K8S_27'}], 
+            'acme_AWS_1668010000289': [
+                {'suppressionType': 'Resources', 'id': '5565e523-58da-4bc7-970e-c3fceef93ac1',
+                 'policyId': 'acme_AWS_1668010000289', 'creationDate': '2022-11-09T16:28:50.887Z',
+                 'comment': 'Testing', 'resources': [{'accountId': 'acme_cli_repo/testing-resources',
+                                                      'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail9'}],
+                 'checkovPolicyId': 'acme_AWS_1668010000289'},
+                {'suppressionType': 'Resources', 'id': 'adf6f831-4393-4dcb-b345-2a14bf944267',
+                 'policyId': 'acme_AWS_1668010000289', 'creationDate': '2022-11-09T16:28:50.951Z',
+                 'comment': 'Testing', 'resources': [{'accountId': 'acme_cli_repo/testing-resources',
+                                                      'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail10'}],
+                 'checkovPolicyId': 'acme_AWS_1668010000289'},
+                {'suppressionType': 'Resources', 'id': '86d88e69-5755-4e69-965b-f97fc26e784b',
+                 'policyId': 'acme_AWS_1668010000289', 'creationDate': '2022-11-09T16:28:50.838Z',
+                 'comment': 'Testing', 'resources': [{'accountId': 'acme_cli_repo/testing-resources',
+                                                      'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail8'}],
+                 'checkovPolicyId': 'acme_AWS_1668010000289'}]}
+
+        expected_suppressions = ['CKV_AWS_252', 'CKV_AWS_36', 'CKV_K8S_27']
+        policy_level_suppressions = suppressions_integration.get_policy_level_suppressions()
+        self.assertEqual(expected_suppressions, policy_level_suppressions)
 
 
 if __name__ == '__main__':

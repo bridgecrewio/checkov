@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from checkov.common.parsers.yaml.multiline_parser import yml_multiline_parser
+from checkov.secrets.parsers.yaml.multiline_parser import yml_multiline_parser
 
 
 class TestMultilineParserYml(unittest.TestCase):

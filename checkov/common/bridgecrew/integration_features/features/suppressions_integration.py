@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from itertools import groupby
-from typing import TYPE_CHECKING, Pattern, Any
+from typing import TYPE_CHECKING, Pattern, Any, List
 
 from checkov.common.bridgecrew.check_type import CheckType
 
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.report import Report
     from checkov.common.output.record import Record
+    from checkov.common.typing import _BaseRunner
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
@@ -208,9 +209,18 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def _init_repo_regex(self) -> None:
         self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
         pass
+
+    def get_policy_level_suppressions(self) -> List[str]:
+        policy_level_suppressions = []
+        for check_id, check_suppressions in self.suppressions.items():
+            for suppression in check_suppressions:
+                if suppression.get("suppressionType") == "Policy":
+                    policy_level_suppressions.append(check_id)
+                    break
+        return policy_level_suppressions
 
 
 integration = SuppressionsIntegration(bc_integration)

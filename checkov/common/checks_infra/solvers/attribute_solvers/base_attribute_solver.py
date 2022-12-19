@@ -5,7 +5,7 @@ import logging
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
-from jsonpath_ng.ext import parse
+from bc_jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
