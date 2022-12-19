@@ -48,8 +48,8 @@ class GithubActionProvider:
 
                 elif isinstance(container, str):
                     image = container
-                    start_line = [line_number for line_number, line in self.workflow_line_numbers if image in line
-                                  and line_number >= job_object[START_LINE]][0]
+                    start_line = [line_number for line_number, line in
+                                  self.workflow_line_numbers[job_object[START_LINE]:] if image in line][0]
                     end_line = start_line + 1
 
                 if image:
