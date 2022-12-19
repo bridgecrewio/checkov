@@ -79,7 +79,7 @@ class TestBigQueryDatasetPublicACL(unittest.TestCase):
                          "description": ["This is a test description"],
                          "location": ["EU"],
                          "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "view": ["example-view-id"]}]
+                         "access": [{"view": {"projectId": "foo", "datasetId": "bar", "tableId": "buzz"}}]
                          }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
@@ -90,7 +90,7 @@ class TestBigQueryDatasetPublicACL(unittest.TestCase):
                          "description": ["This is a test description"],
                          "location": ["EU"],
                          "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "routine": ["example-routine-id"]}]
+                         "access": [{"routine": {"projectId": "foo", "datasetId": "bar", "routineId": "buzz"}}]
                          }
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
