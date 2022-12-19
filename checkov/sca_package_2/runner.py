@@ -157,4 +157,3 @@ class Runner(BaseRunner[None]):
                           "the scanning is terminating. details are below.\n"
                           "please try again. if it is repeated, please report.", exc_info=True)
             return []
-
