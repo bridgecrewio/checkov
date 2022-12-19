@@ -1031,7 +1031,6 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
         definition_context_paths = [f.definition_context_file_path for f in report.failed_checks]
         definition_context_paths.sort()
-        self.assertEqual(len(expected_definition_context_paths), 3)
         self.assertEqual(expected_definition_context_paths, definition_context_paths)
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
@@ -1049,7 +1048,6 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
         definition_context_paths = [f.definition_context_file_path for f in report.failed_checks]
         definition_context_paths.sort()
-        self.assertEqual(len(expected_definition_context_paths), 3)
         self.assertEqual(expected_definition_context_paths.sort(), definition_context_paths.sort())
 
     def test_runner_malformed_857(self):
