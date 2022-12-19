@@ -1015,6 +1015,43 @@ class TestRunnerValid(unittest.TestCase):
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    def test_record_definition_context_path(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
+        checks_allow_list = ['CKV_AWS_20']
+        main_path = os.path.join(resources_path, 'main.tf')
+        expected_definition_context_paths = [main_path,
+                                             f'{os.path.join(resources_path, "module/main.tf")}[{main_path}#0]',
+                                             f'{os.path.join(resources_path, "module/module2/main.tf")}[{main_path}->{os.path.join(resources_path, "module/main.tf")}#0]']
+        expected_definition_context_paths.sort()
+
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+        definition_context_paths = [f.definition_context_file_path for f in report.failed_checks]
+        definition_context_paths.sort()
+        self.assertEqual(len(expected_definition_context_paths), 3)
+        self.assertEqual(expected_definition_context_paths, definition_context_paths)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_record_definition_context_path_with_nested_module(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
+        checks_allow_list = ['CKV_AWS_20']
+        expected_definition_context_paths = [os.path.join(resources_path, 'main.tf'),
+                                             f'{os.path.join(resources_path, "module/main.tf")}[{os.path.join(resources_path, "main.tf")}#0]',
+                                             f'{os.path.join(resources_path, "module/module2/main.tf")}[{os.path.join(resources_path, "module/main.tf")}#0[{os.path.join(resources_path, "main.tf")}#0]]']
+        expected_definition_context_paths.sort()
+
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+        definition_context_paths = [f.definition_context_file_path for f in report.failed_checks]
+        definition_context_paths.sort()
+        self.assertEqual(len(expected_definition_context_paths), 3)
+        self.assertEqual(expected_definition_context_paths.sort(), definition_context_paths.sort())
+
     def test_runner_malformed_857(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -1216,14 +1253,16 @@ class TestRunnerValid(unittest.TestCase):
         checks_allow_list = ['CKV_AWS_20']
         expected_resources_ids = ['aws_s3_bucket.example', 'module.s3_module.aws_s3_bucket.example2',
                                   'module.s3_module.module.inner_s3_module.aws_s3_bucket.example3']
+        expected_resources_ids.sort()
 
         runner = Runner()
         report = runner.run(root_folder=resources_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
 
         resources_ids = [f.resource for f in report.failed_checks]
+        resources_ids.sort()
         self.assertEqual(len(resources_ids), 3)
-        self.assertEqual(expected_resources_ids.sort(), resources_ids.sort())
+        self.assertEqual(expected_resources_ids, resources_ids)
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
