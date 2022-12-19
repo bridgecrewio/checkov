@@ -15,7 +15,8 @@ class TestKubernetesGraphManager(TestGraph):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "../runner/resources"))
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
         graph_flags = K8sGraphFlags(create_complex_vertices=False, create_edges=False)
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False, graph_flags=graph_flags)
+        graph_manager.graph_flags = graph_flags
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
             os.path.join(root_dir, "example.yaml"): [
@@ -42,6 +43,7 @@ class TestKubernetesGraphManager(TestGraph):
         resource = definitions[relative_file_path][0]
 
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        local_graph = graph_manager.build_graph_from_definitions(definitions, graph_flags=graph_flags)
+        graph_manager.graph_flags = graph_flags
+        local_graph = graph_manager.build_graph_from_definitions(definitions)
         self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)
