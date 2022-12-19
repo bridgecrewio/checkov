@@ -19,6 +19,7 @@ import checkov.logging_init  # noqa  # should be imported before the others to e
 
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
+from checkov.azure_devops.runner import Runner as azure_devops
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
@@ -105,7 +106,8 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
-    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
+    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner(),
+    azure_devops(),
 )
 
 

@@ -1,0 +1,54 @@
+[
+  {
+    "createdBy": {
+      "displayName": "Steve Rogers",
+      "url": "https://spsprodweu5.vssps.visualstudio.com/12345678-abcd-1234-abcd-1234567890/_apis/Identities/12345678-abcd-1234-abcd-1234567890",
+      "_links": {
+        "avatar": {
+          "href": "https://dev.azure.com/acme/_apis/GraphProfile/MemberAvatars/msa.example"
+        }
+      },
+      "id": "12345678-abcd-1234-abcd-1234567890",
+      "uniqueName": "steve.rogers@marvel.com",
+      "imageUrl": "https://dev.azure.com/acme/_api/_common/identityImage?id=12345678-abcd-1234-abcd-1234567890",
+      "descriptor": "msa.example"
+    },
+    "createdDate": "2022-12-18T23:27:31.6259462Z",
+    "isEnabled": true,
+    "isBlocking": true,
+    "isDeleted": false,
+    "settings": {
+      "minimumApproverCount": 1,
+      "creatorVoteCounts": true,
+      "allowDownvotes": false,
+      "resetOnSourcePush": false,
+      "requireVoteOnLastIteration": false,
+      "resetRejectionsOnSourcePush": false,
+      "blockLastPusherVote": false,
+      "scope": [
+        {
+          "refName": "refs/heads/main",
+          "matchKind": "Exact",
+          "repositoryId": "12345678-abcd-1234-abcd-1234567890"
+        }
+      ]
+    },
+    "isEnterpriseManaged": false,
+    "_links": {
+      "self": {
+        "href": "https://dev.azure.com/acme/12345678-abcd-1234-abcd-1234567890/_apis/policy/configurations/3"
+      },
+      "policyType": {
+        "href": "https://dev.azure.com/acme/12345678-abcd-1234-abcd-1234567890/_apis/policy/types/fa4e907d-c16b-4a4c-9dfa-4906e5d171dd"
+      }
+    },
+    "revision": 6,
+    "id": 3,
+    "url": "https://dev.azure.com/acme/12345678-abcd-1234-abcd-1234567890/_apis/policy/configurations/3",
+    "type": {
+      "id": "fa4e907d-c16b-4a4c-9dfa-4906e5d171dd",
+      "url": "https://dev.azure.com/acme/12345678-abcd-1234-abcd-1234567890/_apis/policy/types/fa4e907d-c16b-4a4c-9dfa-4906e5d171dd",
+      "displayName": "Minimum number of reviewers"
+    }
+  }
+]
