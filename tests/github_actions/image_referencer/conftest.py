@@ -158,7 +158,7 @@ def workflow_line_numbers_with_two_identical_images() -> list[tuple[int, str]]:
             (21, '        run: |\n'),
             (22, '          terragrunt init\n'),
             (23, '          terragrunt destroy -auto-approve -var-file devl.tfvars\n'),
-            (24, '  first_job:\n'),
+            (24, '  second_job:\n'),
             (25, '    runs-on: ubuntu-latest\n'),
             (26, '    name: Name\n'),
             (27, '    container: node:14.16\n'),

@@ -43,6 +43,7 @@ def test_extract_images_from_workflow_correct_line_numbers(workflow_with_two_ide
     assert len(images) == 2
     assert images[0].start_line != images[1].start_line
     assert images[0].end_line != images[1].end_line
+    assert images[0].related_resource_id != images[1].related_resource_id
 
 
 @pytest.mark.parametrize(
