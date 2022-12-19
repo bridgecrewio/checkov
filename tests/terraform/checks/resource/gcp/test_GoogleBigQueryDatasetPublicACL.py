@@ -117,6 +117,7 @@ class TestBigQueryDatasetPublicACL(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
+    # Since we do not know what type of keys will be added in the future, checks should be based on allowlist
     def test_failure_unknown_key_to_be_added_in_the_future(self):
         resource_conf = {"dataset_id": ["example_dataset"],
                          "friendly_name": ["test"],
