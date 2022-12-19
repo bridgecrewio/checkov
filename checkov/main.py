@@ -113,6 +113,15 @@ def exit_run(no_fail_on_crash: bool) -> None:
     exit(0) if no_fail_on_crash else exit(2)
 
 
+def commit_repository(config: Namespace) -> Optional[str]:
+    try:
+        return bc_integration.commit_repository(config.branch)
+    except Exception:
+        logging.debug("commit_repository failed, exiting", exc_info=True)
+        exit_run(config.no_fail_on_crash)
+        return ""
+
+
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
     default_config_paths = get_default_config_paths(sys.argv[1:])
     parser = ExtArgumentParser(description='Infrastructure as code static analysis',
@@ -335,14 +344,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                  os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
-    def commit_repository() -> Optional[str]:
-        try:
-            return bc_integration.commit_repository(config.branch)
-        except Exception as e:
-            logging.debug(f"commit_repository failed, exiting: {e}")
-            exit_run(config.no_fail_on_crash)
-            return ""
-
     if config.directory:
         exit_codes = []
         for root_folder in config.directory:
@@ -359,7 +360,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.persist_run_metadata(run_metadata)
-                url = commit_repository()
+                url = commit_repository(config)
 
             if config.create_baseline:
                 overall_baseline = Baseline()
@@ -403,7 +404,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
         bc_integration.persist_run_metadata(run_metadata)
-        url = commit_repository()
+        url = commit_repository(config)
         exit_code = runner_registry.print_reports(results, config, url=url)
         return exit_code
     elif config.file:
@@ -428,7 +429,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
             bc_integration.persist_run_metadata(run_metadata)
-            url = commit_repository()
+            url = commit_repository(config)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
     elif not config.quiet:
