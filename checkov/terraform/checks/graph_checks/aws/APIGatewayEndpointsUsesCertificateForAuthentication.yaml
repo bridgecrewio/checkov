@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_AWS_51"
+  name: "Ensure AWS API Gateway endpoints uses client certificate authentication"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_api_gateway_stage"
+  - "aws_apigatewayv2_stage"
+  attribute: "client_certificate_id"
+  operator: "exists"
