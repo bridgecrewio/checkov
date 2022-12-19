@@ -102,16 +102,21 @@ def build_gha_definitions_context(definitions: dict[str, dict[str, Any]], defini
                 # iterate on the actual objects of each definition
                 if isinstance(definition, dict):
                     for attribute, attr_value in definition.items():
-                        if isinstance(attr_value, dict) or isinstance(attr_value, str):
-                            start_line: int = attr_value['__startline__']        # type: ignore
-                            end_line: int = attr_value['__endline__']            # type: ignore
+                        if isinstance(attr_value, dict):
+                            start_line = attr_value['__startline__']
+                            end_line = attr_value['__endline__']
+                        elif isinstance(attr_value, str) and '__startline__' in definition and '__endline__' in definition:
+                            start_line = definition['__startline__']
+                            end_line = definition['__endline__']
+                        else:
+                            continue
 
-                            code_lines = definitions_raw[file_path][start_line - 1: end_line]
-                            dpath.new(
-                                definitions_context,
-                                [file_path, str(file_path_definition), str(attribute)],
-                                {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
-                            )
+                        code_lines = definitions_raw[file_path][start_line - 1: end_line - 1]
+                        dpath.new(
+                            definitions_context,
+                            [file_path, str(file_path_definition), str(attribute)],
+                            {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
+                        )
                 elif isinstance(definition, str):
                     for line_tuple in definitions_raw[file_path]:
                         if file_path_definition in line_tuple[1] and definition in line_tuple[1]:

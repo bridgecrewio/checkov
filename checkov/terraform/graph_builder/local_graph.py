@@ -18,6 +18,7 @@ from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.parser_utils import get_current_module_index, get_abs_path, get_tf_definition_key
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
+from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -525,16 +526,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    @staticmethod
-    def get_current_address(vertex: TerraformBlock, address_prefix: str = ''):
-        if vertex.block_type == BlockType.MODULE:
-            return address_prefix + f"{vertex.block_type}.{vertex.name}"
-        else:
-            return address_prefix + vertex.name
-
     def update_nested_modules_address(self) -> None:
         for vertex in self.vertices:
-            if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
+            if vertex.block_type not in parser_registry.context_parsers:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
 
@@ -543,15 +537,15 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 for module in source_module:
                     address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = self.get_current_address(vertex, address_prefix)
+            address = f'{address_prefix}{vertex.name}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-            if vertex.block_type == BlockType.RESOURCE:
-                resource_type = vertex.name.split('.')[0]
-                resource_name = '.'.join(vertex.name.split('.')[1:])
-                vertex.config[resource_type][resource_name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
-            else:
-                vertex.config[vertex.name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            vertex_context = vertex.config
+            definition_path = context_parser.get_entity_definition_path(vertex.config)
+            for path in definition_path:
+                vertex_context = vertex_context.get(path, vertex_context)
+            vertex_context[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
 def to_list(data):
