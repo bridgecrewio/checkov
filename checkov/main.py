@@ -339,10 +339,10 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 logger.error(f'Directory {root_folder} does not exist; skipping it')
                 continue
             file = config.file
-            try:
-                scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
-                                                   files=file)
-            except TwistcliDownloadingError:
+            scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
+                                               files=file)
+            was_error = any([scan_report.error_status for scan_report in scan_reports])
+            if was_error:
                 return 2
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
@@ -377,14 +377,13 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
-        try:
-            result = runner.run(
-                root_folder='',
-                image_id=config.docker_image,
-                dockerfile_path=config.dockerfile_path,
-                runner_filter=runner_filter,
-            )
-        except TwistcliDownloadingError:
+        result = runner.run(
+            root_folder='',
+            image_id=config.docker_image,
+            dockerfile_path=config.dockerfile_path,
+            runner_filter=runner_filter,
+        )
+        if result.error_status:
             return 2
 
         results = result if isinstance(result, list) else [result]
@@ -403,10 +402,10 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         return exit_code
     elif config.file:
         runner_registry.filter_runners_for_files(config.file)
-        try:
-            scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
-                                               repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
-        except TwistcliDownloadingError:
+        scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
+                                           repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        was_error = any([scan_report.error_status for scan_report in scan_reports])
+        if was_error:
             return 2
         if baseline:
             baseline.compare_and_reduce_reports(scan_reports)
