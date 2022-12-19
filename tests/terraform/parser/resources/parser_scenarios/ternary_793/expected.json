@@ -7,7 +7,8 @@
           "default": [true],
           "description": ["Whether or not the metadata service requires session tokens"],
           "__start_line__": 1,
-          "__end_line__": 5
+          "__end_line__": 5,
+          "__address__": "metadata_http_tokens_required"
         }
       }
     ],
