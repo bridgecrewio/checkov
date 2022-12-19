@@ -382,10 +382,10 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             dockerfile_path=config.dockerfile_path,
             runner_filter=runner_filter,
         )
-        if result.error_status:
-            return 2
-
         results = result if isinstance(result, list) else [result]
+        was_error = any([scan_report.error_status for scan_report in results])
+        if was_error:
+            return 2
         if len(results) > 1:
             # this shouldn't happen, but if it happens, then it is intended or something is broke
             logger.error(f"SCA image runner returned {len(results)} reports; expected 1")

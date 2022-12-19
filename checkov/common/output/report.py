@@ -54,7 +54,7 @@ class Report:
         self.image_cached_results: List[dict[str, Any]] = []
         self.error_status: int = 0
 
-    def set_error_status(self, error_status: int):
+    def set_error_status(self, error_status: int) -> None:
         self.error_status = error_status
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
