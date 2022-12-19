@@ -10,14 +10,16 @@
             "-yay"
           ],
           "__start_line__": 2,
-          "__end_line__": 5
+          "__end_line__": 5,
+          "__address__": "gratuitous_var_default"
         }
       },
       {
         "input": {
           "default": ["module-input"],
           "__start_line__": 7,
-          "__end_line__": 9
+          "__end_line__": 9,
+          "__address__": "input"
         }
       }
     ],
@@ -42,7 +44,7 @@
           "__resolved__": ["bucket/bucket.tf[maze.tf#0]"],
           "__start_line__": 20,
           "__end_line__": 23,
-          "__address__": "module.bucket"
+          "__address__": "bucket"
         }
       }
     ],
@@ -66,7 +68,8 @@
       {
         "name": {
           "__start_line__": 1,
-          "__end_line__": 1
+          "__end_line__": 1,
+          "__address__": "module.bucket.name"
         }
       }
     ],

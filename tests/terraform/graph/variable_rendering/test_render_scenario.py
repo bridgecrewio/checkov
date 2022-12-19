@@ -134,7 +134,8 @@ class TestRendererScenarios(TestCase):
                     ],
                 'type': ['list(string)'],
                 "__start_line__": 11,
-                "__end_line__": 14
+                "__end_line__": 14,
+                "__address__": "log_types_enabled"
             }
         }
         self.go("list_default_622", different_expected)

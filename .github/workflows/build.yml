@@ -40,12 +40,12 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
@@ -82,7 +82,7 @@ jobs:
   prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v4
         with:
           python-version: 3.7
@@ -109,7 +109,7 @@ jobs:
     timeout-minutes: 30
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - name: Set up Python 3.7
         uses: actions/setup-python@2c3dd9e7e29afd70cc0950079bde6c979d1f69f9  # v4
         with:
@@ -134,7 +134,7 @@ jobs:
     environment: release
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
@@ -220,9 +220,8 @@ jobs:
           ## update python version
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
-          echo "checkov==$new_tag" > 'admissioncontroller/checkov-requirements.txt'
 
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt admissioncontroller/checkov-requirements.txt || echo "No changes to commit"
+          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push --tags
@@ -254,7 +253,7 @@ jobs:
       FULL_IMAGE_TAG: ${{ needs.bump-version.outputs.version }}
       SHORT_IMAGE_TAG: ${{ needs.bump-version.outputs.major_version }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b  # v2
       - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325  # v2  # needed for self-hosted builds
 
@@ -322,7 +321,7 @@ jobs:
     needs: bump-version
     environment: release
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - name: update checkov-k8s version
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
@@ -344,7 +343,7 @@ jobs:
     needs: bump-version
     environment: release
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - name: Get release version
         id: versions
         run: |
@@ -366,7 +365,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - name: update checkov release
         run: |
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
