@@ -32,6 +32,19 @@ def test_extract_images_from_workflow_no_images(workflow_without_images, workflo
     assert not images
 
 
+def test_extract_images_from_workflow_correct_line_numbers(workflow_with_two_identical_images,
+                                                           workflow_line_numbers_with_two_identical_images):
+    file_path = '/.github/workflows/unsecure_command.yaml'
+
+    gha_provider = GithubActionProvider(file_path=file_path, workflow_config=workflow_with_two_identical_images,
+                                        workflow_line_numbers=workflow_line_numbers_with_two_identical_images)
+    images = gha_provider.extract_images_from_workflow()
+
+    assert len(images) == 2
+    assert images[0].start_line != images[1].start_line
+    assert images[0].end_line != images[1].end_line
+
+
 @pytest.mark.parametrize(
     "start_line,end_line,expected_key",
     [
