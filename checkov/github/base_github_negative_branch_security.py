@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from abc import abstractmethod
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -27,17 +27,19 @@ class NegativeBranchSecurity(BaseGithubCheck):
         )
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if branch_security_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if not matches:
                 # attribute doesn't exists
                 return self.missing_attribute_result
 
             if matches:
-                if ANY_VALUE in self.get_forbidden_values() or all(
-                    match.value not in self.get_forbidden_values() for match in matches
+                forbidden_values = self.get_forbidden_values()
+                if ANY_VALUE in forbidden_values or any(
+                    match.value in forbidden_values for match in matches
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
                     return CheckResult.FAILED
@@ -47,7 +49,7 @@ class NegativeBranchSecurity(BaseGithubCheck):
             message = conf.get("message", "")
             if message == MESSAGE_BRANCH_NOT_PROTECTED:
                 return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
     @abstractmethod
     def get_evaluated_keys(self) -> list[str]:

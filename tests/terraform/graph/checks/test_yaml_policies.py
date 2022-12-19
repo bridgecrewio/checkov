@@ -23,6 +23,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_AccessControlGroupRuleDefine(self):
+        self.go("AccessControlGroupRuleDefine")
+
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
 
@@ -67,6 +70,24 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_VAconfiguredToSendReports(self):
         self.go("VAconfiguredToSendReports")
+
+    def test_AWSConfigRecorderEnabled(self):
+        self.go("AWSConfigRecorderEnabled")
+
+    def test_CLoudFrontS3OriginConfigWithOAI(self):
+        self.go("CLoudFrontS3OriginConfigWithOAI")
+
+    def test_CloudFrontWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("CloudFrontWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_ConfigRecorderRecordsAllGlobalResources(self):
+        self.go("ConfigRecorderRecordsAllGlobalResources")
+
+    def test_DMSEndpointHaveSSLConfigured(self):
+        self.go("DMSEndpointHaveSSLConfigured")
+
+    def test_ElastiCacheRedisConfiguredAutomaticFailOver(self):
+        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")  
 
     def test_VAconfiguredToSendReportsToAdmins(self):
         self.go("VAconfiguredToSendReportsToAdmins")
@@ -143,6 +164,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AutoScallingEnabledELB(self):
         self.go("AutoScallingEnabledELB")
 
+    def test_AutoScalingEnabledLB(self):
+        self.go("AutoScalingEnabledLB")
+
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 
@@ -208,6 +232,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_Route53ARecordAttachedResource(self):
         self.go("Route53ARecordAttachedResource")
+
+    def test_RouteTablePublicSubnetConnection(self):
+        self.go("RouteTablePublicSubnetConnection")
 
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")

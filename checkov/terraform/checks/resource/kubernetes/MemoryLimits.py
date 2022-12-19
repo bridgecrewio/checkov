@@ -16,6 +16,9 @@ class MemoryLimits(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        if not spec:
+            return CheckResult.UNKNOWN
+
         evaluated_keys_path = "spec"
 
         template = spec.get("template")

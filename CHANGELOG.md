@@ -1,6 +1,169 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.112...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.172...HEAD)
+
+## [2.2.172](https://github.com/bridgecrewio/checkov/compare/2.2.168...2.2.172) - 2022-12-18
+
+### Feature
+
+- **general:** Add no-fail-on-crash flag - [#4097](https://github.com/bridgecrewio/checkov/pull/4097)
+- **gha:** add fix for gha graphs and UT - [#4084](https://github.com/bridgecrewio/checkov/pull/4084)
+- **kubernetes:** inject k8s FF flags to instance instead of constructor - [#4096](https://github.com/bridgecrewio/checkov/pull/4096)
+
+### Bug Fix
+
+- **terraform:** add a method for get the entity definition path from the entity itself - [#4095](https://github.com/bridgecrewio/checkov/pull/4095)
+- **terraform:** add address attribute to all scanned terraform blocks - [#4074](https://github.com/bridgecrewio/checkov/pull/4074)
+
+## [2.2.168](https://github.com/bridgecrewio/checkov/compare/2.2.158...2.2.168) - 2022-12-15
+
+### Feature
+
+- **kubernetes:** Add kubernetes YAML checks to checkov packaging - [#4073](https://github.com/bridgecrewio/checkov/pull/4073)
+- **kubernetes:** move whorf to dedicated repo - [#4062](https://github.com/bridgecrewio/checkov/pull/4062)
+- **terraform_plan:** add Image Referencer for Terraform plan files - [#4063](https://github.com/bridgecrewio/checkov/pull/4063)
+- **terraform:** add CKV NCP rules about AutoScalingGroup, Load Balancer - [#3821](https://github.com/bridgecrewio/checkov/pull/3821)
+- **terraform:** add CKV NCP rules about Nat Gateways and Route - [#3854](https://github.com/bridgecrewio/checkov/pull/3854)
+- **terraform:** combine tf plan and tf graphs for nested modules - [#4066](https://github.com/bridgecrewio/checkov/pull/4066)
+- **terraform:** More azurerm checks for terraform - [#3970](https://github.com/bridgecrewio/checkov/pull/3970)
+
+### Bug Fix
+
+- **openapi:** Fix in PathSchemeDefineHTTP opeAPI check - [#4079](https://github.com/bridgecrewio/checkov/pull/4079)
+- **terraform:** CKV_AZURE_43 add new test case - [#4082](https://github.com/bridgecrewio/checkov/pull/4082)
+
+## [2.2.158](https://github.com/bridgecrewio/checkov/compare/2.2.155...2.2.158) - 2022-12-14
+
+### Feature
+
+- **github:** more CIS checks- part3  - [#4057](https://github.com/bridgecrewio/checkov/pull/4057)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#3962](https://github.com/bridgecrewio/checkov/pull/3962)
+
+### Bug Fix
+
+- **secrets:** fix secrets crash when secret is non string - [#4077](https://github.com/bridgecrewio/checkov/pull/4077)
+
+## [2.2.155](https://github.com/bridgecrewio/checkov/compare/2.2.148...2.2.155) - 2022-12-13
+
+### Feature
+
+- **github:**  more CIS checks- part2 - [#4017](https://github.com/bridgecrewio/checkov/pull/4017)
+- **kubernetes:** added CKV2_K8S_EXAMPLE_1 only in tests as an example for k8s graph check for pod which is publicly accessible - [#4060](https://github.com/bridgecrewio/checkov/pull/4060)
+- **kubernetes:** added deployment name to pod resource id - [#4040](https://github.com/bridgecrewio/checkov/pull/4040)
+- **sca:** fix root packages fixed version - [#4070](https://github.com/bridgecrewio/checkov/pull/4070)
+
+### Bug Fix
+
+- **sca:** invoke packaging.Version instead of parse - [#4065](https://github.com/bridgecrewio/checkov/pull/4065)
+- **secrets:** fix error when secret is None - [#4071](https://github.com/bridgecrewio/checkov/pull/4071)
+- **terraform:** checkov fix as resource container_group modified - [#4061](https://github.com/bridgecrewio/checkov/pull/4061)
+- **terraform:** fixed unexpected data for IAMPublicActionsPolicy - [#4067](https://github.com/bridgecrewio/checkov/pull/4067)
+- **terraform:** fixed unexpected data for MonitorLogProfileRetentionDays - [#4068](https://github.com/bridgecrewio/checkov/pull/4068)
+
+### Platform
+
+- **general:** Apply licensing from platform - [#3961](https://github.com/bridgecrewio/checkov/pull/3961)
+
+## [2.2.148](https://github.com/bridgecrewio/checkov/compare/2.2.139...2.2.148) - 2022-12-12
+
+### Feature
+
+- **gha:** Add gha graph infra - [#4058](https://github.com/bridgecrewio/checkov/pull/4058)
+- **gha:** add infra for gha graphs - [#4052](https://github.com/bridgecrewio/checkov/pull/4052)
+- **sca:**  fixed dependencies default value - [#4056](https://github.com/bridgecrewio/checkov/pull/4056)
+- **sca:** added indirect cves fix versions - [#4023](https://github.com/bridgecrewio/checkov/pull/4023)
+- **secrets:** Inject secrets omitter to runner registry - [#4054](https://github.com/bridgecrewio/checkov/pull/4054)
+- **terraform_plan:** support jsonpath queries in AWS IAM policy strings for Terraform plan - [#4033](https://github.com/bridgecrewio/checkov/pull/4033)
+- **terraform:** Extend secret attributes to omit mapping - [#4028](https://github.com/bridgecrewio/checkov/pull/4028)
+- **terraform:** tf plan combine graphs pass params - [#4051](https://github.com/bridgecrewio/checkov/pull/4051)
+
+### Bug Fix
+
+- **terraform:** add missing resource aws_route53_resolver_endpoint #3968 - [#3995](https://github.com/bridgecrewio/checkov/pull/3995)
+- **terraform:** fix getting local dest module path - [#4055](https://github.com/bridgecrewio/checkov/pull/4055)
+- **terraform:** Fix some errors in Dynamic Blocks rendering - [#4050](https://github.com/bridgecrewio/checkov/pull/4050)
+
+## [2.2.139](https://github.com/bridgecrewio/checkov/compare/2.2.130...2.2.139) - 2022-12-11
+
+### Feature
+
+- **graph:** Added `not_within` attribute solver for graph checks - [#4041](https://github.com/bridgecrewio/checkov/pull/4041)
+- **kubernetes:** Add CKV2_K8S_2 graph check for potential privilege escalation in `nodes/proxy` or `pods/exec` with `create` permissions - [#4034](https://github.com/bridgecrewio/checkov/pull/4034)
+- **kubernetes:** Add CKV2_K8S_3 no `impersonate` permissions for `ServiceAccount/Node` - [#4037](https://github.com/bridgecrewio/checkov/pull/4037)
+- **kubernetes:** Added CKV2_K8S_4 check to not allow modifying of services/status - [#4038](https://github.com/bridgecrewio/checkov/pull/4038)
+- **kubernetes:** Added CKV2_K8S_5 check that no service account or node can read all secrets - [#4042](https://github.com/bridgecrewio/checkov/pull/4042)
+- **secrets:** Accepting json reports from bucket in secrets_omitter - [#4039](https://github.com/bridgecrewio/checkov/pull/4039)
+- **terraform:** add CKV NCP rules about Route Table Association - [#3856](https://github.com/bridgecrewio/checkov/pull/3856)
+
+### Bug Fix
+
+- **kubernetes:** Corrected list format for yaml files in new k8s graph check tests - [#4035](https://github.com/bridgecrewio/checkov/pull/4035)
+- **secrets:** custom secret add support for value str and not only list - [#4024](https://github.com/bridgecrewio/checkov/pull/4024)
+- **terraform:** Fix in dot separator in the dynamic argument - [#4036](https://github.com/bridgecrewio/checkov/pull/4036)
+
+## [2.2.130](https://github.com/bridgecrewio/checkov/compare/2.2.124...2.2.130) - 2022-12-08
+
+### Feature
+
+- **general:** Apply policy-level suppressions as skipped checks - [#4020](https://github.com/bridgecrewio/checkov/pull/4020)
+- **github:** Add 3 CIS checks: 1.1.3, 1.1.8, 1.1.10 - [#4003](https://github.com/bridgecrewio/checkov/pull/4003)
+- **kubernetes:** Added CKV2_K8S_1 to ensure RoleBinding do not allow privilege escalation to a ServiceAccount/Node - [#4004](https://github.com/bridgecrewio/checkov/pull/4004)
+- **secrets:** Omit secrets from reports based on secrets reports - [#3991](https://github.com/bridgecrewio/checkov/pull/3991)
+- **secrets:** Omit secrets from reports based on secrets reports - [#4015](https://github.com/bridgecrewio/checkov/pull/4015)
+
+### Bug Fix
+
+- **github:** remove secrets from schema example - [#4019](https://github.com/bridgecrewio/checkov/pull/4019)
+- **terraform:** fix resource block address - [#4018](https://github.com/bridgecrewio/checkov/pull/4018)
+
+## [2.2.124](https://github.com/bridgecrewio/checkov/compare/2.2.116...2.2.124) - 2022-12-07
+
+### Feature
+
+- **sca:** change sca packages output to include dependencies structure - [#3957](https://github.com/bridgecrewio/checkov/pull/3957)
+- **secrets:** Adding check length for secret - [#3985](https://github.com/bridgecrewio/checkov/pull/3985)
+- **terraform:** nested modules support in graph - [#3935](https://github.com/bridgecrewio/checkov/pull/3935)
+
+### Bug Fix
+
+- **circleci:** fix executors in resource_id - [#4008](https://github.com/bridgecrewio/checkov/pull/4008)
+- **secrets:** Bump detect secrets version - [#3997](https://github.com/bridgecrewio/checkov/pull/3997)
+- **terraform:** Fix an issue in dynamic blocks - [#4006](https://github.com/bridgecrewio/checkov/pull/4006)
+- **terraform:** fix CKV_AWS_283 check - [#4005](https://github.com/bridgecrewio/checkov/pull/4005)
+- **terraform:** Fix CKV_AZURE_168 check - [#4000](https://github.com/bridgecrewio/checkov/pull/4000)
+- **terraform:** Fix some issues in dynamic blocks flow - [#4002](https://github.com/bridgecrewio/checkov/pull/4002)
+- **terraform:** Fix TF checks crashes - [#3992](https://github.com/bridgecrewio/checkov/pull/3992)
+
+## [2.2.116](https://github.com/bridgecrewio/checkov/compare/2.2.114...2.2.116) - 2022-12-06
+
+### Feature
+
+- **general:** Report failed attempts at reporting contributor metrics - [#3984](https://github.com/bridgecrewio/checkov/pull/3984)
+- **kubernetes:** create simple resources id for pods; allow enabling k8s graph features using env vars - [#3975](https://github.com/bridgecrewio/checkov/pull/3975)
+- **terraform:** check for insecure protocols - [#3958](https://github.com/bridgecrewio/checkov/pull/3958)
+- **terraform:** Check resource-based policies for public access - [#3989](https://github.com/bridgecrewio/checkov/pull/3989)
+- **terraform:** Dynamic Blocks support for loop in for_each attribute - [#3982](https://github.com/bridgecrewio/checkov/pull/3982)
+- **terraform:** new aks checks for Azure - [#3951](https://github.com/bridgecrewio/checkov/pull/3951)
+
+### Bug Fix
+
+- **dockerfile:** fix Dockerfile inline skip handling - [#3976](https://github.com/bridgecrewio/checkov/pull/3976)
+- **secrets:** fix_Record_code_block_secrets - [#3987](https://github.com/bridgecrewio/checkov/pull/3987)
+- **terraform:** azurerm kusto cluster encryption - wrong attribute tested for - [#3972](https://github.com/bridgecrewio/checkov/pull/3972)
+
+## [2.2.114](https://github.com/bridgecrewio/checkov/compare/2.2.112...2.2.114) - 2022-12-04
+
+### Feature
+
+- **terraform:** add CKV NCP rules about ncloud access control group rule - [#3860](https://github.com/bridgecrewio/checkov/pull/3860)
+
+### Bug Fix
+
+- **secrets:** fix Issue with 'NoneType' error in the custom detectors load_detectors - [#3973](https://github.com/bridgecrewio/checkov/pull/3973)
+
+### Platform
+
+- **terraform:** remove redundant exc_info for module without source - [#3974](https://github.com/bridgecrewio/checkov/pull/3974)
 
 ## [2.2.112](https://github.com/bridgecrewio/checkov/compare/2.2.106...2.2.112) - 2022-12-01
 

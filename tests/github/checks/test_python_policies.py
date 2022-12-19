@@ -40,6 +40,42 @@ def test_GithubBranchRequireStatusChecks():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubBranchRequireStatusChecks")
 
 
+def test_GithubRequire2Approvals():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubRequire2Approvals")
+
+
+def test_GithubDisallowInactiveBranch60Days():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubDisallowInactiveBranch60Days")
+
+
+def test_GithubRequireUpdatedBranch():
+    run_check(base_path=BASE_DIR / "branch_security", check="GithubRequireUpdatedBranch")
+
+
+def test_GithubPublicRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubPublicRepositoryCreationIsLimited")
+
+
+def test_GithubInternalRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubInternalRepositoryCreationIsLimited")
+
+
+def test_GithubPrivateRepositoryCreationIsLimited():
+    run_check(base_path=BASE_DIR / "repo_management", check="GithubPrivateRepositoryCreationIsLimited")
+
+
+def test_GithubMinimumAdminsInOrganization():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubMinimumAdminsInOrganization")
+
+
+def test_GithubRequireStrictBasePermissionsRepository():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubRequireStrictBasePermissionsRepository")
+
+
+def test_GithubRequireOrganizationIsVerified():
+    run_check(base_path=BASE_DIR / "contribution_access", check="GithubRequireOrganizationIsVerified")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP

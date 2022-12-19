@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from abc import abstractmethod
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -25,9 +25,10 @@ class BranchSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if branch_security_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if matches and all(isinstance(match.value, dict) or match.value == self.get_expected_value() for match in matches):
                 return CheckResult.PASSED
@@ -37,7 +38,7 @@ class BranchSecurity(BaseGithubCheck):
             message = conf.get('message', '')
             if message == MESSAGE_BRANCH_NOT_PROTECTED:
                 return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
     def get_expected_value(self) -> str | bool:
         return True
