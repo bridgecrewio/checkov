@@ -4,7 +4,7 @@ import logging
 import os
 import platform
 
-from typing import Type, Optional
+from typing import Type, Optional, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -14,7 +14,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.output.record import Record
-from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_definitions
+from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
@@ -25,6 +25,9 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
+
+if TYPE_CHECKING:
+    from checkov.common.typing import ResourceAttributesToOmit
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -106,9 +109,7 @@ class Runner(TerraformRunner):
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
             if CHECKOV_CREATE_GRAPH:
-                censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
-                                                                          resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
-                self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
+                self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
@@ -126,7 +127,10 @@ class Runner(TerraformRunner):
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.definitions:
-            graph_report = self._get_graph_report(root_folder, runner_filter, tf_local_graph)
+            graph_report = self._get_graph_report(root_folder=root_folder,
+                                                  runner_filter=runner_filter,
+                                                  tf_local_graph=tf_local_graph,
+                                                  resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
             merge_reports(report, graph_report)
 
         if runner_filter.run_image_referencer:
@@ -142,15 +146,17 @@ class Runner(TerraformRunner):
 
         return report
 
-    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter, tf_local_graph: Optional[TerraformLocalGraph]) -> Report:
+    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter,
+                          tf_local_graph: Optional[TerraformLocalGraph],
+                          resource_attributes_to_omit: ResourceAttributesToOmit) -> Report:
         if self._should_run_deep_analysis and tf_local_graph:
             deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
             deep_analysis_graph_manager.filter_report(graph_report)
             return graph_report
-        return self.get_graph_checks_report(root_folder, runner_filter)
+        return self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
         graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
