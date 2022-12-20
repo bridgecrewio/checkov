@@ -282,7 +282,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 logger.debug(message, exc_info=True)
             else:
                 logger.error(message)
-                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
+                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
             exit_run(config.no_fail_on_crash)
     else:
         logger.debug('No API key found. Scanning locally only.')
