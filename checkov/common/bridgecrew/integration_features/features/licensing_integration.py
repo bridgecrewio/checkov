@@ -25,6 +25,11 @@ class LicensingIntegration(BaseIntegrationFeature):
         self.enabled_modules: List[CustomerSubscription] = []
         self.open_source_only: bool = True
 
+    @property
+    def billing_plan(self) -> None:
+        # Deprecated, already calculated in the BE into the enabled_modules list
+        return None
+
     def is_valid(self) -> bool:
         # We will always use this integration to determine what runs or not
         return True

@@ -170,7 +170,7 @@ class TestLicensingIntegration(unittest.TestCase):
 
         instance.customer_run_config_response = {
             'platformLicense': {
-                'modules': {m: True for m in module_keys}
+                'modules': {m: True for m in module_keys},
             }
         }
         licensing_integration.pre_scan()
@@ -202,7 +202,7 @@ class TestLicensingIntegration(unittest.TestCase):
 
         instance.customer_run_config_response = {
             'platformLicense': {
-                'modules': {key: True for key in module_keys}
+                'modules': {key: True for key in module_keys},
             }
         }
 
