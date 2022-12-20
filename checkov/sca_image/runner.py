@@ -227,7 +227,7 @@ class Runner(PackageRunner):
         )
         return report
 
-    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any],
+    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any] | None,
                                  root_folder: Union[str, Path, None] = None) -> dict[str, Any]:
         """
             :param image_cached_result: twistcli result for image as saved in cache
@@ -252,7 +252,8 @@ class Runner(PackageRunner):
             root_folder=root_folder)
         return payload
 
-    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter, image_cached_result: Dict[str, Any]) -> Report:
+    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter,
+                         image_cached_result: Dict[str, Any] | None) -> Report:
         """
 
         :param dockerfile_path: path of a file that might contain a container image
