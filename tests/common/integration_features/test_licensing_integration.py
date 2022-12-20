@@ -157,7 +157,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: True for m in module_keys},
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
         licensing_integration.pre_scan()
@@ -172,7 +171,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: True for m in module_keys},
-                'billingPlan': 'RESOURCE_BASED'
             }
         }
         licensing_integration.pre_scan()
@@ -187,7 +185,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: True for m in module_keys},
-                'billingPlan': 'RESOURCE_BASED'
             }
         }
 
@@ -206,7 +203,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {key: True for key in module_keys},
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -225,7 +221,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {key: False for key in module_keys},
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -246,7 +241,6 @@ class TestLicensingIntegration(unittest.TestCase):
             instance.customer_run_config_response = {
                 'platformLicense': {
                     'modules': {key: key == module for key in module_keys},
-                    'billingPlan': 'DEVELOPER_BASED'
                 }
             }
             licensing_integration.pre_scan()
@@ -261,7 +255,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: True for m in module_keys},
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -283,7 +276,6 @@ class TestLicensingIntegration(unittest.TestCase):
         instance.customer_run_config_response = {
             'platformLicense': {
                 'modules': {m: False for m in module_keys},
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -311,7 +303,6 @@ class TestLicensingIntegration(unittest.TestCase):
                     'SECRETS': False,
                     'SCA': False
                 },
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -340,7 +331,6 @@ class TestLicensingIntegration(unittest.TestCase):
                     'SECRETS': False,
                     'SCA': False
                 },
-                'billingPlan': 'DEVELOPER_BASED'
             }
         }
 
@@ -368,8 +358,7 @@ class TestLicensingIntegration(unittest.TestCase):
                     'IAC': False,
                     'SECRETS': False,
                     'SCA': False
-                },
-                'billingPlan': 'DEVELOPER_BASED'
+                }
             }
         }
 
