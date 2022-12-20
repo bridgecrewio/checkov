@@ -36,6 +36,7 @@ from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
+from checkov.common.models.enums import ErrorStatus
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
@@ -187,7 +188,7 @@ class RunnerRegistry:
 
     @staticmethod
     def is_error_in_reports(reports: List[Report]) -> bool:
-        return any(scan_report.error_status for scan_report in reports)
+        return any(scan_report.error_status != ErrorStatus.Success for scan_report in reports)
 
     @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
