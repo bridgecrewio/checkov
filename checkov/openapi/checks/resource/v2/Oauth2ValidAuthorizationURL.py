@@ -5,8 +5,7 @@ from typing import Any, Union, List
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
-
-VALID_URL_REGEX = re.compile(r'^(https?):\/\/(-\.)?([^\s\/?\.#-]+([-\.\/])?)+(\/[^\s]*)?$')
+from checkov.openapi.utils import VALID_URL_REGEX
 
 
 class Oauth2ValidAuthorizationURL(BaseOpenapiCheckV2):
