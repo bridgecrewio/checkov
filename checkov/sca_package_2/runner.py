@@ -50,14 +50,18 @@ class Runner(BaseRunner[None]):
         if runner_filter.excluded_paths:
             excluded_paths.update(runner_filter.excluded_paths)
 
-        if not self.upload_package_files(
+        uploaded_files: List[FileToPersist] | None = self.upload_package_files(
                 root_path=self._code_repo_path,
                 files=files,
                 excluded_paths=excluded_paths,
                 excluded_file_names=excluded_file_names,
-        ):
-            # no packages found
+        )
+        if uploaded_files is None:
+            # failure happened during uploading
             return None
+        if len(uploaded_files) == 0:
+            # no packages were uploaded. we can skip the scanning
+            return {}
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
@@ -83,6 +87,7 @@ class Runner(BaseRunner[None]):
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
+            report.set_error_status(2)
             return report
 
         for path, result in scan_results.items():
@@ -125,7 +130,7 @@ class Runner(BaseRunner[None]):
             files: list[str] | None,
             excluded_paths: set[str],
             excluded_file_names: set[str] | None = None,
-    ) -> List[FileToPersist]:
+    ) -> List[FileToPersist] | None:
         """ upload package files to s3"""
         logging.info("SCA package scanning upload for package files")
         excluded_file_names = excluded_file_names or set()
@@ -153,7 +158,7 @@ class Runner(BaseRunner[None]):
             bc_integration.persist_files(package_files_to_persist)
             return package_files_to_persist
         except Exception:
-            logging.error("Unexpected failure happened during uploading files for package scanning.\n"
+            logging.debug("Unexpected failure happened during uploading files for package scanning.\n"
                           "the scanning is terminating. details are below.\n"
                           "please try again. if it is repeated, please report.", exc_info=True)
-            return []
+            return None
