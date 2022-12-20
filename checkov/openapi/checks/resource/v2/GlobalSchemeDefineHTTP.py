@@ -8,7 +8,6 @@ from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiChe
 
 class GlobalSchemeDefineHTTP(BaseOpenapiCheckV2):
     def __init__(self) -> None:
-        # https://learning.postman.com/docs/api-governance/api-definition/openapi2/#schemes-of-the-operation-have-http-scheme-defined
         id = "CKV_OPENAPI_18"
         name = "Ensure that global schemes use 'https' protocol instead of 'http'- version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
