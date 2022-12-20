@@ -322,8 +322,13 @@ def is_nested(full_path: str) -> bool:
     return '[' in full_path
 
 
-def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
-    return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
+def get_tf_definition_key(path: str, module_dependency: str, module_dependency_num: str) -> str:
+    if not module_dependency:
+        return path
+    if not is_nested(module_dependency):
+        return f"{path}[{module_dependency}#{module_dependency_num}]"
+    module_index = get_current_module_index(module_dependency)
+    return f"{path}[{module_dependency[:module_index]}#{module_dependency_num}{module_dependency[module_index:]}]"
 
 
 def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[str]]:
