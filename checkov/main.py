@@ -353,6 +353,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file)
+            if runner_registry.is_error_in_reports(scan_reports):
+                exit_run(config.no_fail_on_crash)
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
@@ -392,8 +394,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             dockerfile_path=config.dockerfile_path,
             runner_filter=runner_filter,
         )
-
         results = result if isinstance(result, list) else [result]
+        if runner_registry.is_error_in_reports(results):
+            exit_run(config.no_fail_on_crash)
         if len(results) > 1:
             # this shouldn't happen, but if it happens, then it is intended or something is broke
             logger.error(f"SCA image runner returned {len(results)} reports; expected 1")
@@ -411,6 +414,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         runner_registry.filter_runners_for_files(config.file)
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        if runner_registry.is_error_in_reports(scan_reports):
+            exit_run(config.no_fail_on_crash)
         if baseline:
             baseline.compare_and_reduce_reports(scan_reports)
         if config.create_baseline:
