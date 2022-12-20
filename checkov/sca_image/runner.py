@@ -129,7 +129,7 @@ class Runner(PackageRunner):
 
             output_path.unlink()
         except Exception:
-            logging.error(
+            logging.debug(
                 "Unexpected failure happened during uploading results to cache. details are below.\n"
                 "Note that the scan is still running. if this is repeated, please report.", exc_info=True)
 
