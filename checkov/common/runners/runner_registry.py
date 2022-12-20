@@ -554,6 +554,7 @@ class RunnerRegistry:
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
