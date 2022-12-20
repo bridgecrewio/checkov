@@ -56,7 +56,7 @@ class Scanner:
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
             logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
-            scan_results: list[dict[str, Any]] = []
+            scan_results: list[dict[str, Any] | None] = []
             for input_path in input_paths:
                 scan_results.append(await self.run_scan(input_path))
         else:
