@@ -1,83 +1,45 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.MySQLGeoBackupEnabled import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestMySQLGeoBackupEnabled(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_MySQLGeoBackupEnabled"
 
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_mysql_server" "example" {
-  name                = var.mysqlserver_name
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-  administrator_login          = var.admin_name
-  administrator_login_password = var.password
-  sku_name = var.sku_name
-  storage_mb = var.storage_mb
-  version    = var.server_version
+        # then
+        summary = report.get_summary()
 
-  auto_grow_enabled            = true
-  backup_retention_days        = 7
-  geo_redundant_backup_enabled = false
-  infrastructure_encryption_enabled = false
-    public_network_access_enabled = true
-}
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "azurerm_mysql_flexible_server.pass",
+            "azurerm_mysql_server.pass",
+        }
+        failing_resources = {
+            "azurerm_mysql_flexible_server.fail",
+            "azurerm_mysql_flexible_server.fail2",
+            "azurerm_mysql_server.fail",
+            "azurerm_mysql_server.fail2",
+        }
 
-    def test_missing_failure(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_mysql_server" "example" {
-  name                = var.mysqlserver_name
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-  administrator_login          = var.admin_name
-  administrator_login_password = var.password
-  sku_name = var.sku_name
-  storage_mb = var.storage_mb
-  version    = var.server_version
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-  auto_grow_enabled            = true
-  backup_retention_days        = 7
-  infrastructure_encryption_enabled = false
-}
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-        
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-resource "azurerm_mysql_server" "example" {
-  name                = var.mysqlserver_name
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
-
-  administrator_login          = var.admin_name
-  administrator_login_password = var.password
-  sku_name = var.sku_name
-  storage_mb = var.storage_mb
-  version    = var.server_version
-
-  auto_grow_enabled            = true
-  backup_retention_days        = 7
-  geo_redundant_backup_enabled = true
-  infrastructure_encryption_enabled = false
-  public_network_access_enabled = false
-}
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mysql_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
+
