@@ -13,7 +13,6 @@ from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner, TWISTCLI_FILE_NAME
 from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_scanning import \
     docker_image_scanning_integration
-from checkov.common.models.enums import ErrorStatus
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
@@ -289,7 +288,7 @@ class Runner(PackageRunner):
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 report = Report(self.check_type)
-                report.set_error_status(ErrorStatus.Error)
+                report.set_error_status(2)
                 return report
 
             self.raw_report = scan_result
@@ -310,7 +309,7 @@ class Runner(PackageRunner):
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
             report = Report(self.check_type)
-            report.set_error_status(ErrorStatus.Error)
+            report.set_error_status(2)
             return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
