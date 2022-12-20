@@ -50,7 +50,7 @@ class Scanner:
     async def run_scan_multi(
             self,
             input_paths: "Iterable[Path]",
-    ) -> "Sequence[Dict[str, Any] | None] | None":
+    ) -> "Sequence[Dict[str, Any]] | None":
 
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
@@ -90,10 +90,15 @@ class Scanner:
                     res['repository'] = str(input_paths_as_list[idx])
                     scan_results[idx] = res
 
-        if any(report is None for report in scan_results):
-            return None
+        # checking whether there are None results that indicates for error. id there is any, we return None
+        scan_results_without_nones: list[dict[str, Any]] = []
+        for result in scan_results:
+            if result is None:
+                return None
+            else:
+                scan_results_without_nones.append(result)
 
-        return scan_results
+        return scan_results_without_nones
 
     async def run_scan(self, input_path: Path) -> dict[str, Any] | None:
         try:
