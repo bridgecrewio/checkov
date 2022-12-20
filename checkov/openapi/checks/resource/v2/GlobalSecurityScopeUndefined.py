@@ -22,19 +22,20 @@ class GlobalSecurityScopeUndefined(BaseOpenapiCheckV2):
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         security_definitions = conf.get('securityDefinitions', {}) or {}
-        security = conf.get('security', [{}]) or [{}]
-        for security_key, security_scopes in security.items():
-            if self.is_start_end_line(security_key) or not security_scopes:
-                continue
-            security_definition = security_definitions.get(security_key, {})
-            if not security_definition:
-                return CheckResult.FAILED, conf
-            definition_scopes = security_definition.get('scopes', {})
-            if not definition_scopes:
-                return CheckResult.FAILED, conf
-            for scope in security_scopes:
-                if scope not in definition_scopes:
+        security_values = conf.get('security', [{}]) or [{}]
+        for security in security_values:
+            for security_key, security_scopes in security.items():
+                if self.is_start_end_line(security_key) or not security_scopes:
+                    continue
+                security_definition = security_definitions.get(security_key, {})
+                if not security_definition:
                     return CheckResult.FAILED, conf
+                definition_scopes = security_definition.get('scopes', {})
+                if not definition_scopes:
+                    return CheckResult.FAILED, conf
+                for scope in security_scopes:
+                    if scope not in definition_scopes:
+                        return CheckResult.FAILED, conf
 
         return CheckResult.PASSED, conf
 
