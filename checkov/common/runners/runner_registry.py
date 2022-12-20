@@ -186,6 +186,10 @@ class RunnerRegistry:
                           exc_info=True)
 
     @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status for scan_report in reports)
+
+    @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
 
         soft_fail = config.soft_fail
