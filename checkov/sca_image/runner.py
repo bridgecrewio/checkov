@@ -47,7 +47,7 @@ class Runner(PackageRunner):
             image_id: str,
             dockerfile_path: str,
             runner_filter: RunnerFilter | None = None,
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any] | None:
         runner_filter = runner_filter or RunnerFilter()
 
         # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
@@ -65,7 +65,9 @@ class Runner(PackageRunner):
             logging.info(f"Found cached scan results of image {image_id}")
             return cached_results
 
-        image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
+        setup_status: bool = image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
+        if not setup_status:
+            return None
         try:
             output_path = Path(f'results-{image_id}.json')
             scan_result = asyncio.run(self.execute_scan(image_id, output_path))
@@ -285,7 +287,9 @@ class Runner(PackageRunner):
                 return Report(self.check_type)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
-                return Report(self.check_type)
+                report = Report(self.check_type)
+                report.set_error_status(2)
+                return report
 
             self.raw_report = scan_result
             result = scan_result.get('results', [{}])[0]
@@ -304,7 +308,9 @@ class Runner(PackageRunner):
         """
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
-            return Report(self.check_type)
+            report = Report(self.check_type)
+            report.set_error_status(2)
+            return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
         image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
