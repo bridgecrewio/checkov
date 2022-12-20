@@ -6,7 +6,7 @@ from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
 
 
-class Oauth2SecurityDefinitionImplicitFlow(BaseOpenapiCheckV2):
+class SecurityDefinitionBasicAuth(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_13"
         name = "Ensure security definitions do not use basic auth - version 2.0 files"
@@ -35,4 +35,4 @@ class Oauth2SecurityDefinitionImplicitFlow(BaseOpenapiCheckV2):
         return CheckResult.PASSED, conf
 
 
-check = Oauth2SecurityDefinitionImplicitFlow()
+check = SecurityDefinitionBasicAuth()

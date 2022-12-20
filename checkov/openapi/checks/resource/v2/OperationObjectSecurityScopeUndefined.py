@@ -6,7 +6,7 @@ from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
 
 
-class OperatiobObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
+class OperationObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_21"
         name = "Ensure that security scopes of operations are defined in securityDefinitions - version 2.0 files"
@@ -48,4 +48,4 @@ class OperatiobObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
         return CheckResult.PASSED, conf
 
 
-check = OperatiobObjectSecurityScopeUndefined()
+check = OperationObjectSecurityScopeUndefined()
