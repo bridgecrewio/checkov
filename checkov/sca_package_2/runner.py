@@ -149,5 +149,14 @@ class Runner(BaseRunner[None]):
                     package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
         logging.info(f"{len(package_files_to_persist)} sca package files found.")
+        if package_files_to_persist and not bc_integration.bc_source.upload_results:
+            # if source is IDE we dont upload the results but we need the s3 path and s3 init for package scanning
+            bc_integration.setup_bridgecrew_credentials(repo_id=bc_integration.repo_id,
+                                                        skip_download=bc_integration.skip_download,
+                                                        source=bc_integration.bc_source,
+                                                        source_version=bc_integration.bc_source_version,
+                                                        repo_branch=bc_integration.repo_branch,
+                                                        prisma_api_url=bc_integration.prisma_api_url,
+                                                        is_package_scan=True)
         bc_integration.persist_files(package_files_to_persist)
         return package_files_to_persist
