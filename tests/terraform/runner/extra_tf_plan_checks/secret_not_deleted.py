@@ -18,6 +18,7 @@ class KmsKeyNotDeleted(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         actions = conf.get(TF_PLAN_RESOURCE_CHANGE_ACTIONS)
         if isinstance(actions, list) and "delete" in actions:
+            self.details.append("some great details")
             return CheckResult.FAILED
         return CheckResult.PASSED
 
