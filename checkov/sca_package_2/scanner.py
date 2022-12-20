@@ -58,7 +58,7 @@ class Scanner:
                 return False
             return True
         except Exception:
-            logging.error(
+            logging.debug(
                 "[sca_package_2] - Unexpected failure happened during package scanning.\n"
                 "the scanning is terminating. details are below.\n"
                 "please try again. if it is repeated, please report.", exc_info=True)
