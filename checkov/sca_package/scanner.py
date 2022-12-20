@@ -86,9 +86,12 @@ class Scanner:
                     res['repository'] = str(input_paths_as_list[idx])
                     scan_results[idx] = res
 
+        if any(report is None for report in scan_results):
+            return None
+
         return scan_results
 
-    async def run_scan(self, input_path: Path) -> dict[str, Any]:
+    async def run_scan(self, input_path: Path) -> dict[str, Any] | None:
         try:
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
             logging.info(f"Start to scan package file {input_path}")
@@ -114,11 +117,11 @@ class Scanner:
 
             return self.run_scan_busy_wait(input_path, response_json['id'])
         except Exception:
-            logging.error(
+            logging.debug(
                 "[sca_package] - Unexpected failure happened during package scanning.\n"
                 "the scanning is terminating. details are below.\n"
                 "please try again. if it is repeated, please report.", exc_info=True)
-            return {}
+            return None
 
     def run_scan_busy_wait(self, input_path: Path, scan_id: str) -> dict[str, Any]:
         current_state = "Empty"
