@@ -226,7 +226,7 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
-        self.region = DEFAULT_REGION
+        region = DEFAULT_REGION
         use_accelerate_endpoint = True
 
         if prisma_api_url:
