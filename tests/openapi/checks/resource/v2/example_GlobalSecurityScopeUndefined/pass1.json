@@ -12,9 +12,11 @@
       }
     }
   },
-  "security": {
-    "some_auth": [
-      "read:api"
-    ]
-  }
+  "security": [
+    {
+      "some_auth": [
+        "read:api"
+      ]
+    }
+  ]
 }
