@@ -186,6 +186,10 @@ class RunnerRegistry:
                           exc_info=True)
 
     @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status for scan_report in reports)
+
+    @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
 
         soft_fail = config.soft_fail
@@ -554,6 +558,7 @@ class RunnerRegistry:
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,

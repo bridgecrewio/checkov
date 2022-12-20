@@ -101,7 +101,7 @@ class Runner(TerraformRunner):
         runner_filter = runner_filter or RunnerFilter()
         self.deep_analysis = runner_filter.deep_analysis
         if runner_filter.repo_root_for_plan_enrichment:
-            self.repo_root_for_plan_enrichment = runner_filter.repo_root_for_plan_enrichment[0]
+            self.repo_root_for_plan_enrichment = os.path.abspath(runner_filter.repo_root_for_plan_enrichment[0])
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
         tf_local_graph: Optional[TerraformLocalGraph] = None

@@ -35,7 +35,7 @@ class Scanner:
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
-    def scan(self, input_paths: Collection[Path]) -> Sequence[dict[str, Any]]:
+    def scan(self, input_paths: Collection[Path]) -> Sequence[dict[str, Any]] | None:
         self.pbar.initiate(len(input_paths))
         scan_results = asyncio.run(
             self.run_scan_multi(input_paths=input_paths)
@@ -46,7 +46,7 @@ class Scanner:
     async def run_scan_multi(
             self,
             input_paths: "Iterable[Path]",
-    ) -> "Sequence[Dict[str, Any]]":
+    ) -> "Sequence[Dict[str, Any]] | None":
 
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
@@ -59,8 +59,10 @@ class Scanner:
             scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
         if any(scan_result.get("packages") is None for scan_result in scan_results):
-            image_scanner.setup_twistcli()
+            status: bool = image_scanner.setup_twistcli()
 
+            if not status:
+                return None
             if os.getenv("PYCHARM_HOSTED") == "1":
                 # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode

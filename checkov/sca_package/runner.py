@@ -67,9 +67,9 @@ class Runner(BaseRunner[None]):
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_paths)
-
-        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        scan_results: Sequence[dict[str, Any]] | None = scanner.scan(input_paths)
+        if scan_results is not None:
+            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -88,6 +88,7 @@ class Runner(BaseRunner[None]):
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
+            report.set_error_status(2)
             return report
 
         for result in scan_results:
