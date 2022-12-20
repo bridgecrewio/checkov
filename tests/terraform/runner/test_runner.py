@@ -313,6 +313,8 @@ class TestRunnerValid(unittest.TestCase):
                 continue  # this rule has been merged into a v2 graph implementation -> CKV_AZURE_24
             if f'CKV_AZURE_{i}' == 'CKV_AZURE_51':
                 continue  # https://github.com/bridgecrewio/checkov/pull/983
+            if f"CKV_AZURE_{i}" == "CKV_AZURE_60":
+                continue  # duplicate of CKV_AZURE_3
             if f"CKV_AZURE_{i}" == "CKV_AZURE_90":
                 continue  # duplicate of CKV_AZURE_53
 
@@ -677,43 +679,41 @@ class TestRunnerValid(unittest.TestCase):
                     }
                 },
                 "module": {
-                    "module": {
-                        "new_relic": {
-                            "start_line": 57,
-                            "end_line": 67,
-                            "code_lines": [
-                                (57, 'module "new_relic" {\n'),
-                                (
-                                    58,
-                                    'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
-                                ),
-                                (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
-                                (
-                                    60,
-                                    "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
-                                ),
-                                (
-                                    61,
-                                    "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
-                                ),
-                                (
-                                    62,
-                                    "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
-                                ),
-                                (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
-                                (
-                                    64,
-                                    'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
-                                ),
-                                (
-                                    65,
-                                    "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
-                                ),
-                                (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
-                                (67, "}"),
-                            ],
-                            "skipped_checks": [],
-                        }
+                    "new_relic": {
+                        "start_line": 57,
+                        "end_line": 67,
+                        "code_lines": [
+                            (57, 'module "new_relic" {\n'),
+                            (
+                                58,
+                                'source                            = "s3::https://s3.amazonaws.com/my-artifacts/new-relic-k8s-0.2.5.zip"\n',
+                            ),
+                            (59, "kubernetes_host                   = module.aks_cluster.kube_config.0.host\n"),
+                            (
+                                60,
+                                "kubernetes_client_certificate     = base64decode(module.aks_cluster.kube_config.0.client_certificate)\n",
+                            ),
+                            (
+                                61,
+                                "kubernetes_client_key             = base64decode(module.aks_cluster.kube_config.0.client_key)\n",
+                            ),
+                            (
+                                62,
+                                "kubernetes_cluster_ca_certificate = base64decode(module.aks_cluster.kube_config.0.cluster_ca_certificate)\n",
+                            ),
+                            (63, "cluster_name                      = module.naming_conventions.aks_name\n"),
+                            (
+                                64,
+                                'new_relic_license                 = data.vault_generic_secret.new_relic_license.data["license"]\n',
+                            ),
+                            (
+                                65,
+                                "cluster_ca_bundle_b64             = module.aks_cluster.kube_config.0.cluster_ca_certificate\n",
+                            ),
+                            (66, "module_depends_on                 = [null_resource.delay_aks_deployments]\n"),
+                            (67, "}"),
+                        ],
+                        "skipped_checks": [],
                     }
                 },
             },
@@ -766,7 +766,7 @@ class TestRunnerValid(unittest.TestCase):
             },
         }
         tf_definitions = {
-            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example.tf": {
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example.tf": {
                 "resource": [
                     {
                         "aws_s3_bucket": {
@@ -836,7 +836,7 @@ class TestRunnerValid(unittest.TestCase):
                     }
                 ],
             },
-            "/mock/os/checkov_v2/tests/terraform/runner/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
+            f"{current_dir}/resources/valid_tf_only_passed_checks/example_skip_acl.tf": {
                 "resource": [
                     {
                         "aws_s3_bucket": {
@@ -1208,6 +1208,22 @@ class TestRunnerValid(unittest.TestCase):
 
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_resource_ids_nested_modules(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "resource_ids_nested_modules")
+        checks_allow_list = ['CKV_AWS_20']
+        expected_resources_ids = ['aws_s3_bucket.example', 'module.s3_module.aws_s3_bucket.example2',
+                                  'module.s3_module.module.inner_s3_module.aws_s3_bucket.example3']
+
+        runner = Runner()
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        resources_ids = [f.resource for f in report.failed_checks]
+        self.assertEqual(len(resources_ids), 3)
+        self.assertEqual(expected_resources_ids.sort(), resources_ids.sort())
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(

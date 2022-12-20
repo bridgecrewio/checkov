@@ -3,7 +3,7 @@ name: PR Title
 on:
   pull_request:
     branches:
-      - master
+      - main
     types: [opened, edited, reopened, synchronize]
 
 jobs:

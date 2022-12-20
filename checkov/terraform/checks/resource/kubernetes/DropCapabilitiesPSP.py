@@ -18,6 +18,9 @@ class DropCapabilitiesPSP(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get('spec'):
             spec = conf.get('spec')[0]
+            if not spec:
+                return CheckResult.UNKNOWN
+
             if spec.get("required_drop_capabilities"):
                 drop_cap = spec.get("required_drop_capabilities")[0]
                 if drop_cap and isinstance(drop_cap, list):
