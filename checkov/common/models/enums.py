@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class CheckResult(str, Enum):
@@ -49,6 +49,6 @@ class ScanDataFormat(Enum):
     DEPENDENCY_TREE = 3
 
 
-class ErrorStatus(Enum):
+class ErrorStatus(IntEnum):
     Success = 0
     Error = 2
