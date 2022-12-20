@@ -50,7 +50,7 @@ class Scanner:
     async def run_scan_multi(
             self,
             input_paths: "Iterable[Path]",
-    ) -> "Sequence[Dict[str, Any]] | None":
+    ) -> "Sequence[Dict[str, Any] | None] | None":
 
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
