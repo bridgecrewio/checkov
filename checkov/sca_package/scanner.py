@@ -35,6 +35,10 @@ class Scanner:
             self.pbar.turn_off_progress_bar()
         self.root_folder = root_folder
 
+    @staticmethod
+    def should_rescan_for_result(scan_result: dict[str, Any] | None) -> bool:
+        return scan_result is None or scan_result.get("packages") is None
+
     def scan(self, input_paths: Collection[Path]) -> Sequence[dict[str, Any]] | None:
         self.pbar.initiate(len(input_paths))
         scan_results = asyncio.run(
@@ -58,7 +62,7 @@ class Scanner:
         else:
             scan_results = await asyncio.gather(*[self.run_scan(i) for i in input_paths])
 
-        if any(scan_result.get("packages") is None for scan_result in scan_results):
+        if any(self.should_rescan_for_result(scan_result) for scan_result in scan_results):
             status: bool = image_scanner.setup_twistcli()
 
             if not status:
@@ -68,15 +72,15 @@ class Scanner:
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
                 logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
                 scan_results = [
-                    await self.execute_twistcli_scan(input_path) if scan_results[idx].get("packages") is None else
-                    scan_results[idx] for idx, input_path in enumerate(input_paths)
+                    await self.execute_twistcli_scan(input_path) if self.should_rescan_for_result(scan_results[idx])
+                    else scan_results[idx] for idx, input_path in enumerate(input_paths)
                 ]
             else:
                 input_paths_as_list: List[Path] = list(input_paths)  # create a list from a set ("Iterable")
                 indices_to_fix: List[int] = [
                     idx
                     for idx in range(len(input_paths_as_list))
-                    if scan_results[idx].get("packages") is None
+                    if self.should_rescan_for_result(scan_results[idx])
                 ]
                 new_scan_results = await asyncio.gather(*[
                     self.execute_twistcli_scan(input_paths_as_list[idx]) for idx in indices_to_fix

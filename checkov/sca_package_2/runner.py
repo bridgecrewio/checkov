@@ -52,10 +52,10 @@ class Runner(BaseRunner[None]):
             excluded_paths.update(runner_filter.excluded_paths)
 
         uploaded_files: List[FileToPersist] | None = self.upload_package_files(
-                root_path=self._code_repo_path,
-                files=files,
-                excluded_paths=excluded_paths,
-                excluded_file_names=excluded_file_names,
+            root_path=self._code_repo_path,
+            files=files,
+            excluded_paths=excluded_paths,
+            excluded_file_names=excluded_file_names,
         )
         if uploaded_files is None:
             # failure happened during uploading
