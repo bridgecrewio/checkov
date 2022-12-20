@@ -61,7 +61,7 @@ class Runner(PackageRunner):
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
 
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(image_id)
+        cached_results: Dict[str, Any] | None = image_scanner.get_scan_results_from_cache(image_id)
         if cached_results:
             logging.info(f"Found cached scan results of image {image_id}")
             return cached_results
@@ -190,7 +190,7 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    image_cached_result: Dict[str, Any] = image_scanner.get_scan_results_from_cache(
+                    image_cached_result: Dict[str, Any] | None = image_scanner.get_scan_results_from_cache(
                         f"image:{image.name}")
 
                     image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname,
