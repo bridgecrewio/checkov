@@ -17,14 +17,12 @@ if TYPE_CHECKING:
 
 LICENSE_KEY = 'platformLicense'
 MODULES_KEY = 'modules'
-BILLING_PLAN_KEY = 'billingPlan'
 
 
 class LicensingIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=6)
         self.enabled_modules: List[CustomerSubscription] = []
-        self.billing_plan: Optional[BillingPlan] = None
         self.open_source_only: bool = True
 
     def is_valid(self) -> bool:
@@ -46,7 +44,6 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.open_source_only = False
             # the API will return True for all modules if they are on resource mode, so we don't actually need the billing plan explicitly here
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
-            self.billing_plan = BillingPlan(license_details[BILLING_PLAN_KEY])
 
     def is_runner_valid(self, runner_check_type: str) -> bool:
         logging.debug(f'Checking if {runner_check_type} is valid for license')
