@@ -47,3 +47,8 @@ class ScanDataFormat(Enum):
     TWISTCLI = 1
     PLATFORM = 2
     DEPENDENCY_TREE = 3
+
+
+class ErrorStatus(Enum):
+    Success = 0
+    Error = 2
