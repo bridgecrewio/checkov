@@ -68,6 +68,8 @@ class Runner(PackageRunner):
         setup_status: bool = image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         if not setup_status:
             return None
+        if not setup_status:
+            return None
         output_path = Path(f'results-{image_id}.json')
         scan_result = asyncio.run(self.execute_scan(image_id, output_path))
         self.upload_results_to_cache(output_path, image_id)

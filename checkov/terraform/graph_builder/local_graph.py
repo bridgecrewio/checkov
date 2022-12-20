@@ -15,7 +15,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key
+from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -622,4 +622,4 @@ def get_path_with_nested_modules(block: TerraformBlock) -> str:
         return block.path
     if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
         return unify_dependency_path([block.module_dependency, block.path])
-    return get_tf_definition_key(block.path, block.module_dependency, block.module_dependency_num)
+    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)
