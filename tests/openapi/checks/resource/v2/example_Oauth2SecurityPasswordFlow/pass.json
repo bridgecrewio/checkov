@@ -7,13 +7,13 @@
   "security": [
     {
       "good_auth_1": [
-        "write"
+        "write:api"
       ],
       "good_auth_2": [
-        "write"
+        "write:api"
       ],
       "good_auth_3": [
-        "write"
+        "write:api"
       ]
     }
   ],

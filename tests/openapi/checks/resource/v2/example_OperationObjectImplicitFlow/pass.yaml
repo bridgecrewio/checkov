@@ -14,8 +14,8 @@ paths:
           description: 200 response
       security:
         - some_oauth2:
-            - write
-            - read
+            - write:api
+            - read:api
 securityDefinitions:
   some_oauth2:
     type: oauth2

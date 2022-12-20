@@ -14,5 +14,5 @@ paths:
           description: 200 response
       security:
         - some_auth:
-            - write
-            - read
+            - write:api
+            - read:api

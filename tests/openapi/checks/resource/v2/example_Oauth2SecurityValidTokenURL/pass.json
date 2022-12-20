@@ -7,7 +7,7 @@
   "security": [
     {
       "some_auth": [
-        "write"
+        "write:api"
       ]
     }
   ],

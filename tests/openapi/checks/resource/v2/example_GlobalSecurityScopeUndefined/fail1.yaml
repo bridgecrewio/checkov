@@ -8,6 +8,6 @@ securityDefinitions:
     scopes:
       read:api: read your apis
 security:
-  some_auth:
+  - some_auth:
     - read:api
     - error:api

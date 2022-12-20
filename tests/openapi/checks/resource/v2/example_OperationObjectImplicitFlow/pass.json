@@ -20,8 +20,8 @@
         "security": [
           {
             "some_oauth2": [
-              "write",
-              "read"
+              "write:api",
+              "read:api"
             ]
           }
         ]
