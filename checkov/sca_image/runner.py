@@ -17,6 +17,7 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
@@ -292,7 +293,7 @@ class Runner(PackageRunner):
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 report = Report(self.check_type)
-                report.set_error_status(2)
+                report.set_error_status(ErrorStatus.ERROR)
                 return report
 
             self.raw_report = scan_result
@@ -313,7 +314,7 @@ class Runner(PackageRunner):
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
             report = Report(self.check_type)
-            report.set_error_status(2)
+            report.set_error_status(ErrorStatus.ERROR)
             return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]

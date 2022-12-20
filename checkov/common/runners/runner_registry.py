@@ -26,6 +26,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report, merge_reports
@@ -187,7 +188,7 @@ class RunnerRegistry:
 
     @staticmethod
     def is_error_in_reports(reports: List[Report]) -> bool:
-        return any(scan_report.error_status for scan_report in reports)
+        return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
 
     @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:

@@ -10,6 +10,7 @@ from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
 from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
@@ -87,7 +88,7 @@ class Runner(BaseRunner[None]):
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
-            report.set_error_status(2)
+            report.set_error_status(ErrorStatus.ERROR)
             return report
 
         for path, result in scan_results.items():
