@@ -230,6 +230,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     resource = resource_id
                     module_dependency = entity.get(CustomAttributes.MODULE_DEPENDENCY)
                     module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
+                    definition_context_file_path = full_file_path
                     if module_dependency and module_dependency_num:
                         if self.enable_nested_modules:
                             resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS, resource_id)
@@ -239,6 +240,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             referrer_id = self._find_id_for_referrer(tf_path)
                             if referrer_id:
                                 resource = f'{referrer_id}.{resource_id}'
+                        definition_context_file_path = get_tf_definition_key(full_file_path, module_dependency, module_dependency_num)
                     entity_config = self.get_graph_resource_entity_config(entity, entity_context)
                     censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
                                                                               entity_code_lines=entity_context.get(
@@ -263,7 +265,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        connected_node=connected_node_data
+                        connected_node=connected_node_data,
+                        definition_context_file_path=definition_context_file_path
                     )
                     if self.breadcrumbs:
                         if self.enable_nested_modules:
@@ -280,14 +283,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         entity_evaluations = None
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
+        if entity.get(CustomAttributes.MODULE_DEPENDENCY):
+            full_file_path = get_tf_definition_key(full_file_path, entity[CustomAttributes.MODULE_DEPENDENCY], entity[CustomAttributes.MODULE_DEPENDENCY_NUM])
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
         entity_context = self.context.get(full_file_path, {})
         try:
-            if not entity_context:
-                dc_keys = self.context.keys()
-                dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
-                entity_context = self.context.get(dc_key, {})
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
@@ -442,7 +443,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        details=check.details
+                        details=check.details,
+                        definition_context_file_path=full_file_path
                     )
                     if CHECKOV_CREATE_GRAPH:
                         if self.enable_nested_modules:
