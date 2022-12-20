@@ -10,7 +10,7 @@ import pytest
 
 os.environ['CHECKOV_RUN_SCA_PACKAGE_SCAN_V2'] = 'true'
 
-from checkov.common.bridgecrew.bc_source import SourceType
+from checkov.common.bridgecrew.bc_source import SourceType, BCSourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.common.output.report import Report
 from checkov.sca_package_2.runner import Runner
@@ -22,6 +22,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 @pytest.fixture()
 def mock_bc_integration() -> BcPlatformIntegration:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceType(BCSourceType.CLI, True)
     bc_integration.setup_bridgecrew_credentials(
         repo_id="bridgecrewio/checkov",
         skip_fixes=True,
@@ -1061,6 +1062,7 @@ def scan_result_success_response() -> Dict[str, Any]:
 @mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceType(BCSourceType.CLI, True)
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
@@ -1072,6 +1074,7 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
 @mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_report_dt(package_mocker: MockerFixture, scan_results_dt: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceType(BCSourceType.CLI, True)
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_results_dt
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
@@ -1092,6 +1095,7 @@ def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture,
 
 def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceType(BCSourceType.CLI, True)
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)

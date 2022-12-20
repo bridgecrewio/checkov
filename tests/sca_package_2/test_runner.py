@@ -4,6 +4,7 @@ from mock.mock import MagicMock
 from pytest_mock import MockerFixture
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.bc_source import SourceType, BCSourceType
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner
@@ -17,6 +18,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def test_upload_scannable_files():
     # when
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceType(BCSourceType.CLI, True)
     input_paths = Runner().upload_package_files(
         root_path=EXAMPLES_DIR,
         files=[],
