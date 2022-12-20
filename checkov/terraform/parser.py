@@ -28,8 +28,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index, is_nested, \
-    get_tf_definition_key, get_module_from_full_path, get_abs_path
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, get_tf_definition_key, \
+    get_module_from_full_path, get_abs_path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -629,11 +629,8 @@ class Parser:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_module_name = get_abs_path(nested_str)
         nested_module_index = nested_data.get('module_index')
-        module_index = get_current_module_index(nested_str)
-        nested_key = nested_str[module_index:]
-        return get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
+        return get_tf_definition_key(file, nested_str, nested_module_index)
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
@@ -643,7 +640,7 @@ class Parser:
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
-        return get_tf_definition_key(key, file, module_index, nested_key)
+        return get_tf_definition_key(key, f"{file}{nested_key}", module_index)
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
