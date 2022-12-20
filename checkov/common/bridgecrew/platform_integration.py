@@ -106,6 +106,7 @@ class BcPlatformIntegration:
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
+        self.region: str | None = None
 
     def setup_api_urls(self) -> None:
         """
@@ -237,9 +238,8 @@ class BcPlatformIntegration:
                 use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
-        if self.bc_source and self.bc_source.upload_results:
+        if self.bc_source:
             try:
-                self.skip_fixes = True  # no need to run fixes on CI integration
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
                 self.timestamp = self.repo_path.split("/")[-2]
@@ -257,8 +257,6 @@ class BcPlatformIntegration:
                     region_name=region,
                     config=config,
                 )
-                self.platform_integration_configured = True
-                self.use_s3_integration = True
             except MaxRetryError:
                 logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
                               "disabling it and re-running the command.", exc_info=True)
@@ -275,6 +273,11 @@ class BcPlatformIntegration:
             except BridgecrewAuthError:
                 logging.error("Received an error response during authentication")
                 raise
+
+        if self.bc_source.upload_results:
+            self.skip_fixes = True  # no need to run fixes on CI integration
+            self.platform_integration_configured = True
+            self.use_s3_integration = True
 
         self.platform_integration_configured = True
 
