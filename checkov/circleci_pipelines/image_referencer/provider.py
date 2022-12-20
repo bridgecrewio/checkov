@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 import jmespath
 from checkov.common.images.image_referencer import Image
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -28,7 +28,7 @@ class CircleCIProvider:
             ('executors', "executors.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}"),
         )
         for tag, keyword in keywords:
-            results = jmespath.search(keyword, self.workflow_config)
+            results = cast("list[dict[str, Any]]", jmespath.search(keyword, self.workflow_config))
             if not results:
                 continue
             for result in results:

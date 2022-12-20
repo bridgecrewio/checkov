@@ -5,6 +5,9 @@ from pathlib import Path
 
 
 from typing import Dict, Any
+
+import mock
+
 # do not remove - prevents circular import
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
@@ -590,6 +593,10 @@ class TestRunnerValid(unittest.TestCase):
         resource_ids = [check.resource for check in report.failed_checks]
         self.assertCountEqual(resource_ids,["aws_secretsmanager_secret.default", "aws_secretsmanager_secret.default"])
 
+        # check also the details
+        failed_check = next(check for check in report.failed_checks if check.check_id == "CUSTOM_DELETE_1")
+        self.assertEqual(failed_check.details, ["some great details"])
+
     def test_runner_nested_child_modules_with_connections(self):
         # given
         tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"
@@ -653,6 +660,41 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True', 'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
+    def test_plan_and_tf_combine_graph(self):
+        tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph/tfplan.json"
+
+        repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph"
+
+        # deep_analysis disabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=False,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_6"], deep_analysis=True, repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.passed_checks[0].resource_address, report.passed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+        assert report.passed_checks[0].file_path.endswith('.json')
+        assert report.passed_checks[1].file_path.endswith('.json')
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks

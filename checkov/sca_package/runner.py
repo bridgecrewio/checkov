@@ -38,11 +38,11 @@ class Runner(BaseRunner[None]):
 
         # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
         if not should_run_scan(runner_filter.checks):
-            return None
+            return []
 
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
-            return None
+            return []
 
         logging.info("SCA package scanning searching for scannable files")
 
@@ -61,15 +61,17 @@ class Runner(BaseRunner[None]):
         )
         if not input_paths:
             # no packages found
-            return None
+            return []
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_paths)
 
-        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        # it will be None in case of unexpected failure during the scanning
+        scan_results: Sequence[dict[str, Any]] | None = scanner.scan(input_paths)
+        if scan_results is not None:
+            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -88,6 +90,7 @@ class Runner(BaseRunner[None]):
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
+            report.set_error_status(2)
             return report
 
         for result in scan_results:

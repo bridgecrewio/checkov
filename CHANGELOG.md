@@ -1,6 +1,84 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.148...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.180...HEAD)
+
+## [2.2.180](https://github.com/bridgecrewio/checkov/compare/2.2.172...2.2.180) - 2022-12-19
+
+### Feature
+
+- **general:** Use --no-fail-on-crash to gracefully exit commit_repository and setup_bridgecrew_credentials - [#4099](https://github.com/bridgecrewio/checkov/pull/4099)
+- **terraform_plan:** add check details to TF plan scan results - [#4091](https://github.com/bridgecrewio/checkov/pull/4091)
+- **terraform:** new azurerm checks - App config - [#3988](https://github.com/bridgecrewio/checkov/pull/3988)
+- **terraform:** Omit values from graph checks - [#4076](https://github.com/bridgecrewio/checkov/pull/4076)
+
+### Bug Fix
+
+- **general:** change env var name for no-fail-on-crash flag - [#4107](https://github.com/bridgecrewio/checkov/pull/4107)
+- **github:** Fix GHA IR resource names in case of 2 identical images - [#4108](https://github.com/bridgecrewio/checkov/pull/4108)
+- **terraform:** azurerm storage defaults - fix for storage case #3516 - [#4083](https://github.com/bridgecrewio/checkov/pull/4083)
+- **terraform:** fix nested module resources ids in the report - [#4098](https://github.com/bridgecrewio/checkov/pull/4098)
+
+## [2.2.172](https://github.com/bridgecrewio/checkov/compare/2.2.168...2.2.172) - 2022-12-18
+
+### Feature
+
+- **general:** Add no-fail-on-crash flag - [#4097](https://github.com/bridgecrewio/checkov/pull/4097)
+- **gha:** add fix for gha graphs and UT - [#4084](https://github.com/bridgecrewio/checkov/pull/4084)
+- **kubernetes:** inject k8s FF flags to instance instead of constructor - [#4096](https://github.com/bridgecrewio/checkov/pull/4096)
+
+### Bug Fix
+
+- **terraform:** add a method for get the entity definition path from the entity itself - [#4095](https://github.com/bridgecrewio/checkov/pull/4095)
+- **terraform:** add address attribute to all scanned terraform blocks - [#4074](https://github.com/bridgecrewio/checkov/pull/4074)
+
+## [2.2.168](https://github.com/bridgecrewio/checkov/compare/2.2.158...2.2.168) - 2022-12-15
+
+### Feature
+
+- **kubernetes:** Add kubernetes YAML checks to checkov packaging - [#4073](https://github.com/bridgecrewio/checkov/pull/4073)
+- **kubernetes:** move whorf to dedicated repo - [#4062](https://github.com/bridgecrewio/checkov/pull/4062)
+- **terraform_plan:** add Image Referencer for Terraform plan files - [#4063](https://github.com/bridgecrewio/checkov/pull/4063)
+- **terraform:** add CKV NCP rules about AutoScalingGroup, Load Balancer - [#3821](https://github.com/bridgecrewio/checkov/pull/3821)
+- **terraform:** add CKV NCP rules about Nat Gateways and Route - [#3854](https://github.com/bridgecrewio/checkov/pull/3854)
+- **terraform:** combine tf plan and tf graphs for nested modules - [#4066](https://github.com/bridgecrewio/checkov/pull/4066)
+- **terraform:** More azurerm checks for terraform - [#3970](https://github.com/bridgecrewio/checkov/pull/3970)
+
+### Bug Fix
+
+- **openapi:** Fix in PathSchemeDefineHTTP opeAPI check - [#4079](https://github.com/bridgecrewio/checkov/pull/4079)
+- **terraform:** CKV_AZURE_43 add new test case - [#4082](https://github.com/bridgecrewio/checkov/pull/4082)
+
+## [2.2.158](https://github.com/bridgecrewio/checkov/compare/2.2.155...2.2.158) - 2022-12-14
+
+### Feature
+
+- **github:** more CIS checks- part3  - [#4057](https://github.com/bridgecrewio/checkov/pull/4057)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#3962](https://github.com/bridgecrewio/checkov/pull/3962)
+
+### Bug Fix
+
+- **secrets:** fix secrets crash when secret is non string - [#4077](https://github.com/bridgecrewio/checkov/pull/4077)
+
+## [2.2.155](https://github.com/bridgecrewio/checkov/compare/2.2.148...2.2.155) - 2022-12-13
+
+### Feature
+
+- **github:**  more CIS checks- part2 - [#4017](https://github.com/bridgecrewio/checkov/pull/4017)
+- **kubernetes:** added CKV2_K8S_EXAMPLE_1 only in tests as an example for k8s graph check for pod which is publicly accessible - [#4060](https://github.com/bridgecrewio/checkov/pull/4060)
+- **kubernetes:** added deployment name to pod resource id - [#4040](https://github.com/bridgecrewio/checkov/pull/4040)
+- **sca:** fix root packages fixed version - [#4070](https://github.com/bridgecrewio/checkov/pull/4070)
+
+### Bug Fix
+
+- **sca:** invoke packaging.Version instead of parse - [#4065](https://github.com/bridgecrewio/checkov/pull/4065)
+- **secrets:** fix error when secret is None - [#4071](https://github.com/bridgecrewio/checkov/pull/4071)
+- **terraform:** checkov fix as resource container_group modified - [#4061](https://github.com/bridgecrewio/checkov/pull/4061)
+- **terraform:** fixed unexpected data for IAMPublicActionsPolicy - [#4067](https://github.com/bridgecrewio/checkov/pull/4067)
+- **terraform:** fixed unexpected data for MonitorLogProfileRetentionDays - [#4068](https://github.com/bridgecrewio/checkov/pull/4068)
+
+### Platform
+
+- **general:** Apply licensing from platform - [#3961](https://github.com/bridgecrewio/checkov/pull/3961)
 
 ## [2.2.148](https://github.com/bridgecrewio/checkov/compare/2.2.139...2.2.148) - 2022-12-12
 

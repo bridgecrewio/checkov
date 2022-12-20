@@ -166,7 +166,7 @@ class RunnerRegistry:
         integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment:
+        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
@@ -184,6 +184,10 @@ class RunnerRegistry:
         except EnvironmentError:
             logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
                           exc_info=True)
+
+    @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status for scan_report in reports)
 
     @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
@@ -554,6 +558,7 @@ class RunnerRegistry:
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
