@@ -24,6 +24,7 @@ class TestOauth2SecurityRequirement(unittest.TestCase):
         }
         failing_resources = {
             "/fail.yaml",
+            "/fail2.yaml",
             "/fail.json",
         }
 

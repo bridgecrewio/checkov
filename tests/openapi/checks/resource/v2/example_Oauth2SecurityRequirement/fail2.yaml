@@ -12,7 +12,7 @@ paths:
           description: Success
 securityDefinitions:
   some_auth:
-    type: oauth2
+    type: basic
     description: For more information, see https://api.my.company.com/docs/oauth
     flow: authorizationCode
     authorizationUrl: https://api.my.company.com/oauth/authorize
@@ -22,4 +22,3 @@ securityDefinitions:
 security:
   - some_auth:
       - read:api
-      - write:api
