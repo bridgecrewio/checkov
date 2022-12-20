@@ -8,6 +8,7 @@ from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiChe
 
 VALID_URL_REGEX = re.compile(r'^(https?):\/\/(-\.)?([^\s\/?\.#-]+([-\.\/])?)+(\/[^\s]*)?$')
 
+
 class Oauth2SecurityValidTokenURL(BaseOpenapiCheckV2):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_9"

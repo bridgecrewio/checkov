@@ -29,7 +29,7 @@ class Oauth2SecurityPasswordFlow(BaseOpenapiCheckV2):
         for auth_dict in security_values:
             if not isinstance(auth_dict, dict):
                 return CheckResult.UNKNOWN, conf
-            for auth_key, auth_list in auth_dict.items():
+            for auth_key in auth_dict:
                 if self.is_start_end_line(auth_key):
                     continue
                 auth_definition = security_definitions.get(auth_key, {})
