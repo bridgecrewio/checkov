@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -34,13 +34,13 @@ class Registry(BaseCheckRegistry):
                 for item, item_conf in analyzed_entities.items():
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
-                            check,
-                            item_conf,
-                            item,
-                            entity_type,
-                            results,
-                            scanned_file,
-                            skip_info
+                            check=check,
+                            entity_configuration=cast("dict[str, Any]", item_conf),
+                            entity_name=item,
+                            entity_type=entity_type,
+                            results=results,
+                            scanned_file=scanned_file,
+                            skip_info=skip_info,
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
