@@ -58,7 +58,8 @@ def test_build_graph_from_definitions():
 
 def test_get_definitions():
     definitions, definitions_raw = get_gha_files_definitions(root_folder=str(Path(__file__).parent / "gha"),
-                                                             files=[str(Path(__file__).parent / "gha/.github/workflows/failed.yaml")])
+                                                             files=[str(Path(
+                                                                 __file__).parent / "gha/.github/workflows/failed.yaml")])
     assert len(definitions) == len(definitions_raw) == 1
     assert definitions[list(definitions.keys())[0]] == {
         "name": "read-only",
@@ -112,7 +113,8 @@ def test_get_definitions():
 
 def test_build_def_context_on_list():
     defs, defs_raw = get_gha_files_definitions(root_folder=str(Path(__file__).parent / "gha"),
-                                               files=[str(Path(__file__).parent / "gha/.github/workflows/on_list.yaml")])
+                                               files=[
+                                                   str(Path(__file__).parent / "gha/.github/workflows/on_list.yaml")])
     context = build_gha_definitions_context(definitions=defs, definitions_raw=defs_raw)
     assert context[list(context.keys())[0]] == {
         'on': {
@@ -185,6 +187,51 @@ def test_build_def_context_simple():
                 ],
             }
         },
+    }
+
+
+def test_build_def_context_multiple_on_directives():
+    defs, defs_raw = get_gha_files_definitions(root_folder=str(Path(__file__).parent / "gha"),
+                                               files=[str(Path(__file__).parent / "gha/.github/workflows/multiple_on_descendants.yaml")])
+    assert len(defs[list(defs.keys())[0]]) == 5
+    pull_request_block = defs[list(defs.keys())[0]]['on']['pull_request']
+    assert len(pull_request_block) == 4 and 'types' in pull_request_block and 'workflow_dispatch' in pull_request_block
+    context = build_gha_definitions_context(definitions=defs, definitions_raw=defs_raw)
+    assert len(defs) == len(context)
+    assert context[list(context.keys())[0]] == {
+        'on': {
+            'pull_request': {
+                'start_line': 4,
+                'end_line': 7,
+                'code_lines': [(4, '    types: [ opened, synchronize, labeled, unlabeled ]\n'),
+                               (5, '    workflow_dispatch:\n'),
+                               (6, '\n')]
+            }
+        },
+        'jobs': {
+            'handle_branches': {
+                'start_line': 9,
+                'end_line': 27,
+                'code_lines': [(9, '    runs-on: ubuntu-latest\n'),
+                               (10, "    if: github.repository == 'org/content'\n"),
+                               (11, '    steps:\n'),
+                               (12, '      - name: Checkout\n'),
+                               (13, '        uses: actions/checkout@v3\n'),
+                               (14, '      - name: Setup Python\n'),
+                               (15, '        uses: actions/setup-python@v3\n'),
+                               (16, '        with:\n'),
+                               (17, "          python-version: '3.9'\n"),
+                               (18, '      - name: Install Python Dependencies\n'),
+                               (19, '        run: |\n'),
+                               (20, '          python -m pip install --upgrade pip\n'),
+                               (21, '      - name: Delete Branches\n'),
+                               (22, '        env:\n'),
+                               (23, '          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}\n'),
+                               (24, '        run: |\n'),
+                               (25, '          echo "Deleting branches"\n'),
+                               (26, '          pipenv sync\n')]
+            }
+        }
     }
 
 
@@ -284,8 +331,7 @@ def test_build_def_context_1():
             (25, "          PASSWORD: ${{ secrets.TEST_PASS_1 }}\n"),
             (26, "        run: |\n"),
             (27, '          echo "Run detection for PR: $PR_NUMBER on branch: $BRANCH_NAME"\n'),
-            (28,
-             "          investigation_id=$(poetry run Utils/github_workflow_scripts/run_detection.py --pr_number $PR_NUMBER --branch_name $BRANCH_NAME)\n",),
+            (28, "          investigation_id=$(poetry run Utils/github_workflow_scripts/run_detection.py --pr_number $PR_NUMBER --branch_name $BRANCH_NAME)\n",),
             (29, '          echo "INVESTIGATION_ID=$investigation_id" >> $GITHUB_ENV\n'),
             (30, "      - name: Wait For Playbook To Finish\n"),
             (31, "        env:\n"),
@@ -309,10 +355,7 @@ def test_build_def_context_1():
                     "end_line": 38,
                     "code_lines": [
                         (6, "    runs-on: ubuntu-latest\n"),
-                        (
-                            7,
-                            "    if: github.event.pull_request.head.repo.fork == false'\n",
-                        ),
+                        (7, "    if: github.event.pull_request.head.repo.fork == false'\n",),
                         (8, "    steps:\n"),
                         (9, "      - name: Checkout\n"),
                         (10, "        uses: actions/checkout@v3\n"),
@@ -333,10 +376,7 @@ def test_build_def_context_1():
                         (25, "          PASSWORD: ${{ secrets.TEST_PASS_1 }}\n"),
                         (26, "        run: |\n"),
                         (27, '          echo "Run detection for PR: $PR_NUMBER on branch: $BRANCH_NAME"\n'),
-                        (
-                            28,
-                            "          investigation_id=$(poetry run Utils/github_workflow_scripts/run_detection.py --pr_number $PR_NUMBER --branch_name $BRANCH_NAME)\n",
-                        ),
+                        (28, "          investigation_id=$(poetry run Utils/github_workflow_scripts/run_detection.py --pr_number $PR_NUMBER --branch_name $BRANCH_NAME)\n",),
                         (29, '          echo "INVESTIGATION_ID=$investigation_id" >> $GITHUB_ENV\n'),
                         (30, "      - name: Wait For Playbook To Finish\n"),
                         (31, "        env:\n"),
@@ -453,7 +493,8 @@ def test_build_def_context_2():
     assert len(context) == len(defs)
     assert context == {
         "/tmp/checkov/tempo/blue/master/src/.github/workflows/trigger-build.yml": {
-            "on": {"pull_request_target": {"start_line": 4, "end_line": 6, "code_lines": [(4, "    types: [labeled]\n"), (5, "\n")]}},
+            "on": {"pull_request_target": {"start_line": 4, "end_line": 6,
+                                           "code_lines": [(4, "    types: [labeled]\n"), (5, "\n")]}},
             "jobs": {
                 "trigget_build": {
                     "start_line": 8,

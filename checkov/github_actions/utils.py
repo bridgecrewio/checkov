@@ -84,8 +84,8 @@ def get_gha_files_definitions(root_folder: str | Path,
 
     for file_path in file_paths:
         str_file_path = str(file_path)
-        process = str_file_path in files_set if files_set else True
-        if process:
+        should_parse: bool = str_file_path in files_set if files_set else True
+        if should_parse:
             result = parse_file(f=file_path)
             # result should be tuple of dict representing the file payload structure and list of lines of the payload
             if result is not None:
