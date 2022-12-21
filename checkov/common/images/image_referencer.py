@@ -164,7 +164,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
     ) -> None:
         """Adds an image record to the given report, if possible"""
 
-        cached_results: dict[str, Any] = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
+        cached_results: dict[str, Any] | None = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
             image_scanning_report: dict[str, Any] = docker_image_scanning_integration.create_report(
