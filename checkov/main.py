@@ -79,7 +79,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-source = get_source_type(BC_SOURCE)
+SOURCE = get_source_type(BC_SOURCE)
 DEFAULT_RUNNERS = (
     tf_graph_runner(),
     cfn_runner(),
@@ -105,7 +105,7 @@ DEFAULT_RUNNERS = (
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
-    sca_package_runner_2() if (CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results)else sca_package_runner()
+    sca_package_runner_2() if (CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and SOURCE.upload_results)else sca_package_runner()
 )
 
 
@@ -238,13 +238,12 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
 
-        source_env_val = os.getenv('BC_SOURCE', 'cli')
-        source = get_source_type(source_env_val)
-        if source == SourceTypes[BCSourceType.DISABLED]:
+
+        if SOURCE == SourceTypes[BCSourceType.DISABLED]:
             logger.warning(
-                f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
+                f'Received unexpected value for BC_SOURCE: {BC_SOURCE}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
         source_version = os.getenv('BC_SOURCE_VERSION', version)
-        logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
+        logger.debug(f'BC_SOURCE = {SOURCE.name}, version = {source_version}')
 
         if config.list:
             # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
@@ -256,16 +255,16 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.setup_bridgecrew_credentials(repo_id=config.repo_id,
                                                         skip_fixes=config.skip_fixes,
                                                         skip_download=config.skip_download,
-                                                        source=source,
+                                                        source=SOURCE,
                                                         source_version=source_version,
                                                         repo_branch=config.branch,
                                                         prisma_api_url=config.prisma_api_url)
 
-            should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
+            should_run_contributor_metrics = SOURCE.report_contributor_metrics and config.repo_id and config.prisma_api_url
             logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
             if should_run_contributor_metrics:
                 try:        # collect contributor info and upload
-                    report_contributor_metrics(config.repo_id, source.name, bc_integration)
+                    report_contributor_metrics(config.repo_id, SOURCE.name, bc_integration)
                 except Exception as e:
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 
