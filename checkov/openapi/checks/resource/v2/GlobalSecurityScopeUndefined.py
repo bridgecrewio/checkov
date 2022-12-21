@@ -8,7 +8,7 @@ from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiChe
 
 class GlobalSecurityScopeUndefined(BaseOpenapiCheckV2):
     def __init__(self) -> None:
-        id = "CKV_OPENAPI_20"
+        id = "CKV_OPENAPI_19"
         name = "Ensure that global security scope is defined in securityDefinitions - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["security"]

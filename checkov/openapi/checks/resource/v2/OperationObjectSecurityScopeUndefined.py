@@ -8,7 +8,7 @@ from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiChe
 
 class OperationObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
     def __init__(self) -> None:
-        id = "CKV_OPENAPI_21"
+        id = "CKV_OPENAPI_9"
         name = "Ensure that security scopes of operations are defined in securityDefinitions - version 2.0 files"
         categories = [CheckCategories.API_SECURITY]
         supported_resources = ["paths"]
