@@ -2,7 +2,7 @@ name: Handle branches
 on:
   pull_request:
     types: [ opened, synchronize, labeled, unlabeled ]
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   handle_branches:

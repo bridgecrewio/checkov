@@ -194,18 +194,16 @@ def test_build_def_context_multiple_on_directives():
     defs, defs_raw = get_gha_files_definitions(root_folder=str(Path(__file__).parent / "gha"),
                                                files=[str(Path(__file__).parent / "gha/.github/workflows/multiple_on_descendants.yaml")])
     assert len(defs[list(defs.keys())[0]]) == 5
-    pull_request_block = defs[list(defs.keys())[0]]['on']['pull_request']
-    assert len(pull_request_block) == 4 and 'types' in pull_request_block and 'workflow_dispatch' in pull_request_block
+    on_block = defs[list(defs.keys())[0]]['on']
+    assert len(on_block) == 4 and 'pull_request' in on_block and 'workflow_dispatch' in on_block
     context = build_gha_definitions_context(definitions=defs, definitions_raw=defs_raw)
     assert len(defs) == len(context)
     assert context[list(context.keys())[0]] == {
         'on': {
             'pull_request': {
                 'start_line': 4,
-                'end_line': 7,
-                'code_lines': [(4, '    types: [ opened, synchronize, labeled, unlabeled ]\n'),
-                               (5, '    workflow_dispatch:\n'),
-                               (6, '\n')]
+                'end_line': 5,
+                'code_lines': [(4, '    types: [ opened, synchronize, labeled, unlabeled ]\n')]
             }
         },
         'jobs': {
