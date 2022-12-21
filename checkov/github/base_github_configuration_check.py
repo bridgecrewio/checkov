@@ -6,8 +6,10 @@ from typing import Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories
+from checkov.common.parsers.node import DictNode, ListNode
 from checkov.github.dal import CKV_METADATA
 from checkov.github.registry import registry
+from bc_jsonpath_ng import parse
 
 
 HTTP = re.compile("^http://")
@@ -40,3 +42,9 @@ class BaseGithubCheck(BaseCheck):
                 del new_conf[CKV_METADATA]
                 return ckv_metadata, new_conf
         return {}, conf
+
+    def get_result_configuration(self, evaluated_key: str, conf: dict[str, Any]) -> DictNode | ListNode | str:
+        result_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
+        json_path = parse(f"$.{'.'.join(result_conf_path)}")
+        result_conf = json_path.find(conf)
+        return result_conf[0].value if result_conf else conf

@@ -22,18 +22,19 @@ class BaseOrganizationCheck(BaseGithubCheck):
         )
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'org_metadata' in ckv_metadata.get('file_name', ''):
             if org_schema.validate(conf):
                 evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+                evaluated_conf = self.get_result_configuration(evaluated_key, conf)
                 jsonpath_expression = parse(f"$..{evaluated_key}")
                 matches = jsonpath_expression.find(conf)
                 if matches:
                     if matches[0].value in self.get_allowed_values():
-                        return CheckResult.PASSED
-                    return CheckResult.FAILED
-                return self.missing_attribute_result
+                        return CheckResult.PASSED, evaluated_conf
+                    return CheckResult.FAILED, evaluated_conf
+                return self.missing_attribute_result, evaluated_conf
         return CheckResult.UNKNOWN
 
     @abstractmethod

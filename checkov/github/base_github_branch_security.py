@@ -25,15 +25,16 @@ class BranchSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
         if branch_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            evaluated_conf = self.get_result_configuration(evaluated_key, conf)
             jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if matches and all(isinstance(match.value, dict) or match.value == self.get_expected_value() for match in matches):
-                return CheckResult.PASSED
+                return CheckResult.PASSED, evaluated_conf
             else:
-                return CheckResult.FAILED
+                return CheckResult.FAILED, evaluated_conf
         if no_branch_security_schema.validate(conf):
             message = conf.get('message', '')
             if message == MESSAGE_BRANCH_NOT_PROTECTED:
