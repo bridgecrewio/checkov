@@ -140,10 +140,20 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
         self.vertices.append(block)
 
     def _create_on_vertices(self, file_path: str, on: Any) -> None:
-        if not on or not isinstance(on, (str, dict, list)):
+        if not on:
             return
 
-        config = on
+        if isinstance(on, (str, list)):
+            # to get the correct line numbers we would need to check the raw definition
+            config = {
+                "on": on,
+                START_LINE: 0,
+                END_LINE: 0,
+            }
+        elif isinstance(on, dict):
+            config = on
+        else:
+            return
 
         attributes = deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.ON

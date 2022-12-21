@@ -75,7 +75,7 @@ def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
 
 
 def get_gha_files_definitions(root_folder: str | Path,
-                              files: "list[Path] | None" = None,
+                              files: "list[str] | None" = None,
                               runner_filter: RunnerFilter | None = None,) -> tuple[dict[str, Any], dict[str, Any]]:
     definitions = {}
     definitions_raw = {}
@@ -135,7 +135,7 @@ def build_gha_definitions_context(definitions: dict[str, dict[str, Any]], defini
     return definitions_context
 
 
-def definition_locator_helper(definition, target) -> bool:
+def definition_locator_helper(definition: str | list[str], target: str) -> bool:
     if isinstance(definition, str):
         return definition in target
     elif isinstance(definition, list):
