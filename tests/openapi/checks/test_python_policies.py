@@ -40,14 +40,6 @@ def test_Oauth2SecurityRequirement():
     run_check(base_path=BASE_DIR / "resource" / "v2", check="Oauth2SecurityRequirement")
 
 
-def test_Oauth2SecurityValidTokenURL():
-    run_check(base_path=BASE_DIR / "resource" / "v2", check="Oauth2SecurityValidTokenURL")
-
-
-def test_Oauth2ValidAuthorizationURL():
-    run_check(base_path=BASE_DIR / "resource" / "v2", check="Oauth2ValidAuthorizationURL")
-
-
 def test_OperationObjectBasicAuth():
     run_check(base_path=BASE_DIR / "resource" / "v2", check="OperationObjectBasicAuth")
 
