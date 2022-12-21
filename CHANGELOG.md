@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.180...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.186...HEAD)
+
+## [2.2.186](https://github.com/bridgecrewio/checkov/compare/2.2.180...2.2.186) - 2022-12-20
+
+### Feature
+
+- **general:** move the jsonpath try/catch up a level to catch more errors - [#3911](https://github.com/bridgecrewio/checkov/pull/3911)
+- **sca:** returning exit code 2 in case of error for downloading twistcli - [#4105](https://github.com/bridgecrewio/checkov/pull/4105)
+
+### Bug Fix
+
+- **dockerfile:** adjust the file abs path for Dockerfile graph results - [#4118](https://github.com/bridgecrewio/checkov/pull/4118)
+- **openapi:** fix an open API CKV_OPENAPI_6 check - [#4109](https://github.com/bridgecrewio/checkov/pull/4109)
+- **sca:** fixing integration tests - [#4117](https://github.com/bridgecrewio/checkov/pull/4117)
+- **terraform_plan:** use abs path for repo_root_for_plan_enrichment - [#4115](https://github.com/bridgecrewio/checkov/pull/4115)
+- **terraform:** CKV2_AZURE_21 changed blob access type to private - [#3898](https://github.com/bridgecrewio/checkov/pull/3898)
+- **terraform:** fix support for getting module-referenced resources context - [#4110](https://github.com/bridgecrewio/checkov/pull/4110)
+
+### Platform
+
+- **terraform:** add previous get_tf_definition_key function - [#4114](https://github.com/bridgecrewio/checkov/pull/4114)
 
 ## [2.2.180](https://github.com/bridgecrewio/checkov/compare/2.2.172...2.2.180) - 2022-12-19
 

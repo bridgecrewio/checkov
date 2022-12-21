@@ -17,6 +17,7 @@ from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
@@ -60,7 +61,7 @@ class Runner(PackageRunner):
 
         logging.info(f"SCA image scanning is scanning the image {image_id}")
 
-        cached_results: Dict[str, Any] = image_scanner.get_scan_results_from_cache(image_id)
+        cached_results: Dict[str, Any] | None = image_scanner.get_scan_results_from_cache(image_id)
         if cached_results:
             logging.info(f"Found cached scan results of image {image_id}")
             return cached_results
@@ -68,14 +69,13 @@ class Runner(PackageRunner):
         setup_status: bool = image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
         if not setup_status:
             return None
-        try:
-            output_path = Path(f'results-{image_id}.json')
-            scan_result = asyncio.run(self.execute_scan(image_id, output_path))
-            self.upload_results_to_cache(output_path, image_id)
-            logging.info(f"SCA image scanning successfully scanned the image {image_id}")
-            return scan_result
-        except Exception:
-            raise
+        if not setup_status:
+            return None
+        output_path = Path(f'results-{image_id}.json')
+        scan_result = asyncio.run(self.execute_scan(image_id, output_path))
+        self.upload_results_to_cache(output_path, image_id)
+        logging.info(f"SCA image scanning successfully scanned the image {image_id}")
+        return scan_result
 
     async def execute_scan(
             self,
@@ -109,24 +109,29 @@ class Runner(PackageRunner):
         return scan_result
 
     def upload_results_to_cache(self, output_path: Path, image_id: str) -> None:
-        image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
+        try:
+            image_id_sha = f"sha256:{image_id}" if not image_id.startswith("sha256:") else image_id
 
-        request_body = {
-            "compressedResult": compress_file_gzip_base64(str(output_path)),
-            "compressionMethod": "gzip",
-            "id": image_id_sha
-        }
-        response = request_wrapper(
-            "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-            headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
-        )
+            request_body = {
+                "compressedResult": compress_file_gzip_base64(str(output_path)),
+                "compressionMethod": "gzip",
+                "id": image_id_sha
+            }
+            response = request_wrapper(
+                "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
+                headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
+            )
 
-        if response.ok:
-            logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
-        else:
-            logging.info(f"Failed to upload scan results to cache with id={image_id}")
+            if response.ok:
+                logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+            else:
+                logging.info(f"Failed to upload scan results to cache with id={image_id}")
 
-        output_path.unlink()
+            output_path.unlink()
+        except Exception:
+            logging.debug(
+                "Unexpected failure happened during uploading results to cache. details are below.\n"
+                "Note that the scan is still running. if this is repeated, please report.", exc_info=True)
 
     def run(
             self,
@@ -185,7 +190,7 @@ class Runner(PackageRunner):
             if image_referencer.is_workflow_file(abs_fname):
                 images = image_referencer.get_images(file_path=abs_fname)
                 for image in images:
-                    image_cached_result: Dict[str, Any] = image_scanner.get_scan_results_from_cache(
+                    image_cached_result: Dict[str, Any] | None = image_scanner.get_scan_results_from_cache(
                         f"image:{image.name}")
 
                     image_cached_report: dict[str, Any] = self.get_image_cached_results(dockerfile_path=abs_fname,
@@ -222,7 +227,7 @@ class Runner(PackageRunner):
         )
         return report
 
-    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any],
+    def get_image_cached_results(self, dockerfile_path: str, image: Image, image_cached_result: Dict[str, Any] | None,
                                  root_folder: Union[str, Path, None] = None) -> dict[str, Any]:
         """
             :param image_cached_result: twistcli result for image as saved in cache
@@ -247,7 +252,8 @@ class Runner(PackageRunner):
             root_folder=root_folder)
         return payload
 
-    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter, image_cached_result: Dict[str, Any]) -> Report:
+    def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter,
+                         image_cached_result: Dict[str, Any] | None) -> Report:
         """
 
         :param dockerfile_path: path of a file that might contain a container image
@@ -288,7 +294,7 @@ class Runner(PackageRunner):
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
                 report = Report(self.check_type)
-                report.set_error_status(2)
+                report.set_error_status(ErrorStatus.ERROR)
                 return report
 
             self.raw_report = scan_result
@@ -309,7 +315,7 @@ class Runner(PackageRunner):
         scan_result = self.scan(image_id, dockerfile_path, runner_filter)
         if scan_result is None:
             report = Report(self.check_type)
-            report.set_error_status(2)
+            report.set_error_status(ErrorStatus.ERROR)
             return report
         self.raw_report = scan_result
         result = scan_result.get('results', [{}])[0]
