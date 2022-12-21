@@ -116,7 +116,10 @@ def test_build_def_context_on_list():
     context = build_gha_definitions_context(definitions=defs, definitions_raw=defs_raw)
     assert context[list(context.keys())[0]] == {
         'on': {
-            'start_line': 2, 'end_line': 3, 'code_lines': [(2, 'on: [push, fork]\n')]},
+            "['push', 'fork']": {
+                'start_line': 2, 'end_line': 3, 'code_lines': [(2, 'on: [push, fork]\n')]
+            }
+        },
         'permissions': {
             'pull-requests': {
                 'start_line': 5,

@@ -127,7 +127,7 @@ def build_gha_definitions_context(definitions: dict[str, dict[str, Any]], defini
                             code_lines = definitions_raw[file_path][line_tuple[0] - 1:line_tuple[0]]
                             dpath.new(
                                 definitions_context,
-                                [file_path, str(file_path_definition)],
+                                [file_path, str(file_path_definition), str(definition)],
                                 {"start_line": line_tuple[0], "end_line": line_tuple[0] + 1, "code_lines": code_lines},
                             )
                             break
