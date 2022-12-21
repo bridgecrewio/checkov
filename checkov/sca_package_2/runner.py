@@ -157,6 +157,6 @@ class Runner(BaseRunner[None]):
                                                         source_version=bc_integration.bc_source_version,
                                                         repo_branch=bc_integration.repo_branch,
                                                         prisma_api_url=bc_integration.prisma_api_url,
-                                                        is_package_scan=True)
+                                                        block_upload_results=True)
         bc_integration.persist_files(package_files_to_persist)
         return package_files_to_persist

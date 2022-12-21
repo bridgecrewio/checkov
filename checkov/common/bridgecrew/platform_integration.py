@@ -211,7 +211,7 @@ class BcPlatformIntegration:
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
-        is_package_scan: bool = False
+        block_upload_results: bool = False
     ) -> None:
         """
         Setup credentials against Bridgecrew's platform.
@@ -238,7 +238,7 @@ class BcPlatformIntegration:
                 use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
-        if self.bc_source and (self.bc_source.upload_results or is_package_scan):
+        if self.bc_source and (self.bc_source.upload_results or block_upload_results):
             try:
                 repo_full_path, response = self.get_s3_role(repo_id)
                 self.bucket, self.repo_path = repo_full_path.split("/", 1)
@@ -257,7 +257,7 @@ class BcPlatformIntegration:
                     region_name=region,
                     config=config,
                 )
-                if not is_package_scan:
+                if not block_upload_results:
                     self.skip_fixes = True  # no need to run fixes on CI integration
                     self.platform_integration_configured = True
                     self.use_s3_integration = True
