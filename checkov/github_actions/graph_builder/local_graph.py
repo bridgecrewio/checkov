@@ -33,6 +33,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
             self._create_jobs_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
             self._create_steps_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
             self._create_permissions_vertices(file_path=file_path, permissions=definition.get(ResourceType.PERMISSIONS))
+            self._create_on_vertices(file_path=file_path, on=definition.get(ResourceType.ON))
 
     def _create_jobs_vertices(self, file_path: str, jobs: Any) -> None:
         """Creates jobs vertices"""
@@ -126,6 +127,28 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
 
         block_name = ResourceType.PERMISSIONS
+
+        block = Block(
+            name=block_name,
+            config=config,
+            path=file_path,
+            block_type=BlockType.RESOURCE,
+            attributes=attributes,
+            id=block_name,
+            source=self.source,
+        )
+        self.vertices.append(block)
+
+    def _create_on_vertices(self, file_path: str, on: Any) -> None:
+        if not on or not isinstance(on, (str, dict, list)):
+            return
+
+        config = on
+
+        attributes = deepcopy(config)
+        attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.ON
+
+        block_name = ResourceType.ON
 
         block = Block(
             name=block_name,
