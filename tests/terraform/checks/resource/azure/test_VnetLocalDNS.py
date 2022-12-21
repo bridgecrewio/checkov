@@ -23,6 +23,7 @@ class TestVnetLocalDNS(unittest.TestCase):
         }
         failing_resources = {
             "azurerm_virtual_network.fail",
+            "azurerm_virtual_network.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
