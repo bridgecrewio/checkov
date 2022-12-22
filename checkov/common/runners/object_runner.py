@@ -203,7 +203,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=result,
-                        code_block=self.definitions_raw[file_path][start - 1:end + 1],
+                        code_block=self.definitions_raw[file_path][start - 1:end + 2],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
                         resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck

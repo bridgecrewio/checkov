@@ -25,7 +25,9 @@ class BranchSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
+    def scan_entity_conf(  # type:ignore[override]
+            self, conf: dict[str, Any], entity_type: str) -> \
+            CheckResult | tuple[CheckResult, dict[str, Any] | str | list[str | dict[str, Any]]]:
         if branch_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
             evaluated_conf = self.get_result_configuration(evaluated_key, conf)

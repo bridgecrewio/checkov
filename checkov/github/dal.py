@@ -26,8 +26,8 @@ class Github(BaseVCSDAL):
         os.environ["CKV_GITHUB_CONF_DIR_PATH"] = self.github_conf_dir_path
 
         # if any file was left from previous run-remove it.
-        if os.path.isdir(self.github_conf_dir_path):
-            shutil.rmtree(self.github_conf_dir_path)
+        # if os.path.isdir(self.github_conf_dir_path):
+            # shutil.rmtree(self.github_conf_dir_path)
 
         self.github_conf_file_paths = {
             "org_security": [Path(self.github_conf_dir_path) / "org_security.json"],

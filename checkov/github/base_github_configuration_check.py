@@ -43,7 +43,7 @@ class BaseGithubCheck(BaseCheck):
                 return ckv_metadata, new_conf
         return {}, conf
 
-    def get_result_configuration(self, evaluated_key: str, conf: dict[str, Any]) -> DictNode | ListNode | str:
+    def get_result_configuration(self, evaluated_key: str, conf: dict[str, Any]) -> dict[str, Any] | str | list[str | dict[str, Any]]:
         result_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
         json_path = parse(f"$.{'.'.join(result_conf_path)}")
         result_conf = json_path.find(conf)
