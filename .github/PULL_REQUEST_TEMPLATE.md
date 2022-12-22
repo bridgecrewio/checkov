@@ -10,10 +10,10 @@
     - chore:    to indicate adjustments to workflow files or dependency updates
     - platform: to indicate a change needed for the platform
     Additionally a scope is needs to be added to the prefix, which indicates the targeted framework, in doubt choose 'general'.
-    
-    Allowed prefixs: 
+    #    
+    Allowed prefixs:
     argo|arm|azure|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gha|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph|terraform_plan
-    
+    #
     ex.
     feat(terraform): add CKV_AWS_123 to ensure that VPC Endpoint Service is configured for Manual Acceptance
 "
