@@ -593,6 +593,10 @@ class TestRunnerValid(unittest.TestCase):
         resource_ids = [check.resource for check in report.failed_checks]
         self.assertCountEqual(resource_ids,["aws_secretsmanager_secret.default", "aws_secretsmanager_secret.default"])
 
+        # check also the details
+        failed_check = next(check for check in report.failed_checks if check.check_id == "CUSTOM_DELETE_1")
+        self.assertEqual(failed_check.details, ["some great details"])
+
     def test_runner_nested_child_modules_with_connections(self):
         # given
         tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"

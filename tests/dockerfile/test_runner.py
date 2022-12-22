@@ -91,11 +91,17 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/expose_port/pass"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
-        self.assertEqual(len(report.passed_checks), 1)
+                            runner_filter=RunnerFilter(framework=["all"],checks=["CKV_DOCKER_1", "CKV2_DOCKER_1"]))
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
+
+        #  also check the abs file paths
+        record_python = next(check for check in report.passed_checks if check.check_id == "CKV_DOCKER_1")
+        assert record_python.file_abs_path.endswith("checkov/tests/dockerfile/resources/expose_port/pass/Dockerfile")
+        record_graph = next(check for check in report.passed_checks if check.check_id == "CKV2_DOCKER_1")
+        assert record_graph.file_abs_path.endswith("checkov/tests/dockerfile/resources/expose_port/pass/Dockerfile")
 
     def test_runner_skip_check(self):
         #  given
