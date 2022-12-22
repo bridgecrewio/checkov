@@ -20,9 +20,7 @@
     },
     "testRunnerIpRange": {
       "type": "string",
-      "defaultValue": "*",
-
-
+      "defaultValue": "*"
     }
   },
   "resources": [
