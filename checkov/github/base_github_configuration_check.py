@@ -6,7 +6,6 @@ from typing import Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories
-from checkov.common.parsers.node import DictNode, ListNode
 from checkov.github.dal import CKV_METADATA
 from checkov.github.registry import registry
 from bc_jsonpath_ng import parse
