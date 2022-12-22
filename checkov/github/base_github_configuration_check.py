@@ -45,6 +45,8 @@ class BaseGithubCheck(BaseCheck):
     def get_result_configuration(
             self, evaluated_key: str, conf: dict[str, Any]) -> dict[str, Any] | str | list[str | dict[str, Any]]:
         # if the evaluated key points to a key within an object, the result config should be its parent, for context
+        # example 1 - key: `object.nested_object.key` -> json_path should be `$.object.nested_object`
+        # example 2 - key: `key` -> json_path should be `$.key`
         evaluated_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
         json_path = parse(f"$.{'.'.join(evaluated_conf_path)}")
         evaluated_conf = json_path.find(conf)
