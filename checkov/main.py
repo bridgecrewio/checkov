@@ -79,6 +79,7 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
+# sca package runner added during the run method
 DEFAULT_RUNNERS = [
     tf_graph_runner(),
     cfn_runner(),
