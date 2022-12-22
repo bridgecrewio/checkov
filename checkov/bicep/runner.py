@@ -87,7 +87,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
         self.root_folder = root_folder
 
         if not self.context or not self.definitions:
-            file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
+            file_paths = get_scannable_file_paths(
+                root_folder=root_folder, files=files, excluded_paths=runner_filter.excluded_paths
+            )
 
             if not file_paths:
                 return report
