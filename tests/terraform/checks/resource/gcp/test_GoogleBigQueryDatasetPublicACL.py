@@ -1,133 +1,49 @@
 import unittest
+from pathlib import Path
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleBigQueryDatasetPublicACL import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestBigQueryDatasetPublicACL(unittest.TestCase):
+class TestGoogleBigQueryDatasetPublicACL(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_GoogleBigQueryDatasetPublicACL"
 
-    def test_failure_special_group(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "special_group": ["allAuthenticatedUsers"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure_all_users(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["VIEWER"], "special_group": ["projectReaders"]},
-                                    {"role": ["READER"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_success_special_group(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "special_group": ["projectReaders"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "google_bigquery_dataset.pass_special_group",
+            "google_bigquery_dataset.pass_user_by_email",
+            "google_bigquery_dataset.pass_group_by_email",
+            "google_bigquery_dataset.pass_domain",
+            "google_bigquery_dataset.pass_view",
+            "google_bigquery_dataset.pass_routine",
+            "google_bigquery_dataset.pass_dataset",
+        }
 
-    def test_success_user_by_email(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "user_by_email": ["foo@bar.com"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "google_bigquery_dataset.fail_special_group",
+            "google_bigquery_dataset.fail_all_users",
+            "google_bigquery_dataset.fail_new_key",
+        }
 
-    def test_success_group_by_email(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "group_by_email": ["foo-team@bar.com"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-    def test_success_domain(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["EDITOR"], "domain": ["example.com"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
 
-    def test_success_view(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"view": {"projectId": "foo", "datasetId": "bar", "tableId": "buzz"}}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
-    def test_success_routine(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"routine": {"projectId": "foo", "datasetId": "bar", "routineId": "buzz"}}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_success_dataset(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"dataset": {"dataset": {"datasetId": "foo","projectId": "bar"},"targetTypes": ["VIEWS"]}}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_iam_member(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "iam_member": ["deleted:serviceAccount:foo@bar.iam.gserviceaccount.com?uid=1234567890"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    # Since we do not know what type of keys will be added in the future, checks should be based on allowlist
-    def test_failure_unknown_key_to_be_added_in_the_future(self):
-        resource_conf = {"dataset_id": ["example_dataset"],
-                         "friendly_name": ["test"],
-                         "description": ["This is a test description"],
-                         "location": ["EU"],
-                         "default_table_expiration_ms": [3600000],
-                         "access": [{"role": ["READER"], "unknown_key": ["unknown_value"]}]
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
