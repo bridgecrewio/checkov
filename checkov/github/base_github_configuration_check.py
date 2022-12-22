@@ -42,8 +42,11 @@ class BaseGithubCheck(BaseCheck):
                 return ckv_metadata, new_conf
         return {}, conf
 
-    def get_result_configuration(self, evaluated_key: str, conf: dict[str, Any]) -> dict[str, Any] | str | list[str | dict[str, Any]]:
-        result_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
-        json_path = parse(f"$.{'.'.join(result_conf_path)}")
-        result_conf = json_path.find(conf)
-        return result_conf[0].value if result_conf else conf
+    def get_result_configuration(
+            self, evaluated_key: str, conf: dict[str, Any]) -> dict[str, Any] | str | list[str | dict[str, Any]]:
+        # if the evaluated key points to a key within an object, the result config should be its parent, for context
+        evaluated_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
+        json_path = parse(f"$.{'.'.join(evaluated_conf_path)}")
+        evaluated_conf = json_path.find(conf)
+
+        return evaluated_conf[0].value if evaluated_conf else conf
