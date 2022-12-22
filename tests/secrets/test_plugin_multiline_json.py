@@ -1,15 +1,9 @@
-import os
 import time
 import unittest
 from pathlib import Path
 
-from detect_secrets.util.code_snippet import CodeSnippet
-from detect_secrets.util.filetype import FileType
-
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCombinator
-from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_KEYWORD_BY_FILETYPE
-from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_SECRET_BY_FILETYPE
 from checkov.secrets.runner import Runner
 
 
@@ -41,7 +35,7 @@ class TestCombinatorPluginMultilineJson(unittest.TestCase):
 
         # then
         assert end_time-start_time < 1  # assert the time limit is not too long for parsing long lines.
-        self.assertEqual(len(report.failed_checks), 8)
+        self.assertEqual(len(report.failed_checks), 10)
         # None of the results is related to multiline scanning - all is detected even if multiline scanning is disabled.
         # This is a different result compared to same data in .yml file.
         self.assertEqual(report.parsing_errors, [])

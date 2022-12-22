@@ -28,10 +28,12 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
+    integration as suppressions_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.images.image_referencer import enable_image_referencer
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry, OUTPUT_CHOICES, SUMMARY_POSITIONS
@@ -77,8 +79,8 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-
-DEFAULT_RUNNERS = (
+# sca package runner added during the run method
+DEFAULT_RUNNERS = [
     tf_graph_runner(),
     cfn_runner(),
     k8_runner(),
@@ -102,9 +104,21 @@ DEFAULT_RUNNERS = (
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner(),
-    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
-)
+    azure_pipelines_runner()
+]
+
+
+def exit_run(no_fail_on_crash: bool) -> None:
+    exit(0) if no_fail_on_crash else exit(2)
+
+
+def commit_repository(config: Namespace) -> Optional[str]:
+    try:
+        return bc_integration.commit_repository(config.branch)
+    except Exception:
+        logging.debug("commit_repository failed, exiting", exc_info=True)
+        exit_run(config.no_fail_on_crash)
+        return ""
 
 
 def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optional[int]:
@@ -147,7 +161,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
                   '--external-checks-dir options.',
                   file=sys.stderr)
-            exit(2)
+            exit_run(config.no_fail_on_crash)
         elif config.skip_download:
             print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
                   'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
@@ -172,12 +186,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
     if config.var_file:
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
-    run_image_referencer = enable_image_referencer(
-        bc_integration=bc_integration,
-        frameworks=config.framework,
-        skip_frameworks=config.skip_framework,
-    )
-
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
                                  skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
@@ -187,9 +195,28 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
                                  use_enforcement_rules=config.use_enforcement_rules,
-                                 run_image_referencer=run_image_referencer,
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
-                                 block_list_secret_scan=config.block_list_secret_scan)
+                                 block_list_secret_scan=config.block_list_secret_scan,
+                                 deep_analysis=config.deep_analysis,
+                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+
+    source_env_val = os.getenv('BC_SOURCE', 'cli')
+    source = get_source_type(source_env_val)
+    if source == SourceTypes[BCSourceType.DISABLED]:
+        logger.warning(
+            f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
+    source_version = os.getenv('BC_SOURCE_VERSION', version)
+    logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
+
+    if config.list:
+        # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
+        logger.debug('Using --list; setting source to DISABLED')
+        source = SourceTypes[BCSourceType.DISABLED]
+
+    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+        DEFAULT_RUNNERS.append(sca_package_runner_2())
+    else:
+        DEFAULT_RUNNERS.append(sca_package_runner())
 
     if outer_registry:
         runner_registry = outer_registry
@@ -228,19 +255,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
 
-        source_env_val = os.getenv('BC_SOURCE', 'cli')
-        source = get_source_type(source_env_val)
-        if source == SourceTypes[BCSourceType.DISABLED]:
-            logger.warning(
-                f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
-        source_version = os.getenv('BC_SOURCE_VERSION', version)
-        logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
-
-        if config.list:
-            # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
-            logger.debug('Using --list; setting source to DISABLED')
-            source = SourceTypes[BCSourceType.DISABLED]
-
         try:
             bc_integration.bc_api_key = config.bc_api_key
             bc_integration.setup_bridgecrew_credentials(repo_id=config.repo_id,
@@ -260,7 +274,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
 
         except MaxRetryError:
-            return None
+            exit_run(config.no_fail_on_crash)
         except Exception:
             if bc_integration.prisma_api_url:
                 message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
@@ -272,8 +286,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 logger.debug(message, exc_info=True)
             else:
                 logger.error(message)
-                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support')
-            return None
+                logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
+            exit_run(config.no_fail_on_crash)
     else:
         logger.debug('No API key found. Scanning locally only.')
         config.include_all_checkov_policies = True
@@ -298,16 +312,20 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                   'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
                   '(but note that this will not include any custom platform configurations or policy metadata).',
                   file=sys.stderr)
-            exit(2)
+            exit_run(config.no_fail_on_crash)
 
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
 
     integration_feature_registry.run_pre_scan()
 
+    runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
     runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
+
+    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -339,6 +357,8 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             file = config.file
             scan_reports = runner_registry.run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                                                files=file)
+            if runner_registry.is_error_in_reports(scan_reports):
+                exit_run(config.no_fail_on_crash)
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
@@ -346,7 +366,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.persist_run_metadata(run_metadata)
-                url = bc_integration.commit_repository(config.branch)
+                url = commit_repository(config)
 
             if config.create_baseline:
                 overall_baseline = Baseline()
@@ -378,8 +398,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             dockerfile_path=config.dockerfile_path,
             runner_filter=runner_filter,
         )
-
         results = result if isinstance(result, list) else [result]
+        if runner_registry.is_error_in_reports(results):
+            exit_run(config.no_fail_on_crash)
         if len(results) > 1:
             # this shouldn't happen, but if it happens, then it is intended or something is broke
             logger.error(f"SCA image runner returned {len(results)} reports; expected 1")
@@ -390,13 +411,15 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         bc_integration.persist_image_scan_results(runner.raw_report, config.dockerfile_path, config.docker_image,
                                                   config.branch)
         bc_integration.persist_run_metadata(run_metadata)
-        url = bc_integration.commit_repository(config.branch)
+        url = commit_repository(config)
         exit_code = runner_registry.print_reports(results, config, url=url)
         return exit_code
     elif config.file:
         runner_registry.filter_runners_for_files(config.file)
         scan_reports = runner_registry.run(external_checks_dir=external_checks_dir, files=config.file,
                                            repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+        if runner_registry.is_error_in_reports(scan_reports):
+            exit_run(config.no_fail_on_crash)
         if baseline:
             baseline.compare_and_reduce_reports(scan_reports)
         if config.create_baseline:
@@ -415,7 +438,7 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
             bc_integration.persist_scan_results(scan_reports)
             bc_integration.persist_run_metadata(run_metadata)
-            url = bc_integration.commit_repository(config.branch)
+            url = commit_repository(config)
         exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
     elif not config.quiet:
@@ -649,6 +672,15 @@ def add_parser_args(parser: ArgumentParser) -> None:
                help="exclude extra resources (resources without violations) from report output",
                action='store_true',
                env_var='CKV_SKIP_RESOURCES_WITHOUT_VIOLATIONS')
+    parser.add('--deep-analysis',
+               default=False,
+               action='store_true',
+               help='Enable combine tf graph and rf plan graph')
+    parser.add('--no-fail-on-crash',
+               default=False,
+               env_var='CKV_NO_FAIL_ON_CRASH',
+               action='store_true',
+               help='Return exit code 0 instead of 2')
 
 
 def get_external_checks_dir(config: Any) -> Any:

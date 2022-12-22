@@ -5,7 +5,7 @@ import logging
 import re
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
-from jsonpath_ng.ext import parse
+from bc_jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -117,30 +117,31 @@ class BaseAttributeSolver(BaseSolver):
             failed_vertices.append(data)
 
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
-        attribute_matches: List[str] = []
-        if self.is_jsonpath_check:
-            parsed_attr = self.parsed_attributes.get(self.attribute)
-            if parsed_attr is None:
-                try:
-                    parsed_attr = parse(self.attribute)
+        try:
+            attribute_matches: List[str] = []
+            if self.is_jsonpath_check:
+                parsed_attr = self.parsed_attributes.get(self.attribute)
+                if parsed_attr is None:
+                    parsed_attr = parse(self.attribute)  # type:ignore[arg-type]  # self.attribute is no longer going to be Optional here
                     self.parsed_attributes[self.attribute] = parsed_attr
-                except Exception:
-                    logging.debug('Error parsing jsonpath expression', exc_info=True)
-                    raise
-            for match in parsed_attr.find(vertex):
-                full_path = str(match.full_path)
-                if full_path not in vertex:
-                    vertex[full_path] = match.value
 
-                attribute_matches.append(full_path)
+                for match in parsed_attr.find(vertex):
+                    full_path = str(match.full_path)
+                    if full_path not in vertex:
+                        vertex[full_path] = match.value
 
-        elif isinstance(self.attribute, str):
-            attribute_patterns = self.get_attribute_patterns(self.attribute)
-            for attr in vertex:
-                if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
-                    attribute_matches.append(attr)
+                    attribute_matches.append(full_path)
 
-        return attribute_matches
+            elif isinstance(self.attribute, str):
+                attribute_patterns = self.get_attribute_patterns(self.attribute)
+                for attr in vertex:
+                    if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                        attribute_matches.append(attr)
+
+            return attribute_matches
+        except Exception:
+            logging.debug('Error parsing or evaluating jsonpath expression', exc_info=True)
+            raise
 
     @staticmethod
     def get_attribute_patterns(attribute: str) -> Tuple[Pattern[str], Pattern[str]]:

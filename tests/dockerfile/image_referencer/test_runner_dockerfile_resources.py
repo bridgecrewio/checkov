@@ -40,7 +40,7 @@ def test_simple_dockerfile(mocker: MockerFixture, image_cached_result, license_s
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 4
+    assert len(tf_report.passed_checks) == 5
     assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
@@ -92,7 +92,7 @@ def test_multi_stage_dockerfile(mocker: MockerFixture, image_cached_result):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 4
+    assert len(tf_report.passed_checks) == 6
     assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
@@ -135,7 +135,7 @@ def test_multi_platform_dockerfile(mocker: MockerFixture, image_cached_result):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 3
+    assert len(tf_report.passed_checks) == 4
     assert len(tf_report.failed_checks) == 3
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0

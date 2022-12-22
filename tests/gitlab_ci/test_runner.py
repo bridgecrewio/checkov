@@ -21,7 +21,7 @@ class TestRunnerValid(unittest.TestCase):
         )
         self.assertEqual(len(report.failed_checks), 5)
         self.assertEqual(report.parsing_errors, [])
-        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.passed_checks), 6)
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 

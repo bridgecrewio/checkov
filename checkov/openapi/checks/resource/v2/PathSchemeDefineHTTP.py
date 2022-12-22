@@ -23,7 +23,7 @@ class PathSchemeDefineHTTP(BaseOpenapiCheckV2):
             return CheckResult.UNKNOWN, conf
 
         for path, http_method in paths.items():
-            if self.is_start_end_line(path):
+            if self.is_start_end_line(path) or not http_method:
                 continue
             for op_name, op_val in http_method.items():
                 if self.is_start_end_line(op_name):
