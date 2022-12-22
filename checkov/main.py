@@ -79,8 +79,8 @@ outer_registry = None
 logger = logging.getLogger(__name__)
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
-
-DEFAULT_RUNNERS = (
+# sca package runner added during the run method
+DEFAULT_RUNNERS = [
     tf_graph_runner(),
     cfn_runner(),
     k8_runner(),
@@ -104,9 +104,8 @@ DEFAULT_RUNNERS = (
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner(),
-    sca_package_runner_2() if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else sca_package_runner()
-)
+    azure_pipelines_runner()
+]
 
 
 def exit_run(no_fail_on_crash: bool) -> None:
@@ -201,6 +200,24 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
                                  deep_analysis=config.deep_analysis,
                                  repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
 
+    source_env_val = os.getenv('BC_SOURCE', 'cli')
+    source = get_source_type(source_env_val)
+    if source == SourceTypes[BCSourceType.DISABLED]:
+        logger.warning(
+            f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
+    source_version = os.getenv('BC_SOURCE_VERSION', version)
+    logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
+
+    if config.list:
+        # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
+        logger.debug('Using --list; setting source to DISABLED')
+        source = SourceTypes[BCSourceType.DISABLED]
+
+    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+        DEFAULT_RUNNERS.append(sca_package_runner_2())
+    else:
+        DEFAULT_RUNNERS.append(sca_package_runner())
+
     if outer_registry:
         runner_registry = outer_registry
         runner_registry.runner_filter = runner_filter
@@ -237,19 +254,6 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
             if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
                 parser.error("--repo-id argument format should be 'organization/repository_name' E.g "
                              "bridgecrewio/checkov")
-
-        source_env_val = os.getenv('BC_SOURCE', 'cli')
-        source = get_source_type(source_env_val)
-        if source == SourceTypes[BCSourceType.DISABLED]:
-            logger.warning(
-                f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
-        source_version = os.getenv('BC_SOURCE_VERSION', version)
-        logger.debug(f'BC_SOURCE = {source.name}, version = {source_version}')
-
-        if config.list:
-            # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
-            logger.debug('Using --list; setting source to DISABLED')
-            source = SourceTypes[BCSourceType.DISABLED]
 
         try:
             bc_integration.bc_api_key = config.bc_api_key
