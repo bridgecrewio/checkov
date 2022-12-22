@@ -103,9 +103,7 @@ DEFAULT_RUNNERS = [
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner(),
-    sca_package_runner_2(),
-    sca_package_runner()
+    azure_pipelines_runner()
 ]
 
 
@@ -215,9 +213,9 @@ def run(banner: str = checkov_banner, argv: List[str] = sys.argv[1:]) -> Optiona
         source = SourceTypes[BCSourceType.DISABLED]
 
     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
-        del DEFAULT_RUNNERS[-1]
+        DEFAULT_RUNNERS.append(sca_package_runner_2())
     else:
-        del DEFAULT_RUNNERS[-2]
+        DEFAULT_RUNNERS.append(sca_package_runner())
 
     if outer_registry:
         runner_registry = outer_registry
