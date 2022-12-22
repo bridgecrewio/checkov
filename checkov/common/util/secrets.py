@@ -120,7 +120,7 @@ def omit_multiple_secret_values_from_line(secrets: set[str], line_text: str) -> 
 
 def omit_secret_value_from_line(secret: str, line_text: str) -> str:
     secret_length = len(secret)
-    secret_len_to_expose = secret_length // 4
+    secret_len_to_expose = min(secret_length // 4, 6)  # no more than 6 characters should be exposed
 
     try:
         secret_index = line_text.index(secret)
