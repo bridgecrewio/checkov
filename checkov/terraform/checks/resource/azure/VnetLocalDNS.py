@@ -26,6 +26,8 @@ class VnetLocalDNS(BaseResourceCheck):
                 if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list):
                     address_spaces = conf["address_space"][0]
                     for address_range in address_spaces:
+                        if not isinstance(address_range, str):
+                            continue
                         net = ip_network(address_range)
                         if isinstance(ip, str) and ip_address(ip) in net:
                             return CheckResult.PASSED
