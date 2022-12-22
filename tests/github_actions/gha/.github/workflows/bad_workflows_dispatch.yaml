@@ -1,10 +1,13 @@
 name: read-only
 
 on:
-  pull_request:
-    types: [ opened, synchronize, labeled, unlabeled ]
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
 
-permissions: write-all
+permissions: read-all
 
 jobs:
   example:
