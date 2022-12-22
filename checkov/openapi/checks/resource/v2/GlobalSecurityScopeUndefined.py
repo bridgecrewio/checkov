@@ -24,6 +24,8 @@ class GlobalSecurityScopeUndefined(BaseOpenapiCheckV2):
         security_definitions = conf.get('securityDefinitions', {}) or {}
         security_values = conf.get('security', [{}]) or [{}]
         for security in security_values:
+            if not isinstance(security, dict):
+                return CheckResult.UNKNOWN, conf
             for security_key, security_scopes in security.items():
                 if self.is_start_end_line(security_key) or not security_scopes:
                     continue

@@ -32,6 +32,8 @@ class Oauth2SecurityPasswordFlow(BaseOpenapiCheckV2):
             for auth_key in auth_dict:
                 if self.is_start_end_line(auth_key):
                     continue
+                if not isinstance(security_definitions, dict):
+                    return CheckResult.UNKNOWN, conf
                 auth_definition = security_definitions.get(auth_key, {})
                 auth_type = auth_definition.get('type', '')
                 if auth_type.lower() == 'oauth2':

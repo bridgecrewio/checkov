@@ -24,11 +24,15 @@ class SecurityDefinitionBasicAuth(BaseOpenapiCheckV2):
             self, conf: dict[str, Any], entity_type: str
     ) -> tuple[CheckResult, Union[dict[str, Any], List[Any]]]:
         security_definitions = conf.get('securityDefinitions', {}) or {}
+        if not isinstance(security_definitions, dict):
+            return CheckResult.UNKNOWN, conf
 
         for auth_key, auth_dict in security_definitions.items():
             if self.is_start_end_line(auth_key):
                 continue
-            auth_type = auth_dict.get('type')
+            if not isinstance(auth_dict, dict):
+                return CheckResult.UNKNOWN, conf
+            auth_type = auth_dict.get('type', '')
             if auth_type.lower() == 'basic':
                 return CheckResult.FAILED, auth_dict
 

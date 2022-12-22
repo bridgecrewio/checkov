@@ -29,14 +29,22 @@ class OperationObjectImplicitFlow(BaseOpenapiCheckV2):
         for path, path_dict in paths.items():
             if self.is_start_end_line(path):
                 continue
+            if not isinstance(path_dict, dict):
+                return CheckResult.UNKNOWN, conf
             for operation, operation_dict in path_dict.items():
                 if self.is_start_end_line(operation):
                     continue
+                if not isinstance(operation_dict, dict):
+                    return CheckResult.UNKNOWN, conf
                 security = operation_dict.get('security', [])
                 for security_definition in security:
+                    if not isinstance(security_definition, dict):
+                        return CheckResult.UNKNOWN, conf
                     for auth_key in security_definition:
                         if self.is_start_end_line(auth_key):
                             continue
+                        if not isinstance(security_definitions, dict):
+                            return CheckResult.UNKNOWN, conf
                         auth_definition = security_definitions.get(auth_key, {})
                         auth_flow = auth_definition.get('flow', '')
                         if auth_flow == 'implicit':

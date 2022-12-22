@@ -29,15 +29,22 @@ class Oauth2OperationObjectPasswordFlow(BaseOpenapiCheckV2):
         for path, path_dict in paths.items():
             if self.is_start_end_line(path):
                 continue
+            if not isinstance(path_dict, dict):
+                return CheckResult.UNKNOWN, conf
             for operation, operation_dict in path_dict.items():
                 if self.is_start_end_line(operation):
                     continue
+                if not isinstance(operation_dict, dict):
+                    return CheckResult.UNKNOWN, conf
                 security = operation_dict.get('security', [])
                 for security_definition in security:
-                    for auth_key in security_definition:
+                    if not isinstance(security_definition, dict):
+                        return CheckResult.UNKNOWN, conf
+                    for auth_key, auth_definition in security_definition.items():
                         if self.is_start_end_line(auth_key):
                             continue
-                        auth_definition = security_definitions.get(auth_key, {})
+                        if not isinstance(auth_definition, dict):
+                            return CheckResult.UNKNOWN, conf
                         auth_type = auth_definition.get('type', '')
                         if auth_type.lower() == 'oauth2':
                             auth_flow = auth_definition.get('flow', '')

@@ -28,10 +28,14 @@ class OperationObjectConsumesUndefined(BaseOpenapiCheckV2):
         for path, path_dict in paths.items():
             if self.is_start_end_line(path):
                 continue
+            if not isinstance(path_dict, dict):
+                return CheckResult.UNKNOWN, conf
             for operation, operation_dict in path_dict.items():
                 if self.is_start_end_line(operation):
                     continue
                 if operation.lower() in ['post', 'put', 'patch']:
+                    if not isinstance(operation_dict, dict):
+                        return CheckResult.UNKNOWN, conf
                     if not operation_dict.get('consumes'):
                         return CheckResult.FAILED, operation_dict
 

@@ -28,7 +28,9 @@ class Oauth2SecurityDefinitionImplicitFlow(BaseOpenapiCheckV2):
         for auth_key, auth_dict in security_definitions.items():
             if self.is_start_end_line(auth_key):
                 continue
-            auth_type = auth_dict.get('type')
+            if not isinstance(auth_dict, dict):
+                return CheckResult.UNKNOWN, conf
+            auth_type = auth_dict.get('type', '')
             if auth_type.lower() == 'oauth2':
                 auth_flow = auth_dict.get('flow', '')
                 if auth_flow == 'implicit':
