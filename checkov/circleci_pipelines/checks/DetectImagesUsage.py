@@ -16,7 +16,7 @@ class DetectImageUsage(BaseCircleCIPipelinesCheck):
             block_type=BlockType.ARRAY,
             supported_entities=(
                 "executors.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}",
-                'jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}',
+                "jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}",
             )
         )
 

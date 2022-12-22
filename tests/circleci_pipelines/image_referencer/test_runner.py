@@ -35,7 +35,7 @@ def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(circleci_report.resources) == 0
-    assert len(circleci_report.passed_checks) == 21
+    assert len(circleci_report.passed_checks) == 32
     assert len(circleci_report.failed_checks) == 13
     assert len(circleci_report.skipped_checks) == 0
     assert len(circleci_report.parsing_errors) == 0
@@ -62,5 +62,5 @@ def test_runner_image_check(file_path):
 
     assert len(report.failed_checks) == 0
     assert report.parsing_errors == []
-    assert len(report.passed_checks) == 1
+    assert len(report.passed_checks) == 12
     assert report.skipped_checks ==[]
