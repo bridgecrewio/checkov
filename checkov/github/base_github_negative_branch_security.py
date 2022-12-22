@@ -46,6 +46,7 @@ class NegativeBranchSecurity(BaseGithubCheck):
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
                     return CheckResult.FAILED, evaluated_conf
+
             return CheckResult.PASSED, evaluated_conf
         if no_branch_security_schema.validate(conf):
             message = conf.get("message", "")
