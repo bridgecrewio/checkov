@@ -854,3 +854,26 @@ resource "aws_route53_resolver_endpoint" "pass_route53_resolver_endpoint" {
     subnet_id = var.subnet_id
   }
 }
+
+# Transfer Family
+
+resource "aws_security_group" "pass_transfer_server" {
+  ingress {
+    description = "SFTP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_transfer_server" "pass_transfer_server" {
+  endpoint_type = "VPC"
+
+  endpoint_details {
+    address_allocation_ids = [var.eip_id]
+    subnet_ids             = [var.subnet_id]
+    vpc_id                 = var.vpc_id
+    security_group_ids     = [aws_security_group.pass_transfer_server.id]
+  }
+}
