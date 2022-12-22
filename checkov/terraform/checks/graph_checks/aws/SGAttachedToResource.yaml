@@ -48,6 +48,7 @@ definition:
         - aws_redshift_cluster
         - aws_route53_resolver_endpoint
         - aws_sagemaker_notebook_instance
+        - aws_transfer_server
         - aws_vpc_endpoint
       operator:  exists
       attribute: networking
