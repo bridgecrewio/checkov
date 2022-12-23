@@ -141,6 +141,8 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_1"]),
         )
         self.assertEqual(len(report.passed_checks), 1)
+
+        # file_line_range should cover the entire file range for empty evaluated_key path
         self.assertEqual(report.passed_checks[0].file_line_range, [1, 81])
         report.print_console()
 
@@ -155,6 +157,8 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_2"]),
         )
         self.assertEqual(len(report.passed_checks), 1)
+
+        # file_line_range should cover the object that the evaluated_key path points at
         self.assertEqual(report.passed_checks[0].file_line_range, [19, 24])
         report.print_console()
 
@@ -169,6 +173,8 @@ class TestRunnerValid(unittest.TestCase):
             runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_3"]),
         )
         self.assertEqual(len(report.passed_checks), 1)
+
+        # file_line_range should cover the parent object of the key that the evaluated_key path points at
         self.assertEqual(report.passed_checks[0].file_line_range, [17, 31])
         report.print_console()
 
