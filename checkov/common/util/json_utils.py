@@ -32,4 +32,4 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 def get_jsonpath_from_evaluated_key(evaluated_key: str) -> JSONPath:
     evaluated_key = evaluated_key.replace("/", ".")
-    return parse(f"$..{evaluated_key}")
+    return parse(f"$..{evaluated_key}")  # type:ignore[no-any-return]
