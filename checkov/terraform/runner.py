@@ -629,7 +629,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
     def get_graph_resource_entity_config(self, entity, entity_context):
         definition_path = entity_context.get('definition_path', [])
-        entity_config = entity['config_']
+        entity_config = entity.get('config_', {})
         for path in definition_path:
             new_entity_config = entity_config.get(path)
             if not new_entity_config:

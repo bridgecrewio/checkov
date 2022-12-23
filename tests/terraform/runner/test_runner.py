@@ -1624,6 +1624,46 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
+    def test_get_graph_resource_valid_entity_config(self):
+        entity = {
+            'block_name_': 'azurerm_kubernetes_cluster.k8s_cluster',
+            'block_type_': 'resource',
+            'file_path_': '/private/tmp/checkov/1003739117890702336/McK-Internal/OFCS-SecurityEngineering-terragoat/pr/3/0ce50afc1dfa17321a54a732917f553bba22ff13/full/src/terraform/azure/aks.tf',
+            'config_': {
+                'azurerm_kubernetes_cluster': {
+                    'k8s_cluster': {
+                        'addon_profile': [{'kube_dashboard': [{'enabled': [True]}], 'oms_agent': [{'enabled': [False]}]}],
+                        'default_node_pool': [{'name': ['default'], 'vm_size': ['Standard_D2_v2']}],
+                        'location': ['East US']}}}}
+        entity_context = {'definition_path': ['azurerm_kubernetes_cluster', 'k8s_cluster']}
+        expected_entity_config = {
+                          'addon_profile': [{'kube_dashboard': [{'enabled': [True]}], 'oms_agent': [{'enabled': [False]}]}],
+                          'default_node_pool': [{'name': ['default'], 'vm_size': ['Standard_D2_v2']}],
+                          'location': ['East US']}
+        runner = Runner()
+        entity_config = runner.get_graph_resource_entity_config(entity, entity_context)
+        self.assertEqual(entity_config, expected_entity_config)
+
+    def test_get_graph_resource_invalid_entity_config(self):
+        entity = {'block_name_': 'aws.plain_text_access_keys_provider',
+                  'block_type_': 'provider',
+                  'file_path_': '/private/tmp/checkov/1003739117890702336/McK-Internal/OFCS-SecurityEngineering-terragoat/pr/3/0ce50afc1dfa17321a54a732917f553bba22ff13/full/src/terraform/aws/providers.tf',
+                  'config_': {
+                      'aws': {
+                            'access_key': ['AKIAIOSFODNN7EXAMPLE'],
+                            'alias': ['plain_text_access_keys_provider'],
+                            'region': ['us-west-1'],
+                            'secret_key': ['wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY']}}}
+        entity_context = {'definition_path': ['aws', 'plain_text_access_keys_provider']}
+        expected_entity_config = {
+                            'access_key': ['AKIAIOSFODNN7EXAMPLE'],
+                            'alias': ['plain_text_access_keys_provider'],
+                            'region': ['us-west-1'],
+                            'secret_key': ['wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY']}
+        runner = Runner()
+        entity_config = runner.get_graph_resource_entity_config(entity, entity_context)
+        self.assertEqual(entity_config, expected_entity_config)
+
     def tearDown(self):
         parser_registry.context = {}
         resource_registry.checks = self.orig_checks
