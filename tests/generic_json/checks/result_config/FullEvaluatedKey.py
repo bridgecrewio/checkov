@@ -5,10 +5,9 @@ from checkov.json_doc.base_json_check import BaseJsonCheck
 from checkov.json_doc.enums import BlockType
 
 
-class NoEvaluatedKey(BaseJsonCheck):
+class FullEvaluatedKey(BaseJsonCheck):
     def __init__(self):
-        name = "Ensure that the closest parent configuration block is returned for an evaluated key path that points" \
-               " to a string"
+        name = "Ensure that the right configuration block is returned for an evaluated_key that points to an object"
         id = "CKV_RESULT_CONFIG_3"
         categories = [CheckCategories.CONVENTION]
         super().__init__(
@@ -26,4 +25,4 @@ class NoEvaluatedKey(BaseJsonCheck):
         return ['required_pull_request_reviews/dismissal_restrictions/url']
 
 
-check = NoEvaluatedKey()
+check = FullEvaluatedKey()
