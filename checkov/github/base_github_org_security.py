@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from bc_jsonpath_ng import parse
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult

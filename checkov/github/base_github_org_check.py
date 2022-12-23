@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import Any
-from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.json_utils import get_jsonpath_from_evaluated_key

@@ -198,6 +198,3 @@ class Registry(BaseCheckRegistry):
                 entity_conf = reduced_conf
 
         return entity_conf
-
-
-
