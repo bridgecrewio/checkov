@@ -84,8 +84,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     @multi_signature()
     @abstractmethod
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> \
-            CheckResult | tuple[CheckResult, dict[str, Any] | str | list[str | dict[str, Any]]]:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | tuple[CheckResult, dict[str, Any]]:
         raise NotImplementedError()
 
     @classmethod

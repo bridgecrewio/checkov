@@ -27,8 +27,7 @@ class NegativeBranchSecurity(BaseGithubCheck):
         )
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_entity_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if branch_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
             jsonpath_expression = parse(f"$..{evaluated_key}")
