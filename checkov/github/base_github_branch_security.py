@@ -3,9 +3,8 @@ from __future__ import annotations
 from typing import Any
 from abc import abstractmethod
 
-from bc_jsonpath_ng import parse
-
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.json_utils import get_jsonpath_from_evaluated_key
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.branch_protection import schema as branch_security_schema
 from checkov.github.schemas.no_branch_protection import schema as no_branch_security_schema
@@ -26,17 +25,15 @@ class BranchSecurity(BaseGithubCheck):
         )
 
     def scan_entity_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str) -> \
-            CheckResult | tuple[CheckResult, dict[str, Any] | str | list[str | dict[str, Any]]]:
+            self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if branch_security_schema.validate(conf):
-            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
-            evaluated_conf = self.get_result_configuration(evaluated_key, conf)
-            jsonpath_expression = parse(f"$..{evaluated_key}")
+            evaluated_key = self.get_evaluated_keys()[0]
+            jsonpath_expression = get_jsonpath_from_evaluated_key(evaluated_key)
             matches = jsonpath_expression.find(conf)
             if matches and all(isinstance(match.value, dict) or match.value == self.get_expected_value() for match in matches):
-                return CheckResult.PASSED, evaluated_conf
+                return CheckResult.PASSED
             else:
-                return CheckResult.FAILED, evaluated_conf
+                return CheckResult.FAILED
         if no_branch_security_schema.validate(conf):
             message = conf.get('message', '')
             if message == MESSAGE_BRANCH_NOT_PROTECTED:

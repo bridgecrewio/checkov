@@ -28,11 +28,9 @@ class NegativeBranchSecurity(BaseGithubCheck):
         self.missing_attribute_result = missing_attribute_result
 
     def scan_entity_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str) -> \
-            CheckResult | tuple[CheckResult, dict[str, Any] | str | list[str | dict[str, Any]]]:
+            self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if branch_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
-            evaluated_conf = self.get_result_configuration(evaluated_key, conf)
             jsonpath_expression = parse(f"$..{evaluated_key}")
             matches = jsonpath_expression.find(conf)
             if not matches:
@@ -45,9 +43,9 @@ class NegativeBranchSecurity(BaseGithubCheck):
                     match.value in forbidden_values for match in matches
                 ):
                     # attribute exists, but is not a value of 'get_forbidden_values()' or 'ANY_VALUE'
-                    return CheckResult.FAILED, evaluated_conf
+                    return CheckResult.FAILED
 
-            return CheckResult.PASSED, evaluated_conf
+            return CheckResult.PASSED
         if no_branch_security_schema.validate(conf):
             message = conf.get("message", "")
             if message == MESSAGE_BRANCH_NOT_PROTECTED:

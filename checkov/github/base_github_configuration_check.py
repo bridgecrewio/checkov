@@ -8,7 +8,6 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories
 from checkov.github.dal import CKV_METADATA
 from checkov.github.registry import registry
-from bc_jsonpath_ng import parse
 
 
 HTTP = re.compile("^http://")
@@ -41,14 +40,3 @@ class BaseGithubCheck(BaseCheck):
                 del new_conf[CKV_METADATA]
                 return ckv_metadata, new_conf
         return {}, conf
-
-    def get_result_configuration(
-            self, evaluated_key: str, conf: dict[str, Any]) -> dict[str, Any] | str | list[str | dict[str, Any]]:
-        # if the evaluated key points to a key within an object, the result config should be its parent, for context
-        # example 1 - key: `object.nested_object.key` -> json_path should be `$.object.nested_object`
-        # example 2 - key: `key` -> json_path should be `$.key`
-        evaluated_conf_path = evaluated_key.split('.')[:-1] if '.' in evaluated_key else [evaluated_key]
-        json_path = parse(f"$.{'.'.join(evaluated_conf_path)}")
-        evaluated_conf = json_path.find(conf)
-
-        return evaluated_conf[0].value if evaluated_conf else conf
