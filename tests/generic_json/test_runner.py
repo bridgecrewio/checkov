@@ -130,6 +130,51 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_focused_result_configuration_no_evaluated_key(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources", "result_config")
+        checks_dir = os.path.join(current_dir, "checks", "result_config")
+        runner = Runner()
+        report = runner.run(
+            root_folder=valid_dir_path,
+            external_checks_dir=[checks_dir],
+            runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_1"]),
+        )
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(report.passed_checks[0].file_line_range, [1, 81])
+        report.print_console()
+
+    def test_focused_result_configuration_full_evaluated(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources", "result_config")
+        checks_dir = os.path.join(current_dir, "checks", "result_config")
+        runner = Runner()
+        report = runner.run(
+            root_folder=valid_dir_path,
+            external_checks_dir=[checks_dir],
+            runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_2"]),
+        )
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(report.passed_checks[0].file_line_range, [19, 24])
+        report.print_console()
+
+    def test_focused_result_configuration_partial_evaluated_key(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = os.path.join(current_dir, "resources", "result_config")
+        checks_dir = os.path.join(current_dir, "checks", "result_config")
+        runner = Runner()
+        report = runner.run(
+            root_folder=valid_dir_path,
+            external_checks_dir=[checks_dir],
+            runner_filter=RunnerFilter(framework="all", checks=["CKV_RESULT_CONFIG_3"]),
+        )
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(report.passed_checks[0].file_line_range, [17, 31])
+        report.print_console()
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
