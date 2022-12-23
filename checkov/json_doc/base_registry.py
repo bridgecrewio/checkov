@@ -187,7 +187,7 @@ class Registry(BaseCheckRegistry):
         return "", "", {}
 
     def get_result_configuration(self, evaluated_keys: list[str], entity_conf: dict[str, Any]) \
-            -> dict[str, Any] | str | list[str | dict[str, Any]]:
+            -> dict[str, Any] | list[str | dict[str, Any]]:
         if len(evaluated_keys) == 1:
             # the result configuration should be the smallest code block found by the evaluated_key path, that is of \
             # type dict or list - the only types that currently have start_mark and end_mark lines configured
