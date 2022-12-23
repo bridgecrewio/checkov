@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.191...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.199...HEAD)
+
+## [2.2.199](https://github.com/bridgecrewio/checkov/compare/2.2.191...2.2.199) - 2022-12-22
+
+### Feature
+
+- **gha:** support on directive in workflow files - [#4125](https://github.com/bridgecrewio/checkov/pull/4125)
+- **sca:** run old package scanning for IDE scan  - [#4133](https://github.com/bridgecrewio/checkov/pull/4133)
+- **secrets:** expose maximum 6 characters of secret values - [#4140](https://github.com/bridgecrewio/checkov/pull/4140)
+
+### Bug Fix
+
+- **circleci:** add resource to ir - [#4135](https://github.com/bridgecrewio/checkov/pull/4135)
+- **general:** Reformat PR template - [#4139](https://github.com/bridgecrewio/checkov/pull/4139)
+- **kubernetes:** move Kubernetes context error message - [#4132](https://github.com/bridgecrewio/checkov/pull/4132)
+- **terraform:** add aws_transfer_server to CKV2_AWS_5 check - [#4137](https://github.com/bridgecrewio/checkov/pull/4137)
+- **terraform:** Add some more supported keys to bigquery public acl check ignore list to avoid false positive - [#3969](https://github.com/bridgecrewio/checkov/pull/3969)
+- **terraform:** fix azure network address invalid value - [#4131](https://github.com/bridgecrewio/checkov/pull/4131)
 
 ## [2.2.191](https://github.com/bridgecrewio/checkov/compare/2.2.186...2.2.191) - 2022-12-21
 
