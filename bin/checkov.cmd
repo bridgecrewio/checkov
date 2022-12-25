@@ -41,6 +41,4 @@ import sys
 if __name__ == '__main__':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=SyntaxWarning)
-        ckv = Checkov()
-        ckv.parse_config()
-        sys.exit(ckv.run())
+        sys.exit(Checkov().run())
