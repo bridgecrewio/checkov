@@ -1,8 +1,5 @@
 from typing import Iterable, Dict, Optional
 
-from checkov.common.models.enums import CheckResult
-from checkov.common.typing import _CheckResult
-
 
 class EnrichedSecret:
     __slots__ = ("original_secret", "bc_check_id", "resource")
