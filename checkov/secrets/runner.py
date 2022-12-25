@@ -29,8 +29,8 @@ from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
-from checkov.secrets.coordinator import EnrichedSecret
 from checkov.runner_filter import RunnerFilter
+from checkov.secrets.coordinator import EnrichedSecret
 from checkov.secrets.coordinator import secrets_coordinator
 
 if TYPE_CHECKING:
