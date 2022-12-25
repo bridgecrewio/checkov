@@ -251,20 +251,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 entity = check_result["entity"]
                 entity_file_path = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
-                entity_id = entity[CustomAttributes.ID]
-                # Deal with nested pods within a deployment.
-                # May have K8S graph adjacencies, but will not be in the self.context map of objects.
-                # (Consider them 'virtual' objects created for the sake of graph lookups)
-                if PARENT_RESOURCE_ID_KEY_NAME in entity:
-                    if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
-                        entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]
-                    else:
-                        logging.info(
-                            "Unsupported nested resource type for Kubernetes graph edges. "
-                            f"Type: {entity[CustomAttributes.RESOURCE_TYPE]} Parent: {entity[PARENT_RESOURCE_ID_KEY_NAME]}"
-                        )
-                else:
-                    entity_context = self.context[entity_file_path][entity_id]
+                entity_context = self.get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
                 clean_check_result: _CheckResult = {
                     "result": check_result["result"],
@@ -287,6 +274,30 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+    def get_entity_context(self, entity: dict[str, Any], entity_file_path: str) -> dict[str, Any]:
+        """Extract the context for the given entity
+
+        Deal with nested pods within a deployment.
+        May have K8S graph adjacencies, but will not be in the self.context map of objects.
+        (Consider them 'virtual' objects created for the sake of graph lookups)
+        """
+
+        entity_context = {}
+
+        if PARENT_RESOURCE_ID_KEY_NAME in entity:
+            if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
+                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]
+            else:
+                logging.info(
+                    "Unsupported nested resource type for Kubernetes graph edges. "
+                    f"Type: {entity[CustomAttributes.RESOURCE_TYPE]} Parent: {entity[PARENT_RESOURCE_ID_KEY_NAME]}"
+                )
+        else:
+            entity_id = entity[CustomAttributes.ID]
+            entity_context = self.context[entity_file_path][entity_id]
+
+        return entity_context
 
     def extract_images(
         self,
