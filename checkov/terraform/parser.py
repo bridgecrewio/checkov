@@ -95,6 +95,7 @@ class Parser:
         self.excluded_paths = excluded_paths
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
+        self.keys_to_remove = set()
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -514,6 +515,8 @@ class Parser:
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
+                            self.keys_to_remove.add(key)
+
                             if self.enable_nested_modules:
                                 self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
@@ -566,6 +569,14 @@ class Parser:
         return module, tf_definitions
 
     def _update_resolved_modules(self):
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if file_key in self.keys_to_remove:
+                for resolved in self.module_to_resolved[key]:
+                    self.out_definitions.pop(resolved, None)
+                    self.keys_to_remove.add(resolved)
+                self.module_to_resolved.pop(key, None)
+
         for key, resolved_list in self.module_to_resolved.items():
             file_key, module_index, module_name = key
             if file_key not in self.out_definitions:
