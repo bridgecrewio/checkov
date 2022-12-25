@@ -1,7 +1,6 @@
-from typing import Optional, Iterable, TYPE_CHECKING
+from typing import Optional, Iterable, List, Tuple, Dict
 
-if TYPE_CHECKING:
-    from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.potential_secret import PotentialSecret
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.typing import _CheckResult
@@ -12,7 +11,7 @@ class EnrichedSecret:
                  "resource")
 
     def __init__(self, potential_secret: PotentialSecret, check_id: str, bc_check_id: str, secret_key: str,
-                 severity: Optional[Severity], result: _CheckResult, code_block: list[tuple[int, str]],
+                 severity: Optional[Severity], result: _CheckResult, code_block: List[Tuple[int, str]],
                  resource: str):
         self.potential_secret = potential_secret
         self.check_id = check_id
@@ -26,7 +25,7 @@ class EnrichedSecret:
 
 class SecretsCoordinator:
     def __init__(self) -> None:
-        self._secrets: dict[str, EnrichedSecret] = {}
+        self._secrets: Dict[str, EnrichedSecret] = {}
 
     def add_secret(self, enriched_secret: EnrichedSecret) -> None:
         # can be changed to any other suitable way.
