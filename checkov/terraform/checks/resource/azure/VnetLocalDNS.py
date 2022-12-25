@@ -28,7 +28,10 @@ class VnetLocalDNS(BaseResourceCheck):
                     for address_range in address_spaces:
                         if not isinstance(address_range, str):
                             continue
-                        net = ip_network(address_range)
+                        try:
+                            net = ip_network(address_range)
+                        except ValueError:
+                            return CheckResult.UNKNOWN
                         if isinstance(ip, str) and ip_address(ip) in net:
                             return CheckResult.PASSED
             self.evaluated_keys = ["dns_servers"]
