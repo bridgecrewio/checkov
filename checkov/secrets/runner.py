@@ -173,12 +173,8 @@ class Runner(BaseRunner[None]):
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
-                enriched_secret = EnrichedSecret(
-                    original_secret=secret.secret_value,
-                    bc_check_id=bc_check_id,
-                    resource=resource
-                )
-                secrets_coordinator.add_secret(enriched_secret=enriched_secret, check_result=result)
+                logging.info(f"{bc_check_id=}")
+                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
@@ -260,3 +256,9 @@ class Runner(BaseRunner[None]):
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 }
         return None
+
+    @staticmethod
+    def save_secret_to_coordinator(secret_value: str, bc_check_id: str, resource: str, result: _CheckResult):
+        enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
+        if result.get('result') == CheckResult.FAILED and enriched_secret.original_secret is not None:
+            secrets_coordinator.add_secret(enriched_secret=enriched_secret)

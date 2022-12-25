@@ -17,13 +17,11 @@ class SecretsCoordinator:
     def __init__(self) -> None:
         self._secrets: Dict[str, EnrichedSecret] = {}
 
-    def add_secret(self, enriched_secret: EnrichedSecret, check_result: _CheckResult) -> None:
+    def add_secret(self, enriched_secret: EnrichedSecret) -> None:
         # can be changed to any other suitable way.
         # should not have duplicates? - if duplicates allowed, implementation should be changed
         # may be saved by file type first, then by key - or any other preprocessing that may help differ the secrets.
-
-        if check_result.get('result') == CheckResult.FAILED and enriched_secret.original_secret is not None:
-            self._secrets[enriched_secret.resource] = enriched_secret
+        self._secrets[enriched_secret.resource] = enriched_secret
 
     def get_resources(self) -> Iterable[str]:
         return self._secrets.keys()
