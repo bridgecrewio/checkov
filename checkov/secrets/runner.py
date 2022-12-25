@@ -174,16 +174,11 @@ class Runner(BaseRunner[None]):
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
                 enriched_secret = EnrichedSecret(
-                    potential_secret=secret,
-                    check_id=check_id,
+                    original_secret=secret.secret_value,
                     bc_check_id=bc_check_id,
-                    secret_key=secret_key,
-                    severity=severity,
-                    result=result,
-                    code_block=[(secret.line_number, line_text)],
                     resource=resource
                 )
-                secrets_coordinator.add_secret(enriched_secret)
+                secrets_coordinator.add_secret(enriched_secret=enriched_secret, check_result=result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
