@@ -34,11 +34,13 @@ goto :EOF
 # ===================================================
 
 #!/usr/bin/env python
-from checkov.main import run
+from checkov.main import Checkov
 import warnings
 import sys
 
 if __name__ == '__main__':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=SyntaxWarning)
-        sys.exit(run())
+        ckv = Checkov()
+        ckv.parse_config()
+        sys.exit(ckv.run())
