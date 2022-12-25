@@ -6,7 +6,7 @@ from checkov.secrets.runner import Runner
 from checkov.secrets.coordinator import secrets_coordinator
 
 
-class TestCCoordinator(unittest.TestCase):
+class TestCoordinator(unittest.TestCase):
 
     def test_same_resources_in_report_and_coordinator(self):
         test_root_folder = f'{Path(__file__).parent}'
