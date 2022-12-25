@@ -26,7 +26,7 @@ class SecretsCoordinator:
             self._secrets[enriched_secret.resource] = enriched_secret
 
     def get_resources(self) -> Iterable[str]:
-        return {secret.resource for secret in self._secrets.values()}
+        return self._secrets.keys()
 
 
 secrets_coordinator: SecretsCoordinator = SecretsCoordinator()
