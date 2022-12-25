@@ -173,7 +173,6 @@ class Runner(BaseRunner[None]):
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
-                logging.info(f"{bc_check_id=}")
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
