@@ -183,12 +183,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kubernetes runner was not set")
-            return report
 
         if results:
+            if not self.context:
+                # this shouldn't happen
+                logging.error("Context for Kubernetes runner was not set")
+                return report
+
             for check, check_result in results.items():
                 resource_id = get_resource_id(entity_conf)
                 if not resource_id:

@@ -58,3 +58,21 @@ def get_files_definitions(
             logging.info(f"Dockerfile skipping {file} as it can't be read as text file")
 
     return definitions, definitions_raw
+
+
+def get_abs_path(root_folder: str | None, file_path: str) -> str:
+    """Creates the abs path
+
+    There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
+    or there will be no leading slash; root_folder will always be none.
+    If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
+    The goal here is simply to get a valid path to the file (which docker_file_path does not always give).
+    """
+
+    if root_folder and file_path.startswith("/"):
+        # remove the leading slash, if it exists
+        file_path = file_path[1:]
+
+    path_to_convert = os.path.join(root_folder, file_path) if root_folder else file_path
+
+    return os.path.abspath(path_to_convert)

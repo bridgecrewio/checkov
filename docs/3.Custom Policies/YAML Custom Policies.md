@@ -352,6 +352,7 @@ Following `resource_types` are supported
 - `permissions` on the root level
 - `steps`
 - `jobs`
+- `on`
 
 Following connections are supported
 
@@ -370,6 +371,8 @@ attribute: "permissions"
 operator: "not_equals"
 value: "write-all"
 ```
+
+The value for `on` can be either a map, a string or a list of strings.
 
 ### Kubernetes
 All resources can be referenced under `resource_types`.
