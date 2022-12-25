@@ -30,6 +30,8 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
+from checkov.secrets.coordinator import EnrichedSecret
+from checkov.secrets.coordinator import secrets_coordinator
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -167,9 +169,21 @@ class Runner(BaseRunner[None]):
                     secret=secret,
                     runner_filter=runner_filter,
                 ) or result
-                report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+                resource = f'{secret.filename}:{secret.secret_hash}'
+                report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
+                enriched_secret = EnrichedSecret(
+                    potential_secret=secret,
+                    check_id=check_id,
+                    bc_check_id=bc_check_id,
+                    secret_key=secret_key,
+                    severity=severity,
+                    result=result,
+                    code_block=[(secret.line_number, line_text)],
+                    resource=resource
+                )
+                secrets_coordinator.add_secret(enriched_secret)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
