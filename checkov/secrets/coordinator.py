@@ -1,6 +1,6 @@
 from typing import Optional, Iterable, List, Tuple, Dict
 
-from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.core.potential_secret import PotentialSecret # noqa TC002
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.typing import _CheckResult
