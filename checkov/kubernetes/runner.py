@@ -14,7 +14,6 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
-from checkov.common.typing import _CheckResult
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
@@ -35,6 +34,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.images.image_referencer import Image
+    from checkov.common.typing import _CheckResult, _EntityContext
 
 
 class TimeoutError(Exception):
@@ -263,9 +263,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     check_id=check.id,
                     check_name=check.name,
                     check_result=clean_check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=entity_context.get("code_lines") or [],
                     file_path=get_relative_file_path(entity_file_abs_path, root_folder),
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    file_line_range=[entity_context.get("start_line") or 0, entity_context.get("end_line") or 0],
                     resource=entity[CustomAttributes.ID],
                     evaluations={},
                     check_class=check.__class__.__module__,
@@ -276,7 +276,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 report.add_record(record=record)
         return report
 
-    def get_entity_context(self, entity: dict[str, Any], entity_file_path: str) -> dict[str, Any]:
+    def get_entity_context(self, entity: dict[str, Any], entity_file_path: str) -> _EntityContext:
         """Extract the context for the given entity
 
         Deal with nested pods within a deployment.
@@ -284,11 +284,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         (Consider them 'virtual' objects created for the sake of graph lookups)
         """
 
-        entity_context = {}
+        entity_context: _EntityContext = {}
 
         if PARENT_RESOURCE_ID_KEY_NAME in entity:
             if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
-                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]
+                # self.context not being None is checked in the caller method
+                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]  # type:ignore[index]
             else:
                 logging.info(
                     "Unsupported nested resource type for Kubernetes graph edges. "
@@ -296,7 +297,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 )
         else:
             entity_id = entity[CustomAttributes.ID]
-            entity_context = self.context[entity_file_path][entity_id]
+            # self.context not being None is checked in the caller method
+            entity_context = self.context[entity_file_path][entity_id]  # type:ignore[index]
 
         return entity_context
 
