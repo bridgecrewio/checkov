@@ -24,6 +24,3 @@ class SecretsCoordinator:
 
     def get_resources(self) -> Iterable[str]:
         return self._secrets.keys()
-
-
-secrets_coordinator: SecretsCoordinator = SecretsCoordinator()
