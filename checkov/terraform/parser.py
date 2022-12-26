@@ -568,13 +568,24 @@ class Parser:
 
         return module, tf_definitions
 
+    def _remove_unused_resolved_recursive(self, resolved):
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if resolved != file_key:
+                continue
+            for resolved in self.module_to_resolved[key]:
+                self.out_definitions.pop(resolved, None)
+                self._remove_unused_resolved_recursive(resolved)
+            self.module_to_resolved.pop(key, None)
+            break
+
     def _update_resolved_modules(self):
         for key in list(self.module_to_resolved.keys()):
             file_key, module_index, module_name = key
             if file_key in self.keys_to_remove:
                 for resolved in self.module_to_resolved[key]:
                     self.out_definitions.pop(resolved, None)
-                    self.keys_to_remove.add(resolved)
+                    self._remove_unused_resolved_recursive(resolved)
                 self.module_to_resolved.pop(key, None)
 
         for key, resolved_list in self.module_to_resolved.items():

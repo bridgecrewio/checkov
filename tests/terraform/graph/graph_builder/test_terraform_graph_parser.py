@@ -184,9 +184,10 @@ class TestParser(TestCase):
         config_parser = Parser()
         definitions = {}
 
-        from checkov.terraform.module_loading.content import ModuleContent
-        ext_module = ModuleContent(dir=f'{source_dir}/.external_modules/github.com/cloudposse/terraform-aws-iam-system-user/tags/0.9.0')
-        external_module_cache = { 'git::https://github.com/cloudposse/terraform-aws-iam-system-user.git?ref=tags/0.9.0:latest': ext_module}
-        config_parser.parse_directory(source_dir, definitions, external_modules_content_cache=external_module_cache)
-        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call//main.tf' not in definitions
-        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/.external_modules/github.com/cloudposse/terraform-aws-iam-system-user/tags/0.9.0/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
+        config_parser.parse_directory(source_dir, definitions)
+        assert len(definitions.keys()) == 13
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0]' not in definitions
