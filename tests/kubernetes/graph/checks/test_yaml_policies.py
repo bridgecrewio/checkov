@@ -66,6 +66,10 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PodIsPubliclyAccessibleExample(self) -> None:
         self.go('PodIsPubliclyAccessibleExample')
 
+    @with_k8s_graph_flags()
+    def test_RequireAllPodsToHaveNetworkPolicy(self) -> None:
+        self.go('RequireAllPodsToHaveNetworkPolicy')
+
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
         first_results_key = list(checks_results.keys())[0]

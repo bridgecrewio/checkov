@@ -79,3 +79,11 @@ class _LicenseStatus(TypedDict):
     policy: str
     license: str
     status: str
+
+
+class _EntityContext(TypedDict, total=False):
+    start_line: int
+    end_line: int
+    policy: str
+    code_lines: list[tuple[int, str]]
+    skipped_checks: list[_SkippedCheck]

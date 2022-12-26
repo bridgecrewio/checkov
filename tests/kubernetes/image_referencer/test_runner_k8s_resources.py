@@ -41,7 +41,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
 
     assert len(k8s_report.resources) == 1
     assert len(k8s_report.passed_checks) == 68
-    assert len(k8s_report.failed_checks) == 19
+    assert len(k8s_report.failed_checks) == 20
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
