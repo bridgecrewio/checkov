@@ -241,7 +241,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             if referrer_id:
                                 resource = f'{referrer_id}.{resource_id}'
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
-                    entity_config = self.get_graph_resource_entity_config(entity, entity_context)
+                    entity_config = self.get_graph_resource_entity_config(entity)
                     censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
                                                                               entity_code_lines=entity_context.get(
                                                                                   'code_lines'),
@@ -627,9 +627,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
         return images
 
-    def get_graph_resource_entity_config(self, entity, entity_context):
-        definition_path = entity_context.get('definition_path', [])
-        entity_config = entity['config_']
+    @staticmethod
+    def get_graph_resource_entity_config(entity):
+        context_parser = parser_registry.context_parsers[entity[CustomAttributes.BLOCK_TYPE]]
+        entity_config = entity[CustomAttributes.CONFIG]
+        definition_path = context_parser.get_entity_definition_path(entity_config)
         for path in definition_path:
             entity_config = entity_config[path]
         return entity_config
