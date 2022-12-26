@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.201...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.207...HEAD)
+
+## [2.2.207](https://github.com/bridgecrewio/checkov/compare/2.2.201...2.2.207) - 2022-12-26
+
+### Feature
+
+- **kubernetes:** Support graph edges for nested (related) Pod resources. - [#4100](https://github.com/bridgecrewio/checkov/pull/4100)
+- **secrets:** Keep original secrets data in runtime for further validation - [#4144](https://github.com/bridgecrewio/checkov/pull/4144)
+- **secrets:** Keep original secrets data in runtime for further validation - [#4149](https://github.com/bridgecrewio/checkov/pull/4149)
+
+### Bug Fix
+
+- **general:** fix excluded paths for path with special characters - [#4152](https://github.com/bridgecrewio/checkov/pull/4152)
+- **terraform:** add test path to exclude-patterns - [#4150](https://github.com/bridgecrewio/checkov/pull/4150)
+- **terraform:** fix edge-case in CKV_AZURE_37 check - [#4153](https://github.com/bridgecrewio/checkov/pull/4153)
+- **terraform:** fix getting graph entity config in terraform runner - [#4146](https://github.com/bridgecrewio/checkov/pull/4146)
+- **terraform:** remove redundant nested definitions - [#4147](https://github.com/bridgecrewio/checkov/pull/4147)
 
 ## [2.2.201](https://github.com/bridgecrewio/checkov/compare/2.2.199...2.2.201) - 2022-12-25
 
