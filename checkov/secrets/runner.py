@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional
+from typing import TYPE_CHECKING, cast, Optional, Iterable
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
@@ -30,8 +30,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.coordinator import EnrichedSecret
-from checkov.secrets.coordinator import secrets_coordinator
+from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -69,6 +68,10 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
+
+    def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
+        super().__init__(file_extensions, file_names)
+        self.secrets_coordinator = SecretsCoordinator()
 
     def run(
             self,
@@ -256,9 +259,9 @@ class Runner(BaseRunner[None]):
                 }
         return None
 
-    @staticmethod
-    def save_secret_to_coordinator(secret_value: Optional[str], bc_check_id: str, resource: str, result: _CheckResult)\
+    def save_secret_to_coordinator(self, secret_value: Optional[str], bc_check_id: str, resource: str,
+                                   result: _CheckResult)\
             -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
             enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
-            secrets_coordinator.add_secret(enriched_secret=enriched_secret)
+            self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
