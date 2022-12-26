@@ -1,9 +1,9 @@
 import os
-from unittest import TestCase
 
 from lark import Tree
 
 from checkov.terraform.parser import Parser
+from unittest import TestCase, mock
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -176,3 +176,17 @@ class TestParser(TestCase):
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']
         result_resource = tf_definitions[source_dir + '/main.tf']['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_build_graph_with_linked_modules(self):
+        source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                   '../resources/nested_modules_double_call'))
+        config_parser = Parser()
+        definitions = {}
+
+        from checkov.terraform.module_loading.content import ModuleContent
+        ext_module = ModuleContent(dir=f'{source_dir}/.external_modules/github.com/cloudposse/terraform-aws-iam-system-user/tags/0.9.0')
+        external_module_cache = { 'git::https://github.com/cloudposse/terraform-aws-iam-system-user.git?ref=tags/0.9.0:latest': ext_module}
+        config_parser.parse_directory(source_dir, definitions, external_modules_content_cache=external_module_cache)
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call//main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/.external_modules/github.com/cloudposse/terraform-aws-iam-system-user/tags/0.9.0/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
