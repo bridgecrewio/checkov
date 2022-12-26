@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union, List
+from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.checks.enums import BlockType
 from checkov.openapi.checks.resource.v2.BaseOpenapiCheckV2 import BaseOpenapiCheckV2
