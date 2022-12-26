@@ -90,7 +90,7 @@ class NodeConstructor(SafeConstructor):
             NodeConstructor.construct_yaml_seq,
         )
         if content_type != ContentType.TFPLAN:
-            self.add_constructor(  # type:ignore[type-var]
+            NodeConstructor.add_constructor(  # type:ignore[type-var]
                 u'tag:yaml.org,2002:null',
                 NodeConstructor.construct_yaml_null_error,
             )
