@@ -17,4 +17,3 @@ class TestCoordinator(unittest.TestCase):
         secrets_resources_in_coordinator = secret_runner.secrets_coordinator.get_resources()
         failed_resources_from_report = set(f"{record.file_abs_path}:{record.resource}" for record in report.failed_checks)
         self.assertEqual(secrets_resources_in_coordinator, failed_resources_from_report)
-
