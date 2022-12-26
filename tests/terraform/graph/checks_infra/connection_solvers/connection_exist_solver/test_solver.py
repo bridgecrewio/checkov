@@ -3,6 +3,7 @@ from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
+from unittest import mock
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -39,6 +40,7 @@ class ConnectionSolver(TestBaseSolver):
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_reduce_graph_by_target_types(self):
         # given
         check_id = "VPCForSubnet"
@@ -54,5 +56,5 @@ class ConnectionSolver(TestBaseSolver):
         assert len(graph_connector.nodes) >= 661
         assert len(graph_connector.edges) >= 327
 
-        assert len(reduced_graph.nodes) <= 52
-        assert len(reduced_graph.edges) <= 12
+        assert len(reduced_graph.nodes) <= 85
+        assert len(reduced_graph.edges) <= 15
