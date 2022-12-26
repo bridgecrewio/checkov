@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure PostgreSQL database flag 'log_statement_stats' is set to 'off'"
   id: "CKV2_GCP_17"
-  category: "GENERAL"
+  category: "LOGGING"
 definition:
   and:
     - cond_type: "attribute"
