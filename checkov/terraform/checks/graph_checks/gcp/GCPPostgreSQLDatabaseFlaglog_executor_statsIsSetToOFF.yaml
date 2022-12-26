@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure PostgreSQL database flag 'log_executor_stats' is set to 'off'"
   id: "CKV2_GCP_14"
-  category: "GENERAL"
+  category: "LOGGING"
 definition:
   and:
     - cond_type: "attribute"
