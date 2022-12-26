@@ -34,7 +34,6 @@ resource "azurerm_signalr_service" "pass" {
     capacity = 1
   }
 
-  id
   cors {
     allowed_origins = ["http://www.example.com"]
   }
