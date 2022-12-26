@@ -573,20 +573,20 @@ class Parser:
             file_key, module_index, module_name = key
             if resolved != file_key:
                 continue
-            for resolved in self.module_to_resolved[key]:
-                self.out_definitions.pop(resolved, None)
-                self._remove_unused_resolved_recursive(resolved)
-            self.module_to_resolved.pop(key, None)
+            self._remove_unused_resolved(key)
             break
+
+    def _remove_unused_resolved(self, key):
+        for new_resolved in self.module_to_resolved[key]:
+            self.out_definitions.pop(new_resolved, None)
+            self._remove_unused_resolved_recursive(new_resolved)
+        self.module_to_resolved.pop(key, None)
 
     def _update_resolved_modules(self):
         for key in list(self.module_to_resolved.keys()):
             file_key, module_index, module_name = key
             if file_key in self.keys_to_remove:
-                for resolved in self.module_to_resolved[key]:
-                    self.out_definitions.pop(resolved, None)
-                    self._remove_unused_resolved_recursive(resolved)
-                self.module_to_resolved.pop(key, None)
+                self._remove_unused_resolved(key)
 
         for key, resolved_list in self.module_to_resolved.items():
             file_key, module_index, module_name = key
