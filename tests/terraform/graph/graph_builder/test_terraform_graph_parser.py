@@ -1,9 +1,9 @@
 import os
-from unittest import TestCase
 
 from lark import Tree
 
 from checkov.terraform.parser import Parser
+from unittest import TestCase, mock
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -176,3 +176,18 @@ class TestParser(TestCase):
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']
         result_resource = tf_definitions[source_dir + '/main.tf']['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_build_graph_with_linked_modules(self):
+        source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                   '../resources/nested_modules_double_call'))
+        config_parser = Parser()
+        definitions = {}
+
+        config_parser.parse_directory(source_dir, definitions)
+        assert len(definitions.keys()) == 13
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0]' not in definitions
