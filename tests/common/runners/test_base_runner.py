@@ -180,17 +180,17 @@ class TestBaseRunner(unittest.TestCase):
 
     def test_filter_ignored_directories_by_values(self):
         # this simulates scanning a subdirectory and applying filter logic using an absolute path
-        current_dir = os.path.dirname(os.path.realpath(__file__))
+        current_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'filter_ignored_directories_by_values')
         excluded_paths = ['dir2++']
         remaining_dirs = []
         expected = {
-            os.path.join(current_dir, 'sample_dir2', 'dir33'),
-            os.path.join(current_dir, 'sample_dir2', 'dir1'),
-            os.path.join(current_dir, 'sample_dir2', 'dir1', 'dir4'),
-            os.path.join(current_dir, 'sample_dir2', 'dir11')
+            os.path.join(current_dir, 'dir33'),
+            os.path.join(current_dir, 'dir1'),
+            os.path.join(current_dir, 'dir1', 'dir4'),
+            os.path.join(current_dir, 'dir11')
         }
 
-        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir2')):
+        for root, dirs, files in os.walk(current_dir):
             filter_ignored_paths(root, dirs, excluded_paths)
             remaining_dirs += [os.path.join(root, d) for d in dirs]
 
@@ -202,15 +202,15 @@ class TestBaseRunner(unittest.TestCase):
         remaining_dirs = []
 
         expected = {
-            os.path.join(current_dir, 'sample_dir2', 'dir33'),
-            os.path.join(current_dir, 'sample_dir2', 'dir1'),
-            os.path.join(current_dir, 'sample_dir2', 'dir1', 'dir4'),
-            os.path.join(current_dir, 'sample_dir2', 'dir11'),
-            os.path.join(current_dir, 'sample_dir2', 'dir11', 'dir2++'),
-            os.path.join(current_dir, 'sample_dir2', 'dir33', 'dir2++'),
+            os.path.join(current_dir, 'dir33'),
+            os.path.join(current_dir, 'dir1'),
+            os.path.join(current_dir, 'dir1', 'dir4'),
+            os.path.join(current_dir, 'dir11'),
+            os.path.join(current_dir, 'dir11', 'dir2++'),
+            os.path.join(current_dir, 'dir33', 'dir2++'),
         }
 
-        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir2')):
+        for root, dirs, files in os.walk(current_dir):
             filter_ignored_paths(root, dirs, excluded_paths)
             remaining_dirs += [os.path.join(root, d) for d in dirs]
 
