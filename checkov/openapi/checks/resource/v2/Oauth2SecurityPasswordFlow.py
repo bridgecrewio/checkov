@@ -20,11 +20,9 @@ class Oauth2SecurityPasswordFlow(BaseOpenapiCheckV2):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_openapi_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str
-    ) -> tuple[CheckResult, Union[dict[str, Any], List[Any]]]:
-        security_values = conf.get("security", [{}]) or [{}]
-        security_definitions = conf.get('securityDefinitions', {}) or {}
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+        security_values = conf.get("security") or [{}]
+        security_definitions = conf.get('securityDefinitions') or {}
 
         for auth_dict in security_values:
             if not isinstance(auth_dict, dict):

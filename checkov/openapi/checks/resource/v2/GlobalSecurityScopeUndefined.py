@@ -21,8 +21,8 @@ class GlobalSecurityScopeUndefined(BaseOpenapiCheckV2):
         )
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
-        security_definitions = conf.get('securityDefinitions', {}) or {}
-        security_values = conf.get('security', [{}]) or [{}]
+        security_definitions = conf.get('securityDefinitions') or {}
+        security_values = conf.get('security') or [{}]
         for security in security_values:
             if not isinstance(security, dict):
                 return CheckResult.UNKNOWN, conf

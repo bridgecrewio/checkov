@@ -21,8 +21,8 @@ class OperationObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
         )
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
-        paths = conf.get("paths", {})
-        security_definitions = conf.get('securityDefinitions', {}) or {}
+        paths = conf.get("paths") or {}
+        security_definitions = conf.get('securityDefinitions') or {}
         if not isinstance(paths, dict):
             return CheckResult.UNKNOWN, conf
 

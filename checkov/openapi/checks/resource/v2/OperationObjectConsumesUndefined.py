@@ -20,10 +20,8 @@ class OperationObjectConsumesUndefined(BaseOpenapiCheckV2):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_openapi_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str
-    ) -> tuple[CheckResult, Union[dict[str, Any], List[Any]]]:
-        paths = conf.get('paths', {}) or {}
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+        paths = conf.get('paths') or {}
 
         for path, path_dict in paths.items():
             if self.is_start_end_line(path):

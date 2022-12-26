@@ -20,10 +20,8 @@ class SecurityDefinitionBasicAuth(BaseOpenapiCheckV2):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_openapi_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str
-    ) -> tuple[CheckResult, Union[dict[str, Any], List[Any]]]:
-        security_definitions = conf.get('securityDefinitions', {}) or {}
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+        security_definitions = conf.get('securityDefinitions') or {}
         if not isinstance(security_definitions, dict):
             return CheckResult.UNKNOWN, conf
 

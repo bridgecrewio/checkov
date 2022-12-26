@@ -20,10 +20,8 @@ class Oauth2SecurityDefinitionImplicitFlow(BaseOpenapiCheckV2):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_openapi_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str
-    ) -> tuple[CheckResult, Union[dict[str, Any], List[Any]]]:
-        security_definitions = conf.get('securityDefinitions', {}) or {}
+    def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+        security_definitions = conf.get('securityDefinitions') or {}
 
         for auth_key, auth_dict in security_definitions.items():
             if self.is_start_end_line(auth_key):
