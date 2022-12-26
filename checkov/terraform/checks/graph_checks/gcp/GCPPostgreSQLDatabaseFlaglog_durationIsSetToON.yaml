@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure PostgreSQL database flag 'log_duration' is set to 'on'"
   id: "CKV2_GCP_13"
-  category: "GENERAL"
+  category: "LOGGING"
 definition:
   or:
     - cond_type: "attribute"
