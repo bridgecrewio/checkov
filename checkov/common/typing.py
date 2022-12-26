@@ -1,21 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, TypeVar
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.models.enums import CheckResult
+    from checkov.common.runners.base_runner import BaseRunner  # noqa
 
+
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
 _Resource: TypeAlias = str
-_Attribute: TypeAlias = str
-ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attribute]
+_Attributes: TypeAlias = List[str]
+ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 
 
 class _CheckResult(TypedDict, total=False):
@@ -76,3 +79,11 @@ class _LicenseStatus(TypedDict):
     policy: str
     license: str
     status: str
+
+
+class _EntityContext(TypedDict, total=False):
+    start_line: int
+    end_line: int
+    policy: str
+    code_lines: list[tuple[int, str]]
+    skipped_checks: list[_SkippedCheck]

@@ -8,8 +8,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
+      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
         with:
           python-version: 3.9
       - name: pre-commit
@@ -18,8 +18,8 @@ jobs:
   cfn-lint:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
+      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -32,8 +32,8 @@ jobs:
   mypy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-    - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+    - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
+    - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
       with:
         python-version: 3.7
     - name: Install pipenv
@@ -56,9 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+        uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
         with:
           python-version: ${{ matrix.python }}
       - name: Install pipenv
@@ -83,12 +83,12 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
+      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -131,12 +131,12 @@ jobs:
       working-directory: ./performance_tests
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b  # v3
+      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@8c91899e586c5b171469028077307d293428b516  # v3
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -164,3 +164,32 @@ jobs:
         run: |
           pipenv run pytest
         working-directory: ${{ env.working-directory }}
+
+  dogfood-tests:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.7"
+      WORKING_DIRECTORY: ./dogfood_tests
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+
+      - name: Build & install checkov package
+        run: |
+          pipenv --python ${{ env.PYTHON_VERSION }}     
+          pipenv run pip install pytest pytest-xdist
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Run dogfood tests
+        run: |
+          pipenv run pytest
+        working-directory: ${{ env.WORKING_DIRECTORY }}

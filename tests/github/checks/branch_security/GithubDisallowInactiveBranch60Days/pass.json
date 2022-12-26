@@ -1,0 +1,96 @@
+{
+    "name": "master",
+    "commit": {
+        "sha": "some-sha",
+        "node_id": "node-id",
+        "commit": {
+            "author": {
+                "name": "GitHub Action",
+                "email": "action@github.com",
+                "date": "2022-12-06T15:18:41Z"
+            },
+            "committer": {
+                "name": "GitHub Action",
+                "email": "action@github.com",
+                "date": "2022-12-06T15:18:41Z"
+            },
+            "message": "update resource scan result doc",
+            "tree": {
+                "sha": "some-sha",
+                "url": "https://api.github.com/repos/marynaKK/terragoat/git/trees/some-sha"
+            },
+            "url": "https://api.github.com/repos/marynaKK/terragoat/git/commits/some-sha",
+            "comment_count": 0,
+            "verification": {
+                "verified": false,
+                "reason": "unsigned",
+                "signature": null,
+                "payload": null
+            }
+        },
+        "url": "https://api.github.com/repos/marynaKK/terragoat/commits/some-sha",
+        "html_url": "https://github.com/marynaKK/terragoat/commit/some-sha",
+        "comments_url": "https://api.github.com/repos/marynaKK/terragoat/commits/some-sha/comments",
+        "author": {
+            "login": "actions-user",
+            "id": 12345678,
+            "node_id": "node-id",
+            "avatar_url": "https://avatars.githubusercontent.com/u/65916846?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/actions-user",
+            "html_url": "https://github.com/actions-user",
+            "followers_url": "https://api.github.com/users/actions-user/followers",
+            "following_url": "https://api.github.com/users/actions-user/following{/other_user}",
+            "gists_url": "https://api.github.com/users/actions-user/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/actions-user/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/actions-user/subscriptions",
+            "organizations_url": "https://api.github.com/users/actions-user/orgs",
+            "repos_url": "https://api.github.com/users/actions-user/repos",
+            "events_url": "https://api.github.com/users/actions-user/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/actions-user/received_events",
+            "type": "User",
+            "site_admin": false
+        },
+        "committer": {
+            "login": "actions-user",
+            "id": 12345678,
+            "node_id": "node-id",
+            "avatar_url": "https://avatars.githubusercontent.com/u/65916846?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/actions-user",
+            "html_url": "https://github.com/actions-user",
+            "followers_url": "https://api.github.com/users/actions-user/followers",
+            "following_url": "https://api.github.com/users/actions-user/following{/other_user}",
+            "gists_url": "https://api.github.com/users/actions-user/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/actions-user/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/actions-user/subscriptions",
+            "organizations_url": "https://api.github.com/users/actions-user/orgs",
+            "repos_url": "https://api.github.com/users/actions-user/repos",
+            "events_url": "https://api.github.com/users/actions-user/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/actions-user/received_events",
+            "type": "User",
+            "site_admin": false
+        },
+        "parents": [
+            {
+                "sha": "some-sha",
+                "url": "https://api.github.com/repos/marynaKK/terragoat/commits/some-sha",
+                "html_url": "https://github.com/marynaKK/terragoat/commit/some-sha"
+            }
+        ]
+    },
+    "_links": {
+        "self": "https://api.github.com/repos/marynaKK/terragoat/branches/master",
+        "html": "https://github.com/marynaKK/terragoat/tree/master"
+    },
+    "protected": false,
+    "protection": {
+        "enabled": false,
+        "required_status_checks": {
+            "enforcement_level": "off",
+            "contexts": [],
+            "checks": []
+        }
+    },
+    "protection_url": "https://api.github.com/repos/marynaKK/terragoat/branches/master/protection"
+}

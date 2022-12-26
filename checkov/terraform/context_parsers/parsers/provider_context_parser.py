@@ -16,6 +16,10 @@ class ProviderContextParser(BaseContextParser):
         entity_type, entity_value = next(iter(entity_block.items()))
         return [entity_type, entity_value.get("alias", ["default"])[0]]
 
+    def get_entity_definition_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
+        entity_type, _ = next(iter(entity_block.items()))
+        return [entity_type]
+
     def enrich_definition_block(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         for entity_block in definition_blocks:
             entity_type, entity_config = next(iter(entity_block.items()))

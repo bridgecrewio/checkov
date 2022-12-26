@@ -18,6 +18,9 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
         self.evaluated_keys = ["properties/networkAcls/defaultAction"]
         properties = conf.get("properties")
         if properties:
+            if not isinstance(properties, dict):
+                return CheckResult.UNKNOWN
+
             nacls = properties.get("networkAcls")
             if nacls:
                 default_action = nacls.get("defaultAction")

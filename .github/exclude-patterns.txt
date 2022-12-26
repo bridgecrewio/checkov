@@ -8,9 +8,8 @@ tests/terraform/checks/resource/aws/example_LambdaEnvironmentCredentials/main.tf
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/FAIL.yaml
 tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
-tests/secrets/resources/.*
-tests/secrets/yml_multiline/.*
-tests/secrets/json_multiline/.*
+tests/secrets/.*
+tests/common/utils/test_secrets_utils.py
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
 tests/terraform/checks/provider/aws/test_credentials.py
@@ -30,3 +29,4 @@ tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sa
 checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
 tests/common/utils/conftest.py
+tests/terraform/runner/resources/get_graph_resource_entity_config/main.tf
