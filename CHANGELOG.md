@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.199...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.201...HEAD)
+
+## [2.2.201](https://github.com/bridgecrewio/checkov/compare/2.2.199...2.2.201) - 2022-12-25
+
+### Bug Fix
+
+- **secrets:** add support to conditionQuery - [#4086](https://github.com/bridgecrewio/checkov/pull/4086)
+- **terraform:** fix edge-case in CKV_AZURE_183 check - [#4145](https://github.com/bridgecrewio/checkov/pull/4145)
 
 ## [2.2.199](https://github.com/bridgecrewio/checkov/compare/2.2.191...2.2.199) - 2022-12-22
 
