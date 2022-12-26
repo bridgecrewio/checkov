@@ -41,7 +41,9 @@ class RunnerFilter(object):
             show_progress_bar: Optional[bool] = True,
             run_image_referencer: bool = False,
             enable_secret_scan_all_files: bool = False,
-            block_list_secret_scan: Optional[List[str]] = None
+            block_list_secret_scan: Optional[List[str]] = None,
+            deep_analysis: bool = False,
+            repo_root_for_plan_enrichment: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -99,6 +101,9 @@ class RunnerFilter(object):
         self.run_image_referencer = run_image_referencer
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
         self.block_list_secret_scan = block_list_secret_scan
+        self.suppressed_policies: List[str] = []
+        self.deep_analysis = deep_analysis
+        self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
@@ -166,7 +171,8 @@ class RunnerFilter(object):
         should_skip_check = (
             skip_severity or
             explicit_skip or
-            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run)
+            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
+            check_id in self.suppressed_policies
         )
 
         if should_skip_check:
@@ -254,3 +260,7 @@ class RunnerFilter(object):
                                      skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
                                      run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
         return runner_filter
+
+    def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
+        logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
+        self.suppressed_policies = policy_level_suppressions

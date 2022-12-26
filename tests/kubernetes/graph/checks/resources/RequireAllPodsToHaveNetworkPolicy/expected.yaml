@@ -1,0 +1,4 @@
+pass:
+  - 'Pod.default.internal-proxy-deployment.app-internal-proxy'
+fail:
+  - 'Pod.default.external-proxy-deployment.app-external-proxy'

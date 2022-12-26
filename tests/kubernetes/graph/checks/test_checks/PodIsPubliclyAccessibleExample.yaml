@@ -1,0 +1,33 @@
+metadata:
+  id: "CKV2_K8S_EXAMPLE_1"
+  name: "Pod is publicly accessible"
+  category: "KUBERNETES"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - Pod
+      operator: within
+      attribute: kind
+    - or:
+        - cond_type: connection
+          operator: not_exists
+          resource_types:
+            - Pod
+          connected_resource_types:
+            - Service
+        - and:
+          - cond_type: connection
+            operator: exists
+            resource_types:
+              - Pod
+            connected_resource_types:
+              - Service
+          - cond_type: attribute
+            attribute: 'spec.type'
+            operator: not_within
+            value:
+              - 'LoadBalancer'
+              - 'NodePort'
+            resource_types:
+              - Service

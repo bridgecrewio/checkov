@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
@@ -114,7 +115,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 records.append(new_record)
         return records
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
         pass
 

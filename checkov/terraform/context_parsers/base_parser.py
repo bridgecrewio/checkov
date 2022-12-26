@@ -45,6 +45,14 @@ class BaseContextParser(ABC):
         """
         raise NotImplementedError
 
+    def get_entity_definition_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
+        """
+        returns the entity's path in the entity definition block
+        :param entity_block: entity definition block
+        :return: list of nested entity's keys in the entity definition block
+        """
+        return self.get_entity_context_path(entity_block)
+
     def _is_block_signature(self, line_num: int, line_tokens: List[str], entity_context_path: List[str]) -> bool:
         """
         Determine if the given tokenized line token is the entity signature line

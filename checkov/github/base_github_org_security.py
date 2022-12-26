@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -22,14 +22,15 @@ class OrgSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if org_security_schema.validate(conf):
-            jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
+            evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
+            jsonpath_expression = parse(f"$..{evaluated_key}")
             if all(match.value == self.get_expected_value() for match in jsonpath_expression.find(conf)):
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
     def get_expected_value(self) -> int | bool | str:
         return True

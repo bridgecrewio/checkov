@@ -15,8 +15,10 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
+from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -151,10 +153,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 path_to_module_str = unify_dependency_path(path_to_module)
                 if block_dirs_to_modules.get((dir_name, path_to_module_str)):
                     continue
-                module_list = self.map_path_to_module.get(path_to_module[-1], [])
+                module_file = get_abs_path(path_to_module[-1])
+                module_list = self.map_path_to_module.get(module_file, [])
                 for module_index in module_list:
                     module_vertex = self.vertices[module_index]
-                    if module_vertex.module_dependency == unify_dependency_path(path_to_module[:-1]):
+                    if get_path_with_nested_modules(module_vertex) == path_to_module_str:
                         module_vertex_dir = self.get_dirname(module_vertex.path)
                         module_source = module_vertex.attributes.get("source", [""])[0]
                         module_version = module_vertex.attributes.get("version", ["latest"])[0]
@@ -232,7 +235,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 )
                             except Exception:
                                 logging.warning(
-                                    f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping", exc_info=True
+                                    f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
                                 )
                         else:
                             self._create_edge(origin_node_index, dest_node_index, attribute_key, cross_variable_edges)
@@ -240,9 +243,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
                 and isinstance(vertex.attributes.get('source')[0], str):
-            target_path = vertex.path
-            if vertex.module_dependency != "":
-                target_path = unify_dependency_path([vertex.module_dependency, vertex.path])
+            target_path = get_path_with_nested_modules(vertex)
             dest_module_path = self._get_dest_module_path(
                 curr_module_dir=self.get_dirname(vertex.path),
                 dest_module_source=vertex.attributes["source"][0],
@@ -365,7 +366,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if 'Non-relative patterns are unsupported' in str(e):
                     return ""
                 raise e
-        return os.path.realpath(dest_module_path)
+        return os.path.abspath(dest_module_path)
 
     def _find_vertex_index_relative_to_path(
         self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None
@@ -525,28 +526,26 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    @staticmethod
-    def get_current_address(vertex: TerraformBlock, address_prefix: str = ''):
-        if vertex.block_type == BlockType.MODULE:
-            return address_prefix + f"{vertex.block_type}.{vertex.name}"
-        else:
-            return address_prefix + vertex.name
-
     def update_nested_modules_address(self) -> None:
         for vertex in self.vertices:
-            if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
+            if vertex.block_type not in parser_registry.context_parsers:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
-            if not source_module:
-                address = self.get_current_address(vertex)
-                vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
-                continue
-            address_prefix = ''
-            for module in source_module:
-                address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = self.get_current_address(vertex, address_prefix)
+            address_prefix = ''
+            if source_module:
+                for module in source_module:
+                    address_prefix += f"{module.get('type')}.{module.get('name')}."
+
+            address = f'{address_prefix}{vertex.name}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
+
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            vertex_context = vertex.config
+            definition_path = context_parser.get_entity_definition_path(vertex.config)
+            for path in definition_path:
+                vertex_context = vertex_context.get(path, vertex_context)
+            vertex_context[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
 def to_list(data):
@@ -616,3 +615,11 @@ def update_list_attribute(
         config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
+
+
+def get_path_with_nested_modules(block: TerraformBlock) -> str:
+    if not block.module_dependency:
+        return block.path
+    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
+        return unify_dependency_path([block.module_dependency, block.path])
+    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)
