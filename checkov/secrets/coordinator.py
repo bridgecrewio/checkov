@@ -4,13 +4,15 @@ from typing import Iterable, Dict, Optional
 class EnrichedSecret:
     __slots__ = ("original_secret", "bc_check_id", "resource")
 
-    def __init__(self, original_secret: Optional[str], bc_check_id: str, resource: str):
+    def __init__(self, original_secret: Optional[str], bc_check_id: str, resource: str) -> None:
         self.original_secret = original_secret
         self.bc_check_id = bc_check_id
         self.resource = resource
 
 
 class SecretsCoordinator:
+    __slots__ = ("_secrets", )
+
     def __init__(self) -> None:
         self._secrets: Dict[str, EnrichedSecret] = {}
 
