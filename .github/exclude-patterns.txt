@@ -29,3 +29,4 @@ tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sa
 checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
 tests/common/utils/conftest.py
+tests/terraform/runner/resources/get_graph_resource_entity_config/main.tf

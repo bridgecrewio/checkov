@@ -14,12 +14,15 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.registry import resource_registry
@@ -1627,6 +1630,17 @@ class TestRunnerValid(unittest.TestCase):
     def tearDown(self):
         parser_registry.context = {}
         resource_registry.checks = self.orig_checks
+
+    def test_get_graph_resource_entity_config(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        path_to_scan = os.path.join(current_dir, 'resources', 'get_graph_resource_entity_config')
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph, _ = graph_manager.build_graph_from_source_directory(path_to_scan)
+        graph_manager.save_graph(graph)
+        graph_connector = graph_manager.get_reader_endpoint()
+        for _, data in graph_connector.nodes(data=True):
+            config = Runner.get_graph_resource_entity_config(data)
+            self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
 
 
 if __name__ == '__main__':

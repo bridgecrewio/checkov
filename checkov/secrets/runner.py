@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, Optional, Iterable
 
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
@@ -30,6 +30,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
+from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -67,6 +68,10 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
+
+    def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
+        super().__init__(file_extensions, file_names)
+        self.secrets_coordinator = SecretsCoordinator()
 
     def run(
             self,
@@ -167,9 +172,11 @@ class Runner(BaseRunner[None]):
                     secret=secret,
                     runner_filter=runner_filter,
                 ) or result
-                report.add_resource(f'{secret.filename}:{secret.secret_hash}')
+                resource = f'{secret.filename}:{secret.secret_hash}'
+                report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
+                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(Record(
                     check_id=check_id,
@@ -251,3 +258,10 @@ class Runner(BaseRunner[None]):
                     "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 }
         return None
+
+    def save_secret_to_coordinator(self, secret_value: Optional[str], bc_check_id: str, resource: str,
+                                   result: _CheckResult)\
+            -> None:
+        if result.get('result') == CheckResult.FAILED and secret_value is not None:
+            enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
+            self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
