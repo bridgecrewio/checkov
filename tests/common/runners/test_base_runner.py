@@ -178,6 +178,45 @@ class TestBaseRunner(unittest.TestCase):
         # we expect .terraform and dir11/dir2 and dir33/dir2 to get filtered out
         self.assertEqual(set(remaining_dirs), expected)
 
+    def test_filter_ignored_directories_by_values(self):
+        # this simulates scanning a subdirectory and applying filter logic using an absolute path
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        excluded_paths = ['dir2++']
+        remaining_dirs = []
+        expected = {
+            os.path.join(current_dir, 'sample_dir2', 'dir33'),
+            os.path.join(current_dir, 'sample_dir2', 'dir1'),
+            os.path.join(current_dir, 'sample_dir2', 'dir1', 'dir4'),
+            os.path.join(current_dir, 'sample_dir2', 'dir11')
+        }
+
+        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir2')):
+            filter_ignored_paths(root, dirs, excluded_paths)
+            remaining_dirs += [os.path.join(root, d) for d in dirs]
+
+        # we expect .terraform and all dir2 to get filtered out
+        self.assertEqual(set(remaining_dirs), expected)
+
+        excluded_paths = [os.path.join('dir1', 'dir2++')]
+
+        remaining_dirs = []
+
+        expected = {
+            os.path.join(current_dir, 'sample_dir2', 'dir33'),
+            os.path.join(current_dir, 'sample_dir2', 'dir1'),
+            os.path.join(current_dir, 'sample_dir2', 'dir1', 'dir4'),
+            os.path.join(current_dir, 'sample_dir2', 'dir11'),
+            os.path.join(current_dir, 'sample_dir2', 'dir11', 'dir2++'),
+            os.path.join(current_dir, 'sample_dir2', 'dir33', 'dir2++'),
+        }
+
+        for root, dirs, files in os.walk(os.path.join(current_dir, 'sample_dir2')):
+            filter_ignored_paths(root, dirs, excluded_paths)
+            remaining_dirs += [os.path.join(root, d) for d in dirs]
+
+        # we expect .terraform and dir1/dir2 to get filtered out
+        self.assertEqual(set(remaining_dirs), expected)
+
     def test_file_filter(self):
         runner = Runner()
 

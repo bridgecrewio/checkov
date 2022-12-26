@@ -165,7 +165,8 @@ def filter_ignored_paths(
                 continue
         for entry in list(names):
             path = entry.name if isinstance(entry, os.DirEntry) else entry
-            if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled) or any(path == p for p in excluded_paths):
+            full_path = os.path.join(root_dir, path)
+            if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
 
 
