@@ -40,7 +40,6 @@ class ConnectionSolver(TestBaseSolver):
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_reduce_graph_by_target_types(self):
         # given
         check_id = "VPCForSubnet"
