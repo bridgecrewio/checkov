@@ -6,7 +6,7 @@ from typing import Any, List
 class StorageAccountsUseReplication(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that Storage Accounts use replication"
-        id = "CKV_AZURE_189"
+        id = "CKV_AZURE_197"
         supported_resources = ("azurerm_storage_account",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
