@@ -4,10 +4,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that key vault disable public network access"
+        name = "Ensure that Azure Key Vault disables public network access"
         id = "CKV_AZURE_189"
-        supported_resources = ['azurerm_key_vault']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('azurerm_key_vault',)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):
