@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import logging
 import re
 from inspect import ismethod
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Any, Optional, List, Union, TYPE_CHECKING
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
@@ -15,19 +17,23 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.data_structures_utils import search_deep_keys
 from checkov.cloudformation.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 
+if TYPE_CHECKING:
+    from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
-class CloudformationLocalGraph(LocalGraph):
+
+class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
     SUPPORTED_RESOURCE_ATTR_CONNECTION_KEYS = (ResourceAttributes.DEPENDS_ON, IntrinsicFunctions.CONDITION)
     SUPPORTED_FN_CONNECTION_KEYS = (IntrinsicFunctions.GET_ATT, ConditionFunctions.IF,
                                     IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.CONDITION)
 
-    def __init__(self, cfn_definitions: Dict[str, DictNode], source: str = "CloudFormation") -> None:
+    def __init__(self, cfn_definitions: dict[str, dict[str, Any]], source: str = "CloudFormation") -> None:
         super().__init__()
         self.definitions = cfn_definitions
         self.source = source
-        self._vertices_indexes = {}
-        self.transform_pre = {}
-        self._edges_set = set()
+        self.vertices: "list[CloudformationBlock]" = []
+        self._vertices_indexes: "dict[str, dict[str, int]]" = {}
+        self.transform_pre: "dict[str, Any]" = {}
+        self._edges_set: set[Edge] = set()
         self._connection_key_func = {
             IntrinsicFunctions.GET_ATT: self._fetch_getatt_target_id,
             ConditionFunctions.IF: self._fetch_if_target_id,
@@ -210,7 +216,7 @@ class CloudformationLocalGraph(LocalGraph):
                     if origin_vertex_index is not None and dest_vertex_index is not None:
                         self._create_edge(origin_vertex_index, dest_vertex_index, label)
 
-    def search_deep_keys(self, searchText, cfndict, includeGlobals=True):
+    def search_deep_keys(self, searchText: str, cfndict: dict[str, Any], includeGlobals: bool = True) -> list[list[Any]]:
         """
             Search for a key in all parts of the template.
             :return if searchText is "Ref", an array like ['Resources', 'myInstance', 'Properties', 'ImageId', 'Ref', 'Ec2ImageId']
@@ -320,7 +326,7 @@ class CloudformationLocalGraph(LocalGraph):
                 self.out_edges[i] = []
 
     def get_resources_types_in_graph(self) -> List[str]:
-        pass
+        return []
 
     def _create_edges(self) -> None:
         self._add_resource_attr_connections(ResourceAttributes.DEPENDS_ON)
@@ -353,6 +359,17 @@ class CloudformationLocalGraph(LocalGraph):
                 if ts_var.get(identifier):
                     return True
         return False
+
+    def update_vertices_configs(self) -> None:
+        # not used
+        pass
+
+    @staticmethod
+    def update_vertex_config(
+        vertex: Block, changed_attributes: list[str] | dict[str, Any], dynamic_blocks: bool = False
+    ) -> None:
+        # not used
+        pass
 
 
 def get_only_dict_items(origin_dict: Union[Dict[str, Any], Any]) -> Dict[str, Dict[str, Any]]:
