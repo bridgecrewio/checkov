@@ -3,7 +3,7 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.ACREnableImageQuarantine import check
+from checkov.terraform.checks.resource.azure.KeyVaultDisablesPublicNetworkAccess import check
 
 
 class TestKeyVaultDisablesPublicNetworkAccess(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestKeyVaultDisablesPublicNetworkAccess(unittest.TestCase):
             'azurerm_key_vault.pass1',
             'azurerm_key_vault.pass2',
             'azurerm_key_vault.pass3',
-            'azurerm_key_vault.pass4',
+            'azurerm_key_vault.pass4'
         }
         failing_resources = {
             'azurerm_key_vault.fail1',
