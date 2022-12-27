@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.207...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.212...HEAD)
+
+## [2.2.212](https://github.com/bridgecrewio/checkov/compare/2.2.207...2.2.212) - 2022-12-27
+
+### Feature
+
+- **azure:** Add check - azure keyvalut public network access - [#4155](https://github.com/bridgecrewio/checkov/pull/4155)
+
+### Bug Fix
+
+- **terraform:** fix edge-case in CKV_AZURE_183 check - [#4154](https://github.com/bridgecrewio/checkov/pull/4154)
+- **terraform:** fix graph checks nested modules - [#4157](https://github.com/bridgecrewio/checkov/pull/4157)
+- **terraform:** fix or connection graph checks nested modules - [#4158](https://github.com/bridgecrewio/checkov/pull/4158)
 
 ## [2.2.207](https://github.com/bridgecrewio/checkov/compare/2.2.201...2.2.207) - 2022-12-26
 
