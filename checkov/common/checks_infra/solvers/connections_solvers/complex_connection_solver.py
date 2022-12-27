@@ -34,9 +34,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
 
     @staticmethod
     def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, str]:
-        return check[CustomAttributes.ID],\
-               check[CustomAttributes.FILE_PATH],\
-               check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+        return check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH], check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
 
     @staticmethod
     def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
