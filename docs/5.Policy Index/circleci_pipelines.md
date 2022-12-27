@@ -16,6 +16,7 @@ nav_order: 1
 |  5 | CKV_CIRCLECIPIPELINES_6 | circleci_pipelines | jobs.*.steps[]                                                                             | Ensure run commands are not vulnerable to shell injection                   | circleci_pipelines | https://github.com/bridgecrewio/checkov/tree/master/checkov/circleci_pipelines/checks/ShellInjection.py           |
 |  6 | CKV_CIRCLECIPIPELINES_7 | circleci_pipelines | jobs.*.steps[]                                                                             | Suspicious use of curl in run task                                          | circleci_pipelines | https://github.com/bridgecrewio/checkov/tree/master/checkov/circleci_pipelines/checks/SuspectCurlInScript.py      |
 |  7 | CKV_CIRCLECIPIPELINES_8 | circleci_pipelines | executors.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__} | Detecting image usages in circleci pipelines                                | circleci_pipelines | https://github.com/bridgecrewio/checkov/tree/master/checkov/circleci_pipelines/checks/DetectImagesUsage.py        |
+|  8 | CKV_CIRCLECIPIPELINES_8 | circleci_pipelines | jobs.*.docker[].{image: image, __startline__: __startline__, __endline__:__endline__}      | Detecting image usages in circleci pipelines                                | circleci_pipelines | https://github.com/bridgecrewio/checkov/tree/master/checkov/circleci_pipelines/checks/DetectImagesUsage.py        |
 
 
 ---
