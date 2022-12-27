@@ -25,7 +25,9 @@ class TestKeyVaultDisablesPublicNetworkAccess(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_key_vault.fail1',
-            'azurerm_key_vault.fail2'
+            'azurerm_key_vault.fail2',
+            'azurerm_key_vault.fail3',
+            'azurerm_key_vault.fail4'
         }
 
         skipped_resources = {}

@@ -21,16 +21,23 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
         KeyVaultDisablesPublicNetworkAccess unique logic.
         public_network_access_enabled default value is True (when creating it)
         If it False - check pass
-        Otherwise, we check that network_acls configure exists.
+        Otherwise, we check that ip rules configured inside network_acls.
 
         """
-        network_acls_key = "network_acls"
         conf_value = conf.get(self.get_inspected_key())
         conf_value = conf_value[0] if isinstance(conf_value, list) else conf_value
         if self.get_expected_value() == conf_value:
             return CheckResult.PASSED
-        if conf.get(network_acls_key):
-            return CheckResult.PASSED
+        if conf.get("network_acls"):
+            network_acls = conf.get("network_acls")
+            if isinstance(network_acls, list):
+                for network_acl in network_acls:
+                    if isinstance(network_acl, dict):
+                        ip_rules = network_acl.get("ip_rules")
+                        ip_rules = ip_rules[0] if isinstance(ip_rules, list) else ip_rules
+                        if ip_rules:
+                            return CheckResult.PASSED
+
         return CheckResult.FAILED
 
 
