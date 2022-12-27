@@ -33,7 +33,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         super().__init__(list(resource_types), list(connected_resources_types))
 
     @staticmethod
-    def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, str]:
+    def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, Optional[Any]]:
         return check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH], check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
 
     @staticmethod
