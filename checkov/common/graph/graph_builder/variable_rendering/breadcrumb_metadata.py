@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 class BreadcrumbMetadata:
     __slots__ = ("attribute_key", "vertex_id")
 
