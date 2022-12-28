@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.212...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.217...HEAD)
+
+## [2.2.217](https://github.com/bridgecrewio/checkov/compare/2.2.212...2.2.217) - 2022-12-28
+
+### Feature
+
+- **general:** Make code blocks for json check results focused on the relevant part - [#4130](https://github.com/bridgecrewio/checkov/pull/4130)
+- **openapi:** Add v2 openAPI new checks - [#4112](https://github.com/bridgecrewio/checkov/pull/4112)
+- **terraform:** new azure storage checks - [#4021](https://github.com/bridgecrewio/checkov/pull/4021)
+
+### Bug Fix
+
+- **github:** Handle entity configurations of type list - [#4160](https://github.com/bridgecrewio/checkov/pull/4160)
+- **sca:** Fix extra space in output of dependencies - [#4162](https://github.com/bridgecrewio/checkov/pull/4162)
 
 ## [2.2.212](https://github.com/bridgecrewio/checkov/compare/2.2.207...2.2.212) - 2022-12-27
 
