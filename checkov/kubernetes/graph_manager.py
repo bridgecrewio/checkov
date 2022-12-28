@@ -18,7 +18,7 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
     def build_graph_from_source_directory(
         self,
         source_dir: str,
-        local_graph_classType: type[KubernetesLocalGraph] = KubernetesLocalGraph,
+        local_graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
         render_variables: bool = True,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,

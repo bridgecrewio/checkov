@@ -118,7 +118,8 @@ def request_wrapper(
         headers: dict[str, Any],
         data: Any | None = None,
         json: dict[str, Any] | None = None,
-        should_call_raise_for_status: bool = False
+        should_call_raise_for_status: bool = False,
+        params: dict[str, Any] | None = None
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -135,7 +136,7 @@ def request_wrapper(
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
-            response = requests.request(method, url, headers=headers, data=data, json=json)
+            response = requests.request(method, url, headers=headers, data=data, json=json, params=params)
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response

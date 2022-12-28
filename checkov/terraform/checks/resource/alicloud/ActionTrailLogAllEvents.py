@@ -4,13 +4,18 @@ from typing import Any
 
 
 class ActionTrailLogAllEvents(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Action Trail Logging for all events"
         id = "CKV_ALI_5"
-        supported_resources = ['alicloud_actiontrail_trail']
-        categories = [CheckCategories.LOGGING]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.FAILED)
+        supported_resources = ("alicloud_actiontrail_trail",)
+        categories = (CheckCategories.LOGGING,)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.FAILED,
+        )
 
     def get_inspected_key(self) -> str:
         return "event_rw"

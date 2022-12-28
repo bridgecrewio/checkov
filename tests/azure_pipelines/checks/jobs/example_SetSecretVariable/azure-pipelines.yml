@@ -38,6 +38,7 @@ jobs:
   - bash: |
       echo "##vso[task.setvariable variable=normal_variable;]something"
       echo "##vso[task.setvariable variable=secret_variable;issecret=true]super-secret"
+    name: setSecretVariableStep
   - powershell: |
       Write-Host "##vso[task.setvariable variable=normal_variable;]something"
       Write-Host "##vso[task.setvariable variable=secret_variable;issecret=true]super-secret"

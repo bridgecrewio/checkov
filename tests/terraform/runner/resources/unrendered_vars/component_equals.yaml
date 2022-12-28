@@ -1,0 +1,11 @@
+metadata:
+  id: "COMPONENT_EQUALS"
+  name: "Ensure S3 bucket has a component tag"
+  category: "general"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_s3_bucket"
+  attribute: "tags.component"
+  operator: "equals"
+  value: "xyz"

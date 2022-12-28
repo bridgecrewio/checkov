@@ -18,6 +18,8 @@ class CPURequests(BaseK8sContainerCheck):
             if not isinstance(res, dict):
                 return CheckResult.UNKNOWN
             requests = res.get("requests")
+            if not isinstance(requests, dict):
+                return CheckResult.UNKNOWN
             if requests and requests.get("cpu"):
                 return CheckResult.PASSED
         return CheckResult.FAILED

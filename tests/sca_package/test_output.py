@@ -176,7 +176,7 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        scan_data_format=ScanDataFormat.FROM_PLATFORM
+        scan_data_format=ScanDataFormat.PLATFORM
     )
 
     # then

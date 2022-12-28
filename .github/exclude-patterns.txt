@@ -9,10 +9,13 @@ tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/FA
 tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
 tests/secrets/resources/.*
+tests/secrets/yml_multiline/.*
+tests/secrets/json_multiline/.*
 tests/terraform/runner/resources/example/example.tf
 .*Pipfile.lock
 tests/terraform/checks/provider/aws/test_credentials.py
 tests/terraform/checks/resource/aws/test_EC2Credentials.py
+tests/terraform/checks/provider/ncp/test_credentials.py
 tests/terraform/checks/provider/openstack/test_credentials.py
 tests/terraform/module_loading/test_registry.py
 tests/unit/test_secrets.py
@@ -26,3 +29,4 @@ tests/cloudformation/checks/resource/aws/example_AWSCredentials/EC2Credentials-F
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sam.yaml
 checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
+tests/common/utils/conftest.py

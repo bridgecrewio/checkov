@@ -168,8 +168,8 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 0
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.passed_checks) == 2
+    assert len(tf_report.failed_checks) == 11
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -253,8 +253,8 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 0
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.passed_checks) == 2
+    assert len(tf_report.failed_checks) == 11
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 

@@ -91,7 +91,8 @@ class Runner(YamlRunner, JsonRunner):
         except Exception:
             return False
 
-    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str], definitions: dict[str, Any] | None = None) -> str:
+    def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
+                     definitions: dict[str, Any] | None = None) -> str:
         return ",".join(supported_entities)
 
     def load_file(self, filename: str | Path) -> str:

@@ -1273,6 +1273,50 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
+    def test_unrendered_simple_var(self):
+        resources_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
+        file_to_scan = os.path.join(resources_dir, "simple.tf")
+        checks = ['BUCKET_EQUALS', 'BUCKET_EXISTS']
+
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+
+        # plus 1 unknown
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'BUCKET_EQUALS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in report.passed_checks))
+
+    def test_unrendered_nested_var(self):
+        resources_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
+        file_to_scan = os.path.join(resources_dir, "nested.tf")
+        checks = ['COMPONENT_EQUALS', 'COMPONENT_EXISTS']
+
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+
+        # plus 3 unknown
+        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.unknown_nested_2_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
+
     def test_no_duplicate_results(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "duplicate_violations")

@@ -20,6 +20,10 @@ class ResourceContextParser(BaseContextParser):
             entity_type, entity_value = next(iter(entity_block.items()))
             entity_name, entity_config = next(iter(entity_value.items()))
 
+            if isinstance(entity_config[START_LINE], list) and isinstance(entity_config[END_LINE], list):
+                entity_config[START_LINE] = entity_config[START_LINE][0]
+                entity_config[END_LINE] = entity_config[END_LINE][0]
+
             self.context[entity_type][entity_name] = {
                 "start_line": entity_config[START_LINE],
                 "end_line": entity_config[END_LINE],

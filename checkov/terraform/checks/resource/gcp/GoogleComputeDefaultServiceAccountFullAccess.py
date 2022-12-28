@@ -23,9 +23,13 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
         :param conf: google_compute_instance configuration
         :return: <CheckResult>
         """
-        if 'name' in conf and conf['name'][0].startswith('gke-'):
-            self.evaluated_keys = ['name']
-            return CheckResult.PASSED
+
+        if 'name' in conf:
+            if not isinstance(conf['name'][0], str):
+                return CheckResult.UNKNOWN
+            if conf['name'][0].startswith('gke-'):
+                self.evaluated_keys = ['name']
+                return CheckResult.PASSED
 
         if 'source_instance_template' in conf.keys() and 'service_account' not in conf.keys():
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),

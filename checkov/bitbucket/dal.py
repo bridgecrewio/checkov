@@ -57,7 +57,7 @@ class Bitbucket(BaseVCSDAL):
 
     def _headers(self) -> dict[str, Any]:
         # not needed here
-        pass
+        return {}
 
     def get_branch_restrictions(self) -> dict[str, Any] | None:
         if self.current_repository:

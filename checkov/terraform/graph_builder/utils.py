@@ -254,6 +254,21 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
 
 
+def attribute_has_dup_with_dynamic_attributes(attribute_key: str, attributes: dict[str, Any] | list[str]) -> bool:
+    """
+    :param attribute_key: key inside the `attributes` dictionary
+    :param attributes: `attributes` dictionary
+    :return: True if attribute_key has duplicate attribute with dynamic reference.
+    :example: if attributes.keys == [name.rule, dynamic.name.content.rule] -> will return True.
+    """
+    attribute_key_paths = attribute_key.split('.')
+    if len(attribute_key_paths) > 1:
+        attar_key_dynamic_ref = f"dynamic.{attribute_key_paths[0]}.content.{attribute_key_paths[1]}"
+        return attar_key_dynamic_ref in attributes
+    else:
+        return False
+
+
 def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: dict[str, str]) -> str:
     resource_id = resource.get(CustomAttributes.ID)
     # for external modules resources the id should start with the prefix module.[module_name]

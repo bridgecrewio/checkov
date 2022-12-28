@@ -37,6 +37,7 @@ class Module:
         self.source = ""
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
+        self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -149,9 +150,15 @@ class Module:
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
                     attributes = self.clean_bad_characters(resource_conf)
+                    dynamic_attributes = None
                     if not isinstance(attributes, dict):
                         continue
-                    has_dynamic_block = handle_dynamic_values(attributes)
+                    if self.render_dynamic_blocks_env_var.lower() == 'false':
+                        has_dynamic_block = False
+                    else:
+                        old_attributes = deepcopy(attributes)
+                        has_dynamic_block = handle_dynamic_values(attributes)
+                        dynamic_attributes = {k: attributes[k] for k in set(attributes) - set(old_attributes)}
                     provisioner = attributes.get("provisioner")
                     if provisioner:
                         self._handle_provisioner(provisioner, attributes)
@@ -165,7 +172,8 @@ class Module:
                         attributes=attributes,
                         id=block_name,
                         source=self.source,
-                        has_dynamic_block=has_dynamic_block
+                        has_dynamic_block=has_dynamic_block,
+                        dynamic_attributes=dynamic_attributes
                     )
                     self._add_to_blocks(resource_block)
 

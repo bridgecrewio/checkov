@@ -25,6 +25,7 @@ from checkov.common.sca.commons import (
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
+from checkov.common.output.common import format_licenses_to_string
 
 if TYPE_CHECKING:
     from checkov.common.output.common import SCADetails
@@ -85,9 +86,9 @@ def _update_details_by_scan_data_format(
     details: dict[str, Any],
     vulnerability_details: dict[str, Any],
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI
 ) -> None:
-    if scan_data_format == ScanDataFormat.FROM_TWISTCLI:
+    if scan_data_format in {ScanDataFormat.TWISTCLI, ScanDataFormat.DEPENDENCY_TREE}:
         lowest_fixed_version = UNFIXABLE_VERSION
         package_version = vulnerability_details["packageVersion"]
         fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
@@ -103,7 +104,7 @@ def _update_details_by_scan_data_format(
                 lowest_fixed_version = str(min(fixed_versions))
         details.update({"status": status, "lowest_fixed_version": lowest_fixed_version,
                         "fixed_versions": fixed_versions, "image_details": sca_details})
-    elif scan_data_format == ScanDataFormat.FROM_PLATFORM:
+    elif scan_data_format == ScanDataFormat.PLATFORM:
         status = vulnerability_details["status"]
         fix_version = vulnerability_details.get("cveStatus")
         details.update({"status": status, "fix_version": fix_version})
@@ -117,13 +118,13 @@ def create_report_cve_record(
     licenses: str,
     runner_filter: RunnerFilter | None = None,
     sca_details: SCADetails | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
     package_version = vulnerability_details["packageVersion"]
     package_type = get_package_type(package_name, package_version, sca_details)
-    cve_id = vulnerability_details["id"].upper()
+    cve_id = vulnerability_details.get("id", vulnerability_details.get("cveId", '')).upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
     # sanitize severity names
     if severity == "moderate":
@@ -247,7 +248,7 @@ def add_to_reports_cves_and_packages(
     licenses_per_package_map: dict[str, list[str]],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
-    scan_data_format: ScanDataFormat = ScanDataFormat.FROM_TWISTCLI,
+    scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
     vulnerable_packages = []
 
@@ -258,7 +259,7 @@ def add_to_reports_cves_and_packages(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             vulnerability_details=vulnerability,
-            licenses=", ".join(licenses_per_package_map[get_package_alias(package_name, package_version)]) or "Unknown",
+            licenses=format_licenses_to_string(licenses_per_package_map[get_package_alias(package_name, package_version)]),
             runner_filter=runner_filter,
             sca_details=sca_details,
             scan_data_format=scan_data_format,
@@ -292,10 +293,7 @@ def add_to_reports_cves_and_packages(
                     vulnerability_details={
                         "package_name": package["name"],
                         "package_version": package["version"],
-                        "licenses": ", ".join(
-                            licenses_per_package_map[get_package_alias(package["name"], package["version"])]
-                        )
-                        or "Unknown",
+                        "licenses": format_licenses_to_string(licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
                         "package_type": get_package_type(package["name"], package["version"], sca_details),
                     },
                 )
@@ -313,6 +311,7 @@ def add_to_report_sca_data(
     license_statuses: list[_LicenseStatus],
     sca_details: SCADetails | None = None,
     report_type: str | None = None,
+    dependencies: dict[str, Any] | None = None,
 ) -> None:
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
@@ -320,7 +319,7 @@ def add_to_report_sca_data(
 
     add_to_reports_cves_and_packages(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                      vulnerabilities, packages, licenses_per_package_map, sca_details, report_type,
-                                     ScanDataFormat.FROM_TWISTCLI)
+                                     ScanDataFormat.TWISTCLI if dependencies is None else ScanDataFormat.DEPENDENCY_TREE)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:

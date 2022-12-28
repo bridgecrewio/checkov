@@ -34,7 +34,7 @@ def test_resolve_job_name(start_line, end_line, expected_job_name, definition):
     "key,expected_key",
     [
         ('jobs.container-test-job.CKV_GHA_3[7:23]', "jobs.container-test-job"),
-        ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps.Check for dockerenv file"),
+        ('jobs.*.steps[].jobs.*.steps[].CKV_GHA_3[18:23]', "jobs.container-test-job.steps.1[Check for dockerenv file]"),
     ],
 )
 def test_get_resource(key, expected_key, definition):

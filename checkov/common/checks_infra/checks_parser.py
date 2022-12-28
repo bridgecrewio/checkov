@@ -46,7 +46,13 @@ from checkov.common.checks_infra.solvers import (
     EqualsIgnoreCaseAttributeSolver,
     NotEqualsIgnoreCaseAttributeSolver,
     RangeIncludesAttributeSolver,
-    RangeNotIncludesAttributeSolver
+    RangeNotIncludesAttributeSolver,
+    NumberOfWordsEqualsAttributeSolver,
+    NumberOfWordsNotEqualsAttributeSolver,
+    NumberOfWordsGreaterThanAttributeSolver,
+    NumberOfWordsGreaterThanOrEqualAttributeSolver,
+    NumberOfWordsLessThanAttributeSolver,
+    NumberOfWordsLessThanOrEqualAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -100,7 +106,13 @@ operators_to_attributes_solver_classes: dict[str, Type[BaseAttributeSolver]] = {
     "equals_ignore_case": EqualsIgnoreCaseAttributeSolver,
     "not_equals_ignore_case": NotEqualsIgnoreCaseAttributeSolver,
     "range_includes": RangeIncludesAttributeSolver,
-    "range_not_includes": RangeNotIncludesAttributeSolver
+    "range_not_includes": RangeNotIncludesAttributeSolver,
+    "number_of_words_equals": NumberOfWordsEqualsAttributeSolver,
+    "number_of_words_not_equals": NumberOfWordsNotEqualsAttributeSolver,
+    "number_of_words_greater_than": NumberOfWordsGreaterThanAttributeSolver,
+    "number_of_words_greater_than_or_equal": NumberOfWordsGreaterThanOrEqualAttributeSolver,
+    "number_of_words_less_than_or_equal": NumberOfWordsLessThanOrEqualAttributeSolver,
+    "number_of_words_less_than": NumberOfWordsLessThanAttributeSolver,
 }
 
 operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {

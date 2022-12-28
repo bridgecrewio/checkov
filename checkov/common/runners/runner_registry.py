@@ -45,7 +45,8 @@ _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
-OUTPUT_CHOICES = ["cli", "cyclonedx", "json", "junitxml", "github_failed_only", "sarif", "csv"]
+CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
+OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "sarif", "csv"]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
@@ -253,7 +254,7 @@ class RunnerRegistry:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
-                if "cyclonedx" in config.output:
+                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
@@ -372,17 +373,30 @@ class RunnerRegistry:
             )
 
             data_outputs['junitxml'] = junit_output
-        if "cyclonedx" in config.output:
+        if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
             cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
-            cyclonedx_output = cyclonedx.get_xml_output()
 
-            self._print_to_console(
-                output_formats=output_formats,
-                output_format="cyclonedx",
-                output=cyclonedx_output,
-            )
+            for cyclonedx_format in CYCLONEDX_OUTPUTS:
+                if cyclonedx_format not in config.output:
+                    # only the XML or JSON format was chosen
+                    continue
 
-            data_outputs["cyclonedx"] = cyclonedx_output
+                if cyclonedx_format == "cyclonedx":
+                    cyclonedx_output = cyclonedx.get_xml_output()
+                elif cyclonedx_format == "cyclonedx_json":
+                    cyclonedx_output = cyclonedx.get_json_output()
+                else:
+                    # this shouldn't happen
+                    logging.error(f"CycloneDX output format '{cyclonedx_format}' not supported")
+                    continue
+
+                self._print_to_console(
+                    output_formats=output_formats,
+                    output_format=cyclonedx_format,
+                    output=cyclonedx_output,
+                )
+
+                data_outputs[cyclonedx_format] = cyclonedx_output
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -390,12 +404,16 @@ class RunnerRegistry:
             csv_sbom_report.persist_report(is_api_key=is_api_key, output_path=config.output_file_path)
 
         # Save output to file
-        file_names = {'cli': 'results_cli.txt',
-                      'github_failed_only': 'results_github_failed_only.md',
-                      'sarif': 'results_sarif.sarif',
-                      'json': 'results_json.json',
-                      'junitxml': 'results_junitxml.xml',
-                      'cyclonedx': 'results_cyclonedx.xml'}
+        file_names = {
+            'cli': 'results_cli.txt',
+            'github_failed_only': 'results_github_failed_only.md',
+            'sarif': 'results_sarif.sarif',
+            'json': 'results_json.json',
+            'junitxml': 'results_junitxml.xml',
+            'cyclonedx': 'results_cyclonedx.xml',
+            'cyclonedx_json': 'results_cyclonedx.json',
+        }
+
         if config.output_file_path:
             if output_formats:
                 for output_format, output_path in output_formats.items():

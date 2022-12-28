@@ -256,6 +256,18 @@ A typical output looks like this
 </bom>
 ```
 
+The output can be either created in a XML
+
+```shell
+checkov -d . -o cyclonedx
+```
+
+or JSON format.
+
+```shell
+checkov -d . -o cyclonedx_json
+```
+
 The default schema version is currently `v1.4`, but can be adjusted by setting the environment variable `CHECKOV_CYCLONEDX_SCHEMA_VERSION`.
 
 ex.

@@ -1,0 +1,11 @@
+metadata:
+  id: "BUCKET_EQUALS"
+  name: "Ensure S3 bucket name is xyz"
+  category: "general"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_s3_bucket"
+  attribute: "bucket"
+  operator: "equals"
+  value: "xyz"

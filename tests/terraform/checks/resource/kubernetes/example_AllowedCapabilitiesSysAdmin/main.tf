@@ -185,6 +185,234 @@ resource "kubernetes_pod_v1" "ignore" {
   }
 }
 
+resource "kubernetes_deployment" "ignore" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container = [
+          {
+            image = "nginx:1.7.9"
+            name  = "example22"
+
+            security_context = {
+              privileged = true
+            }
+
+            env = {
+              name  = "environment"
+              value = "test"
+            }
+
+            port = {
+              container_port = 8080
+            }
+
+            liveness_probe = {
+              http_get = {
+                path = "/nginx_status"
+                port = 80
+
+                http_header = {
+                  name  = "X-Custom-Header"
+                  value = "Awesome"
+                }
+              }
+
+              initial_delay_seconds = 3
+              period_seconds        = 3
+            }
+          }
+        ,
+          {
+            image = "nginx:1.7.9"
+            name  = "example22222"
+
+            security_context = {
+              privileged = true
+            }
+
+            env = {
+              name  = "environment"
+              value = "test"
+            }
+
+            port = {
+              container_port = 8080
+            }
+
+            liveness_probe = {
+              http_get = {
+                path = "/nginx_status"
+                port = 80
+
+                http_header = {
+                  name  = "X-Custom-Header"
+                  value = "Awesome"
+                }
+              }
+
+              initial_delay_seconds = 3
+              period_seconds        = 3
+            }
+          }
+        ]
+
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "ignore" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container = [
+          {
+            image = "nginx:1.7.9"
+            name  = "example22"
+
+            security_context = {
+              privileged = true
+            }
+
+            env = {
+              name  = "environment"
+              value = "test"
+            }
+
+            port = {
+              container_port = 8080
+            }
+
+            liveness_probe = {
+              http_get = {
+                path = "/nginx_status"
+                port = 80
+
+                http_header = {
+                  name  = "X-Custom-Header"
+                  value = "Awesome"
+                }
+              }
+
+              initial_delay_seconds = 3
+              period_seconds        = 3
+            }
+          }
+        ,
+          {
+            image = "nginx:1.7.9"
+            name  = "example22222"
+
+            security_context = {
+              privileged = true
+            }
+
+            env = {
+              name  = "environment"
+              value = "test"
+            }
+
+            port = {
+              container_port = 8080
+            }
+
+            liveness_probe = {
+              http_get = {
+                path = "/nginx_status"
+                port = 80
+
+                http_header = {
+                  name  = "X-Custom-Header"
+                  value = "Awesome"
+                }
+              }
+
+              initial_delay_seconds = 3
+              period_seconds        = 3
+            }
+          }
+        ]
+
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
+  }
+}
+
 
 resource "kubernetes_pod" "fail" {
   metadata {
@@ -379,63 +607,235 @@ resource "kubernetes_pod_v1" "fail" {
   }
 }
 
-
-resource "kubernetes_pod" "pass2" {
+resource "kubernetes_deployment" "fail" {
   metadata {
     name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
   }
 
   spec {
-    container {
-      image = "nginx:1.7.9"
-      name  = "example22"
+    replicas = 3
 
-      security_context {
-        capabilities {
-          add = []
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
         }
       }
 
-      env {
-        name  = "environment"
-        value = "test"
-      }
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
 
-      port {
-        container_port = 8080
-      }
+          security_context {
+            capabilities {
+              add = ["SYS_ADMIN"]
+            }
+          }
 
-      liveness_probe {
-        http_get  {
-          path = "/nginx_status"
-          port = 80
+          env {
+            name  = "environment"
+            value = "test"
+          }
 
-          http_header {
-            name  = "X-Custom-Header"
-            value = "Awesome"
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
           }
         }
 
-        initial_delay_seconds = 3
-        period_seconds        = 3
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22222"
+
+          security_context {
+            capabilities {
+              add = ["NET_BIND_SERVICE"]
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "fail" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
       }
     }
 
-    dns_config {
-      nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
-      searches    = ["example.com"]
-
-      option {
-        name  = "ndots"
-        value = 1
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
       }
 
-      option {
-        name = "use-vc"
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
+
+          security_context {
+            capabilities {
+              add = ["SYS_ADMIN"]
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22222"
+
+          security_context {
+            capabilities {
+              add = ["NET_BIND_SERVICE"]
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
       }
     }
-
-    dns_policy = "None"
   }
 }
 
@@ -498,6 +898,7 @@ resource "kubernetes_pod" "pass2" {
     dns_policy = "None"
   }
 }
+
 
 resource "kubernetes_pod_v1" "pass2" {
   metadata {
@@ -555,6 +956,166 @@ resource "kubernetes_pod_v1" "pass2" {
     }
 
     dns_policy = "None"
+  }
+}
+
+resource "kubernetes_deployment" "pass2" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
+
+          security_context {
+            capabilities {
+              add = []
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "pass2" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
+
+          security_context {
+            capabilities {
+              add = []
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
   }
 }
 
@@ -671,5 +1232,163 @@ resource "kubernetes_pod_v1" "pass" {
     }
 
     dns_policy = "None"
+  }
+}
+
+resource "kubernetes_deployment" "pass" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
+
+          security_context {
+            capabilities {
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "pass" {
+  metadata {
+    name = "terraform-example"
+    labels = {
+      k8s-app = "nginx"
+    }
+  }
+
+  spec {
+    replicas = 3
+
+    selector {
+      match_labels = {
+        k8s-app = "nginx"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          k8s-app = "nginx"
+        }
+      }
+
+      spec {
+        container {
+          image = "nginx:1.7.9"
+          name  = "example22"
+
+          security_context {
+            capabilities {
+            }
+          }
+
+          env {
+            name  = "environment"
+            value = "test"
+          }
+
+          port {
+            container_port = 8080
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/nginx_status"
+              port = 80
+
+              http_header {
+                name  = "X-Custom-Header"
+                value = "Awesome"
+              }
+            }
+
+            initial_delay_seconds = 3
+            period_seconds        = 3
+          }
+        }
+
+        dns_config {
+          nameservers = ["1.1.1.1", "8.8.8.8", "9.9.9.9"]
+          searches    = ["example.com"]
+
+          option {
+            name  = "ndots"
+            value = 1
+          }
+
+          option {
+            name = "use-vc"
+          }
+        }
+
+        dns_policy = "None"
+      }
+    }
   }
 }
