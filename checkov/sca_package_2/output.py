@@ -387,6 +387,8 @@ def create_package_overview_table_part(
                     package_name_col_val = " ".join([dep_sign, package_name])
                 else:
                     package_name_col_val = package_name
+            elif dep_sign:
+                package_name_col_val = dep_sign
 
             package_table.add_row(
                 [
