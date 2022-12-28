@@ -1,16 +1,15 @@
-import os
 import unittest
+from pathlib import Path
 
-from checkov.openapi.checks.resource.v2.Oauth2SecurityRequirement import check
-from checkov.openapi.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.resource.azure.StorageBlobRestrictPublicAccess import check
+from checkov.terraform.runner import Runner
 
 
-class TestOauth2SecurityRequirement(unittest.TestCase):
-    def test_summary(self):
+class TestStorageBlobRestrictPublicAccess(unittest.TestCase):
+    def test(self):
         # given
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = current_dir + "/example_Oauth2SecurityRequirement"
+        test_files_dir = Path(__file__).parent / "example_StorageBlobRestrictPublicAccess"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,21 +18,22 @@ class TestOauth2SecurityRequirement(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "/pass.yaml",
-            "/pass.json",
+            "azurerm_storage_account.pass",
+
         }
         failing_resources = {
-            "/fail.yaml",
-            "/fail.json",
+            "azurerm_storage_account.fail",
+            "azurerm_storage_account.fail2",
         }
 
-        passed_check_resources = {c.file_path for c in report.passed_checks}
-        failed_check_resources = {c.file_path for c in report.failed_checks}
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

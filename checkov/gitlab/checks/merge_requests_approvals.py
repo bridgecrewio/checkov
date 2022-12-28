@@ -21,11 +21,11 @@ class MergeRequestRequiresApproval(BaseGitlabCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]] | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if project_aprovals_schema.validate(conf):
             if conf.get("approvals_before_merge", 0) < 2:
-                return CheckResult.FAILED, conf
-            return CheckResult.PASSED, conf
+                return CheckResult.FAILED
+            return CheckResult.PASSED
         return None
 
 
