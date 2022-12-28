@@ -121,6 +121,9 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
+            if not file_abs_path.startswith("/tmp"):
+                file_abs_path = realKustomizeEnvMetadata['filePath']
+
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
             record = Record(
@@ -128,7 +131,7 @@ class K8sKustomizeRunner(K8sRunner):
                 check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.severity)
+                check_class=check.__class__.__module__, file_abs_path=file_abs_path, severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
 
