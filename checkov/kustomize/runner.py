@@ -121,7 +121,8 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
-            if not file_abs_path.startswith("/tmp"):
+            temp_dir = "/tmp"
+            if not file_abs_path.startswith(temp_dir):
                 abs_path = realKustomizeEnvMetadata['filePath']
             else:
                 abs_path = file_abs_path
