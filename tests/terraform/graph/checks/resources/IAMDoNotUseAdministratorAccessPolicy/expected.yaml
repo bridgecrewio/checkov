@@ -1,0 +1,12 @@
+pass:
+  - "aws_iam_policy.other_access_name_pass"
+  - "aws_iam_policy.other_access_arn_pass"
+  - "aws_iam_user_policy_attachment.test_attach_pass"
+  - "aws_ssoadmin_managed_policy_attachment.amazon_ec2_read_only_access_pass"
+fail:
+  - "aws_iam_policy.administrator_access_name_fail"
+  - "aws_iam_policy.administrator_access_arn_fail"
+  - "aws_iam_user_policy_attachment.test_attach_fail"
+  - "aws_iam_role_policy_attachment.test_attach_fail"
+  - "aws_iam_group_policy_attachment.test_attach_fail"
+  - "aws_ssoadmin_managed_policy_attachment.administrator_access_fail"
