@@ -186,13 +186,13 @@ class Registry(BaseCheckRegistry):
         # not used, but is an abstractmethod
         return "", "", {}
 
-    def get_result_configuration(self, evaluated_keys: list[str], entity_conf: dict[str, Any]) \
+    def get_result_configuration(self, evaluated_keys: list[str], entity_conf: dict[str, Any] | list[Any]) \
             -> dict[str, Any] | list[str | dict[str, Any]]:
-        if len(evaluated_keys) == 1:
+        if len(evaluated_keys) == 1 and isinstance(entity_conf, dict):
             # the result configuration should be the smallest code block found by the evaluated_key path, that is of \
             # type dict or list - the only types that currently have start_mark and end_mark lines configured
             for path in evaluated_keys[0].split('/'):
-                reduced_conf = entity_conf.get(path)
+                reduced_conf = entity_conf.get(path)  # type:ignore[union-attr]
                 if not reduced_conf or isinstance(reduced_conf, str):
                     return entity_conf
                 entity_conf = reduced_conf
