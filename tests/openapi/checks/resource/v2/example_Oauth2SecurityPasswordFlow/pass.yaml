@@ -4,8 +4,11 @@ info:
   version: 1.0.0
 security:
   - some_auth:
-      - write:api
-      - read:api
+      -
+  - another_auth:
+      -
 securityDefinitions:
   some_auth:
     type: basic
+  another_auth:
+    type: oauth2

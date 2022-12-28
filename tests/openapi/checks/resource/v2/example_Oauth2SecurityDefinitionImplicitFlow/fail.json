@@ -4,17 +4,10 @@
     "title": "test",
     "version": "1.0.0"
   },
-  "security": [
-    {
-      "some_auth": [
-        "write:api",
-        "read:api"
-      ]
-    }
-  ],
   "securityDefinitions": {
     "some_auth": {
-      "type": "basic"
+      "type": "oauth2",
+      "flow": "implicit"
     }
   }
 }

@@ -9,6 +9,14 @@
       "get": {
         "operationId": "listVersionsv2",
         "summary": "List API versions",
+        "security": [
+          {
+            "some_auth": [
+              "read:api",
+              "error:api"
+            ]
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -18,21 +26,11 @@
     }
   },
   "securityDefinitions": {
-    "oAuth2AuthCodeNeg2": {
+    "some_auth": {
       "type": "oauth2",
-      "description": "For more information, see https://api.my.company.com/docs/oauth",
-      "flow": "authorizationCode",
-      "authorizationUrl": "https://api.my.company.com/oauth/authorize",
-      "tokenUrl": "https://api.my.company.com/oauth/token",
       "scopes": {
         "read:api": "read your apis"
       }
     }
-  },
-  "security": {
-    "oAuth2AuthCodeNeg2": [
-      "read:api",
-      "error:api"
-    ]
   }
 }

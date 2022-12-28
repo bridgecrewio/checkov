@@ -14,7 +14,8 @@
   ],
   "securityDefinitions": {
     "some_auth": {
-      "type": "basic"
+      "type": "oauth2",
+      "flow": "password"
     }
   }
 }
