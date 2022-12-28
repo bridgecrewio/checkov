@@ -150,7 +150,6 @@ class Block:
         if (
             self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest)
             and change_origin_id is not None
-            and attribute_at_dest is not None
         ):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
