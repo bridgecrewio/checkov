@@ -9,7 +9,7 @@ resource "azurerm_kubernetes_cluster" "pass" {
     node_count = var.default_node_pool.node_count
     vm_size    = var.default_node_pool.vm_size
     max_pods   = 51
-    type = "VirtualMachineScaleSets"
+    type       = "VirtualMachineScaleSets"
   }
 
   identity {
@@ -17,8 +17,8 @@ resource "azurerm_kubernetes_cluster" "pass" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
@@ -32,8 +32,8 @@ resource "azurerm_kubernetes_cluster" "fail" {
     name       = var.default_node_pool.name
     node_count = var.default_node_pool.node_count
     vm_size    = var.default_node_pool.vm_size
-    max_pods=28
-    type="AvailabilitySet"
+    max_pods   = 28
+    type       = "AvailabilitySet"
   }
 
   identity {
@@ -41,8 +41,8 @@ resource "azurerm_kubernetes_cluster" "fail" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
@@ -63,7 +63,7 @@ resource "azurerm_kubernetes_cluster" "pass2" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
