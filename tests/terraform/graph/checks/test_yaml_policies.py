@@ -167,6 +167,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AutoScalingEnabledLB(self):
         self.go("AutoScalingEnabledLB")
 
+    def test_IAMDoNotUseAdministratorAccessPolicy(self):
+        self.go("IAMDoNotUseAdministratorAccessPolicy")
+    
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 
