@@ -35,7 +35,7 @@ class TestCheckovJsonReport(unittest.TestCase):
                 sca_image = False
                 for report in reports:
                     if report["check_type"] == "github_actions":
-                        github_actions_report_exists = True
+                        github_actions_report_exists = False
                         self.assertGreaterEqual(report['summary']['failed'], 1)
                     if report["check_type"] == "sca_image":
                         sca_image = True
