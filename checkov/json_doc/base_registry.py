@@ -186,7 +186,8 @@ class Registry(BaseCheckRegistry):
         # not used, but is an abstractmethod
         return "", "", {}
 
-    def get_result_configuration(self, evaluated_keys: list[str], entity_conf: dict[str, Any] | list[Any]) \
+    @staticmethod
+    def get_result_configuration(evaluated_keys: list[str], entity_conf: dict[str, Any] | list[Any]) \
             -> dict[str, Any] | list[str | dict[str, Any]]:
         if len(evaluated_keys) == 1 and isinstance(entity_conf, dict):
             # the result configuration should be the smallest code block found by the evaluated_key path, that is of \
