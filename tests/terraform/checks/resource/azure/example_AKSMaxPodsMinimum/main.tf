@@ -16,8 +16,8 @@ resource "azurerm_kubernetes_cluster" "pass" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
@@ -54,7 +54,7 @@ resource "azurerm_kubernetes_cluster" "fail" {
     name       = var.default_node_pool.name
     node_count = var.default_node_pool.node_count
     vm_size    = var.default_node_pool.vm_size
-    max_pods=28
+    max_pods   = 28
   }
 
   identity {
@@ -62,8 +62,8 @@ resource "azurerm_kubernetes_cluster" "fail" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
@@ -84,8 +84,8 @@ resource "azurerm_kubernetes_cluster" "fail2" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
@@ -94,7 +94,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "pass" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  max_pods = 51
+  max_pods              = 51
   tags = {
     Environment = "Production"
   }
@@ -105,7 +105,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "fail" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  max_pods = 33
+  max_pods              = 33
   tags = {
     Environment = "Production"
   }

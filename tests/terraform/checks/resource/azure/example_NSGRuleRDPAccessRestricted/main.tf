@@ -167,11 +167,11 @@ resource "azurerm_network_security_rule" "range_prefix_lower_case" {
 }
 
 resource "azurerm_network_security_group" "snet_nsgs" {
-  count               = "${length(local.subnets)}"
+  count               = length(local.subnets)
   name                = "${local.root}-snet-${lookup(local.subnets[count.index], "name")}-nsg"
-  location            = "${azurerm_resource_group.net_rg.location}"
-  resource_group_name = "${azurerm_resource_group.net_rg.name}"
-  tags                = "${local.tags}"
+  location            = azurerm_resource_group.net_rg.location
+  resource_group_name = azurerm_resource_group.net_rg.name
+  tags                = local.tags
 
 
   dynamic "security_rule" {
