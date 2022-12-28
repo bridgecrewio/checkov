@@ -384,7 +384,7 @@ def create_package_overview_table_part(
             package_name_col_val = ""
             if is_sub_dep_changed:
                 if dep_sign:
-                    package_name_col_val = " ".join([dep_sign, package_name if is_sub_dep_changed else ""])
+                    package_name_col_val = " ".join([dep_sign, package_name])
                 else:
                     package_name_col_val = package_name
 
