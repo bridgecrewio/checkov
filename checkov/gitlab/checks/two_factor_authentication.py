@@ -21,12 +21,12 @@ class GroupsTwoFactorAuthentication(BaseGitlabCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: list[dict[str, Any]], entity_type: str) -> tuple[CheckResult, list[dict[str, Any]]] | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: list[dict[str, Any]], entity_type: str) -> CheckResult | None:  # type:ignore[override]
         if schema.validate(conf):
             for group in conf:
                 if group.get("require_two_factor_authentication") is False:
-                    return CheckResult.FAILED, conf
-            return CheckResult.PASSED, conf
+                    return CheckResult.FAILED
+            return CheckResult.PASSED
         return None
 
 

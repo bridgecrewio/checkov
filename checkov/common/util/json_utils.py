@@ -3,6 +3,7 @@ import json
 from typing import Any
 
 from lark import Tree
+from bc_jsonpath_ng import parse, JSONPath
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
@@ -27,3 +28,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return o.__dict__
         else:
             return json.JSONEncoder.default(self, o)
+
+
+def get_jsonpath_from_evaluated_key(evaluated_key: str) -> JSONPath:
+    evaluated_key = evaluated_key.replace("/", ".")
+    return parse(f"$..{evaluated_key}")  # type:ignore[no-any-return]
