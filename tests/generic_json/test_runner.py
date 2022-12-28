@@ -178,6 +178,18 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.passed_checks[0].file_line_range, [17, 31])
         report.print_console()
 
+    def test_get_result_configuration_for_list_type(self):
+        entity_conf = [{'file_name': 'branch_protection_rules', 'org_complementary_metadata': {}, 'repo_complementary_metadata': {}}]
+        evaluated_keys = ['data/organization/ipAllowListForInstalledAppsEnabledSetting']
+        result_config = registry.get_result_configuration(evaluated_keys, entity_conf)
+        self.assertEqual(result_config, entity_conf)
+
+    def test_get_result_configuration_for_dict_type(self):
+        entity_conf = {'required_pull_request_reviews': {'dismiss_stale_reviews': False}, 'CKV_METADATA': {'file_name': 'pass', 'org_complementary_metadata': {}, 'repo_complementary_metadata': {}}}
+        evaluated_keys = ['required_pull_request_reviews/dismiss_stale_reviews']
+        result_config = registry.get_result_configuration(evaluated_keys, entity_conf)
+        self.assertEqual(result_config, {'dismiss_stale_reviews': False})
+
 
 
 
