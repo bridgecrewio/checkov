@@ -4,7 +4,7 @@ import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable
 
-from mypy_extensions import TypedDict
+from typing_extensions import TypedDict
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations
