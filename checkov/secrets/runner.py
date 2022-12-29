@@ -8,10 +8,12 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.output.secrets_record import SecretsRecord
+from checkov.common.util.http_utils import request_wrapper
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
-
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -30,6 +32,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
+from checkov.secrets.consts import ValidationStatus
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 
 if TYPE_CHECKING:
@@ -132,7 +135,8 @@ class Runner(BaseRunner[None]):
                                     files_to_scan.append(os.path.join(root, file))
                             elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                 files_to_scan.append(os.path.join(root, file))
-                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(file):
+                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
+                                file):
                             files_to_scan.append(os.path.join(root, file))
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
@@ -153,7 +157,8 @@ class Runner(BaseRunner[None]):
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
-                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS):
+                if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
+                                                      report_type=CheckType.SECRETS):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
@@ -178,7 +183,7 @@ class Runner(BaseRunner[None]):
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
-                report.add_record(Record(
+                report.add_record(SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
@@ -191,7 +196,11 @@ class Runner(BaseRunner[None]):
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
+                    validation_status=ValidationStatus.Unknown.value
                 ))
+
+            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator._secrets.values())  # modify after secrets_coordinator changes are merged
+            self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
     @staticmethod
@@ -243,7 +252,8 @@ class Runner(BaseRunner[None]):
             secret: PotentialSecret,
             runner_filter: RunnerFilter
     ) -> _CheckResult | None:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
+                                              report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"
@@ -260,8 +270,42 @@ class Runner(BaseRunner[None]):
         return None
 
     def save_secret_to_coordinator(self, secret_value: Optional[str], bc_check_id: str, resource: str,
-                                   result: _CheckResult)\
+                                   result: _CheckResult) \
             -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
             enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
+
+    @staticmethod
+    def verify_secrets(report: Report, enriched_secrets_s3_path: str) -> None:
+        if not os.getenv("CKV_VALIDATE_SECRETS") or not os.getenv("BC_API_KEY"):
+            logging.debug('Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and pass an api key')
+            return None
+
+        request_body = {
+            "reportS3Path": enriched_secrets_s3_path,
+            "sourceId": os.getenv('CKV_REPO_ID')
+        }
+        response = None
+        try:
+            response = request_wrapper(
+                "POST", f"{bc_integration.api_url}/api/v1/secrets/verify",
+                headers=bc_integration.get_default_headers("POST"),
+                json=request_body,
+                should_call_raise_for_status=True
+            ).json()
+        except Exception:
+            logging.error(f'Failed to perform secrets verification', exc_info=True)
+
+        if not response:
+            return None
+
+        validation_status_by_check_id_and_resource = {}
+        for validation_status_entity in response.get("validationStatuses", []):
+            validation_status_by_check_id_and_resource[f'{validation_status_entity.get("bc_check_id")}_' \
+                                                       f'{validation_status_entity.get("resource")}'] = \
+                validation_status_entity.get('status')
+
+        for secrets_record in report.failed_checks:
+            secrets_record.validation_status = \
+                validation_status_by_check_id_and_resource[f'{secrets_record.bc_check_id}_{secrets_record.resource}']

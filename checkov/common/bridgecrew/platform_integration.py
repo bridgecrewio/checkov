@@ -411,6 +411,16 @@ class BcPlatformIntegration:
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
+    def persist_enriched_secrets(self, enriched_secrets: list[dict[str, str]]) -> str | None:
+        if not enriched_secrets or not self.repo_path:
+            logging.debug('enriched secrets or repo path are empty, aborting')
+            return None
+
+        repo_path_without_src = os.path.dirname(self.repo_path)
+        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/enriched_secrets_report.json'
+        _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        return s3_path
+
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
         if not self.use_s3_integration:
             return
