@@ -17,7 +17,10 @@ from checkov.common.graph.graph_builder.variable_rendering.renderer import Varia
 if TYPE_CHECKING:
     from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
     from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
+    from typing_extensions import TypeAlias
 
+_EdgeEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any, dict[str, Any]], tuple[str | None, str | None]]]"
+_VertexEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any], str | None]]"
 
 class _EvaluatedEdge(TypedDict):
     vertex_index: int
@@ -37,7 +40,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
 
     def __init__(self, local_graph: "CloudformationLocalGraph") -> None:
         super().__init__(local_graph)
-        self.edge_evaluation_methods: "dict[str, Callable[[Any, dict[str, Any]], tuple[str | None, str | None]]]" = {
+        self.edge_evaluation_methods: _EdgeEvaluationMethodsEntry = {
             IntrinsicFunctions.REF: self._evaluate_ref_connection,
             IntrinsicFunctions.FIND_IN_MAP: self._evaluate_findinmap_connection,
             IntrinsicFunctions.GET_ATT: self._evaluate_getatt_connection,
@@ -117,7 +120,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
 
         if isinstance(selection_list, str):
             selection_list = selection_list.split(', ')
-        # convert idx_to_select to int if possible cause it might be a str_node
+        # convert idx_to_select to int if possible because it might be a str_node
         if isinstance(idx_to_select, str) and str.isdecimal(idx_to_select):
             idx_to_select = int(idx_to_select)
         if isinstance(idx_to_select, int) and isinstance(selection_list, list) \
