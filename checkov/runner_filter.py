@@ -187,7 +187,7 @@ class RunnerFilter(object):
         logging.debug(f'Should run check {check_id}: {result}')
         return result
 
-    def should_run_check_for_file(self, check_id, file_full_path, root_folder) -> bool:
+    def should_run_check_for_file(self, check_id: str, file_full_path: str, root_folder: str) -> bool:
         """
         Check if skip check_id for a certain file_types, according to given path pattern
         """
