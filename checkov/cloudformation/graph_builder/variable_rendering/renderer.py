@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 _EdgeEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any, dict[str, Any]], tuple[str | None, str | None]]]"
 _VertexEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any], str | None]]"
 
+
 class _EvaluatedEdge(TypedDict):
     vertex_index: int
     attribute_key: str
