@@ -14,7 +14,6 @@ class SecretsCoordinator:
         self._secrets: Dict[str, EnrichedSecret] = {}
 
     def add_secret(self, enriched_secret: EnrichedSecret) -> None:
-        # can be changed to any other suitable way.
         # should not have duplicates? - if duplicates allowed, implementation should be changed
         # may be saved by file type first, then by key - or any other preprocessing that may help differ the secrets.
         self._secrets[enriched_secret['resource']] = enriched_secret
