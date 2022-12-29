@@ -30,7 +30,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.coordinator import SecretsCoordinator
+from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -263,6 +263,5 @@ class Runner(BaseRunner[None]):
                                    result: _CheckResult)\
             -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
-            self.secrets_coordinator.add_secret(
-                original_secret=secret_value, bc_check_id=bc_check_id, resource=resource
-            )
+            enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
+            self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
