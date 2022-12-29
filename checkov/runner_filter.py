@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import logging
 import fnmatch
+import os
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
+import re
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
@@ -184,6 +186,59 @@ class RunnerFilter(object):
 
         logging.debug(f'Should run check {check_id}: {result}')
         return result
+
+    def should_run_check_for_file(self, check_id, file_full_path, root_folder) -> bool:
+        """
+        Check if skip check_id for a certain file_types, according to given path pattern
+        """
+        # Check that we have skip check with a path pattern
+        if not self.skip_checks:
+            return True
+
+        skip_check_with_rule = next(iter([skip_check for skip_check in self.skip_checks if check_id in skip_check]), None)
+        if not skip_check_with_rule:
+            return True
+
+        # skip_check_with_rule pattern should be as following (All upper case params is configured by user:
+        # "{CHECK_ID}:{DIRECTORY_RELATIVE_TO_ROOT}/{FILE_NAME_PATTERN}.{FILE_TYPE}
+        splitted_check = skip_check_with_rule.split(":")
+        # In case it's not expected pattern
+        if len(splitted_check) != 2:
+            return True
+        # Creating a Regex pattern according to User Input
+        pattern = splitted_check[1]
+        directory_pattern, file_pattern = os.path.split(pattern)
+        directory_pattern = directory_pattern if directory_pattern != '**' else ''
+        # # This value will be checked VS filename dir
+        full_dir_pattern = f"{root_folder}/{directory_pattern}" if directory_pattern else root_folder
+        file_pattern = file_pattern.split('.')
+        if len(file_pattern) != 2:
+            return True
+        # The following 2 values will be checked VS the secret.filename
+        file_name_pattern, file_type = file_pattern[0], file_pattern[1]
+        file_name_pattern = file_name_pattern if file_name_pattern != "*" else ''
+        if re.search(fr"{full_dir_pattern}.*{file_name_pattern + '.*' if file_name_pattern else ''}.{file_type}$", file_full_path):
+            return False
+        return True
+
+        #
+        # # In case it's not expected pattern
+        # file_pattern = file_pattern.split('.')
+        # if len(file_pattern) != 2:
+        #     return True
+        # # The following 2 values will be checked VS the secret.filename
+        # file_name_pattern, file_type = file_pattern[0], file_pattern[1]
+        # file_name_pattern = file_name_pattern if file_name_pattern != "*" else ''
+        #
+        # # Now split filename:
+        # file_directory, file_name = os.path.split(file_full_path)
+        #
+        # # ToDo: Replace with regex?
+        # if full_dir_pattern in file_directory and \
+        #     file_name_pattern in file_name and \
+        #     f".{file_type}" in file_name:
+        #     return False
+        return True
 
     @staticmethod
     def check_matches(check_id: str,

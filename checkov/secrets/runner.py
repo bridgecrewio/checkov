@@ -171,6 +171,7 @@ class Runner(BaseRunner[None]):
                     severity=severity,
                     secret=secret,
                     runner_filter=runner_filter,
+                    root_folder=root_folder
                 ) or result
                 resource = f'{secret.filename}:{secret.secret_hash}'
                 report.add_resource(resource)
@@ -241,13 +242,16 @@ class Runner(BaseRunner[None]):
             bc_check_id: str,
             severity: Severity | None,
             secret: PotentialSecret,
-            runner_filter: RunnerFilter
+            runner_filter: RunnerFilter,
+            root_folder: str
     ) -> _CheckResult | None:
-        if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
+        if (not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys()) or \
+                not runner_filter.should_run_check_for_file(check_id=check_id, file_full_path=secret.filename, root_folder=root_folder):
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"
             }
+
         # Check for suppression comment in the line before, the line of, and the line after the secret
         for line_number in [secret.line_number, secret.line_number - 1, secret.line_number + 1]:
             lt = linecache.getline(secret.filename, line_number)
