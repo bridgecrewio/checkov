@@ -199,7 +199,7 @@ class Runner(BaseRunner[None]):
                     validation_status=ValidationStatus.Unknown.value
                 ))
 
-            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator._secrets.values())  # modify after secrets_coordinator changes are merged
+            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets().values())
             self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
