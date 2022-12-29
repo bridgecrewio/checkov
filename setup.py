@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.6",
+        "bc-detect-secrets==1.4.7",
         "bc-jsonpath-ng==1.5.8",
         "deep-merge",
         "tabulate",
