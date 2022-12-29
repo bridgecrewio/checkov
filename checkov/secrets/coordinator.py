@@ -1,4 +1,5 @@
-from typing import Iterable, Dict, TypedDict
+from typing import Iterable, Dict
+from typing_extensions import TypedDict
 
 
 class EnrichedSecret(TypedDict):
