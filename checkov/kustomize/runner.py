@@ -138,7 +138,6 @@ class K8sKustomizeRunner(K8sRunner):
                 check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
-            print(record.file_abs_path)
 
         return report
 
