@@ -211,13 +211,7 @@ class RunnerFilter(object):
         directory_pattern = directory_pattern if directory_pattern != '**' else ''
         # # This value will be checked VS filename dir
         full_dir_pattern = f"{root_folder}/{directory_pattern}" if directory_pattern else root_folder
-        file_pattern = file_pattern.split('.')
-        if len(file_pattern) != 2:
-            return True
-        # The following 2 values will be checked VS the secret.filename
-        file_name_pattern, file_type = file_pattern[0], file_pattern[1]
-        file_name_pattern = file_name_pattern if file_name_pattern != "*" else ''
-        if re.search(fr"{full_dir_pattern}.*{file_name_pattern + '.*' if file_name_pattern else ''}.{file_type}$", file_full_path):
+        if re.search(fr"^{full_dir_pattern}/{file_pattern}", file_full_path):
             return False
         return True
 
