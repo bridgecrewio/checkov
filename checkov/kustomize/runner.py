@@ -121,7 +121,8 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
-            external_run_indicator = "BC"
+            external_run_indicator = "Bc"
+            # means this scan originated in the platform
             if type(self.graph_manager).__name__.startswith(external_run_indicator):
                 absolute_file_path = file_abs_path
             else:
