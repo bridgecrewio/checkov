@@ -221,25 +221,6 @@ class RunnerFilter(object):
             return False
         return True
 
-        #
-        # # In case it's not expected pattern
-        # file_pattern = file_pattern.split('.')
-        # if len(file_pattern) != 2:
-        #     return True
-        # # The following 2 values will be checked VS the secret.filename
-        # file_name_pattern, file_type = file_pattern[0], file_pattern[1]
-        # file_name_pattern = file_name_pattern if file_name_pattern != "*" else ''
-        #
-        # # Now split filename:
-        # file_directory, file_name = os.path.split(file_full_path)
-        #
-        # # ToDo: Replace with regex?
-        # if full_dir_pattern in file_directory and \
-        #     file_name_pattern in file_name and \
-        #     f".{file_type}" in file_name:
-        #     return False
-        return True
-
     @staticmethod
     def check_matches(check_id: str,
                       bc_check_id: Optional[str],
