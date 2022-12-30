@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import List, Dict, Any, Tuple
 
@@ -7,7 +9,7 @@ from checkov.cloudformation.graph_builder.graph_components.blocks import Cloudfo
 
 
 def convert_graph_vertices_to_definitions(
-    vertices: List[CloudformationBlock], root_folder: str
+    vertices: List[CloudformationBlock], root_folder: str | None
 ) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     definitions: Dict[str, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}

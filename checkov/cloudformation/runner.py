@@ -98,8 +98,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices,
-                                                                                           root_folder)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                    vertices=local_graph.vertices,
+                    root_folder=root_folder,
+                )
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():

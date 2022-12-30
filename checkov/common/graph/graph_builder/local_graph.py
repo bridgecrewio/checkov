@@ -85,12 +85,12 @@ class LocalGraph(Generic[_Block]):
         vertex_index: int,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int,
-        attribute_at_dest: str,
+        change_origin_id: int | None,
+        attribute_at_dest: str | None,
         transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
-        if attribute_at_dest:
+        if attribute_at_dest and change_origin_id is not None:
             previous_breadcrumbs = self.vertices[change_origin_id].changed_attributes.get(attribute_at_dest, [])
         self.vertices[vertex_index].update_attribute(
             attribute_key, attribute_value, change_origin_id, previous_breadcrumbs, attribute_at_dest, transform_step
