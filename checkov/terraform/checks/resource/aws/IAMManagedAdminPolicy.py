@@ -16,7 +16,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         description = "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 
         # This is the Unique ID for your check
-        id = "CKV_AWS_274"
+        id = "POL1"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
         supported_resources = (
@@ -25,6 +25,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
             "aws_iam_role_policy_attachment",
             "aws_iam_user_policy_attachment",
             "aws_iam_group_policy_attachment",
+            "aws_ssoadmin_managed_policy_attachment",
         )
 
         # Valid CheckCategories are defined in checkov/common/models/enums.py
@@ -45,6 +46,13 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         ):
             policy_arn = conf.get("policy_arn")
             if policy_arn and policy_arn[0] == ADMIN_POLICY_ARN:
+                return CheckResult.FAILED
+
+        elif self.entity_type in (
+            "aws_ssoadmin_managed_policy_attachment"
+        ):
+            managed_policy_arn = conf.get("managed_policy_arn")
+            if managed_policy_arn and managed_policy_arn[0] == ADMIN_POLICY_ARN:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED
