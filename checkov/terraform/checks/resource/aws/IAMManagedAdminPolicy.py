@@ -16,7 +16,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
         description = "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy"
 
         # This is the Unique ID for your check
-        id = "POL1"
+        id = "CKV_AWS_274"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
         supported_resources = (
