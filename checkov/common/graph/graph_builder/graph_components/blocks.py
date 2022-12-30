@@ -136,9 +136,9 @@ class Block:
         self,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int,
+        change_origin_id: int | None,
         previous_breadcrumbs: list[BreadcrumbMetadata],
-        attribute_at_dest: str,
+        attribute_at_dest: str | None,
         transform_step: bool = False,
     ) -> None:
         self.update_inner_attribute(
@@ -147,7 +147,10 @@ class Block:
             value_to_update=attribute_value
         )
 
-        if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
+        if (
+            self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest)
+            and change_origin_id is not None
+        ):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         # update the numbered attributes, if the new value is a list
