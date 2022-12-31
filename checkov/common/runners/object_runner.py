@@ -118,33 +118,42 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 if CHECKOV_CREATE_GRAPH and self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
-        if files:
-            self._load_files(files)
+        if self.context is None or self.definitions is None:
+            if files:
+                self._load_files(files)
 
-        if root_folder:
-            self.root_folder = root_folder
+            if root_folder:
+                self.root_folder = root_folder
 
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
-                files_to_load = [os.path.join(root, f_name) for f_name in f_names]
-                self._load_files(files_to_load=files_to_load)
+                for root, d_names, f_names in os.walk(root_folder):
+                    filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
+                    filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
+                    files_to_load = [os.path.join(root, f_name) for f_name in f_names]
+                    self._load_files(files_to_load=files_to_load)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info(f"Creating {self.source} graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(
-                definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
-            )
-            logging.info(f"Successfully created {self.source} graph")
+            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+                logging.info(f"Creating {self.source} graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(
+                    definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
+                )
 
-            self.graph_manager.save_graph(local_graph)
+                logging.info(f"Successfully created {self.source} graph")
+
+                self.graph_manager.save_graph(local_graph)
+        else:
+            logging.info("Going to use existing graph")
+            if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(self.definitions, dict):
+                # populate gha metadata dict
+                for key, definition in self.definitions.items():
+                    workflow_name = definition.get('name', '')
+                    triggers = self._get_triggers(definition)
+                    jobs = self._get_jobs(definition)
+                    self.map_file_path_to_gha_metadata_dict[key] = {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
 
         self.pbar.initiate(len(self.definitions))
 
         # run Python checks
-        self.add_python_check_results(
-            report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder
-        )
+        self.add_python_check_results(report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH and self.graph_registry:
