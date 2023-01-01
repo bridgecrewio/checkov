@@ -145,7 +145,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
 
         return images
 
-    def populate_metadata_dict(self):
+    def populate_metadata_dict(self) -> None:
         if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(self.definitions, dict):
             # populate gha metadata dict
             for key, definition in self.definitions.items():
