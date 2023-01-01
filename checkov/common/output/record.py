@@ -195,7 +195,7 @@ class Record:
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             if hasattr(self, 'validation_status'):
-                validation_status_string = f'Status: {self.validation_status}\n'
+                validation_status_string = f'\tStatus: {self.validation_status}\n'
                 return f"{check_message}{status_message}{severity_message}{detail}{file_details}{validation_status_string}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 

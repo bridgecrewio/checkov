@@ -202,7 +202,7 @@ class Runner(BaseRunner[None]):
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(
-                self.secrets_coordinator.get_secrets().values())
+                list(self.secrets_coordinator.get_secrets().values()))
             self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
@@ -288,7 +288,7 @@ class Runner(BaseRunner[None]):
 
         request_body = {
             "reportS3Path": enriched_secrets_s3_path,
-            "sourceId": os.getenv('CKV_REPO_ID')
+            "sourceId": os.getenv('CKV_REPO_ID', "")
         }
         response = None
         try:
@@ -297,21 +297,22 @@ class Runner(BaseRunner[None]):
                 headers=bc_integration.get_default_headers("POST"),
                 json=request_body,
                 should_call_raise_for_status=True
-            ).json()
+            )
         except Exception:
             logging.error(f'Failed to perform secrets verification', exc_info=True)
 
         if not response:
             return VerifySecretsResult.FAILURE
 
+        response = response.json()
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in response.get("validationStatuses", []):
             key = f'{validation_status_entity.get("violationId")}_{validation_status_entity.get("resourceId")}'
             validation_status_by_check_id_and_resource[key] = validation_status_entity.get('status')
 
         for secrets_record in report.failed_checks:
-            key = f'{secrets_record.bc_check_id}_{secrets_record.resource}'
+            key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
             secrets_record.validation_status = \
-                validation_status_by_check_id_and_resource.get(key, ValidationStatus.Unknown)
+                validation_status_by_check_id_and_resource.get(key, ValidationStatus.Unknown.value)
 
         return VerifySecretsResult.SUCCESS
