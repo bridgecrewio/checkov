@@ -99,7 +99,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.breadcrumbs = breadcrumbs
 
     def set_raw_definitions(self, definitions_raw: dict[str, list[tuple[int, str]]] | None) -> None:
-        self.definitions_raw = definitions_raw
+        self.definitions_raw = definitions_raw      # type:ignore[assignment]
 
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
         return None
