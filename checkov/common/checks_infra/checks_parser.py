@@ -156,7 +156,7 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         check.guideline = raw_check.get("metadata", {}).get("guideline")
-        check.check_path = kwargs.get("check_path")
+        check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
