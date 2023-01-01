@@ -206,7 +206,6 @@ class RunnerFilter(object):
             return True
         # Creating a Regex pattern according to User Input
         pattern = splitted_check[1]
-        # # This value will be checked VS filename dir
         full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
         try:
             if re.search(full_regex_pattern, file_full_path):
