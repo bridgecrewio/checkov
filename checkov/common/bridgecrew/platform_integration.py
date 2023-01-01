@@ -417,7 +417,7 @@ class BcPlatformIntegration:
             return None
 
         repo_path_without_src = os.path.dirname(self.repo_path)
-        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/enriched_secrets_report.json'
+        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/secrets_to_verify.json'
         _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         return s3_path
 
