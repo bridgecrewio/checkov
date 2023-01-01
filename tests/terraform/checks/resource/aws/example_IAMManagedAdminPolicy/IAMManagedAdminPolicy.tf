@@ -26,6 +26,12 @@ resource "aws_iam_group_policy_attachment" "fail5" {
   group      = "group"
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
+# Test SSO policy attachment with AdministratorAccess - Fail
+resource "aws_ssoadmin_managed_policy_attachment" "fail6" {
+  instance_arn       = tolist(data.aws_ssoadmin_instances.my_instance.arns)[0]
+  managed_policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  permission_set_arn = aws_ssoadmin_permission_set.admins.arn
+}
 
 # Pass
 
@@ -59,6 +65,12 @@ resource "aws_iam_group_policy_attachment" "pass5" {
 resource "aws_iam_role_policy_attachment" "pass6" {
   role       = aws_iam_role.fail1.name
 #  policy_arn = ""  # not valid, just to simulate a TF plan behaviour
+}
+# Test SSO policy attachment with other policy - Pass
+resource "aws_ssoadmin_managed_policy_attachment" "pass7" {
+  instance_arn       = tolist(data.aws_ssoadmin_instances.my_instance.arns)[0]
+  managed_policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+  permission_set_arn = aws_ssoadmin_permission_set.viewers.arn
 }
 
 # Data
