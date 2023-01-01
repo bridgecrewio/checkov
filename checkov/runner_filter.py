@@ -207,11 +207,9 @@ class RunnerFilter(object):
             return True
         # Creating a Regex pattern according to User Input
         pattern = splitted_check[1]
-        directory_pattern, file_pattern = os.path.split(pattern)
-        directory_pattern = directory_pattern if directory_pattern != '**' else ''
         # # This value will be checked VS filename dir
-        full_dir_pattern = f"{root_folder}/{directory_pattern}" if directory_pattern else root_folder
-        if re.search(fr"^{full_dir_pattern}/{file_pattern}", file_full_path):
+        full_regex_pattern = fr"^{root_folder}/{pattern}"
+        if re.search(full_regex_pattern, file_full_path):
             return False
         return True
 
