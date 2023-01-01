@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.212...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.220...HEAD)
+
+## [2.2.220](https://github.com/bridgecrewio/checkov/compare/2.2.217...2.2.220) - 2022-12-29
+
+### Feature
+
+- **sca:** remove report_results from checkov, as it is not used at all - [#4161](https://github.com/bridgecrewio/checkov/pull/4161)
+
+### Bug Fix
+
+- **general:** fix f-string log message - [#4170](https://github.com/bridgecrewio/checkov/pull/4170)
+
+### Documentation
+
+- **general:** fix reference link in Contributing docs page - [#4164](https://github.com/bridgecrewio/checkov/pull/4164)
+
+## [2.2.217](https://github.com/bridgecrewio/checkov/compare/2.2.212...2.2.217) - 2022-12-28
+
+### Feature
+
+- **general:** Make code blocks for json check results focused on the relevant part - [#4130](https://github.com/bridgecrewio/checkov/pull/4130)
+- **openapi:** Add v2 openAPI new checks - [#4112](https://github.com/bridgecrewio/checkov/pull/4112)
+- **terraform:** new azure storage checks - [#4021](https://github.com/bridgecrewio/checkov/pull/4021)
+
+### Bug Fix
+
+- **github:** Handle entity configurations of type list - [#4160](https://github.com/bridgecrewio/checkov/pull/4160)
+- **sca:** Fix extra space in output of dependencies - [#4162](https://github.com/bridgecrewio/checkov/pull/4162)
 
 ## [2.2.212](https://github.com/bridgecrewio/checkov/compare/2.2.207...2.2.212) - 2022-12-27
 

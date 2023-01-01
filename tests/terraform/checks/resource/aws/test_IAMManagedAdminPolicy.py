@@ -24,6 +24,7 @@ class TestIAMManagedAdminPolicy(unittest.TestCase):
             "aws_iam_user_policy_attachment.pass4",
             "aws_iam_group_policy_attachment.pass5",
             "aws_iam_role_policy_attachment.pass6",
+            "aws_ssoadmin_managed_policy_attachment.pass7",
         }
 
         failing_resources = {
@@ -32,6 +33,7 @@ class TestIAMManagedAdminPolicy(unittest.TestCase):
             "aws_iam_role_policy_attachment.fail3",
             "aws_iam_user_policy_attachment.fail4",
             "aws_iam_group_policy_attachment.fail5",
+            "aws_ssoadmin_managed_policy_attachment.fail6",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
