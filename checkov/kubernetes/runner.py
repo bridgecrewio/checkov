@@ -242,11 +242,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         if not checks_results:
             return report
 
-        if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kubernetes runner was not set")
-            return report
-
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
