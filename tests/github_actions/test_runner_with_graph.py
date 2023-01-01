@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from checkov.github_actions.runner import Runner
-from checkov.github_actions.utils import get_gha_files_definitions, build_gha_definitions_context
+from checkov.github_actions.utils import build_gha_definitions_context
 from checkov.runner_filter import RunnerFilter
 
 
