@@ -306,12 +306,12 @@ class Runner(BaseRunner[None]):
 
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in response.get("validationStatuses", []):
-            validation_status_by_check_id_and_resource[f'{validation_status_entity.get("violationId")}_'
-                                                       f'{validation_status_entity.get("resourceId")}'] = \
-                validation_status_entity.get('status')
+            key = f'{validation_status_entity.get("violationId")}_{validation_status_entity.get("resourceId")}'
+            validation_status_by_check_id_and_resource[key] = validation_status_entity.get('status')
 
         for secrets_record in report.failed_checks:
+            key = f'{secrets_record.bc_check_id}_{secrets_record.resource}'
             secrets_record.validation_status = \
-                validation_status_by_check_id_and_resource[f'{secrets_record.bc_check_id}_{secrets_record.resource}']
+                validation_status_by_check_id_and_resource.get(key, ValidationStatus.Unknown)
 
         return VerifySecretsResult.SUCCESS
