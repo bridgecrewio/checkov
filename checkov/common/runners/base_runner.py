@@ -101,6 +101,9 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     def set_raw_definitions(self, definitions_raw: dict[str, list[tuple[int, str]]] | None) -> None:
         self.definitions_raw = definitions_raw
 
+    def populate_metadata_dict(self):
+        return None
+
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
         return None
 

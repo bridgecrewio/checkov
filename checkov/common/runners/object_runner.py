@@ -142,14 +142,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 self.graph_manager.save_graph(local_graph)
         else:
             logging.info("Going to use existing graph")
-            if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(self.definitions, dict):
-                # populate gha metadata dict
-                for key, definition in self.definitions.items():
-                    if isinstance(definition, dict):
-                        workflow_name = definition.get('name', '')
-                        triggers = self._get_triggers(definition)
-                        jobs = self._get_jobs(definition)
-                        self.map_file_path_to_gha_metadata_dict[key] = {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
+            self.populate_metadata_dict()
 
         self.pbar.initiate(len(self.definitions))
 
