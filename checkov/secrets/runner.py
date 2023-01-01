@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable
 
+from checkov.common.util.type_forcers import convert_str_to_bool
+
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.secrets_record import SecretsRecord
 from checkov.common.util.http_utils import request_wrapper
@@ -32,7 +34,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus
+from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 
 if TYPE_CHECKING:
@@ -199,7 +201,8 @@ class Runner(BaseRunner[None]):
                     validation_status=ValidationStatus.Unknown.value
                 ))
 
-            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets().values())
+            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(
+                self.secrets_coordinator.get_secrets().values())
             self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
@@ -277,10 +280,11 @@ class Runner(BaseRunner[None]):
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
     @staticmethod
-    def verify_secrets(report: Report, enriched_secrets_s3_path: str) -> None:
-        if not os.getenv("CKV_VALIDATE_SECRETS") or not os.getenv("BC_API_KEY"):
-            logging.debug('Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and pass an api key')
-            return None
+    def verify_secrets(report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
+        if not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)) or not os.getenv("BC_API_KEY"):
+            logging.debug(
+                'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
+            return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         request_body = {
             "reportS3Path": enriched_secrets_s3_path,
@@ -298,14 +302,16 @@ class Runner(BaseRunner[None]):
             logging.error(f'Failed to perform secrets verification', exc_info=True)
 
         if not response:
-            return None
+            return VerifySecretsResult.FAILURE
 
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in response.get("validationStatuses", []):
-            validation_status_by_check_id_and_resource[f'{validation_status_entity.get("bc_check_id")}_' \
-                                                       f'{validation_status_entity.get("resource")}'] = \
+            validation_status_by_check_id_and_resource[f'{validation_status_entity.get("violationId")}_'
+                                                       f'{validation_status_entity.get("resourceId")}'] = \
                 validation_status_entity.get('status')
 
         for secrets_record in report.failed_checks:
             secrets_record.validation_status = \
                 validation_status_by_check_id_and_resource[f'{secrets_record.bc_check_id}_{secrets_record.resource}']
+
+        return VerifySecretsResult.SUCCESS
