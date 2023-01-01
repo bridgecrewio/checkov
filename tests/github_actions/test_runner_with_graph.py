@@ -10,7 +10,7 @@ from checkov.runner_filter import RunnerFilter
 def test_runner_with_existing_graph():
 
     def mock_graph():
-        with open('resources/graph.pkl', 'rb') as inp:
+        with open(str(Path(__file__).parent / 'resources/graph.pkl'), 'rb') as inp:
             graph = pickle.load(inp)
             return graph
 
@@ -19,7 +19,7 @@ def test_runner_with_existing_graph():
     file_dir = [str(file_path)]
     checks = ["CKV2_GHA_1"]
     definitions, definitions_raw = get_gha_files_definitions(root_folder=str(Path(__file__).parent / "gha"),
-                                                                files=[str(Path(__file__).parent / "gha/.github/workflows/failed.yaml")])
+                                                             files=[str(Path(__file__).parent / "gha/.github/workflows/failed.yaml")])
     context = build_gha_definitions_context(definitions=definitions, definitions_raw=definitions_raw)
 
     graph_runner = Runner()
