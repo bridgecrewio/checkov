@@ -148,10 +148,12 @@ class BaseCheckRegistry:
                 skip_info=skip_info,
             )
             return result
-        except Exception:
+        except Exception as e:
             logging.error(f'Failed to run check {check.id} on {scanned_file}:{entity_type}.{entity_name}',
                           exc_info=True)
             logging.info(f'Entity configuration: {entity_configuration}')
+            if os.getenv("TEST_MODE") == "ON":
+                raise e
             return _CheckResult(
                 result=CheckResult.UNKNOWN, suppress_comment="", evaluated_keys=[],
                 results_configuration=entity_configuration, check=check, entity=entity_configuration
