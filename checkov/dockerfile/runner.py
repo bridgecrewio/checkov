@@ -59,7 +59,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
         self.definitions: "dict[str, dict[str, list[_Instruction]]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
-        self.definitions_raw: "dict[str, list[str]]" = {}
+        self.definitions_raw: "dict[str, list[str]]" = {}       # type:ignore[assignment]
         self.root_folder: str | None = None
 
     def should_scan_file(self, filename: str) -> bool:

@@ -25,6 +25,7 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
             "aws_iam_role_policy_attachment",
             "aws_iam_user_policy_attachment",
             "aws_iam_group_policy_attachment",
+            "aws_ssoadmin_managed_policy_attachment",
         )
 
         # Valid CheckCategories are defined in checkov/common/models/enums.py
@@ -44,7 +45,14 @@ class IAMManagedAdminPolicy(BaseResourceCheck):
             "aws_iam_group_policy_attachment",
         ):
             policy_arn = conf.get("policy_arn")
-            if policy_arn and policy_arn[0] == ADMIN_POLICY_ARN:
+            if policy_arn and isinstance(policy_arn, list) and policy_arn[0] == ADMIN_POLICY_ARN:
+                return CheckResult.FAILED
+
+        elif self.entity_type in (
+            "aws_ssoadmin_managed_policy_attachment"
+        ):
+            managed_policy_arn = conf.get("managed_policy_arn")
+            if managed_policy_arn and isinstance(managed_policy_arn, list) and managed_policy_arn[0] == ADMIN_POLICY_ARN:
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

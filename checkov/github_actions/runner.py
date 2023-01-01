@@ -144,3 +144,14 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             images.extend(manager.extract_images_from_workflow())
 
         return images
+
+    def populate_metadata_dict(self) -> None:
+        if isinstance(self.definitions, dict):
+            # populate gha metadata dict
+            for key, definition in self.definitions.items():
+                if isinstance(definition, dict):
+                    workflow_name = definition.get('name', '')
+                    triggers = self._get_triggers(definition)
+                    jobs = self._get_jobs(definition)
+                    self.map_file_path_to_gha_metadata_dict[key] = {"triggers": triggers,
+                                                                    "workflow_name": workflow_name, "jobs": jobs}
