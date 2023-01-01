@@ -34,7 +34,8 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
                 for network_acl in network_acls:
                     if isinstance(network_acl, dict):
                         ip_rules = network_acl.get("ip_rules")
-                        ip_rules = ip_rules[0] if isinstance(ip_rules, list) else ip_rules
+                        # Get first element in ip_rules (as parser wrap it with list).
+                        ip_rules = ip_rules[0] if isinstance(ip_rules, list) and ip_rules else ip_rules
                         if ip_rules:
                             return CheckResult.PASSED
 
