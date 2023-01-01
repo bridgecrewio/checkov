@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import fnmatch
-import os
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
 import re
@@ -187,7 +186,7 @@ class RunnerFilter(object):
         logging.debug(f'Should run check {check_id}: {result}')
         return result
 
-    def should_run_check_for_file(self, check_id: str, file_full_path: str, root_folder: str) -> bool:
+    def should_run_check_for_file(self, check_id: str, file_full_path: str, root_folder: str | None) -> bool:
         """
         Check if skip check_id for a certain file_types, according to given path pattern
         """
@@ -208,7 +207,7 @@ class RunnerFilter(object):
         # Creating a Regex pattern according to User Input
         pattern = splitted_check[1]
         # # This value will be checked VS filename dir
-        full_regex_pattern = fr"^{root_folder}/{pattern}"
+        full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
         try:
             if re.search(full_regex_pattern, file_full_path):
                 return False
