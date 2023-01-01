@@ -94,7 +94,11 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                         # only for platform custom polices with resource_types == all
                         graph_check.resource_types = ['all']
                     for rt in graph_check.resource_types:
-                        check_link = get_check_link(inspect.getfile(graph_check.__class__))
+                        if graph_check.check_path:
+                            base_path = graph_check.check_path
+                        else:
+                            base_path = inspect.getfile(graph_check.__class__)
+                        check_link = get_check_link(base_path)
                         printable_checks_list.append(
                             (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac, check_link))
 
