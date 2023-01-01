@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.217...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.220...HEAD)
+
+## [2.2.220](https://github.com/bridgecrewio/checkov/compare/2.2.217...2.2.220) - 2022-12-29
+
+### Feature
+
+- **sca:** remove report_results from checkov, as it is not used at all - [#4161](https://github.com/bridgecrewio/checkov/pull/4161)
+
+### Bug Fix
+
+- **general:** fix f-string log message - [#4170](https://github.com/bridgecrewio/checkov/pull/4170)
+
+### Documentation
+
+- **general:** fix reference link in Contributing docs page - [#4164](https://github.com/bridgecrewio/checkov/pull/4164)
 
 ## [2.2.217](https://github.com/bridgecrewio/checkov/compare/2.2.212...2.2.217) - 2022-12-28
 

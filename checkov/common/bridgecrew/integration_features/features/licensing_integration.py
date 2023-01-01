@@ -54,7 +54,7 @@ class LicensingIntegration(BaseIntegrationFeature):
         logging.debug(f'Checking if {runner_check_type} is valid for license')
         if self.open_source_only:
             enabled = CodeCategoryMapping[runner_check_type] in open_source_categories  # new secrets are disabled, but the runner is valid
-            logging.debug('Open source mode - the runner is {"en" if enabled else "dis"}abled')
+            logging.debug(f'Open source mode - the runner is {"en" if enabled else "dis"}abled')
         else:
             sub_type = LicensingIntegration.get_subscription_for_runner(runner_check_type)
             enabled = sub_type in self.enabled_modules
