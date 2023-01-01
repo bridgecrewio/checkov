@@ -118,7 +118,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 if CHECKOV_CREATE_GRAPH and self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
-        if self.context is None or self.definitions is None:
+        if not self.context or not self.definitions:
             if files:
                 self._load_files(files)
 
@@ -145,10 +145,11 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
             if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(self.definitions, dict):
                 # populate gha metadata dict
                 for key, definition in self.definitions.items():
-                    workflow_name = definition.get('name', '')
-                    triggers = self._get_triggers(definition)
-                    jobs = self._get_jobs(definition)
-                    self.map_file_path_to_gha_metadata_dict[key] = {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
+                    if isinstance(definition, dict):
+                        workflow_name = definition.get('name', '')
+                        triggers = self._get_triggers(definition)
+                        jobs = self._get_jobs(definition)
+                        self.map_file_path_to_gha_metadata_dict[key] = {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
 
         self.pbar.initiate(len(self.definitions))
 
