@@ -209,8 +209,15 @@ class RunnerFilter(object):
         pattern = splitted_check[1]
         # # This value will be checked VS filename dir
         full_regex_pattern = fr"^{root_folder}/{pattern}"
-        if re.search(full_regex_pattern, file_full_path):
-            return False
+        try:
+            if re.search(full_regex_pattern, file_full_path):
+                return False
+        except Exception as exc:
+            logging.error(
+                "Invalid regex pattern has been supplied",
+                extra={"regex_pattern": pattern, "exc": str(exc)}
+            )
+
         return True
 
     @staticmethod
