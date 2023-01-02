@@ -245,8 +245,14 @@ class Runner(BaseRunner[None]):
             runner_filter: RunnerFilter,
             root_folder: str | None
     ) -> _CheckResult | None:
-        if (not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity, report_type=CheckType.SECRETS) and check_id in CHECK_ID_TO_SECRET_TYPE.keys()) or \
-                not runner_filter.should_run_check_for_file(check_id=check_id, file_full_path=secret.filename, root_folder=root_folder):
+        if not runner_filter.should_run_check(
+                check_id=check_id,
+                bc_check_id=bc_check_id,
+                severity=severity,
+                report_type=CheckType.SECRETS,
+                file_full_path=secret.filename,
+                root_folder=root_folder
+        ) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
                 "result": CheckResult.SKIPPED,
                 "suppress_comment": f"Secret scan {check_id} is skipped"

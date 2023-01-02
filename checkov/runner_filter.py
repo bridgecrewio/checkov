@@ -127,12 +127,14 @@ class RunnerFilter(object):
             self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
-        self,
-        check: BaseCheck | BaseGraphCheck | None = None,
-        check_id: str | None = None,
-        bc_check_id: str | None = None,
-        severity: Severity | None = None,
-        report_type: str | None = None
+            self,
+            check: BaseCheck | BaseGraphCheck | None = None,
+            check_id: str | None = None,
+            bc_check_id: str | None = None,
+            severity: Severity | None = None,
+            report_type: str | None = None,
+            file_full_path: str | None = None,
+            root_folder: str | None = None
     ) -> bool:
         if check:
             check_id = check.id
@@ -180,12 +182,14 @@ class RunnerFilter(object):
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
+        regex_match = self._match_regex_pattern(check_id, file_full_path, root_folder)
 
         should_skip_check = (
-            skip_severity or
-            explicit_skip or
-            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-            check_id in self.suppressed_policies
+                skip_severity or
+                explicit_skip or
+                regex_match or
+                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
+                check_id in self.suppressed_policies
         )
 
         if should_skip_check:
@@ -198,30 +202,28 @@ class RunnerFilter(object):
         logging.debug(f'Should run check {check_id}: {result}')
         return result
 
-    def should_run_check_for_file(self, check_id: str, file_full_path: str, root_folder: str | None) -> bool:
+    def _match_regex_pattern(self, check_id: str, file_full_path: str | None, root_folder: str | None) -> bool:
         """
         Check if skip check_id for a certain file_types, according to given path pattern
         """
-        # Check that we have skip check with a path pattern
-        if not self.skip_checks:
-            return True
-
+        if not file_full_path:
+            return False
         regex_patterns = self.skip_checks_regex_patterns.get(check_id, [])
         if not regex_patterns:
-            return True
+            return False
 
         for pattern in regex_patterns:
             full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
             try:
                 if re.search(full_regex_pattern, file_full_path):
-                    return False
+                    return True
             except Exception as exc:
                 logging.error(
                     "Invalid regex pattern has been supplied",
                     extra={"regex_pattern": pattern, "exc": str(exc)}
                 )
 
-        return True
+        return False
 
     @staticmethod
     def check_matches(check_id: str,
@@ -248,7 +250,7 @@ class RunnerFilter(object):
         if not self.filtered_policy_ids:
             return True
         return check_id in self.filtered_policy_ids
-    
+
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
         for key, value in self.__dict__.items():
