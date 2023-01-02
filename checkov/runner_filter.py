@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import fnmatch
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
 import re
@@ -59,6 +60,7 @@ class RunnerFilter(object):
         self.skip_check_threshold = None
         self.checks = []
         self.skip_checks = []
+        self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
 
         # split out check/skip thresholds so we can access them easily later
@@ -69,7 +71,17 @@ class RunnerFilter(object):
                     self.check_threshold = Severities[val]
             else:
                 self.checks.append(val)
+        # Get regex patterns to split checks and remove it from skip checks:
+        updated_skip_checks = set(skip_checks)
+        for val in (skip_checks or []):
+            splitted_check = val.split(":")
+            # In case it's not expected pattern
+            if len(splitted_check) != 2:
+                continue
+            self.skip_checks_regex_patterns[splitted_check[0]].append(splitted_check[1])
+            updated_skip_checks -= {val}
 
+        skip_checks = list(updated_skip_checks)
         for val in (skip_checks or []):
             if val.upper() in Severities:
                 val = val.upper()
@@ -194,27 +206,20 @@ class RunnerFilter(object):
         if not self.skip_checks:
             return True
 
-        skip_check_with_rule = next(iter([skip_check for skip_check in self.skip_checks if check_id in skip_check]), None)
-        if not skip_check_with_rule:
+        regex_patterns = self.skip_checks_regex_patterns.get(check_id, [])
+        if not regex_patterns:
             return True
 
-        # skip_check_with_rule pattern should be as following (All upper case params is configured by user:
-        # "{CHECK_ID}:{DIRECTORY_RELATIVE_TO_ROOT}/{FILE_NAME_PATTERN}.{FILE_TYPE}
-        splitted_check = skip_check_with_rule.split(":")
-        # In case it's not expected pattern
-        if len(splitted_check) != 2:
-            return True
-        # Creating a Regex pattern according to User Input
-        pattern = splitted_check[1]
-        full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
-        try:
-            if re.search(full_regex_pattern, file_full_path):
-                return False
-        except Exception as exc:
-            logging.error(
-                "Invalid regex pattern has been supplied",
-                extra={"regex_pattern": pattern, "exc": str(exc)}
-            )
+        for pattern in regex_patterns:
+            full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
+            try:
+                if re.search(full_regex_pattern, file_full_path):
+                    return False
+            except Exception as exc:
+                logging.error(
+                    "Invalid regex pattern has been supplied",
+                    extra={"regex_pattern": pattern, "exc": str(exc)}
+                )
 
         return True
 
