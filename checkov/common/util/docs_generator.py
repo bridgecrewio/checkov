@@ -36,7 +36,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
-CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/tree/master/checkov'
+CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/blob/main/checkov'
 
 
 def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
@@ -94,7 +94,11 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                         # only for platform custom polices with resource_types == all
                         graph_check.resource_types = ['all']
                     for rt in graph_check.resource_types:
-                        check_link = get_check_link(inspect.getfile(graph_check.__class__))
+                        if graph_check.check_path:
+                            base_path = graph_check.check_path
+                        else:
+                            base_path = inspect.getfile(graph_check.__class__)
+                        check_link = get_check_link(base_path)
                         printable_checks_list.append(
                             (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac, check_link))
 
