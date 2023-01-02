@@ -185,11 +185,11 @@ class RunnerFilter(object):
         regex_match = self._match_regex_pattern(check_id, file_full_path, root_folder)
 
         should_skip_check = (
-                skip_severity or
-                explicit_skip or
-                regex_match or
-                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-                check_id in self.suppressed_policies
+            skip_severity or
+            explicit_skip or
+            regex_match or
+            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
+            check_id in self.suppressed_policies
         )
 
         if should_skip_check:
