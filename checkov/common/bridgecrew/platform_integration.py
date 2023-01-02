@@ -120,10 +120,10 @@ class BcPlatformIntegration:
             self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
         else:
             self.api_url = self.bc_api_url
-        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.guidelines_api_url = f"{self.api_url}/api/v2/guidelines"
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
-        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
+        self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):

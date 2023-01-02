@@ -19,7 +19,7 @@ def report_contributor_metrics(repository: str, source: str,
     if request_body:
         while number_of_attempts <= 3:
             response = request_wrapper(
-                "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
+                "POST", f"{bc_integration.api_url}/api/v2/contributors/report",
                 headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
             )
             if response.status_code < 300:
