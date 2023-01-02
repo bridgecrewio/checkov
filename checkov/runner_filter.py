@@ -209,6 +209,9 @@ class RunnerFilter(object):
         if not file_full_path:
             return False
         regex_patterns = self.skip_checks_regex_patterns.get(check_id, [])
+        # In case skip is generic, for example, CKV_AZURE_*.
+        generic_check_regex_patterns = self.skip_checks_regex_patterns.get(f"{check_id[:-1]}*", [])
+        regex_patterns.extend(generic_check_regex_patterns)
         if not regex_patterns:
             return False
 
