@@ -47,7 +47,7 @@ def test_verify_secrets_failure(mock_bc_integration: BcPlatformIntegration, stat
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/verify",
+        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
         json={},
         status=status_code
     )
@@ -65,43 +65,38 @@ def test_verify_secrets(mock_bc_integration: BcPlatformIntegration, secrets_repo
                                      "VIOLATION_2": "Valid",
                                      "VIOLATION_3": "Invalid",
                                      "VIOLATION_4": "Unknown"}
-    response_json = {
-        "validationStatuses": [
+    verified_report = [
             {
                 "violationId": "VIOLATION_1",
-                "resourceId": "RESOURCE_1",
-                "sourceId": "mock",
+                "resourceId": "mock:RESOURCE_1",
                 "status": "Privileged"
             },
             {
                 "violationId": "VIOLATION_2",
-                "resourceId": "RESOURCE_2",
-                "sourceId": "mock",
+                "resourceId": "mock:RESOURCE_2",
                 "status": "Valid"
             },
             {
                 "violationId": "VIOLATION_3",
-                "resourceId": "RESOURCE_3",
-                "sourceId": "mock",
+                "resourceId": "mock:RESOURCE_3",
                 "status": "Invalid"
             },
             {
                 "violationId": "VIOLATION_4",
-                "resourceId": "RESOURCE_4",
-                "sourceId": "mock",
+                "resourceId": "mock:RESOURCE_4",
                 "status": "Unknown"
             }
         ]
-    }
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/verify",
-        json=response_json,
+        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        json={'verificationReportSignedUrl': 'mock'},
         status=200
     )
-
-    result = Runner().verify_secrets(secrets_report, "path/to/enriched/secrets")
+    runner = Runner()
+    runner.get_json_verification_report = lambda x: verified_report
+    result = runner.verify_secrets(secrets_report, "path/to/enriched/secrets")
 
     assert result == VerifySecretsResult.SUCCESS
     for check in secrets_report.failed_checks:

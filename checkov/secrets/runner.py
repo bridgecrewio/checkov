@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable
 
+import requests
+
 from checkov.common.util.type_forcers import convert_str_to_bool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -24,7 +26,6 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -201,8 +202,7 @@ class Runner(BaseRunner[None]):
                     validation_status=ValidationStatus.Unknown.value
                 ))
 
-            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(
-                list(self.secrets_coordinator.get_secrets().values()))
+            enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
@@ -279,21 +279,19 @@ class Runner(BaseRunner[None]):
             enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
-    @staticmethod
-    def verify_secrets(report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
+    def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
         if not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)) or not os.getenv("BC_API_KEY"):
             logging.debug(
                 'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         request_body = {
-            "reportS3Path": enriched_secrets_s3_path,
-            "sourceId": os.getenv('CKV_REPO_ID', "")
+            "reportS3Path": enriched_secrets_s3_path
         }
         response = None
         try:
             response = request_wrapper(
-                "POST", f"{bc_integration.api_url}/api/v1/secrets/verify",
+                "POST", f"{bc_integration.api_url}/api/v1/secrets/reportVerification",
                 headers=bc_integration.get_default_headers("POST"),
                 json=request_body,
                 should_call_raise_for_status=True
@@ -304,9 +302,14 @@ class Runner(BaseRunner[None]):
         if not response:
             return VerifySecretsResult.FAILURE
 
-        response = response.json()
+        verification_report_presigned_url = response.json()['verificationReportSignedUrl']
+        verification_report = self.get_json_verification_report(verification_report_presigned_url)
+
+        if not verification_report:
+            return VerifySecretsResult.FAILURE
+
         validation_status_by_check_id_and_resource = {}
-        for validation_status_entity in response.get("validationStatuses", []):
+        for validation_status_entity in verification_report:
             key = f'{validation_status_entity.get("violationId")}_{validation_status_entity.get("resourceId")}'
             validation_status_by_check_id_and_resource[key] = validation_status_entity.get('status')
 
@@ -316,3 +319,13 @@ class Runner(BaseRunner[None]):
                 validation_status_by_check_id_and_resource.get(key, ValidationStatus.Unknown.value)
 
         return VerifySecretsResult.SUCCESS
+
+    @staticmethod
+    def get_json_verification_report(presigned_url: str) -> list[dict[str, str]] | None:
+        response = None
+        try:
+            response = requests.get(presigned_url)
+        except Exception:
+            logging.error('Unable to download verification report')
+
+        return response.json() if response else None

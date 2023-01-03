@@ -40,27 +40,6 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
         raise
 
 
-def _get_json_object(
-    s3_client: BaseClient, bucket: str, object_path: str, throw_json_error: bool = True
-) -> dict[str, Any] | None:
-    try:
-        result_body = s3_client.get_object(Bucket=bucket, Key=object_path)['Body'].read().decode('utf-8')
-        return cast("dict[str, Any]", json.loads(result_body))
-    except ClientError:
-        logging.warning("failed to download json object", exc_info=True)
-    except JSONDecodeError as e:
-        if throw_json_error:
-            logging.error("Unable to decode downloaded JSON", exc_info=True)
-            raise e
-        else:
-            logging.warning("Failed to get json object", exc_info=True)
-    except Exception as e:
-        logging.error("Failed to get json object", exc_info=True)
-        raise e
-
-    return None
-
-
 def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = defaultdict(dict)
     for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks):
