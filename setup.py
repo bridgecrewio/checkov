@@ -66,7 +66,7 @@ setup(
         "aiohttp",
         "aiodns",
         "aiomultiprocess",
-        "jsonschema<4.0.0,>=3.0.2",
+        "jsonschema>=4.6.0",
         "prettytable>=3.0.0",
         "pycep-parser==0.3.9",
         "charset-normalizer",
