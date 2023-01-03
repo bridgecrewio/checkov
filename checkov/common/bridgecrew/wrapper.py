@@ -34,7 +34,7 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into {object_path} in S3 bucket {bucket}", exc_info=True)
+        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=True)
         raise
 
 
