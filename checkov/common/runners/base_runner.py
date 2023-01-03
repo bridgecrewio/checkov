@@ -6,7 +6,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
@@ -113,7 +113,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-
+        filtered_result: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         if not self.graph_manager or not self.graph_registry:
             # should not happen
             logging.warning("Graph components were not initialized")
@@ -124,7 +124,6 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         # Filtering the checks now
-        filtered_result: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         for check, results in checks_results.items():
             filtered_result[check] = [result for result in results if runner_filter.should_run_check(
                 check, check_id=check.id, file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH)])]
