@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.229...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.230...HEAD)
+
+## [2.2.230](https://github.com/bridgecrewio/checkov/compare/2.2.229...2.2.230) - 2023-01-03
+
+### Feature
+
+- **general:** Skip check in json file - [#4172](https://github.com/bridgecrewio/checkov/pull/4172)
 
 ## [2.2.229](https://github.com/bridgecrewio/checkov/compare/2.2.220...2.2.229) - 2023-01-01
 
