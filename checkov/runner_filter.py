@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import logging
 import fnmatch
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
+import re
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
@@ -58,6 +60,7 @@ class RunnerFilter(object):
         self.skip_check_threshold = None
         self.checks = []
         self.skip_checks = []
+        self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
 
         # split out check/skip thresholds so we can access them easily later
@@ -68,7 +71,17 @@ class RunnerFilter(object):
                     self.check_threshold = Severities[val]
             else:
                 self.checks.append(val)
+        # Get regex patterns to split checks and remove it from skip checks:
+        updated_skip_checks = set(skip_checks)
+        for val in (skip_checks or []):
+            splitted_check = val.split(":")
+            # In case it's not expected pattern
+            if len(splitted_check) != 2:
+                continue
+            self.skip_checks_regex_patterns[splitted_check[0]].append(splitted_check[1])
+            updated_skip_checks -= {val}
 
+        skip_checks = list(updated_skip_checks)
         for val in (skip_checks or []):
             if val.upper() in Severities:
                 val = val.upper()
@@ -114,12 +127,14 @@ class RunnerFilter(object):
             self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
-        self,
-        check: BaseCheck | BaseGraphCheck | None = None,
-        check_id: str | None = None,
-        bc_check_id: str | None = None,
-        severity: Severity | None = None,
-        report_type: str | None = None
+            self,
+            check: BaseCheck | BaseGraphCheck | None = None,
+            check_id: str | None = None,
+            bc_check_id: str | None = None,
+            severity: Severity | None = None,
+            report_type: str | None = None,
+            file_origin_paths: List[str] | None = None,
+            root_folder: str | None = None
     ) -> bool:
         if check:
             check_id = check.id
@@ -167,10 +182,11 @@ class RunnerFilter(object):
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
-
+        regex_match = self._match_regex_pattern(check_id, file_origin_paths, root_folder)
         should_skip_check = (
             skip_severity or
             explicit_skip or
+            regex_match or
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
             check_id in self.suppressed_policies
         )
@@ -184,6 +200,35 @@ class RunnerFilter(object):
 
         logging.debug(f'Should run check {check_id}: {result}')
         return result
+
+    def _match_regex_pattern(self, check_id: str, file_origin_paths: List[str] | None, root_folder: str | None) -> bool:
+        """
+        Check if skip check_id for a certain file_types, according to given path pattern
+        """
+        if not file_origin_paths:
+            return False
+        regex_patterns = self.skip_checks_regex_patterns.get(check_id, [])
+        # In case skip is generic, for example, CKV_AZURE_*.
+        generic_check_id = f"{'_'.join(i for i in check_id.split('_')[:-1])}_*"
+        generic_check_regex_patterns = self.skip_checks_regex_patterns.get(generic_check_id, [])
+        regex_patterns.extend(generic_check_regex_patterns)
+        if not regex_patterns:
+            return False
+
+        for pattern in regex_patterns:
+            if not pattern:
+                continue
+            full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
+            try:
+                if any(re.search(full_regex_pattern, path) for path in file_origin_paths):
+                    return True
+            except Exception as exc:
+                logging.error(
+                    "Invalid regex pattern has been supplied",
+                    extra={"regex_pattern": pattern, "exc": str(exc)}
+                )
+
+        return False
 
     @staticmethod
     def check_matches(check_id: str,
@@ -210,7 +255,7 @@ class RunnerFilter(object):
         if not self.filtered_policy_ids:
             return True
         return check_id in self.filtered_policy_ids
-    
+
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
         for key, value in self.__dict__.items():
