@@ -2,10 +2,10 @@ from enum import Enum
 
 
 class ValidationStatus(Enum):
-    Privileged = 'Privileged'
-    Valid = 'Valid'
-    Invalid = 'Invalid'
-    Unknown = 'Unknown'
+    PRIVILEGED = 'Privileged'
+    VALID = 'Valid'
+    INVALID = 'Invalid'
+    UNKNOWN = 'Unknown'
 
 
 class VerifySecretsResult(Enum):

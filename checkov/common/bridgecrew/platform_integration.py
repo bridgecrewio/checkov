@@ -40,6 +40,7 @@ from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.secrets.coordinator import EnrichedSecret
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -411,9 +412,9 @@ class BcPlatformIntegration:
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
-    def persist_enriched_secrets(self, enriched_secrets: list[dict[str, str]]) -> str | None:
-        if not enriched_secrets or not self.repo_path:
-            logging.debug('enriched secrets or repo path are empty, aborting')
+    def persist_enriched_secrets(self, enriched_secrets: list[EnrichedSecret]) -> str | None:
+        if not enriched_secrets or not self.repo_path or not self.bucket:
+            logging.debug('One of enriched secrets, repo path, or bucket are empty, aborting')
             return None
 
         repo_path_without_src = os.path.dirname(self.repo_path)

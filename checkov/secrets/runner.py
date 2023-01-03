@@ -199,10 +199,13 @@ class Runner(BaseRunner[None]):
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
-                    validation_status=ValidationStatus.Unknown.value
+                    validation_status=ValidationStatus.UNKNOWN.value
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
+            if not enriched_secrets_s3_path:
+                return report
+
             self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
@@ -297,7 +300,7 @@ class Runner(BaseRunner[None]):
                 should_call_raise_for_status=True
             )
         except Exception:
-            logging.error(f'Failed to perform secrets verification', exc_info=True)
+            logging.error('Failed to perform secrets verification', exc_info=True)
 
         if not response:
             return VerifySecretsResult.FAILURE
@@ -316,7 +319,7 @@ class Runner(BaseRunner[None]):
         for secrets_record in report.failed_checks:
             key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
             secrets_record.validation_status = \
-                validation_status_by_check_id_and_resource.get(key, ValidationStatus.Unknown.value)
+                validation_status_by_check_id_and_resource.get(key, ValidationStatus.UNKNOWN.value)
 
         return VerifySecretsResult.SUCCESS
 
