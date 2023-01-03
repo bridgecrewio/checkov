@@ -317,9 +317,10 @@ class Runner(BaseRunner[None]):
             validation_status_by_check_id_and_resource[key] = validation_status_entity.get('status')
 
         for secrets_record in report.failed_checks:
-            key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
-            secrets_record.validation_status = \
-                validation_status_by_check_id_and_resource.get(key, ValidationStatus.UNKNOWN.value)
+            if hasattr(secrets_record, "validation_status"):
+                key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
+                secrets_record.validation_status = \
+                    validation_status_by_check_id_and_resource.get(key, ValidationStatus.UNKNOWN.value)
 
         return VerifySecretsResult.SUCCESS
 
