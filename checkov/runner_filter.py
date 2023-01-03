@@ -133,7 +133,7 @@ class RunnerFilter(object):
             bc_check_id: str | None = None,
             severity: Severity | None = None,
             report_type: str | None = None,
-            file_full_path: str | None = None,
+            file_origin_paths: List[str] | None = None,
             root_folder: str | None = None
     ) -> bool:
         if check:
@@ -182,8 +182,7 @@ class RunnerFilter(object):
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
-        regex_match = self._match_regex_pattern(check_id, file_full_path, root_folder)
-
+        regex_match = self._match_regex_pattern(check_id, file_origin_paths, root_folder)
         should_skip_check = (
             skip_severity or
             explicit_skip or
@@ -202,15 +201,16 @@ class RunnerFilter(object):
         logging.debug(f'Should run check {check_id}: {result}')
         return result
 
-    def _match_regex_pattern(self, check_id: str, file_full_path: str | None, root_folder: str | None) -> bool:
+    def _match_regex_pattern(self, check_id: str, file_origin_paths: List[str] | None, root_folder: str | None) -> bool:
         """
         Check if skip check_id for a certain file_types, according to given path pattern
         """
-        if not file_full_path:
+        if not file_origin_paths:
             return False
         regex_patterns = self.skip_checks_regex_patterns.get(check_id, [])
         # In case skip is generic, for example, CKV_AZURE_*.
-        generic_check_regex_patterns = self.skip_checks_regex_patterns.get(f"{check_id[:-1]}*", [])
+        generic_check_id = f"{'_'.join(i for i in check_id.split('_')[:-1])}_*"
+        generic_check_regex_patterns = self.skip_checks_regex_patterns.get(generic_check_id, [])
         regex_patterns.extend(generic_check_regex_patterns)
         if not regex_patterns:
             return False
@@ -218,7 +218,7 @@ class RunnerFilter(object):
         for pattern in regex_patterns:
             full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
             try:
-                if re.search(full_regex_pattern, file_full_path):
+                if any(re.search(full_regex_pattern, path) for path in file_origin_paths):
                     return True
             except Exception as exc:
                 logging.error(

@@ -1,12 +1,11 @@
 import os
 import unittest
 
-from checkov.arm.checks.resource.AKSApiServerAuthorizedIpRanges import check
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestAKSApiServerAuthorizedIpRanges(unittest.TestCase):
+class TestSkipJsonRegexPattern(unittest.TestCase):
 
     def test_skip_all_checks(self):
         runner = Runner()
@@ -97,6 +96,7 @@ class TestAKSApiServerAuthorizedIpRanges(unittest.TestCase):
         # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

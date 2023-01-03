@@ -28,7 +28,18 @@ class BaseRegistry:
     ) -> dict[BaseGraphCheck, list[_CheckResult]]:
 
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
+        graph_sources_path = list(
+            set([graph_connector.nodes.get(node).get("file_path_")
+                 for node in graph_connector.nodes if graph_connector.nodes.get(node) and \
+                 graph_connector.nodes.get(node).get("file_path_")])
+        )
+        checks_to_run = [
+            c for c in self.checks if runner_filter.should_run_check(
+                c,
+                report_type=report_type,
+                file_origin_paths=graph_sources_path
+            )
+        ]
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(

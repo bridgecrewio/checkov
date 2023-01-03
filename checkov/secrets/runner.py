@@ -250,7 +250,7 @@ class Runner(BaseRunner[None]):
                 bc_check_id=bc_check_id,
                 severity=severity,
                 report_type=CheckType.SECRETS,
-                file_full_path=secret.filename,
+                file_origin_paths=[secret.filename],
                 root_folder=root_folder
         ) and check_id in CHECK_ID_TO_SECRET_TYPE.keys():
             return {
