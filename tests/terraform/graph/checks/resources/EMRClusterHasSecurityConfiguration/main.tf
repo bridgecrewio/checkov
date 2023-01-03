@@ -4,7 +4,7 @@ resource "aws_emr_cluster" "pass" {
   # EMR version must be 5.23.0 or later
   release_label = "emr-5.24.1"
 
-  security_configuration = "securityGroupId"
+  security_configuration = "example"
 
   # Termination protection is automatically enabled for multiple masters
   # To destroy the cluster, this must be configured to false and applied first
