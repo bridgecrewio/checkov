@@ -6,7 +6,7 @@ resource "azurerm_container_registry" "pass" {
   sku                    = "Premium"
   anonymous_pull_enabled = false
   trust_policy {
-    enabled= true
+    enabled = true
   }
 }
 
@@ -24,6 +24,6 @@ resource "azurerm_container_registry" "fail2" {
   location            = azurerm_resource_group.rg.location
   sku                 = "Standard"
   trust_policy {
-    enabled= false
+    enabled = false
   }
 }

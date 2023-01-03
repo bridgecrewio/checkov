@@ -213,7 +213,7 @@
       },
       "kind": "Storage",
       "properties": {
-        "networkAcls": "defaultAction": "Deny"
+        "networkAcls": "defaultAction"
       }
     },
     {

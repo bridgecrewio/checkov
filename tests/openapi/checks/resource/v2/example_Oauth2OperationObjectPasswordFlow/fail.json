@@ -1,0 +1,38 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "test",
+    "version": "1.0.0"
+  },
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "listVersionsv2",
+        "summary": "List API versions",
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        },
+        "security": [
+          {
+            "some_oauth2": [
+              "write",
+              "read"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "some_oauth2": {
+      "type": "oauth2",
+      "flow": "password",
+      "tokenUrl": "https://api.my.company.com/oauth/token"
+    }
+  }
+}

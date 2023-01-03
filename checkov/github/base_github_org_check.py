@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from typing import Any
-from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.json_utils import get_jsonpath_from_evaluated_key
 from checkov.github.base_github_configuration_check import BaseGithubCheck
 from checkov.github.schemas.organization import schema as org_schema
 from checkov.json_doc.enums import BlockType
@@ -26,8 +26,8 @@ class BaseOrganizationCheck(BaseGithubCheck):
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'org_metadata' in ckv_metadata.get('file_name', ''):
             if org_schema.validate(conf):
-                evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
-                jsonpath_expression = parse(f"$..{evaluated_key}")
+                evaluated_key = self.get_evaluated_keys()[0]
+                jsonpath_expression = get_jsonpath_from_evaluated_key(evaluated_key)
                 matches = jsonpath_expression.find(conf)
                 if matches:
                     if matches[0].value in self.get_allowed_values():
