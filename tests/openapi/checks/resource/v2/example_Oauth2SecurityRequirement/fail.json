@@ -7,8 +7,8 @@
   "security": [
     {
       "some_auth": [
-        "write: some",
-        "read: some"
+        "write:api",
+        "read:api"
       ]
     }
   ],

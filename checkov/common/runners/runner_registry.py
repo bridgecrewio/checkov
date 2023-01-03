@@ -26,6 +26,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report, merge_reports
@@ -184,6 +185,10 @@ class RunnerRegistry:
         except EnvironmentError:
             logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
                           exc_info=True)
+
+    @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
 
     @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
@@ -554,6 +559,7 @@ class RunnerRegistry:
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,

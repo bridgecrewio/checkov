@@ -98,6 +98,12 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.context = context
         self.breadcrumbs = breadcrumbs
 
+    def set_raw_definitions(self, definitions_raw: dict[str, list[tuple[int, str]]] | None) -> None:
+        self.definitions_raw = definitions_raw
+
+    def populate_metadata_dict(self) -> None:
+        return None
+
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
         return None
 
@@ -156,10 +162,17 @@ def filter_ignored_paths(
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
     #  paths specified via the CLI argument will presumably use \\
     if excluded_paths:
-        compiled = [re.compile(p.replace(".terraform", r"\.terraform")) for p in excluded_paths]
+        compiled = []
+        for p in excluded_paths:
+            try:
+                compiled.append(re.compile(p.replace(".terraform", r"\.terraform")))
+            except re.error:
+                # do not add compiled paths that aren't regexes
+                continue
         for entry in list(names):
             path = entry.name if isinstance(entry, os.DirEntry) else entry
-            if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled):
+            full_path = os.path.join(root_dir, path)
+            if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
 
 

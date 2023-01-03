@@ -49,7 +49,7 @@ class Registry(BaseRegistry):
                             self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
                             continue
                         check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json)
+                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{dir}/{file}'
                         )
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
