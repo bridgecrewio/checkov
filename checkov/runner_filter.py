@@ -216,6 +216,8 @@ class RunnerFilter(object):
             return False
 
         for pattern in regex_patterns:
+            if not pattern:
+                continue
             full_regex_pattern = fr"^{root_folder}/{pattern}" if root_folder else pattern
             try:
                 if any(re.search(full_regex_pattern, path) for path in file_origin_paths):
