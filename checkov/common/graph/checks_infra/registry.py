@@ -30,7 +30,7 @@ class BaseRegistry:
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         graph_sources_path = list(
             set([graph_connector.nodes.get(node).get("file_path_")
-                 for node in graph_connector.nodes if graph_connector.nodes.get(node) and \
+                 for node in graph_connector.nodes if graph_connector.nodes.get(node) and
                  graph_connector.nodes.get(node).get("file_path_")])
         )
         checks_to_run = [
