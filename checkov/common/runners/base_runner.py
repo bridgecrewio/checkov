@@ -125,8 +125,15 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             checks_results = {**checks_results, **registry_results}
         # Filtering the checks now
         for check, results in checks_results.items():
-            filtered_result[check] = [result for result in results if runner_filter.should_run_check(
-                check, check_id=check.id, file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH)])]
+            for result in results:
+                if not filtered_result.get(check):
+                    filtered_result[check] = []
+                if runner_filter.should_run_check(
+                        check,
+                        check_id=check.id,
+                        file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH)]
+                ):
+                    filtered_result[check].append(result)
 
         return filtered_result
 
