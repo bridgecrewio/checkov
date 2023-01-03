@@ -5,7 +5,6 @@ import linecache
 import logging
 import os
 import re
-import time
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable
 
@@ -284,7 +283,7 @@ class Runner(BaseRunner[None]):
             enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
-    @timeit  # type: ignore
+    @timeit
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
         if not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)) or not os.getenv("BC_API_KEY"):
             logging.debug(
