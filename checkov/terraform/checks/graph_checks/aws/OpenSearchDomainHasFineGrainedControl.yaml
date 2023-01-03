@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_52"
-  name: "Ensure AWS ElasticSearch Fine-grained access control is enabled"
+  name: "Ensure AWS ElasticSearch/OpenSearch Fine-grained access control is enabled"
   category: "IAM"
 definition:
   and:
