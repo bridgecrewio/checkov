@@ -299,6 +299,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3KMSEncryptedByDefault(self):
         self.go("S3KMSEncryptedByDefault")
 
+    def test_GCPNetworkDoesNotUseDefaultFirewall(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewall")
+
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
