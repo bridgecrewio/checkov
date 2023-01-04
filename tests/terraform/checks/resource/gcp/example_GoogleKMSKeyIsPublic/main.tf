@@ -63,3 +63,34 @@ resource "google_kms_crypto_key_iam_policy" "pass2" {
 }
 HERE
 }
+
+
+resource "google_kms_crypto_key_iam_binding" "pass" {
+  crypto_key_id = google_kms_crypto_key.key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+
+  members = [
+    "user:jane@example.com",
+  ]
+}
+
+resource "google_kms_crypto_key_iam_binding" "fail" {
+  crypto_key_id = google_kms_crypto_key.key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+
+  members = [
+    "allUsers",
+  ]
+}
+
+resource "google_kms_crypto_key_iam_member" "pass" {
+  crypto_key_id = google_kms_crypto_key.key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+  member        = "user:jane@example.com"
+}
+
+resource "google_kms_crypto_key_iam_member" "fail" {
+  crypto_key_id = google_kms_crypto_key.key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypter"
+  member        = "allUsers"
+}

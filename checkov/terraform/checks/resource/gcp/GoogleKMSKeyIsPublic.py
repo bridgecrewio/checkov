@@ -12,7 +12,8 @@ class GoogleKMSKeyIsPublic(BaseResourceCheck):
         """
         name = "KMS policy should not define public access"
         id = "CKV_GCP_112"
-        supported_resources = ["google_kms_crypto_key_iam_policy"]
+        supported_resources = ["google_kms_crypto_key_iam_policy", "google_kms_crypto_key_iam_binding",
+                               'google_kms_crypto_key_iam_member']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -28,6 +29,17 @@ class GoogleKMSKeyIsPublic(BaseResourceCheck):
                         for member in members:
                             if member in fails:
                                 return CheckResult.FAILED
+            return CheckResult.PASSED
+        if conf.get("members") and isinstance(conf.get("members"), list):
+            members = conf.get("members")[0]
+            for member in members:
+                if member in fails:
+                    return CheckResult.FAILED
+            return CheckResult.PASSED
+        if conf.get("member") and isinstance(conf.get("member"), list):
+            member = conf.get("member")[0]
+            if member in fails:
+                return CheckResult.FAILED
             return CheckResult.PASSED
         return CheckResult.UNKNOWN
 

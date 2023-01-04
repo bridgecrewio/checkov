@@ -19,10 +19,14 @@ class TestGoogleKMSKeyIsPublic(unittest.TestCase):
         passing_resources = {
             'google_kms_crypto_key_iam_policy.pass',
             'google_kms_crypto_key_iam_policy.pass2',
+            'google_kms_crypto_key_iam_binding.pass',
+            'google_kms_crypto_key_iam_member.pass'
         }
         failing_resources = {
             'google_kms_crypto_key_iam_policy.fail',
             'google_kms_crypto_key_iam_policy.fail2',
+            'google_kms_crypto_key_iam_binding.fail',
+            'google_kms_crypto_key_iam_member.fail'
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
