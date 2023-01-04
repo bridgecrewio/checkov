@@ -307,7 +307,8 @@ class Runner(BaseRunner[None]):
                 "POST", f"{bc_integration.api_url}/api/v1/secrets/reportVerification",
                 headers=bc_integration.get_default_headers("POST"),
                 json=request_body,
-                should_call_raise_for_status=True
+                should_call_raise_for_status=True,
+                log_json_body=False
             )
         except Exception:
             logging.error('Failed to perform secrets verification', exc_info=True)
