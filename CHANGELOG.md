@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.230...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.234...HEAD)
+
+## [2.2.234](https://github.com/bridgecrewio/checkov/compare/2.2.230...2.2.234) - 2023-01-04
+
+### Feature
+
+- **sca:** enable CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 env var - [#4192](https://github.com/bridgecrewio/checkov/pull/4192)
+- **secrets:** Call secrets verify API - [#4181](https://github.com/bridgecrewio/checkov/pull/4181)
+
+### Bug Fix
+
+- **general:** set newer jsonschema dependency bound-  solves #2227 - [#4183](https://github.com/bridgecrewio/checkov/pull/4183)
+- **general:** Update exclude-patterns.txt - [#4187](https://github.com/bridgecrewio/checkov/pull/4187)
+
+### Documentation
+
+- **general:** fix links in contributing docs - [#4184](https://github.com/bridgecrewio/checkov/pull/4184)
 
 ## [2.2.230](https://github.com/bridgecrewio/checkov/compare/2.2.229...2.2.230) - 2023-01-03
 
