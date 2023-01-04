@@ -16,7 +16,8 @@ SUPPORTED_PACKAGE_FILES = {
 }
 SUPPORTED_FILES = SUPPORTED_PACKAGE_FILES.union({"Dockerfile"})
 
-DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.mod"}
+DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.mod", "paket.dependencies", "paket.lock"}
+
 SCANNABLE_PACKAGE_FILES = SUPPORTED_PACKAGE_FILES | DEPENDENCY_TREE_SUPPORTED_FILES
 
 ANY_VALUE = "CKV_ANY"
