@@ -1,6 +1,28 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.220...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.230...HEAD)
+
+## [2.2.230](https://github.com/bridgecrewio/checkov/compare/2.2.229...2.2.230) - 2023-01-03
+
+### Feature
+
+- **general:** Skip check in json file - [#4172](https://github.com/bridgecrewio/checkov/pull/4172)
+
+## [2.2.229](https://github.com/bridgecrewio/checkov/compare/2.2.220...2.2.229) - 2023-01-01
+
+### Feature
+
+- **gha:** add support for gha existing graph - [#4175](https://github.com/bridgecrewio/checkov/pull/4175)
+- **secrets:** change secretsCoordinator to dict format - [#4169](https://github.com/bridgecrewio/checkov/pull/4169)
+- **terraform:** added aws_ssoadmin_managed_policy_attachment resource to CKV_AWS_274 - [#4173](https://github.com/bridgecrewio/checkov/pull/4173)
+
+### Bug Fix
+
+- **general:** add link to BaseGraphRegistry checks - [#4177](https://github.com/bridgecrewio/checkov/pull/4177)
+- **general:** change CODE_LINK_BASE from master to main - [#4178](https://github.com/bridgecrewio/checkov/pull/4178)
+- **kubernetes:** remove unneeded context check - [#4171](https://github.com/bridgecrewio/checkov/pull/4171)
+- **kustomize:** fixed kustomize abs_file_path - [#4159](https://github.com/bridgecrewio/checkov/pull/4159)
+- **terraform:** out of range error by checking if list is empty - [#4176](https://github.com/bridgecrewio/checkov/pull/4176)
 
 ## [2.2.220](https://github.com/bridgecrewio/checkov/compare/2.2.217...2.2.220) - 2022-12-29
 
