@@ -414,7 +414,8 @@ class BcPlatformIntegration:
 
     def persist_enriched_secrets(self, enriched_secrets: list[EnrichedSecret]) -> str | None:
         if not enriched_secrets or not self.repo_path or not self.bucket:
-            logging.debug('One of enriched secrets, repo path, or bucket are empty, aborting')
+            logging.debug(f'One of enriched secrets, repo path, or bucket are empty, aborting. values:'
+                          f'enriched_secrets={enriched_secrets}, repo_path={self.repo_path}, bucket={self.bucket}')
             return None
 
         repo_path_without_src = os.path.dirname(self.repo_path)

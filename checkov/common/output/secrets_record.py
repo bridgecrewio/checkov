@@ -9,7 +9,6 @@ from checkov.common.typing import _CheckResult
 
 class SecretsRecord(Record):
     def __init__(self,
-                 validation_status: Optional[str],
                  check_id: str,
                  check_name: str,
                  check_result: _CheckResult,
@@ -34,7 +33,9 @@ class SecretsRecord(Record):
                  connected_node: Optional[Dict[str, Any]] = None,
                  details: Optional[List[str]] = None,
                  check_len: int | None = None,
-                 definition_context_file_path: Optional[str] = None):
+                 definition_context_file_path: Optional[str] = None,
+                 validation_status: Optional[str] = None
+                 ):
         super().__init__(check_id=check_id,
                          check_name=check_name,
                          check_result=check_result,

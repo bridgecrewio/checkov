@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, cast, Optional, Iterable
 
 import requests
 
-from checkov.common.util.time_utils import timeit
+from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -204,10 +204,9 @@ class Runner(BaseRunner[None]):
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
-            if not enriched_secrets_s3_path:
-                return report
+            if enriched_secrets_s3_path:
+                self.verify_secrets(report, enriched_secrets_s3_path)
 
-            self.verify_secrets(report, enriched_secrets_s3_path)
             return report
 
     @staticmethod
@@ -283,9 +282,9 @@ class Runner(BaseRunner[None]):
             enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
-    @timeit
+    @time_it
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
-        if not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)) or not os.getenv("BC_API_KEY"):
+        if not os.getenv("BC_API_KEY") or not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
             logging.debug(
                 'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
@@ -307,7 +306,11 @@ class Runner(BaseRunner[None]):
         if not response:
             return VerifySecretsResult.FAILURE
 
-        verification_report_presigned_url = response.json()['verificationReportSignedUrl']
+        verification_report_presigned_url = response.json().get('verificationReportSignedUrl')
+        if not verification_report_presigned_url:
+            logging.error("Response is missing verificationReportSignedUrl key, aborting")
+            return VerifySecretsResult.FAILURE
+
         verification_report = self.get_json_verification_report(verification_report_presigned_url)
 
         if not verification_report:
@@ -315,12 +318,16 @@ class Runner(BaseRunner[None]):
 
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in verification_report:
-            key = f'{validation_status_entity.get("violationId")}_{validation_status_entity.get("resourceId")}'
-            validation_status_by_check_id_and_resource[key] = validation_status_entity.get('status')
+            if not all(required_key in validation_status_entity.keys() for required_key in ["violationId", "resourceId", "status"]):
+                logging.debug(f"{validation_status_entity} does not have all required keys, skipping")
+                continue
+
+            key = f'{validation_status_entity["violationId"]}_{validation_status_entity["resourceId"]}'
+            validation_status_by_check_id_and_resource[key] = validation_status_entity['status']
 
         for secrets_record in report.failed_checks:
             if hasattr(secrets_record, "validation_status"):
-                key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
+                key = f'{secrets_record.bc_check_id}_{secrets_record.file_abs_path}:{secrets_record.resource}'
                 secrets_record.validation_status = \
                     validation_status_by_check_id_and_resource.get(key, ValidationStatus.UNKNOWN.value)
 
