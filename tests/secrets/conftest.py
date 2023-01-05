@@ -24,6 +24,12 @@ def mock_bc_integration() -> BcPlatformIntegration:
     return bc_integration
 
 
+@pytest.fixture(scope='function')
+def mock_bc_integration_no_api_key() -> BcPlatformIntegration:
+    bc_integration.bc_api_key = None
+    return bc_integration
+
+
 @pytest.fixture
 def secrets_report() -> Report:
     kwargs = {'validation_status': 'mock', 'check_id': 'mock', 'check_name': 'mock', 'code_block': 'mock', 'file_path': 'mock',
