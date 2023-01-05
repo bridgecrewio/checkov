@@ -6,8 +6,9 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, TYPE_CHECKING, TypeVar, Generic
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -98,6 +99,12 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.context = context
         self.breadcrumbs = breadcrumbs
 
+    def set_raw_definitions(self, definitions_raw: dict[str, list[tuple[int, str]]] | None) -> None:
+        self.definitions_raw = definitions_raw
+
+    def populate_metadata_dict(self) -> None:
+        return None
+
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
         return None
 
@@ -106,7 +113,6 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-
         if not self.graph_manager or not self.graph_registry:
             # should not happen
             logging.warning("Graph components were not initialized")
@@ -116,7 +122,16 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             r.load_checks()
             registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
-        return checks_results
+        # Filtering the checks now
+        filtered_result: Dict[BaseGraphCheck, List[_CheckResult]] = {}
+        for check, results in checks_results.items():
+            filtered_result[check] = [result for result in results if runner_filter.should_run_check(
+                check,
+                check_id=check.id,
+                file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH, "")]
+            )]
+
+        return filtered_result
 
 
 def filter_ignored_paths(

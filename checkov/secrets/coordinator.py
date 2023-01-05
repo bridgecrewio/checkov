@@ -1,26 +1,27 @@
-from typing import Iterable, Dict, Optional
+from __future__ import annotations
+from typing import Iterable
+from typing_extensions import TypedDict
 
 
-class EnrichedSecret:
-    __slots__ = ("original_secret", "bc_check_id", "resource")
-
-    def __init__(self, original_secret: Optional[str], bc_check_id: str, resource: str) -> None:
-        self.original_secret = original_secret
-        self.bc_check_id = bc_check_id
-        self.resource = resource
+class EnrichedSecret(TypedDict):
+    original_secret: str
+    bc_check_id: str
+    resource: str
 
 
 class SecretsCoordinator:
     __slots__ = ("_secrets", )
 
     def __init__(self) -> None:
-        self._secrets: Dict[str, EnrichedSecret] = {}
+        self._secrets: list[EnrichedSecret] = []
 
     def add_secret(self, enriched_secret: EnrichedSecret) -> None:
-        # can be changed to any other suitable way.
         # should not have duplicates? - if duplicates allowed, implementation should be changed
         # may be saved by file type first, then by key - or any other preprocessing that may help differ the secrets.
-        self._secrets[enriched_secret.resource] = enriched_secret
+        self._secrets.append(enriched_secret)
 
     def get_resources(self) -> Iterable[str]:
-        return self._secrets.keys()
+        return [enriched_secret["resource"] for enriched_secret in self._secrets]
+
+    def get_secrets(self) -> list[EnrichedSecret]:
+        return self._secrets
