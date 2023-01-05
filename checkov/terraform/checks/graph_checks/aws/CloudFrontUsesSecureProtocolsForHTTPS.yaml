@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_AWS_54"
+  name: "Ensure AWS CloudFront distribution is using secure SSL protocols for HTTPS communication"
+  category: "NETWORKING"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_cloudfront_distribution"
+  attribute: "origin.*.custom_origin_config.origin_ssl_protocols"
+  operator: "not_contains"
+  value: "SSLv3"
