@@ -68,7 +68,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
 
         self.context: dict[str, dict[str, Any]] = {}
         self.definitions: dict[Path, BicepJson] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
-        self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}
+        self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}    # type:ignore[assignment]
         self.root_folder: str | Path | None = None
 
     def run(
@@ -87,7 +87,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
         self.root_folder = root_folder
 
         if not self.context or not self.definitions:
-            file_paths = get_scannable_file_paths(root_folder=root_folder, files=files)
+            file_paths = get_scannable_file_paths(
+                root_folder=root_folder, files=files, excluded_paths=runner_filter.excluded_paths
+            )
 
             if not file_paths:
                 return report

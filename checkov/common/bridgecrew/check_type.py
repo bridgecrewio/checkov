@@ -28,3 +28,7 @@ class CheckType:
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
+
+
+# needs to be at the end
+checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]

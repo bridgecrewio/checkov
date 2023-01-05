@@ -1,0 +1,3720 @@
+{
+  "format_version": "0.1",
+  "terraform_version": "0.12.23",
+  "variables": {
+    "ami": {
+      "value": "ami-09a5b0b7edf08843d"
+    },
+    "availability_zone": {
+      "value": "us-west-2a"
+    },
+    "availability_zone2": {
+      "value": "us-west-2b"
+    },
+    "company_name": {
+      "value": "acme"
+    },
+    "dbname": {
+      "value": "db1"
+    },
+    "environment": {
+      "value": "corp"
+    },
+    "neptune-dbname": {
+      "value": "neptunedb1"
+    },
+    "password": {
+      "value": "Aa1234321Bb"
+    },
+    "profile": {
+      "value": "default"
+    },
+    "region": {
+      "value": "us-west-2"
+    }
+  },
+  "planned_values": {
+    "outputs": {
+      "db_app_public_dns": {
+        "sensitive": false
+      },
+      "db_endpoint": {
+        "sensitive": false
+      },
+      "ec2_public_dns": {
+        "sensitive": false
+      },
+      "endpoint": {
+        "sensitive": false
+      },
+      "kubeconfig-certificate-authority-data": {
+        "sensitive": false
+      },
+      "public_subnet": {
+        "sensitive": false
+      },
+      "public_subnet2": {
+        "sensitive": false
+      },
+      "secret": {
+        "sensitive": false
+      },
+      "username": {
+        "sensitive": false,
+        "value": "123456789123-acme-corp-user"
+      },
+      "vpc_id": {
+        "sensitive": false
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_db_instance.default",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "allocated_storage": 20,
+            "allow_major_version_upgrade": null,
+            "apply_immediately": true,
+            "auto_minor_version_upgrade": true,
+            "backup_retention_period": 0,
+            "copy_tags_to_snapshot": false,
+            "db_subnet_group_name": "sg-123456789123-acme-corp",
+            "delete_automated_backups": true,
+            "deletion_protection": null,
+            "domain": null,
+            "domain_iam_role_name": null,
+            "enabled_cloudwatch_logs_exports": null,
+            "engine": "mysql",
+            "engine_version": "8.0",
+            "final_snapshot_identifier": null,
+            "iam_database_authentication_enabled": null,
+            "identifier": "rds-123456789123-acme-corp",
+            "instance_class": "db.t3.micro",
+            "iops": null,
+            "max_allocated_storage": null,
+            "monitoring_interval": 0,
+            "multi_az": false,
+            "name": "db1",
+            "option_group_name": "og-123456789123-acme-corp",
+            "parameter_group_name": "pg-123456789123-acme-corp",
+            "password": "Aa1234321Bb",
+            "performance_insights_enabled": false,
+            "publicly_accessible": true,
+            "replicate_source_db": null,
+            "s3_import": [],
+            "security_group_names": null,
+            "skip_final_snapshot": true,
+            "snapshot_identifier": null,
+            "storage_encrypted": false,
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-rds"
+            },
+            "timeouts": null,
+            "username": "admin"
+          }
+        },
+        {
+          "address": "aws_db_option_group.default",
+          "mode": "managed",
+          "type": "aws_db_option_group",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "engine_name": "mysql",
+            "major_engine_version": "8.0",
+            "name": "og-123456789123-acme-corp",
+            "option": [],
+            "option_group_description": "Terraform OG",
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-og"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_db_parameter_group.default",
+          "mode": "managed",
+          "type": "aws_db_parameter_group",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "description": "Terraform PG",
+            "family": "mysql8.0",
+            "name": "pg-123456789123-acme-corp",
+            "parameter": [
+              {
+                "apply_method": "immediate",
+                "name": "character_set_client",
+                "value": "utf8"
+              },
+              {
+                "apply_method": "immediate",
+                "name": "character_set_server",
+                "value": "utf8"
+              }
+            ],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-pg"
+            }
+          }
+        },
+        {
+          "address": "aws_db_subnet_group.default",
+          "mode": "managed",
+          "type": "aws_db_subnet_group",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "description": "Terraform DB Subnet Group",
+            "name": "sg-123456789123-acme-corp",
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "sg-123456789123-acme-corp"
+            }
+          }
+        },
+        {
+          "address": "aws_ebs_snapshot.example_snapshot",
+          "mode": "managed",
+          "type": "aws_ebs_snapshot",
+          "name": "example_snapshot",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "description": "123456789123-acme-corp-ebs-snapshot",
+            "tags": {
+              "Name": "123456789123-acme-corp-ebs-snapshot"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_ebs_volume.web_host_storage",
+          "mode": "managed",
+          "type": "aws_ebs_volume",
+          "name": "web_host_storage",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "availability_zone": "us-west-2a",
+            "multi_attach_enabled": null,
+            "outpost_arn": null,
+            "size": 1,
+            "tags": {
+              "Name": "123456789123-acme-corp-ebs"
+            }
+          }
+        },
+        {
+          "address": "aws_ecr_repository.repository",
+          "mode": "managed",
+          "type": "aws_ecr_repository",
+          "name": "repository",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "encryption_configuration": [],
+            "image_scanning_configuration": [],
+            "image_tag_mutability": "MUTABLE",
+            "name": "123456789123-acme-corp-repository",
+            "tags": {
+              "Name": "123456789123-acme-corp-repository"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_eks_cluster.eks_cluster",
+          "mode": "managed",
+          "type": "aws_eks_cluster",
+          "name": "eks_cluster",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "enabled_cluster_log_types": null,
+            "encryption_config": [],
+            "name": "123456789123-acme-corp-eks",
+            "tags": null,
+            "timeouts": null,
+            "vpc_config": [
+              {
+                "endpoint_private_access": true,
+                "endpoint_public_access": true,
+                "security_group_ids": null
+              }
+            ]
+          }
+        },
+        {
+          "address": "aws_elasticsearch_domain.monitoring-framework",
+          "mode": "managed",
+          "type": "aws_elasticsearch_domain",
+          "name": "monitoring-framework",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "cluster_config": [
+              {
+                "dedicated_master_count": null,
+                "dedicated_master_enabled": false,
+                "dedicated_master_type": null,
+                "instance_count": 1,
+                "instance_type": "t2.small.elasticsearch",
+                "warm_count": null,
+                "warm_enabled": null,
+                "warm_type": null,
+                "zone_awareness_config": [],
+                "zone_awareness_enabled": null
+              }
+            ],
+            "cognito_options": [],
+            "domain_name": "tg-corp-es",
+            "ebs_options": [
+              {
+                "ebs_enabled": true,
+                "iops": null,
+                "volume_size": 30
+              }
+            ],
+            "elasticsearch_version": "2.3",
+            "log_publishing_options": [],
+            "snapshot_options": [],
+            "tags": null,
+            "timeouts": null,
+            "vpc_options": []
+          }
+        },
+        {
+          "address": "aws_elasticsearch_domain_policy.monitoring-framework-policy",
+          "mode": "managed",
+          "type": "aws_elasticsearch_domain_policy",
+          "name": "monitoring-framework-policy",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "access_policies": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"es:*\",\n      \"Resource\": \"*\",\n      \"Principal\": {\n        \"AWS\": \"*\"\n      }\n    }\n  ]\n}",
+            "domain_name": "tg-corp-es"
+          }
+        },
+        {
+          "address": "aws_elb.weblb",
+          "mode": "managed",
+          "type": "aws_elb",
+          "name": "weblb",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "access_logs": [],
+            "connection_draining": true,
+            "connection_draining_timeout": 400,
+            "cross_zone_load_balancing": true,
+            "health_check": [
+              {
+                "healthy_threshold": 2,
+                "interval": 30,
+                "target": "HTTP:8000/",
+                "timeout": 3,
+                "unhealthy_threshold": 2
+              }
+            ],
+            "idle_timeout": 400,
+            "listener": [
+              {
+                "instance_port": 8000,
+                "instance_protocol": "http",
+                "lb_port": 80,
+                "lb_protocol": "http",
+                "ssl_certificate_id": ""
+              }
+            ],
+            "name": "weblb-terraform-elb",
+            "name_prefix": null,
+            "tags": {
+              "Name": "foobar-terraform-elb"
+            }
+          }
+        },
+        {
+          "address": "aws_flow_log.vpcflowlogs",
+          "mode": "managed",
+          "type": "aws_flow_log",
+          "name": "vpcflowlogs",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "eni_id": null,
+            "iam_role_arn": null,
+            "log_destination_type": "s3",
+            "max_aggregation_interval": 600,
+            "subnet_id": null,
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-flowlogs"
+            },
+            "traffic_type": "ALL"
+          }
+        },
+        {
+          "address": "aws_iam_access_key.user",
+          "mode": "managed",
+          "type": "aws_iam_access_key",
+          "name": "user",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "pgp_key": null,
+            "user": "123456789123-acme-corp-user"
+          }
+        },
+        {
+          "address": "aws_iam_instance_profile.ec2profile",
+          "mode": "managed",
+          "type": "aws_iam_instance_profile",
+          "name": "ec2profile",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "name": "123456789123-acme-corp-profile",
+            "name_prefix": null,
+            "path": "/",
+            "role": "123456789123-acme-corp-role"
+          }
+        },
+        {
+          "address": "aws_iam_role.ec2role",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "ec2role",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "assume_role_policy": "{\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Action\": \"sts:AssumeRole\",\n            \"Principal\": {\n               \"Service\": \"ec2.amazonaws.com\"\n            },\n            \"Effect\": \"Allow\",\n            \"Sid\": \"\"\n        }\n    ]\n}\n",
+            "description": null,
+            "force_detach_policies": false,
+            "max_session_duration": 3600,
+            "name": "123456789123-acme-corp-role",
+            "name_prefix": null,
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-role"
+            }
+          }
+        },
+        {
+          "address": "aws_iam_role.iam_for_eks",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "iam_for_eks",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"eks.amazonaws.com\"\n      }\n    }\n  ]\n}",
+            "description": null,
+            "force_detach_policies": false,
+            "max_session_duration": 3600,
+            "name": "123456789123-acme-corp-iam-for-eks",
+            "name_prefix": null,
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": null
+          }
+        },
+        {
+          "address": "aws_iam_role.iam_for_lambda",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "iam_for_lambda",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"lambda.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}\n",
+            "description": null,
+            "force_detach_policies": false,
+            "max_session_duration": 3600,
+            "name": "123456789123-acme-corp-analysis-lambda",
+            "name_prefix": null,
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": null
+          }
+        },
+        {
+          "address": "aws_iam_role_policy.ec2policy",
+          "mode": "managed",
+          "type": "aws_iam_role_policy",
+          "name": "ec2policy",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "name": "123456789123-acme-corp-policy",
+            "name_prefix": null,
+            "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": [\n        \"s3:*\",\n        \"ec2:*\",\n        \"rds:*\"\n      ],\n      \"Effect\": \"Allow\",\n      \"Resource\": \"*\"\n    }\n  ]\n}\n"
+          }
+        },
+        {
+          "address": "aws_iam_role_policy_attachment.policy_attachment-AmazonEKSClusterPolicy",
+          "mode": "managed",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "policy_attachment-AmazonEKSClusterPolicy",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "policy_arn": "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+            "role": "123456789123-acme-corp-iam-for-eks"
+          }
+        },
+        {
+          "address": "aws_iam_role_policy_attachment.policy_attachment-AmazonEKSServicePolicy",
+          "mode": "managed",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "policy_attachment-AmazonEKSServicePolicy",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "policy_arn": "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+            "role": "123456789123-acme-corp-iam-for-eks"
+          }
+        },
+        {
+          "address": "aws_iam_user.user",
+          "mode": "managed",
+          "type": "aws_iam_user",
+          "name": "user",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "force_destroy": true,
+            "name": "123456789123-acme-corp-user",
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-user"
+            }
+          }
+        },
+        {
+          "address": "aws_iam_user_policy.userpolicy",
+          "mode": "managed",
+          "type": "aws_iam_user_policy",
+          "name": "userpolicy",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "name": "excess_policy",
+            "name_prefix": null,
+            "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": [\n        \"ec2:*\",\n        \"s3:*\",\n        \"lambda:*\",\n        \"cloudwatch:*\"\n      ],\n      \"Effect\": \"Allow\",\n      \"Resource\": \"*\"\n    }\n  ]\n}\n",
+            "user": "123456789123-acme-corp-user"
+          }
+        },
+        {
+          "address": "aws_instance.db_app",
+          "mode": "managed",
+          "type": "aws_instance",
+          "name": "db_app",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "ami": "ami-0f0a6d00932023856",
+            "credit_specification": [],
+            "disable_api_termination": null,
+            "ebs_optimized": null,
+            "get_password_data": false,
+            "hibernation": null,
+            "iam_instance_profile": "123456789123-acme-corp-profile",
+            "instance_initiated_shutdown_behavior": null,
+            "instance_type": "t2.nano",
+            "monitoring": null,
+            "source_dest_check": true,
+            "tags": {
+              "Name": "123456789123-acme-corp-dbapp"
+            },
+            "timeouts": null,
+            "user_data_base64": null
+          }
+        },
+        {
+          "address": "aws_instance.web_host",
+          "mode": "managed",
+          "type": "aws_instance",
+          "name": "web_host",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "ami": "ami-09a5b0b7edf08843d",
+            "credit_specification": [],
+            "disable_api_termination": null,
+            "ebs_optimized": null,
+            "get_password_data": false,
+            "hibernation": null,
+            "iam_instance_profile": null,
+            "instance_initiated_shutdown_behavior": null,
+            "instance_type": "t2.nano",
+            "monitoring": null,
+            "source_dest_check": true,
+            "tags": {
+              "Name": "123456789123-acme-corp-ec2"
+            },
+            "timeouts": null,
+            "user_data": "44c6c808e6449ee36dfcfc4ebd66c1b9634b40f2",
+            "user_data_base64": null
+          }
+        },
+        {
+          "address": "aws_internet_gateway.web_igw",
+          "mode": "managed",
+          "type": "aws_internet_gateway",
+          "name": "web_igw",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "tags": {
+              "Name": "123456789123-acme-corp-igw"
+            }
+          }
+        },
+        {
+          "address": "aws_kms_alias.logs_key_alias",
+          "mode": "managed",
+          "type": "aws_kms_alias",
+          "name": "logs_key_alias",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "name": "alias/123456789123-acme-corp-logs-bucket-key",
+            "name_prefix": null
+          }
+        },
+        {
+          "address": "aws_kms_key.logs_key",
+          "mode": "managed",
+          "type": "aws_kms_key",
+          "name": "logs_key",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+            "deletion_window_in_days": 7,
+            "description": "123456789123-acme-corp-logs bucket key",
+            "enable_key_rotation": false,
+            "is_enabled": true,
+            "key_usage": "ENCRYPT_DECRYPT",
+            "tags": null
+          }
+        },
+        {
+          "address": "aws_lambda_function.analysis_lambda",
+          "mode": "managed",
+          "type": "aws_lambda_function",
+          "name": "analysis_lambda",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "dead_letter_config": [],
+            "description": null,
+            "environment": [
+              {
+                "variables": {
+                  "access_key": "AKIAIOSFODNN7EXAMPLE",
+                  "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                }
+              }
+            ],
+            "file_system_config": [],
+            "filename": "resources/lambda_function_payload.zip",
+            "function_name": "123456789123-acme-corp-analysis",
+            "handler": "exports.test",
+            "kms_key_arn": null,
+            "layers": null,
+            "memory_size": 128,
+            "publish": false,
+            "reserved_concurrent_executions": -1,
+            "runtime": "nodejs12.x",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "source_code_hash": "Fne61Y/F2pmVywaVqIYcztFMK3LNeMJKpWFNnxDdGTw=",
+            "tags": null,
+            "timeout": 3,
+            "timeouts": null,
+            "vpc_config": []
+          }
+        },
+        {
+          "address": "aws_neptune_cluster.default",
+          "mode": "managed",
+          "type": "aws_neptune_cluster",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "apply_immediately": true,
+            "backup_retention_period": 5,
+            "cluster_identifier": "neptunedb1",
+            "deletion_protection": null,
+            "enable_cloudwatch_logs_exports": null,
+            "engine": "neptune",
+            "final_snapshot_identifier": null,
+            "iam_database_authentication_enabled": false,
+            "iam_roles": null,
+            "neptune_cluster_parameter_group_name": "default.neptune1",
+            "port": 8182,
+            "preferred_backup_window": "07:00-09:00",
+            "replication_source_identifier": null,
+            "skip_final_snapshot": true,
+            "snapshot_identifier": null,
+            "storage_encrypted": false,
+            "tags": null,
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_neptune_cluster_instance.default[0]",
+          "mode": "managed",
+          "type": "aws_neptune_cluster_instance",
+          "name": "default",
+          "index": 0,
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "apply_immediately": true,
+            "auto_minor_version_upgrade": true,
+            "engine": "neptune",
+            "instance_class": "db.t3.medium",
+            "neptune_parameter_group_name": "default.neptune1",
+            "port": 8182,
+            "promotion_tier": 0,
+            "publicly_accessible": false,
+            "tags": null,
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_neptune_cluster_snapshot.default",
+          "mode": "managed",
+          "type": "aws_neptune_cluster_snapshot",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "db_cluster_snapshot_identifier": "resourcetestsnapshot1",
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_network_interface.web-eni",
+          "mode": "managed",
+          "type": "aws_network_interface",
+          "name": "web-eni",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "description": null,
+            "private_ips": [
+              "172.16.10.100"
+            ],
+            "source_dest_check": true,
+            "tags": {
+              "Name": "123456789123-acme-corp-primary_network_interface"
+            }
+          }
+        },
+        {
+          "address": "aws_route.public_internet_gateway",
+          "mode": "managed",
+          "type": "aws_route",
+          "name": "public_internet_gateway",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "destination_cidr_block": "0.0.0.0/0",
+            "destination_ipv6_cidr_block": null,
+            "timeouts": {
+              "create": "5m",
+              "delete": null
+            },
+            "transit_gateway_id": null,
+            "vpc_peering_connection_id": null
+          }
+        },
+        {
+          "address": "aws_route_table.web_rtb",
+          "mode": "managed",
+          "type": "aws_route_table",
+          "name": "web_rtb",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "tags": {
+              "Name": "123456789123-acme-corp-rtb"
+            }
+          }
+        },
+        {
+          "address": "aws_route_table_association.rtbassoc",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "rtbassoc",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": null
+          }
+        },
+        {
+          "address": "aws_route_table_association.rtbassoc2",
+          "mode": "managed",
+          "type": "aws_route_table_association",
+          "name": "rtbassoc2",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "gateway_id": null
+          }
+        },
+        {
+          "address": "aws_s3_bucket.data",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "data",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "public-read",
+            "bucket": "123456789123-acme-corp-data",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-data"
+            },
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket.data_science",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "data_science",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "private",
+            "bucket": "123456789123-acme-corp-data-science",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [
+              {
+                "target_prefix": "log/"
+              }
+            ],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [],
+            "tags": null,
+            "versioning": [
+              {
+                "enabled": true,
+                "mfa_delete": false
+              }
+            ],
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket.financials",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "financials",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "private",
+            "bucket": "123456789123-acme-corp-financials",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-financials"
+            },
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket.flowbucket",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "flowbucket",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "private",
+            "bucket": "123456789123-acme-corp-flowlogs",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-flowlogs"
+            },
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket.logs",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "logs",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "log-delivery-write",
+            "bucket": "123456789123-acme-corp-logs",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "sse_algorithm": "aws:kms"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-logs"
+            },
+            "versioning": [
+              {
+                "enabled": true,
+                "mfa_delete": false
+              }
+            ],
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket.operations",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "operations",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "private",
+            "bucket": "123456789123-acme-corp-operations",
+            "bucket_prefix": null,
+            "cors_rule": [],
+            "force_destroy": true,
+            "grant": [],
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "policy": null,
+            "replication_configuration": [],
+            "server_side_encryption_configuration": [],
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-operations"
+            },
+            "versioning": [
+              {
+                "enabled": true,
+                "mfa_delete": false
+              }
+            ],
+            "website": []
+          }
+        },
+        {
+          "address": "aws_s3_bucket_object.data_object",
+          "mode": "managed",
+          "type": "aws_s3_bucket_object",
+          "name": "data_object",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "acl": "private",
+            "cache_control": null,
+            "content": null,
+            "content_base64": null,
+            "content_disposition": null,
+            "content_encoding": null,
+            "content_language": null,
+            "force_destroy": false,
+            "key": "customer-master.xlsx",
+            "metadata": null,
+            "object_lock_legal_hold_status": null,
+            "object_lock_mode": null,
+            "object_lock_retain_until_date": null,
+            "source": "resources/customer-master.xlsx",
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-customer-master"
+            },
+            "website_redirect": null
+          }
+        },
+        {
+          "address": "aws_security_group.default",
+          "mode": "managed",
+          "type": "aws_security_group",
+          "name": "default",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "description": "Managed by Terraform",
+            "name": "123456789123-acme-corp-rds-sg",
+            "name_prefix": null,
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Environment": "123456789123-acme-corp",
+              "Name": "123456789123-acme-corp-rds-sg"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_security_group.web-node",
+          "mode": "managed",
+          "type": "aws_security_group",
+          "name": "web-node",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "description": "123456789123-acme-corp Security Group",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "ingress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 22,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 22
+              },
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 80,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 80
+              }
+            ],
+            "name": "123456789123-acme-corp-sg",
+            "name_prefix": null,
+            "revoke_rules_on_delete": false,
+            "tags": null,
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_security_group_rule.egress",
+          "mode": "managed",
+          "type": "aws_security_group_rule",
+          "name": "egress",
+          "provider_name": "aws",
+          "schema_version": 2,
+          "values": {
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ],
+            "description": null,
+            "from_port": 0,
+            "ipv6_cidr_blocks": null,
+            "prefix_list_ids": null,
+            "protocol": "-1",
+            "self": false,
+            "to_port": 0,
+            "type": "egress"
+          }
+        },
+        {
+          "address": "aws_security_group_rule.ingress",
+          "mode": "managed",
+          "type": "aws_security_group_rule",
+          "name": "ingress",
+          "provider_name": "aws",
+          "schema_version": 2,
+          "values": {
+            "cidr_blocks": [
+              "172.16.0.0/16"
+            ],
+            "description": null,
+            "from_port": 3306,
+            "ipv6_cidr_blocks": null,
+            "prefix_list_ids": null,
+            "protocol": "tcp",
+            "self": false,
+            "to_port": 3306,
+            "type": "ingress"
+          }
+        },
+        {
+          "address": "aws_subnet.eks_subnet1",
+          "mode": "managed",
+          "type": "aws_subnet",
+          "name": "eks_subnet1",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "us-west-2a",
+            "cidr_block": "10.10.10.0/24",
+            "ipv6_cidr_block": null,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": null,
+            "tags": {
+              "Name": "123456789123-acme-corp-eks-subnet",
+              "kubernetes.io/cluster/123456789123-acme-corp-eks": "shared"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_subnet.eks_subnet2",
+          "mode": "managed",
+          "type": "aws_subnet",
+          "name": "eks_subnet2",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "us-west-2b",
+            "cidr_block": "10.10.11.0/24",
+            "ipv6_cidr_block": null,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": null,
+            "tags": {
+              "Name": "123456789123-acme-corp-eks-subnet2",
+              "kubernetes.io/cluster/123456789123-acme-corp-eks": "shared"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_subnet.web_subnet",
+          "mode": "managed",
+          "type": "aws_subnet",
+          "name": "web_subnet",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "us-west-2a",
+            "cidr_block": "172.16.10.0/24",
+            "ipv6_cidr_block": null,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": null,
+            "tags": {
+              "Name": "123456789123-acme-corp-subnet"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_subnet.web_subnet2",
+          "mode": "managed",
+          "type": "aws_subnet",
+          "name": "web_subnet2",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "us-west-2b",
+            "cidr_block": "172.16.11.0/24",
+            "ipv6_cidr_block": null,
+            "map_public_ip_on_launch": true,
+            "outpost_arn": null,
+            "tags": {
+              "Name": "123456789123-acme-corp-subnet2"
+            },
+            "timeouts": null
+          }
+        },
+        {
+          "address": "aws_volume_attachment.ebs_att",
+          "mode": "managed",
+          "type": "aws_volume_attachment",
+          "name": "ebs_att",
+          "provider_name": "aws",
+          "schema_version": 0,
+          "values": {
+            "device_name": "/dev/sdh",
+            "force_detach": null,
+            "skip_destroy": null
+          }
+        },
+        {
+          "address": "aws_vpc.eks_vpc",
+          "mode": "managed",
+          "type": "aws_vpc",
+          "name": "eks_vpc",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_generated_ipv6_cidr_block": false,
+            "cidr_block": "10.10.0.0/16",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "instance_tenancy": "default",
+            "tags": {
+              "Name": "123456789123-acme-corp-eks-vpc"
+            }
+          }
+        },
+        {
+          "address": "aws_vpc.web_vpc",
+          "mode": "managed",
+          "type": "aws_vpc",
+          "name": "web_vpc",
+          "provider_name": "aws",
+          "schema_version": 1,
+          "values": {
+            "assign_generated_ipv6_cidr_block": false,
+            "cidr_block": "172.16.0.0/16",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "instance_tenancy": "default",
+            "tags": {
+              "Name": "123456789123-acme-corp-vpc"
+            }
+          }
+        },
+        {
+          "address": "null_resource.push_image",
+          "mode": "managed",
+          "type": "null_resource",
+          "name": "push_image",
+          "provider_name": "null",
+          "schema_version": 0,
+          "values": {
+            "triggers": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_db_instance.default",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allocated_storage": 20,
+          "allow_major_version_upgrade": null,
+          "apply_immediately": true,
+          "auto_minor_version_upgrade": true,
+          "backup_retention_period": 0,
+          "copy_tags_to_snapshot": false,
+          "db_subnet_group_name": "sg-123456789123-acme-corp",
+          "delete_automated_backups": true,
+          "deletion_protection": null,
+          "domain": null,
+          "domain_iam_role_name": null,
+          "enabled_cloudwatch_logs_exports": null,
+          "engine": "mysql",
+          "engine_version": "8.0",
+          "final_snapshot_identifier": null,
+          "iam_database_authentication_enabled": null,
+          "identifier": "rds-123456789123-acme-corp",
+          "instance_class": "db.t3.micro",
+          "iops": null,
+          "max_allocated_storage": null,
+          "monitoring_interval": 0,
+          "multi_az": false,
+          "name": "db1",
+          "option_group_name": "og-123456789123-acme-corp",
+          "parameter_group_name": "pg-123456789123-acme-corp",
+          "password": "Aa1234321Bb",
+          "performance_insights_enabled": false,
+          "publicly_accessible": true,
+          "replicate_source_db": null,
+          "s3_import": [],
+          "security_group_names": null,
+          "skip_final_snapshot": true,
+          "snapshot_identifier": null,
+          "storage_encrypted": false,
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-rds"
+          },
+          "timeouts": null,
+          "username": "admin"
+        },
+        "after_unknown": {
+          "address": true,
+          "arn": true,
+          "availability_zone": true,
+          "backup_window": true,
+          "ca_cert_identifier": true,
+          "character_set_name": true,
+          "endpoint": true,
+          "hosted_zone_id": true,
+          "id": true,
+          "identifier_prefix": true,
+          "kms_key_id": true,
+          "license_model": true,
+          "maintenance_window": true,
+          "monitoring_role_arn": true,
+          "performance_insights_kms_key_id": true,
+          "performance_insights_retention_period": true,
+          "port": true,
+          "replicas": true,
+          "resource_id": true,
+          "s3_import": [],
+          "status": true,
+          "storage_type": true,
+          "tags": {},
+          "timezone": true,
+          "vpc_security_group_ids": true
+        }
+      }
+    },
+    {
+      "address": "aws_db_option_group.default",
+      "mode": "managed",
+      "type": "aws_db_option_group",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "engine_name": "mysql",
+          "major_engine_version": "8.0",
+          "name": "og-123456789123-acme-corp",
+          "option": [],
+          "option_group_description": "Terraform OG",
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-og"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "name_prefix": true,
+          "option": [],
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_db_parameter_group.default",
+      "mode": "managed",
+      "type": "aws_db_parameter_group",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "Terraform PG",
+          "family": "mysql8.0",
+          "name": "pg-123456789123-acme-corp",
+          "parameter": [
+            {
+              "apply_method": "immediate",
+              "name": "character_set_client",
+              "value": "utf8"
+            },
+            {
+              "apply_method": "immediate",
+              "name": "character_set_server",
+              "value": "utf8"
+            }
+          ],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-pg"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "name_prefix": true,
+          "parameter": [
+            {},
+            {}
+          ],
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_db_subnet_group.default",
+      "mode": "managed",
+      "type": "aws_db_subnet_group",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "Terraform DB Subnet Group",
+          "name": "sg-123456789123-acme-corp",
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "sg-123456789123-acme-corp"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "name_prefix": true,
+          "subnet_ids": true,
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_ebs_snapshot.example_snapshot",
+      "mode": "managed",
+      "type": "aws_ebs_snapshot",
+      "name": "example_snapshot",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "123456789123-acme-corp-ebs-snapshot",
+          "tags": {
+            "Name": "123456789123-acme-corp-ebs-snapshot"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "data_encryption_key_id": true,
+          "encrypted": true,
+          "id": true,
+          "kms_key_id": true,
+          "owner_alias": true,
+          "owner_id": true,
+          "tags": {},
+          "volume_id": true,
+          "volume_size": true
+        }
+      }
+    },
+    {
+      "address": "aws_ebs_volume.web_host_storage",
+      "mode": "managed",
+      "type": "aws_ebs_volume",
+      "name": "web_host_storage",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "availability_zone": "us-west-2a",
+          "multi_attach_enabled": null,
+          "outpost_arn": null,
+          "size": 1,
+          "tags": {
+            "Name": "123456789123-acme-corp-ebs"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "encrypted": true,
+          "id": true,
+          "iops": true,
+          "kms_key_id": true,
+          "snapshot_id": true,
+          "tags": {},
+          "type": true
+        }
+      }
+    },
+    {
+      "address": "aws_ecr_repository.repository",
+      "mode": "managed",
+      "type": "aws_ecr_repository",
+      "name": "repository",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "encryption_configuration": [],
+          "image_scanning_configuration": [],
+          "image_tag_mutability": "MUTABLE",
+          "name": "123456789123-acme-corp-repository",
+          "tags": {
+            "Name": "123456789123-acme-corp-repository"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "encryption_configuration": [],
+          "id": true,
+          "image_scanning_configuration": [],
+          "registry_id": true,
+          "repository_url": true,
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_eks_cluster.eks_cluster",
+      "mode": "managed",
+      "type": "aws_eks_cluster",
+      "name": "eks_cluster",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "enabled_cluster_log_types": null,
+          "encryption_config": [],
+          "name": "123456789123-acme-corp-eks",
+          "tags": null,
+          "timeouts": null,
+          "vpc_config": [
+            {
+              "endpoint_private_access": true,
+              "endpoint_public_access": true,
+              "security_group_ids": null
+            }
+          ]
+        },
+        "after_unknown": {
+          "arn": true,
+          "certificate_authority": true,
+          "created_at": true,
+          "encryption_config": [],
+          "endpoint": true,
+          "id": true,
+          "identity": true,
+          "platform_version": true,
+          "role_arn": true,
+          "status": true,
+          "version": true,
+          "vpc_config": [
+            {
+              "cluster_security_group_id": true,
+              "public_access_cidrs": true,
+              "subnet_ids": true,
+              "vpc_id": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "address": "aws_elasticsearch_domain.monitoring-framework",
+      "mode": "managed",
+      "type": "aws_elasticsearch_domain",
+      "name": "monitoring-framework",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "cluster_config": [
+            {
+              "dedicated_master_count": null,
+              "dedicated_master_enabled": false,
+              "dedicated_master_type": null,
+              "instance_count": 1,
+              "instance_type": "t2.small.elasticsearch",
+              "warm_count": null,
+              "warm_enabled": null,
+              "warm_type": null,
+              "zone_awareness_config": [],
+              "zone_awareness_enabled": null
+            }
+          ],
+          "cognito_options": [],
+          "domain_name": "tg-corp-es",
+          "ebs_options": [
+            {
+              "ebs_enabled": true,
+              "iops": null,
+              "volume_size": 30
+            }
+          ],
+          "elasticsearch_version": "2.3",
+          "log_publishing_options": [],
+          "snapshot_options": [],
+          "tags": null,
+          "timeouts": null,
+          "vpc_options": []
+        },
+        "after_unknown": {
+          "access_policies": true,
+          "advanced_options": true,
+          "advanced_security_options": true,
+          "arn": true,
+          "cluster_config": [
+            {
+              "zone_awareness_config": []
+            }
+          ],
+          "cognito_options": [],
+          "domain_endpoint_options": true,
+          "domain_id": true,
+          "ebs_options": [
+            {
+              "volume_type": true
+            }
+          ],
+          "encrypt_at_rest": true,
+          "endpoint": true,
+          "id": true,
+          "kibana_endpoint": true,
+          "log_publishing_options": [],
+          "node_to_node_encryption": true,
+          "snapshot_options": [],
+          "vpc_options": []
+        }
+      }
+    },
+    {
+      "address": "aws_elasticsearch_domain_policy.monitoring-framework-policy",
+      "mode": "managed",
+      "type": "aws_elasticsearch_domain_policy",
+      "name": "monitoring-framework-policy",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "access_policies": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"es:*\",\n      \"Resource\": \"*\",\n      \"Principal\": {\n        \"AWS\": \"*\"\n      }\n    }\n  ]\n}",
+          "domain_name": "tg-corp-es"
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "aws_elb.weblb",
+      "mode": "managed",
+      "type": "aws_elb",
+      "name": "weblb",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "access_logs": [],
+          "connection_draining": true,
+          "connection_draining_timeout": 400,
+          "cross_zone_load_balancing": true,
+          "health_check": [
+            {
+              "healthy_threshold": 2,
+              "interval": 30,
+              "target": "HTTP:8000/",
+              "timeout": 3,
+              "unhealthy_threshold": 2
+            }
+          ],
+          "idle_timeout": 400,
+          "listener": [
+            {
+              "instance_port": 8000,
+              "instance_protocol": "http",
+              "lb_port": 80,
+              "lb_protocol": "http",
+              "ssl_certificate_id": ""
+            }
+          ],
+          "name": "weblb-terraform-elb",
+          "name_prefix": null,
+          "tags": {
+            "Name": "foobar-terraform-elb"
+          }
+        },
+        "after_unknown": {
+          "access_logs": [],
+          "arn": true,
+          "availability_zones": true,
+          "dns_name": true,
+          "health_check": [
+            {}
+          ],
+          "id": true,
+          "instances": true,
+          "internal": true,
+          "listener": [
+            {}
+          ],
+          "security_groups": true,
+          "source_security_group": true,
+          "source_security_group_id": true,
+          "subnets": true,
+          "tags": {},
+          "zone_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_flow_log.vpcflowlogs",
+      "mode": "managed",
+      "type": "aws_flow_log",
+      "name": "vpcflowlogs",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "eni_id": null,
+          "iam_role_arn": null,
+          "log_destination_type": "s3",
+          "max_aggregation_interval": 600,
+          "subnet_id": null,
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-flowlogs"
+          },
+          "traffic_type": "ALL"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "log_destination": true,
+          "log_format": true,
+          "log_group_name": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_access_key.user",
+      "mode": "managed",
+      "type": "aws_iam_access_key",
+      "name": "user",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "pgp_key": null,
+          "user": "123456789123-acme-corp-user"
+        },
+        "after_unknown": {
+          "encrypted_secret": true,
+          "id": true,
+          "key_fingerprint": true,
+          "secret": true,
+          "ses_smtp_password_v4": true,
+          "status": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_instance_profile.ec2profile",
+      "mode": "managed",
+      "type": "aws_iam_instance_profile",
+      "name": "ec2profile",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "123456789123-acme-corp-profile",
+          "name_prefix": null,
+          "path": "/",
+          "role": "123456789123-acme-corp-role"
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "unique_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role.ec2role",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "ec2role",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Action\": \"sts:AssumeRole\",\n            \"Principal\": {\n               \"Service\": \"ec2.amazonaws.com\"\n            },\n            \"Effect\": \"Allow\",\n            \"Sid\": \"\"\n        }\n    ]\n}\n",
+          "description": null,
+          "force_detach_policies": false,
+          "max_session_duration": 3600,
+          "name": "123456789123-acme-corp-role",
+          "name_prefix": null,
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-role"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "tags": {},
+          "unique_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role.iam_for_eks",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "iam_for_eks",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"eks.amazonaws.com\"\n      }\n    }\n  ]\n}",
+          "description": null,
+          "force_detach_policies": false,
+          "max_session_duration": 3600,
+          "name": "123456789123-acme-corp-iam-for-eks",
+          "name_prefix": null,
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "unique_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role.iam_for_lambda",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "iam_for_lambda",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"lambda.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}\n",
+          "description": null,
+          "force_detach_policies": false,
+          "max_session_duration": 3600,
+          "name": "123456789123-acme-corp-analysis-lambda",
+          "name_prefix": null,
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "unique_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy.ec2policy",
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "ec2policy",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "123456789123-acme-corp-policy",
+          "name_prefix": null,
+          "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": [\n        \"s3:*\",\n        \"ec2:*\",\n        \"rds:*\"\n      ],\n      \"Effect\": \"Allow\",\n      \"Resource\": \"*\"\n    }\n  ]\n}\n"
+        },
+        "after_unknown": {
+          "id": true,
+          "role": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy_attachment.policy_attachment-AmazonEKSClusterPolicy",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "policy_attachment-AmazonEKSClusterPolicy",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "policy_arn": "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy",
+          "role": "123456789123-acme-corp-iam-for-eks"
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role_policy_attachment.policy_attachment-AmazonEKSServicePolicy",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "policy_attachment-AmazonEKSServicePolicy",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "policy_arn": "arn:aws:iam::aws:policy/AmazonEKSServicePolicy",
+          "role": "123456789123-acme-corp-iam-for-eks"
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_user.user",
+      "mode": "managed",
+      "type": "aws_iam_user",
+      "name": "user",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "force_destroy": true,
+          "name": "123456789123-acme-corp-user",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-user"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "tags": {},
+          "unique_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_iam_user_policy.userpolicy",
+      "mode": "managed",
+      "type": "aws_iam_user_policy",
+      "name": "userpolicy",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "excess_policy",
+          "name_prefix": null,
+          "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": [\n        \"ec2:*\",\n        \"s3:*\",\n        \"lambda:*\",\n        \"cloudwatch:*\"\n      ],\n      \"Effect\": \"Allow\",\n      \"Resource\": \"*\"\n    }\n  ]\n}\n",
+          "user": "123456789123-acme-corp-user"
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "aws_instance.db_app",
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "db_app",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "ami": "ami-0f0a6d00932023856",
+          "credit_specification": [],
+          "disable_api_termination": null,
+          "ebs_optimized": null,
+          "get_password_data": false,
+          "hibernation": null,
+          "iam_instance_profile": "123456789123-acme-corp-profile",
+          "instance_initiated_shutdown_behavior": null,
+          "instance_type": "t2.nano",
+          "monitoring": null,
+          "source_dest_check": true,
+          "tags": {
+            "Name": "123456789123-acme-corp-dbapp"
+          },
+          "timeouts": null,
+          "user_data_base64": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "associate_public_ip_address": true,
+          "availability_zone": true,
+          "cpu_core_count": true,
+          "cpu_threads_per_core": true,
+          "credit_specification": [],
+          "ebs_block_device": true,
+          "ephemeral_block_device": true,
+          "host_id": true,
+          "id": true,
+          "instance_state": true,
+          "ipv6_address_count": true,
+          "ipv6_addresses": true,
+          "key_name": true,
+          "metadata_options": true,
+          "network_interface": true,
+          "outpost_arn": true,
+          "password_data": true,
+          "placement_group": true,
+          "primary_network_interface_id": true,
+          "private_dns": true,
+          "private_ip": true,
+          "public_dns": true,
+          "public_ip": true,
+          "root_block_device": true,
+          "secondary_private_ips": true,
+          "security_groups": true,
+          "subnet_id": true,
+          "tags": {},
+          "tenancy": true,
+          "user_data": true,
+          "volume_tags": true,
+          "vpc_security_group_ids": true
+        }
+      }
+    },
+    {
+      "address": "aws_instance.web_host",
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "web_host",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "ami": "ami-09a5b0b7edf08843d",
+          "credit_specification": [],
+          "disable_api_termination": null,
+          "ebs_optimized": null,
+          "get_password_data": false,
+          "hibernation": null,
+          "iam_instance_profile": null,
+          "instance_initiated_shutdown_behavior": null,
+          "instance_type": "t2.nano",
+          "monitoring": null,
+          "source_dest_check": true,
+          "tags": {
+            "Name": "123456789123-acme-corp-ec2"
+          },
+          "timeouts": null,
+          "user_data": "44c6c808e6449ee36dfcfc4ebd66c1b9634b40f2",
+          "user_data_base64": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "associate_public_ip_address": true,
+          "availability_zone": true,
+          "cpu_core_count": true,
+          "cpu_threads_per_core": true,
+          "credit_specification": [],
+          "ebs_block_device": true,
+          "ephemeral_block_device": true,
+          "host_id": true,
+          "id": true,
+          "instance_state": true,
+          "ipv6_address_count": true,
+          "ipv6_addresses": true,
+          "key_name": true,
+          "metadata_options": true,
+          "network_interface": true,
+          "outpost_arn": true,
+          "password_data": true,
+          "placement_group": true,
+          "primary_network_interface_id": true,
+          "private_dns": true,
+          "private_ip": true,
+          "public_dns": true,
+          "public_ip": true,
+          "root_block_device": true,
+          "secondary_private_ips": true,
+          "security_groups": true,
+          "subnet_id": true,
+          "tags": {},
+          "tenancy": true,
+          "volume_tags": true,
+          "vpc_security_group_ids": true
+        }
+      }
+    },
+    {
+      "address": "aws_internet_gateway.web_igw",
+      "mode": "managed",
+      "type": "aws_internet_gateway",
+      "name": "web_igw",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "tags": {
+            "Name": "123456789123-acme-corp-igw"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_kms_alias.logs_key_alias",
+      "mode": "managed",
+      "type": "aws_kms_alias",
+      "name": "logs_key_alias",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "name": "alias/123456789123-acme-corp-logs-bucket-key",
+          "name_prefix": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "target_key_arn": true,
+          "target_key_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_kms_key.logs_key",
+      "mode": "managed",
+      "type": "aws_kms_key",
+      "name": "logs_key",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+          "deletion_window_in_days": 7,
+          "description": "123456789123-acme-corp-logs bucket key",
+          "enable_key_rotation": false,
+          "is_enabled": true,
+          "key_usage": "ENCRYPT_DECRYPT",
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "key_id": true,
+          "policy": true
+        }
+      }
+    },
+    {
+      "address": "aws_lambda_function.analysis_lambda",
+      "mode": "managed",
+      "type": "aws_lambda_function",
+      "name": "analysis_lambda",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "dead_letter_config": [],
+          "description": null,
+          "environment": [
+            {
+              "variables": {
+                "access_key": "AKIAIOSFODNN7EXAMPLE",
+                "secret_key": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+              }
+            }
+          ],
+          "file_system_config": [],
+          "filename": "resources/lambda_function_payload.zip",
+          "function_name": "123456789123-acme-corp-analysis",
+          "handler": "exports.test",
+          "kms_key_arn": null,
+          "layers": null,
+          "memory_size": 128,
+          "publish": false,
+          "reserved_concurrent_executions": -1,
+          "runtime": "nodejs12.x",
+          "s3_bucket": null,
+          "s3_key": null,
+          "s3_object_version": null,
+          "source_code_hash": "Fne61Y/F2pmVywaVqIYcztFMK3LNeMJKpWFNnxDdGTw=",
+          "tags": null,
+          "timeout": 3,
+          "timeouts": null,
+          "vpc_config": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "dead_letter_config": [],
+          "environment": [
+            {
+              "variables": {}
+            }
+          ],
+          "file_system_config": [],
+          "id": true,
+          "invoke_arn": true,
+          "last_modified": true,
+          "qualified_arn": true,
+          "role": true,
+          "source_code_size": true,
+          "tracing_config": true,
+          "version": true,
+          "vpc_config": []
+        }
+      }
+    },
+    {
+      "address": "aws_neptune_cluster.default",
+      "mode": "managed",
+      "type": "aws_neptune_cluster",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "apply_immediately": true,
+          "backup_retention_period": 5,
+          "cluster_identifier": "neptunedb1",
+          "deletion_protection": null,
+          "enable_cloudwatch_logs_exports": null,
+          "engine": "neptune",
+          "final_snapshot_identifier": null,
+          "iam_database_authentication_enabled": false,
+          "iam_roles": null,
+          "neptune_cluster_parameter_group_name": "default.neptune1",
+          "port": 8182,
+          "preferred_backup_window": "07:00-09:00",
+          "replication_source_identifier": null,
+          "skip_final_snapshot": true,
+          "snapshot_identifier": null,
+          "storage_encrypted": false,
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zones": true,
+          "cluster_identifier_prefix": true,
+          "cluster_members": true,
+          "cluster_resource_id": true,
+          "endpoint": true,
+          "engine_version": true,
+          "hosted_zone_id": true,
+          "id": true,
+          "kms_key_arn": true,
+          "neptune_subnet_group_name": true,
+          "preferred_maintenance_window": true,
+          "reader_endpoint": true,
+          "vpc_security_group_ids": true
+        }
+      }
+    },
+    {
+      "address": "aws_neptune_cluster_instance.default[0]",
+      "mode": "managed",
+      "type": "aws_neptune_cluster_instance",
+      "name": "default",
+      "index": 0,
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "apply_immediately": true,
+          "auto_minor_version_upgrade": true,
+          "engine": "neptune",
+          "instance_class": "db.t3.medium",
+          "neptune_parameter_group_name": "default.neptune1",
+          "port": 8182,
+          "promotion_tier": 0,
+          "publicly_accessible": false,
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "address": true,
+          "arn": true,
+          "availability_zone": true,
+          "cluster_identifier": true,
+          "dbi_resource_id": true,
+          "endpoint": true,
+          "engine_version": true,
+          "id": true,
+          "identifier": true,
+          "identifier_prefix": true,
+          "kms_key_arn": true,
+          "neptune_subnet_group_name": true,
+          "preferred_backup_window": true,
+          "preferred_maintenance_window": true,
+          "storage_encrypted": true,
+          "writer": true
+        }
+      }
+    },
+    {
+      "address": "aws_neptune_cluster_snapshot.default",
+      "mode": "managed",
+      "type": "aws_neptune_cluster_snapshot",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "db_cluster_snapshot_identifier": "resourcetestsnapshot1",
+          "timeouts": null
+        },
+        "after_unknown": {
+          "allocated_storage": true,
+          "availability_zones": true,
+          "db_cluster_identifier": true,
+          "db_cluster_snapshot_arn": true,
+          "engine": true,
+          "engine_version": true,
+          "id": true,
+          "kms_key_id": true,
+          "license_model": true,
+          "port": true,
+          "snapshot_type": true,
+          "source_db_cluster_snapshot_arn": true,
+          "status": true,
+          "storage_encrypted": true,
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_network_interface.web-eni",
+      "mode": "managed",
+      "type": "aws_network_interface",
+      "name": "web-eni",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "private_ips": [
+            "172.16.10.100"
+          ],
+          "source_dest_check": true,
+          "tags": {
+            "Name": "123456789123-acme-corp-primary_network_interface"
+          }
+        },
+        "after_unknown": {
+          "attachment": true,
+          "id": true,
+          "ipv6_address_count": true,
+          "ipv6_addresses": true,
+          "mac_address": true,
+          "outpost_arn": true,
+          "private_dns_name": true,
+          "private_ip": true,
+          "private_ips": [
+            false
+          ],
+          "private_ips_count": true,
+          "security_groups": true,
+          "subnet_id": true,
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_route.public_internet_gateway",
+      "mode": "managed",
+      "type": "aws_route",
+      "name": "public_internet_gateway",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "destination_cidr_block": "0.0.0.0/0",
+          "destination_ipv6_cidr_block": null,
+          "timeouts": {
+            "create": "5m",
+            "delete": null
+          },
+          "transit_gateway_id": null,
+          "vpc_peering_connection_id": null
+        },
+        "after_unknown": {
+          "destination_prefix_list_id": true,
+          "egress_only_gateway_id": true,
+          "gateway_id": true,
+          "id": true,
+          "instance_id": true,
+          "instance_owner_id": true,
+          "local_gateway_id": true,
+          "nat_gateway_id": true,
+          "network_interface_id": true,
+          "origin": true,
+          "route_table_id": true,
+          "state": true,
+          "timeouts": {}
+        }
+      }
+    },
+    {
+      "address": "aws_route_table.web_rtb",
+      "mode": "managed",
+      "type": "aws_route_table",
+      "name": "web_rtb",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "tags": {
+            "Name": "123456789123-acme-corp-rtb"
+          }
+        },
+        "after_unknown": {
+          "id": true,
+          "owner_id": true,
+          "propagating_vgws": true,
+          "route": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_route_table_association.rtbassoc",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "rtbassoc",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "gateway_id": null
+        },
+        "after_unknown": {
+          "id": true,
+          "route_table_id": true,
+          "subnet_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_route_table_association.rtbassoc2",
+      "mode": "managed",
+      "type": "aws_route_table_association",
+      "name": "rtbassoc2",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "gateway_id": null
+        },
+        "after_unknown": {
+          "id": true,
+          "route_table_id": true,
+          "subnet_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.data",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "data",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "public-read",
+          "bucket": "123456789123-acme-corp-data",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-data"
+          },
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [],
+          "tags": {},
+          "versioning": true,
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.data_science",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "data_science",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "private",
+          "bucket": "123456789123-acme-corp-data-science",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [
+            {
+              "target_prefix": "log/"
+            }
+          ],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [],
+          "tags": null,
+          "versioning": [
+            {
+              "enabled": true,
+              "mfa_delete": false
+            }
+          ],
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [
+            {
+              "target_bucket": true
+            }
+          ],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [],
+          "versioning": [
+            {}
+          ],
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.financials",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "financials",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "private",
+          "bucket": "123456789123-acme-corp-financials",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-financials"
+          },
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [],
+          "tags": {},
+          "versioning": true,
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.flowbucket",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "flowbucket",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "private",
+          "bucket": "123456789123-acme-corp-flowlogs",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-flowlogs"
+          },
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [],
+          "tags": {},
+          "versioning": true,
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.logs",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "logs",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "log-delivery-write",
+          "bucket": "123456789123-acme-corp-logs",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [
+            {
+              "rule": [
+                {
+                  "apply_server_side_encryption_by_default": [
+                    {
+                      "sse_algorithm": "aws:kms"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-logs"
+          },
+          "versioning": [
+            {
+              "enabled": true,
+              "mfa_delete": false
+            }
+          ],
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [
+            {
+              "rule": [
+                {
+                  "apply_server_side_encryption_by_default": [
+                    {
+                      "kms_master_key_id": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "tags": {},
+          "versioning": [
+            {}
+          ],
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket.operations",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "operations",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "private",
+          "bucket": "123456789123-acme-corp-operations",
+          "bucket_prefix": null,
+          "cors_rule": [],
+          "force_destroy": true,
+          "grant": [],
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "policy": null,
+          "replication_configuration": [],
+          "server_side_encryption_configuration": [],
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-operations"
+          },
+          "versioning": [
+            {
+              "enabled": true,
+              "mfa_delete": false
+            }
+          ],
+          "website": []
+        },
+        "after_unknown": {
+          "acceleration_status": true,
+          "arn": true,
+          "bucket_domain_name": true,
+          "bucket_regional_domain_name": true,
+          "cors_rule": [],
+          "grant": [],
+          "hosted_zone_id": true,
+          "id": true,
+          "lifecycle_rule": [],
+          "logging": [],
+          "object_lock_configuration": [],
+          "region": true,
+          "replication_configuration": [],
+          "request_payer": true,
+          "server_side_encryption_configuration": [],
+          "tags": {},
+          "versioning": [
+            {}
+          ],
+          "website": [],
+          "website_domain": true,
+          "website_endpoint": true
+        }
+      }
+    },
+    {
+      "address": "aws_s3_bucket_object.data_object",
+      "mode": "managed",
+      "type": "aws_s3_bucket_object",
+      "name": "data_object",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "acl": "private",
+          "cache_control": null,
+          "content": null,
+          "content_base64": null,
+          "content_disposition": null,
+          "content_encoding": null,
+          "content_language": null,
+          "force_destroy": false,
+          "key": "customer-master.xlsx",
+          "metadata": null,
+          "object_lock_legal_hold_status": null,
+          "object_lock_mode": null,
+          "object_lock_retain_until_date": null,
+          "source": "resources/customer-master.xlsx",
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-customer-master"
+          },
+          "website_redirect": null
+        },
+        "after_unknown": {
+          "bucket": true,
+          "content_type": true,
+          "etag": true,
+          "id": true,
+          "kms_key_id": true,
+          "server_side_encryption": true,
+          "storage_class": true,
+          "tags": {},
+          "version_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_security_group.default",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "default",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "Managed by Terraform",
+          "name": "123456789123-acme-corp-rds-sg",
+          "name_prefix": null,
+          "revoke_rules_on_delete": false,
+          "tags": {
+            "Environment": "123456789123-acme-corp",
+            "Name": "123456789123-acme-corp-rds-sg"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "egress": true,
+          "id": true,
+          "ingress": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_security_group.web-node",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "web-node",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "123456789123-acme-corp Security Group",
+          "egress": [
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "",
+              "from_port": 0,
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "protocol": "-1",
+              "security_groups": [],
+              "self": false,
+              "to_port": 0
+            }
+          ],
+          "ingress": [
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "",
+              "from_port": 22,
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "protocol": "tcp",
+              "security_groups": [],
+              "self": false,
+              "to_port": 22
+            },
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "",
+              "from_port": 80,
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "protocol": "tcp",
+              "security_groups": [],
+              "self": false,
+              "to_port": 80
+            }
+          ],
+          "name": "123456789123-acme-corp-sg",
+          "name_prefix": null,
+          "revoke_rules_on_delete": false,
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "egress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "id": true,
+          "ingress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            },
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "owner_id": true,
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_security_group_rule.egress",
+      "mode": "managed",
+      "type": "aws_security_group_rule",
+      "name": "egress",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "cidr_blocks": [
+            "0.0.0.0/0"
+          ],
+          "description": null,
+          "from_port": 0,
+          "ipv6_cidr_blocks": null,
+          "prefix_list_ids": null,
+          "protocol": "-1",
+          "self": false,
+          "to_port": 0,
+          "type": "egress"
+        },
+        "after_unknown": {
+          "cidr_blocks": [
+            false
+          ],
+          "id": true,
+          "security_group_id": true,
+          "source_security_group_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_security_group_rule.ingress",
+      "mode": "managed",
+      "type": "aws_security_group_rule",
+      "name": "ingress",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "cidr_blocks": [
+            "172.16.0.0/16"
+          ],
+          "description": null,
+          "from_port": 3306,
+          "ipv6_cidr_blocks": null,
+          "prefix_list_ids": null,
+          "protocol": "tcp",
+          "self": false,
+          "to_port": 3306,
+          "type": "ingress"
+        },
+        "after_unknown": {
+          "cidr_blocks": [
+            false
+          ],
+          "id": true,
+          "security_group_id": true,
+          "source_security_group_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_subnet.eks_subnet1",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "eks_subnet1",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_ipv6_address_on_creation": false,
+          "availability_zone": "us-west-2a",
+          "cidr_block": "10.10.10.0/24",
+          "ipv6_cidr_block": null,
+          "map_public_ip_on_launch": true,
+          "outpost_arn": null,
+          "tags": {
+            "Name": "123456789123-acme-corp-eks-subnet",
+            "kubernetes.io/cluster/123456789123-acme-corp-eks": "shared"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone_id": true,
+          "id": true,
+          "ipv6_cidr_block_association_id": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_subnet.eks_subnet2",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "eks_subnet2",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_ipv6_address_on_creation": false,
+          "availability_zone": "us-west-2b",
+          "cidr_block": "10.10.11.0/24",
+          "ipv6_cidr_block": null,
+          "map_public_ip_on_launch": true,
+          "outpost_arn": null,
+          "tags": {
+            "Name": "123456789123-acme-corp-eks-subnet2",
+            "kubernetes.io/cluster/123456789123-acme-corp-eks": "shared"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone_id": true,
+          "id": true,
+          "ipv6_cidr_block_association_id": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_subnet.web_subnet",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "web_subnet",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_ipv6_address_on_creation": false,
+          "availability_zone": "us-west-2a",
+          "cidr_block": "172.16.10.0/24",
+          "ipv6_cidr_block": null,
+          "map_public_ip_on_launch": true,
+          "outpost_arn": null,
+          "tags": {
+            "Name": "123456789123-acme-corp-subnet"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone_id": true,
+          "id": true,
+          "ipv6_cidr_block_association_id": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_subnet.web_subnet2",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "web_subnet2",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_ipv6_address_on_creation": false,
+          "availability_zone": "us-west-2b",
+          "cidr_block": "172.16.11.0/24",
+          "ipv6_cidr_block": null,
+          "map_public_ip_on_launch": true,
+          "outpost_arn": null,
+          "tags": {
+            "Name": "123456789123-acme-corp-subnet2"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone_id": true,
+          "id": true,
+          "ipv6_cidr_block_association_id": true,
+          "owner_id": true,
+          "tags": {},
+          "vpc_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_volume_attachment.ebs_att",
+      "mode": "managed",
+      "type": "aws_volume_attachment",
+      "name": "ebs_att",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "device_name": "/dev/sdh",
+          "force_detach": null,
+          "skip_destroy": null
+        },
+        "after_unknown": {
+          "id": true,
+          "instance_id": true,
+          "volume_id": true
+        }
+      }
+    },
+    {
+      "address": "aws_vpc.eks_vpc",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "eks_vpc",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_generated_ipv6_cidr_block": false,
+          "cidr_block": "10.10.0.0/16",
+          "enable_dns_hostnames": true,
+          "enable_dns_support": true,
+          "instance_tenancy": "default",
+          "tags": {
+            "Name": "123456789123-acme-corp-eks-vpc"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "default_network_acl_id": true,
+          "default_route_table_id": true,
+          "default_security_group_id": true,
+          "dhcp_options_id": true,
+          "enable_classiclink": true,
+          "enable_classiclink_dns_support": true,
+          "id": true,
+          "ipv6_association_id": true,
+          "ipv6_cidr_block": true,
+          "main_route_table_id": true,
+          "owner_id": true,
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "aws_vpc.web_vpc",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "web_vpc",
+      "provider_name": "aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assign_generated_ipv6_cidr_block": false,
+          "cidr_block": "172.16.0.0/16",
+          "enable_dns_hostnames": true,
+          "enable_dns_support": true,
+          "instance_tenancy": "default",
+          "tags": {
+            "Name": "123456789123-acme-corp-vpc"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "default_network_acl_id": true,
+          "default_route_table_id": true,
+          "default_security_group_id": true,
+          "dhcp_options_id": true,
+          "enable_classiclink": true,
+          "enable_classiclink_dns_support": true,
+          "id": true,
+          "ipv6_association_id": true,
+          "ipv6_cidr_block": true,
+          "main_route_table_id": true,
+          "owner_id": true,
+          "tags": {}
+        }
+      }
+    },
+    {
+      "address": "null_resource.push_image",
+      "mode": "managed",
+      "type": "null_resource",
+      "name": "push_image",
+      "provider_name": "null",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "triggers": null
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    }
+  ],
+  "output_changes": {
+    "db_app_public_dns": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "db_endpoint": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "ec2_public_dns": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "endpoint": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "kubeconfig-certificate-authority-data": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "public_subnet": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "public_subnet2": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "secret": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    },
+    "username": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after": "123456789123-acme-corp-user",
+      "after_unknown": false
+    },
+    "vpc_id": {
+      "actions": [
+        "create"
+      ],
+      "before": null,
+      "after_unknown": true
+    }
+  },
+  "prior_state": {
+    "format_version": "0.1",
+    "terraform_version": "0.12.23",
+    "values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "data.aws_ami.amazon-linux-2",
+            "mode": "data",
+            "type": "aws_ami",
+            "name": "amazon-linux-2",
+            "provider_name": "aws",
+            "schema_version": 0,
+            "values": {
+              "architecture": "x86_64",
+              "arn": "arn:aws:ec2:us-west-2::image/ami-0f0a6d00932023856",
+              "block_device_mappings": [
+                {
+                  "device_name": "/dev/xvda",
+                  "ebs": {
+                    "delete_on_termination": "true",
+                    "encrypted": "false",
+                    "iops": "0",
+                    "snapshot_id": "snap-06c1606ba5ca274b1",
+                    "volume_size": "8",
+                    "volume_type": "standard"
+                  },
+                  "no_device": "",
+                  "virtual_name": ""
+                }
+              ],
+              "creation_date": "2020-09-22T02:09:24.000Z",
+              "description": "Amazon Linux 2 AMI 2.0.20200917.0 x86_64 HVM ebs",
+              "executable_users": null,
+              "filter": [
+                {
+                  "name": "name",
+                  "values": [
+                    "amzn2-ami-hvm-*-x86_64-ebs"
+                  ]
+                },
+                {
+                  "name": "owner-alias",
+                  "values": [
+                    "amazon"
+                  ]
+                }
+              ],
+              "hypervisor": "xen",
+              "id": "ami-0f0a6d00932023856",
+              "image_id": "ami-0f0a6d00932023856",
+              "image_location": "amazon/amzn2-ami-hvm-2.0.20200917.0-x86_64-ebs",
+              "image_owner_alias": "amazon",
+              "image_type": "machine",
+              "kernel_id": null,
+              "most_recent": true,
+              "name": "amzn2-ami-hvm-2.0.20200917.0-x86_64-ebs",
+              "name_regex": null,
+              "owner_id": "137112412989",
+              "owners": [
+                "amazon"
+              ],
+              "platform": null,
+              "product_codes": [],
+              "public": true,
+              "ramdisk_id": null,
+              "root_device_name": "/dev/xvda",
+              "root_device_type": "ebs",
+              "root_snapshot_id": "snap-06c1606ba5ca274b1",
+              "sriov_net_support": "simple",
+              "state": "available",
+              "state_reason": {
+                "code": "UNSET",
+                "message": "UNSET"
+              },
+              "tags": {},
+              "virtualization_type": "hvm"
+            }
+          },
+          {
+            "address": "data.aws_caller_identity.current",
+            "mode": "data",
+            "type": "aws_caller_identity",
+            "name": "current",
+            "provider_name": "aws",
+            "schema_version": 0,
+            "values": {
+              "account_id": "123456789123",
+              "arn": "arn:aws:iam::123456789123:user/barak@bridgecrew.io",
+              "id": "123456789123",
+              "user_id": "AIDA2MPWNTLGWKZRRDYTT"
+            }
+          },
+          {
+            "address": "data.aws_iam_policy_document.iam_policy_eks",
+            "mode": "data",
+            "type": "aws_iam_policy_document",
+            "name": "iam_policy_eks",
+            "provider_name": "aws",
+            "schema_version": 0,
+            "values": {
+              "id": "189502314",
+              "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"eks.amazonaws.com\"\n      }\n    }\n  ]\n}",
+              "override_json": null,
+              "policy_id": null,
+              "source_json": null,
+              "statement": [
+                {
+                  "actions": [
+                    "sts:AssumeRole"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "eks.amazonaws.com"
+                      ],
+                      "type": "Service"
+                    }
+                  ],
+                  "resources": [],
+                  "sid": ""
+                }
+              ],
+              "version": "2012-10-17"
+            }
+          },
+          {
+            "address": "data.aws_iam_policy_document.policy",
+            "mode": "data",
+            "type": "aws_iam_policy_document",
+            "name": "policy",
+            "provider_name": "aws",
+            "schema_version": 0,
+            "values": {
+              "id": "3931805674",
+              "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Sid\": \"\",\n      \"Effect\": \"Allow\",\n      \"Action\": \"es:*\",\n      \"Resource\": \"*\",\n      \"Principal\": {\n        \"AWS\": \"*\"\n      }\n    }\n  ]\n}",
+              "override_json": null,
+              "policy_id": null,
+              "source_json": null,
+              "statement": [
+                {
+                  "actions": [
+                    "es:*"
+                  ],
+                  "condition": [],
+                  "effect": "Allow",
+                  "not_actions": [],
+                  "not_principals": [],
+                  "not_resources": [],
+                  "principals": [
+                    {
+                      "identifiers": [
+                        "*"
+                      ],
+                      "type": "AWS"
+                    }
+                  ],
+                  "resources": [
+                    "*"
+                  ],
+                  "sid": ""
+                }
+              ],
+              "version": "2012-10-17"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

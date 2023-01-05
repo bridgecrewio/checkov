@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -19,7 +20,7 @@ class BaseCloudFormationProvider:
     __slots__ = ("graph_connector", "supported_resource_types")
 
     def __init__(
-        self, graph_connector: DiGraph, supported_resource_types: dict[str, _ExtractImagesCallableAlias]
+        self, graph_connector: DiGraph, supported_resource_types: Mapping[str, _ExtractImagesCallableAlias]
     ) -> None:
         self.graph_connector = graph_connector
         self.supported_resource_types = supported_resource_types
