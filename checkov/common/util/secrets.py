@@ -139,12 +139,14 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
     return censored_line
 
 
-def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
-                                  entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
-                                  resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
-        list[tuple[int, str]]:
-    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+def omit_secret_value_from_checks(
+        check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
+        entity_code_lines: list[tuple[int, str]],
+        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+        resource_attributes_to_omit: ResourceAttributesToOmit | None = None
+) -> list[tuple[int, str]]:
+    # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    secrets = set()
     censored_code_lines = []
 
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
@@ -168,12 +170,15 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
     return censored_code_lines
 
 
-def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dict[str, CheckResult] | _CheckResult,
-                                        entity_code_lines: list[tuple[int, str]],
-                                        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
-                                        resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
-        list[tuple[int, str]]:
-    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+def omit_secret_value_from_graph_checks(
+        check: BaseGraphCheck,
+        check_result: dict[str, CheckResult] | _CheckResult,
+        entity_code_lines: list[tuple[int, str]],
+        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+        resource_attributes_to_omit: ResourceAttributesToOmit | None = None
+) -> list[tuple[int, str]]:
+    # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    secrets = set()
     censored_code_lines = []
 
     if check.category == CheckCategories.SECRETS.name and check_result.get('result') == CheckResult.FAILED:

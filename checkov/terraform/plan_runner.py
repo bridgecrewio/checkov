@@ -26,8 +26,6 @@ from checkov.terraform.plan_utils import create_definitions, build_definitions_c
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
-if TYPE_CHECKING:
-    from checkov.common.typing import ResourceAttributesToOmit
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -99,6 +97,8 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
+        # Update resource_attr_to_omit according to plan runner hardcoded RESOURCE_ATTRIBUTES_TO_OMIT
+        self._extend_resource_attributes_to_omit(runner_filter)
         self.deep_analysis = runner_filter.deep_analysis
         if runner_filter.repo_root_for_plan_enrichment:
             self.repo_root_for_plan_enrichment = os.path.abspath(runner_filter.repo_root_for_plan_enrichment[0])
@@ -127,10 +127,11 @@ class Runner(TerraformRunner):
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.definitions:
-            graph_report = self._get_graph_report(root_folder=root_folder,
-                                                  runner_filter=runner_filter,
-                                                  tf_local_graph=tf_local_graph,
-                                                  resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
+            graph_report = self._get_graph_report(
+                root_folder=root_folder,
+                runner_filter=runner_filter,
+                tf_local_graph=tf_local_graph
+            )
             merge_reports(report, graph_report)
 
         if runner_filter.run_image_referencer:
@@ -146,22 +147,32 @@ class Runner(TerraformRunner):
 
         return report
 
-    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter,
-                          tf_local_graph: Optional[TerraformLocalGraph],
-                          resource_attributes_to_omit: ResourceAttributesToOmit) -> Report:
+    @staticmethod
+    def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter):
+        for k, v in RESOURCE_ATTRIBUTES_TO_OMIT.items():
+            runner_filter.resource_attr_to_omit[k].update(v)
+
+    def _get_graph_report(
+            self,
+            root_folder: str,
+            runner_filter: RunnerFilter,
+            tf_local_graph: Optional[TerraformLocalGraph]
+    ) -> Report:
         if self._should_run_deep_analysis and tf_local_graph:
             deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             deep_analysis_graph_manager.filter_report(graph_report)
             return graph_report
-        return self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
+        return self.get_graph_checks_report(root_folder, runner_filter)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
         graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
-        tf_local_graph, _ = graph_manager.build_graph_from_source_directory(self.repo_root_for_plan_enrichment,
-                                                                            render_variables=True)
+        tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
+            self.repo_root_for_plan_enrichment,
+            render_variables=True
+        )
         self.graph_manager = graph_manager
         return tf_local_graph
 
@@ -201,7 +212,6 @@ class Runner(TerraformRunner):
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
                         continue
-
                     censored_code_lines = omit_secret_value_from_checks(
                         check=check,
                         check_result=check_result,

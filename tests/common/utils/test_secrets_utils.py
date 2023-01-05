@@ -71,16 +71,23 @@ def test_omit_secret_value_from_checks_by_secret_2():
 
     assert result == entity_lines_without_secrets
 
-def test_omit_secret_value_from_graph_checks_by_attribute(tfplan_resource_lines_with_secrets,
-                                                          tfplan_resource_config_with_secrets,
-                                                          tfplan_resource_lines_without_secrets):
+
+def test_omit_secret_value_from_graph_checks_by_attribute(
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        tfplan_resource_lines_without_secrets
+):
     check = BaseGraphCheck()
     check.resource_types = ['azurerm_key_vault_secret']
     check_result = {'result': CheckResult.FAILED}
-    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
+    resource_attributes_to_omit = {'azurerm_key_vault_secret': {'value'}}
 
-    result = omit_secret_value_from_graph_checks(check, check_result, tfplan_resource_lines_with_secrets, tfplan_resource_config_with_secrets,
-                                           resource_attributes_to_omit)
+    result = omit_secret_value_from_graph_checks(
+        check,
+        check_result,
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        resource_attributes_to_omit
+    )
 
     assert result == tfplan_resource_lines_without_secrets
-

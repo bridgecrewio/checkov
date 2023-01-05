@@ -48,7 +48,6 @@ from checkov.common.runners.base_runner import strtobool
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.images.image_referencer import Image
-    from checkov.common.typing import ResourceAttributesToOmit
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -205,8 +204,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter,
-                                resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
@@ -242,11 +240,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                 resource = f'{referrer_id}.{resource_id}'
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
                     entity_config = self.get_graph_resource_entity_config(entity)
-                    censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
-                                                                              entity_code_lines=entity_context.get(
-                                                                                  'code_lines'),
-                                                                              entity_config=entity_config,
-                                                                              resource_attributes_to_omit=resource_attributes_to_omit)
+                    censored_code_lines = omit_secret_value_from_graph_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_context.get('code_lines'),
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
