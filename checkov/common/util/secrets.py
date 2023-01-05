@@ -204,7 +204,7 @@ def omit_secret_value_from_graph_checks(
                     secret = entity_config.get(entity)
                     if isinstance(secret, list) and secret:
                         secrets.add(secret[0])
-    # ToDo: Should delete
+    # ToDo: Should delete After writing test and check it works exactly the same..
     # if resource_attributes_to_omit:
     #     # iterate over all resources
     #     for resource in check.resource_types:
