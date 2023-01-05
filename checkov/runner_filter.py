@@ -6,7 +6,7 @@ import fnmatch
 import os
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
@@ -120,15 +120,15 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
-        self.resource_attr_to_omit: Dict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
+        self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit_paths
         )
 
     @staticmethod
-    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> Dict[str, Set[str]]:
-        if not resource_attr_to_omit_paths:
-            return {}
+    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> DefaultDict[str, Set[str]]:
         resource_attributes_to_omit = defaultdict(lambda: set())
+        if not resource_attr_to_omit_paths:
+            return resource_attributes_to_omit
         for file_path in resource_attr_to_omit_paths:
             # Path can be relative or absolute. This one works for both
             try:

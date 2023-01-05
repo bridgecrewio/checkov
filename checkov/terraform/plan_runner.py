@@ -150,6 +150,7 @@ class Runner(TerraformRunner):
     @staticmethod
     def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter):
         for k, v in RESOURCE_ATTRIBUTES_TO_OMIT.items():
+            # It's ok as runner_filter is ALWAYS default dict with set() as value
             runner_filter.resource_attr_to_omit[k].update(v)
 
     def _get_graph_report(
