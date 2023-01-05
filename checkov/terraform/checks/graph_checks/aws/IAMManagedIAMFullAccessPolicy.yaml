@@ -3,7 +3,6 @@ metadata:
   id: "CKV2_AWS_51"
   name: "Ensure AWS Managed IAMFullAccess IAM policy is not used."
   category: "IAM"
-  severity: "high"
 definition:
   not:
     or:

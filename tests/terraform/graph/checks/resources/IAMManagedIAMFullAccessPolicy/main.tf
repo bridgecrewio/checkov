@@ -22,11 +22,22 @@ resource "aws_iam_role" "fail3" {
   assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
   managed_policy_arns = ["arn:aws:iam::aws:policy/IAMFullAccess"]
 }
+# Test iam role with mutiple policies including IAMFullAccess - Fail
+resource "aws_iam_role" "fail3a" {
+  name                = "role"
+  assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
+  managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess","arn:aws:iam::aws:policy/IAMFullAccess"]
+}
 # Test iam role with other policy - Pass
 resource "aws_iam_role" "pass3" {
   name                = "role"
   assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
   managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"]
+}
+# Test iam role with no managed policies - Pass
+resource "aws_iam_role" "pass3a" {
+  name                = "role"
+  assume_role_policy  = data.aws_iam_policy_document.instance_assume_role_policy.json
 }
 
 # Test policy attachment with IAMFullAccess - Fail
