@@ -125,7 +125,7 @@ class RunnerFilter(object):
         )
 
     @staticmethod
-    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> DefaultDict[str, Set[str]]:
+    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: Optional[List[str]]) -> DefaultDict[str, Set[str]]:
         resource_attributes_to_omit = defaultdict(lambda: set())
         if not resource_attr_to_omit_paths:
             return resource_attributes_to_omit
