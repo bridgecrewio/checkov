@@ -1,6 +1,12 @@
 resource "aws_apigatewayv2_stage" "fail_v2" {
-  api_id = aws_apigatewayv2_api.example.id
+  api_id = aws_apigatewayv2_api.fail_api_1.id
   name   = "example-stage"
+}
+
+resource "aws_apigatewayv2_api" "fail_api_1" {
+  name                       = "example-websocket-api"
+  protocol_type              = "WEBSOCKET"
+  route_selection_expression = "$request.body.action"
 }
 
 resource "aws_api_gateway_stage" "fail_v1" {
@@ -10,9 +16,15 @@ resource "aws_api_gateway_stage" "fail_v1" {
 }
 
 resource "aws_apigatewayv2_stage" "pass_v2" {
-  api_id = aws_apigatewayv2_api.example.id
+  api_id = aws_apigatewayv2_api.pass_api_1.id
   name   = "example-stage"
   client_certificate_id = "certificateId"
+}
+
+resource "aws_apigatewayv2_api" "pass_api_1" {
+  name                       = "example-websocket-api"
+  protocol_type              = "WEBSOCKET"
+  route_selection_expression = "$request.body.action"
 }
 
 resource "aws_api_gateway_stage" "pass_v1" {
