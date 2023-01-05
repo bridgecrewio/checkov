@@ -724,6 +724,23 @@ class TestRunnerFilter(unittest.TestCase):
         assert runner_filter.resource_attr_to_omit
         assert runner_filter.resource_attr_to_omit == third_file_real_parsed_content
 
+    def test_resource_attr_to_omit_load_config_sanity_combine(self):
+        combined_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password", "blabla"},
+            "key4": {"admin_password", "blabla2", "1", "2"},
+            "key5": {"plaintext", "admin_password"},
+            "key6": {"admin_password"},
+            "key7": {"plaintext"},
+            "*": {"plaintext"}
+        }
+        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
+        relative_path = "resource_attr_to_omit_configs/second.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, relative_path])
+        assert runner_filter.resource_attr_to_omit
+        assert runner_filter.resource_attr_to_omit == combined_file_real_parsed_content
+
 
 if __name__ == '__main__':
     unittest.main()
