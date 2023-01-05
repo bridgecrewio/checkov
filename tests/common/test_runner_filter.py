@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -101,7 +102,7 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_1"])
         # prioritze disable - also this is not valid input and would be blocked in main.py
         self.assertFalse(instance.should_run_check(check_id="CHECK_1"))
-    
+
     def test_should_run_omitted_wildcard(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertTrue(instance.should_run_check(check_id="CHECK_999"))
@@ -109,7 +110,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertTrue(instance.should_run_check(check_id="CHECK_999", bc_check_id="BC_CHECK_999"))
-    
+
     def test_should_run_omitted_wildcard2(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertFalse(instance.should_run_check(check_id="CHECK_AWS_909"))
@@ -117,7 +118,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard2_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertFalse(instance.should_run_check(check_id="CHECK_AWS_909", bc_check_id="BC_CHECK_AWS_909"))
-    
+
     def test_should_run_omitted_wildcard3(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE*"])
         self.assertTrue(instance.should_run_check(check_id="EXT_CHECK_909"))
@@ -635,6 +636,93 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
+    def test_resource_attr_to_omit_load_config_empty_list(self):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[])
+        assert not runner_filter.resource_attr_to_omit
+        # assert that we have default dict as well:
+        runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
+        assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
+
+    def test_resource_attr_to_omit_load_config_empty_none(self):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=None)
+        assert not runner_filter.resource_attr_to_omit
+        # assert that we have default dict as well:
+        runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
+        assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
+
+    def test_resource_attr_to_omit_load_config_sanity_relative_path(self):
+        """
+        This check is more than a Sanity test - it also checks parser edge cases -
+        - key has single str value
+        - key has a list of values, one of them has incompatible type (first file content contains single str value
+            in key3 & int value in key4. Both need to be parsed into a set)
+        """
+        first_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password"},
+            "key4": {"admin_password", "1"},
+            "key5": {"plaintext"},
+            "*": {"plaintext"}
+        }
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["resource_attr_to_omit_configs/first.json"])
+        assert runner_filter.resource_attr_to_omit
+        assert runner_filter.resource_attr_to_omit == first_file_real_parsed_content
+
+    def test_resource_attr_to_omit_load_config_sanity_absolute_path(self):
+        """
+        This check is more than a Sanity test - it also checks parser edge cases -
+        - key has single str value
+        - key has a list of values, one of them has incompatible type (first file content contains single str value
+            in key3 & int value in key4. Both need to be parsed into a set)
+        """
+        first_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password"},
+            "key4": {"admin_password", "1"},
+            "key5": {"plaintext"},
+            "*": {"plaintext"}
+        }
+        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
+        assert runner_filter.resource_attr_to_omit
+        assert runner_filter.resource_attr_to_omit == first_file_real_parsed_content
+
+    def test_resource_attr_to_omit_load_config_corrupted(self):
+        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
+        assert not runner_filter.resource_attr_to_omit
+
+    def test_resource_attr_to_omit_load_config_one_corrupted_one_fine(self):
+        first_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password"},
+            "key4": {"admin_password", "1"},
+            "key5": {"plaintext"},
+            "*": {"plaintext"}
+        }
+        corrupted_absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
+        fine_relative_path = "resource_attr_to_omit_configs/first.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
+        assert runner_filter.resource_attr_to_omit
+        assert runner_filter.resource_attr_to_omit == first_file_real_parsed_content
+
+    def test_resource_attr_to_omit_load_config_int_value(self):
+        third_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password"},
+            "key4": {"admin_password", "1"},
+            "key5": {"plaintext"},
+            "*": {"plaintext"}
+        }
+        relative_path = "resource_attr_to_omit_configs/third.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+        assert runner_filter.resource_attr_to_omit
+        assert runner_filter.resource_attr_to_omit == third_file_real_parsed_content
 
 
 if __name__ == '__main__':
