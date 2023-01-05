@@ -112,7 +112,7 @@ class CustomRegexDetector(RegexBasedDetector):
         detectors = load_detectors()
 
         for detector in detectors:
-            self.denylist.add(re.compile(r'{}'.format(detector["Regex"])))
+            self.denylist.add(re.compile('{}'.format(detector["Regex"])))
             self.regex_to_metadata[detector["Regex"]] = detector
 
     def analyze_line(
