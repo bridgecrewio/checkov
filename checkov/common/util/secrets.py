@@ -9,6 +9,7 @@ import re
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.consts import RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -188,13 +189,34 @@ def omit_secret_value_from_graph_checks(
         }
 
     if resource_attributes_to_omit:
+        # Universal mask ('*') might exist in resource_attributes_to_omit. If it does exist, we need to mask the all
+        # entities in resource types according to resource_attributes_to_omit.get('*')
+        universal_mask = resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set())
         for resource in check.resource_types:
-            if resource in resource_attributes_to_omit:
-                for attribute in resource_attributes_to_omit.get(resource):  # type:ignore[union-attr]
-                    if attribute in entity_config:
-                        secret = entity_config.get(attribute)
-                        if isinstance(secret, list) and secret:
-                            secrets.add(secret[0])
+            resource_masks = resource_attributes_to_omit.get(resource, set())
+            # resource_masks should contain all mask rules that should apply on this resource
+            resource_masks.update(universal_mask)
+            if not resource_masks:
+                continue
+            # If entity is one that should be masked, we add it the value to secrets
+            for entity in entity_config.keys():
+                if entity in resource_masks:
+                    secret = entity_config.get(entity)
+                    if isinstance(secret, list) and secret:
+                        secrets.add(secret[0])
+    # ToDo: Should delete
+    # if resource_attributes_to_omit:
+    #     # iterate over all resources
+    #     for resource in check.resource_types:
+    #         # If mask config exist for it
+    #         if resource in resource_attributes_to_omit:
+    #             # Get all mask rules
+    #             for attribute in resource_attributes_to_omit.get(resource):  # type:ignore[union-attr]
+    #                 # If one mask rule entry is in it - add it to secret if it's not null
+    #                 if attribute in entity_config:
+    #                     secret2 = entity_config.get(attribute)
+    #                     if isinstance(secret2, list) and secret2:
+    #                         secrets.add(secret2[0])
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
