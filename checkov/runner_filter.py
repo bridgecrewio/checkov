@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import logging
 import fnmatch
+import os
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
@@ -45,7 +47,8 @@ class RunnerFilter(object):
             enable_secret_scan_all_files: bool = False,
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
-            repo_root_for_plan_enrichment: Optional[List[str]] = None
+            repo_root_for_plan_enrichment: Optional[List[str]] = None,
+            resource_attr_to_omit_paths: List[str] = []
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -117,6 +120,50 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
+        self.resource_attr_to_omit = self._load_resource_attr_to_omit(resource_attr_to_omit_paths)
+
+    def _load_resource_attr_to_omit(self, resource_attr_to_omit_paths: List[str]) -> dict:
+        if not resource_attr_to_omit_paths:
+            return {}
+        resource_attributes_to_omit = defaultdict(lambda: [])
+        for file_path in resource_attr_to_omit_paths:
+            # Path can be relative or absolute. This one works for both
+            try:
+                if not os.path.isfile(file_path):
+                    logging.error(
+                        "Error parsing config (resource attr to omit): Given config path is invalid",
+                        extra={"path": file_path}
+                    )
+                    continue
+                try:
+                    # Read file content and load Json data:
+                    json_data = json.load(open(file_path, 'r'))
+                except json.JSONDecodeError:
+                    logging.error(
+                        "Error parsing config (resource attr to omit): File contains invalid json data",
+                        extra={"path": file_path}
+                    )
+                    continue
+                # For each key in json data we should extend current config
+                for k, v in json_data.items():
+                    config_data = v
+                    if not isinstance(v, list):
+                        if isinstance(v, str):
+                            config_data = [v]
+                        else:
+                            logging.error("Config contains unsupported type",
+                                extra={"path": file_path, "resource_type": k, "value": v}
+                            )
+                            continue
+                    config_data = [entry for entry in config_data if isinstance(entry, str)]
+                    resource_attributes_to_omit[k].extend(config_data)
+            except Exception as exc:
+                logging.error(
+                    "Unknown Exception occured when tring to update config from path",
+                    extra={"path": file_path}
+                )
+            print(resource_attributes_to_omit)
+        return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
