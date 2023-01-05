@@ -38,6 +38,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunUnsafeCurl(self):
         self.go("RunUnsafeCurl")
 
+    def test_RunUnsafeWget(self):
+        self.go("RunUnsafeWget")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
