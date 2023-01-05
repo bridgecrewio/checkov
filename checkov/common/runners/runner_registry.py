@@ -81,7 +81,12 @@ class RunnerRegistry:
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
-        if len(self.runners) == 1:
+        if len(self.runners) == 0:
+            logging.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
+                          '(e.g., `--file xyz.yaml --framework terraform`), or if you specify a framework with missing dependencies (e.g., '
+                          'helm or kustomize, which require those tools to be on your system). Running with LOG_LEVEL=DEBUG may provide more information.')
+            return []
+        elif len(self.runners) == 1:
             runner_check_type = self.runners[0].check_type
             if self.licensing_integration.is_runner_valid(runner_check_type):
                 reports: Iterable[Report | list[Report]] = [
