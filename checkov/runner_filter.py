@@ -48,7 +48,7 @@ class RunnerFilter(object):
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
-            resource_attr_to_omit_paths: List[str] = []
+            resource_attr_to_omit_paths: Optional[List[str]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -154,7 +154,8 @@ class RunnerFilter(object):
                         if isinstance(v, str):
                             config_data = [v]
                         else:
-                            logging.error("Config contains unsupported type",
+                            logging.error(
+                                "Config contains unsupported type",
                                 extra={"path": file_path, "resource_type": k, "value": v}
                             )
                             continue

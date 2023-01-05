@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, TypeVar, Set
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:

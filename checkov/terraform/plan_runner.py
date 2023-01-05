@@ -4,7 +4,7 @@ import logging
 import os
 import platform
 
-from typing import Type, Optional, TYPE_CHECKING
+from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
