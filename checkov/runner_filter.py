@@ -120,9 +120,10 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
-        self.resource_attr_to_omit = self._load_resource_attr_to_omit(resource_attr_to_omit_paths)
+        self.resource_attr_to_omit = RunnerFilter._load_resource_attr_to_omit(resource_attr_to_omit_paths)
 
-    def _load_resource_attr_to_omit(self, resource_attr_to_omit_paths: List[str]) -> dict:
+    @staticmethod
+    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> dict:
         if not resource_attr_to_omit_paths:
             return {}
         resource_attributes_to_omit = defaultdict(lambda: [])
