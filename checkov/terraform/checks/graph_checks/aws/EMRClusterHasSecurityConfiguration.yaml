@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_AWS_55"
+  name: "Ensure AWS EMR cluster is configured with security configuration"
+  category: "ENCRYPTION"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_emr_cluster"
+  attribute: "security_configuration"
+  operator: "exists"
