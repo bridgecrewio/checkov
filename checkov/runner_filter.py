@@ -120,13 +120,15 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
-        self.resource_attr_to_omit = RunnerFilter._load_resource_attr_to_omit(resource_attr_to_omit_paths)
+        self.resource_attr_to_omit: Dict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
+            resource_attr_to_omit_paths
+        )
 
     @staticmethod
-    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> dict:
+    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: List[str]) -> Dict[str, Set[str]]:
         if not resource_attr_to_omit_paths:
             return {}
-        resource_attributes_to_omit = defaultdict(lambda: [])
+        resource_attributes_to_omit = defaultdict(lambda: set())
         for file_path in resource_attr_to_omit_paths:
             # Path can be relative or absolute. This one works for both
             try:
@@ -157,13 +159,12 @@ class RunnerFilter(object):
                             )
                             continue
                     config_data = [entry for entry in config_data if isinstance(entry, str)]
-                    resource_attributes_to_omit[k].extend(config_data)
-            except Exception as exc:
+                    resource_attributes_to_omit[k].update(config_data)
+            except Exception:
                 logging.error(
                     "Unknown Exception occured when tring to update config from path",
                     extra={"path": file_path}
                 )
-            print(resource_attributes_to_omit)
         return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
