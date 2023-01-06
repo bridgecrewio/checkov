@@ -6,9 +6,9 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class AzureServicebusPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure 'public network access enabled' is set to 'False' for Azure Servicebus"
+        name = "Ensure 'public network access enabled' is set to 'False' for Azure Service Bus"
         id = "CKV_AZURE_204"
-        supported_resources = ['azurerm_servicebus_namespace']
+        supported_resources = ("azurerm_servicebus_namespace",)
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

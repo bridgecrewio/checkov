@@ -9,13 +9,13 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class CDNDisableHttpEndpoints(BaseResourceValueCheck):
     def __init__(self) -> None:
         # This is the full description of your check
-        description = "Ensure the CDN Disables the Http endpoint"
+        description = "Ensure the Azure CDN disables the HTTP endpoint"
 
         # This is the Unique ID for your check
         id = "CKV_AZURE_197"
 
         # These are the Terraform objects supported by this check (ex: aws_iam_policy_document)
-        supported_resources = ['azurerm_cdn_endpoint']
+        supported_resources = ("azurerm_cdn_endpoint",)
 
         # Valid CheckCategories are defined in checkov/common/models/enums.py
         categories = (CheckCategories.NETWORKING,)
