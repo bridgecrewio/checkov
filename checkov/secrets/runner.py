@@ -293,7 +293,7 @@ class Runner(BaseRunner[None]):
 
     @time_it
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
-        if not os.getenv("BC_API_KEY") or not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
+        if not bc_integration.bc_api_key or not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
             logging.debug(
                 'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS

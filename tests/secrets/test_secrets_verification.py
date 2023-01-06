@@ -11,24 +11,19 @@ from checkov.secrets.consts import VerifySecretsResult
 from checkov.secrets.runner import Runner
 
 
-@pytest.mark.parametrize(
-    "validate_secrets_flag,api_key",
-    [
-        (None, "someKey"),
-        (None, None),
-        ("True", None)
-    ],
-)
-def test_verify_secrets_insufficient_params(validate_secrets_flag: str | None, api_key: str | None) -> None:
-    if validate_secrets_flag:
-        os.environ["CKV_VALIDATE_SECRETS"] = validate_secrets_flag
-    if api_key:
-        os.environ["BC_API_KEY"] = api_key
+def test_verify_secrets_insufficient_params_no_api_key(mock_bc_integration_no_api_key: BcPlatformIntegration) -> None:
+    os.environ["CKV_VALIDATE_SECRETS"] = "true"
 
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     os.environ.pop("CKV_VALIDATE_SECRETS", None)
-    os.environ.pop("BC_API_KEY", None)
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+
+def test_verify_secrets_insufficient_params_no_flag(mock_bc_integration: BcPlatformIntegration) -> None:
+    # Not setting CKV_VALIDATE_SECRETS env var
+
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
 
