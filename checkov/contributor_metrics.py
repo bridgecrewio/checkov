@@ -16,10 +16,11 @@ def report_contributor_metrics(repository: str, source: str,
     logging.debug(f"Attempting to get log history for repository {repository} under source {source}")
     request_body = parse_gitlog(repository, source)
     number_of_attempts = 1
+    contributors_report_api_url = f"{bc_integration.api_url}/api/v2/contributors/report"
     if request_body:
-        while number_of_attempts <= 3:
+        while number_of_attempts <= 4:
             response = request_wrapper(
-                "POST", f"{bc_integration.api_url}/api/v1/contributors/report",
+                "POST", contributors_report_api_url,
                 headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
             )
             if response.status_code < 300:
@@ -27,6 +28,7 @@ def report_contributor_metrics(repository: str, source: str,
                     f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")
                 break
             else:
+                contributors_report_api_url = f"{bc_integration.api_url}/api/v1/contributors/report"
                 failed_attempt = {
                     'message': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
                     'timestamp': str(datetime.datetime.now())}

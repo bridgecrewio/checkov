@@ -30,3 +30,5 @@ checkov/terraform/module_loading/loaders/github_access_token_loader.py
 checkov/terraform/module_loading/loaders/git_loader.py
 tests/common/utils/conftest.py
 tests/terraform/runner/resources/get_graph_resource_entity_config/main.tf
+tests/terraform/runner/tf_plan_skip_check_regex/resource/.*
+tests/terraform/runner/tfplan2.json
