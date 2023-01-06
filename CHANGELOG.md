@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.238...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.239...HEAD)
+
+## [2.2.239](https://github.com/bridgecrewio/checkov/compare/2.2.238...2.2.239) - 2023-01-06
+
+### Bug Fix
+
+- **general:** fix incorrect billing message when frameworks are removed from --framework list - [#4201](https://github.com/bridgecrewio/checkov/pull/4201)
 
 ## [2.2.238](https://github.com/bridgecrewio/checkov/compare/2.2.234...2.2.238) - 2023-01-05
 
