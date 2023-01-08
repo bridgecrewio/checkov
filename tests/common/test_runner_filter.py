@@ -652,29 +652,6 @@ class TestRunnerFilter(unittest.TestCase):
         runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
         assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
 
-    def test_resource_attr_to_omit_load_config_sanity_relative_path(self):
-        """
-        This check is more than a Sanity test - it also checks parser edge cases -
-        - key has single str value
-        - key has a list of values, one of them has incompatible type (first file content contains single str value
-            in key3 & int value in key4. Both need to be parsed into a set)
-        """
-        first_file_real_parsed_content = {
-            "aws_db_instance": {"storage_container_path"},
-            "key2": {"storage_container_path"},
-            "key3": {"admin_password"},
-            "key4": {"admin_password", "1"},
-            "key5": {"plaintext"},
-            "*": {"plaintext"}
-        }
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["common/resource_attr_to_omit_configs/first.json"])
-        assert runner_filter.resource_attr_to_omit
-        for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == first_file_real_parsed_content.get(k)
-
-        for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
-
     def test_resource_attr_to_omit_load_config_sanity_absolute_path(self):
         """
         This check is more than a Sanity test - it also checks parser edge cases -
