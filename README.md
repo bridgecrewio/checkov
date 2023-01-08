@@ -294,8 +294,26 @@ Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on jso
 checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
 ```
 
+Supply a path to config file (JSON format) that contains mapping between resource and specific attributes it might contain.
+Checkov will use this config to mask (obfuscate) the resource attributes values.
+For example:
+ - config file that contains (detailed below) will cause the azurerm_key_vault_secret.value to be masked.
+ ```sh
+ { "azurerm_key_vault_secret": ["value"]}
+```
+ - config file that contains (detailed below) will cause the {RESOURCE} that has value attribute to be masked.
+ ```sh
+ { "*": ["value"]}
+```
+Usage example:
+```sh
+checkov -d --framework terraform_plan --resource-attr-to-omit PATH_TO_FILE.json
+```
 
-
+Moreover, multiple config files can be added, for example::
+```sh
+checkov -d --framework terraform_plan --resource-attr-to-omit PATH_TO_FILE1.json --resource-attr-to-omit PATH_TO_FILE2.json
+```
 
 ### Suppressing/Ignoring a check
 
