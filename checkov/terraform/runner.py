@@ -42,6 +42,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
+from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 
@@ -245,7 +246,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         # for plan resources
                         resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                         if not self.enable_nested_modules:
-                            resource = ".".join(resource.split(".")[-4:])
+                            resource = get_resource_id_without_nested_modules(resource)
                     entity_config = self.get_graph_resource_entity_config(entity)
                     censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
                                                                               entity_code_lines=entity_context.get(

@@ -22,7 +22,8 @@ from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.plan_utils import create_definitions, build_definitions_context
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context, \
+    get_resource_id_without_nested_modules
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
@@ -115,7 +116,7 @@ class Runner(TerraformRunner):
                         if self.enable_nested_modules:
                             report.add_resource(f'{vertex.path}:{vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)}')
                         else:
-                            resource_id = ".".join(vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS).split(".")[-4:])
+                            resource_id = get_resource_id_without_nested_modules(CustomAttributes.TF_RESOURCE_ADDRESS)
                             report.add_resource(f'{vertex.path}:{resource_id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
@@ -197,7 +198,7 @@ class Runner(TerraformRunner):
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
-                entity_id = entity_address if self.enable_nested_modules else ".".join(entity_address.split('.')[-4:])
+                entity_id = entity_address if self.enable_nested_modules else get_resource_id_without_nested_modules(entity_address)
                 _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
