@@ -667,8 +667,7 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=["resource_attr_to_omit_configs/first.json"])
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["common/resource_attr_to_omit_configs/first.json"])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == first_file_real_parsed_content.get(k)
@@ -691,9 +690,9 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
+
+        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == first_file_real_parsed_content.get(k)
@@ -702,13 +701,12 @@ class TestRunnerFilter(unittest.TestCase):
             assert v == runner_filter.resource_attr_to_omit.get(k)
 
     def test_resource_attr_to_omit_load_config_corrupted(self):
-        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
+        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/corrupted.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
         assert not runner_filter.resource_attr_to_omit
 
     def test_resource_attr_to_omit_load_config_not_exists(self):
-        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/not_exists.json"
+        absolute_path = os.path.dirname(os.path.realpath(__file__)) + "/resource_attr_to_omit_configs/not_exists.json"
         runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
         assert not runner_filter.resource_attr_to_omit
 
@@ -722,10 +720,9 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        corrupted_absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
-        fine_relative_path = "resource_attr_to_omit_configs/first.json"
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
+        corrupted_absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/corrupted.json"
+        fine_relative_path = "common/resource_attr_to_omit_configs/first.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
@@ -743,9 +740,8 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        relative_path = "resource_attr_to_omit_configs/third.json"
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+        relative_path = "common/resource_attr_to_omit_configs/third.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == third_file_real_parsed_content.get(k)
@@ -764,10 +760,9 @@ class TestRunnerFilter(unittest.TestCase):
             "key7": {"plaintext"},
             "*": {"plaintext"}
         }
-        absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
-        relative_path = "resource_attr_to_omit_configs/second.json"
-        with patch("os.path.isfile", return_value=True):
-            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, relative_path])
+        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
+        relative_path = "common/resource_attr_to_omit_configs/second.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, relative_path])
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
