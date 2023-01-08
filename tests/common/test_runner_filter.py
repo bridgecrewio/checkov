@@ -724,7 +724,8 @@ class TestRunnerFilter(unittest.TestCase):
         }
         corrupted_absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
         fine_relative_path = "resource_attr_to_omit_configs/first.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
+        with patch("os.path.isfile", return_value=True):
+            runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():

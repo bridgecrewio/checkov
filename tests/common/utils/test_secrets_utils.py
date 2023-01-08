@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -122,7 +124,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_confi
 
     # absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
     relative_path = "../resource_attr_to_omit_configs/real_keys.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    with patch("os.path.isfile", return_value=True):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -143,7 +146,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_conf
 
     # absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
     relative_path = "../resource_attr_to_omit_configs/universal_key.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    with patch("os.path.isfile", return_value=True):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -164,7 +168,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_con
 
     # absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
     relative_path = "../resource_attr_to_omit_configs/duplicated_key.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    with patch("os.path.isfile", return_value=True):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -185,7 +190,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
 
     # absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/first.json"
     relative_path = "../resource_attr_to_omit_configs/multiple_keys.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    with patch("os.path.isfile", return_value=True):
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
