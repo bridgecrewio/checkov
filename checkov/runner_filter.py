@@ -161,9 +161,9 @@ class RunnerFilter(object):
                             continue
                     config_data = [entry for entry in config_data if isinstance(entry, str)]
                     resource_attributes_to_omit[k].update(config_data)
-            except Exception:
+            except Exception as exc:
                 logging.error(
-                    "Unknown Exception occured when tring to update config from path",
+                    f"Unknown Exception occured when trying to update config from path: {str(exc)}",
                     extra={"path": file_path}
                 )
         return resource_attributes_to_omit
