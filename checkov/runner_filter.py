@@ -173,6 +173,7 @@ class RunnerFilter(object):
         )
 
         if not should_run_check:
+            logging.debug(f'Should run check {check_id}: False')
             return False
 
         # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
