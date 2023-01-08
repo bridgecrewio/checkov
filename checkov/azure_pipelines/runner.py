@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any, Dict, List
 
+from networkx import DiGraph
+
 from checkov.azure_pipelines.checks.registry import registry
-from checkov.common.output.report import CheckType
+from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
+from checkov.azure_pipelines.image_referencer.manager import AzurePipelinesImageReferencerManager
+from checkov.common.images.image_referencer import ImageReferencerMixin, Image
+from checkov.common.output.report import CheckType, Report
+from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.common.util.consts import START_LINE, END_LINE
 
@@ -13,7 +20,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-class Runner(YamlRunner):
+class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
     check_type = CheckType.AZURE_PIPELINES  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:
@@ -26,7 +33,7 @@ class Runner(YamlRunner):
         self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
-            return super()._parse_file(f=f)
+            return super()._parse_file(f=f)  # type: ignore
 
         return None
 
@@ -37,40 +44,51 @@ class Runner(YamlRunner):
                      start_line: int = -1, end_line: int = -1) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
-        resource_name = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
+        resource_name: str = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
         return resource_name if resource_name else key
 
+    def run(
+            self,
+            root_folder: str | None = None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True,
+    ) -> Report | list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
+        report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
+                             files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
 
-def generate_resource_key_recursive(start_line: int, end_line: int,
-                                    file_conf: Dict[str, Any] | List[Dict[str, Any]], resource_key: str | None = None
-                                    ) -> str | None:
-    if not isinstance(file_conf, dict):
-        return resource_key
+            image_report = self.check_container_image_references(
+                root_path=root_folder,
+                runner_filter=runner_filter,
+                definitions=self.definitions
+            )
 
-    def _get_resource_from_code_block(block_to_inspect: dict[str, Any], inspected_key: str | None) -> str | None:
-        if block_to_inspect[START_LINE] <= start_line <= end_line <= block_to_inspect[END_LINE]:
-            block_name = block_to_inspect.get('displayName',
-                                              block_to_inspect.get('name',
-                                                                   block_to_inspect.get('job',
-                                                                                        block_to_inspect.get('stage',
-                                                                                                             False))))
-            inspected_key = f'{inspected_key}({block_name})' if block_name else inspected_key
-            if block_to_inspect[START_LINE] == start_line:
-                return inspected_key
-            return generate_resource_key_recursive(start_line, end_line, block_to_inspect, resource_key=inspected_key)
-        return None
+            if image_report:
+                return [report, image_report]  # type:ignore[list-item]  # report can only be of type Report, not a list
 
-    for code_block_name, code_block in file_conf.items():
-        if isinstance(code_block, dict):
-            new_key = f'{resource_key}.{code_block_name}' if resource_key else code_block_name
-            resource = _get_resource_from_code_block(code_block, new_key)
-            if resource:
-                return resource
-        elif isinstance(code_block, list):
-            for index, item in enumerate(code_block):
-                if isinstance(item, dict):
-                    resource_key_to_inspect = f'{resource_key}.{code_block_name}[{index}]' if resource_key else f'{code_block_name}[{index}]'
-                    resource = _get_resource_from_code_block(item, resource_key_to_inspect)
-                    if resource:
-                        return resource
-    return resource_key
+        return report
+
+    def extract_images(
+            self,
+            graph_connector: DiGraph | None = None,
+            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        images: list[Image] = []
+        if not definitions:
+            return images
+
+        for file, config in definitions.items():
+            if isinstance(config, list):
+                continue
+
+            manager = AzurePipelinesImageReferencerManager(workflow_config=config, file_path=file)
+            images.extend(manager.extract_images_from_workflow())
+
+        return images
