@@ -115,7 +115,8 @@ class Runner(TerraformRunner):
                         if self.enable_nested_modules:
                             report.add_resource(f'{vertex.path}:{vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)}')
                         else:
-                            report.add_resource(f'{vertex.path}:{vertex.id}')
+                            resource_id = ".".join(vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS).split(".")[-4:])
+                            report.add_resource(f'{vertex.path}:{resource_id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph()

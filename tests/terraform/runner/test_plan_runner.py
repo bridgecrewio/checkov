@@ -716,6 +716,8 @@ class TestRunnerValid(unittest.TestCase):
         for check in itertools.chain(report.failed_checks, report.passed_checks):
             self.assertIn(check.resource, valid_resources_ids)
 
+        self.assertEqual(len(report.resources), 3)
+
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True'})
     def test_plan_resources_ids_with_nested_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -735,6 +737,8 @@ class TestRunnerValid(unittest.TestCase):
 
         for check in itertools.chain(report.failed_checks, report.passed_checks):
             self.assertIn(check.resource, valid_resources_ids)
+
+        self.assertEqual(len(report.resources), 3)
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
