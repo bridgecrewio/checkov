@@ -171,6 +171,7 @@ class RunnerFilter(object):
             implicit_run or
             (is_external and self.all_external)
         )
+        logging.debug(f'(should_run_check) run_severity = {run_severity}, explicit_run = {explicit_run}, implicit_run {implicit_run}, is_external {is_external}, all_external = {self.all_external}')
 
         if not should_run_check:
             logging.debug(f'Should run check {check_id}: False')
@@ -179,6 +180,7 @@ class RunnerFilter(object):
         # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
         # It can, however, be skipped.
         if not is_policy_filtered:
+            logging.debug(f'not is_policy_filtered {check_id}: should_run_check = False')
             should_run_check = False
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
@@ -191,15 +193,20 @@ class RunnerFilter(object):
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
             check_id in self.suppressed_policies
         )
+        logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
+        logging.debug(
+            f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}')
 
         if should_skip_check:
             result = False
+            logging.debug(f'should_skip_check {check_id}: {result}')
         elif should_run_check:
             result = True
+            logging.debug(f'should_run_check {check_id}: {result}')
         else:
             result = False
+            logging.debug(f'default {check_id}: {result}')
 
-        logging.debug(f'Should run check {check_id}: {result}')
         return result
 
     def _match_regex_pattern(self, check_id: str, file_origin_paths: List[str] | None, root_folder: str | None) -> bool:
