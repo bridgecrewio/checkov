@@ -179,7 +179,7 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../common/resource_attr_to_omit_configs/multiple_keys.json"
+    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.json"
     runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
