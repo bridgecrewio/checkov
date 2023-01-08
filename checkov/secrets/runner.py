@@ -298,6 +298,10 @@ class Runner(BaseRunner[None]):
                 'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
+        if bc_integration.skip_download:
+            logging.debug('Skipping secrets verification as flag skip-download was specified')
+            return VerifySecretsResult.INSUFFICIENT_PARAMS
+
         request_body = {
             "reportS3Path": enriched_secrets_s3_path
         }
