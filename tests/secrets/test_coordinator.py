@@ -15,5 +15,5 @@ class TestCoordinator(unittest.TestCase):
             root_folder=test_root_folder, runner_filter=RunnerFilter(framework=['secrets'])
         )
         secrets_resources_in_coordinator = set(secret_runner.secrets_coordinator.get_resources())
-        failed_resources_from_report = set(f"{record.file_abs_path}:{record.resource}" for record in report.failed_checks)
+        failed_resources_from_report = set(f"{record.file_path}:{record.resource}" for record in report.failed_checks)
         self.assertEqual(secrets_resources_in_coordinator, failed_resources_from_report)
