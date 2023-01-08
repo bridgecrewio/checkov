@@ -667,7 +667,7 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["../common/resource_attr_to_omit_configs/first.json"])
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["common/resource_attr_to_omit_configs/first.json"])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == first_file_real_parsed_content.get(k)
