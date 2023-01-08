@@ -202,13 +202,13 @@ class EntropyKeywordCombinator(BasePlugin):
             return set()
 
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
+        keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
         if is_iac:
             filetype = determine_file_type(filename)
             single_line_parser = SINGLE_LINE_PARSER.get(filetype)
             multiline_parsers = MULTILINE_PARSERS.get(filetype)
 
             # classic key-value pair
-            keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
             if keyword_on_key:
                 if single_line_parser:
                     return single_line_parser.detect_secret(
@@ -254,7 +254,8 @@ class EntropyKeywordCombinator(BasePlugin):
                         return potential_secrets
         else:
             return self.detect_secret(
-                scanners=self.high_entropy_scanners,
+                # If we found a keyword (i.e. db_pass = ), lower the threshold to the iac threshold
+                scanners=self.high_entropy_scanners if not keyword_on_key else self.high_entropy_scanners_iac,
                 filename=filename,
                 line=line,
                 line_number=line_number,
