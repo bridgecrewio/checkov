@@ -194,12 +194,14 @@ class RunnerFilter(object):
 
         if should_skip_check:
             result = False
+            logging.debug(f'should_skip_check {check_id}: {result}')
         elif should_run_check:
             result = True
+            logging.debug(f'should_run_check {check_id}: {result}')
         else:
             result = False
+            logging.debug(f'default {check_id}: {result}')
 
-        logging.debug(f'Should run check {check_id}: {result}')
         return result
 
     def _match_regex_pattern(self, check_id: str, file_origin_paths: List[str] | None, root_folder: str | None) -> bool:
