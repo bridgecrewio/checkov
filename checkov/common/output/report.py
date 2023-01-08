@@ -596,7 +596,7 @@ class Report:
         return report
 
     @staticmethod
-    def get_plan_resource_raw_id(resource_id):
+    def get_plan_resource_raw_id(resource_id: str) -> str:
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
         if '[' in resource_raw_id:
             resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
