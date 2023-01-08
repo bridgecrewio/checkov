@@ -41,7 +41,7 @@ def load_detectors() -> list[dict[str, Any]]:
 
 def modify_secrets_policy_to_detectors(policies_list: List[dict[str, Any]]) -> List[dict[str, Any]]:
     secrets_list = transforms_policies_to_detectors_list(policies_list)
-    logging.info(f"(modify_secrets_policy_to_detectors) secrets_list = {secrets_list}")
+    logging.debug(f"(modify_secrets_policy_to_detectors) secrets_list = {secrets_list}")
     return secrets_list
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import linecache
 import logging
 import os
@@ -153,9 +154,11 @@ class Runner(BaseRunner[None]):
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
+                    logging.debug(f'Secrets was filter - no check_id line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
                 if secret_key in secrets_duplication:
+                    logging.debug(f'Secrets was filter - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -163,6 +166,8 @@ class Runner(BaseRunner[None]):
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
+                    logging.debug(
+                        f'Secrets was filter - should_run_check. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
@@ -207,7 +212,7 @@ class Runner(BaseRunner[None]):
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             if enriched_secrets_s3_path:
                 self.verify_secrets(report, enriched_secrets_s3_path)
-
+            logging.debug(f'report fail checks len: {len(report.failed_checks)}')
             return report
 
     @staticmethod
@@ -240,7 +245,7 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results {file_results}')
+            logging.info(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
