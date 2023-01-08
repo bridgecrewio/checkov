@@ -194,7 +194,7 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
 
-        secret_validation_status_string = "" # nosec
+        secret_validation_status_string = ""  # nosec
         if self.check_result["result"] == CheckResult.FAILED and \
                 hasattr(self, 'validation_status') and \
                 os.getenv("CKV_VALIDATE_SECRETS"):
