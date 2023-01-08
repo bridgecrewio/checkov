@@ -669,10 +669,10 @@ class TestRunnerFilter(unittest.TestCase):
         runner_filter = RunnerFilter(resource_attr_to_omit_paths=["resource_attr_to_omit_configs/first.json"])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == first_file_real_parsed_content.get(k)
+            self.assertTrue(v == first_file_real_parsed_content.get(k))
 
         for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
+            self.assertTrue(v == runner_filter.resource_attr_to_omit.get(k))
 
     def test_resource_attr_to_omit_load_config_sanity_absolute_path(self):
         """
@@ -693,10 +693,10 @@ class TestRunnerFilter(unittest.TestCase):
         runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == first_file_real_parsed_content.get(k)
+            self.assertTrue(v == first_file_real_parsed_content.get(k))
 
         for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
+            self.assertTrue(v == runner_filter.resource_attr_to_omit.get(k))
 
     def test_resource_attr_to_omit_load_config_corrupted(self):
         absolute_path = os.getcwd() + "/resource_attr_to_omit_configs/corrupted.json"
@@ -718,11 +718,10 @@ class TestRunnerFilter(unittest.TestCase):
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == first_file_real_parsed_content.get(k)
+            self.assertTrue(v == first_file_real_parsed_content.get(k))
 
         for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
-        assert dict(runner_filter.resource_attr_to_omit) == first_file_real_parsed_content
+            self.assertTrue(v == runner_filter.resource_attr_to_omit.get(k))
 
     def test_resource_attr_to_omit_load_config_int_value(self):
         third_file_real_parsed_content = {
@@ -737,10 +736,10 @@ class TestRunnerFilter(unittest.TestCase):
         runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == third_file_real_parsed_content.get(k)
+            self.assertTrue(v == third_file_real_parsed_content.get(k))
 
         for k, v in third_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
+            self.assertTrue(v == runner_filter.resource_attr_to_omit.get(k))
 
     def test_resource_attr_to_omit_load_config_sanity_combine(self):
         combined_file_real_parsed_content = {
@@ -759,10 +758,10 @@ class TestRunnerFilter(unittest.TestCase):
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == combined_file_real_parsed_content.get(k)
+            self.assertTrue(v == combined_file_real_parsed_content.get(k))
 
         for k, v in combined_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
+            self.assertTrue(v == runner_filter.resource_attr_to_omit.get(k))
 
 
 if __name__ == '__main__':
