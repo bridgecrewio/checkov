@@ -166,13 +166,6 @@ def omit_secret_value_from_checks(
             if isinstance(secret, list) and secret:
                 secrets.add(secret[0])
 
-    # ToDo: Delete
-    # if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit:
-    #     for attribute_to_omit in [attr for attr in resource_attributes_to_omit.get(check.entity_type) if attr in entity_config]:  # type:ignore[union-attr]
-    #         secret = entity_config.get(attribute_to_omit)
-    #         if isinstance(secret, list) and secret:
-    #             secrets.add(secret[0])
-
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
         return entity_code_lines
@@ -217,19 +210,6 @@ def omit_secret_value_from_graph_checks(
                     secret = entity_config.get(entity)
                     if isinstance(secret, list) and secret:
                         secrets.add(secret[0])
-    # ToDo: Should delete After writing test and check it works exactly the same..
-    # if resource_attributes_to_omit:
-    #     # iterate over all resources
-    #     for resource in check.resource_types:
-    #         # If mask config exist for it
-    #         if resource in resource_attributes_to_omit:
-    #             # Get all mask rules
-    #             for attribute in resource_attributes_to_omit.get(resource):  # type:ignore[union-attr]
-    #                 # If one mask rule entry is in it - add it to secret if it's not null
-    #                 if attribute in entity_config:
-    #                     secret2 = entity_config.get(attribute)
-    #                     if isinstance(secret2, list) and secret2:
-    #                         secrets.add(secret2[0])
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")
