@@ -187,7 +187,8 @@ class Runner(BaseRunner[None]):
                     runner_filter=runner_filter,
                     root_folder=root_folder
                 ) or result
-                resource = f'{secret.filename}:{secret.secret_hash}'
+                relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+                resource = f'{relative_file_path}:{secret.secret_hash}'
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
@@ -200,7 +201,7 @@ class Runner(BaseRunner[None]):
                     check_name=secret.type,
                     check_result=result,
                     code_block=[(secret.line_number, line_text_censored)],
-                    file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
+                    file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
                     check_class="",
