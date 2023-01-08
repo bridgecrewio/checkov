@@ -121,9 +121,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_confi
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = "common/resource_attr_to_omit_configs/real_keys.json"
-    with patch("os.path.isfile", return_value=True):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    relative_path = "../../common/resource_attr_to_omit_configs/real_keys.json"
+    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -141,9 +140,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_conf
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = "common/resource_attr_to_omit_configs/universal_key.json"
-    with patch("os.path.isfile", return_value=True):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    relative_path = "../../common/resource_attr_to_omit_configs/universal_key.json"
+    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -161,9 +159,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_con
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = "common/resource_attr_to_omit_configs/duplicated_key.json"
-    with patch("os.path.isfile", return_value=True):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    relative_path = "../../common/resource_attr_to_omit_configs/duplicated_key.json"
+    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -181,9 +178,8 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = "common/resource_attr_to_omit_configs/multiple_keys.json"
-    with patch("os.path.isfile", return_value=True):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+    relative_path = "../../common/resource_attr_to_omit_configs/multiple_keys.json"
+    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
