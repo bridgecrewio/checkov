@@ -423,8 +423,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             tags = get_resource_tags(entity_type, entity_config)
             if results:
                 for check, check_result in results.items():
-                    censored_code_lines = omit_secret_value_from_checks(check, check_result, entity_code_lines,
-                                                                        entity_config)
+                    censored_code_lines = omit_secret_value_from_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_code_lines,
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

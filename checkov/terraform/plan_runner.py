@@ -218,7 +218,7 @@ class Runner(TerraformRunner):
                         check_result=check_result,
                         entity_code_lines=entity_code_lines,
                         entity_config=entity_config,
-                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
                     record = Record(
                         check_id=check.id,
