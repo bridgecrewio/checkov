@@ -112,7 +112,10 @@ class Runner(TerraformRunner):
                 self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
-                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                        if self.enable_nested_modules:
+                            report.add_resource(f'{vertex.path}:{vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)}')
+                        else:
+                            report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph()
@@ -188,12 +191,12 @@ class Runner(TerraformRunner):
             for entity in entities:
                 context_parser = parser_registry.context_parsers[block_type]
                 definition_path = context_parser.get_entity_context_path(entity)
-                entity_id = ".".join(definition_path)
                 # Entity can exist only once per dir, for file as well
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
+                entity_id = entity_address if self.enable_nested_modules else ".".join(entity_address.split('.')[-4:])
                 _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
