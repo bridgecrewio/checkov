@@ -1,0 +1,5 @@
+FROM alpine:3.5
+RUN pip install checkov --trusted-host pypi.org --trusted-host files.pythonhosted.org
+RUN pip install checkov --trusted-host=pypi.python.org --trusted-host=pypi.org
+RUN pip3 install checkov --trusted-host pypi.org --trusted-host files.pythonhosted.org
+RUN pip3 install checkov --trusted-host=pypi.python.org --trusted-host=pypi.org
