@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.234...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.239...HEAD)
+
+## [2.2.239](https://github.com/bridgecrewio/checkov/compare/2.2.238...2.2.239) - 2023-01-06
+
+### Bug Fix
+
+- **general:** fix incorrect billing message when frameworks are removed from --framework list - [#4201](https://github.com/bridgecrewio/checkov/pull/4201)
+
+## [2.2.238](https://github.com/bridgecrewio/checkov/compare/2.2.234...2.2.238) - 2023-01-05
+
+### Feature
+
+- **dockerfile:** Add check for unsafe curl usages - [#4186](https://github.com/bridgecrewio/checkov/pull/4186)
+- **general:** add logic to vcs scanning to prevent empty repo collabs failing check - [#4199](https://github.com/bridgecrewio/checkov/pull/4199)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4113](https://github.com/bridgecrewio/checkov/pull/4113)
+
+### Bug Fix
+
+- **general:** handle variable dependent values in policy - [#4200](https://github.com/bridgecrewio/checkov/pull/4200)
+- **secrets:** Fix api key condition in verify_secrets - [#4195](https://github.com/bridgecrewio/checkov/pull/4195)
+- **secrets:** Remove raw string modifier from re.compile - [#4197](https://github.com/bridgecrewio/checkov/pull/4197)
 
 ## [2.2.234](https://github.com/bridgecrewio/checkov/compare/2.2.230...2.2.234) - 2023-01-04
 

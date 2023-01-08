@@ -161,6 +161,23 @@ class TestRunnerRegistry(unittest.TestCase):
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
 
+    def test_run_with_empty_frameworks(self):
+        # ensures that a run with a framework that gets filtered out (e.g. --framework terraform --file abc.yaml)
+        # returns an empty report
+
+        checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+        scan_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'plan_with_hcl_for_enrichment', 'tfplan.json')
+
+        runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.filter_runners_for_files(['tfplan.json'])
+        with self.assertLogs(level='ERROR') as log:
+            reports = runner_registry.run(root_folder=None, files=[scan_file])
+            self.assertEqual(len(reports), 0)  # checking that we get an empty report, not an exception
+            self.assertIn(
+                'There are no runners to run. This can happen if you specify a file type and a framework that are not compatible',
+                ''.join(log.output))
+
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
