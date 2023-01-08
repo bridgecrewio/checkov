@@ -241,6 +241,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             if referrer_id:
                                 resource = f'{referrer_id}.{resource_id}'
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
+                    elif entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id:
+                        # for plan resources
+                        resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        if not self.enable_nested_modules:
+                            resource = ".".join(resource.split(".")[-4:])
                     entity_config = self.get_graph_resource_entity_config(entity)
                     censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
                                                                               entity_code_lines=entity_context.get(
