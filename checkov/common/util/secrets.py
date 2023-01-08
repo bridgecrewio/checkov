@@ -156,8 +156,8 @@ def omit_secret_value_from_checks(
                         key.startswith(f'{check.id}_secret')])
 
     if resource_attributes_to_omit:
-        universal_mask = set(resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set()))
-        resource_masks = set(resource_attributes_to_omit.get(check.entity_type, set()))
+        universal_mask = resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set())
+        resource_masks = resource_attributes_to_omit.get(check.entity_type, set())
         resource_masks.update(universal_mask)
         for key in entity_config.keys():
             if key not in resource_masks:
