@@ -667,7 +667,7 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["common/resource_attr_to_omit_configs/first.json"])
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=["../common/resource_attr_to_omit_configs/first.json"])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == first_file_real_parsed_content.get(k)
@@ -721,8 +721,8 @@ class TestRunnerFilter(unittest.TestCase):
             "*": {"plaintext"}
         }
         corrupted_absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/corrupted.json"
-        fine_relative_path = "common/resource_attr_to_omit_configs/first.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_relative_path])
+        fine_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_path])
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
@@ -740,8 +740,8 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-        relative_path = "common/resource_attr_to_omit_configs/third.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
+        file_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/third.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[file_path])
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == third_file_real_parsed_content.get(k)
@@ -761,8 +761,8 @@ class TestRunnerFilter(unittest.TestCase):
             "*": {"plaintext"}
         }
         absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
-        relative_path = "common/resource_attr_to_omit_configs/second.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, relative_path])
+        file_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/second.json"
+        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, file_path])
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
