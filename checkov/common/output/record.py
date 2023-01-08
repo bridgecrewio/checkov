@@ -193,8 +193,12 @@ class Record:
                         )
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
-        secret_validation_status_string = f'\tStatus: {self.validation_status}\n' if \
-            self.check_result["result"] == CheckResult.FAILED and hasattr(self, 'validation_status') else ""
+
+        secret_validation_status_string = ""  # nosec
+        if self.check_result["result"] == CheckResult.FAILED and \
+                hasattr(self, 'validation_status') and \
+                os.getenv("CKV_VALIDATE_SECRETS"):
+            secret_validation_status_string = f'\tStatus: {self.validation_status}\n'
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{secret_validation_status_string}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
