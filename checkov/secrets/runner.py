@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import json
 import linecache
 import logging
 import os
