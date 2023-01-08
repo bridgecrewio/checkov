@@ -39,8 +39,8 @@ resource "azurerm_kubernetes_cluster" "failed_empty_max_pods" {
   }
 
 
-  tags = var.tags
-  local_account_disabled = var.local_account_disabled
+  tags                    = var.tags
+  local_account_disabled  = var.local_account_disabled
   private_cluster_enabled = var.private_cluster
 }
 
