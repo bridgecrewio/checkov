@@ -552,7 +552,8 @@ class Report:
     ) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
-            enriched_resource = enriched_resources.get(record.resource)
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            enriched_resource = enriched_resources.get(resource_raw_id)
             if enriched_resource:
                 record.file_path = enriched_resource["scanned_file"]
                 record.file_line_range = enriched_resource["entity_lines_range"]
@@ -566,7 +567,8 @@ class Report:
         module_address_len = len("module.")
         skip_records = []
         for record in report.failed_checks:
-            resource_skips = enriched_resources.get(record.resource, {}).get(
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            resource_skips = enriched_resources.get(resource_raw_id, {}).get(
                 "skipped_checks", []
             )
             for skip in resource_skips:
@@ -592,6 +594,13 @@ class Report:
             if record in report.failed_checks:
                 report.failed_checks.remove(record)
         return report
+
+    @staticmethod
+    def get_plan_resource_raw_id(resource_id):
+        resource_raw_id = ".".join(resource_id.split(".")[-2:])
+        if '[' in resource_raw_id:
+            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
+        return resource_raw_id
 
 
 def merge_reports(base_report: Report, report_to_merge: Report) -> None:
