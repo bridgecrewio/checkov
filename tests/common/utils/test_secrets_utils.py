@@ -1,9 +1,9 @@
 import os
-from unittest.mock import patch
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.provider.aws.credentials import AWSCredentials
 from checkov.terraform.checks.resource.azure.SecretExpirationDate import SecretExpirationDate
@@ -119,11 +119,15 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_confi
         tfplan_resource_config_with_secrets,
         tfplan_resource_lines_without_secrets
 ):
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/real_keys.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/real_keys.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -138,11 +142,15 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_conf
         tfplan_resource_config_with_secrets,
         tfplan_resource_lines_without_secrets
 ):
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/universal_key.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/universal_key.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,
@@ -157,12 +165,15 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_con
         tfplan_resource_config_with_secrets,
         tfplan_resource_lines_without_secrets
 ):
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/duplicated_key.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/duplicated_key.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
-
     assert omit_secret_value_from_checks(
         check,
         check_result,
@@ -176,11 +187,17 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
         tfplan_resource_config_with_secrets,
         tfplan_resource_lines_without_secrets_multiple_keys
 ):
+
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    relative_path = f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.json"
-    runner_filter = RunnerFilter(resource_attr_to_omit_paths=[relative_path])
 
     assert omit_secret_value_from_checks(
         check,

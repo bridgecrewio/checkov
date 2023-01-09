@@ -2,10 +2,6 @@ import os
 import unittest
 from collections import defaultdict
 
-from unittest.mock import patch
-
-import pytest
-
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
