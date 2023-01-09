@@ -220,6 +220,11 @@ class EntropyKeywordCombinator(BasePlugin):
                         kwargs=kwargs
                     )
                 else:
+                    for pt in keyword_on_key:
+                        if pt.secret_value:
+                            quoted_secret = f"\"{pt.secret_value}\""
+                            if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
+                                line = line.replace(pt.secret_value, f"\"{pt.secret_value}\"", 1)
                     return self.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,

@@ -153,9 +153,11 @@ class Runner(BaseRunner[None]):
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
+                    logging.debug(f'Secrets was filter - no check_id line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
                 if secret_key in secrets_duplication:
+                    logging.debug(f'Secrets was filter - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -163,6 +165,8 @@ class Runner(BaseRunner[None]):
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
+                    logging.debug(
+                        f'Secrets was filter - should_run_check. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
@@ -182,7 +186,8 @@ class Runner(BaseRunner[None]):
                     runner_filter=runner_filter,
                     root_folder=root_folder
                 ) or result
-                resource = f'{secret.filename}:{secret.secret_hash}'
+                relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+                resource = f'{relative_file_path}:{secret.secret_hash}'
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
@@ -195,7 +200,7 @@ class Runner(BaseRunner[None]):
                     check_name=secret.type,
                     check_result=result,
                     code_block=[(secret.line_number, line_text_censored)],
-                    file_path=f'/{os.path.relpath(secret.filename, root_folder)}',
+                    file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
                     resource=secret.secret_hash,
                     check_class="",
@@ -207,7 +212,7 @@ class Runner(BaseRunner[None]):
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             if enriched_secrets_s3_path:
                 self.verify_secrets(report, enriched_secrets_s3_path)
-
+            logging.debug(f'report fail checks len: {len(report.failed_checks)}')
             return report
 
     @staticmethod
@@ -240,7 +245,7 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results {file_results}')
+            logging.info(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
