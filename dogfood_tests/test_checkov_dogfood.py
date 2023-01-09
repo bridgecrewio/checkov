@@ -147,9 +147,7 @@ def test_terraform_plan_framework(caplog: LogCaptureFixture) -> None:
     excluded_paths = [
         "cloudformation/parser/fail.json$",
         "cloudformation/parser/success_triple_quotes_string.json$",
-        "cloudformation/runner/resources/invalid.json$",
-        "common/resource_attr_to_omit_configs/corrupted.json$"
-
+        "cloudformation/runner/resources/invalid.json$"
     ]
 
     run_framework_test(caplog=caplog, framework=CheckType.TERRAFORM_PLAN, excluded_paths=excluded_paths)
