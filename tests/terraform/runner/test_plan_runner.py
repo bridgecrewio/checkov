@@ -501,6 +501,29 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(summary["failed"], 0)
         self.assertEqual(summary["passed"], 1)
 
+    def test_runner_with_resource_reference_extra_ref(self):
+        # given
+        valid_plan_path = Path(__file__).parent / "resources/plan_with_resource_reference/tfplan_extra_ref.json"
+        extra_checks_dir_path = [str(Path(__file__).parent / "extra_tf_plan_checks")]
+        allowed_checks = ["CUSTOM_CONNECTION_1"]
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(valid_plan_path)],
+            external_checks_dir=extra_checks_dir_path,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=allowed_checks),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 4)
+
     def test_runner_skip_graph_when_no_plan_exists(self):
         # given
         tf_file_path = Path(__file__).parent / "resource/example/example.tf"
