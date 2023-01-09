@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import dpath.util
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -22,6 +23,7 @@ checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
     'file_line_range')
+secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
 
@@ -57,17 +59,19 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
     """
     reduced_scan_reports: dict[str, _ReducedScanReport] = {}
     for report in scan_reports:
-        reduced_scan_reports[report.check_type] = \
+        check_type = report.check_type
+        reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
+        reduced_scan_reports[check_type] = \
             {
                 "checks": {
                     "passed_checks": [
-                        {k: getattr(check, k) for k in check_reduced_keys}
+                        {k: getattr(check, k) for k in reduced_keys}
                         for check in report.passed_checks],
                     "failed_checks": [
-                        {k: getattr(check, k) for k in check_reduced_keys}
+                        {k: getattr(check, k) for k in reduced_keys}
                         for check in report.failed_checks],
                     "skipped_checks": [
-                        {k: getattr(check, k) for k in check_reduced_keys}
+                        {k: getattr(check, k) for k in reduced_keys}
                         for check in report.skipped_checks]
                 },
                 "image_cached_results": report.image_cached_results
