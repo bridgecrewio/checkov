@@ -159,10 +159,9 @@ def omit_secret_value_from_checks(
         universal_mask = resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set())
         resource_masks = resource_attributes_to_omit.get(check.entity_type, set())
         resource_masks.update(universal_mask)
-        for key in entity_config.keys():
+        for key, secret in entity_config.items():
             if key not in resource_masks:
                 continue
-            secret = entity_config.get(key)
             if isinstance(secret, list) and secret:
                 secrets.add(secret[0])
 
@@ -205,9 +204,8 @@ def omit_secret_value_from_graph_checks(
             if not resource_masks:
                 continue
             # If entity is one that should be masked, we add it the value to secrets
-            for attribute in entity_config.keys():
+            for attribute, secret in entity_config.items():
                 if attribute in resource_masks:
-                    secret = entity_config.get(attribute)
                     if isinstance(secret, list) and secret:
                         secrets.add(secret[0])
 
