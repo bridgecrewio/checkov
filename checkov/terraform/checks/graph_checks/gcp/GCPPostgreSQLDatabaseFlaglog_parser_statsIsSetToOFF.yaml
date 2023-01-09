@@ -3,21 +3,20 @@ metadata:
   id: "CKV2_GCP_15"
   category: "LOGGING"
 definition:
-  and:
+  or:
     - cond_type: "attribute"
       resource_types:
         - "google_sql_database_instance"
       attribute: "database_version"
-      operator: "contains"
+      operator: "not_contains"
       value: "POSTGRES"
-    - or:
-        - cond_type: "attribute"
-          resource_types:
-            - "google_sql_database_instance"
-          attribute: "settings.database_flags[*]"
-          operator: "jsonpath_not_exists"
-        - cond_type: "attribute"
-          resource_types:
-            - "google_sql_database_instance"
-          attribute: "settings.database_flags[?(@.name == log_parser_stats & @.value == on)]"
-          operator: "jsonpath_not_exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "settings.database_flags[*]"
+      operator: "jsonpath_not_exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "settings.database_flags[?(@.name == log_parser_stats & @.value == on)]"
+      operator: "jsonpath_not_exists"
