@@ -219,6 +219,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_with_child_modules/tfplan.json"
         runner = Runner()
+        runner.graph_registry.checks = []
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
