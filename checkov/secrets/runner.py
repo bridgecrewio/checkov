@@ -6,7 +6,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
 
@@ -161,6 +161,7 @@ class Runner(BaseRunner[None]):
                     continue
                 else:
                     secrets_duplication[secret_key] = True
+                self._add_custom_detectors_to_metadata_integration()
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
@@ -361,3 +362,15 @@ class Runner(BaseRunner[None]):
             logging.error('Unable to download verification report')
 
         return response.json() if response else None
+
+    @staticmethod
+    def _add_custom_detectors_to_metadata_integration() -> None:
+        customer_run_config_response = bc_integration.customer_run_config_response
+        policies_list: List[dict[str, Any]] = []
+        if customer_run_config_response:
+            policies_list = customer_run_config_response.get('secretsPolicies', [])
+        for policy in policies_list:
+            if policy.get('isCustom', False) is True:
+                check_id = policy['incidentId']
+                logging.debug(f"(add_to_custom_detectors) is custom check_id = {check_id}")
+                metadata_integration.check_metadata[check_id] = {'id': check_id}
