@@ -8,7 +8,6 @@ import os
 import shutil
 import signal
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -937,10 +936,5 @@ class Checkov:
 
 
 if __name__ == '__main__':
-    start_time = datetime.now()
     ckv = Checkov()
-    end_time = datetime.now()
-    ckv.run()
-    logging.debug(f'total time = {end_time - start_time}')
-    sys.exit()
-
+    sys.exit(ckv.run())
