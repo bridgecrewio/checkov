@@ -95,5 +95,3 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
         if not parsed:
             logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
-
-

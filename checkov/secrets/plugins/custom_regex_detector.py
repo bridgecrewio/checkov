@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, List, TYPE_CHECKING, cast
+from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
 
 
 from detect_secrets.constants import VerifiedResult
