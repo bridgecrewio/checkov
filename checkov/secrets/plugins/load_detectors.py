@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List
-
-from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
-    integration as metadata_integration
 import yaml
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
