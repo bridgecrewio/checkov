@@ -632,7 +632,7 @@ class Checkov:
             block_list_secret_scan=self.config.block_list_secret_scan,
             deep_analysis=self.config.deep_analysis,
             repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-            resource_attr_to_omit_paths=self.config.mask
+            resource_attr_to_omit=self.config.mask
         )
 
         source_env_val = os.getenv('BC_SOURCE', 'cli')

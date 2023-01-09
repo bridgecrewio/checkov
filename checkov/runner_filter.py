@@ -48,7 +48,7 @@ class RunnerFilter(object):
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
-            resource_attr_to_omit_paths: Optional[List[str]] = None
+            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = {}
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -121,7 +121,7 @@ class RunnerFilter(object):
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
-            resource_attr_to_omit_paths
+            resource_attr_to_omit
         )
 
     @staticmethod
