@@ -502,6 +502,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "--mask",
             action="append",
             default=[],
-            help="A path to a config file (JSON format) that contains a mapping of resource type to list of attribute. "
-                 "This config will be used to mask (obfuscate) chosen attributes (in resource type context"
+            help="List of <resource_type>:<variable> OR <variable> only. Each entry in the list will be used for"
+                 "masking the desired attribute for resource (or for all resources, if no resource given)."
+                 "Notice: one entry can contain several variables, seperated with a comma. For example:"
+                 "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
         )
