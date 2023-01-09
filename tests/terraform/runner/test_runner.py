@@ -101,7 +101,6 @@ class TestRunnerValid(unittest.TestCase):
 
         passing_tf_dir_path = current_dir + "/resources/valid_tf_only_passed_checks"
 
-        print("testing dir" + passing_tf_dir_path)
         runner = Runner()
         report = runner.run(root_folder=passing_tf_dir_path, external_checks_dir=None)
         report_json = report.get_json()
@@ -120,7 +119,6 @@ class TestRunnerValid(unittest.TestCase):
 
         tf_dir_path = current_dir + "/resources/mutli_line_ternary"
 
-        print("testing dir" + tf_dir_path)
         runner = Runner()
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=None)
         self.assertListEqual(report.parsing_errors, [])
@@ -133,7 +131,6 @@ class TestRunnerValid(unittest.TestCase):
         tf_dir_path = current_dir + "/resources/extra_check_test"
         extra_checks_dir_path = [current_dir + "/extra_checks"]
 
-        print("testing dir" + tf_dir_path)
         runner = Runner()
         report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path)
         report_json = report.get_json()
@@ -1089,7 +1086,6 @@ class TestRunnerValid(unittest.TestCase):
         for record in report.failed_checks:
             if "inside" in record.resource:
                 found_inside = True
-                print(record)
                 self.assertEqual(record.resource, "module.test_module.aws_s3_bucket.inside")
                 assert record.file_path == "/module/module.tf"
                 self.assertEqual(record.file_line_range, [7, 9])
