@@ -244,7 +244,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
                     elif entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id:
                         # for plan resources
-                        resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        resource = entity[CustomAttributes.TF_RESOURCE_ADDRESS]
                         if not self.enable_nested_modules:
                             resource = get_resource_id_without_nested_modules(resource)
                     entity_config = self.get_graph_resource_entity_config(entity)
