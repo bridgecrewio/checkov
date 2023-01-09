@@ -195,7 +195,7 @@ def omit_secret_value_from_graph_checks(
         }
 
     if resource_attributes_to_omit:
-        # Universal mask ('*') might exist in resource_attributes_to_omit. If it does exist, we need to mask the all
+        # Universal mask ('*') might exist in resource_attributes_to_omit. If it does exist, we need to mask all the
         # entities in resource types according to resource_attributes_to_omit.get('*')
         universal_mask = set(resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set()))
         for resource in check.resource_types:

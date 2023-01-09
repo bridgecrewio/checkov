@@ -504,5 +504,5 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="append",
             default=[],
             help="A path to a config file (JSON format) that contains a mapping of resource type to list of attribute. "
-                 "This config will be use to mask (obfuscate) chosen attributes (in resource type context"
+                 "This config will be used to mask (obfuscate) chosen attributes (in resource type context"
         )
