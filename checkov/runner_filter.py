@@ -171,7 +171,6 @@ class RunnerFilter(object):
             implicit_run or
             (is_external and self.all_external)
         )
-        logging.debug(f'(should_run_check) run_severity = {run_severity}, explicit_run = {explicit_run}, implicit_run {implicit_run}, is_external {is_external}, all_external = {self.all_external}')
 
         if not should_run_check:
             logging.debug(f'Should run check {check_id}: False')
