@@ -34,6 +34,7 @@ jobs:
     steps:
     - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
     - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+      id: setup-python
       with:
         python-version: 3.7
         cache: "pipenv"
@@ -46,6 +47,10 @@ jobs:
         pipenv --python 3.7
         pipenv install --dev
         pipenv run pip install typed-ast  # for some reason this has an old version
+    - uses: actions/cache@58c146cc91c5b9e778e71775dfe9bf1442ad9a12  # v3
+      with:
+        path: ~/.mypy_cache
+        key: mypy-${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('Pipfile.lock') }}
     - name: Run Mypy
       run: |
         pipenv run mypy
