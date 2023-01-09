@@ -40,9 +40,6 @@ def add_to_custom_detectors(custom_detectors: List[Dict[str, Any]], name: str, c
                              'Check_ID': check_id,
                              'Regex': regex,
                              'isCustom': is_custom})
-    if is_custom:
-        logging.debug(f"(add_to_custom_detectors) is custom check_id = {check_id}")
-        metadata_integration.check_metadata[check_id] = {'id': check_id}
 
 
 def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], condition_query: Dict[str, Any],
@@ -58,7 +55,7 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
             add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
                                     secret_policy['isCustom'])
             logging.info(
-                f"Regex : {secret_policy['title']} added to custom_detectors, custom_detectors len {len(custom_detectors)} ")
+                f"Regex : {secret_policy['title']} added to custom_detectors")
     return parsed
 
 

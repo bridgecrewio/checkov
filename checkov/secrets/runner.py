@@ -370,7 +370,7 @@ class Runner(BaseRunner[None]):
         if customer_run_config_response:
             policies_list = customer_run_config_response.get('secretsPolicies', [])
         for policy in policies_list:
-            if policy.get('isCustom', False) is True:
+            if policy.get('isCustom', False):
                 check_id = policy['incidentId']
-                logging.debug(f"(add_to_custom_detectors) is custom check_id = {check_id}")
                 metadata_integration.check_metadata[check_id] = {'id': check_id}
+                logging.debug(f"(add_custom_detectors_to_metadata_integration) check_id = {check_id}")
