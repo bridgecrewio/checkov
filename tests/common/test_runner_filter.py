@@ -1,10 +1,15 @@
 import os
 import unittest
+from collections import defaultdict
 
 from unittest.mock import patch
+
+import pytest
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 
 
@@ -639,14 +644,7 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
 
     def test_resource_attr_to_omit_load_config_empty_list(self):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[])
-        assert not runner_filter.resource_attr_to_omit
-        # assert that we have default dict as well:
-        runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
-        assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
-
-    def test_resource_attr_to_omit_load_config_empty_none(self):
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=None)
+        runner_filter = RunnerFilter(resource_attr_to_omit=defaultdict(lambda: []))
         assert not runner_filter.resource_attr_to_omit
         # assert that we have default dict as well:
         runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
@@ -667,63 +665,17 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext"},
             "*": {"plaintext"}
         }
-
-        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
+        argv = [
+            "--config-file",
+            f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.yml"
+        ]
+        ckv = Checkov(argv=argv)
+        runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
             assert v == first_file_real_parsed_content.get(k)
 
         for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
-
-    def test_resource_attr_to_omit_load_config_corrupted(self):
-        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/corrupted.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
-        assert not runner_filter.resource_attr_to_omit
-
-    def test_resource_attr_to_omit_load_config_not_exists(self):
-        absolute_path = os.path.dirname(os.path.realpath(__file__)) + "/resource_attr_to_omit_configs/not_exists.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path])
-        assert not runner_filter.resource_attr_to_omit
-
-
-    def test_resource_attr_to_omit_load_config_one_corrupted_one_fine(self):
-        first_file_real_parsed_content = {
-            "aws_db_instance": {"storage_container_path"},
-            "key2": {"storage_container_path"},
-            "key3": {"admin_password"},
-            "key4": {"admin_password", "1"},
-            "key5": {"plaintext"},
-            "*": {"plaintext"}
-        }
-        corrupted_absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/corrupted.json"
-        fine_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[corrupted_absolute_path, fine_path])
-
-        assert runner_filter.resource_attr_to_omit
-        for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == first_file_real_parsed_content.get(k)
-
-        for k, v in first_file_real_parsed_content.items():
-            assert v == runner_filter.resource_attr_to_omit.get(k)
-
-    def test_resource_attr_to_omit_load_config_int_value(self):
-        third_file_real_parsed_content = {
-            "aws_db_instance": {"storage_container_path"},
-            "key2": {"storage_container_path"},
-            "key3": {"admin_password"},
-            "key4": {"admin_password", "1"},
-            "key5": {"plaintext"},
-            "*": {"plaintext"}
-        }
-        file_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/third.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[file_path])
-        assert runner_filter.resource_attr_to_omit
-        for k, v in runner_filter.resource_attr_to_omit.items():
-            assert v == third_file_real_parsed_content.get(k)
-
-        for k, v in third_file_real_parsed_content.items():
             assert v == runner_filter.resource_attr_to_omit.get(k)
 
     def test_resource_attr_to_omit_load_config_sanity_combine(self):
@@ -737,9 +689,13 @@ class TestRunnerFilter(unittest.TestCase):
             "key7": {"plaintext"},
             "*": {"plaintext"}
         }
-        absolute_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.json"
-        file_path = f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/second.json"
-        runner_filter = RunnerFilter(resource_attr_to_omit_paths=[absolute_path, file_path])
+
+        argv = [
+            "--config-file",
+            f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/combined.yml"
+        ]
+        ckv = Checkov(argv=argv)
+        runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
 
         assert runner_filter.resource_attr_to_omit
         for k, v in runner_filter.resource_attr_to_omit.items():
