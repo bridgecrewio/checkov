@@ -205,9 +205,9 @@ def omit_secret_value_from_graph_checks(
             if not resource_masks:
                 continue
             # If entity is one that should be masked, we add it the value to secrets
-            for entity in entity_config.keys():
-                if entity in resource_masks:
-                    secret = entity_config.get(entity)
+            for attribute in entity_config.keys():
+                if attribute in resource_masks:
+                    secret = entity_config.get(attribute)
                     if isinstance(secret, list) and secret:
                         secrets.add(secret[0])
 
