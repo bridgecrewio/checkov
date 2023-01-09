@@ -8,6 +8,7 @@ import os
 import shutil
 import signal
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -40,7 +41,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
+from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2, RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
@@ -492,6 +493,22 @@ class Checkov:
 
         self.parse_config(argv=argv)
 
+    def _parse_mask_to_resource_attributes_to_omit(self):
+        resource_attributes_to_omit = defaultdict(lambda : set())
+        for entry in self.config.mask:
+            splitted_entry = entry.split(':')
+            # if we have 2 entries, this is resource & variable to mask
+            splitted_entry_len = len(splitted_entry)
+            if 2 == splitted_entry_len:
+                resource = splitted_entry[0]
+                variables_to_mask = splitted_entry[1].split(',')
+                resource_attributes_to_omit[resource].update(variables_to_mask)
+            elif 1 == splitted_entry_len:
+                variables_to_mask = splitted_entry[0].split(',')
+                resource_attributes_to_omit[RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK].update(variables_to_mask)
+
+        self.config.mask = resource_attributes_to_omit
+
     def parse_config(self, argv: list[str] = sys.argv[1:]) -> None:
         """Parses the user defined config via CLI flags"""
 
@@ -537,6 +554,9 @@ class Checkov:
             logger.warning(
                 '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
             )
+
+        # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
+        self._parse_mask_to_resource_attributes_to_omit()
 
     def run(self, banner: str = checkov_banner) -> int | None:
         self.run_metadata = {
@@ -612,7 +632,7 @@ class Checkov:
             block_list_secret_scan=self.config.block_list_secret_scan,
             deep_analysis=self.config.deep_analysis,
             repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-            resource_attr_to_omit_paths=self.config.resource_attr_to_omit
+            resource_attr_to_omit_paths=self.config.mask
         )
 
         source_env_val = os.getenv('BC_SOURCE', 'cli')

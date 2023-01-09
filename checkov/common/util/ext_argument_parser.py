@@ -499,8 +499,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="Return exit code 0 instead of 2",
         )
         self.add(
-            "--resource-attr-to-omit",
-            env_var="CKV_RESOURCE_ATTR_TO_OMIT",
+            "--mask",
             action="append",
             default=[],
             help="A path to a config file (JSON format) that contains a mapping of resource type to list of attribute. "

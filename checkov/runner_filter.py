@@ -125,47 +125,10 @@ class RunnerFilter(object):
         )
 
     @staticmethod
-    def _load_resource_attr_to_omit(resource_attr_to_omit_paths: Optional[List[str]]) -> DefaultDict[str, Set[str]]:
+    def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
         resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
-        if not resource_attr_to_omit_paths:
-            return resource_attributes_to_omit
-        for file_path in resource_attr_to_omit_paths:
-            # Path can be relative or absolute. This one works for both
-            try:
-                if not os.path.isfile(file_path):
-                    logging.error(
-                        "Error parsing config (resource attr to omit): Given config path is invalid",
-                        extra={"path": file_path}
-                    )
-                    continue
-                try:
-                    # Read file content and load Json data:
-                    json_data = json.load(open(file_path, 'r'))
-                except json.JSONDecodeError:
-                    logging.error(
-                        "Error parsing config (resource attr to omit): File contains invalid json data",
-                        extra={"path": file_path}
-                    )
-                    continue
-                # For each key in json data we should extend current config
-                for k, v in json_data.items():
-                    config_data = v
-                    if not isinstance(v, list):
-                        if isinstance(v, str):
-                            config_data = [v]
-                        else:
-                            logging.error(
-                                "Config contains unsupported type",
-                                extra={"path": file_path, "resource_type": k, "value": v}
-                            )
-                            continue
-                    config_data = [entry for entry in config_data if isinstance(entry, str)]
-                    resource_attributes_to_omit[k].update(config_data)
-            except Exception as exc:
-                logging.error(
-                    f"Unknown Exception occured when trying to update config from path: {str(exc)}",
-                    extra={"path": file_path}
-                )
+        # In order to create new object (and not a reference to the given one)
+        resource_attributes_to_omit.update(resource_attr_to_omit_input)
         return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
