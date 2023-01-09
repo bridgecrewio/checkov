@@ -597,6 +597,10 @@ class Report:
 
     @staticmethod
     def get_plan_resource_raw_id(resource_id: str) -> str:
+        """
+        return the resource raw id without the modules and the indexes
+        example: from resource_id='module.module_name.type.name[1]' return 'type.name'
+        """
         resource_raw_id = ".".join(resource_id.split(".")[-2:])
         if '[' in resource_raw_id:
             resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]

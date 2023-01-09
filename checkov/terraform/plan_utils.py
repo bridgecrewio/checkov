@@ -105,4 +105,8 @@ def get_entity_context(definitions, definitions_raw, definition_path, full_file_
 
 
 def get_resource_id_without_nested_modules(address: str) -> str:
+    """
+    return resource id with the last module in the address
+    example: from address='module.name1.module.name2.type.name' return 'module: module.name2.type.name'
+    """
     return ".".join(address.split(".")[-4:])
