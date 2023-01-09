@@ -113,10 +113,11 @@ class Runner(TerraformRunner):
                 self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
+                        address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                         if self.enable_nested_modules:
-                            report.add_resource(f'{vertex.path}:{vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)}')
+                            report.add_resource(f'{vertex.path}:{address}')
                         else:
-                            resource_id = get_resource_id_without_nested_modules(CustomAttributes.TF_RESOURCE_ADDRESS)
+                            resource_id = get_resource_id_without_nested_modules(address)
                             report.add_resource(f'{vertex.path}:{resource_id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
