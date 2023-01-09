@@ -51,6 +51,7 @@ def add_to_custom_detectors(custom_detectors: List[Dict[str, Any]], name: str, c
                              'Regex': regex,
                              'isCustom': is_custom})
     if is_custom:
+        logging.debug(f"(add_to_custom_detectors) is custom check_id = {check_id}")
         metadata_integration.check_metadata[check_id] = {'id': check_id}
 
 

@@ -166,7 +166,7 @@ class Runner(BaseRunner[None]):
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
                     logging.debug(
-                        f'Secrets was filter - should_run_check. line_number {secret.line_number}, check_id {check_id}')
+                        f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
