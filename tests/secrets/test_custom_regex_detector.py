@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.plugins.custom_regex_detector import modify_secrets_policy_to_detectors, CustomRegexDetector
+from checkov.secrets.plugins.load_detectors import modify_secrets_policy_to_detectors
 from checkov.secrets.runner import Runner
 
 
