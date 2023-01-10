@@ -141,6 +141,20 @@ class TestRunnerFilter(unittest.TestCase):
         check = TestCheck('CKV_EXT_999')
         self.assertFalse(instance._should_run_scan(check, {}, run_filter, CheckType.KUBERNETES))
 
+    def test_run_by_id_external_custom(self):
+        instance = Registry(report_type=CheckType.KUBERNETES)
+        run_filter = RunnerFilter(checks=["K8S_EXT_999"], skip_checks=[])
+        run_filter.notify_external_check("K8S_EXT_999")
+        check = TestCheck('K8S_EXT_999')
+        self.assertTrue(instance._should_run_scan(check, {}, run_filter, CheckType.KUBERNETES))
+
+    def test_run_by_id_external_custom_disabled(self):
+        instance = Registry(report_type=CheckType.KUBERNETES)
+        run_filter = RunnerFilter(checks=[], skip_checks=["K8S_EXT_999"])
+        run_filter.notify_external_check("K8S_EXT_999")
+        check = TestCheck('K8S_EXT_999')
+        self.assertFalse(instance._should_run_scan(check, {}, run_filter, CheckType.KUBERNETES))
+
     # Namespace filtering
 
     def test_namespace_allow_default(self):
