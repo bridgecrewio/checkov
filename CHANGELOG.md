@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.252...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.254...HEAD)
+
+## [2.2.254](https://github.com/bridgecrewio/checkov/compare/2.2.252...2.2.254) - 2023-01-10
+
+### Feature
+
+- **general:** Add resource attributes to omit arg - [#4193](https://github.com/bridgecrewio/checkov/pull/4193)
+- **terraform:** enable cross variable edges - [#4224](https://github.com/bridgecrewio/checkov/pull/4224)
+
+### Bug Fix
+
+- **secrets:** add function to add the custom policies to the metadata integration not in the multiprocess - [#4221](https://github.com/bridgecrewio/checkov/pull/4221)
 
 ## [2.2.252](https://github.com/bridgecrewio/checkov/compare/2.2.246...2.2.252) - 2023-01-09
 
