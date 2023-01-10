@@ -26,6 +26,7 @@ on:
       - kubernetes/requirements.txt
       - coverage.svg
       - '.swm/**'
+      - '.pre-commit-config.yaml'
 
 concurrency:
   group: 'build'
