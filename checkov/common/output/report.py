@@ -14,7 +14,7 @@ from termcolor import colored
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ErrorStatus
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
@@ -52,6 +52,10 @@ class Report:
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
         self.image_cached_results: List[dict[str, Any]] = []
+        self.error_status: ErrorStatus = ErrorStatus.SUCCESS
+
+    def set_error_status(self, error_status: ErrorStatus) -> None:
+        self.error_status = error_status
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -548,7 +552,8 @@ class Report:
     ) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
-            enriched_resource = enriched_resources.get(record.resource)
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            enriched_resource = enriched_resources.get(resource_raw_id)
             if enriched_resource:
                 record.file_path = enriched_resource["scanned_file"]
                 record.file_line_range = enriched_resource["entity_lines_range"]
@@ -562,7 +567,8 @@ class Report:
         module_address_len = len("module.")
         skip_records = []
         for record in report.failed_checks:
-            resource_skips = enriched_resources.get(record.resource, {}).get(
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            resource_skips = enriched_resources.get(resource_raw_id, {}).get(
                 "skipped_checks", []
             )
             for skip in resource_skips:
@@ -588,6 +594,17 @@ class Report:
             if record in report.failed_checks:
                 report.failed_checks.remove(record)
         return report
+
+    @staticmethod
+    def get_plan_resource_raw_id(resource_id: str) -> str:
+        """
+        return the resource raw id without the modules and the indexes
+        example: from resource_id='module.module_name.type.name[1]' return 'type.name'
+        """
+        resource_raw_id = ".".join(resource_id.split(".")[-2:])
+        if '[' in resource_raw_id:
+            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
+        return resource_raw_id
 
 
 def merge_reports(base_report: Report, report_to_merge: Report) -> None:

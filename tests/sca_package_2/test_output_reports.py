@@ -35,7 +35,7 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
 
 
 def test_console_output(mocker, sca_package_2_report):
-    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", True)
     console_output = sca_package_2_report.print_console(False, False, None, None, False)
 
     # then
@@ -50,14 +50,14 @@ def test_console_output(mocker, sca_package_2_report):
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 6        │ critical: 1          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 0           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n',
             '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
             "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  flask               │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
+            '\t│ flask                │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
             '\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │\n',
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  django              │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
+            '\t│ django               │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
             '\t│                      │ CVE-2016-7401        │ high                 │                      │ 1.8.15               │                      │\n',
             '\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n',
             '\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n',
@@ -74,14 +74,14 @@ def test_console_output(mocker, sca_package_2_report):
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 2        │ critical: 0          │ high: 2              │ medium: 0            │ low: 0               │ skipped: 0           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n',
             '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
             "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  golang.org/x/crypto │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
+            '\t│ golang.org/x/crypto  │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  github.com/dgrijalv │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
-            '\t│ a/jwt-go             │                      │                      │                      │                      │                      │\n',
+            '\t│ github.com/dgrijalva │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
+            '\t│ /jwt-go              │                      │                      │                      │                      │                      │\n',
             '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
 
         ]
@@ -91,7 +91,7 @@ def test_console_output(mocker, sca_package_2_report):
 def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
     # simulate a tty call by enforcing color
     mocker.patch.dict(os.environ, {"FORCE_COLOR": "True"})
-    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", True)
 
     console_output = sca_package_2_report.print_console(False, False, None, None, False)
 
@@ -106,14 +106,14 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 6        │ critical: 1          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 0           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t│ To fix 6/6 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n',
             '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
             "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  flask               │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
+            '\t│ flask                │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n',
             '\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │\n',
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  django              │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
+            '\t│ django               │ CVE-2019-19844       │ critical             │ 1.2                  │ 1.11.27              │ 2.2.24               │\n',
             '\t│                      │ CVE-2016-7401        │ high                 │                      │ 1.8.15               │                      │\n',
             '\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n',
             '\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n',
@@ -130,14 +130,14 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_package_2_report):
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 2        │ critical: 0          │ high: 2              │ medium: 0            │ low: 0               │ skipped: 0           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                 │\n',
+            '\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n',
             '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
             "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  golang.org/x/crypto │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
+            '\t│ golang.org/x/crypto  │ CVE-2020-29652       │ high                 │ v0.0.1               │ 0.0.2                │ 0.0.2                │\n',
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-            '\t│  github.com/dgrijalv │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
-            '\t│ a/jwt-go             │                      │                      │                      │                      │                      │\n',
+            '\t│ github.com/dgrijalva │ CVE-2020-26160       │ high                 │ v3.2.0               │ 4.0.0rc1             │ 4.0.0rc1             │\n',
+            '\t│ /jwt-go              │                      │                      │                      │                      │                      │\n',
             '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
         ]
     )

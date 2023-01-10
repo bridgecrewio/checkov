@@ -6,12 +6,12 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
 
-from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
 
@@ -136,6 +136,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     is_root_package = root_package_alias == get_package_alias(package_name, package_version)
                     if is_root_package:  # we want fixed versions just for root packages
                         fix_versions_lists.append(record.vulnerability_details["fixed_versions"])
+                    else:
+                        root_package_fix_version = record.vulnerability_details.get("root_package_fix_version")
+                        if root_package_fix_version:
+                            parsed_version = packaging_version.parse(root_package_fix_version.strip())
+                            fix_versions_lists.append([parsed_version])
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
@@ -144,6 +149,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                             "root_package_name": record.vulnerability_details["root_package_name"],
                             "root_package_version": record.vulnerability_details["root_package_version"],
+                            "root_package_fix_version": record.vulnerability_details.get("root_package_fix_version", ""),
                             "package_name": package_name,
                             "package_version": package_version,
                         }
@@ -299,12 +305,12 @@ def create_fixable_cve_summary_table_part(
         table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
+        header=False, min_table_width=table_width + (column_count + 1) * 2, max_table_width=table_width + (column_count + 1) * 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
         fixable_table.add_row(
-            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/  "])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one
@@ -356,7 +362,7 @@ def create_package_overview_table_part(
                             "",
                             cve["root_package_version"],
                             "",
-                            "",
+                            details.get("compliant_version", ""),
                         ]
                     )
                 else:
@@ -375,14 +381,22 @@ def create_package_overview_table_part(
                         dep_sign = ""
                     else:
                         dep_sign = package_table.vertical_char
+            package_name_col_val = ""
+            if is_sub_dep_changed:
+                if dep_sign:
+                    package_name_col_val = " ".join([dep_sign, package_name])
+                else:
+                    package_name_col_val = package_name
+            elif dep_sign:
+                package_name_col_val = dep_sign
 
             package_table.add_row(
                 [
-                    " ".join([dep_sign, package_name if is_sub_dep_changed else ""]),
+                    package_name_col_val,
                     cve["id"],
                     cve["severity"],
                     package_version if is_sub_dep_changed else "",
-                    cve["fixed_version"] if is_root else "",
+                    cve["fixed_version"] if is_root else cve.get("root_package_fix_version", ""),
                     compliant_version
                 ]
             )

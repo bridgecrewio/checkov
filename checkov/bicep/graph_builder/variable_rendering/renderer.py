@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 
 
-class BicepVariableRenderer(VariableRenderer):
+class BicepVariableRenderer(VariableRenderer["BicepLocalGraph"]):
     def __init__(self, local_graph: BicepLocalGraph) -> None:
         super().__init__(local_graph)
 

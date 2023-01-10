@@ -47,6 +47,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_APIGatewayEndpointsUsesCertificateForAuthentication(self):
+        self.go("APIGatewayEndpointsUsesCertificateForAuthentication")
+
+    def test_APIGatewayRequestParameterValidationEnabled(self):
+        self.go("APIGatewayRequestParameterValidationEnabled")        
+
+    def test_CloudFrontUsesSecureProtocolsForHTTPS(self):
+        self.go("CloudFrontUsesSecureProtocolsForHTTPS")
+
+    def test_EMRClusterHasSecurityConfiguration(self):
+        self.go("EMRClusterHasSecurityConfiguration")
+
+    def test_OpenSearchDomainHasFineGrainedControl(self):
+        self.go("OpenSearchDomainHasFineGrainedControl")        
+
     def test_VPCHasRestrictedSG(self):
         self.go("VPCHasRestrictedSG")
 
@@ -70,6 +85,24 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_VAconfiguredToSendReports(self):
         self.go("VAconfiguredToSendReports")
+
+    def test_AWSConfigRecorderEnabled(self):
+        self.go("AWSConfigRecorderEnabled")
+
+    def test_CLoudFrontS3OriginConfigWithOAI(self):
+        self.go("CLoudFrontS3OriginConfigWithOAI")
+
+    def test_CloudFrontWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("CloudFrontWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_ConfigRecorderRecordsAllGlobalResources(self):
+        self.go("ConfigRecorderRecordsAllGlobalResources")
+
+    def test_DMSEndpointHaveSSLConfigured(self):
+        self.go("DMSEndpointHaveSSLConfigured")
+
+    def test_ElastiCacheRedisConfiguredAutomaticFailOver(self):
+        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")  
 
     def test_VAconfiguredToSendReportsToAdmins(self):
         self.go("VAconfiguredToSendReportsToAdmins")
@@ -145,6 +178,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AutoScallingEnabledELB(self):
         self.go("AutoScallingEnabledELB")
+
+    def test_AutoScalingEnabledLB(self):
+        self.go("AutoScalingEnabledLB")
 
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")

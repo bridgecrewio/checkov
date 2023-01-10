@@ -62,7 +62,7 @@ resource "azurerm_resource_group" "test" {
   name     = "test"
 }
 provider "azurerm" {
-  features{}
+  features {}
 }
 
 resource "azurerm_linux_virtual_machine" "pass2" {

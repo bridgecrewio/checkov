@@ -71,7 +71,7 @@ resource "azurerm_api_management" "fail2" {
   publisher_name      = "My Company"
   publisher_email     = "company@terraform.io"
 
-  sku_name = "Consumption"
+  sku_name                   = "Consumption"
   client_certificate_enabled = false
 
   policy {
@@ -104,7 +104,7 @@ resource "azurerm_api_management" "pass" {
   publisher_name      = "My Company"
   publisher_email     = "company@terraform.io"
 
-  sku_name = "Consumption"
+  sku_name                   = "Consumption"
   client_certificate_enabled = true
 
   policy {

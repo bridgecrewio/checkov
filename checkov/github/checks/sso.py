@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from jsonpath_ng import parse
+from bc_jsonpath_ng import parse
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.github.base_github_configuration_check import BaseGithubCheck
@@ -23,14 +23,14 @@ class GithubSSO(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult | None:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         if org_security_schema.validate(conf):
             jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
             if len(jsonpath_expression.find(conf)) > 0:
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
-        return None
+        return CheckResult.UNKNOWN
 
     def get_evaluated_keys(self) -> list[str]:
         return ['data/organization/samlIdentityProvider/ssoUrl']

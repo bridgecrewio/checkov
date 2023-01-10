@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_2"
+  name: "Ensure that certificate validation isn't disabled with curl"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(curl[^\\|&;]*\\s+((--insecure)|(-[^-\\s]*k))).*"
