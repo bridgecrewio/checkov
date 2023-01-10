@@ -150,9 +150,13 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(parameter_details)
                             results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
                             for check, check_result in results.items():
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    entity_code_lines,
-                                                                                    parameter_details)
+                                censored_code_lines = omit_secret_value_from_checks(
+                                    check=check,
+                                    check_result=check_result,
+                                    entity_code_lines=entity_code_lines,
+                                    entity_config=parameter_details,
+                                    resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                                )
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                                 code_block=censored_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,

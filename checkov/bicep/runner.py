@@ -188,6 +188,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
                                     check_result=check_result,
                                     entity_code_lines=file_code_lines[start_line - 1 : end_line],
                                     entity_config=conf,
+                                    resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                                 )
 
                                 record = Record(
