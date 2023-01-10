@@ -51,8 +51,6 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
             parsed = True
             add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex,
                                     secret_policy['isCustom'])
-            logging.info(
-                f"Regex : {check_id} added to custom_detectors")
     return parsed
 
 
@@ -86,5 +84,5 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
         elif code:
             parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
         if not parsed:
-            logging.info(f"policy : {check_id} could not be parsed")
+            logging.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
