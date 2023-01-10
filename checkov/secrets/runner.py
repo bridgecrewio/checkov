@@ -150,6 +150,7 @@ class Runner(BaseRunner[None]):
             self._scan_files(files_to_scan, secrets, self.pbar)
             self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
+            self._add_custom_detectors_to_metadata_integration()
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
@@ -161,7 +162,6 @@ class Runner(BaseRunner[None]):
                     continue
                 else:
                     secrets_duplication[secret_key] = True
-                self._add_custom_detectors_to_metadata_integration()
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
@@ -373,4 +373,3 @@ class Runner(BaseRunner[None]):
             if policy.get('isCustom', False):
                 check_id = policy['incidentId']
                 metadata_integration.check_metadata[check_id] = {'id': check_id}
-                logging.debug(f"(add_custom_detectors_to_metadata_integration) check_id = {check_id}")
