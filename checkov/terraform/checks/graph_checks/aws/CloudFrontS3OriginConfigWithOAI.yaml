@@ -25,6 +25,5 @@ definition:
       resource_types:
         - aws_cloudfront_distribution
       attribute: "origin.*.origin_access_control_id"
-      operator: "exists"         
-        
-    
+      operator: "exists"
+
