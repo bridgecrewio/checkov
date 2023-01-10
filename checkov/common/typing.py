@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
 ]
 
 _Resource: TypeAlias = str
-_Attributes: TypeAlias = List[str]
+_Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 
 

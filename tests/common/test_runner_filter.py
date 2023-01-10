@@ -1,8 +1,11 @@
+import os
 import unittest
+from collections import defaultdict
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 
 
@@ -101,7 +104,7 @@ class TestRunnerFilter(unittest.TestCase):
         instance = RunnerFilter(checks=["CHECK_1"], skip_checks=["CHECK_1"])
         # prioritze disable - also this is not valid input and would be blocked in main.py
         self.assertFalse(instance.should_run_check(check_id="CHECK_1"))
-    
+
     def test_should_run_omitted_wildcard(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertTrue(instance.should_run_check(check_id="CHECK_999"))
@@ -109,7 +112,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertTrue(instance.should_run_check(check_id="CHECK_999", bc_check_id="BC_CHECK_999"))
-    
+
     def test_should_run_omitted_wildcard2(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*"])
         self.assertFalse(instance.should_run_check(check_id="CHECK_AWS_909"))
@@ -117,7 +120,7 @@ class TestRunnerFilter(unittest.TestCase):
     def test_should_run_omitted_wildcard2_bc_id(self):
         instance = RunnerFilter(skip_checks=["BC_CHECK_AWS*"])
         self.assertFalse(instance.should_run_check(check_id="CHECK_AWS_909", bc_check_id="BC_CHECK_AWS_909"))
-    
+
     def test_should_run_omitted_wildcard3(self):
         instance = RunnerFilter(skip_checks=["CHECK_AWS*","CHECK_AZURE*"])
         self.assertTrue(instance.should_run_check(check_id="EXT_CHECK_909"))
@@ -635,6 +638,70 @@ class TestRunnerFilter(unittest.TestCase):
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.MEDIUM], report_type=CheckType.SCA_IMAGE))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.TERRAFORM))
         self.assertFalse(instance.should_run_check(check_id='CKV_AWS_123', severity=Severities[BcSeverities.LOW], report_type=CheckType.SCA_IMAGE))
+
+    def test_resource_attr_to_omit_load_config_empty_list(self):
+        runner_filter = RunnerFilter(resource_attr_to_omit=defaultdict(lambda: []))
+        assert not runner_filter.resource_attr_to_omit
+        # assert that we have default dict as well:
+        runner_filter.resource_attr_to_omit["acab"].update(["ac", "ab"])
+        assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
+
+    def test_resource_attr_to_omit_load_config_sanity_absolute_path(self):
+        """
+        This check is more than a Sanity test - it also checks parser edge cases -
+        - key has single str value
+        - key has a list of values, one of them has incompatible type (first file content contains single str value
+            in key3 & int value in key4. Both need to be parsed into a set)
+        """
+        first_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password"},
+            "key4": {"admin_password", "1"},
+            "key5": {"plaintext"},
+            # ToDo: Uncomment if we want to support universal masking
+            # "*": {"plaintext"}
+        }
+
+        argv = [
+            "--config-file",
+            f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.yml"
+        ]
+        ckv = Checkov(argv=argv)
+        runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+        assert runner_filter.resource_attr_to_omit
+        for k, v in runner_filter.resource_attr_to_omit.items():
+            assert v == first_file_real_parsed_content.get(k)
+
+        for k, v in first_file_real_parsed_content.items():
+            assert v == runner_filter.resource_attr_to_omit.get(k)
+
+    def test_resource_attr_to_omit_load_config_sanity_combine(self):
+        combined_file_real_parsed_content = {
+            "aws_db_instance": {"storage_container_path"},
+            "key2": {"storage_container_path"},
+            "key3": {"admin_password", "blabla"},
+            "key4": {"admin_password", "blabla2", "1", "2"},
+            "key5": {"plaintext", "admin_password"},
+            "key6": {"admin_password"},
+            "key7": {"plaintext"},
+            # ToDo: Uncomment if we want to support universal masking
+            # "*": {"plaintext"}
+        }
+
+        argv = [
+            "--config-file",
+            f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/combined.yml"
+        ]
+        ckv = Checkov(argv=argv)
+        runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+
+        assert runner_filter.resource_attr_to_omit
+        for k, v in runner_filter.resource_attr_to_omit.items():
+            assert v == combined_file_real_parsed_content.get(k)
+
+        for k, v in combined_file_real_parsed_content.items():
+            assert v == runner_filter.resource_attr_to_omit.get(k)
 
 
 if __name__ == '__main__':

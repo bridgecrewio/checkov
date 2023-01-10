@@ -498,3 +498,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="store_true",
             help="Return exit code 0 instead of 2",
         )
+        self.add(
+            "--mask",
+            action="append",
+            default=[],
+            help="List of <resource_type>:<variable> OR <variable> only. Each entry in the list will be used for"
+                 "masking the desired attribute for resource (or for all resources, if no resource given)."
+                 "Notice: one entry can contain several variables, seperated with a comma. For example:"
+                 "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
+        )

@@ -23,6 +23,7 @@ class CustomAttributes:
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
     TF_RESOURCE_ADDRESS = "__address__"
+    REFERENCES = "references_"
 
 
 def props(cls: Any) -> List[str]:

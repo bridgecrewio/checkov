@@ -203,7 +203,11 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 ### Running or skipping checks 
 
 By using command line flags, you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information about how these flags work together.
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include.
+Moreover, as json files can't contain comments, one can pass regex pattern to skip json file secret scan.
+
+See the docs for more detailed information about how these flags work together.
+   
 
 ## Examples
 
@@ -279,6 +283,28 @@ OR enable the environment variables for multiple runs
 export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
 checkov -d .
 ```
+
+Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that their suffix is DontScan
+```sh
+checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
+```
+
+Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that contains "skip_test" in path
+```sh
+checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
+```
+
+One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
+The masking can apply on resource & value (or multiple values, seperated with a comma). 
+Examples:
+```sh
+mask:
+- aws_instance:user_data
+- azurerm_key_vault_secret:admin_password,user_passwords
+```
+In the example above, the following values will be masked:
+- user_data for aws_instance resource
+- both admin_password &user_passwords for azurerm_key_vault_secret
 
 
 ### Suppressing/Ignoring a check
