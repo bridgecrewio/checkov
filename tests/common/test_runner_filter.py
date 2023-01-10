@@ -659,8 +659,10 @@ class TestRunnerFilter(unittest.TestCase):
             "key3": {"admin_password"},
             "key4": {"admin_password", "1"},
             "key5": {"plaintext"},
-            "*": {"plaintext"}
+            # ToDo: Uncomment if we want to support universal masking
+            # "*": {"plaintext"}
         }
+
         argv = [
             "--config-file",
             f"{os.path.dirname(os.path.realpath(__file__))}/resource_attr_to_omit_configs/first.yml"
@@ -683,7 +685,8 @@ class TestRunnerFilter(unittest.TestCase):
             "key5": {"plaintext", "admin_password"},
             "key6": {"admin_password"},
             "key7": {"plaintext"},
-            "*": {"plaintext"}
+            # ToDo: Uncomment if we want to support universal masking
+            # "*": {"plaintext"}
         }
 
         argv = [

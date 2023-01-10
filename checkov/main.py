@@ -503,9 +503,10 @@ class Checkov:
                 resource = splitted_entry[0]
                 variables_to_mask = splitted_entry[1].split(',')
                 resource_attributes_to_omit[resource].update(variables_to_mask)
-            elif 1 == splitted_entry_len:
-                variables_to_mask = splitted_entry[0].split(',')
-                resource_attributes_to_omit[RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK].update(variables_to_mask)
+            # ToDo: Uncomment if we want to support universal masking
+            # elif 1 == splitted_entry_len:
+            #     variables_to_mask = splitted_entry[0].split(',')
+            #     resource_attributes_to_omit[RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK].update(variables_to_mask)
 
         self.config.mask = resource_attributes_to_omit
 

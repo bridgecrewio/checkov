@@ -137,28 +137,28 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_confi
         runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
 
 
-def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_config(
-        tfplan_resource_lines_with_secrets,
-        tfplan_resource_config_with_secrets,
-        tfplan_resource_lines_without_secrets
-):
-    argv = [
-        "--config-file",
-        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/universal_key.yml"
-    ]
-    ckv = Checkov(argv=argv)
-    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
-    check = SecretExpirationDate()
-    check.entity_type = 'azurerm_key_vault_secret'
-    check_result = {'result': CheckResult.FAILED}
-
-    assert omit_secret_value_from_checks(
-        check,
-        check_result,
-        tfplan_resource_lines_with_secrets,
-        tfplan_resource_config_with_secrets,
-        runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
-
+# ToDo: Uncomment if we want to support universal masking
+# def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_config(
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         tfplan_resource_lines_without_secrets
+# ):
+#     argv = [
+#         "--config-file",
+#         f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/universal_key.yml"
+#     ]
+#     ckv = Checkov(argv=argv)
+#     runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+#     check = SecretExpirationDate()
+#     check.entity_type = 'azurerm_key_vault_secret'
+#     check_result = {'result': CheckResult.FAILED}
+#
+#     assert omit_secret_value_from_checks(
+#         check,
+#         check_result,
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
 
 def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_config(
         tfplan_resource_lines_with_secrets,
@@ -182,27 +182,28 @@ def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_con
         runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
 
 
-def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
-        tfplan_resource_lines_with_secrets,
-        tfplan_resource_config_with_secrets,
-        tfplan_resource_lines_without_secrets_multiple_keys
-):
-
-    argv = [
-        "--config-file",
-        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.yml"
-    ]
-    ckv = Checkov(argv=argv)
-    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
-
-    check = SecretExpirationDate()
-    check.entity_type = 'azurerm_key_vault_secret'
-    check_result = {'result': CheckResult.FAILED}
-
-    assert omit_secret_value_from_checks(
-        check,
-        check_result,
-        tfplan_resource_lines_with_secrets,
-        tfplan_resource_config_with_secrets,
-        runner_filter.resource_attr_to_omit
-    ) == tfplan_resource_lines_without_secrets_multiple_keys
+# ToDo: Uncomment if we want to support universal masking
+# def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         tfplan_resource_lines_without_secrets_multiple_keys
+# ):
+#
+#     argv = [
+#         "--config-file",
+#         f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.yml"
+#     ]
+#     ckv = Checkov(argv=argv)
+#     runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+#
+#     check = SecretExpirationDate()
+#     check.entity_type = 'azurerm_key_vault_secret'
+#     check_result = {'result': CheckResult.FAILED}
+#
+#     assert omit_secret_value_from_checks(
+#         check,
+#         check_result,
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         runner_filter.resource_attr_to_omit
+#     ) == tfplan_resource_lines_without_secrets_multiple_keys
