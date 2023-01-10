@@ -126,7 +126,8 @@ class RunnerFilter(object):
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
         resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
         # In order to create new object (and not a reference to the given one)
-        resource_attributes_to_omit.update(resource_attr_to_omit_input)
+        if resource_attr_to_omit_input:
+            resource_attributes_to_omit.update(resource_attr_to_omit_input)
         return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
