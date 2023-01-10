@@ -7,7 +7,7 @@ class AzureSearchAllowedIPsNotGlobal(BaseResourceNegativeValueCheck):
     def __init__(self):
         # Setting the allowed ips to include global routes CIDR - 0.0.0.0/0 makes the resource public
         name = "Ensure Azure search service allowed IPS does not give public Access"
-        id = "CKV_AZURE_206"
+        id = "CKV_AZURE_210"
         supported_resources = ['azurerm_search_service']
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
