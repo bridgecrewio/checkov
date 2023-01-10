@@ -312,6 +312,8 @@ def create_fixable_cve_summary_table_part(
         fixable_table.add_row(
             [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/  "])
         fixable_table.align = "l"
+    else:
+        return []
 
     # hack to make multiple tables look like one
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]
