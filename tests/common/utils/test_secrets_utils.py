@@ -1,31 +1,47 @@
+import os
+
 from checkov.common.models.enums import CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+from checkov.main import Checkov
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.provider.aws.credentials import AWSCredentials
 from checkov.terraform.checks.resource.azure.SecretExpirationDate import SecretExpirationDate
 
 
-def test_omit_secret_value_from_checks_by_attribute(tfplan_resource_lines_with_secrets,
-                                                    tfplan_resource_config_with_secrets,
-                                                    tfplan_resource_lines_without_secrets):
+def test_omit_secret_value_from_checks_by_attribute(
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        tfplan_resource_lines_without_secrets
+):
     check = SecretExpirationDate()
     check.entity_type = 'azurerm_key_vault_secret'
     check_result = {'result': CheckResult.FAILED}
-    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
+    resource_attributes_to_omit = {'azurerm_key_vault_secret': {'value'}}
 
-    assert omit_secret_value_from_checks(check, check_result, tfplan_resource_lines_with_secrets,
-                                         tfplan_resource_config_with_secrets, resource_attributes_to_omit
-                                         ) == tfplan_resource_lines_without_secrets
+    assert omit_secret_value_from_checks(
+        check,
+        check_result,
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        resource_attributes_to_omit
+    ) == tfplan_resource_lines_without_secrets
 
 
-def test_omit_secret_value_from_checks_by_secret(aws_provider_lines_with_secrets, aws_provider_config_with_secrets,
-                                                 aws_provider_lines_without_secrets):
+def test_omit_secret_value_from_checks_by_secret(
+        aws_provider_lines_with_secrets,
+        aws_provider_config_with_secrets,
+        aws_provider_lines_without_secrets
+):
     check = AWSCredentials()
     check_result = {'result': CheckResult.FAILED}
 
-    assert omit_secret_value_from_checks(check, check_result, aws_provider_lines_with_secrets,
-                                         aws_provider_config_with_secrets
-                                         ) == aws_provider_lines_without_secrets
+    assert omit_secret_value_from_checks(
+        check,
+        check_result,
+        aws_provider_lines_with_secrets,
+        aws_provider_config_with_secrets
+    ) == aws_provider_lines_without_secrets
 
 
 def test_omit_secret_value_from_checks_by_secret_2():
@@ -64,23 +80,130 @@ def test_omit_secret_value_from_checks_by_secret_2():
         (100, '            "timeouts": null,\n'),
         (101, '            "value": "-----********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************--\\n"\n')
     ]
-    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
+    resource_attributes_to_omit = {'azurerm_key_vault_secret': {'value'}}
 
-    result = omit_secret_value_from_checks(check, check_result, entity_lines_with_secrets, entity_config_with_secrets,
-                                           resource_attributes_to_omit)
+    result = omit_secret_value_from_checks(
+        check,
+        check_result,
+        entity_lines_with_secrets,
+        entity_config_with_secrets,
+        resource_attributes_to_omit
+    )
 
     assert result == entity_lines_without_secrets
 
-def test_omit_secret_value_from_graph_checks_by_attribute(tfplan_resource_lines_with_secrets,
-                                                          tfplan_resource_config_with_secrets,
-                                                          tfplan_resource_lines_without_secrets):
+
+def test_omit_secret_value_from_graph_checks_by_attribute(
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        tfplan_resource_lines_without_secrets
+):
     check = BaseGraphCheck()
     check.resource_types = ['azurerm_key_vault_secret']
     check_result = {'result': CheckResult.FAILED}
-    resource_attributes_to_omit = {'azurerm_key_vault_secret': ['value']}
+    resource_attributes_to_omit = {'azurerm_key_vault_secret': {'value'}}
 
-    result = omit_secret_value_from_graph_checks(check, check_result, tfplan_resource_lines_with_secrets, tfplan_resource_config_with_secrets,
-                                           resource_attributes_to_omit)
+    result = omit_secret_value_from_graph_checks(
+        check,
+        check_result,
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        resource_attributes_to_omit
+    )
 
     assert result == tfplan_resource_lines_without_secrets
 
+
+def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_config(
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        tfplan_resource_lines_without_secrets
+):
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/real_keys.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+    check = SecretExpirationDate()
+    check.entity_type = 'azurerm_key_vault_secret'
+    check_result = {'result': CheckResult.FAILED}
+
+    assert omit_secret_value_from_checks(
+        check,
+        check_result,
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
+
+
+# ToDo: Uncomment if we want to support universal masking
+# def test_omit_secret_value_from_checks_by_attribute_runner_filter_universal_config(
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         tfplan_resource_lines_without_secrets
+# ):
+#     argv = [
+#         "--config-file",
+#         f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/universal_key.yml"
+#     ]
+#     ckv = Checkov(argv=argv)
+#     runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+#     check = SecretExpirationDate()
+#     check.entity_type = 'azurerm_key_vault_secret'
+#     check_result = {'result': CheckResult.FAILED}
+#
+#     assert omit_secret_value_from_checks(
+#         check,
+#         check_result,
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
+
+def test_omit_secret_value_from_checks_by_attribute_runner_filter_duplicated_config(
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        tfplan_resource_lines_without_secrets
+):
+    argv = [
+        "--config-file",
+        f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/duplicated_key.yml"
+    ]
+    ckv = Checkov(argv=argv)
+    runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+    check = SecretExpirationDate()
+    check.entity_type = 'azurerm_key_vault_secret'
+    check_result = {'result': CheckResult.FAILED}
+    assert omit_secret_value_from_checks(
+        check,
+        check_result,
+        tfplan_resource_lines_with_secrets,
+        tfplan_resource_config_with_secrets,
+        runner_filter.resource_attr_to_omit) == tfplan_resource_lines_without_secrets
+
+
+# ToDo: Uncomment if we want to support universal masking
+# def test_omit_secret_value_from_checks_by_attribute_runner_filter_multiple_keys(
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         tfplan_resource_lines_without_secrets_multiple_keys
+# ):
+#
+#     argv = [
+#         "--config-file",
+#         f"{os.path.dirname(os.path.realpath(__file__))}/../resource_attr_to_omit_configs/multiple_keys.yml"
+#     ]
+#     ckv = Checkov(argv=argv)
+#     runner_filter = RunnerFilter(resource_attr_to_omit=ckv.config.mask)
+#
+#     check = SecretExpirationDate()
+#     check.entity_type = 'azurerm_key_vault_secret'
+#     check_result = {'result': CheckResult.FAILED}
+#
+#     assert omit_secret_value_from_checks(
+#         check,
+#         check_result,
+#         tfplan_resource_lines_with_secrets,
+#         tfplan_resource_config_with_secrets,
+#         runner_filter.resource_attr_to_omit
+#     ) == tfplan_resource_lines_without_secrets_multiple_keys
