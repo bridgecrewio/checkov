@@ -9,6 +9,7 @@ import re
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.consts import RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -139,21 +140,28 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
     return censored_line
 
 
-def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, CheckResult] | _CheckResult,
-                                  entity_code_lines: list[tuple[int, str]],
-                                  entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
-                                  resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
-        list[tuple[int, str]]:
-    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+def omit_secret_value_from_checks(
+        check: BaseCheck,
+        check_result: dict[str, CheckResult] | _CheckResult,
+        entity_code_lines: list[tuple[int, str]],
+        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+        resource_attributes_to_omit: ResourceAttributesToOmit | None = None
+) -> list[tuple[int, str]]:
+    # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    secrets = set()
     censored_code_lines = []
 
     if CheckCategories.SECRETS in check.categories and check_result.get('result') == CheckResult.FAILED:
         secrets.update([str(secret) for key, secret in entity_config.items() if
                         key.startswith(f'{check.id}_secret')])
 
-    if resource_attributes_to_omit and check.entity_type in resource_attributes_to_omit:
-        for attribute_to_omit in [attr for attr in resource_attributes_to_omit.get(check.entity_type) if attr in entity_config]:  # type:ignore[union-attr]
-            secret = entity_config.get(attribute_to_omit)
+    if resource_attributes_to_omit:
+        universal_mask = resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set())
+        resource_masks = resource_attributes_to_omit.get(check.entity_type, set())
+        resource_masks.update(universal_mask)
+        for key, secret in entity_config.items():
+            if key not in resource_masks:
+                continue
             if isinstance(secret, list) and secret:
                 secrets.add(secret[0])
 
@@ -168,12 +176,15 @@ def omit_secret_value_from_checks(check: BaseCheck, check_result: dict[str, Chec
     return censored_code_lines
 
 
-def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dict[str, CheckResult] | _CheckResult,
-                                        entity_code_lines: list[tuple[int, str]],
-                                        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
-                                        resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> \
-        list[tuple[int, str]]:
-    secrets = set()  # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+def omit_secret_value_from_graph_checks(
+        check: BaseGraphCheck,
+        check_result: dict[str, CheckResult] | _CheckResult,
+        entity_code_lines: list[tuple[int, str]],
+        entity_config: dict[str, Any] | ParameterAttributes | ResourceAttributes,
+        resource_attributes_to_omit: ResourceAttributesToOmit | None = None
+) -> list[tuple[int, str]]:
+    # a set, to efficiently avoid duplicates in case the same secret is found in the following conditions
+    secrets = set()
     censored_code_lines = []
 
     if check.category == CheckCategories.SECRETS.name and check_result.get('result') == CheckResult.FAILED:
@@ -183,13 +194,20 @@ def omit_secret_value_from_graph_checks(check: BaseGraphCheck, check_result: dic
         }
 
     if resource_attributes_to_omit:
+        # Universal mask ('*') might exist in resource_attributes_to_omit. If it does exist, we need to mask all the
+        # entities in resource types according to resource_attributes_to_omit.get('*')
+        universal_mask = set(resource_attributes_to_omit.get(RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK, set()))
         for resource in check.resource_types:
-            if resource in resource_attributes_to_omit:
-                for attribute in resource_attributes_to_omit.get(resource):  # type:ignore[union-attr]
-                    if attribute in entity_config:
-                        secret = entity_config.get(attribute)
-                        if isinstance(secret, list) and secret:
-                            secrets.add(secret[0])
+            resource_masks = set(resource_attributes_to_omit.get(resource, set()))
+            # resource_masks should contain all mask rules that should apply on this resource
+            resource_masks.update(universal_mask)
+            if not resource_masks:
+                continue
+            # If entity is one that should be masked, we add it the value to secrets
+            for attribute, secret in entity_config.items():
+                if attribute in resource_masks:
+                    if isinstance(secret, list) and secret:
+                        secrets.add(secret[0])
 
     if not secrets:
         logging.debug(f"Secret was not saved in {check.id}, can't omit")

@@ -1,0 +1,2 @@
+FROM alpine:3.5
+RUN echo "panw" && wget --no-check-certificate https://example.com

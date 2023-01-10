@@ -5,30 +5,40 @@ import pytest
 import responses
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.output.report import Report
 from checkov.secrets.consts import VerifySecretsResult
 from checkov.secrets.runner import Runner
 
 
-@pytest.mark.parametrize(
-    "validate_secrets_flag,api_key",
-    [
-        (None, "someKey"),
-        (None, None),
-        ("True", None)
-    ],
-)
-def test_verify_secrets_insufficient_params(validate_secrets_flag: str | None, api_key: str | None) -> None:
-    if validate_secrets_flag:
-        os.environ["CKV_VALIDATE_SECRETS"] = validate_secrets_flag
-    if api_key:
-        os.environ["BC_API_KEY"] = api_key
+def test_verify_secrets_insufficient_params_skip_download() -> None:
+    os.environ["CKV_VALIDATE_SECRETS"] = "true"
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.skip_download = True
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
 
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     os.environ.pop("CKV_VALIDATE_SECRETS", None)
-    os.environ.pop("BC_API_KEY", None)
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+
+def test_verify_secrets_insufficient_params_no_api_key() -> None:
+    os.environ["CKV_VALIDATE_SECRETS"] = "true"
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = None
+
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    os.environ.pop("CKV_VALIDATE_SECRETS", None)
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+
+def test_verify_secrets_insufficient_params_no_flag() -> None:
+    # Not setting CKV_VALIDATE_SECRETS env var
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
 
@@ -41,7 +51,7 @@ def test_verify_secrets_insufficient_params(validate_secrets_flag: str | None, a
         (400,),
     ]
 )
-def test_verify_secrets_failure(mock_bc_integration: BcPlatformIntegration, status_code: int) -> None:
+def test_verify_secrets_failure(mock_bc_integration, status_code: int) -> None:
     os.environ["CKV_VALIDATE_SECRETS"] = "True"
     os.environ["BC_API_KEY"] = "Key"
 
@@ -58,7 +68,7 @@ def test_verify_secrets_failure(mock_bc_integration: BcPlatformIntegration, stat
 
 
 @responses.activate
-def test_verify_secrets(mock_bc_integration: BcPlatformIntegration, secrets_report: Report) -> None:
+def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
     os.environ["CKV_VALIDATE_SECRETS"] = "True"
     os.environ["BC_API_KEY"] = "Key"
     violation_id_to_verify_status = {"VIOLATION_1": "Privileged",

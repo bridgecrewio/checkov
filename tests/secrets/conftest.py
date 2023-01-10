@@ -2,25 +2,15 @@ import pytest
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
-
-from checkov.common.bridgecrew.bc_source import SourceType
-
-from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.common.output.report import Report
 from checkov.common.output.secrets_record import SecretsRecord
 
 
-@pytest.fixture(scope='package')
-def mock_bc_integration() -> BcPlatformIntegration:
+@pytest.fixture
+def mock_bc_integration():
+    from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    bc_integration.setup_bridgecrew_credentials(
-        repo_id="bridgecrewio/checkov",
-        skip_fixes=True,
-        skip_download=True,
-        source=SourceType("Github", False),
-        source_version="1.0",
-        repo_branch="master",
-    )
+    bc_integration.skip_download = False
     return bc_integration
 
 
