@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class AppServiceIdentity(BaseResourceValueCheck):
+class AzureSearchManagedIdentity(BaseResourceValueCheck):
     def __init__(self):
         # Connections to Azure resources is required to use some features including indexing and customer managed-keys.
         # Cognitive Search can use managed identities to authenticate to Azure resource without storing credentials.
@@ -23,4 +23,4 @@ class AppServiceIdentity(BaseResourceValueCheck):
         return "SystemAssigned"
 
 
-check = AppServiceIdentity()
+check = AzureSearchManagedIdentity()
