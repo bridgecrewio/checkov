@@ -41,7 +41,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2, RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK
+from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
