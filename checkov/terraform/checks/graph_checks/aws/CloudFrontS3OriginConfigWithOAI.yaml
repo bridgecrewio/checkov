@@ -19,7 +19,7 @@ definition:
     - cond_type: attribute
       resource_types:
         - aws_cloudfront_distribution
-      attribute: "origin.*.s3_origin_config"
+      attribute: "origin.*.s3_origin_config.origin_access_identity"
       operator: "exists"
     - cond_type: attribute
       resource_types:
