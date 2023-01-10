@@ -295,19 +295,16 @@ checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SE
 ```
 
 One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
-The masking can apply on resource & value (or multiple values, seperated with a comma). Another option is to mask 
-value (or multiple) for all resources. 
+The masking can apply on resource & value (or multiple values, seperated with a comma). 
 Examples:
 ```sh
 mask:
 - aws_instance:user_data
 - azurerm_key_vault_secret:admin_password,user_passwords
-- main_password
 ```
 In the example above, the following resource types will be masked:
 - user_data for aws_instance resource
 - both admin_password &user_passwords for azurerm_key_vault_secret
-- main password for all resources
 
 
 ### Suppressing/Ignoring a check
