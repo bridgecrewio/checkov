@@ -302,7 +302,7 @@ mask:
 - aws_instance:user_data
 - azurerm_key_vault_secret:admin_password,user_passwords
 ```
-In the example above, the following resource types will be masked:
+In the example above, the following values will be masked:
 - user_data for aws_instance resource
 - both admin_password &user_passwords for azurerm_key_vault_secret
 
