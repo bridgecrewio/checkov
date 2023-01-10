@@ -294,26 +294,21 @@ Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on jso
 checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
 ```
 
-Supply a path to config file (JSON format) that contains mapping between resource and specific attributes it might contain.
-Checkov will use this config to mask (obfuscate) the resource attributes values.
-For example:
- - config file that contains (detailed below) will cause the azurerm_key_vault_secret.value to be masked.
- ```sh
- { "azurerm_key_vault_secret": ["value"]}
-```
- - config file that contains (detailed below) will cause the {RESOURCE} that has value attribute to be masked.
- ```sh
- { "*": ["value"]}
-```
-Usage example:
+One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
+The masking can apply on resource & value (or multiple values, seperated with a comma). Another option is to mask 
+value (or multiple) for all resources. 
+Examples:
 ```sh
-checkov -d --framework terraform_plan --resource-attr-to-omit PATH_TO_FILE.json
+mask:
+- aws_instance:user_data
+- azurerm_key_vault_secret:admin_password,user_passwords
+- main_password
 ```
+In the example above, the following resource types will be masked:
+- user_data for aws_instance resource
+- both admin_password &user_passwords for azurerm_key_vault_secret
+- main password for all resources
 
-Moreover, multiple config files can be added, for example::
-```sh
-checkov -d --framework terraform_plan --resource-attr-to-omit PATH_TO_FILE1.json --resource-attr-to-omit PATH_TO_FILE2.json
-```
 
 ### Suppressing/Ignoring a check
 
