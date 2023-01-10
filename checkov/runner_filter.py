@@ -4,7 +4,7 @@ import logging
 import fnmatch
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
@@ -45,7 +45,8 @@ class RunnerFilter(object):
             enable_secret_scan_all_files: bool = False,
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
-            repo_root_for_plan_enrichment: Optional[List[str]] = None
+            repo_root_for_plan_enrichment: Optional[List[str]] = None,
+            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -117,6 +118,17 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
+        self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
+            resource_attr_to_omit
+        )
+
+    @staticmethod
+    def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
+        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
+        # In order to create new object (and not a reference to the given one)
+        if resource_attr_to_omit_input:
+            resource_attributes_to_omit.update(resource_attr_to_omit_input)
+        return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}

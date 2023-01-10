@@ -153,4 +153,22 @@ def tfplan_resource_lines_without_secrets():
             (49,
              '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
 
+@pytest.fixture
+def tfplan_resource_lines_without_secrets_multiple_keys():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "IClnje**************************************",\n'),
+            (48, '                                "version": "123d0b**************************",\n'),
 
+            (49,
+             '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]

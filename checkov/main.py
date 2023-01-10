@@ -8,6 +8,7 @@ import os
 import shutil
 import signal
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -492,6 +493,23 @@ class Checkov:
 
         self.parse_config(argv=argv)
 
+    def _parse_mask_to_resource_attributes_to_omit(self) -> None:
+        resource_attributes_to_omit = defaultdict(lambda: set())
+        for entry in self.config.mask:
+            splitted_entry = entry.split(':')
+            # if we have 2 entries, this is resource & variable to mask
+            splitted_entry_len = len(splitted_entry)
+            if 2 == splitted_entry_len:
+                resource = splitted_entry[0]
+                variables_to_mask = splitted_entry[1].split(',')
+                resource_attributes_to_omit[resource].update(variables_to_mask)
+            # ToDo: Uncomment if we want to support universal masking
+            # elif 1 == splitted_entry_len:
+            #     variables_to_mask = splitted_entry[0].split(',')
+            #     resource_attributes_to_omit[RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK].update(variables_to_mask)
+
+        self.config.mask = resource_attributes_to_omit
+
     def parse_config(self, argv: list[str] = sys.argv[1:]) -> None:
         """Parses the user defined config via CLI flags"""
 
@@ -537,6 +555,9 @@ class Checkov:
             logger.warning(
                 '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
             )
+
+        # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
+        self._parse_mask_to_resource_attributes_to_omit()
 
     def run(self, banner: str = checkov_banner) -> int | None:
         self.run_metadata = {
@@ -592,19 +613,28 @@ class Checkov:
         if self.config.var_file:
             self.config.var_file = [os.path.abspath(f) for f in self.config.var_file]
 
-        runner_filter = RunnerFilter(framework=self.config.framework, skip_framework=self.config.skip_framework, checks=self.config.check,
-                                     skip_checks=self.config.skip_check, include_all_checkov_policies=self.config.include_all_checkov_policies,
-                                     download_external_modules=bool(convert_str_to_bool(self.config.download_external_modules)),
-                                     external_modules_download_path=self.config.external_modules_download_path,
-                                     evaluate_variables=bool(convert_str_to_bool(self.config.evaluate_variables)),
-                                     runners=checkov_runners, excluded_paths=excluded_paths,
-                                     all_external=self.config.run_all_external_checks, var_files=self.config.var_file,
-                                     skip_cve_package=self.config.skip_cve_package, show_progress_bar=not self.config.quiet,
-                                     use_enforcement_rules=self.config.use_enforcement_rules,
-                                     enable_secret_scan_all_files=bool(convert_str_to_bool(self.config.enable_secret_scan_all_files)),
-                                     block_list_secret_scan=self.config.block_list_secret_scan,
-                                     deep_analysis=self.config.deep_analysis,
-                                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment)
+        runner_filter = RunnerFilter(
+            framework=self.config.framework,
+            skip_framework=self.config.skip_framework,
+            checks=self.config.check,
+            skip_checks=self.config.skip_check,
+            include_all_checkov_policies=self.config.include_all_checkov_policies,
+            download_external_modules=bool(convert_str_to_bool(self.config.download_external_modules)),
+            external_modules_download_path=self.config.external_modules_download_path,
+            evaluate_variables=bool(convert_str_to_bool(self.config.evaluate_variables)),
+            runners=checkov_runners,
+            excluded_paths=excluded_paths,
+            all_external=self.config.run_all_external_checks,
+            var_files=self.config.var_file,
+            skip_cve_package=self.config.skip_cve_package,
+            show_progress_bar=not self.config.quiet,
+            use_enforcement_rules=self.config.use_enforcement_rules,
+            enable_secret_scan_all_files=bool(convert_str_to_bool(self.config.enable_secret_scan_all_files)),
+            block_list_secret_scan=self.config.block_list_secret_scan,
+            deep_analysis=self.config.deep_analysis,
+            repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
+            resource_attr_to_omit=self.config.mask
+        )
 
         source_env_val = os.getenv('BC_SOURCE', 'cli')
         source = get_source_type(source_env_val)

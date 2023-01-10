@@ -141,9 +141,13 @@ class Runner(BaseRunner):
                             tags = cfn_utils.get_resource_tags(entity, cfn_registry)
                             if results:
                                 for check, check_result in results.items():
-                                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                        entity_code_lines,
-                                                                                        resource)
+                                    censored_code_lines = omit_secret_value_from_checks(
+                                        check=check,
+                                        check_result=check_result,
+                                        entity_code_lines=entity_code_lines,
+                                        entity_config=resource,
+                                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                                    )
                                     record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
                                                     code_block=censored_code_lines, file_path=sls_file,
                                                     file_line_range=entity_lines_range,
@@ -185,9 +189,13 @@ class Runner(BaseRunner):
                         tags = cfn_utils.get_resource_tags(entity, registry)
                         if results:
                             for check, check_result in results.items():
-                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                                    entity_code_lines,
-                                                                                    item_content)
+                                censored_code_lines = omit_secret_value_from_checks(
+                                    check=check,
+                                    check_result=check_result,
+                                    entity_code_lines=entity_code_lines,
+                                    entity_config=item_content,
+                                    resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                                )
                                 record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                                 code_block=censored_code_lines, file_path=sls_file,
                                                 file_line_range=entity_lines_range,
@@ -220,9 +228,13 @@ class Runner(BaseRunner):
                 tags = cfn_utils.get_resource_tags(entity, registry)
                 if results:
                     for check, check_result in results.items():
-                        censored_code_lines = omit_secret_value_from_checks(check, check_result,
-                                                                            entity_code_lines,
-                                                                            item_content)
+                        censored_code_lines = omit_secret_value_from_checks(
+                            check=check,
+                            check_result=check_result,
+                            entity_code_lines=entity_code_lines,
+                            entity_config=item_content,
+                            resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                        )
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
                                         code_block=censored_code_lines, file_path=sls_file,
                                         file_line_range=entity_lines_range,
