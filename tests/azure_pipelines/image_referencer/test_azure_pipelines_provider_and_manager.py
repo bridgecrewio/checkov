@@ -431,7 +431,6 @@ def test_manager_extract_images_from_workflow():
         )
     }
 
-
 def test_manager_extract_images_from_workflow_no_images():
     file_path = 'tests/azure_pipelines/image_referencer/resources/azure-pipelines.yaml'
     workflow_config = {

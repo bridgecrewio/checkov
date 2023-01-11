@@ -37,7 +37,7 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
 
     assert len(azure_pipelines_report.resources) == 0
     assert len(azure_pipelines_report.passed_checks) == 0
-    assert len(azure_pipelines_report.failed_checks) == 0
+    assert len(azure_pipelines_report.failed_checks) == 2
     assert len(azure_pipelines_report.skipped_checks) == 0
     assert len(azure_pipelines_report.parsing_errors) == 0
 
@@ -47,8 +47,8 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
     ]
 
-    assert len(sca_image_report.passed_checks) == 1
-    assert len(sca_image_report.failed_checks) == 4
+    assert len(sca_image_report.passed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0

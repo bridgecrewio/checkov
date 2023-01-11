@@ -8,11 +8,8 @@ resources:
     endpoint: AzureDevOps
     name: AzureDevOps/AzureDevOps
 
-stages:
-- stage: Example
-  jobs:
-  - job: FailNoTag
-    displayName: FailNoTagDisplayName
-    pool:
-      vmImage: 'ubuntu-18.04'
-    container: redis:latest
+jobs:
+- job: PassTag
+  pool:
+    vmImage: 'ubuntu-18.04'
+  container: redis:latest
