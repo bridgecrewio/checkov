@@ -345,11 +345,16 @@ class Runner(BaseRunner[None]):
             key = f'{validation_status_entity["violationId"]}_{validation_status_entity["resourceId"]}'
             validation_status_by_check_id_and_resource[key] = validation_status_entity['status']
 
+        logging.debug(f'secrets verification api returned with {len(validation_status_by_check_id_and_resource.keys())} unique entries')
+
         for secrets_record in report.failed_checks:
             if hasattr(secrets_record, "validation_status"):
-                key = f'{secrets_record.bc_check_id}_{secrets_record.file_abs_path}:{secrets_record.resource}'
-                secrets_record.validation_status = \
-                    validation_status_by_check_id_and_resource.get(key, ValidationStatus.UNKNOWN.value)
+                key = f'{secrets_record.bc_check_id}_{secrets_record.file_path}:{secrets_record.resource}'
+                secrets_record.validation_status = validation_status_by_check_id_and_resource.get(key)
+
+                if secrets_record.validation_status is None:
+                    logging.debug(f'Failed to find verification status of {key}, setting by default to Unknown')
+                    secrets_record.validation_status = ValidationStatus.UNKNOWN.value
 
         return VerifySecretsResult.SUCCESS
 
