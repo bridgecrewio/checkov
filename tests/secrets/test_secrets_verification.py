@@ -122,7 +122,7 @@ def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
 
 
 @responses.activate
-def test_runner_verify_secrets(mock_bc_integration):
+def test_runner_verify_secrets(mock_bc_integration, mock_metadata_integration):
     current_dir = os.path.dirname(os.path.realpath(__file__))
     valid_dir_path = current_dir + "/resources/cfn"
 
@@ -131,7 +131,7 @@ def test_runner_verify_secrets(mock_bc_integration):
     resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
     verified_report = [
         {
-            "violationId": "None",
+            "violationId": "BC_GIT_6",
             "resourceId": f"{rel_resource_path}:{resource_id}",
             "status": "Valid"
         }
