@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 from networkx import DiGraph
 
@@ -12,7 +12,6 @@ from checkov.common.images.image_referencer import ImageReferencerMixin, Image
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
-from checkov.common.util.consts import START_LINE, END_LINE
 
 
 if TYPE_CHECKING:
