@@ -59,4 +59,3 @@ class AzurePipelinesProvider:
                                                                 resource_key='',
                                                                 start_line=start_line,
                                                                 end_line=end_line))
-
