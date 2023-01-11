@@ -3,6 +3,7 @@ import os
 
 import pytest
 import responses
+from checkov.runner_filter import RunnerFilter
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
@@ -118,3 +119,39 @@ def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
     for check in secrets_report.passed_checks:
         if hasattr(check, "validation_status"):
             assert check.validation_status == 'mock'
+
+
+@responses.activate
+def test_runner_verify_secrets(mock_bc_integration):
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    valid_dir_path = current_dir + "/resources"
+
+    os.environ["CKV_VALIDATE_SECRETS"] = "True"
+    rel_resource_path = '/cfn/secret.yml'
+    resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
+    verified_report = [
+        {
+            "violationId": "None",
+            "resourceId": f"{rel_resource_path}:{resource_id}",
+            "status": "Valid"
+        }
+    ]
+
+    responses.add(
+        method=responses.POST,
+        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        json={'verificationReportSignedUrl': 'mock'},
+        status=200
+    )
+
+    runner = Runner()
+    mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
+    mock_bc_integration.bc_api_key = 'mock'
+    runner.get_json_verification_report = lambda x: verified_report
+
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets']))
+
+    for check in report.failed_checks:
+        if check.file_path == rel_resource_path and check.resource == resource_id:
+            assert check.validation_status == 'Valid'
