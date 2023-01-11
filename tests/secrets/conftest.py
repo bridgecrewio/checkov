@@ -15,6 +15,12 @@ def mock_bc_integration():
 
 
 @pytest.fixture
+def mock_metadata_integration():
+    from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration
+    integration.get_bc_id = lambda ckv_id: 'BC_GIT_2' if ckv_id == 'CKV_SECRETS_2' else 'BC_GIT_6'
+
+
+@pytest.fixture
 def secrets_report() -> Report:
     kwargs = {'validation_status': 'mock', 'check_id': 'mock', 'check_name': 'mock', 'code_block': 'mock', 'file_path': 'mock',
               'file_line_range': 'mock', 'evaluations': 'mock', 'check_class': 'mock', 'file_abs_path': 'mock'}
