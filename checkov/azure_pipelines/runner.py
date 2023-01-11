@@ -3,8 +3,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Any
 
-from networkx import DiGraph
-
 from checkov.azure_pipelines.checks.registry import registry
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
 from checkov.azure_pipelines.image_referencer.manager import AzurePipelinesImageReferencerManager
@@ -17,6 +15,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from collections.abc import Iterable
+    from networkx import DiGraph
 
 
 class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
