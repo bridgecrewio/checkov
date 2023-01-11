@@ -124,10 +124,10 @@ def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
 @responses.activate
 def test_runner_verify_secrets(mock_bc_integration):
     current_dir = os.path.dirname(os.path.realpath(__file__))
-    valid_dir_path = current_dir + "/resources"
+    valid_dir_path = current_dir + "/resources/cfn"
 
     os.environ["CKV_VALIDATE_SECRETS"] = "True"
-    rel_resource_path = '/cfn/secret.yml'
+    rel_resource_path = '/secret.yml'
     resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
     verified_report = [
         {
