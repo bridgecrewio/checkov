@@ -2,12 +2,11 @@ import unittest
 
 import os
 
-import mock
 import responses
 
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -17,7 +16,6 @@ class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_metadata = metadata_integration.check_metadata
-        self.bc_integration = bc_integration
 
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -351,13 +349,13 @@ class TestRunnerValid(unittest.TestCase):
 
         responses.add(
             method=responses.POST,
-            url=f"{self.bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+            url=f"{bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
             json={'verificationReportSignedUrl': 'mock'},
             status=200
         )
 
         runner = Runner()
-        self.bc_integration.persist_enriched_secrets = lambda x: 'mock'
+        bc_integration.persist_enriched_secrets = lambda x: 'mock'
         bc_integration.bc_api_key = 'mock'
         runner.get_json_verification_report = lambda x: verified_report
 
