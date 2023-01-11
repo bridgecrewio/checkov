@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
+from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -100,14 +101,14 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
                 logging.info("creating Kubernetes graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                local_graph = self.graph_manager.build_graph_from_definitions(deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
                     report.add_resource(f'{file_abs_path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions = local_graph.definitions
+        #        self.definitions = local_graph.definitions
         self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
