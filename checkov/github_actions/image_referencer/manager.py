@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Any
 
-from checkov.common.images.image_referencer import Image
 from checkov.common.images.image_referencer_manager import ImageReferencerManager
 from checkov.github_actions.image_referencer.provider import GithubActionProvider
 

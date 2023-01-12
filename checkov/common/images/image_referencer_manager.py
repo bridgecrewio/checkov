@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class ImageReferencerManager:
-    provider: Provider
+    provider: Provider = None
 
     def __init__(self, workflow_config: dict[str, Any], file_path: str):
         self.workflow_config = workflow_config
@@ -18,4 +18,3 @@ class ImageReferencerManager:
     def extract_images_from_workflow(self) -> list[Image]:
         images: list[Image] = self.provider.extract_images_from_workflow()
         return images
-
