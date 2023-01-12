@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.254...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.257...HEAD)
+
+## [2.2.257](https://github.com/bridgecrewio/checkov/compare/2.2.254...2.2.257) - 2023-01-11
+
+### Bug Fix
+
+- **secrets:** Change verify secrets key to include relative path - [#4232](https://github.com/bridgecrewio/checkov/pull/4232)
+- **terraform:** improve cross-variable edges performance - [#4231](https://github.com/bridgecrewio/checkov/pull/4231)
 
 ## [2.2.254](https://github.com/bridgecrewio/checkov/compare/2.2.252...2.2.254) - 2023-01-10
 
