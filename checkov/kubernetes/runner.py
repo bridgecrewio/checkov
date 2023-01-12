@@ -98,6 +98,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                         self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
+            self.spread_list_items()
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
                 logging.info("creating Kubernetes graph")
@@ -131,6 +132,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     return [report, image_report]
 
         return report
+
+    def spread_list_items(self):
+        for file_path, file_conf in self.definitions.items():
+            for resource in file_conf:
+                if resource.get('kind') == "List":
+                    file_conf.extend(item for item in resource.get("items", []) if item)
+                    file_conf.remove(resource)
 
     def check_definitions(
         self, root_folder: str | None, runner_filter: RunnerFilter, report: Report, collect_skip_comments: bool = True
