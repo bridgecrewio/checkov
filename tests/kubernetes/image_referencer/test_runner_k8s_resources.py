@@ -163,7 +163,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     # given
     file_name = "deployment.yaml"
     image_name = "minio/minio:latest"
-    code_lines = "1-44"
+    code_lines = "13-44"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -186,9 +186,9 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 67
-    assert len(k8s_report.failed_checks) == 20
+    assert len(k8s_report.failed_checks) == 21
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -437,8 +437,8 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, lice
     file_name = "stateful_set.yaml"
     image_name_1 = "cockroachdb/cockroach-k8s-init:0.2"
     image_name_2 = "cockroachdb/cockroach:v1.1.0"
-    code_lines_1 = "1-109"
-    code_lines_2 = "1-109"
+    code_lines_1 = "14-100"
+    code_lines_2 = "14-100"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
