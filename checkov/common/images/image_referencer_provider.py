@@ -18,4 +18,3 @@ class Provider:
     @abstractmethod
     def extract_images_from_workflow(self) -> list[Image]:
         pass
-
