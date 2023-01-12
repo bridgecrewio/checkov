@@ -29,32 +29,32 @@ SCA_LICENSE_CHECK_NAME = "SCA license"
 
 class Record:
     def __init__(
-        self,
-        check_id: str,
-        check_name: str,
-        check_result: _CheckResult,
-        code_block: List[Tuple[int, str]],
-        file_path: str,
-        file_line_range: List[int],
-        resource: str,
-        evaluations: Optional[Dict[str, Any]],
-        check_class: str,
-        file_abs_path: str,
-        entity_tags: Optional[Dict[str, str]] = None,
-        caller_file_path: Optional[str] = None,
-        caller_file_line_range: Optional[Tuple[int, int]] = None,
-        bc_check_id: Optional[str] = None,
-        resource_address: Optional[str] = None,
-        severity: Optional[Severity] = None,
-        bc_category: Optional[str] = None,
-        benchmarks: dict[str, list[str]] | None = None,
-        description: Optional[str] = None,
-        short_description: Optional[str] = None,
-        vulnerability_details: Optional[Dict[str, Any]] = None,
-        connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = None,
-        check_len: int | None = None,
-        definition_context_file_path: Optional[str] = None
+            self,
+            check_id: str,
+            check_name: str,
+            check_result: _CheckResult,
+            code_block: List[Tuple[int, str]],
+            file_path: str,
+            file_line_range: List[int],
+            resource: str,
+            evaluations: Optional[Dict[str, Any]],
+            check_class: str,
+            file_abs_path: str,
+            entity_tags: Optional[Dict[str, str]] = None,
+            caller_file_path: Optional[str] = None,
+            caller_file_line_range: Optional[Tuple[int, int]] = None,
+            bc_check_id: Optional[str] = None,
+            resource_address: Optional[str] = None,
+            severity: Optional[Severity] = None,
+            bc_category: Optional[str] = None,
+            benchmarks: dict[str, list[str]] | None = None,
+            description: Optional[str] = None,
+            short_description: Optional[str] = None,
+            vulnerability_details: Optional[Dict[str, Any]] = None,
+            connected_node: Optional[Dict[str, Any]] = None,
+            details: Optional[List[str]] = None,
+            check_len: int | None = None,
+            definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -149,10 +149,10 @@ class Record:
         guideline_message = ""
         if self.guideline:
             guideline_message = (
-                "\tGuide: "
-                + Style.BRIGHT
-                + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
-                + Style.RESET_ALL
+                    "\tGuide: "
+                    + Style.BRIGHT
+                    + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
+                    + Style.RESET_ALL
             )
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
@@ -199,34 +199,17 @@ class Record:
         secret_validation_status_string = ""  # nosec
         if self.check_result["result"] == CheckResult.FAILED and \
                 hasattr(self, 'validation_status') and \
-                os.getenv("CKV_VALIDATE_SECRETS"):
+                os.getenv("CKV_VALIDATE_SECRETS") and \
+                hasattr(self, '_get_secret_validation_status_message'):  # for typing purposes, can't check with isinstance cause of circular dependency
             secret_validation_status_string = self._get_secret_validation_status_message()
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{secret_validation_status_string}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{secret_validation_status_string}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
             return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"
         else:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
-
-    def _get_secret_validation_status_message(self) -> str:
-        warning_sign_unicode = '\u26a0'
-        text_by_secret_validation_status_status = {
-            ValidationStatus.VALID.value: colored(f'\t{warning_sign_unicode} This secret has been validated'
-                                                  f' and should be prioritized\n', "red"),
-            ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
-            ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
-            ValidationStatus.UNAVAILABLE.value: ''
-        }
-        message = None
-        if hasattr(self, 'validation_status'):
-            message = text_by_secret_validation_status_status.get(self.validation_status)
-
-            if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
-                logging.debug(f'Got empty message for secret validation status = {self.validation_status}')
-
-        return message or ''
 
     def __str__(self) -> str:
         return self.to_string()
