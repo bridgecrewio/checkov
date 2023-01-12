@@ -211,10 +211,12 @@ class Record:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
 
     def _get_secret_validation_status_message(self) -> str:
+        warning_sign_unicode = '\u26a0'
         text_by_secret_validation_status_status = {
-            ValidationStatus.VALID.value: colored('U+26A0 This secret has been validated and should be prioritized\n', "red"),
-            ValidationStatus.INVALID.value: 'This is not a valid secret and can be de-prioritized\n',
-            ValidationStatus.UNKNOWN.value: 'We were not able to validate this secret\n',
+            ValidationStatus.VALID.value: colored(f'\t{warning_sign_unicode} This secret has been validated'
+                                                  f' and should be prioritized\n', "red"),
+            ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
+            ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
             ValidationStatus.UNAVAILABLE.value: ''
         }
         message = None
