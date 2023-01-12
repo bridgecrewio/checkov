@@ -12,6 +12,15 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
 
+WARNING_SIGN_UNICODE = '\u26a0'
+TEXT_BY_SECRET_VALIDATION_STATUS = {
+    ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
+                                          f' and should be prioritized\n', "red"),
+    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
+    ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
+    ValidationStatus.UNAVAILABLE.value: ''
+}
+
 
 class SecretsRecord(Record):
     def __init__(self,
@@ -71,17 +80,9 @@ class SecretsRecord(Record):
         self.validation_status = validation_status
 
     def _get_secret_validation_status_message(self) -> str:
-        warning_sign_unicode = '\u26a0'
-        text_by_secret_validation_status_status = {
-            ValidationStatus.VALID.value: colored(f'\t{warning_sign_unicode} This secret has been validated'
-                                                  f' and should be prioritized\n', "red"),
-            ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
-            ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
-            ValidationStatus.UNAVAILABLE.value: ''
-        }
         message = None
         if hasattr(self, 'validation_status') and self.validation_status:
-            message = text_by_secret_validation_status_status.get(self.validation_status)
+            message = TEXT_BY_SECRET_VALIDATION_STATUS.get(self.validation_status)
 
             if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
                 logging.debug(f'Got empty message for secret validation status = {self.validation_status}')
