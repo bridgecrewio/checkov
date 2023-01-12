@@ -80,7 +80,7 @@ class SecretsRecord(Record):
             ValidationStatus.UNAVAILABLE.value: ''
         }
         message = None
-        if hasattr(self, 'validation_status'):
+        if hasattr(self, 'validation_status') and self.validation_status:
             message = text_by_secret_validation_status_status.get(self.validation_status)
 
             if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
