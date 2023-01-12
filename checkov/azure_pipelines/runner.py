@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.azure_pipelines.checks.registry import registry
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
@@ -31,8 +31,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if self.is_workflow_file(f):
-            return super()._parse_file(f=f)  # type: ignore
-
+            return super()._parse_file(f=f)
         return None
 
     def is_workflow_file(self, file_path: str) -> bool:
@@ -42,7 +41,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
                      start_line: int = -1, end_line: int = -1) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
-        resource_name: str = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
+        resource_name: Optional[str] = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])
         return resource_name if resource_name else key
 
     def run(
