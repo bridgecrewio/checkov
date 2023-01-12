@@ -1,6 +1,6 @@
 metadata:
-  id: "CKV2_GCP_13"
-  name: "Ensure network defines firewall and does not use the default firewall"
+  id: "CKV2_GCP_18"
+  name: "Ensure GCP network defines a firewall and does not use the default firewall"
   category: "NETWORKING"
 definition:
   and:
