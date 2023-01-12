@@ -52,6 +52,8 @@ class RunnerFilter(object):
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
+        self.skip_invalid_secrets = skip_checks and any(check.lower() == 'invalid' for check in skip_checks)
+
         self.use_enforcement_rules = use_enforcement_rules
         self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
 
