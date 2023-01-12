@@ -133,8 +133,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
 
         return report
 
-    def spread_list_items(self):
-        for file_path, file_conf in self.definitions.items():
+    def spread_list_items(self) -> None:
+        for _, file_conf in self.definitions.items():
             for resource in file_conf:
                 if resource.get('kind') == "List":
                     file_conf.extend(item for item in resource.get("items", []) if item)
