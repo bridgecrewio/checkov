@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import logging
 import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
 
-from checkov.secrets.consts import ValidationStatus
 from colorama import init, Fore, Style
 from termcolor import colored
 
@@ -29,32 +27,32 @@ SCA_LICENSE_CHECK_NAME = "SCA license"
 
 class Record:
     def __init__(
-            self,
-            check_id: str,
-            check_name: str,
-            check_result: _CheckResult,
-            code_block: List[Tuple[int, str]],
-            file_path: str,
-            file_line_range: List[int],
-            resource: str,
-            evaluations: Optional[Dict[str, Any]],
-            check_class: str,
-            file_abs_path: str,
-            entity_tags: Optional[Dict[str, str]] = None,
-            caller_file_path: Optional[str] = None,
-            caller_file_line_range: Optional[Tuple[int, int]] = None,
-            bc_check_id: Optional[str] = None,
-            resource_address: Optional[str] = None,
-            severity: Optional[Severity] = None,
-            bc_category: Optional[str] = None,
-            benchmarks: dict[str, list[str]] | None = None,
-            description: Optional[str] = None,
-            short_description: Optional[str] = None,
-            vulnerability_details: Optional[Dict[str, Any]] = None,
-            connected_node: Optional[Dict[str, Any]] = None,
-            details: Optional[List[str]] = None,
-            check_len: int | None = None,
-            definition_context_file_path: Optional[str] = None
+        self,
+        check_id: str,
+        check_name: str,
+        check_result: _CheckResult,
+        code_block: List[Tuple[int, str]],
+        file_path: str,
+        file_line_range: List[int],
+        resource: str,
+        evaluations: Optional[Dict[str, Any]],
+        check_class: str,
+        file_abs_path: str,
+        entity_tags: Optional[Dict[str, str]] = None,
+        caller_file_path: Optional[str] = None,
+        caller_file_line_range: Optional[Tuple[int, int]] = None,
+        bc_check_id: Optional[str] = None,
+        resource_address: Optional[str] = None,
+        severity: Optional[Severity] = None,
+        bc_category: Optional[str] = None,
+        benchmarks: dict[str, list[str]] | None = None,
+        description: Optional[str] = None,
+        short_description: Optional[str] = None,
+        vulnerability_details: Optional[Dict[str, Any]] = None,
+        connected_node: Optional[Dict[str, Any]] = None,
+        details: Optional[List[str]] = None,
+        check_len: int | None = None,
+        definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -149,10 +147,10 @@ class Record:
         guideline_message = ""
         if self.guideline:
             guideline_message = (
-                    "\tGuide: "
-                    + Style.BRIGHT
-                    + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
-                    + Style.RESET_ALL
+                "\tGuide: "
+                + Style.BRIGHT
+                + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
+                + Style.RESET_ALL
             )
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
