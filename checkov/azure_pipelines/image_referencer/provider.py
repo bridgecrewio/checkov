@@ -4,19 +4,14 @@ from typing import Any
 
 from checkov.common.images.image_referencer import Image
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
+from checkov.common.images.image_referencer_provider import Provider
 
 
-class AzurePipelinesProvider:
-    __slots__ = ("supported_keys", "workflow_config", "file_path")
+class AzurePipelinesProvider(Provider):
 
     def __init__(self, workflow_config: dict[str, Any], file_path: str):
+        super().__init__(workflow_config, file_path)
         self.supported_keys = "container"
-        self.workflow_config = workflow_config
-        self.file_path = file_path
-
-    @staticmethod
-    def _get_start_end_lines(entity: dict[str, Any]) -> tuple[int, int]:
-        return entity.get('__startline__', 0), entity.get('__endline__', 0)
 
     def extract_images_from_workflow(self) -> list[Image]:
         images = self.extract_images_from_dict(self.workflow_config)

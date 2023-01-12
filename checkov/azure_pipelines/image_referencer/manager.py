@@ -4,17 +4,16 @@ from typing import Any
 
 from checkov.azure_pipelines.image_referencer.provider import AzurePipelinesProvider
 from checkov.common.images.image_referencer import Image
+from checkov.common.images.image_referencer_manager import ImageReferencerManager
 
 
-class AzurePipelinesImageReferencerManager:
-    __slots__ = ("workflow_config", "file_path")
+class AzurePipelinesImageReferencerManager(ImageReferencerManager):
+    __slots__ = ("workflow_config", "file_path", "provider")
 
     def __init__(self, workflow_config: dict[str, Any], file_path: str):
-        self.workflow_config = workflow_config
-        self.file_path = file_path
+        super().__init__(workflow_config, file_path)
+        self.provider = AzurePipelinesProvider(workflow_config=self.workflow_config, file_path=self.file_path)
 
     def extract_images_from_workflow(self) -> list[Image]:
-        gitlab_provider = AzurePipelinesProvider(workflow_config=self.workflow_config, file_path=self.file_path)
-        images: list[Image] = gitlab_provider.extract_images_from_workflow()
-
+        images: list[Image] = self.provider.extract_images_from_workflow()
         return images
