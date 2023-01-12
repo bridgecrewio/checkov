@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 class StateMachineLoggingExecutionHistory(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure State Machine has X-Ray tracing enabled"
+        name = "Ensure State Machine has execution history logging enabled"
         id = "CKV_AWS_285"
         supported_resources = ['aws_sfn_state_machine']
         categories = [CheckCategories.LOGGING]
