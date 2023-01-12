@@ -77,11 +77,12 @@ class BaseAttributeSolver(BaseSolver):
             attribute_matches = self.get_attribute_matches(vertex)
             filtered_attribute_matches = attribute_matches
             if self.is_value_attribute_check and self.value != '':
-                filtered_attribute_matches = [
-                    a for a in attribute_matches
-                    if not self._is_variable_dependant(vertex.get(a), vertex['source_'])
-                ]
-
+                filtered_attribute_matches = []
+                for attribute in attribute_matches:
+                    resource_variable_dependant = self._is_variable_dependant(vertex.get(attribute), vertex['source_'])
+                    policy_variable_dependant = self._is_variable_dependant(self.value, vertex['source_'])
+                    if not resource_variable_dependant or resource_variable_dependant and policy_variable_dependant:
+                        filtered_attribute_matches.append(attribute)
             if attribute_matches:
                 if self.is_jsonpath_check:
                     if self.resource_type_pred(vertex, self.resource_types) and all(

@@ -1,0 +1,373 @@
+{
+  "format_version": "1.1",
+  "terraform_version": "1.3.6",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_network_security_group.fail",
+          "mode": "managed",
+          "type": "azurerm_network_security_group",
+          "name": "fail",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "schema_version": 0,
+          "values": {
+            "location": "canadacentral",
+            "name": "fail",
+            "resource_group_name": "test",
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "security_rule": []
+          }
+        },
+        {
+          "address": "azurerm_network_security_group.pass",
+          "mode": "managed",
+          "type": "azurerm_network_security_group",
+          "name": "pass",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "schema_version": 0,
+          "values": {
+            "location": "canadacentral",
+            "name": "pass",
+            "resource_group_name": "test",
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "security_rule": []
+          }
+        },
+        {
+          "address": "azurerm_network_security_rule.pass",
+          "mode": "managed",
+          "type": "azurerm_network_security_rule",
+          "name": "pass",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "schema_version": 0,
+          "values": {
+            "access": "Deny",
+            "description": null,
+            "destination_address_prefix": "*",
+            "destination_address_prefixes": null,
+            "destination_application_security_group_ids": null,
+            "destination_port_range": "3389",
+            "destination_port_ranges": null,
+            "direction": "Inbound",
+            "name": "pass",
+            "network_security_group_name": "pass",
+            "priority": 100,
+            "protocol": "Tcp",
+            "resource_group_name": "test",
+            "source_address_prefix": "*",
+            "source_address_prefixes": null,
+            "source_application_security_group_ids": null,
+            "source_port_range": "*",
+            "source_port_ranges": null,
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        },
+        {
+          "address": "azurerm_resource_group.test",
+          "mode": "managed",
+          "type": "azurerm_resource_group",
+          "name": "test",
+          "provider_name": "registry.terraform.io/hashicorp/azurerm",
+          "schema_version": 0,
+          "values": {
+            "location": "canadacentral",
+            "name": "test",
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "azurerm_network_security_group.fail",
+      "mode": "managed",
+      "type": "azurerm_network_security_group",
+      "name": "fail",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "location": "canadacentral",
+          "name": "fail",
+          "resource_group_name": "test",
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "security_rule": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "security_rule": []
+        }
+      }
+    },
+    {
+      "address": "azurerm_network_security_group.pass",
+      "mode": "managed",
+      "type": "azurerm_network_security_group",
+      "name": "pass",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "location": "canadacentral",
+          "name": "pass",
+          "resource_group_name": "test",
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true,
+          "security_rule": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "security_rule": []
+        }
+      }
+    },
+    {
+      "address": "azurerm_network_security_rule.pass",
+      "mode": "managed",
+      "type": "azurerm_network_security_rule",
+      "name": "pass",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "access": "Deny",
+          "description": null,
+          "destination_address_prefix": "*",
+          "destination_address_prefixes": null,
+          "destination_application_security_group_ids": null,
+          "destination_port_range": "3389",
+          "destination_port_ranges": null,
+          "direction": "Inbound",
+          "name": "pass",
+          "network_security_group_name": "pass",
+          "priority": 100,
+          "protocol": "Tcp",
+          "resource_group_name": "test",
+          "source_address_prefix": "*",
+          "source_address_prefixes": null,
+          "source_application_security_group_ids": null,
+          "source_port_range": "*",
+          "source_port_ranges": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "azurerm_resource_group.test",
+      "mode": "managed",
+      "type": "azurerm_resource_group",
+      "name": "test",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "location": "canadacentral",
+          "name": "test",
+          "tags": null,
+          "timeouts": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "azurerm": {
+        "name": "azurerm",
+        "full_name": "registry.terraform.io/hashicorp/azurerm",
+        "version_constraint": ">= 3.36.0",
+        "expressions": {
+          "features": [
+            {
+              "key_vault": [
+                {
+                  "purge_soft_delete_on_destroy": {
+                    "constant_value": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "azurerm_network_security_group.fail",
+          "mode": "managed",
+          "type": "azurerm_network_security_group",
+          "name": "fail",
+          "provider_config_key": "azurerm",
+          "expressions": {
+            "location": {
+              "references": [
+                "azurerm_resource_group.test.location",
+                "azurerm_resource_group.test"
+              ]
+            },
+            "name": {
+              "constant_value": "fail"
+            },
+            "resource_group_name": {
+              "references": [
+                "azurerm_resource_group.test.name",
+                "azurerm_resource_group.test"
+              ]
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "azurerm_network_security_group.pass",
+          "mode": "managed",
+          "type": "azurerm_network_security_group",
+          "name": "pass",
+          "provider_config_key": "azurerm",
+          "expressions": {
+            "location": {
+              "references": [
+                "azurerm_resource_group.test.location",
+                "azurerm_resource_group.test"
+              ]
+            },
+            "name": {
+              "constant_value": "pass"
+            },
+            "resource_group_name": {
+              "references": [
+                "azurerm_resource_group.test.name",
+                "azurerm_resource_group.test"
+              ]
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "azurerm_network_security_rule.pass",
+          "mode": "managed",
+          "type": "azurerm_network_security_rule",
+          "name": "pass",
+          "provider_config_key": "azurerm",
+          "expressions": {
+            "access": {
+              "constant_value": "Deny"
+            },
+            "destination_address_prefix": {
+              "constant_value": "*"
+            },
+            "destination_port_range": {
+              "constant_value": "3389"
+            },
+            "direction": {
+              "constant_value": "Inbound"
+            },
+            "name": {
+              "constant_value": "pass"
+            },
+            "network_security_group_name": {
+              "references": [
+                "azurerm_network_security_group.pass.name",
+                "azurerm_network_security_group.pass"
+              ]
+            },
+            "priority": {
+              "constant_value": 100
+            },
+            "protocol": {
+              "constant_value": "Tcp"
+            },
+            "resource_group_name": {
+              "references": [
+                "azurerm_resource_group.test.name",
+                "azurerm_resource_group.test"
+              ]
+            },
+            "source_address_prefix": {
+              "constant_value": "*"
+            },
+            "source_port_range": {
+              "constant_value": "*"
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "azurerm_resource_group.test",
+          "mode": "managed",
+          "type": "azurerm_resource_group",
+          "name": "test",
+          "provider_config_key": "azurerm",
+          "expressions": {
+            "location": {
+              "constant_value": "Canada Central"
+            },
+            "name": {
+              "constant_value": "test"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "relevant_attributes": [
+    {
+      "resource": "azurerm_resource_group.test",
+      "attribute": [
+        "location"
+      ]
+    },
+    {
+      "resource": "azurerm_resource_group.test",
+      "attribute": [
+        "name"
+      ]
+    },
+    {
+      "resource": "azurerm_network_security_group.pass",
+      "attribute": [
+        "name"
+      ]
+    }
+  ]
+}

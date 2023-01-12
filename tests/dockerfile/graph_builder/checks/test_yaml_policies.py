@@ -34,6 +34,15 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_RunUsingSudo(self):
         self.go("RunUsingSudo")
+    
+    def test_RunUnsafeCurl(self):
+        self.go("RunUnsafeCurl")
+
+    def test_RunUnsafeWget(self):
+        self.go("RunUnsafeWget")
+
+    def test_RunPipTrustedHost(self):
+        self.go("RunPipTrustedHost")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

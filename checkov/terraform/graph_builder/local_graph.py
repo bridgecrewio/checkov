@@ -66,7 +66,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.update_nested_modules_address()
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
+            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
                 # experimental flag on building cross variable edges for terraform graph
                 logging.info("Building cross variable edges")
                 edges_count = len(self.edges)
@@ -291,11 +291,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         if cross_variable_edges:
-            if edge in self.edges or self.vertices[edge.dest].block_type != BlockType.RESOURCE or \
-                    self.vertices[edge.origin].block_type != BlockType.RESOURCE:
+            if self.vertices[dest_vertex_index].block_type != BlockType.RESOURCE or \
+                    self.vertices[origin_vertex_index].block_type != BlockType.RESOURCE:
+                return False
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
             edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
-            if edge in self.edges:
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)

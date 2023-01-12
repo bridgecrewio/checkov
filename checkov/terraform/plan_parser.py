@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Optional, Tuple, Dict, List, Any
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import DictNode, ListNode
 from checkov.terraform.context_parsers.tf_plan import parse
 
@@ -106,9 +107,11 @@ def _hclify(
                 ret_dict[conf_key] = [ref]
                 found_ref = True
         if not found_ref:
-            for value in conf.values():
-                if isinstance(value, dict) and "references" in value.keys():
-                    ret_dict["references_"] = value["references"]
+            ret_dict[CustomAttributes.REFERENCES] = [
+                value["references"]
+                for value in conf.values()
+                if isinstance(value, dict) and "references" in value
+            ]
 
     return ret_dict
 

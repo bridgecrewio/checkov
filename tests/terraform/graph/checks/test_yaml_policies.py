@@ -47,6 +47,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
 
+    def test_APIGatewayEndpointsUsesCertificateForAuthentication(self):
+        self.go("APIGatewayEndpointsUsesCertificateForAuthentication")
+
+    def test_APIGatewayRequestParameterValidationEnabled(self):
+        self.go("APIGatewayRequestParameterValidationEnabled")        
+
+    def test_CloudFrontUsesSecureProtocolsForHTTPS(self):
+        self.go("CloudFrontUsesSecureProtocolsForHTTPS")
+
+    def test_EMRClusterHasSecurityConfiguration(self):
+        self.go("EMRClusterHasSecurityConfiguration")
+
+    def test_OpenSearchDomainHasFineGrainedControl(self):
+        self.go("OpenSearchDomainHasFineGrainedControl")        
+
     def test_VPCHasRestrictedSG(self):
         self.go("VPCHasRestrictedSG")
 
@@ -307,6 +322,21 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_durationIsSetToON(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_durationIsSetToON")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF")
 
     def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
         self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
