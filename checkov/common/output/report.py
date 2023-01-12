@@ -159,13 +159,16 @@ class Report:
             check_id = failed_check.check_id
             bc_check_id = failed_check.bc_check_id
             severity = failed_check.severity
+            secret_validation_status = failed_check.validation_status if hasattr(failed_check, 'validation_status') else ''
 
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
             hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
             explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
             explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
-            implicit_soft_fail = not explicit_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
-            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity
+            explicit_secrets_soft_fail = RunnerFilter.secret_check_matches(secret_validation_status, soft_fail_on_checks)
+            explicit_secrets_hard_fail = RunnerFilter.secret_check_matches(secret_validation_status, hard_fail_on_checks)
+            implicit_soft_fail = not explicit_hard_fail and not explicit_secrets_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
+            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity and not explicit_secrets_soft_fail
 
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \

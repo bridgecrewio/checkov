@@ -265,6 +265,10 @@ class RunnerFilter(object):
         return above_min and not below_max
 
     @staticmethod
+    def secret_check_matches(secret_validation_status: str, statuses_list: list[str]) -> bool:
+        return secret_validation_status in statuses_list
+
+    @staticmethod
     def notify_external_check(check_id: str) -> None:
         RunnerFilter.__EXTERNAL_CHECK_IDS.add(check_id)
 
