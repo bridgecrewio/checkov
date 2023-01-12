@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
 
+from checkov.secrets.consts import ValidationStatus
 from colorama import init, Fore, Style
 from termcolor import colored
 
@@ -198,7 +200,7 @@ class Record:
         if self.check_result["result"] == CheckResult.FAILED and \
                 hasattr(self, 'validation_status') and \
                 os.getenv("CKV_VALIDATE_SECRETS"):
-            secret_validation_status_string = f'\tStatus: {self.validation_status}\n'
+            secret_validation_status_string = self._get_secret_validation_status_message()
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{secret_validation_status_string}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
@@ -207,6 +209,22 @@ class Record:
             return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"
         else:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+
+    def _get_secret_validation_status_message(self) -> str:
+        text_by_secret_validation_status_status = {
+            ValidationStatus.VALID.value: colored('U+26A0 This secret has been validated and should be prioritized\n', "red"),
+            ValidationStatus.INVALID.value: 'This is not a valid secret and can be de-prioritized\n',
+            ValidationStatus.UNKNOWN.value: 'We were not able to validate this secret\n',
+            ValidationStatus.UNAVAILABLE.value: ''
+        }
+        message = None
+        if hasattr(self, 'validation_status'):
+            message = text_by_secret_validation_status_status.get(self.validation_status)
+
+            if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
+                logging.debug(f'Got empty message for secret validation status = {self.validation_status}')
+
+        return message or ''
 
     def __str__(self) -> str:
         return self.to_string()
