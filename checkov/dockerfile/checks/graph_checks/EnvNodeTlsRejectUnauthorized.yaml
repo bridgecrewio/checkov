@@ -10,7 +10,7 @@ definition:
         - ENV
       attribute: value
       operator: not_regex_match
-      value: "(.*\\s+)?(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)0).*"
+      value: "(.*\\s+)?(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)((0)|('0')|(\"0\"))).*"
     - cond_type: attribute
       resource_types:
         - RUN

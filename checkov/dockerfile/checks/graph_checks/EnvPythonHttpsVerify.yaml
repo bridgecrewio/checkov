@@ -10,7 +10,7 @@ definition:
         - ENV
       attribute: value
       operator: not_regex_match
-      value: "(.*\\s+)?(PYTHONHTTPSVERIFY(=|\\s+)0).*"
+      value: "(.*\\s+)?(PYTHONHTTPSVERIFY(=|\\s+)((0)|('0')|(\"0\"))).*"
     - cond_type: attribute
       resource_types:
         - RUN

@@ -23,6 +23,10 @@ pass:
 fail:
   - 'fail/Dockerfile.basic.ENV'
   - 'fail/Dockerfile.basic.ENV'
+  - 'fail/Dockerfile.basic.ENV'
+  - 'fail/Dockerfile.basic.ENV'
+  - 'fail/Dockerfile.basic.ARG'
+  - 'fail/Dockerfile.basic.ARG'
   - 'fail/Dockerfile.basic.ARG'
   - 'fail/Dockerfile.basic.ARG'
   - 'fail/Dockerfile.basic.ENV'
