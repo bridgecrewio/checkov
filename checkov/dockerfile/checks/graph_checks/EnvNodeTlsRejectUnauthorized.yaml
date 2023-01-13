@@ -4,31 +4,16 @@ metadata:
   category: "APPLICATION_SECURITY"
 definition:
   or:
-    - and:
-      - cond_type: attribute
-        resource_types:
-          - ARG
-          - ENV
-        attribute: value
-        operator: not_regex_match
-        value: ".*\\s+(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)0).*"
-      - cond_type: attribute
-        resource_types:
-          - ARG
-          - ENV
-        attribute: value
-        operator: not_regex_match
-        value: "^(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)0).*"
-    - and:
-      - cond_type: attribute
-        resource_types:
-          - RUN
-        attribute: value
-        operator: not_regex_match
-        value: ".*[\\s;&|]+(NODE_TLS_REJECT_UNAUTHORIZED=((0)|('0')|(\"0\"))) .*"
-      - cond_type: attribute
-        resource_types:
-          - RUN
-        attribute: value
-        operator: not_regex_match
-        value: "^(NODE_TLS_REJECT_UNAUTHORIZED=((0)|('0')|(\"0\"))) .*"
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)0).*"
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(NODE_TLS_REJECT_UNAUTHORIZED=((0)|('0')|(\"0\"))) .*"
