@@ -1,0 +1,5 @@
+pass:
+  - "task.default"
+  - "task.enabled"
+fail:
+  - "task.disabled"

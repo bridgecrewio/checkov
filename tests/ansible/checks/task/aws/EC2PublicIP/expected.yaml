@@ -1,0 +1,5 @@
+pass:
+  - "task.private"
+fail:
+  - "task.default"
+  - "task.public"
