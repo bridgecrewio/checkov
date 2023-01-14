@@ -13,7 +13,7 @@
         image_id: ami-123456
 
     - name: public
-      amazon.aws.ec2_instance:
+      ec2_instance:
         name: "public-compute-instance"
         key_name: "prod-ssh-key"
         vpc_subnet_id: subnet-5ca1ab1e

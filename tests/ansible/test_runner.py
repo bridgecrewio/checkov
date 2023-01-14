@@ -83,15 +83,15 @@ def test_runner_with_flat_tasks():
     assert summary["parsing_errors"] == 0
 
     passing_resources = {
-        f"task.Check that you can connect (GET) to a page",
+        f"tasks.uri.Check that you can connect (GET) to a page",
     }
 
     failing_resources = {
-        f"task.Download foo.conf",
+        f"tasks.ansible.builtin.get_url.Download foo.conf",
     }
 
     passed_check_resources = {check.resource for check in report.passed_checks}
-    failed_check_resources = {check.resource for check in report.passed_checks}
+    failed_check_resources = {check.resource for check in report.failed_checks}
 
     assert passing_resources == passed_check_resources
     assert failing_resources == failed_check_resources
@@ -144,7 +144,7 @@ def test_get_resource():
     )
 
     # then
-    assert new_key == "task.enabled"
+    assert new_key == "tasks.amazon.aws.ec2_instance.enabled"
 
 
 def test_get_resource_without_name():
@@ -193,4 +193,4 @@ def test_get_resource_without_name():
     )
 
     # then
-    assert new_key == "task.unknown"
+    assert new_key == "tasks.amazon.aws.ec2_instance.unknown"

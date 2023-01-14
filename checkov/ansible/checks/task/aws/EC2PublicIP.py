@@ -15,7 +15,7 @@ class EC2PublicIP(BaseAnsibleTaskCheck):
             name=name,
             id=id,
             categories=(CheckCategories.NETWORKING,),
-            supported_modules=("amazon.aws.ec2_instance",),
+            supported_modules=("amazon.aws.ec2_instance", "ec2_instance"),
             block_type=BlockType.ARRAY,
         )
 

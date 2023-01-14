@@ -1,5 +1,5 @@
 pass:
-  - "task.private"
+  - "tasks.amazon.aws.ec2_instance.private"
 fail:
-  - "task.default"
-  - "task.public"
+  - "tasks.amazon.aws.ec2_instance.default"
+  - "tasks.ec2_instance.public"

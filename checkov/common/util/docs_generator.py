@@ -162,6 +162,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     if any(x in framework_list for x in ("all", "openapi")):
         add_from_repository(openapi_registry, "resource", "OpenAPI")
     if any(x in framework_list for x in ("all", "ansible")):
+        graph_registry = get_graph_checks_registry("ansible")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Ansible")
         add_from_repository(ansible_registry, "resource", "Ansible")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():

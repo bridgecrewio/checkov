@@ -1,5 +1,5 @@
 pass:
-  - "task.default"
-  - "task.enabled"
+  - "tasks.ansible.builtin.uri.default"
+  - "tasks.uri.enabled"
 fail:
-  - "task.disabled"
+  - "tasks.uri.disabled"
