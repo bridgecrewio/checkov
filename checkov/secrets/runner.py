@@ -394,4 +394,3 @@ class Runner(BaseRunner[None]):
 
         for idx in checks_indexes_moved_to_skipped:
             del report.failed_checks[idx]
-
