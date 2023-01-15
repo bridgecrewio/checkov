@@ -3,13 +3,13 @@ import os
 import re
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
 
-# condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
 
+# condition ? true_val : false_val -> (condition, true_val, false_val)
 CONDITIONAL_EXPR = re.compile(r"([^\?]+)\?([^:]+)\:([^:]+)")
 
 # %{ some_text }
@@ -324,3 +324,47 @@ def find_brackets_pairs(input_str: str, starting: str, closing: str) -> List[Dic
         if end != -1 and end - start > 1:
             all_brackets.append({"start": start, "end": end})
     return all_brackets
+
+
+def find_conditional_expression_groups(input_str: str) -> List[str]:
+    if '?' not in input_str or ':' not in input_str:
+        return []
+    if input_str.index('?') > input_str.rindex(':'):
+        return []
+    brackets_pairs = {
+        '[': ']',
+        '{': '}',
+        '(': ')'
+    }
+    str_keys = {'\'', '"'}
+
+    stack = []
+    groups = []
+
+    def _find_separator_index(separator: str, input_str: str, start: int) -> Optional[int]:
+        for i in range(start, len(input_str)):
+            char = input_str[i]
+            if char == separator and not stack:
+                return i
+            # can be true only if the char in str_keys or in brackets_pairs.values()
+            if stack and stack[-1] == char:
+                stack.pop(len(stack) - 1)
+            elif char in brackets_pairs:
+                stack.append(brackets_pairs[char])
+            elif char in str_keys:
+                stack.append(char)
+
+    # find first group
+    first_separator = _find_separator_index('?', input_str, 0)
+    if first_separator is None:
+        return []
+    groups.append(input_str[:first_separator])
+
+    # find second group
+    second_separator = _find_separator_index(':', input_str, first_separator)
+    if first_separator is None:
+        return []
+    groups.append(input_str[first_separator + 1:second_separator])
+
+    groups.append(input_str[second_separator + 1:])
+    return groups
