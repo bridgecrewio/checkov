@@ -9,7 +9,8 @@ executors:
       - "image": "mongo:2.6.8"
 
 jobs:
-  build_job:
+  test-job-single-line: say-hello-workflow/script
+  test-job-list-line:
     - checkout
   test-docker-hash-img:
     docker:
