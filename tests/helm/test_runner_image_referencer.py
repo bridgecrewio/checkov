@@ -80,7 +80,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     # given
     file_name = "hello-world/templates/deployment.yaml"
     image_name = "nginx:1.16.0"
-    code_lines = "3-42"
+    code_lines = "20-42"
     test_folder = RESOURCES_PATH / "image_referencer"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -103,7 +103,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     helm_report = next(report for report in reports if report.check_type == CheckType.HELM)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(helm_report.resources) == 3
+    assert len(helm_report.resources) == 4
     assert len(helm_report.passed_checks) == 71
     assert len(helm_report.failed_checks) == 19
     assert len(helm_report.skipped_checks) == 0
@@ -122,7 +122,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (
         sca_image_report.image_cached_results[0]["relatedResourceId"]
-        == "/hello-world/templates/deployment.yaml:Deployment.default.release-name-hello-world"
+        == "/hello-world/templates/deployment.yaml:Pod.default.release-name-hello-world.app.kubernetes.io/name-hello-world.app.kubernetes.io/instance-release-name"
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
