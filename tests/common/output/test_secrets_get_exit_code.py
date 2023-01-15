@@ -13,7 +13,8 @@ import pytest
         (False, ['invalid', 'valid', 'unknown'], [], 0),  # Implicit soft fail on all statuses
         (True, [], ['invalid', 'valid', 'unknown'], 0),  # Soft fail wins Implicit hard fail on all statuses
         (False, [], ['invalid', 'valid', 'unknown'], 1),  # Implicit hard fail on all statuses
-        (False, [], [], 1)  # default
+        (False, [], [], 1),  # default
+        (True, [], [], 0)  # soft fail
     ],
 )
 def test_secrets_get_exit_code(secrets_report, soft_fail, soft_fail_checks, hard_fail_checks, expected_exit_code) -> None:
