@@ -181,14 +181,14 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
-                code_lines = entity_context.get("code_lines")
+                code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
