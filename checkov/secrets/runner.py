@@ -387,7 +387,7 @@ class Runner(BaseRunner[None]):
         checks_indexes_moved_to_skipped: list[int] = []
 
         for check_index, check in enumerate(report.failed_checks):
-            if check.validation_status == ValidationStatus.INVALID.value:
+            if hasattr(check, 'validation_status') and check.validation_status == ValidationStatus.INVALID.value:
                 check.check_result["result"] = CheckResult.SKIPPED
                 report.skipped_checks.append(check)
                 checks_indexes_moved_to_skipped.append(check_index)
