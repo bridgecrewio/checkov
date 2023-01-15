@@ -6,7 +6,6 @@ class ValidationStatus(Enum):
     VALID = 'Valid'
     INVALID = 'Invalid'
     UNKNOWN = 'Unknown'
-    UNAVAILABLE = 'UNAVAILABLE'
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
