@@ -1,10 +1,25 @@
 from __future__ import annotations
+
+import logging
 from typing import Optional, List, Tuple, Dict, Any
+
+from termcolor import colored
+
+from checkov.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
+
+WARNING_SIGN_UNICODE = '\u26a0'
+TEXT_BY_SECRET_VALIDATION_STATUS = {
+    ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
+                                          f' and should be prioritized\n', "red"),
+    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
+    ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
+    ValidationStatus.UNAVAILABLE.value: ''
+}
 
 
 class SecretsRecord(Record):
@@ -63,3 +78,13 @@ class SecretsRecord(Record):
                          definition_context_file_path=definition_context_file_path
                          )
         self.validation_status = validation_status
+
+    def _get_secret_validation_status_message(self) -> str:
+        message = None
+        if hasattr(self, 'validation_status') and self.validation_status:
+            message = TEXT_BY_SECRET_VALIDATION_STATUS.get(self.validation_status)
+
+            if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
+                logging.debug(f'Got empty message for secret validation status = {self.validation_status}')
+
+        return message or ''
