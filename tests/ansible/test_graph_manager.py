@@ -6,6 +6,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 from checkov.common.runners.graph_manager import ObjectGraphManager
 from checkov.ansible.graph_builder.local_graph import AnsibleLocalGraph
 from checkov.ansible.runner import Runner
+from checkov.common.util.consts import START_LINE, END_LINE
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -31,6 +32,8 @@ def test_build_graph_from_definitions():
     assert task.id == "tasks.amazon.aws.ec2_instance.enabled"
     assert task.source == "Ansible"
     assert task.attributes[CustomAttributes.RESOURCE_TYPE] == "tasks.amazon.aws.ec2_instance"
+    assert task.attributes[START_LINE] == 7
+    assert task.attributes[END_LINE] == 18
     assert task.config == {
         "name": "public-compute-instance",
         "key_name": "prod-ssh-key",

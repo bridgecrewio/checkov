@@ -56,6 +56,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             attributes = deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
+            # only the module code is relevant for validation,
+            # but in the check result the whole task should be visible
+            attributes[START_LINE] = task[START_LINE]
+            attributes[END_LINE] = task[END_LINE]
+
             self.vertices.append(
                 Block(
                     name=block_name,
