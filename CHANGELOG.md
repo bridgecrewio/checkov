@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.252...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.258...HEAD)
+
+## [2.2.258](https://github.com/bridgecrewio/checkov/compare/2.2.257...2.2.258) - 2023-01-12
+
+### Feature
+
+- **terraform:** PC-Policy-Team - GCP PostgreSQL Instance Database Policies - [#4090](https://github.com/bridgecrewio/checkov/pull/4090)
+
+## [2.2.257](https://github.com/bridgecrewio/checkov/compare/2.2.254...2.2.257) - 2023-01-11
+
+### Bug Fix
+
+- **secrets:** Change verify secrets key to include relative path - [#4232](https://github.com/bridgecrewio/checkov/pull/4232)
+- **terraform:** improve cross-variable edges performance - [#4231](https://github.com/bridgecrewio/checkov/pull/4231)
+
+## [2.2.254](https://github.com/bridgecrewio/checkov/compare/2.2.252...2.2.254) - 2023-01-10
+
+### Feature
+
+- **general:** Add resource attributes to omit arg - [#4193](https://github.com/bridgecrewio/checkov/pull/4193)
+- **terraform:** enable cross variable edges - [#4224](https://github.com/bridgecrewio/checkov/pull/4224)
+
+### Bug Fix
+
+- **secrets:** add function to add the custom policies to the metadata integration not in the multiprocess - [#4221](https://github.com/bridgecrewio/checkov/pull/4221)
 
 ## [2.2.252](https://github.com/bridgecrewio/checkov/compare/2.2.246...2.2.252) - 2023-01-09
 
