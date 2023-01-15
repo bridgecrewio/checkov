@@ -17,7 +17,7 @@ class CircleCIProvider:
     def generate_resource_key(self, start_line: int, end_line: int, tag: str) -> str:
         sub_name = Runner.resolve_sub_name(self.workflow_config, start_line, end_line, tag)
         if not sub_name:    # Failed to locate the resource in the config file
-            return None
+            return ''
         image_name = Runner.resolve_image_name(self.workflow_config[tag][sub_name], start_line, end_line)
         new_key = f'{tag}({sub_name}).docker.image{image_name}' if sub_name else tag
         return new_key
