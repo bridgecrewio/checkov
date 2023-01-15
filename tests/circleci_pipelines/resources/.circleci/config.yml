@@ -1,5 +1,5 @@
---- 
-orbs: 
+---
+orbs:
   new-orb: "whatever/orbname@goodorb"
   some-orb: "orbs/orbname@dev:blah"
 
@@ -9,6 +9,9 @@ executors:
       - "image": "mongo:2.6.8"
 
 jobs:
+  test-job-single-line: say-hello-workflow/script
+  test-job-list-line:
+    - checkout
   test-docker-hash-img:
     docker:
       -
@@ -92,9 +95,9 @@ jobs:
           name: "Echo the PR Reponame"
 
 version: 2.1
-workflows: 
-  say-hello-workflow: 
-    jobs: 
+workflows:
+  say-hello-workflow:
+    jobs:
       - test-docker-hash-img
       - test-docker-latest-img
       - test-docker-versioned-img
