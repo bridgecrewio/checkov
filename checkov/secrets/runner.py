@@ -207,7 +207,7 @@ class Runner(BaseRunner[None]):
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
-                    validation_status=ValidationStatus.UNAVAILABLE.value
+                    validation_status=ValidationStatus.UNKNOWN.value
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
