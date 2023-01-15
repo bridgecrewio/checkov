@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.StateMachineLoggingExecutionHistory i
 from checkov.terraform.runner import Runner
 
 
-class TestStateMachineXray(unittest.TestCase):
+class TestStateMachineLoggingExecutionHistory(unittest.TestCase):
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_StateMachineLoggingExecutionHistory"
