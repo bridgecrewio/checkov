@@ -81,7 +81,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     # given
     file_name = "image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml"
     image_name = "wordpress:4.8-apache"
-    code_lines = "2-31"
+    code_lines = "15-31"
     test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -107,9 +107,9 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     kustomize_report = next(report for report in reports if report.check_type == CheckType.KUSTOMIZE)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(kustomize_report.resources) == 2
+    assert len(kustomize_report.resources) == 3
     assert len(kustomize_report.passed_checks) == 68
-    assert len(kustomize_report.failed_checks) == 20
+    assert len(kustomize_report.failed_checks) == 21
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0
 
@@ -126,7 +126,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (
         sca_image_report.image_cached_results[0]["relatedResourceId"]
-        == "/image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml:Deployment.default.prod-wordpress"
+        == "/image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml:Pod.default.prod-wordpress.app-wordpress"
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
