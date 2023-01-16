@@ -3,16 +3,16 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AzureSearchPublicNetworkAccessDisabled import check
+from checkov.terraform.checks.resource.azure.AzureSearchSLAIndex import check
 
 
-class TestAzureSearchPublicNetworkAccessDisabled(unittest.TestCase):
+class TestAzureSearchSLAIndex(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_AzureSearchPublicNetworkAccessDisabled")
+        test_files_dir = os.path.join(current_dir, "example_AzureSearchSLAIndex")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
