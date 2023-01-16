@@ -275,7 +275,7 @@ class EntropyKeywordCombinator(BasePlugin):
 
         return set()
 
-    def postprocess_secrets(self, detected_secrets, line):
+    def postprocess_secrets(self, detected_secrets, line) -> None:
         for detected_secret in detected_secrets:
             if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
                     detected_secret.secret_value):
