@@ -47,7 +47,7 @@ class GithubActionProvider:
                     start_line, end_line = container.get(START_LINE, 0), container.get(END_LINE, 0)
                 elif isinstance(container, str):
                     image = container
-                    line_to_line_numbers = self.workflow_line_numbers[job_object[START_LINE]-1:]
+                    line_to_line_numbers = self.workflow_line_numbers[job_object[START_LINE] - 1:]
                     lines = [line_number for line_number, line in line_to_line_numbers if image in line]
                     if not lines:
                         continue
