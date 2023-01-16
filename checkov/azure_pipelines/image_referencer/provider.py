@@ -13,16 +13,14 @@ class AzurePipelinesProvider(WorkflowImageReferencerProvider):
         super().__init__(workflow_config, file_path)
         self.supported_keys = "container"
 
-    '''
-    We use a general extraction in azure_pipelines because we can display images in different ways: 
+    '''We use a general extraction in azure_pipelines because we can display images in different ways: 
     - container
     - container.image
     - resources.containers[].container...
     - jobs[].container...
     - jobs[].steps.task.inputs.container...
     - jobs[].strategy.container...
-    - stages[].jobs[]...
-    '''
+    - stages[].jobs[]...'''
     def extract_images_from_workflow(self) -> list[Image]:
         images = self.extract_images_from_dict(self.workflow_config)
         return images
