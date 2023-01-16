@@ -1,3 +1,5 @@
+# Fail case 1
+
 resource "aws_s3_bucket_acl" "fail" {
   bucket = aws_s3_bucket.example.id
   access_control_policy {
@@ -23,6 +25,8 @@ resource "aws_s3_bucket_acl" "fail" {
   }
 }
 
+# Pass case 1
+
 resource "aws_s3_bucket_acl" "pass" {
   bucket = aws_s3_bucket.example.id
   access_control_policy {
@@ -40,6 +44,33 @@ resource "aws_s3_bucket_acl" "pass" {
         uri  = "http://acs.amazonaws.com/groups/global/AllUsers"
       }
       permission = "WRITE"
+    }
+
+    owner {
+      id = data.aws_canonical_user_id.current.id
+    }
+  }
+}
+
+# Pass case 2
+
+resource "aws_s3_bucket_acl" "pass" {
+  bucket = aws_s3_bucket.example.id
+  access_control_policy {
+    grant {
+      grantee {
+        id   = data.aws_canonical_user_id.current.id
+        type = "CanonicalUser"
+      }
+      permission = "FULL_CONTROL"
+    }
+
+    grant {
+      grantee {
+        type = "Group"
+        uri = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
+      }
+      permission = "READ_ACP"
     }
 
     owner {

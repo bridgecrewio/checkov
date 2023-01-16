@@ -1,3 +1,5 @@
+# Pass case 1
+
 resource "aws_neptune_cluster" "pass" {
   cluster_identifier                  = "neptune-cluster-demo"
   engine                              = "neptune"
@@ -9,6 +11,8 @@ resource "aws_neptune_cluster" "pass" {
   deletion_protection                 = true
 }
 
+# Fail case 1
+
 resource "aws_neptune_cluster" "fail" {
   cluster_identifier                  = "neptune-cluster-demo"
   engine                              = "neptune"
@@ -19,6 +23,8 @@ resource "aws_neptune_cluster" "fail" {
   apply_immediately                   = true
   deletion_protection                 = false
 }
+
+# Fail case 2
 
 # Note: 
 # -------
