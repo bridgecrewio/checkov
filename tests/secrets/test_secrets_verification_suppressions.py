@@ -2,6 +2,8 @@ import os
 
 import mock
 import responses
+from checkov.common.models.enums import CheckResult
+
 from checkov.runner_filter import RunnerFilter
 
 from checkov.secrets.runner import Runner
@@ -92,4 +94,18 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
     assert report.failed_checks[0].file_path == rel_resource_path
     assert report.failed_checks[0].resource == second_resource_id
     assert report.failed_checks[0].validation_status == 'Unknown'
+
+
+def test_modify_invalid_secrets_check_result_to_skipped(secrets_report_invalid_status) -> None:
+    Runner()._modify_invalid_secrets_check_result_to_skipped(secrets_report_invalid_status)
+
+    assert len(secrets_report_invalid_status.failed_checks) == 0
+    assert len(secrets_report_invalid_status.skipped_checks) == 4
+    assert len(secrets_report_invalid_status.passed_checks) == 1
+
+    assert all(check.check_result["result"] == CheckResult.SKIPPED
+               for check in secrets_report_invalid_status.skipped_checks)
+    assert all(check.check_result["suppress_comment"] == "Skipped invalid secret"
+               for check in secrets_report_invalid_status.skipped_checks)
+
 
