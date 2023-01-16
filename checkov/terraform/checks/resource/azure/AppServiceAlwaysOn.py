@@ -12,7 +12,7 @@ class AppServiceAlwaysOn(BaseResourceValueCheck):
         # The Always On feature is implemented by the App Service load balancer,
         # periodically sending requests to the application root."
         name = "Ensure App Service is set to be always on"
-        id = "CKV_AZURE_210"
+        id = "CKV_AZURE_214"
         supported_resources = ('azurerm_linux_web_app', 'azurerm_windows_web_app')
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
