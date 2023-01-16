@@ -13,6 +13,12 @@ class ValidationStatus(Enum):
         return self.value
 
 
+SECRET_VALIDATION_STATUSES = [ValidationStatus.VALID.value,
+                              ValidationStatus.PRIVILEGED.value,
+                              ValidationStatus.INVALID.value,
+                              ValidationStatus.UNKNOWN.value]
+
+
 class VerifySecretsResult(Enum):
     INSUFFICIENT_PARAMS = 'INSUFFICIENT_PARAMS'
     FAILURE = 'FAILURE'
