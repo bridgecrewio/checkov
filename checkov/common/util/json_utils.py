@@ -9,6 +9,8 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
 
+type_of_function = type(lambda x: x)
+
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -26,6 +28,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, ImageDetails):
             return o.__dict__
+        elif isinstance(o, type_of_function):
+            return str(o)
         else:
             return json.JSONEncoder.default(self, o)
 

@@ -1,0 +1,20 @@
+FROM alpine:3.15
+
+RUN ABC=123 echo test; NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py ;DEF=456 echo lol;
+RUN ABC=123 echo test;NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py;DEF=456 echo lol;
+RUN ABC=123 echo test ;NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py; DEF=456 echo lol;
+
+RUN ABC=123 echo test&& NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py &&DEF=456 echo lol;
+RUN ABC=123 echo test&&NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py&&DEF=456 echo lol;
+RUN ABC=123 echo test &&NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py&& DEF=456 echo lol;
+
+RUN ABC=123 echo test|| NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py ||DEF=456 echo lol;
+RUN ABC=123 echo test||NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py||DEF=456 echo lol;
+RUN ABC=123 echo test ||NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py|| DEF=456 echo lol;
+
+RUN ABC=123 echo test| NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py |DEF=456 echo lol;
+RUN ABC=123 echo test|NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py|DEF=456 echo lol;
+RUN ABC=123 echo test |NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py| DEF=456 echo lol;
+
+RUN ABC=123      echo test;       NODE_TLS_REJECT_UNAUTHORIZED=0         python example.py ;     DEF=456          echo lol;
+RUN ABC=123      echo test ;       NODE_TLS_REJECT_UNAUTHORIZED=0         python example.py;     DEF=456          echo lol;

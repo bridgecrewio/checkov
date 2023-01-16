@@ -4,13 +4,8 @@ metadata:
   category: "KUBERNETES"
 definition:
   cond_type: attribute
-  attribute: spec.template.spec.containers.*.securityContext.allowPrivilegeEscalation
+  attribute: spec.containers.*.securityContext.allowPrivilegeEscalation
   value: false
   operator: equals
   resource_types:
-    - Deployment
-    - DaemonSet
-    - Job
-    - ReplicaSet
-    - ReplicationController
-    - StatefulSet
+    - Pod
