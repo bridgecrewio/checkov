@@ -44,6 +44,12 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunPipTrustedHost(self):
         self.go("RunPipTrustedHost")
 
+    def test_EnvPythonHttpsVerify(self):
+        self.go("EnvPythonHttpsVerify")
+
+    def test_EnvNodeTlsRejectUnauthorized(self):
+        self.go("EnvNodeTlsRejectUnauthorized")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

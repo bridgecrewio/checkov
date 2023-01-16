@@ -1,0 +1,31 @@
+FROM alpine:3.15
+
+RUN NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py
+RUN NODE_TLS_REJECT_UNAUTHORIZED="0" python example.py
+RUN NODE_TLS_REJECT_UNAUTHORIZED='0' python example.py
+
+RUN NODE_TLS_REJECT_UNAUTHORIZED=0 TEST="lol" python example.py
+RUN NODE_TLS_REJECT_UNAUTHORIZED="0" TEST='lol' python example.py
+RUN NODE_TLS_REJECT_UNAUTHORIZED='0' TEST=lol python example.py
+
+RUN LOL=123 NODE_TLS_REJECT_UNAUTHORIZED=0 python example.py
+RUN LOL="123" NODE_TLS_REJECT_UNAUTHORIZED="0" python example.py
+RUN LOL='123' NODE_TLS_REJECT_UNAUTHORIZED='0' python example.py
+
+RUN TEST_123="456" NODE_TLS_REJECT_UNAUTHORIZED=0 TEST="lol" python example.py
+RUN TEST_123='456' NODE_TLS_REJECT_UNAUTHORIZED="0" TEST='lol' python example.py
+RUN TEST_123=456 NODE_TLS_REJECT_UNAUTHORIZED='0' TEST="lol" python example.py
+
+RUN TEST_123="456" \
+    NODE_TLS_REJECT_UNAUTHORIZED=0 \
+    TEST="lol" \
+    python example.py
+RUN TEST_123='456' \
+    NODE_TLS_REJECT_UNAUTHORIZED="0" \
+    TEST='lol'\
+     python example.py
+RUN \
+     TEST_123=456\
+     NODE_TLS_REJECT_UNAUTHORIZED='0' \
+     TEST="lol" \
+     python example.py
