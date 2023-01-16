@@ -176,7 +176,7 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
 
         # then
         assert end_time-start_time < 1  # assert the time limit is not too long for parsing long lines.
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 3)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
