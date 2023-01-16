@@ -9,15 +9,15 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 @pytest.mark.parametrize(
     "soft_fail,soft_fail_checks,hard_fail_checks,expected_exit_code",
     [
-        (True, [], ['valid'], 0),  # Soft fail overrides any check-specific definition
-        (True, ['invalid'], ['valid'], 0),  # Soft fail overrides any check-specific definition
-        (False, [], ['valid'], 1),  # Hard fail on valid
-        (False, ['valid'], ['valid'], 1),  # Hard fail check wins same soft fail check
-        (False, [], ['invalid'], 1),  # Hard fail on invalid
-        (False, [], ['unknown'], 1),  # Hard fail on unknown
-        (False, ['invalid', 'valid', 'unknown'], [], 0),  # Implicit soft fail on all statuses
-        (True, [], ['invalid', 'valid', 'unknown'], 0),  # Soft fail wins Implicit hard fail on all statuses
-        (False, [], ['invalid', 'valid', 'unknown'], 1),  # Implicit hard fail on all statuses
+        (True, [], ['Valid'], 0),  # Soft fail overrides any check-specific definition
+        (True, ['Invalid'], ['Valid'], 0),  # Soft fail overrides any check-specific definition
+        (False, [], ['Valid'], 1),  # Hard fail on valid
+        (False, ['Valid'], ['Valid'], 1),  # Hard fail check wins same soft fail check
+        (False, [], ['Invalid'], 1),  # Hard fail on invalid
+        (False, [], ['Unknown'], 1),  # Hard fail on unknown
+        (False, ['Invalid', 'Valid', 'Unknown'], [], 0),  # Implicit soft fail on all statuses
+        (True, [], ['Invalid', 'Valid', 'Unknown'], 0),  # Soft fail wins Implicit hard fail on all statuses
+        (False, [], ['Invalid', 'Valid', 'Unknown'], 1),  # Implicit hard fail on all statuses
         (False, [], [], 1),  # default
         (True, [], [], 0)  # soft fail
     ],
