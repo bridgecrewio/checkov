@@ -39,3 +39,30 @@ def secrets_report() -> Report:
     report.add_record(record_5)
 
     return report
+
+
+@pytest.fixture
+def secrets_report_invalid_status() -> Report:
+    kwargs = {'check_id': 'mock', 'check_name': 'mock', 'code_block': 'mock',
+              'file_path': 'mock',
+              'file_line_range': 'mock', 'evaluations': 'mock', 'check_class': 'mock', 'file_abs_path': 'mock'}
+    record_1 = SecretsRecord(bc_check_id="VIOLATION_1", resource="RESOURCE_1",
+                             check_result={"result": CheckResult.FAILED}, validation_status='Invalid', **kwargs)
+    record_2 = SecretsRecord(bc_check_id="VIOLATION_2", resource="RESOURCE_2",
+                             check_result={"result": CheckResult.FAILED}, validation_status='Invalid', **kwargs)
+    record_3 = SecretsRecord(bc_check_id="VIOLATION_3", resource="RESOURCE_3",
+                             check_result={"result": CheckResult.FAILED}, validation_status='Invalid', **kwargs)
+    record_4 = SecretsRecord(bc_check_id="VIOLATION_4", resource="RESOURCE_4",
+                             check_result={"result": CheckResult.FAILED}, validation_status='Invalid', **kwargs)
+
+    record_5 = SecretsRecord(bc_check_id="VIOLATION_1", resource="RESOURCE_1",
+                             check_result={"result": CheckResult.PASSED}, validation_status='Invalid', **kwargs)
+
+    report = Report(CheckType.SECRETS)
+    report.add_record(record_1)
+    report.add_record(record_2)
+    report.add_record(record_3)
+    report.add_record(record_4)
+    report.add_record(record_5)
+
+    return report
