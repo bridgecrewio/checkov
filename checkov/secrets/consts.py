@@ -6,6 +6,7 @@ class ValidationStatus(Enum):
     VALID = 'Valid'
     INVALID = 'Invalid'
     UNKNOWN = 'Unknown'
+    UNAVAILABLE = 'Unavailable'
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
@@ -15,7 +16,8 @@ class ValidationStatus(Enum):
 SECRET_VALIDATION_STATUSES = [ValidationStatus.VALID.value,
                               ValidationStatus.PRIVILEGED.value,
                               ValidationStatus.INVALID.value,
-                              ValidationStatus.UNKNOWN.value]
+                              ValidationStatus.UNKNOWN.value,
+                              ValidationStatus.UNAVAILABLE.value]
 
 
 class VerifySecretsResult(Enum):
