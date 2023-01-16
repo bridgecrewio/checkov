@@ -389,8 +389,14 @@ class Runner(BaseRunner[None]):
         for check_index, check in enumerate(report.failed_checks):
             if hasattr(check, 'validation_status') and check.validation_status == ValidationStatus.INVALID.value:
                 check.check_result["result"] = CheckResult.SKIPPED
+                check.check_result["suppress_comment"] = "Skipped invalid secret"
                 report.skipped_checks.append(check)
                 checks_indexes_moved_to_skipped.append(check_index)
 
-        for idx in checks_indexes_moved_to_skipped:
-            del report.failed_checks[idx]
+        for idx in sorted(checks_indexes_moved_to_skipped, reverse=True):
+            try:
+                del report.failed_checks[idx]
+            except Exception:
+                logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
+                              f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
+                              exc_info=True)
