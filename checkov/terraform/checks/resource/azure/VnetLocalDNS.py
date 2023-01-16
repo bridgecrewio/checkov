@@ -23,7 +23,7 @@ class VnetLocalDNS(BaseResourceCheck):
         if "dns_servers" in conf and conf["dns_servers"] and isinstance(conf["dns_servers"], list):
             dns_servers = conf["dns_servers"][0]
             for ip in dns_servers:
-                if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list):
+                if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list) and len(conf["address_space"]) > 0:
                     address_spaces = conf["address_space"][0]
                     for address_range in address_spaces:
                         if not isinstance(address_range, str):
