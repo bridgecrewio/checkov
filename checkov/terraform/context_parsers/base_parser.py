@@ -13,6 +13,7 @@ import dpath.util
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
+from checkov.common.util.parser_utils import get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
 OPEN_CURLY = "{"
@@ -156,12 +157,8 @@ class BaseContextParser(ABC):
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
-        if tf_file.endswith("]") and "[" in tf_file:
-            self.tf_file = tf_file[: tf_file.index("[")]
-            self.tf_file_path = Path(tf_file[: tf_file.index("[")])
-        else:
-            self.tf_file = tf_file
-            self.tf_file_path = Path(tf_file)
+        self.tf_file = get_abs_path(tf_file)
+        self.tf_file_path = Path(self.tf_file)
         self.context = defaultdict(dict)
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)
