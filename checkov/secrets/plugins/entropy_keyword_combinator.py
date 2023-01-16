@@ -236,11 +236,9 @@ class EntropyKeywordCombinator(BasePlugin):
                     )
                     # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
                     # on their value only
-                    filtered_set = set()
                     for detected_secret in detected_secrets:
                         if line.replace('"', '').replace("'", '').startswith(detected_secret.secret_value):
                             # Found keyword prefix as potential secret
-                            filtered_set.add(detected_secret)
                             line = line.replace(detected_secret.secret_value, '')
 
                             # Re-run secret detection on cut line
@@ -251,7 +249,8 @@ class EntropyKeywordCombinator(BasePlugin):
                                 line_number=line_number,
                                 kwargs=kwargs
                             )
-                            detected_secrets = detected_secrets.difference(filtered_set).union(value_secrets)
+                            detected_secrets.remove(detected_secret)
+                            detected_secrets = detected_secrets.union(value_secrets)
                             break
                     return detected_secrets
 
