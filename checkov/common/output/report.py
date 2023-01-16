@@ -165,8 +165,8 @@ class Report:
             hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
             explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
             explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
-            explicit_secrets_soft_fail = RunnerFilter.secret_check_matches(secret_validation_status, soft_fail_on_checks)
-            explicit_secrets_hard_fail = RunnerFilter.secret_check_matches(secret_validation_status, hard_fail_on_checks)
+            explicit_secrets_soft_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, soft_fail_on_checks)
+            explicit_secrets_hard_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, hard_fail_on_checks)
             implicit_soft_fail = not explicit_hard_fail and not explicit_secrets_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
             implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity and not explicit_secrets_soft_fail
 
