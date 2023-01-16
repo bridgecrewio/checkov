@@ -1,10 +1,16 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
+
+import jmespath
 
 from checkov.common.images.image_referencer import Image
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
 from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
+from checkov.yaml_doc.runner import Runner
+
+START_LINE = '__startline__'
+END_LINE = '__endline__'
 
 
 class AzurePipelinesProvider(WorkflowImageReferencerProvider):
@@ -13,6 +19,16 @@ class AzurePipelinesProvider(WorkflowImageReferencerProvider):
         super().__init__(workflow_config, file_path)
         self.supported_keys = "container"
 
+    '''
+    We use a general extraction in azure_pipelines because we can display images in different ways:
+    - container
+    - container.image
+    - resources.containers[].container...
+    - jobs[].container...
+    - jobs[].steps.task.inputs.container...
+    - jobs[].strategy.container...
+    - stages[].jobs[]...
+    '''
     def extract_images_from_workflow(self) -> list[Image]:
         images = self.extract_images_from_dict(self.workflow_config)
         return images

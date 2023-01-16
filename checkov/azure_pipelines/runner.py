@@ -84,7 +84,13 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         for file, config in definitions.items():
             if isinstance(config, list):
                 continue
-
+            is_container = False
+            for row in self.definitions_raw.get(file, []):
+                if 'container' in row[1]:
+                    is_container = True
+                    break
+            if not is_container:
+                return images
             manager = AzurePipelinesImageReferencerManager(workflow_config=config, file_path=file)
             images.extend(manager.extract_images_from_workflow())
 
