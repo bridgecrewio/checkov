@@ -6,7 +6,7 @@ from typing import Any
 from checkov.common.images.image_referencer import Image
 
 
-class Provider:
+class WorkflowImageReferencerProvider:
     def __init__(self, workflow_config: dict[str, Any], file_path: str):
         self.workflow_config = workflow_config
         self.file_path = file_path

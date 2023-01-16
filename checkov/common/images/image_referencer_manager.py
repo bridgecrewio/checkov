@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from checkov.common.images.image_referencer_provider import Provider
+from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
 
 from typing import Any, TYPE_CHECKING
 
@@ -8,9 +8,10 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
 
 
-class ImageReferencerManager:
+class WorkflowImageReferencerManager:
+    __slots__ = ("workflow_config", "file_path", "provider")
 
-    def __init__(self, workflow_config: dict[str, Any], file_path: str, provider: Provider):
+    def __init__(self, workflow_config: dict[str, Any], file_path: str, provider: WorkflowImageReferencerProvider):
         self.workflow_config = workflow_config
         self.file_path = file_path
         self.provider = provider

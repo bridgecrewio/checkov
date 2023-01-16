@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 
-def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     file_name = "azure-pipelines.yaml"
     test_file = RESOURCES_PATH / file_name

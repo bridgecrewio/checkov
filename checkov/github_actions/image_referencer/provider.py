@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
-from checkov.common.images.image_referencer_provider import Provider
+from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
 from checkov.common.util.consts import START_LINE, END_LINE
 
 
-class GithubActionProvider(Provider):
+class GithubActionProvider(WorkflowImageReferencerProvider):
 
     def __init__(self, workflow_config: dict[str, Any], file_path: str, workflow_line_numbers: list[tuple[int, str]]):
         super().__init__(workflow_config, file_path)

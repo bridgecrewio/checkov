@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import Any, cast
 import jmespath
 from checkov.common.images.image_referencer import Image
-from checkov.common.images.image_referencer_provider import Provider
+from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.yaml_doc.runner import Runner
 
 
-class CircleCIProvider(Provider):
+class CircleCIProvider(WorkflowImageReferencerProvider):
     __slots__ = ("workflow_config", "file_path")
 
     def __init__(self, workflow_config: dict[str, Any], file_path: str) -> None:
