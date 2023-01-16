@@ -3,16 +3,16 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AzureSearchPublicNetworkAccessDisabled import check
+from checkov.terraform.checks.resource.azure.AzureSearchManagedIdentity import check
 
 
-class TestAzureSearchPublicNetworkAccessDisabled(unittest.TestCase):
+class TestAzureSearchManagedIdentity(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_AzureSearchPublicNetworkAccessDisabled")
+        test_files_dir = os.path.join(current_dir, "example_AzureSearchManagedIdentity")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
@@ -22,7 +22,6 @@ class TestAzureSearchPublicNetworkAccessDisabled(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_search_service.fail',
-            'azurerm_search_service.fail2'
         }
         skipped_resources = {}
 
