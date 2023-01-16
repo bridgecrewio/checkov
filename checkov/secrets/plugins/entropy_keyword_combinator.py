@@ -236,22 +236,7 @@ class EntropyKeywordCombinator(BasePlugin):
                     )
                     # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
                     # on their value only
-                    for detected_secret in detected_secrets:
-                        if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(detected_secret.secret_value):
-                            # Found keyword prefix as potential secret
-                            line = line.replace(detected_secret.secret_value, '')
-
-                            # Re-run secret detection on cut line
-                            value_secrets = self.detect_secret(
-                                scanners=self.high_entropy_scanners_iac,
-                                filename=filename,
-                                line=line,
-                                line_number=line_number,
-                                kwargs=kwargs
-                            )
-                            detected_secrets.remove(detected_secret)
-                            detected_secrets = detected_secrets.union(value_secrets)
-                            break
+                    self.postprocess_secrets(detected_secrets, line)
                     return detected_secrets
 
             # not so classic key-value pair, from multiline, that is only in an array format.
@@ -289,6 +274,14 @@ class EntropyKeywordCombinator(BasePlugin):
             )
 
         return set()
+
+    def postprocess_secrets(self, detected_secrets, line):
+        for detected_secret in detected_secrets:
+            if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
+                    detected_secret.secret_value):
+                # Found keyword prefix as potential secret
+                detected_secrets.remove(detected_secret)
+                break
 
     def analyze_multiline(
             self,
