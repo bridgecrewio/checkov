@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
-ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3.5
 ENTROPY_KEYWORD_LIMIT = 4.5
 
 
@@ -220,18 +220,40 @@ class EntropyKeywordCombinator(BasePlugin):
                         kwargs=kwargs
                     )
                 else:
+                    # preprocess line before detecting secrets - add quotes on potential secrets to allow triggering
+                    # entropy detector
                     for pt in keyword_on_key:
                         if pt.secret_value:
                             quoted_secret = f"\"{pt.secret_value}\""
                             if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
                                 line = line.replace(pt.secret_value, f"\"{pt.secret_value}\"", 1)
-                    return self.detect_secret(
+                    detected_secrets = self.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
                         line=line,
                         line_number=line_number,
                         kwargs=kwargs
                     )
+                    # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
+                    # on their value only
+                    filtered_set = set()
+                    for detected_secret in detected_secrets:
+                        if line.replace('"', '').replace("'", '').startswith(detected_secret.secret_value):
+                            # Found keyword prefix as potential secret
+                            filtered_set.add(detected_secret)
+                            line = line.replace(detected_secret.secret_value, '')
+
+                            # Re-run secret detection on cut line
+                            value_secrets = self.detect_secret(
+                                scanners=self.high_entropy_scanners_iac,
+                                filename=filename,
+                                line=line,
+                                line_number=line_number,
+                                kwargs=kwargs
+                            )
+                            detected_secrets = detected_secrets.difference(filtered_set).union(value_secrets)
+                            break
+                    return detected_secrets
 
             # not so classic key-value pair, from multiline, that is only in an array format.
             # The scan searches forwards and backwards for a potential secret pair, so no duplicates expected.

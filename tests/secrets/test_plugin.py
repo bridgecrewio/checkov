@@ -15,6 +15,17 @@ class TestCombinatorPlugin(unittest.TestCase):
         self.assertEqual("Base64 High Entropy String", secret.type)
         self.assertEqual("c00f1a6e4b20aa64691d50781b810756d6254b8e", secret.secret_hash)
 
+    def test_suspicious_keyword_no_secret(self):
+        result = self.plugin.analyze_line("mock.json", "'wrong_one_time_password' = 'Du har tastet feil engangspassord'", 5)
+        self.assertEqual(0, len(result))
+
+    def test_suspicious_keyword_with_secret(self):
+        result = self.plugin.analyze_line("mock.json", "'my_new_password':'F317a45xxmwov9bpgRhyuByXj2nxz7khS6yXQmfSaQCmwbTF1jpfgC56az4a'", 5)
+        self.assertEqual(1, len(result))
+        secret = result.pop()
+        self.assertEqual("Base64 High Entropy String", secret.type)
+        self.assertEqual("F317a45xxmwov9bpgRhyuByXj2nxz7khS6yXQmfSaQCmwbTF1jpfgC56az4a", secret.secret_value)
+
     def test_unquoted_secret(self):
         result = self.plugin.analyze_line("mock.yaml", 'export secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY', 5)
         self.assertEqual(1, len(result))
