@@ -14,7 +14,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -65,7 +65,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -115,7 +115,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -157,7 +157,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
-      - uses: actions/setup-python@5ccb29d8773c3f3f653e1705f474dfaa8a06a912  # v4
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
