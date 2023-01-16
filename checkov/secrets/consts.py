@@ -16,7 +16,8 @@ class ValidationStatus(Enum):
 SECRET_VALIDATION_STATUSES = [ValidationStatus.VALID.value,
                               ValidationStatus.PRIVILEGED.value,
                               ValidationStatus.INVALID.value,
-                              ValidationStatus.UNKNOWN.value]
+                              ValidationStatus.UNKNOWN.value,
+                              ValidationStatus.UNAVAILABLE.value]
 
 
 class VerifySecretsResult(Enum):
