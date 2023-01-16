@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, cast
-
-import jmespath
+from typing import Any
 
 from checkov.common.images.image_referencer import Image
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
 from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
-from checkov.yaml_doc.runner import Runner
-
-START_LINE = '__startline__'
-END_LINE = '__endline__'
 
 
 class AzurePipelinesProvider(WorkflowImageReferencerProvider):
