@@ -226,7 +226,7 @@ class RunnerRegistry:
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
             elif val.capitalize() in SECRET_VALIDATION_STATUSES:
-                soft_fail_on_checks.append(val.capitalize())
+                hard_fail_on_checks.append(val.capitalize())
             else:
                 hard_fail_on_checks.append(val)
 
