@@ -27,7 +27,7 @@ resource "aws_s3_bucket_acl" "fail" {
 
 # Pass case 1
 
-resource "aws_s3_bucket_acl" "pass" {
+resource "aws_s3_bucket_acl" "pass_1" {
   bucket = aws_s3_bucket.example.id
   access_control_policy {
     grant {
@@ -52,9 +52,9 @@ resource "aws_s3_bucket_acl" "pass" {
   }
 }
 
-# Pass case 2
+# Pass case 2s
 
-resource "aws_s3_bucket_acl" "pass" {
+resource "aws_s3_bucket_acl" "pass_2" {
   bucket = aws_s3_bucket.example.id
   access_control_policy {
     grant {

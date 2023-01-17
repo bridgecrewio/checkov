@@ -1,4 +1,5 @@
 pass:
-  - "aws_s3_bucket_acl.pass"
+  - "aws_s3_bucket_acl.pass_1"
+  - "aws_s3_bucket_acl.pass_2"
 fail:
   - "aws_s3_bucket_acl.fail"

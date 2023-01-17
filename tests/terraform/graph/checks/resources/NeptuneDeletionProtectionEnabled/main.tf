@@ -13,7 +13,7 @@ resource "aws_neptune_cluster" "pass" {
 
 # Fail case 1
 
-resource "aws_neptune_cluster" "fail" {
+resource "aws_neptune_cluster" "fail_1" {
   cluster_identifier                  = "neptune-cluster-demo"
   engine                              = "neptune"
   backup_retention_period             = 5
@@ -31,7 +31,7 @@ resource "aws_neptune_cluster" "fail" {
 # If 'deletion_protection' parameter is not passed then, by default it takes 'deletion_protection' as disabled.
 # Reference: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/neptune_cluster#deletion_protection
 
-resource "aws_neptune_cluster" "fail" {
+resource "aws_neptune_cluster" "fail_2" {
   cluster_identifier                  = "neptune-cluster-demo"
   engine                              = "neptune"
   backup_retention_period             = 5
