@@ -236,7 +236,7 @@ class EntropyKeywordCombinator(BasePlugin):
                     )
                     # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
                     # on their value only
-                    self.postprocess_secrets(detected_secrets, line)
+                    self.remove_fp_secrets_in_keys(detected_secrets, line)
                     return detected_secrets
 
             # not so classic key-value pair, from multiline, that is only in an array format.
@@ -275,7 +275,7 @@ class EntropyKeywordCombinator(BasePlugin):
 
         return set()
 
-    def postprocess_secrets(self, detected_secrets: set[PotentialSecret], line: str) -> None:
+    def remove_fp_secrets_in_keys(self, detected_secrets: set[PotentialSecret], line: str) -> None:
         for detected_secret in detected_secrets:
             if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
                     detected_secret.secret_value):
