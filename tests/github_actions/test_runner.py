@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 159)
+        self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_multi_file(self):
@@ -39,8 +39,8 @@ class TestRunnerValid(unittest.TestCase):
         report = Runner().run(files=file_dir, runner_filter=filter)
 
         # then
-        self.assertEqual(len(report.failed_checks), 1)
-        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
         self.assertEqual(len(report.skipped_checks), 0)
         self.assertEqual(len(report.parsing_errors), 0)
 
@@ -94,8 +94,7 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         # then
-        assert len(report.passed_checks) == 3
-        assert len(report.failed_checks) == 1
+        assert len(report.passed_checks) + len(report.failed_checks) == 0
 
     def test_runner_on_shell_injection(self):
         # given

@@ -42,7 +42,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
             return
 
         for name, config in jobs.items():
-            if name in (START_LINE, END_LINE) or not isinstance(config, dict):
+            if name in (START_LINE, END_LINE):
                 continue
 
             attributes = deepcopy(config)
@@ -69,7 +69,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
             return
 
         for name, job_config in jobs.items():
-            if name in (START_LINE, END_LINE) or not isinstance(job_config, dict):
+            if name in (START_LINE, END_LINE):
                 continue
 
             steps = job_config.get(ResourceType.STEPS)

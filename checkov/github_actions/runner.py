@@ -60,7 +60,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             if not file_content:
                 with open(f, 'r') as f_obj:
                     file_content = f_obj.read()
-            if entity_schema and all(is_schema_valid for _ in yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema)):  # nosec
+            if entity_schema and all(list(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema)))):  # nosec
                 return entity_schema
         return None
 
