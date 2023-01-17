@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import mock
 
 from checkov.serverless.checks.function.aws.AdminPolicyDocument import check
 from checkov.serverless.runner import Runner
@@ -7,12 +8,10 @@ from checkov.runner_filter import RunnerFilter
 
 class TestAdminPolicyDocument(unittest.TestCase):
 
+    @mock.patch.dict(os.environ, {"sneaky_var": "*"})
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
-
-        # Used in
-        os.environ["sneaky_var"] = "*"
 
         test_files_dir = current_dir + "/example_AdminPolicyDocument"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
