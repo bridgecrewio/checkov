@@ -4,6 +4,7 @@ import json
 import logging
 import os.path
 import re
+import uuid
 import webbrowser
 from collections import namedtuple
 from concurrent import futures
@@ -12,6 +13,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from typing import List, Dict, TYPE_CHECKING, Any, cast
+from urllib import parse
 
 import boto3  # type:ignore[import]
 import dpath.util
@@ -422,8 +424,7 @@ class BcPlatformIntegration:
                           f' repo_path={self.repo_path}, bucket={self.bucket}')
             return None
 
-        repo_path_without_src = os.path.dirname(self.repo_path)
-        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/secrets_to_verify.json'
+        s3_path = f'checkov/original_secrets/{uuid.uuid4()}.json'
         _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         return s3_path
 
