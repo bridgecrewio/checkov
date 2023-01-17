@@ -68,7 +68,8 @@ class Runner(ObjectRunner):
         """
         if not definition:
             return ""
-        for key, sub_name in definition.get(tag, {}).items():
+        tag_value = definition.get(tag) or {}
+        for key, sub_name in tag_value.items():
             if key in (START_LINE, END_LINE) or not isinstance(sub_name, dict):
                 continue
             if sub_name[START_LINE] <= start_line <= end_line <= sub_name[END_LINE]:

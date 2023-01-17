@@ -29,6 +29,21 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 157)
         self.assertEqual(len(report.skipped_checks), 0)
 
+    def test_runner_multi_file(self):
+        # given
+        file_path = Path(__file__).parent / "resources/.github/workflows/multi_file.yaml"
+        file_dir = [str(file_path)]
+        filter = RunnerFilter(framework=['github_actions'])
+
+        # when
+        report = Runner().run(files=file_dir, runner_filter=filter)
+
+        # then
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 1)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
+
     def test_runner_honors_enforcement_rules(self):
         # given
         test_dir = Path(__file__).parent / "resources"
