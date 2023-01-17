@@ -5,6 +5,7 @@ import json
 import logging
 from typing import Optional, Tuple, Dict, List, Any
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import DictNode, ListNode
 from checkov.terraform.context_parsers.tf_plan import parse
 
@@ -13,7 +14,10 @@ TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 
 RESOURCE_TYPES_JSONIFY = {
+    "aws_batch_job_definition": "container_properties",
+    "aws_ecs_task_definition": "container_definitions",
     "aws_iam_policy": "policy",
+    "aws_iam_role": "assume_role_policy",
     "aws_iam_role_policy": "policy",
     "aws_iam_group_policy": "policy",
     "aws_iam_user_policy": "policy",
@@ -74,6 +78,10 @@ def _hclify(
         if _is_list_of_dicts(value):
             child_list = []
             conf_val = conf.get(key, []) if conf else []
+            if not isinstance(conf_val, list):
+                # this occurs, when a resource in the current state has no value for that argument
+                conf_val = [conf_val]
+
             for internal_val, internal_conf_val in itertools.zip_longest(value, conf_val):
                 if isinstance(internal_val, dict):
                     child_list.append(_hclify(internal_val, internal_conf_val, parent_key=key))
@@ -99,9 +107,11 @@ def _hclify(
                 ret_dict[conf_key] = [ref]
                 found_ref = True
         if not found_ref:
-            for value in conf.values():
-                if isinstance(value, dict) and "references" in value.keys():
-                    ret_dict["references_"] = value["references"]
+            ret_dict[CustomAttributes.REFERENCES] = [
+                value["references"]
+                for value in conf.values()
+                if isinstance(value, dict) and "references" in value
+            ]
 
     return ret_dict
 

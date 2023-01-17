@@ -5,6 +5,7 @@ import logging
 import os
 from typing import Dict, List, Tuple, Any, TYPE_CHECKING
 import dpath
+from charset_normalizer import from_fp
 
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
@@ -32,16 +33,21 @@ def create_definitions(
             for file in f_names:
                 file_ending = os.path.splitext(file)[1]
                 if file_ending == '.json':
+                    file_path = os.path.join(root, file)
                     try:
-                        with open(f'{root}/{file}') as f:
-                            content = json.load(f)
+                        with open(file_path, "rb") as f:
+                            try:
+                                content = json.load(f)
+                            except UnicodeDecodeError:
+                                logging.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+                                content = str(from_fp(f).best())
+
                         if isinstance(content, dict) and content.get('terraform_version'):
-                            files.append(os.path.join(root, file))
+                            files.append(file_path)
                     except Exception as e:
-                        logging.debug(f'Failed to load json file {root}/{file}, skipping')
-                        logging.debug('Failure message:')
-                        logging.debug(e, stack_info=True)
-                        out_parsing_errors[file] = str(e)
+                        logging.debug(f'Failed to load json file {file_path}, skipping', stack_info=True)
+                        out_parsing_errors[file_path] = str(e)
+
     tf_definitions = {}
     definitions_raw = {}
     if files:
@@ -96,3 +102,11 @@ def get_entity_context(definitions, definitions_raw, definition_path, full_file_
                 entity_context['address'] = resource_defintion[TF_PLAN_RESOURCE_ADDRESS]
                 return entity_context
     return entity_context
+
+
+def get_resource_id_without_nested_modules(address: str) -> str:
+    """
+    return resource id with the last module in the address
+    example: from address='module.name1.module.name2.type.name' return 'module: module.name2.type.name'
+    """
+    return ".".join(address.split(".")[-4:])

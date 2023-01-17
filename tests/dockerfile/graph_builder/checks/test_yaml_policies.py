@@ -28,12 +28,26 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         )
 
     def setUp(self) -> None:
-        os.environ["UNIQUE_TAG"] = ""
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     def test_RunUsingSudo(self):
         self.go("RunUsingSudo")
+    
+    def test_RunUnsafeCurl(self):
+        self.go("RunUnsafeCurl")
+
+    def test_RunUnsafeWget(self):
+        self.go("RunUnsafeWget")
+
+    def test_RunPipTrustedHost(self):
+        self.go("RunPipTrustedHost")
+
+    def test_EnvPythonHttpsVerify(self):
+        self.go("EnvPythonHttpsVerify")
+
+    def test_EnvNodeTlsRejectUnauthorized(self):
+        self.go("EnvNodeTlsRejectUnauthorized")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

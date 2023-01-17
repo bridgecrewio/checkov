@@ -51,7 +51,8 @@ class Record:
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
         details: Optional[List[str]] = None,
-        check_len: int | None = None
+        check_len: int | None = None,
+        definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -86,6 +87,7 @@ class Record:
         self.guideline: str | None = None
         self.details: List[str] = details or []
         self.check_len = check_len
+        self.definition_context_file_path = definition_context_file_path
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -191,8 +193,17 @@ class Record:
                         )
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+
+        # Improve this part by leveraging inheritance of SecretsRecord
+        secret_validation_status_string = ""  # nosec
+        if self.check_result["result"] == CheckResult.FAILED and \
+                hasattr(self, 'validation_status') and \
+                os.getenv("CKV_VALIDATE_SECRETS") and \
+                hasattr(self, '_get_secret_validation_status_message'):  # for typing purposes, can't check with isinstance cause of circular dependency
+            secret_validation_status_string = self._get_secret_validation_status_message()
+
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{secret_validation_status_string}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
             return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"

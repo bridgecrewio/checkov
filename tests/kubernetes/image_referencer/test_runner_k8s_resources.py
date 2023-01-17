@@ -41,7 +41,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
 
     assert len(k8s_report.resources) == 1
     assert len(k8s_report.passed_checks) == 68
-    assert len(k8s_report.failed_checks) == 19
+    assert len(k8s_report.failed_checks) == 20
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -118,7 +118,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, licens
     # given
     file_name = "daemon_set.yaml"
     image_name = "newrelic/infrastructure"
-    code_lines = "1-59"
+    code_lines = "11-59"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -141,9 +141,9 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, licens
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 65
-    assert len(k8s_report.failed_checks) == 22
+    assert len(k8s_report.failed_checks) == 23
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -163,7 +163,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     # given
     file_name = "deployment.yaml"
     image_name = "minio/minio:latest"
-    code_lines = "1-44"
+    code_lines = "13-44"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -186,9 +186,9 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 67
-    assert len(k8s_report.failed_checks) == 20
+    assert len(k8s_report.failed_checks) == 21
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -208,7 +208,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result,
     # given
     file_name = "deployment_config.yaml"
     image_name = "rhel7/rhel-tools"
-    code_lines = "1-28"
+    code_lines = "10-26"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -231,9 +231,9 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result,
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 64
-    assert len(k8s_report.failed_checks) == 13
+    assert len(k8s_report.failed_checks) == 14
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -343,7 +343,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result, licen
     # given
     file_name = "replica_set.yaml"
     image_name = "gcr.io/google_samples/gb-frontend:v3"
-    code_lines = "1-22"
+    code_lines = "15-22"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -366,9 +366,9 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result, licen
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 68
-    assert len(k8s_report.failed_checks) == 19
+    assert len(k8s_report.failed_checks) == 20
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -389,8 +389,8 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
     file_name = "replication_controller.yaml"
     image_name_1 = "busybox"
     image_name_2 = "quay.io/pires/docker-elasticsearch-kubernetes:5.6.2"
-    code_lines_1 = "1-59"
-    code_lines_2 = "1-59"
+    code_lines_1 = "10-59"
+    code_lines_2 = "10-59"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -413,9 +413,9 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 66
-    assert len(k8s_report.failed_checks) == 21
+    assert len(k8s_report.failed_checks) == 22
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 
@@ -437,8 +437,8 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, lice
     file_name = "stateful_set.yaml"
     image_name_1 = "cockroachdb/cockroach-k8s-init:0.2"
     image_name_2 = "cockroachdb/cockroach:v1.1.0"
-    code_lines_1 = "1-109"
-    code_lines_2 = "1-109"
+    code_lines_1 = "14-100"
+    code_lines_2 = "14-100"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
@@ -461,9 +461,9 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, lice
     k8s_report = next(report for report in reports if report.check_type == CheckType.KUBERNETES)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(k8s_report.resources) == 1
+    assert len(k8s_report.resources) == 2
     assert len(k8s_report.passed_checks) == 68
-    assert len(k8s_report.failed_checks) == 19
+    assert len(k8s_report.failed_checks) == 20
     assert len(k8s_report.skipped_checks) == 0
     assert len(k8s_report.parsing_errors) == 0
 

@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.plugins.custom_regex_detector import modify_secrets_policy_to_detectors, CustomRegexDetector
+from checkov.secrets.plugins.load_detectors import modify_secrets_policy_to_detectors
 from checkov.secrets.runner import Runner
 
 
@@ -28,30 +28,12 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "provider": "AWS",
                 "remediationIds": [],
                 "conditionQuery": {
-                    "or": [
-                        {
-                            "value": "t3.micro",
-                            "operator": "equals",
-                            "attribute": "instance_type",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "aws_instance"
-                            ]
-                        },
-                        {
-                            "value": "t3.nano",
-                            "operator": "equals",
-                            "attribute": "instance_type",
-                            "cond_type": "attribute",
-                            "resource_types": [
-                                "aws_instance"
-                            ]
-                        }
-                    ]
+                    "value": [],
+                    "cond_type": "secrets"
                 },
                 "customerName": "lshind",
                 "isCustom": True,
-                "code": "---\nmetadata:\n  name: \"test\" #give your custom policy a unique name \n  guidelines: \"test\" #add text that explains the configuration the policy looks for, its implications, and how to fix it\n  category: \"secrets\" #choose one: \"general\"/\"elasticsearch\"/\"iam\"/\"kubernetes\"/\"logging\"/\"monitoring\"/\"networking\"/\"public\"/\"secrets\"/\"serverless\"/\"storage\"\n  severity: \"medium\" #choose one: \"critical\"/\"high\"/\"medium\"/\"low\"\nscope:\n  provider: \"aws\" #choose one: \"aws\"/\"azure\"/\"gcp\"/\"kubernetes\"\ndefinition: #define the conditions the policy searches for.\n# The example below checks EC2s with instance_type t3.micro or t3.nano. for more examples please visit our docs - https://docs.bridgecrew.io/docs/yaml-format-for-custom-policies\n or:\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_instance\"\n    attribute: \"instance_type\"\n    operator: \"equals\"\n    value: \"t3.micro\"\n  - cond_type: \"attribute\"\n    resource_types:\n    - \"aws_instance\"\n    attribute: \"instance_type\"\n    operator: \"equals\"\n    value: \"t3.nano\"\n",
+                "code": "",
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -73,6 +55,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["abcdefg"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -82,7 +68,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test1",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - abcdefg",
+                "code": "",
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -100,6 +86,12 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": [
+                        "1234567"
+                    ],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -109,7 +101,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test2",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - 1234567",
+                "code": "",
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -135,7 +127,6 @@ class TestCustomRegexDetector(unittest.TestCase):
             True for x in range(0, len(detector_obj)) if detector_obj[x]['Check_ID'] == detectors_result[x]['Check_ID'])
         assert len(detectors_result) == len(detector_obj)
 
-
     def test_test_custom_regex_detector(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
@@ -150,6 +141,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?:^|\W)HANA(?:$|\W)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -159,7 +154,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test1",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?:^|\W)HANA(?:$|\W)",
+                "code": None,
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -177,6 +172,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?:^|\W)LIR(?:$|\W)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -186,7 +185,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test2",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?:^|\W)LIR(?:$|\W)",
+                "code": None,
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -215,6 +214,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?:^|\W)HANA(?:$|\W)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -224,7 +227,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test1",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value: (?:^|\W)HANA(?:$|\W)",
+                "code": None,
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -242,6 +245,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?:^|\W)LIR(?:$|\W)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -251,7 +258,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test2",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value: (?:^|\W)LIR(?:$|\W)",
+                "code": None,
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -280,6 +287,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?i)(?:test)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -289,7 +300,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test2",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?i)(?:test)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)",
+                "code": "",
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,
@@ -318,6 +329,10 @@ class TestCustomRegexDetector(unittest.TestCase):
                 "laceworkViolationId": None,
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?i)(?:out)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)"],
+                    "cond_type": "secrets"
+                },
                 "resourceTypes":
                     [
                         "aws_instance"
@@ -327,7 +342,7 @@ class TestCustomRegexDetector(unittest.TestCase):
                     [],
                 "customerName": "test2",
                 "isCustom": True,
-                "code": "definition:\n  cond_type: secrets\n  value:\n  - (?i)(?:out)(?:[0-9a-z\\-_\\t .]{0,20})(?:[\\s|']|[\\s|\"]){0,3}(?:=|>|:=|\\|\\|:|<=|=>|:)(?:'|\\\"|\\s|=|\\x60){0,5}([a-z0-9]{24})(?:['|\\\"|\\n|\\r|\\s|\\x60|;]|$)",
+                "code": "",
                 "descriptiveTitle": None,
                 "constructiveTitle": None,
                 "pcPolicyId": None,

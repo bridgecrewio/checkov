@@ -40,6 +40,7 @@ from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.secrets.coordinator import EnrichedSecret
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -120,10 +121,13 @@ class BcPlatformIntegration:
             self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
         else:
             self.api_url = self.bc_api_url
-        self.guidelines_api_url = f"{self.api_url}/api/v1/guidelines"
+        self.guidelines_api_url = f"{self.api_url}/api/v2/guidelines"
+        self.guidelines_api_url_backoff = f"{self.api_url}/api/v1/guidelines"
+
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
-        self.platform_run_config_url = f"{self.api_url}/api/v1/checkov/runConfiguration"
+        self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
+        self.platform_run_config_url_backoff = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -411,6 +415,18 @@ class BcPlatformIntegration:
         to_upload = {"report": report, "file_path": file_path, "image_name": image_name, "branch": branch}
         _put_json_object(self.s3_client, to_upload, self.bucket, target_report_path)
 
+    def persist_enriched_secrets(self, enriched_secrets: list[EnrichedSecret]) -> str | None:
+        if not enriched_secrets or not self.repo_path or not self.bucket:
+            logging.debug(f'One of enriched secrets, repo path, or bucket are empty, aborting. values:'
+                          f'enriched_secrets={"Valid" if enriched_secrets else "Empty"},'
+                          f' repo_path={self.repo_path}, bucket={self.bucket}')
+            return None
+
+        repo_path_without_src = os.path.dirname(self.repo_path)
+        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/secrets_to_verify.json'
+        _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        return s3_path
+
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
         if not self.use_s3_integration:
             return
@@ -538,6 +554,9 @@ class BcPlatformIntegration:
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
 
+    def get_run_config_url_backoff(self) -> str:
+        return f'{self.platform_run_config_url_backoff}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -561,14 +580,19 @@ class BcPlatformIntegration:
                 logging.error("HTTP manager was not correctly created")
                 return
 
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
-            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             if request.status != 200:
-                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
-                logging.error(error_message)
-                raise BridgecrewAuthError(error_message)
+                url = self.get_run_config_url_backoff()
+                logging.debug(f'Platform run config URL: {url}')
+                request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
+                if request.status != 200:
+                    error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                    logging.error(error_message)
+                    raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
@@ -676,6 +700,9 @@ class BcPlatformIntegration:
                 return
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
+            if request.status >= 300:
+                request = self.http.request("GET", self.guidelines_api_url_backoff, headers=headers)  # type:ignore[no-untyped-call]
+
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")

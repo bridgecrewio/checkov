@@ -26,6 +26,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.report import Report, merge_reports
@@ -37,6 +38,7 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
+from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
@@ -80,7 +82,12 @@ class RunnerRegistry:
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
-        if len(self.runners) == 1:
+        if not self.runners:
+            logging.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
+                          '(e.g., `--file xyz.yaml --framework terraform`), or if you specify a framework with missing dependencies (e.g., '
+                          'helm or kustomize, which require those tools to be on your system). Running with LOG_LEVEL=DEBUG may provide more information.')
+            return []
+        elif len(self.runners) == 1:
             runner_check_type = self.runners[0].check_type
             if self.licensing_integration.is_runner_valid(runner_check_type):
                 reports: Iterable[Report | list[Report]] = [
@@ -166,7 +173,7 @@ class RunnerRegistry:
         integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment:
+        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
@@ -186,6 +193,10 @@ class RunnerRegistry:
                           exc_info=True)
 
     @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
+
+    @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
 
         soft_fail = config.soft_fail
@@ -198,6 +209,8 @@ class RunnerRegistry:
                 val = val.upper()
                 if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
                     soft_fail_threshold = Severities[val]
+            elif val.capitalize() in SECRET_VALIDATION_STATUSES:
+                soft_fail_on_checks.append(val.capitalize())
             else:
                 soft_fail_on_checks.append(val)
 
@@ -212,6 +225,8 @@ class RunnerRegistry:
                 val = val.upper()
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
+            elif val.capitalize() in SECRET_VALIDATION_STATUSES:
+                hard_fail_on_checks.append(val.capitalize())
             else:
                 hard_fail_on_checks.append(val)
 
@@ -554,6 +569,7 @@ class RunnerRegistry:
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,

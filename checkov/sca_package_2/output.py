@@ -193,7 +193,7 @@ def create_cli_license_violations_table(file_path: str,
                                         package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
     package_table_lines: List[str] = []
     columns = 5
-    table_width = 130.0
+    table_width = 136
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
@@ -252,7 +252,7 @@ def create_cli_license_violations_table(file_path: str,
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
-    table_width = 130
+    table_width = 136
     column_width = int(table_width / columns)
 
     cve_table_lines = create_cve_summary_table_part(
@@ -305,13 +305,15 @@ def create_fixable_cve_summary_table_part(
         table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + (column_count + 1) * 2, max_table_width=table_width + (column_count + 1) * 2
+        header=False, min_table_width=table_width + column_count / 2, max_table_width=table_width + column_count / 2
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
         fixable_table.add_row(
             [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/  "])
         fixable_table.align = "l"
+    else:
+        return []
 
     # hack to make multiple tables look like one
     fixable_table_lines = [f"\t{line}" for line in fixable_table.get_string().splitlines(keepends=True)]
@@ -381,10 +383,18 @@ def create_package_overview_table_part(
                         dep_sign = ""
                     else:
                         dep_sign = package_table.vertical_char
+            package_name_col_val = ""
+            if is_sub_dep_changed:
+                if dep_sign:
+                    package_name_col_val = " ".join([dep_sign, package_name])
+                else:
+                    package_name_col_val = package_name
+            elif dep_sign:
+                package_name_col_val = dep_sign
 
             package_table.add_row(
                 [
-                    " ".join([dep_sign, package_name if is_sub_dep_changed else ""]),
+                    package_name_col_val,
                     cve["id"],
                     cve["severity"],
                     package_version if is_sub_dep_changed else "",

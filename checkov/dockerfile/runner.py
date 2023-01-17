@@ -27,6 +27,7 @@ from checkov.dockerfile.utils import (
     DOCKERFILE_ENDLINE,
     get_files_definitions,
     get_scannable_file_paths,
+    get_abs_path,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -58,7 +59,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
         self.definitions: "dict[str, dict[str, list[_Instruction]]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
-        self.definitions_raw: "dict[str, list[str]]" = {}
+        self.definitions_raw: "dict[str, list[str]]" = {}       # type:ignore[assignment]
         self.root_folder: str | None = None
 
     def should_scan_file(self, filename: str) -> bool:
@@ -111,7 +112,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH and self.graph_registry:
-            self.add_graph_check_results(report=report, runner_filter=runner_filter)
+            self.add_graph_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         if runner_filter.run_image_referencer:
             if files:
@@ -135,16 +136,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
 
         for docker_file_path, instructions in self.definitions.items():
             self.pbar.set_additional_data({"Current File Scanned": os.path.relpath(docker_file_path, root_folder)})
-            # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
-            # or there will be no leading slash; root_folder will always be none.
-            # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-            # The goal here is simply to get a valid path to the file (which docker_file_path does not always give).
-            if docker_file_path[0] == "/":
-                path_to_convert = (root_folder + docker_file_path) if root_folder else docker_file_path
-            else:
-                path_to_convert = (os.path.join(root_folder, docker_file_path)) if root_folder else docker_file_path
 
-            file_abs_path = os.path.abspath(path_to_convert)
+            file_abs_path = get_abs_path(root_folder=root_folder, file_path=docker_file_path)
             report.add_resource(file_abs_path)
             skipped_checks = collect_skipped_checks(instructions)
 
@@ -212,7 +205,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
             self.pbar.update()
         self.pbar.close()
 
-    def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter) -> None:
+    def add_graph_check_results(self, report: Report, runner_filter: RunnerFilter, root_folder: str | None) -> None:
         """Adds graph check results to given report"""
 
         graph_checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
@@ -221,6 +214,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_file_path: str = entity[CustomAttributes.FILE_PATH]
+                file_abs_path = get_abs_path(root_folder=root_folder, file_path=entity_file_path)
                 resource_type: str = entity[CustomAttributes.RESOURCE_TYPE]
                 start_line = entity[START_LINE]
                 end_line = entity[END_LINE]
@@ -229,7 +223,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
                     report=report,
                     definitions_raw=self.definitions_raw,
                     docker_file_path=entity_file_path,
-                    file_abs_path=os.path.abspath(entity_file_path),
+                    file_abs_path=file_abs_path,
                     check=check,
                     check_result=check_result,
                     startline=start_line,

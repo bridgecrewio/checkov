@@ -134,7 +134,8 @@ class TestRendererScenarios(TestCase):
                     ],
                 'type': ['list(string)'],
                 "__start_line__": 11,
-                "__end_line__": 14
+                "__end_line__": 14,
+                "__address__": "log_types_enabled"
             }
         }
         self.go("list_default_622", different_expected)
@@ -217,9 +218,8 @@ class TestRendererScenarios(TestCase):
     def test_default_var_types(self):
         self.go("default_var_types")
 
+    @mock.patch.dict(os.environ, {"RENDER_VARIABLES_ASYNC": "False", "LOG_LEVEL": "INFO"})
     def go(self, dir_name, different_expected=None, replace_expected=False, vars_files=None, remove_abs_dir=False):
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-        os.environ['LOG_LEVEL'] = 'INFO'
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))

@@ -51,7 +51,7 @@ resource "azurerm_container_registry" "fail3" {
   trust_policy {
     enabled = var.trust_policy_enabled
   }
-  sku = "Premium"
+  sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
 }
 
@@ -63,12 +63,12 @@ resource "azurerm_container_registry" "pass" {
   trust_policy {
     enabled = var.trust_policy_enabled
   }
-  sku = "Premium"
+  sku                           = "Premium"
   public_network_access_enabled = var.public_network_access
   georeplications {
-      location                  = var.georeplications.value["location"]
-      regional_endpoint_enabled = var.georeplications.value["regional_endpoint_enabled"]
-      zone_redundancy_enabled   = var.georeplications.value["zone_redundancy_enabled"]
-      tags                      = var.georeplications.value["tags"]
-    }
+    location                  = var.georeplications.value["location"]
+    regional_endpoint_enabled = var.georeplications.value["regional_endpoint_enabled"]
+    zone_redundancy_enabled   = var.georeplications.value["zone_redundancy_enabled"]
+    tags                      = var.georeplications.value["tags"]
+  }
 }

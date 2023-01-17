@@ -6,7 +6,7 @@ import logging
 import os
 import platform
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Type, Any, Set, TYPE_CHECKING
+from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath.util
 
@@ -25,9 +25,8 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_current_module_index, \
-    get_tf_definition_key
-from checkov.common.util.secrets import omit_secret_value_from_checks
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_tf_definition_key_from_module_dependency
+from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.registry import data_registry
@@ -44,6 +43,7 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
+from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 
@@ -57,7 +57,7 @@ dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
-class Runner(ImageReferencerMixin, BaseRunner):
+class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -66,7 +66,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
         db_connector: NetworkxConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
         source: str = "Terraform",
-        graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+        graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: TerraformGraphManager | None = None
     ) -> None:
         super().__init__(file_extensions=['.tf', '.hcl'])
@@ -232,24 +232,36 @@ class Runner(ImageReferencerMixin, BaseRunner):
                     resource = resource_id
                     module_dependency = entity.get(CustomAttributes.MODULE_DEPENDENCY)
                     module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
+                    definition_context_file_path = full_file_path
                     if module_dependency and module_dependency_num:
                         if self.enable_nested_modules:
-                            module_index = get_current_module_index(module_dependency)
-                            tf_path = get_tf_definition_key(full_file_path, module_dependency[:module_index],
-                                                            module_dependency_num,
-                                                            module_dependency[module_index:])
+                            resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS, resource_id)
                         else:
                             module_dependency_path = module_dependency.split(PATH_SEPARATOR)[-1]
-                            tf_path = get_tf_definition_key(full_file_path, module_dependency_path, module_dependency_num)
-                        referrer_id = self._find_id_for_referrer(tf_path)
-                        if referrer_id:
-                            resource = f'{referrer_id}.{resource_id}'
+                            tf_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency_path, module_dependency_num)
+                            referrer_id = self._find_id_for_referrer(tf_path)
+                            if referrer_id:
+                                resource = f'{referrer_id}.{resource_id}'
+                        definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
+                    elif entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id:
+                        # for plan resources
+                        resource = entity[CustomAttributes.TF_RESOURCE_ADDRESS]
+                        if not self.enable_nested_modules:
+                            resource = get_resource_id_without_nested_modules(resource)
+                    entity_config = self.get_graph_resource_entity_config(entity)
+                    censored_code_lines = omit_secret_value_from_graph_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_context.get('code_lines'),
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=copy_of_check_result,
-                        code_block=entity_context.get('code_lines'),
+                        code_block=censored_code_lines,
                         file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
                         file_line_range=[entity_context.get('start_line'),
                                          entity_context.get('end_line')],
@@ -262,7 +274,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        connected_node=connected_node_data
+                        connected_node=connected_node_data,
+                        definition_context_file_path=definition_context_file_path
                     )
                     if self.breadcrumbs:
                         if self.enable_nested_modules:
@@ -279,14 +292,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
         entity_evaluations = None
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
+        if entity.get(CustomAttributes.MODULE_DEPENDENCY):
+            full_file_path = get_tf_definition_key_from_module_dependency(full_file_path, entity[CustomAttributes.MODULE_DEPENDENCY], entity[CustomAttributes.MODULE_DEPENDENCY_NUM])
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
         entity_context = self.context.get(full_file_path, {})
         try:
-            if not entity_context:
-                dc_keys = self.context.keys()
-                dc_key = next(x for x in dc_keys if x.startswith(full_file_path))
-                entity_context = self.context.get(dc_key, {})
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
@@ -356,11 +367,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
             caller_file_line_range = None
 
             if self.enable_nested_modules:
+                entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
-                    referrer_id = self._find_id_for_referrer(full_file_path)
-                    entity_id = f"{referrer_id}.{entity_id}"
-                    module_name = referrer_id.split('.')[-1]
+                    full_definition_path = entity_id.split('.')
+                    module_name_index = len(full_definition_path) - full_definition_path[::-1].index(BlockType.MODULE)  # the next item after the last 'module' prefix is the module name
+                    module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                     abs_caller_file = get_abs_path(module)
@@ -420,8 +432,13 @@ class Runner(ImageReferencerMixin, BaseRunner):
             tags = get_resource_tags(entity_type, entity_config)
             if results:
                 for check, check_result in results.items():
-                    censored_code_lines = omit_secret_value_from_checks(check, check_result, entity_code_lines,
-                                                                        entity_config)
+                    censored_code_lines = omit_secret_value_from_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_code_lines,
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -440,7 +457,8 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         severity=check.severity,
                         bc_category=check.bc_category,
                         benchmarks=check.benchmarks,
-                        details=check.details
+                        details=check.details,
+                        definition_context_file_path=full_file_path
                     )
                     if CHECKOV_CREATE_GRAPH:
                         if self.enable_nested_modules:
@@ -589,10 +607,7 @@ class Runner(ImageReferencerMixin, BaseRunner):
                         continue
 
                     if full_file_path in module_content[RESOLVED_MODULE_ENTRY_NAME]:
-                        if self.enable_nested_modules:
-                            id_referrer = module_content.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        else:
-                            id_referrer = f"module.{module_name}"
+                        id_referrer = f"module.{module_name}"
                         self.referrer_cache[full_file_path] = id_referrer
                         return id_referrer
 
@@ -625,3 +640,12 @@ class Runner(ImageReferencerMixin, BaseRunner):
         images = manager.extract_images_from_resources()
 
         return images
+
+    @staticmethod
+    def get_graph_resource_entity_config(entity):
+        context_parser = parser_registry.context_parsers[entity[CustomAttributes.BLOCK_TYPE]]
+        entity_config = entity[CustomAttributes.CONFIG]
+        definition_path = context_parser.get_entity_definition_path(entity_config)
+        for path in definition_path:
+            entity_config = entity_config[path]
+        return entity_config

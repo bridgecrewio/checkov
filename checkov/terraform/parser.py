@@ -9,7 +9,7 @@ from collections import defaultdict
 from copy import deepcopy
 from json import dumps, loads
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, TYPE_CHECKING
 import itertools
 
 import deep_merge
@@ -19,6 +19,7 @@ from lark import Tree
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -28,8 +29,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks, get_current_module_index, is_nested, \
-    get_tf_definition_key, get_module_from_full_path, get_abs_path
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, get_tf_definition_key_from_module_dependency, \
+    get_module_from_full_path, get_abs_path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -44,13 +45,15 @@ ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 
 
-def _filter_ignored_paths(root, paths, excluded_paths):
+def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
     filter_ignored_paths(root, paths, excluded_paths)
-    [paths.remove(path) for path in list(paths) if path in [default_ml_registry.external_modules_folder_name]]
+    for path in force_list(paths):
+        if path == default_ml_registry.external_modules_folder_name:
+            paths.remove(path)
 
 
 class Parser:
-    def __init__(self, module_class: Type[Module] = Module):
+    def __init__(self, module_class: type[Module] = Module) -> None:
         self.module_class = module_class
         self._parsed_directories: set[str] = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
@@ -92,6 +95,7 @@ class Parser:
         self.excluded_paths = excluded_paths
         self.visited_definition_keys = set()
         self.module_to_resolved = {}
+        self.keys_to_remove = set()
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -212,7 +216,7 @@ class Parser:
 
         dir_contents = list(os.scandir(directory))
         if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
-            filter_ignored_paths(root_dir, dir_contents, excluded_paths)
+            filter_ignored_paths(directory, dir_contents, excluded_paths)
 
         tf_files_to_load = []
         for file in dir_contents:
@@ -464,9 +468,11 @@ class Parser:
                                                 keys_referenced_as_modules=keys_referenced_as_modules,
                                                 nested_modules_data=new_nested_modules_data)
 
-                        module_definitions = {path: self.out_definitions[path] for path in
-                                              list(self.out_definitions.keys()) if
-                                              self.get_dirname(path) == content.path()}
+                        module_definitions = {
+                            path: definition
+                            for path, definition in self.out_definitions.items()
+                            if self.get_dirname(path) == content.path()
+                        }
 
                         if not module_definitions:
                             continue
@@ -505,10 +511,12 @@ class Parser:
                                     del self.out_definitions[key]
                                     continue
                             else:
-                                new_key = get_tf_definition_key(key, file, module_index)
+                                new_key = get_tf_definition_key_from_module_dependency(key, file, module_index)
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
+                            self.keys_to_remove.add(key)
+
                             if self.enable_nested_modules:
                                 self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
@@ -560,7 +568,23 @@ class Parser:
 
         return module, tf_definitions
 
+    def _remove_unused_path_recursive(self, path):
+        self.out_definitions.pop(path, None)
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if path == file_key:
+                for resolved_path in self.module_to_resolved[key]:
+                    self._remove_unused_path_recursive(resolved_path)
+                self.module_to_resolved.pop(key, None)
+
     def _update_resolved_modules(self):
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if file_key in self.keys_to_remove:
+                for path in self.module_to_resolved[key]:
+                    self._remove_unused_path_recursive(path)
+                self.module_to_resolved.pop(key, None)
+
         for key, resolved_list in self.module_to_resolved.items():
             file_key, module_index, module_name = key
             if file_key not in self.out_definitions:
@@ -629,21 +653,18 @@ class Parser:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_module_name = get_abs_path(nested_str)
         nested_module_index = nested_data.get('module_index')
-        module_index = get_current_module_index(nested_str)
-        nested_key = nested_str[module_index:]
-        return get_tf_definition_key(file, nested_module_name, nested_module_index, nested_key)
+        return get_tf_definition_key_from_module_dependency(file, nested_str, nested_module_index)
 
     def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
         if not nested_data:
-            return get_tf_definition_key(key, file, module_index)
-        visited_key_to_add = get_tf_definition_key(key, file, module_index)
+            return get_tf_definition_key_from_module_dependency(key, file, module_index)
+        visited_key_to_add = get_tf_definition_key_from_module_dependency(key, file, module_index)
         self.visited_definition_keys.add(visited_key_to_add)
         nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
-        return get_tf_definition_key(key, file, module_index, nested_key)
+        return get_tf_definition_key_from_module_dependency(key, f"{file}{nested_key}", module_index)
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:

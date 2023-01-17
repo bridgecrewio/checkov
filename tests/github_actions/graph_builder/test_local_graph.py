@@ -20,10 +20,10 @@ def test_build_graph():
     local_graph.build_graph(render_variables=False)
 
     # then
-    assert len(local_graph.vertices) == 5
+    assert len(local_graph.vertices) == 6
     assert len(local_graph.edges) == 2
 
-    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 5
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 6
 
     job_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.JOBS]
     step_ids = [vertex.id for vertex in local_graph.vertices if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE) == ResourceType.STEPS]

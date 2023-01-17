@@ -15,9 +15,10 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.util.parser_utils import get_current_module_index, get_abs_path, get_tf_definition_key
+from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
+from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -65,7 +66,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.update_nested_modules_address()
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
+            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
                 # experimental flag on building cross variable edges for terraform graph
                 logging.info("Building cross variable edges")
                 edges_count = len(self.edges)
@@ -290,11 +291,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         if cross_variable_edges:
-            if edge in self.edges or self.vertices[edge.dest].block_type != BlockType.RESOURCE or \
-                    self.vertices[edge.origin].block_type != BlockType.RESOURCE:
+            if self.vertices[dest_vertex_index].block_type != BlockType.RESOURCE or \
+                    self.vertices[origin_vertex_index].block_type != BlockType.RESOURCE:
+                return False
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
             edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
-            if edge in self.edges:
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
@@ -525,16 +528,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    @staticmethod
-    def get_current_address(vertex: TerraformBlock, address_prefix: str = ''):
-        if vertex.block_type == BlockType.MODULE:
-            return address_prefix + f"{vertex.block_type}.{vertex.name}"
-        else:
-            return address_prefix + vertex.name
-
     def update_nested_modules_address(self) -> None:
         for vertex in self.vertices:
-            if vertex.block_type not in [BlockType.MODULE, BlockType.RESOURCE]:
+            if vertex.block_type not in parser_registry.context_parsers:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
 
@@ -543,15 +539,15 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 for module in source_module:
                     address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = self.get_current_address(vertex, address_prefix)
+            address = f'{address_prefix}{vertex.name}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-            if vertex.block_type == BlockType.RESOURCE:
-                resource_type = vertex.name.split('.')[0]
-                resource_name = '.'.join(vertex.name.split('.')[1:])
-                vertex.config[resource_type][resource_name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
-            else:
-                vertex.config[vertex.name][CustomAttributes.TF_RESOURCE_ADDRESS] = address
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            vertex_context = vertex.config
+            definition_path = context_parser.get_entity_definition_path(vertex.config)
+            for path in definition_path:
+                vertex_context = vertex_context.get(path, vertex_context)
+            vertex_context[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
 
 def to_list(data):
@@ -628,5 +624,4 @@ def get_path_with_nested_modules(block: TerraformBlock) -> str:
         return block.path
     if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
         return unify_dependency_path([block.module_dependency, block.path])
-    module_index = get_current_module_index(block.module_dependency)
-    return get_tf_definition_key(block.path, block.module_dependency[:module_index], block.module_dependency_num, block.module_dependency[module_index:])
+    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)

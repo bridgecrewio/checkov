@@ -15,7 +15,8 @@ class TestKubernetesGraphManager(TestGraph):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "../runner/resources"))
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
         graph_flags = K8sGraphFlags(create_complex_vertices=False, create_edges=False)
-        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False, graph_flags=graph_flags)
+        graph_manager.graph_flags = graph_flags
+        local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False)
 
         expected_resources_by_file = {
             os.path.join(root_dir, "example.yaml"): [
@@ -25,10 +26,12 @@ class TestKubernetesGraphManager(TestGraph):
                 "Service.default.a"],
             os.path.join(root_dir, "graph.yaml"): [
                 "StatefulSet.default.cassandra",
-                "Deployment.default.my-nginx"]
+                "Deployment.default.my-nginx",
+                "Pod.default.cassandra.app-cassandra",
+                "Pod.default.my-nginx.app-nginx"]
         }
-        self.assertEqual(5, len(local_graph.vertices))
-        self.assertEqual(5, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(7, len(local_graph.vertices))
+        self.assertEqual(7, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
 
         for v in local_graph.vertices:
             self.assertIn(v.name, expected_resources_by_file[v.path])
@@ -42,6 +45,7 @@ class TestKubernetesGraphManager(TestGraph):
         resource = definitions[relative_file_path][0]
 
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
-        local_graph = graph_manager.build_graph_from_definitions(definitions, graph_flags=graph_flags)
+        graph_manager.graph_flags = graph_flags
+        local_graph = graph_manager.build_graph_from_definitions(definitions)
         self.assertEqual(1, len(local_graph.vertices))
         self.assert_vertex(local_graph.vertices[0], resource)

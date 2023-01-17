@@ -33,8 +33,12 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         super().__init__(list(resource_types), list(connected_resources_types))
 
     @staticmethod
+    def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, Optional[Any]]:
+        return check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH], check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+
+    @staticmethod
     def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        return list({(check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH]): check for check in checks}.values())
+        return list({(ComplexConnectionSolver.get_check_identifier(check)): check for check in checks}.values())
 
     def filter_results(
         self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]

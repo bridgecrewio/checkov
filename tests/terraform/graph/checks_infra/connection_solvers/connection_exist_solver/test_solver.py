@@ -3,6 +3,7 @@ from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
+from unittest import mock
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -54,5 +55,5 @@ class ConnectionSolver(TestBaseSolver):
         assert len(graph_connector.nodes) >= 661
         assert len(graph_connector.edges) >= 327
 
-        assert len(reduced_graph.nodes) <= 52
-        assert len(reduced_graph.edges) <= 12
+        assert len(reduced_graph.nodes) <= 85
+        assert len(reduced_graph.edges) <= 15

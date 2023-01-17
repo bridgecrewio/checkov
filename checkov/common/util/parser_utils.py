@@ -306,10 +306,16 @@ def to_string(value: Any) -> str:
 def get_current_module_index(full_path: str) -> Optional[int]:
     hcl_index = None
     tf_index = None
-    if '.hcl' in full_path:
-        hcl_index = full_path.index('.hcl') + 4  # len('.hcl')
-    if '.tf' in full_path:
-        tf_index = full_path.index('.tf') + 3    # len('.tf')
+    if '[' not in full_path and '#' not in full_path:
+        return len(full_path)
+    if '.hcl[' in full_path:
+        hcl_index = full_path.index('.hcl[') + 4  # len('.hcl')
+    elif '.hcl#' in full_path:
+        hcl_index = full_path.index('.hcl#') + 4  # len('.hcl')
+    if '.tf[' in full_path:
+        tf_index = full_path.index('.tf[') + 3    # len('.tf')
+    elif '.tf#' in full_path:
+        tf_index = full_path.index('.tf#') + 3  # len('.tf')
     if hcl_index and tf_index:
         # returning the index of the first file
         return min(hcl_index, tf_index)
@@ -324,6 +330,15 @@ def is_nested(full_path: str) -> bool:
 
 def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
     return f"{nested_module}[{module_name}#{module_index}{nested_key}]"
+
+
+def get_tf_definition_key_from_module_dependency(path: str, module_dependency: str, module_dependency_num: str) -> str:
+    if not module_dependency:
+        return path
+    if not is_nested(module_dependency):
+        return f"{path}[{module_dependency}#{module_dependency_num}]"
+    module_index = get_current_module_index(module_dependency)
+    return f"{path}[{module_dependency[:module_index]}#{module_dependency_num}{module_dependency[module_index:]}]"
 
 
 def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[str]]:

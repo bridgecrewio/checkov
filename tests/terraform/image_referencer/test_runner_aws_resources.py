@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from pytest_mock import MockerFixture
@@ -17,7 +16,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     # given
     file_name = "apprunner.tf"
     image_name = "public.ecr.aws/aws-containers/hello-app-runner:latest"
-    code_lines = "1-23"
+    code_lines = "1-18"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type('disabled')
@@ -133,8 +132,8 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 0
+    assert len(tf_report.resources) == 3
+    assert len(tf_report.passed_checks) == 4
     assert len(tf_report.failed_checks) == 0
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
@@ -196,7 +195,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     # given
     file_name = "lightsail.tf"
     image_name = "amazon/amazon-lightsail:hello-world"
-    code_lines = "1-32"
+    code_lines = "8-39"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -218,7 +217,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(tf_report.resources) == 1
+    assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 0
     assert len(tf_report.failed_checks) == 0
     assert len(tf_report.skipped_checks) == 0

@@ -1,4 +1,3 @@
-import contextlib
 import copy
 import os
 import os.path
@@ -9,19 +8,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
-from checkov.kubernetes.kubernetes_graph_flags import CREATE_COMPLEX_VERTICES, CREATE_EDGES
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
-
-
-@contextlib.contextmanager
-def with_k8s_graph_flags():
-    create_complex_vertices_env_var = os.environ.get('CREATE_COMPLEX_VERTICES')
-    create_edges_env_var = os.environ.get('CREATE_EDGES')
-    os.environ[CREATE_COMPLEX_VERTICES] = 'True'
-    os.environ[CREATE_EDGES] = 'True'
-    yield
-    os.environ[CREATE_COMPLEX_VERTICES] = create_complex_vertices_env_var or ''
-    os.environ[CREATE_EDGES] = create_edges_env_var or ''
 
 
 class TestYamlPolicies(TestYamlPoliciesBase):
@@ -42,29 +29,26 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_AllowPrivilegeEscalation(self):
         self.go('AllowPrivilegeEscalation')
 
-    @with_k8s_graph_flags()
     def test_RoleBindingPE(self) -> None:
         self.go('RoleBindingPE')
 
-    @with_k8s_graph_flags()
     def test_NoCreateNodesProxyOrPodsExec(self) -> None:
         self.go('NoCreateNodesProxyOrPodsExec')
     
-    @with_k8s_graph_flags()
     def test_ImpersonatePermissions(self) -> None:
         self.go("ImpersonatePermissions")
 
-    @with_k8s_graph_flags()
     def test_ModifyServicesStatus(self) -> None:
         self.go('ModifyServicesStatus')
 
-    @with_k8s_graph_flags()
     def test_ReadAllSecrets(self) -> None:
         self.go('ReadAllSecrets')
 
-    @with_k8s_graph_flags()
     def test_PodIsPubliclyAccessibleExample(self) -> None:
         self.go('PodIsPubliclyAccessibleExample')
+
+    def test_RequireAllPodsToHaveNetworkPolicy(self) -> None:
+        self.go('RequireAllPodsToHaveNetworkPolicy')
 
     def create_report_from_graph_checks_results(self, checks_results, check):
         report = Report("kubernetes")
