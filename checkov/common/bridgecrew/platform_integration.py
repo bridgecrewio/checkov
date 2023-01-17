@@ -424,6 +424,11 @@ class BcPlatformIntegration:
                           f' repo_path={self.repo_path}, bucket={self.bucket}')
             return None
 
+        if not bc_integration.bc_api_key or not os.getenv("CKV_VALIDATE_SECRETS"):
+            logging.debug('Skipping persistence of enriched secrets object as secrets verification is off,'
+                          ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
+            return None
+
         s3_path = f'checkov/original_secrets/{uuid.uuid4()}.json'
         _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         return s3_path
