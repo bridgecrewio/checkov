@@ -26,12 +26,12 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 157)
+        self.assertEqual(len(report.passed_checks), 159)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_multi_file(self):
         # given
-        file_path = Path(__file__).parent / "resources/.github/workflows/multi_file.yaml"
+        file_path = Path(__file__).parent / "gha/.github/workflows/multi_file.yaml"
         file_dir = [str(file_path)]
         filter = RunnerFilter(framework=['github_actions'])
 
@@ -94,7 +94,8 @@ class TestRunnerValid(unittest.TestCase):
         )
 
         # then
-        assert len(report.passed_checks) + len(report.failed_checks) == 0
+        assert len(report.passed_checks) == 3
+        assert len(report.failed_checks) == 1
 
     def test_runner_on_shell_injection(self):
         # given
