@@ -22,6 +22,7 @@ class TestAppGatewayWAFACLCVE202144228(unittest.TestCase):
             "azurerm_web_application_firewall_policy.owasp_3_2_default",
             "azurerm_web_application_firewall_policy.version_3_1_default",
             "azurerm_web_application_firewall_policy.owasp_3_1_disabled_different",
+            "azurerm_web_application_firewall_policy.empty_disabled_rules"
         }
         failing_resources = {
             "azurerm_web_application_firewall_policy.owasp_3_0",
@@ -31,8 +32,8 @@ class TestAppGatewayWAFACLCVE202144228(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 4)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
