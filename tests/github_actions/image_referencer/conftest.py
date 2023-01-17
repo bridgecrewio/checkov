@@ -133,6 +133,50 @@ def workflow_without_images() -> dict[str, Any]:
         "__endline__": 21
     }
 
+
+@pytest.fixture
+def workflow_line_numbers_with_image_first() -> list[tuple[int, str]]:
+    return [(1, 'name: Name\n'),
+            (2, 'on:\n'),
+            (3, '  workflow_dispatch:\n'),
+            (4, '    inputs:\n'),
+            (5, '      logLevel:\n'),
+            (6, "        description: 'Log level'\n"),
+            (7, '\n'),
+            (8, 'jobs:\n'),
+            (9, '  first_job:\n'),
+            (10, '    container: node:14.22\n'),
+            (11, '    name: Name\n'),
+            (12, '    book: wood\n'),
+            (13, '    steps:\n'),
+            (14, '      - name: Checkout codebase\n'),
+            (15, '        uses: actions/checkout@v3\n'),
+            (16, '      - name: infrastructure\n'),
+            (17, '        working-directory: terraform\n'),
+            (18, '        shell: bash\n'),
+            (19, '        env:\n'),
+            (20, '          TF_INPUT: 0\n'),
+            (21, '        run: |\n'),
+            (22, '          terragrunt init\n'),
+            (23, '          terragrunt destroy -auto-approve -var-file devl.tfvars\n'),
+            (24, '  second_job:\n'),
+            (25, '    runs-on: ubuntu-latest\n'),
+            (26, '    name: Name\n'),
+            (27, '    container: node:14.16\n'),
+            (28, '    steps:\n'),
+            (29, '      - name: Checkout codebase\n'),
+            (30, '        uses: actions/checkout@v3\n'),
+            (31, '      - name: infrastructure\n'),
+            (32, '        working-directory: terraform\n'),
+            (33, '        shell: bash\n'),
+            (34, '        env:\n'),
+            (35, '          TF_INPUT: 0\n'),
+            (36, '        run: |\n'),
+            (37, '          terragrunt init\n'),
+            (38, '          terragrunt destroy -auto-approve -var-file devl.tfvars\n')
+            ]
+
+
 @pytest.fixture
 def workflow_line_numbers_with_two_identical_images() -> list[tuple[int, str]]:
     return [(1, 'name: Name\n'),
@@ -174,6 +218,92 @@ def workflow_line_numbers_with_two_identical_images() -> list[tuple[int, str]]:
             (37, '          terragrunt init\n'),
             (38, '          terragrunt destroy -auto-approve -var-file devl.tfvars\n')
             ]
+
+
+@pytest.fixture
+def workflow_with_image_first() -> dict[str, Any]:
+    return {
+        "name": "Name",
+        "on": {
+            "workflow_dispatch": {
+                "inputs": {
+                    "logLevel": {
+                        "description": "Log level",
+                        "__startline__": 6,
+                        "__endline__": 8
+                    },
+                    "__startline__": 5,
+                    "__endline__": 8
+                },
+                "__startline__": 4,
+                "__endline__": 8
+            },
+            "__startline__": 3,
+            "__endline__": 8
+        },
+        "jobs": {
+            "first_job": {
+                "runs-on": "ubuntu-latest",
+                "name": "Name",
+                "container": "node:14.22",
+                "steps": [
+                    {
+                        "name": "Checkout codebase",
+                        "uses": "actions/checkout@v3",
+                        "__startline__": 14,
+                        "__endline__": 16
+                    },
+                    {
+                        "name": "infrastructure",
+                        "working-directory": "terraform",
+                        "shell": "bash",
+                        "env": {
+                            "TF_INPUT": 0,
+                            "__startline__": 20,
+                            "__endline__": 21
+                        },
+                        "run": "terragrunt init\nterragrunt destroy -auto-approve -var-file devl.tfvars\n",
+                        "__startline__": 16,
+                        "__endline__": 24
+                    }
+                ],
+                "__startline__": 10,
+                "__endline__": 24
+            },
+            "second_job": {
+                "runs-on": "ubuntu-latest",
+                "name": "Name",
+                "container": "node:14.16",
+                "steps": [
+                    {
+                        "name": "Checkout codebase",
+                        "uses": "actions/checkout@v3",
+                        "__startline__": 29,
+                        "__endline__": 31
+                    },
+                    {
+                        "name": "infrastructure",
+                        "working-directory": "terraform",
+                        "shell": "bash",
+                        "env": {
+                            "TF_INPUT": 0,
+                            "__startline__": 35,
+                            "__endline__": 36
+                        },
+                        "run": "terragrunt init\nterragrunt destroy -auto-approve -var-file devl.tfvars\n",
+                        "__startline__": 31,
+                        "__endline__": 39
+                    }
+                ],
+                "__startline__": 25,
+                "__endline__": 39
+            },
+            "__startline__": 24,
+            "__endline__": 39
+        },
+        "__startline__": 1,
+        "__endline__": 39
+    }
 
 
 @pytest.fixture
