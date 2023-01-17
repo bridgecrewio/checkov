@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.264...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.271...HEAD)
+
+## [2.2.271](https://github.com/bridgecrewio/checkov/compare/2.2.264...2.2.271) - 2023-01-16
+
+### Feature
+
+- **dockerfile:** Add checks for PYTHONHTTPSVERIFY and NODE_TLS_REJECT_UNAUTHORIZED - [#4223](https://github.com/bridgecrewio/checkov/pull/4223)
+- **secrets:** Skip invalid secrets checks + soft/hard fails - [#4247](https://github.com/bridgecrewio/checkov/pull/4247)
+- **terraform:** Azure search service checks - [#4064](https://github.com/bridgecrewio/checkov/pull/4064)
+- **terraform:** GCP checks for definition of a firewall resource for a network - [#4188](https://github.com/bridgecrewio/checkov/pull/4188)
+
+### Bug Fix
+
+- **general:** Support encoding of function object - [#4259](https://github.com/bridgecrewio/checkov/pull/4259)
+- **kubernetes:** handle missing subjects in k8s cluster role binding - [#4262](https://github.com/bridgecrewio/checkov/pull/4262)
+- **kubernetes:** handle resources with incompatible selector - [#4257](https://github.com/bridgecrewio/checkov/pull/4257)
+- **secrets:** Change secret validation status message - [#4250](https://github.com/bridgecrewio/checkov/pull/4250)
+- **terraform:** default value for CKV_AZURE_5 - [#4237](https://github.com/bridgecrewio/checkov/pull/4237)
+- **terraform:** fix get_current_module_index for path that contain .tf in them - [#4261](https://github.com/bridgecrewio/checkov/pull/4261)
 
 ## [2.2.264](https://github.com/bridgecrewio/checkov/compare/2.2.258...2.2.264) - 2023-01-15
 
