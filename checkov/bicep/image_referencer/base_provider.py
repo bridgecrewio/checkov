@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.bicep.utils import BICEP_START_LINE, BICEP_END_LINE
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.images.graph.image_referencer_provider import GraphImageReferencerProvider
 from checkov.common.images.image_referencer import Image
 from checkov.common.util.str_utils import removeprefix
 
@@ -16,25 +17,12 @@ if TYPE_CHECKING:
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
 
 
-class BaseBicepProvider:
-    __slots__ = ("graph_connector", "supported_resource_types")
-
-    def __init__(
-        self, graph_connector: DiGraph, supported_resource_types: Mapping[str, _ExtractImagesCallableAlias]
-    ) -> None:
-        self.graph_connector = graph_connector
-        self.supported_resource_types = supported_resource_types
+class BaseBicepProvider(GraphImageReferencerProvider):
 
     def extract_images_from_resources(self) -> list[Image]:
         images = []
 
-        resource_nodes = [
-            node
-            for node, resource_type in self.graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
-            if resource_type and resource_type in self.supported_resource_types
-        ]
-
-        supported_resources_graph = self.graph_connector.subgraph(resource_nodes)
+        supported_resources_graph = self.extract_nodes_networkx()
 
         for _, resource in supported_resources_graph.nodes(data=True):
             image_names: list[str] = []
