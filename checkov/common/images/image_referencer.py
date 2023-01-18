@@ -5,7 +5,6 @@ import logging
 import os
 from abc import abstractmethod
 from collections.abc import Iterable
-from datetime import datetime
 from pathlib import Path
 from typing import cast, Any, TYPE_CHECKING, Generic, TypeVar
 
@@ -141,7 +140,6 @@ class ImageReferencerMixin(Generic[_Definitions]):
         check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         report_type = CheckType.SCA_IMAGE
         image_names_to_query = list(set(map(lambda i: i.name, images)))
-        start_time = datetime.now()
         results = asyncio.run(self._fetch_image_results_async(image_names_to_query))
 
         license_statuses_by_image = asyncio.run(self._fetch_licenses_per_image(image_names_to_query, results))
@@ -159,7 +157,6 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 cached_results=results[image_names_to_query.index(image.name)],
                 license_statuses=license_statuses_by_image[image.name]
             )
-        logging.info(f'fetching images and licenses took: {datetime.now() - start_time} ms')
 
         return report
 
