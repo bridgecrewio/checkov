@@ -12,11 +12,6 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.str_utils import removeprefix
 from checkov.terraform.graph_builder.utils import setup_file_path_to_referred_id, get_related_resource_id
 
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
-_ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
-
 
 class BaseTerraformProvider(GraphImageReferencerProvider):
 
