@@ -28,7 +28,7 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, lice
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=license_statuses_result,
     )
     # 'workflow_with_string_container.yml (node:14.16 lines:12-13 (sha256:f9b91f78b0)).musl'

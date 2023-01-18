@@ -28,7 +28,7 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=license_statuses_result,
     )
 

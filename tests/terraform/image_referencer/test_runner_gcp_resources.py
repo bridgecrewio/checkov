@@ -26,7 +26,7 @@ def test_cloud_run_resources(mocker: MockerFixture, image_cached_result, license
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=license_statuses_result,
     )
 
@@ -82,7 +82,7 @@ def test_cloud_run_v2_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -127,7 +127,7 @@ def test_cloudbuild_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 

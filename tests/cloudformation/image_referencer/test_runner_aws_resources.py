@@ -27,7 +27,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=license_statuses_result,
     )
 
@@ -86,7 +86,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -129,7 +129,7 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -171,7 +171,7 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -214,7 +214,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 

@@ -5,8 +5,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
-from aiohttp import ClientSession
-
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
 )
@@ -29,6 +27,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.output.common import format_licenses_to_string
 
 if TYPE_CHECKING:
+    from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
     from checkov.common.typing import _LicenseStatus, _CheckResult

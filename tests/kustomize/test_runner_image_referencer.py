@@ -91,7 +91,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 

@@ -22,7 +22,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -64,7 +64,7 @@ def test_containers_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -109,7 +109,7 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, image_cache
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -154,7 +154,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -197,7 +197,7 @@ def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
@@ -239,7 +239,7 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
         return_value=image_cached_result,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
+        "checkov.common.images.image_referencer.get_license_statuses_async",
         return_value=[],
     )
 
