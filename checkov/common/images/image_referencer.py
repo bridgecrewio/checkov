@@ -167,8 +167,9 @@ class ImageReferencerMixin(Generic[_Definitions]):
         as an input, and the asyncio behavior is managed in the calling method.
         """
         async with aiohttp.ClientSession() as session:
-            results: list[dict[str, Any]] = await asyncio.gather(*[image_scanner.get_scan_results_from_cache_async(i)
-                                                                   for i in image_names_to_query])
+            results: list[dict[str, Any]] = await asyncio.gather(*[
+                image_scanner.get_scan_results_from_cache_async(session, i) for i in image_names_to_query
+            ])
         return results
 
     def _add_image_records(
