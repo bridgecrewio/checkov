@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, Any
+from typing import TYPE_CHECKING, Callable, Any, Mapping
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
@@ -16,7 +16,8 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types")
 
-    def __init__(self, graph_connector: DiGraph, supported_resource_types: dict[str, _ExtractImagesCallableAlias]):
+    def __init__(self, graph_connector: DiGraph,
+                 supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
         self.supported_resource_types = supported_resource_types
 
