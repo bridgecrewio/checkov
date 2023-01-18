@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import pytest
-from asyncmock import AsyncMock
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
