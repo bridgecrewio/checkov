@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.bicep.utils import BICEP_START_LINE, BICEP_END_LINE
 from checkov.common.graph.graph_builder import CustomAttributes

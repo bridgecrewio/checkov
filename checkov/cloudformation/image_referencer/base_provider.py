@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.graph.image_referencer_provider import GraphImageReferencerProvider
