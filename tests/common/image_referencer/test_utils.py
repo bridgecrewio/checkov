@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import asyncio
+
+
 def mock_get_empty_license_statuses_async(session, packages, image_name: str):
-    return {'image_name': image_name, 'licenses': []}
+    result = {'image_name': image_name, 'licenses': []}
+
+    future = asyncio.Future()
+    future.set_result(result)
+
+    return future
 
 
 def mock_get_license_statuses_async(session, packages, image_name: str) -> dict[str, str | list[dict[str, str]]]:
-    return {
+    result = {
         "image_name": image_name,
         "licenses": [
             {
@@ -24,3 +32,8 @@ def mock_get_license_statuses_async(session, packages, image_name: str) -> dict[
             },
         ]
     }
+
+    future = asyncio.Future()
+    future.set_result(result)
+
+    return future

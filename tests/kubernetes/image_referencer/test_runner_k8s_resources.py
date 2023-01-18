@@ -25,7 +25,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -82,7 +82,7 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -127,7 +127,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -172,7 +172,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -217,7 +217,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result)
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -262,7 +262,7 @@ def test_job_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -307,7 +307,7 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -352,7 +352,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -399,7 +399,7 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -447,7 +447,7 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",

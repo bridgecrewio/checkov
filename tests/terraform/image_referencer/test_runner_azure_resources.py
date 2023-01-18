@@ -20,7 +20,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -62,7 +62,7 @@ def test_containers_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -107,7 +107,7 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, image_cache
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -152,7 +152,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -195,7 +195,7 @@ def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -237,7 +237,7 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",

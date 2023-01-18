@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from asyncmock import AsyncMock
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
@@ -17,8 +18,8 @@ RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
 
 @pytest.fixture()
-def image_cached_result() -> dict[str, Any]:
-    return {
+def image_cached_result():
+    result = {
         "results": [
             {
                 "id": "sha256:f9b91f78b0344fa0efc5583d79e78a90556ab0bb3f93fcbc8728b0b70d29a5db",
@@ -53,6 +54,11 @@ def image_cached_result() -> dict[str, Any]:
         ]
     }
 
+    mock_image_cached = AsyncMock()
+    mock_image_cached.return_value = result
+
+    return mock_image_cached
+
 
 @pytest.mark.skipif(not helm_exists(), reason="helm not installed")
 def test_deployment_resources(mocker: MockerFixture, image_cached_result):
@@ -68,7 +74,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",

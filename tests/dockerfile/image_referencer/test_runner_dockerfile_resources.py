@@ -24,7 +24,7 @@ def test_simple_dockerfile(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -80,7 +80,7 @@ def test_multi_stage_dockerfile(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
 
     # when
@@ -123,7 +123,7 @@ def test_multi_platform_dockerfile(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
 
     # when

@@ -155,7 +155,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 report_type=report_type,
                 bc_integration=bc_integration,
                 cached_results=results[image_names_to_query.index(image.name)],
-                license_statuses=license_statuses_by_image[image.name]
+                license_statuses=license_statuses_by_image.get(image.name) or []
             )
 
         return report
@@ -325,9 +325,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
         async with aiohttp.ClientSession() as session:
-            image_results = await asyncio.gather(*[
+            license_results = await asyncio.gather(*[
                 get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
                 for i, result in enumerate(image_results)
+                if "results" in result and result["results"]
             ])
-        merged_result.update({r['image_name']: r['licenses'] for r in image_results})
+        merged_result.update({r['image_name']: r['licenses'] for r in license_results})
         return merged_result

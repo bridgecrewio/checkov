@@ -3,11 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from asyncmock import AsyncMock
 
 
 @pytest.fixture()
-def image_cached_result() -> dict[str, Any]:
-    return {
+def image_cached_result():
+    result = {
         "results": [
             {
                 "id": "sha256:f9b91f78b0344fa0efc5583d79e78a90556ab0bb3f93fcbc8728b0b70d29a5db",
@@ -41,3 +42,8 @@ def image_cached_result() -> dict[str, Any]:
             }
         ]
     }
+
+    mock_image_cached = AsyncMock()
+    mock_image_cached.return_value = result
+
+    return mock_image_cached

@@ -8,12 +8,15 @@ from checkov.azure_pipelines.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async
+
 RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 
-def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     file_name = "azure-pipelines.yaml"
+    image_name = "redis:latest"
     test_file = RESOURCES_PATH / file_name
 
     runner_filter = RunnerFilter(run_image_referencer=True)
@@ -21,11 +24,11 @@ def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result, li
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        return_value=image_cached_result,
+        side_effect=image_cached_result,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
@@ -42,13 +45,13 @@ def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result, li
     assert len(azure_pipelines_report.parsing_errors) == 0
 
 
-    assert sca_image_report.image_cached_results[0]["dockerImageName"] == "redis:latest"
+    assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
     ]
 
-    assert len(sca_image_report.passed_checks) == 2
-    assert len(sca_image_report.failed_checks) == 3
+    assert len(sca_image_report.passed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 4
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
