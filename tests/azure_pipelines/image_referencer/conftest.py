@@ -126,19 +126,23 @@ def image_cached_result() -> dict[str, Any]:
         ]
     }
 
+
 @pytest.fixture()
-def license_statuses_result() -> list[dict[str, str]]:
-    return [{
-        "package_name": "dpkg",
-        "package_version": "1.20.12",
-        "policy": "BC_LIC_1",
-        "license": "GPL-2.0+",
-        "status": "COMPLIANT"
-    },
-    {
-        "package_name": "systemd",
-        "package_version": "247.3-7+deb11u1",
-        "policy": "BC_LIC_1",
-        "license": "LGPL-2.1-or-later",
-        "status": "COMPLIANT"
-    }]
+def license_statuses_result() -> dict[str, str | list[dict[str, str]]]:
+    return {
+        'image_name': 'redis:latest',
+        'licenses': [{
+            "package_name": "dpkg",
+            "package_version": "1.20.12",
+            "policy": "BC_LIC_1",
+            "license": "GPL-2.0+",
+            "status": "COMPLIANT"
+        },
+            {
+                "package_name": "systemd",
+                "package_version": "247.3-7+deb11u1",
+                "policy": "BC_LIC_1",
+                "license": "LGPL-2.1-or-later",
+                "status": "COMPLIANT"
+            }]
+    }
