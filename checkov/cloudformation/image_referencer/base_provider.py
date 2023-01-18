@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
 from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.common.graph.graph_builder import CustomAttributes

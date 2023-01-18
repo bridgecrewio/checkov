@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
 from typing import TYPE_CHECKING, Callable, Any
 
 from checkov.bicep.utils import BICEP_START_LINE, BICEP_END_LINE
@@ -11,7 +10,6 @@ from checkov.common.images.image_referencer import Image
 from checkov.common.util.str_utils import removeprefix
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]

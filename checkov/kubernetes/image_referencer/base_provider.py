@@ -10,7 +10,6 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.str_utils import removeprefix
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
