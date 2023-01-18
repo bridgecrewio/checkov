@@ -498,16 +498,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
             should_call_raise_for_status=True
         )
         response_json = response.json()
-        license_statuses: list[_LicenseStatus] = [
-            {
-                "package_name": license_violation.get("name", ""),
-                "package_version": license_violation.get("version", ""),
-                "policy": license_violation.get("policy", "BC_LIC1"),
-                "license": license_violation.get("license", ""),
-                "status": license_violation.get("status", "COMPLIANT")
-            }
-            for license_violation in response_json.get("violations", [])
-        ]
+        license_statuses: list[_LicenseStatus] = _extract_license_statuses(response_json)
         return license_statuses
     except Exception:
         error_message = (
@@ -521,6 +512,10 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
 
 async def get_license_statuses_async(session: ClientSession, packages: list[dict[str, Any]], image_name: str) \
         -> dict[str, list[_LicenseStatus]]:
+    """
+    This is an async implementation of `get_license_statuses`. The only change is we're getting a session
+    as an input, and the asyncio behavior is managed in the calling method.
+    """
     requests_input = _get_request_input(packages)
     url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
     if not requests_input:
@@ -530,16 +525,7 @@ async def get_license_statuses_async(session: ClientSession, packages: list[dict
                                    json={"packages": requests_input}) as resp:
             response_json = await resp.json()
 
-        license_statuses: list[_LicenseStatus] = [
-            {
-                "package_name": license_violation.get("name", ""),
-                "package_version": license_violation.get("version", ""),
-                "policy": license_violation.get("policy", "BC_LIC1"),
-                "license": license_violation.get("license", ""),
-                "status": license_violation.get("status", "COMPLIANT")
-            }
-            for license_violation in response_json.get("violations", [])
-        ]
+        license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}
     except Exception as e:
         error_message = (
@@ -551,3 +537,16 @@ async def get_license_statuses_async(session: ClientSession, packages: list[dict
 
         return {'image_name': image_name, 'licenses': []}
 
+
+def _extract_license_statuses(response_json: dict[str, str]) -> list[_LicenseStatus]:
+    license_statuses: list[_LicenseStatus] = [
+        {
+            "package_name": license_violation.get("name", ""),
+            "package_version": license_violation.get("version", ""),
+            "policy": license_violation.get("policy", "BC_LIC1"),
+            "license": license_violation.get("license", ""),
+            "status": license_violation.get("status", "COMPLIANT")
+        }
+        for license_violation in response_json.get("violations", [])
+    ]
+    return license_statuses

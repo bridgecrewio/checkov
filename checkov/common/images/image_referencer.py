@@ -165,6 +165,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
 
     @staticmethod
     async def _fetch_image_results_async(image_names_to_query: list[str]) -> list[dict[str, Any]]:
+        """
+        This is an async implementation of `_fetch_image_results`. The only change is we're getting a session
+        as an input, and the asyncio behavior is managed in the calling method.
+        """
         async with aiohttp.ClientSession() as session:
             tasks = []
             for image_name in image_names_to_query:
