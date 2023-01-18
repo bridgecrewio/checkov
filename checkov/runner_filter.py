@@ -48,8 +48,7 @@ class RunnerFilter(object):
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
-            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
-            bc_cloned_checks: dict[str, list[dict[str, Any]]] = None
+            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -66,7 +65,7 @@ class RunnerFilter(object):
         self.check_threshold = None
         self.skip_check_threshold = None
         self.checks = []
-        self.bc_cloned_checks = bc_cloned_checks
+        self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
         self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
