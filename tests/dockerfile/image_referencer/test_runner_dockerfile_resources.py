@@ -22,7 +22,7 @@ def test_simple_dockerfile(mocker: MockerFixture, image_cached_result, license_s
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -78,7 +78,7 @@ def test_multi_stage_dockerfile(mocker: MockerFixture, image_cached_result):
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
 
@@ -121,7 +121,7 @@ def test_multi_platform_dockerfile(mocker: MockerFixture, image_cached_result):
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
 

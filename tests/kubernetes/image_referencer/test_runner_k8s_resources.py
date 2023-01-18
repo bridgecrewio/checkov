@@ -22,7 +22,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -79,7 +79,7 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result, license_
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -124,7 +124,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, licens
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -169,7 +169,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -214,7 +214,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result,
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -259,7 +259,7 @@ def test_job_resources(mocker: MockerFixture, image_cached_result, license_statu
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -304,7 +304,7 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result, lice
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -349,7 +349,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result, licen
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -396,7 +396,7 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -444,7 +444,7 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, lice
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(

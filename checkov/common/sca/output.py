@@ -510,7 +510,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
 
 
 async def get_license_statuses_async(session: ClientSession, packages: list[dict[str, Any]], image_name: str) \
-        -> dict[str, list[_LicenseStatus]]:
+        -> dict[str, str | list[_LicenseStatus]]:
     """
     This is an async implementation of `get_license_statuses`. The only change is we're getting a session
     as an input, and the asyncio behavior is managed in the calling method.
@@ -537,7 +537,7 @@ async def get_license_statuses_async(session: ClientSession, packages: list[dict
         return {'image_name': image_name, 'licenses': []}
 
 
-def _extract_license_statuses(response_json: dict[str, str]) -> list[_LicenseStatus]:
+def _extract_license_statuses(response_json: dict[str, list[dict[str, str]]]) -> list[_LicenseStatus]:
     license_statuses: list[_LicenseStatus] = [
         {
             "package_name": license_violation.get("name", ""),

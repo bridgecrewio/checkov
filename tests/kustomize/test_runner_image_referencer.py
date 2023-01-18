@@ -87,7 +87,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(

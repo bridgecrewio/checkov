@@ -22,7 +22,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -79,7 +79,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -119,7 +119,7 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -161,7 +161,7 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(
@@ -204,7 +204,7 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
         return_value=image_cached_result,
     )
     mocker.patch(

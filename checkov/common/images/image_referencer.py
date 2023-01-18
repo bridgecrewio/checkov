@@ -174,7 +174,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
             for image_name in image_names_to_query:
                 tasks.append(asyncio.ensure_future(
                     image_scanner.get_scan_results_from_cache_async(session, f"image:{image_name}")))
-            results = await asyncio.gather(*tasks)
+            results: list[dict[str, Any]] = await asyncio.gather(*tasks)
         return results
 
     def _add_image_records(
@@ -327,7 +327,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
     @staticmethod
     async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
             -> dict[str, list[_LicenseStatus]]:
-        merged_result = {}
+        merged_result: dict[str, list[_LicenseStatus]] = {}
         async with aiohttp.ClientSession() as session:
             tasks = []
             for i, result in enumerate(image_results):
