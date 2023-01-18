@@ -167,11 +167,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
         as an input, and the asyncio behavior is managed in the calling method.
         """
         async with aiohttp.ClientSession() as session:
-            tasks = []
-            for image_name in image_names_to_query:
-                tasks.append(asyncio.ensure_future(
-                    image_scanner.get_scan_results_from_cache_async(session, f"image:{image_name}")))
-            results: list[dict[str, Any]] = await asyncio.gather(*tasks)
+            results: list[dict[str, Any]] = await asyncio.gather(*[image_scanner.get_scan_results_from_cache_async(i)
+                                                                   for i in image_names_to_query])
         return results
 
     def _add_image_records(
@@ -326,13 +323,9 @@ class ImageReferencerMixin(Generic[_Definitions]):
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
         async with aiohttp.ClientSession() as session:
-            tasks = []
-            for i, result in enumerate(image_results):
-                packages = result['results'][0].get('packages')
-                if packages:
-                    tasks.append(asyncio.ensure_future(get_license_statuses_async(session, packages, image_names[i])))
-                else:
-                    merged_result[image_names[i]] = []
-            image_results = await asyncio.gather(*tasks)
+            image_results = await asyncio.gather(*[
+                get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
+                for i, result in enumerate(image_results)
+            ])
         merged_result.update({r['image_name']: r['licenses'] for r in image_results})
         return merged_result
