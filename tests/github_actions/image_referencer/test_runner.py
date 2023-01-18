@@ -8,10 +8,12 @@ from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async
+
 RESOURCES_PATH = Path(__file__).parent.parent / "resources/.github/workflows"
 
 
-def test_github_action_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_github_action_workflow(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     file_name = "workflow_with_string_container.yml"
     image_name = "node:14.16"
