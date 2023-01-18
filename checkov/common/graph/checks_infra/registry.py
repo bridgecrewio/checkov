@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import concurrent.futures
 import logging
 from typing import Any, TYPE_CHECKING
 from checkov.common.models.enums import CheckResult
