@@ -5,6 +5,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Optional, Dict, List
 
+from aiohttp import ClientSession
+
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import (
     integration as metadata_integration,
 )
@@ -515,3 +517,37 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
         logging.info(error_message, exc_info=True)
 
     return []
+
+
+async def get_license_statuses_async(session: ClientSession, packages: list[dict[str, Any]], image_name: str) \
+        -> dict[str, list[_LicenseStatus]]:
+    requests_input = _get_request_input(packages)
+    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
+    if not requests_input:
+        return {'image_name': image_name, 'licenses': []}
+    try:
+        async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
+                                   json={"packages": requests_input}) as resp:
+            response_json = await resp.json()
+
+        license_statuses: list[_LicenseStatus] = [
+            {
+                "package_name": license_violation.get("name", ""),
+                "package_version": license_violation.get("version", ""),
+                "policy": license_violation.get("policy", "BC_LIC1"),
+                "license": license_violation.get("license", ""),
+                "status": license_violation.get("status", "COMPLIANT")
+            }
+            for license_violation in response_json.get("violations", [])
+        ]
+        return {'image_name': image_name, 'licenses': license_statuses}
+    except Exception as e:
+        error_message = (
+            "failing when trying to get licenses-violations. it is apparently some unexpected "
+            "connection issue. please try later. in case it keeps happening, please report."
+            f"Error: {str(e)}"
+        )
+        logging.info(error_message, exc_info=True)
+
+        return {'image_name': image_name, 'licenses': []}
+

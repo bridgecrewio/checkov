@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from abc import abstractmethod
 from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
 from typing import cast, Any, TYPE_CHECKING, Generic, TypeVar
 
+import aiohttp
 import docker
 
 from checkov.common.bridgecrew.vulnerability_scanning.image_scanner import image_scanner
@@ -16,7 +19,8 @@ from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.commons import should_run_scan
-from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
+from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses_async
+from checkov.common.typing import _LicenseStatus
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -136,9 +140,14 @@ class ImageReferencerMixin(Generic[_Definitions]):
         root_path = Path(root_path) if root_path else None
         check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         report_type = CheckType.SCA_IMAGE
+        image_names_to_query = list(set(map(lambda i: i.name, images)))
+        start_time = datetime.now()
+        results = asyncio.run(self._fetch_image_results_async(image_names_to_query))
+
+        license_statuses_by_image = asyncio.run(self._fetch_licenses_per_image(image_names_to_query, results))
 
         for image in images:
-            self.add_image_records(
+            self._add_image_records(
                 report=report,
                 root_path=root_path,
                 check_class=check_class,
@@ -147,11 +156,24 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 runner_filter=runner_filter,
                 report_type=report_type,
                 bc_integration=bc_integration,
+                cached_results=results[image_names_to_query.index(image.name)],
+                license_statuses=license_statuses_by_image[image.name]
             )
+        logging.info(f'fetching images and licenses took: {datetime.now() - start_time} ms')
 
         return report
 
-    def add_image_records(
+    @staticmethod
+    async def _fetch_image_results_async(image_names_to_query: list[str]) -> list[dict[str, Any]]:
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+            for image_name in image_names_to_query:
+                tasks.append(asyncio.ensure_future(
+                    image_scanner.get_scan_results_from_cache_async(session, f"image:{image_name}")))
+            results = await asyncio.gather(*tasks)
+        return results
+
+    def _add_image_records(
         self,
         report: Report,
         root_path: Path | None,
@@ -161,10 +183,10 @@ class ImageReferencerMixin(Generic[_Definitions]):
         runner_filter: RunnerFilter,
         report_type: str,
         bc_integration: BcPlatformIntegration,
+        cached_results: dict[str, Any],
+        license_statuses: list[_LicenseStatus]
     ) -> None:
         """Adds an image record to the given report, if possible"""
-
-        cached_results: dict[str, Any] | None = image_scanner.get_scan_results_from_cache(f"image:{image.name}")
         if cached_results:
             logging.info(f"Found cached scan results of image {image.name}")
             image_scanning_report: dict[str, Any] = docker_image_scanning_integration.create_report(
@@ -178,8 +200,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
-            image_id = self.extract_image_short_id(result)
-            image_details = self.get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+            image_id = self._extract_image_short_id(result)
+            image_details = self._get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
             if root_path:
                 try:
                     dockerfile_path = str(Path(dockerfile_path).relative_to(root_path))
@@ -190,7 +212,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
             rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
 
-            self.add_vulnerability_records(
+            self._add_vulnerability_records(
                 report=report,
                 result=result,
                 check_class=check_class,
@@ -199,6 +221,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 image_details=image_details,
                 runner_filter=runner_filter,
                 report_type=report_type,
+                license_statuses=license_statuses,
             )
         elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
             # experimental flag on running image referencers via local twistcli
@@ -219,7 +242,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
             rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
 
-            self.add_vulnerability_records(
+            self._add_vulnerability_records(
                 report=report,
                 result=result,
                 check_class=check_class,
@@ -228,11 +251,13 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 image_details=None,
                 runner_filter=runner_filter,
                 report_type=report_type,
+                license_statuses=license_statuses,
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
 
-    def extract_image_short_id(self, scan_result: dict[str, Any]) -> str:
+    @staticmethod
+    def _extract_image_short_id(scan_result: dict[str, Any]) -> str:
         """Extracts a shortened version of the image ID from the scan result"""
 
         if "id" not in scan_result:
@@ -244,7 +269,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
             return image_id[:17]
         return image_id[:10]
 
-    def get_image_details_from_twistcli_result(self, scan_result: dict[str, Any], image_id: str) -> ImageDetails:
+    @staticmethod
+    def _get_image_details_from_twistcli_result(scan_result: dict[str, Any], image_id: str) -> ImageDetails:
         """Extracts the image detaisl from a twistcli scan result"""
 
         image_packages = scan_result.get("packages", [])
@@ -256,20 +282,20 @@ class ImageReferencerMixin(Generic[_Definitions]):
             image_id=image_id,
         )
 
-    def add_vulnerability_records(
-        self,
+    @staticmethod
+    def _add_vulnerability_records(
         report: Report,
         result: dict[str, Any],
         check_class: str,
         dockerfile_path: str,
         rootless_file_path: str,
         image_details: ImageDetails | None,
+        license_statuses: list[_LicenseStatus],
         runner_filter: RunnerFilter,
         report_type: str,
     ) -> None:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
-        license_statuses = get_license_statuses(packages)
         add_to_report_sca_data(
             report=report,
             check_class=check_class,
@@ -293,3 +319,19 @@ class ImageReferencerMixin(Generic[_Definitions]):
         """Tries to find image references in the graph or supported resource"""
 
         pass
+
+    @staticmethod
+    async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
+            -> dict[str, list[_LicenseStatus]]:
+        merged_result = {}
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+            for i, result in enumerate(image_results):
+                packages = result['results'][0].get('packages')
+                if packages:
+                    tasks.append(asyncio.ensure_future(get_license_statuses_async(session, packages, image_names[i])))
+                else:
+                    merged_result[image_names[i]] = []
+            image_results = await asyncio.gather(*tasks)
+        merged_result.update({r['image_name']: r['licenses'] for r in image_results})
+        return merged_result
