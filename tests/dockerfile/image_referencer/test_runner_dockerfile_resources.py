@@ -6,11 +6,12 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.dockerfile.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources"
 
 
-def test_simple_dockerfile(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_simple_dockerfile(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -27,7 +28,7 @@ def test_simple_dockerfile(mocker: MockerFixture, image_cached_result, license_s
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
 
     # when

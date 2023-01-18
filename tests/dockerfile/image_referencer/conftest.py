@@ -41,25 +41,3 @@ def image_cached_result() -> dict[str, Any]:
             }
         ]
     }
-
-
-@pytest.fixture()
-def license_statuses_result() -> dict[str, list[dict[str, str]]]:
-    return {
-        "python:3.9-alpine": [
-            {
-                "package_name": "openssl",
-                "package_version": "1.1.1q-r0",
-                "policy": "BC_LIC_1",
-                "license": "OpenSSL",
-                "status": "OPEN",
-            },
-            {
-                "package_name": "musl",
-                "package_version": "1.2.3-r0",
-                "policy": "BC_LIC_1",
-                "license": "MIT",
-                "status": "COMPLIANT",
-            },
-        ]
-    }

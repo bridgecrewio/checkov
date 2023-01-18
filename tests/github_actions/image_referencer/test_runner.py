@@ -29,7 +29,7 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, lice
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
     # 'workflow_with_string_container.yml (node:14.16 lines:12-13 (sha256:f9b91f78b0)).musl'
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)

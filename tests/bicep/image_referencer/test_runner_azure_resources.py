@@ -6,12 +6,13 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.bicep.runner import Runner
-from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
+    mock_get_license_statuses_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-def test_batch_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_batch_resources(mocker: MockerFixture, image_cached_result):
     # given
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -29,7 +30,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result, license_sta
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
 
     # when

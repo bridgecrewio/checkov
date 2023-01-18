@@ -6,12 +6,13 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
+    mock_get_license_statuses_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
-def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_apprunner_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -28,7 +29,7 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
 
     # when

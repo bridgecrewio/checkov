@@ -6,12 +6,13 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
-from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
+    mock_get_license_statuses_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/k8s"
 
 
-def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_pod_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -28,7 +29,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=license_statuses_result,
+        side_effect=mock_get_license_statuses_async,
     )
 
     # when
@@ -68,7 +69,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result, license_statu
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_cron_job_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_cron_job_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -113,7 +114,7 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result, license_
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_daemon_set_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -158,7 +159,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result, licens
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_deployment_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_deployment_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -203,7 +204,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_deployment_config_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_deployment_config_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -248,7 +249,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result,
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_job_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_job_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -293,7 +294,7 @@ def test_job_resources(mocker: MockerFixture, image_cached_result, license_statu
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_pod_template_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_pod_template_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -338,7 +339,7 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result, lice
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_replica_set_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_replica_set_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -383,7 +384,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result, licen
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_replication_controller_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_replication_controller_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -431,7 +432,7 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_stateful_set_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_stateful_set_resources(mocker: MockerFixture, image_cached_result):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
