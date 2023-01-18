@@ -44,11 +44,13 @@ class GithubActionProvider(WorkflowImageReferencerProvider):
                 if isinstance(container, dict):
                     image = container.get("image", "")
                     start_line, end_line = container.get(START_LINE, 0), container.get(END_LINE, 0)
-
                 elif isinstance(container, str):
                     image = container
-                    start_line = [line_number for line_number, line in
-                                  self.workflow_line_numbers[job_object[START_LINE]:] if image in line][0]
+                    line_to_line_numbers = self.workflow_line_numbers[job_object[START_LINE] - 1:]
+                    image_line = next((line_number for line_number, line in line_to_line_numbers if image in line), None)
+                    if not image_line:
+                        continue
+                    start_line = image_line
                     end_line = start_line + 1
 
                 if image:
