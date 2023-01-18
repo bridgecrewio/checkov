@@ -647,8 +647,8 @@ class TestRunnerFilter(unittest.TestCase):
         assert len(runner_filter.resource_attr_to_omit["acab"]) == 2
 
     def test_should_not_skip_cloned_policy(self):
-        instance = RunnerFilter(include_all_checkov_policies=True,
-                                bc_cloned_checks={'BC_GCP_NETWORKING_17': [
+        instance = RunnerFilter(include_all_checkov_policies=True)
+        instance.bc_cloned_checks = {'BC_GCP_NETWORKING_17': [
                                     [{'id': '1234567_GCP_9876543', 'code': 'null',
                                       'title': 'GCP Firewall rule allows all traffic on HTTP port (80)',
                                       'guideline': 'Refer the documentation for more details,\nhttps://docs.bridgecrew.io/docs/ensure-gcp-google-compute-firewall-ingress-does-not-allow-unrestricted-http-port-80-access',
@@ -657,13 +657,12 @@ class TestRunnerFilter(unittest.TestCase):
                                       'additionalPcPolicyIds': ['123456-873b-4a71-91a8-41a42e4c9314'],
                                       'sourceIncidentId': 'BC_GCP_NETWORKING_17', 'benchmarks': {},
                                       'frameworks': ['CloudFormation', 'Terraform'], 'provider': 'GCP'}]]}
-                                )
         instance.suppressed_policies = ['BC_GCP_NETWORKING_17']
         self.assertTrue(instance.should_run_check(check_id='CKV_GCP_106', bc_check_id='BC_GCP_NETWORKING_17'))
 
     def test_should_skip_suppressed_policy(self):
-        instance = RunnerFilter(include_all_checkov_policies=True,
-                                bc_cloned_checks={'BC_GCP_NETWORKING_17': [
+        instance = RunnerFilter(include_all_checkov_policies=True)
+        instance.bc_cloned_checks = {'BC_GCP_NETWORKING_17': [
                                     [{'id': '1234567_GCP_9876543', 'code': 'null',
                                       'title': 'GCP Firewall rule allows all traffic on HTTP port (80)',
                                       'guideline': 'Refer the documentation for more details,\nhttps://docs.bridgecrew.io/docs/ensure-gcp-google-compute-firewall-ingress-does-not-allow-unrestricted-http-port-80-access',
@@ -671,7 +670,7 @@ class TestRunnerFilter(unittest.TestCase):
                                       'category': 'Networking', 'pcPolicyId': '123456-873b-4a71-91a8-41a42e4c9314',
                                       'additionalPcPolicyIds': ['123456-873b-4a71-91a8-41a42e4c9314'],
                                       'sourceIncidentId': 'BC_GCP_NETWORKING_17', 'benchmarks': {},
-                                      'frameworks': ['CloudFormation', 'Terraform'], 'provider': 'GCP'}]]})
+                                      'frameworks': ['CloudFormation', 'Terraform'], 'provider': 'GCP'}]]}
         instance.suppressed_policies = ['BC_GCP_NETWORKING_18']
         self.assertFalse(instance.should_run_check(check_id='CKV_GCP_77', bc_check_id='BC_GCP_NETWORKING_18'))
 
