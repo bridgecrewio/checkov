@@ -218,7 +218,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         for check_id, check_suppressions in self.suppressions.items():
             for suppression in check_suppressions:
                 if suppression.get("suppressionType") == "Policy":
-                    policy_level_suppressions.append(check_id)
+                    policy_level_suppressions.append(suppression['policyId'])
                     break
         return policy_level_suppressions
 
