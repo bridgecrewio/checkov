@@ -5,6 +5,7 @@ from pytest_mock import MockerFixture
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
@@ -23,7 +24,7 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -65,7 +66,7 @@ def test_containers_resources(mocker: MockerFixture, image_cached_result):
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -110,7 +111,7 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, image_cache
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -155,7 +156,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -198,7 +199,7 @@ def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -240,7 +241,7 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when

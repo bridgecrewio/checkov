@@ -8,6 +8,8 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
+
 RESOURCES_PATH = Path(__file__).parent.parent / "resources"
 
 
@@ -24,7 +26,7 @@ def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)

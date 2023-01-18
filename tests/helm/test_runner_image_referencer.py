@@ -10,6 +10,7 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.helm.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async
 from tests.helm.utils import helm_exists
 
 RESOURCES_PATH = Path(__file__).parent / "runner/resources"
@@ -93,7 +94,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result, licens
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
-        return_value=[],
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
