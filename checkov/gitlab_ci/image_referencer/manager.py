@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from checkov.common.images.image_referencer_manager import WorkflowImageReferencerManager
+from checkov.common.images.workflow_image_referencer_manager import WorkflowImageReferencerManager
 from checkov.gitlab_ci.image_referencer.provider import GitlabCiProvider
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.circleci_pipelines.image_referencer.provider import CircleCIProvider
-from checkov.common.images.image_referencer_manager import WorkflowImageReferencerManager
+from checkov.common.images.workflow_image_referencer_manager import WorkflowImageReferencerManager
 
 
 class CircleCIImageReferencerManager(WorkflowImageReferencerManager):

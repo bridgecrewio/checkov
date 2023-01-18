@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
+from checkov.common.images.workflow_image_referencer_provider import WorkflowImageReferencerProvider
 
 from typing import Any, TYPE_CHECKING
 

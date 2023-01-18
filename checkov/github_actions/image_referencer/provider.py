@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
-from checkov.common.images.image_referencer_provider import WorkflowImageReferencerProvider
+from checkov.common.images.workflow_image_referencer_provider import WorkflowImageReferencerProvider
 from checkov.common.util.consts import START_LINE, END_LINE
 
 
