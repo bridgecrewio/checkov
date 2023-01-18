@@ -56,8 +56,8 @@ def image_cached_result() -> dict[str, Any]:
 
 @pytest.fixture()
 def license_statuses_result() -> dict[str, list[dict[str, str]]]:
-    return {'python:3.9-alpine':
-        [
+    return {
+        "python:3.9-alpine": [
             {
                 "package_name": "openssl",
                 "package_version": "1.1.1q-r0",
