@@ -8,12 +8,12 @@ from checkov.azure_pipelines.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
-from tests.common.image_referencer.test_utils import mock_get_license_statuses_async
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async, mock_get_image_cached_result_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 
-def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result):
+def test_azure_pipelines_workflow(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     file_name = "azure-pipelines.yaml"
     image_name = "redis:latest"
@@ -24,7 +24,7 @@ def test_azure_pipelines_workflow(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",

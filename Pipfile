@@ -35,7 +35,6 @@ flake8 = "*"
 dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
-asyncmock = "*"  # can be removed when we drop 3.7 support
 
 [packages]
 #

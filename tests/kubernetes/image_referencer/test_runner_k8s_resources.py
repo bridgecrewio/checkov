@@ -6,13 +6,16 @@ from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.kubernetes.runner import Runner
-from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
-    mock_get_license_statuses_async
+from tests.common.image_referencer.test_utils import (
+    mock_get_empty_license_statuses_async,
+    mock_get_license_statuses_async,
+    mock_get_image_cached_result_async,
+)
 
 RESOURCES_PATH = Path(__file__).parent / "resources/k8s"
 
 
-def test_pod_resources(mocker: MockerFixture, image_cached_result):
+def test_pod_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -25,7 +28,7 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -49,9 +52,9 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 3
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).musl",
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).openssl",
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).musl",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).openssl",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == "nginx:latest"
     assert (
@@ -59,17 +62,17 @@ def test_pod_resources(mocker: MockerFixture, image_cached_result):
         in sca_image_report.image_cached_results[0]["relatedResourceId"]
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
-        {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
+        {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
     ]
 
     assert len(sca_image_report.passed_checks) == 1
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 4
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_cron_job_resources(mocker: MockerFixture, image_cached_result):
+def test_cron_job_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -82,7 +85,7 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -106,15 +109,15 @@ def test_cron_job_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_daemon_set_resources(mocker: MockerFixture, image_cached_result):
+def test_daemon_set_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -127,7 +130,7 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -151,15 +154,15 @@ def test_daemon_set_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_deployment_resources(mocker: MockerFixture, image_cached_result):
+def test_deployment_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -172,7 +175,7 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -196,15 +199,15 @@ def test_deployment_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_deployment_config_resources(mocker: MockerFixture, image_cached_result):
+def test_deployment_config_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -217,7 +220,7 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result)
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -241,15 +244,15 @@ def test_deployment_config_resources(mocker: MockerFixture, image_cached_result)
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_job_resources(mocker: MockerFixture, image_cached_result):
+def test_job_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -262,7 +265,7 @@ def test_job_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -286,15 +289,15 @@ def test_job_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_pod_template_resources(mocker: MockerFixture, image_cached_result):
+def test_pod_template_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -307,7 +310,7 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -331,15 +334,15 @@ def test_pod_template_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_replica_set_resources(mocker: MockerFixture, image_cached_result):
+def test_replica_set_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -352,7 +355,7 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -376,15 +379,15 @@ def test_replica_set_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_replication_controller_resources(mocker: MockerFixture, image_cached_result):
+def test_replication_controller_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -399,7 +402,7 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -423,16 +426,16 @@ def test_replication_controller_resources(mocker: MockerFixture, image_cached_re
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_stateful_set_resources(mocker: MockerFixture, image_cached_result):
+def test_stateful_set_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -447,7 +450,7 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result):
 
     mocker.patch(
         "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
-        side_effect=image_cached_result,
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
         "checkov.common.images.image_referencer.get_license_statuses_async",
@@ -471,10 +474,10 @@ def test_stateful_set_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0

@@ -210,51 +210,51 @@ def image_cached_results_for_report() -> tuple:
 		{
 			'image_name': 'redis@sha256:54057dd7e125ca41afe526a877e8bd35ec2cdd33b9217e022ed37bdcf7d09673',
 			'related_resource_id': 'jobs(test-docker-hash-img).docker.image[1](redis@sha256:54057dd7e125ca41afe526a877e8bd35ec2cdd33b9217e022ed37bdcf7d09673)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'buildpack-deps:latest',
 			'related_resource_id': 'jobs(test-docker-latest-img).docker.image[1](buildpack-deps:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'mongo:2.6.8',
 			'related_resource_id': 'jobs(test-docker-versioned-img).docker.image[1](mongo:2.6.8)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'postgres:14.2',
 			'related_resource_id': 'jobs(test-docker-versioned-img).docker.image[2](postgres:14.2)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'cimg/python:latest',
 			'related_resource_id': 'jobs(test-echo).docker.image[1](cimg/python:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'cimg/python:latest',
 			'related_resource_id': 'jobs(test-inject).docker.image[1](cimg/python:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'cimg/python:latest',
 			'related_resource_id': 'jobs(test-inject2).docker.image[1](cimg/python:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'cimg/python:latest',
 			'related_resource_id': 'jobs(test-curl-secret).docker.image[1](cimg/python:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'cimg/python:latest',
 			'related_resource_id': 'jobs(test-inject-ci-vars).docker.image[1](cimg/python:latest)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		},
 		{
 			'image_name': 'mongo:2.6.8',
 			'related_resource_id': 'executors(image-executor).docker.image[1](mongo:2.6.8)',
-			'packages': [{'type': 'os', 'name': 'base-files', 'version': '11.1+deb11u3', 'licenses': ['GPL']}]
+			'packages': [{'type': 'os', 'name': 'tzdata', 'version': '2021a-1+deb11u5', 'licenses': []}]
 		}
 	)
