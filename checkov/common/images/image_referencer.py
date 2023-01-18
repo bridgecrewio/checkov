@@ -168,7 +168,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
         """
         async with aiohttp.ClientSession() as session:
             results: list[dict[str, Any]] = await asyncio.gather(*[
-                image_scanner.get_scan_results_from_cache_async(session, i) for i in image_names_to_query
+                image_scanner.get_scan_results_from_cache_async(session, f"image:{i}")
+                for i in image_names_to_query
             ])
         return results
 
