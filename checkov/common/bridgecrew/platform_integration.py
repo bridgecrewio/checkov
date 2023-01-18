@@ -428,7 +428,8 @@ class BcPlatformIntegration:
                           ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return None
 
-        s3_path = f'checkov/original_secrets/{uuid.uuid4()}.json'
+        base_path = self.repo_path.replace('checkov/', 'original_secrets/').replace('/src', '')
+        s3_path = f'{base_path}/{uuid.uuid4()}.json'
         _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         return s3_path
 
