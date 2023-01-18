@@ -215,7 +215,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def get_policy_level_suppressions(self) -> List[str]:
         policy_level_suppressions = []
-        for check_id, check_suppressions in self.suppressions.items():
+        for _, check_suppressions in self.suppressions.items():
             for suppression in check_suppressions:
                 if suppression.get("suppressionType") == "Policy":
                     policy_level_suppressions.append(suppression['policyId'])
