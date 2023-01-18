@@ -17,8 +17,7 @@ class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types")
 
     def __init__(self, graph_connector: DiGraph,
-                 supported_resource_types: dict[str, _ExtractImagesCallableAlias] |
-                                           Mapping[str, _ExtractImagesCallableAlias]):
+                 supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
         self.supported_resource_types = supported_resource_types
 
