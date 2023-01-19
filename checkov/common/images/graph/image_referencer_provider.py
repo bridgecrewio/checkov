@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, Any, Mapping
 
@@ -14,16 +15,25 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 
 
 class GraphImageReferencerProvider:
-    __slots__ = ("graph_connector", "supported_resource_types")
+    __slots__ = ("graph_connector", "supported_resource_types", "graph_framework")
 
+    # TODO add to graph_connector type fot igraph and implement the extract_nodes_igraph function
     def __init__(self, graph_connector: DiGraph,
-                 supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[str, _ExtractImagesCallableAlias]):
+                 supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[
+                     str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
         self.supported_resource_types = supported_resource_types
+        self.graph_framework = os.environ.get('CHECKOV_GRAPH_FRAMEWORK', 'NETWORKX')
 
     @abstractmethod
     def extract_images_from_resources(self) -> list[Image]:
         pass
+
+    def extract_nodes(self):  # type: ignore
+        if self.graph_framework == 'NETWORKX':
+            return self.extract_nodes_networkx()
+        elif self.graph_framework == 'IGRAPH':
+            return self.extract_nodes_igraph()  # type: ignore
 
     def extract_nodes_networkx(self) -> Graph:
         resource_nodes = [

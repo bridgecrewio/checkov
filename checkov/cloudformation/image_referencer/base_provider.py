@@ -14,7 +14,7 @@ class BaseCloudFormationProvider(GraphImageReferencerProvider):
     def extract_images_from_resources(self) -> list[Image]:
         images = []
 
-        supported_resources_graph = self.extract_nodes_networkx()
+        supported_resources_graph = self.extract_nodes()
 
         for _, resource in supported_resources_graph.nodes(data=True):
             image_names: list[str] = []

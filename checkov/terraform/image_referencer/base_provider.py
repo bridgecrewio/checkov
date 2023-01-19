@@ -16,7 +16,7 @@ class BaseTerraformProvider(GraphImageReferencerProvider):
 
     def extract_images_from_resources(self) -> list[Image]:
         images = []
-        supported_resources_graph = self.extract_nodes_networkx()
+        supported_resources_graph = self.extract_nodes()
         file_path_to_referred_id = setup_file_path_to_referred_id(self.graph_connector)
 
         for _, resource in supported_resources_graph.nodes(data=True):
