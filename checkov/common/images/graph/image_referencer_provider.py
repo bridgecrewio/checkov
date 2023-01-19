@@ -33,7 +33,7 @@ class GraphImageReferencerProvider:
         if self.graph_framework == 'NETWORKX':
             return self.extract_nodes_networkx()
         elif self.graph_framework == 'IGRAPH':
-            return self.extract_nodes_igraph()  # type: ignore
+            return self.extract_nodes_igraph()
 
     def extract_nodes_networkx(self) -> Graph:
         resource_nodes = [
