@@ -256,8 +256,10 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
       - uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b  # v2
-      - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325  # v2  # needed for self-hosted builds
-        platforms: linux/amd64,linux/arm64
+      - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18  # v2
+        with:
+          platforms: 'arm64,arm'
+      - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325  # v2
       - name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
         with:
@@ -283,6 +285,7 @@ jobs:
         uses: docker/build-push-action@37abcedcc1da61a57767b7588cb9d03eb57e28b3  # v3
         with:
           context: .
+          platforms: 'linux/amd64,linux/arm64'
           push: true
           tags: |
             ${{ env.DH_IMAGE_NAME }}:latest
