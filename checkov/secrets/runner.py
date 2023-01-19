@@ -357,7 +357,7 @@ class Runner(BaseRunner[None]):
 
                 if secrets_record.validation_status is None:
                     logging.debug(f'Failed to find verification status of {key}, setting by default to Unknown')
-                    secrets_record.validation_status = ValidationStatus.UNKNOWN.value
+                    secrets_record.validation_status = ValidationStatus.UNAVAILABLE.value
 
         return VerifySecretsResult.SUCCESS
 
