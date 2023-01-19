@@ -29,7 +29,7 @@ class GraphImageReferencerProvider:
     def extract_images_from_resources(self) -> list[Image]:
         pass
 
-    def extract_nodes(self):  # type: ignore
+    def extract_nodes(self) -> Graph:
         if self.graph_framework == 'NETWORKX':
             return self.extract_nodes_networkx()
         elif self.graph_framework == 'IGRAPH':
@@ -44,5 +44,5 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_igraph(self):  # type: ignore
+    def extract_nodes_igraph(self) -> Graph:  # type: ignore
         pass
