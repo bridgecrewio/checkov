@@ -151,3 +151,5 @@ def test_runner_verify_secrets(mock_bc_integration, mock_metadata_integration):
     for check in report.failed_checks:
         if check.file_path == rel_resource_path and check.resource == resource_id:
             assert check.validation_status == 'Valid'
+        else:
+            assert check.validation_status == 'Unavailable'
