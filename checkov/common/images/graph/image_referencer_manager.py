@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
+
+import igraph as igraph
 
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
@@ -11,7 +13,7 @@ if TYPE_CHECKING:
 class GraphImageReferencerManager:
     __slots__ = ("graph_connector",)
 
-    def __init__(self, graph_connector: DiGraph) -> None:
+    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph]) -> None:
         self.graph_connector = graph_connector
 
     @abstractmethod

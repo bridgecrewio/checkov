@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import os
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, Any, Mapping
+from typing import TYPE_CHECKING, Callable, Any, Mapping, Union
+
+import igraph as igraph
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
 if TYPE_CHECKING:
     from networkx import DiGraph, Graph
+    from igraph import Graph
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
@@ -18,7 +21,7 @@ class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types", "graph_framework")
 
     # TODO add to graph_connector type fot igraph and implement the extract_nodes_igraph function
-    def __init__(self, graph_connector: DiGraph,
+    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph],
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[
                      str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
