@@ -6,10 +6,9 @@ from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, _LibraryGraph
 
 
 class BaseRegistry:
@@ -21,7 +20,7 @@ class BaseRegistry:
         raise NotImplementedError
 
     def run_checks(
-        self, graph_connector: DiGraph, runner_filter: RunnerFilter, report_type: str
+        self, graph_connector: _LibraryGraph, runner_filter: RunnerFilter, report_type: str
     ) -> dict[BaseGraphCheck, list[_CheckResult]]:
 
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
@@ -34,7 +33,8 @@ class BaseRegistry:
         return check_results
 
     def run_check_parallel(
-        self, check: BaseGraphCheck, check_results: dict[BaseGraphCheck, list[_CheckResult]], graph_connector: DiGraph
+            self, check: BaseGraphCheck, check_results: dict[BaseGraphCheck, list[_CheckResult]],
+            graph_connector: _LibraryGraph
     ) -> None:
         logging.debug(f'Running graph check: {check.id}')
         passed, failed, unknown = check.run(graph_connector)

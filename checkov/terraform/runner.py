@@ -63,7 +63,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def __init__(
         self,
         parser: Parser | None = None,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: NetworkxConnector | IgraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
         source: str = "Terraform",
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
@@ -77,11 +77,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
-        db_connector=IgraphConnector()
-        # db_connector=NetworkxConnector()
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
             source=source,
-            db_connector=db_connector,
+            db_connector=db_connector or self.db_connector,
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}

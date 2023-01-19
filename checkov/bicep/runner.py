@@ -15,6 +15,7 @@ from checkov.bicep.image_referencer.manager import BicepImageReferencerManager
 from checkov.bicep.parser import Parser
 from checkov.bicep.utils import clean_file_path, get_scannable_file_paths
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -50,15 +51,14 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
 
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: NetworkxConnector | IgraphConnector | None = None,
         source: str = "Bicep",
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: BicepGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
-
         super().__init__(file_extensions=['.bicep'])
+        db_connector = db_connector or self.db_connector
         self.external_registries = external_registries if external_registries else []
         self.graph_class = graph_class
         self.graph_manager: BicepGraphManager = (

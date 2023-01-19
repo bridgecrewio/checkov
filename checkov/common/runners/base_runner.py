@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
 
@@ -41,6 +43,7 @@ def strtobool(val: str) -> int:
 
 
 CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
+CHECKOV_GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
@@ -61,6 +64,13 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
+        db_connector_class = None
+        if CHECKOV_GRAPH_FRAMEWORK == "IGRAPH":
+            db_connector_class = IgraphConnector
+        elif CHECKOV_GRAPH_FRAMEWORK == "NETWORKX":
+            db_connector_class = NetworkxConnector
+
+        self.db_connector = db_connector_class()
 
     @abstractmethod
     def run(

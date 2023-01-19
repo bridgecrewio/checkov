@@ -51,7 +51,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
         if source and graph_class:
             # if they are not all set, then ignore it
-            db_connector = db_connector or NetworkxConnector()
+            db_connector = db_connector or self.db_connector
             self.source = source
             self.graph_class = graph_class
             self.graph_manager = (

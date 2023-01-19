@@ -7,6 +7,7 @@ import platform
 from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
@@ -18,7 +19,7 @@ from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH, CHECKOV_GRAPH_FRAMEWORK
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -67,13 +68,13 @@ class Runner(TerraformRunner):
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
                  graph_manager: TerraformGraphManager | None = None,
-                 db_connector: NetworkxConnector | None = None,
+                 db_connector: NetworkxConnector | IgraphConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
                  source: str = "Terraform") -> None:
         super().__init__(
             graph_class=graph_class,
             graph_manager=graph_manager,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector,
             external_registries=external_registries,
             source=source,
         )
@@ -175,7 +176,7 @@ class Runner(TerraformRunner):
         return self.get_graph_checks_report(root_folder, runner_filter)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
-        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph_manager = TerraformGraphManager(db_connector=self.db_connector_class())
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
             self.repo_root_for_plan_enrichment,
             render_variables=True

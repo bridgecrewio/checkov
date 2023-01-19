@@ -49,9 +49,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         graph_class: type[DockerfileLocalGraph] = DockerfileLocalGraph,
         graph_manager: DockerfileGraphManager | None = None,
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__()
+        db_connector = db_connector or self.db_connector
         self.graph_class = graph_class
         self.graph_manager = (
             graph_manager if graph_manager else DockerfileGraphManager(source=source, db_connector=db_connector)

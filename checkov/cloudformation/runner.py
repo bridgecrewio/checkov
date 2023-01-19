@@ -45,9 +45,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
             graph_manager: CloudformationGraphManager | None = None,
             external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
-
         super().__init__(file_extensions=['.json', '.yml', '.yaml', '.template'])
+        db_connector = db_connector or self.db_connector
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager: CloudformationGraphManager = (

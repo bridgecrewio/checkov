@@ -58,9 +58,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         external_registries: list[BaseRegistry] | None = None,
         report_type: str = check_type
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__(file_extensions=K8_POSSIBLE_ENDINGS)
+        db_connector = db_connector or self.db_connector
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = \
