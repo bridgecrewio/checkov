@@ -19,7 +19,6 @@ from checkov.terraform.runner import Runner
 
 class TestYamlPolicies(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -314,11 +313,29 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3KMSEncryptedByDefault(self):
         self.go("S3KMSEncryptedByDefault")
 
+    def test_GCPNetworkDoesNotUseDefaultFirewall(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewall")
+
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_durationIsSetToON(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_durationIsSetToON")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF")
 
     def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
         self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")

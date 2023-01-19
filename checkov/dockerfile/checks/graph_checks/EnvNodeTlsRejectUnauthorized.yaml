@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_6"
+  name: "Ensure that certificate validation isn't disabled with the NODE_TLS_REJECT_UNAUTHORIZED environmnet variable"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(NODE_TLS_REJECT_UNAUTHORIZED(=|\\s+)((0)|('0')|(\"0\"))).*"
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(NODE_TLS_REJECT_UNAUTHORIZED=((0)|('0')|(\"0\"))) .*"
