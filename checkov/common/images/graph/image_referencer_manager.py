@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from networkx import DiGraph
-    import igraph
+    from igraph import Graph
 
 
 class GraphImageReferencerManager:
     __slots__ = ("graph_connector",)
 
-    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph]) -> None:
+    def __init__(self, graph_connector: Union[Graph, DiGraph]) -> None:
         self.graph_connector = graph_connector
 
     @abstractmethod
