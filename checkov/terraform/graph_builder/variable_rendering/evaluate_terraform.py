@@ -1,16 +1,13 @@
 import logging
 import os
 import re
-from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
+from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
-
-# condition ? true_val : false_val -> (condition, true_val, false_val)
-CONDITIONAL_EXPR = re.compile(r"([^\?]+)\?([^:]+)\:([^:]+)")
 
 # %{ some_text }
 DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
@@ -127,20 +124,20 @@ def evaluate_conditional_expression(input_str: str) -> str:
     if variable_ref:
         input_str = variable_ref.groups()[0]
 
-    condition = re.match(CONDITIONAL_EXPR, input_str)
+    condition = find_conditional_expression_groups(input_str)
     while condition:
-        groups = condition.groups()
+        groups, start, end = condition
         if len(groups) != 3:
             return input_str
         evaluated_condition = evaluate_terraform(groups[0])
-        condition_substr = input_str[condition.start() : condition.end()]
+        condition_substr = input_str[start:end]
         if convert_to_bool(evaluated_condition):
             true_val = str(evaluate_terraform(groups[1])).strip()
             input_str = input_str.replace(condition_substr, true_val)
         else:
             false_val = str(evaluate_terraform(groups[2])).strip()
             input_str = input_str.replace(condition_substr, false_val)
-        condition = re.match(CONDITIONAL_EXPR, input_str)
+        condition = find_conditional_expression_groups(input_str)
 
     return input_str
 
@@ -326,11 +323,14 @@ def find_brackets_pairs(input_str: str, starting: str, closing: str) -> List[Dic
     return all_brackets
 
 
-def find_conditional_expression_groups(input_str: str) -> List[str]:
+def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[str], int, int]]:
+    """
+    from condition ? true_val : false_val return [condition, true_val, false_val]
+    """
     if '?' not in input_str or ':' not in input_str:
-        return []
+        return
     if input_str.index('?') > input_str.rindex(':'):
-        return []
+        return
     brackets_pairs = {
         '[': ']',
         '{': '}',
@@ -340,31 +340,56 @@ def find_conditional_expression_groups(input_str: str) -> List[str]:
 
     stack = []
     groups = []
+    end_stack = []
 
-    def _find_separator_index(separator: str, input_str: str, start: int) -> Optional[int]:
+    def _update_stack_if_needed(char, i):
+        # can be true only if the char in str_keys or in brackets_pairs.values()
+        if stack and stack[-1][0] == char:
+            stack.pop(len(stack) - 1)
+        elif char in brackets_pairs:
+            stack.append((brackets_pairs[char], i))
+        elif char in str_keys:
+            stack.append((char, i))
+
+    def _find_separator_index(separator: str, input_str: str, start: int, update_end_stack: bool = False) -> Optional[int]:
         for i in range(start, len(input_str)):
             char = input_str[i]
-            if char == separator and not stack:
-                return i
-            # can be true only if the char in str_keys or in brackets_pairs.values()
-            if stack and stack[-1] == char:
-                stack.pop(len(stack) - 1)
-            elif char in brackets_pairs:
-                stack.append(brackets_pairs[char])
-            elif char in str_keys:
-                stack.append(char)
+            if char == separator:
+                if not stack or stack in end_stack:
+                    return i
+                if update_end_stack:
+                    end_stack.extend(stack)
+                    return i
+            _update_stack_if_needed(char, i)
 
     # find first group
-    first_separator = _find_separator_index('?', input_str, 0)
+    first_separator = _find_separator_index('?', input_str, 0, update_end_stack=True)
     if first_separator is None:
-        return []
-    groups.append(input_str[:first_separator])
+        return
+    start = 0 if not stack else stack[-1][1]
+    groups.append(input_str[start:first_separator])
 
     # find second group
     second_separator = _find_separator_index(':', input_str, first_separator)
     if first_separator is None:
-        return []
+        return
     groups.append(input_str[first_separator + 1:second_separator])
 
-    groups.append(input_str[second_separator + 1:])
-    return groups
+    if not stack:
+        return groups, 0, len(input_str) - 1
+
+    start = stack[-1][1]
+    end = len(input_str) - 1
+    for i in range(second_separator + 1, len(input_str)):
+        char = input_str[i]
+        _update_stack_if_needed(char, i)
+        if not stack:
+            end = i
+            break
+        if len(stack) + 1 == end_stack:
+            end = i - 1
+            break
+
+    groups.append(input_str[second_separator + 1:end])
+
+    return groups, start, end
