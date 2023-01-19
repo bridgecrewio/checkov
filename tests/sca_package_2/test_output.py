@@ -18,6 +18,7 @@ from tests.sca_package_2.conftest import get_vulnerabilities_details_package_jso
     get_vulnerabilities_details_no_deps
 
 
+
 def test_create_report_cve_record():
     # given
     rootless_file_path = "requirements.txt"
@@ -686,6 +687,7 @@ def test_create_cli_table_for_sca_package_with_dependencies():
     ]
 
     cli_output = create_cli_output(True, cves_records)
+    print(cli_output)
     # then
     assert cli_output == "".join([
         "\t/package-lock.json - CVEs Summary:\n",
@@ -702,11 +704,11 @@ def test_create_cli_table_for_sca_package_with_dependencies():
         '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ low                  │ 0.2.0                │                      │                      │\n',
         '\t│ component            │                      │                      │                      │                      │                      │\n',
         '\t│ ├─ glob-parent       │ CVE-2020-28469       │ high                 │ 3.1.0                │                      │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 1.2.5                │                      │                      │\n',
         '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 0.0.10               │                      │                      │\n',
         '\t│ │                    │ CVE-2020-7598        │ medium               │                      │                      │                      │\n',
-        '\t│ ├─ nconf             │ CVE-2022-21803       │ high                 │ 0.6.9                │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 1.2.5                │                      │                      │\n',
         '\t│ ├─ nconf             │ CVE-2022-21803       │ high                 │ 0.10.0               │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ high                 │ 0.6.9                │                      │                      │\n',
         '\t│ └─ unset-value       │ PRISMA-2022-0049     │ high                 │ 1.0.0                │                      │                      │\n',
         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
         '\t│ grunt                │ CVE-2022-1537        │ high                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │\n',
