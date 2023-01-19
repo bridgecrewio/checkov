@@ -82,6 +82,7 @@ pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sy
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 schema = "*"
 requests = ">=2.26.0"
+yarl = "*"
 
 [requires]
 python_version = "3.7"

@@ -357,7 +357,7 @@ class Runner(BaseRunner[None]):
 
                 if secrets_record.validation_status is None:
                     logging.debug(f'Failed to find verification status of {key}, setting by default to Unknown')
-                    secrets_record.validation_status = ValidationStatus.UNKNOWN.value
+                    secrets_record.validation_status = ValidationStatus.UNAVAILABLE.value
 
         return VerifySecretsResult.SUCCESS
 
@@ -380,7 +380,11 @@ class Runner(BaseRunner[None]):
         for policy in policies_list:
             if policy.get('isCustom', False):
                 check_id = policy['incidentId']
-                metadata_integration.check_metadata[check_id] = {'id': check_id}
+                guideline = policy.get('guideline', '')
+                severity = policy.get('severity', '')
+                metadata_integration.check_metadata[check_id] = {'id': check_id,
+                                                                 'guideline': guideline,
+                                                                 'severity': severity}
 
     @staticmethod
     def _modify_invalid_secrets_check_result_to_skipped(report: Report) -> None:

@@ -1,6 +1,29 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.271...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.278...HEAD)
+
+## [2.2.278](https://github.com/bridgecrewio/checkov/compare/2.2.274...2.2.278) - 2023-01-18
+
+### Feature
+
+- **azure:** Add image referencer in azure pipelines - [#4234](https://github.com/bridgecrewio/checkov/pull/4234)
+- **gha:** fix yaml parsing of multi files - [#4270](https://github.com/bridgecrewio/checkov/pull/4270)
+- **secrets:** fix to keyword combinator to reduce FPs - [#4260](https://github.com/bridgecrewio/checkov/pull/4260)
+
+### Bug Fix
+
+- **secrets:** add guideline and severity to custom secret check metadata - [#4276](https://github.com/bridgecrewio/checkov/pull/4276)
+
+## [2.2.274](https://github.com/bridgecrewio/checkov/compare/2.2.271...2.2.274) - 2023-01-17
+
+### Feature
+
+- **gha:** fix failing image retrieval in GHA IR - [#4268](https://github.com/bridgecrewio/checkov/pull/4268)
+
+### Bug Fix
+
+- **cloudformation:** fix CloudFormation checks related to number values - [#4243](https://github.com/bridgecrewio/checkov/pull/4243)
+- **general:** Add normalization to change the name of nuget to dotNet lang - [#4271](https://github.com/bridgecrewio/checkov/pull/4271)
 
 ## [2.2.271](https://github.com/bridgecrewio/checkov/compare/2.2.264...2.2.271) - 2023-01-16
 
