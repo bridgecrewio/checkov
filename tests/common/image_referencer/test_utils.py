@@ -1,13 +1,51 @@
 from __future__ import annotations
 
-from typing import Any
+import asyncio
+import sys
 
-import pytest
+
+def mock_get_empty_license_statuses_async(session, packages, image_name: str):
+    result = {'image_name': image_name, 'licenses': []}
+
+    if sys.version_info < (3, 8):
+        future = asyncio.Future()
+        future.set_result(result)
+        return future
+
+    return result
 
 
-@pytest.fixture()
-def image_cached_result() -> dict[str, Any]:
-    return {
+def mock_get_license_statuses_async(session, packages, image_name: str) -> dict[str, str | list[dict[str, str]]]:
+    result = {
+        "image_name": image_name,
+        "licenses": [
+            {
+                "package_name": "openssl",
+                "package_version": "1.1.1q-r0",
+                "policy": "BC_LIC_1",
+                "license": "OpenSSL",
+                "status": "OPEN",
+            },
+            {
+                "package_name": "musl",
+                "package_version": "1.2.3-r0",
+                "policy": "BC_LIC_1",
+                "license": "MIT",
+                "status": "COMPLIANT",
+            },
+        ]
+    }
+
+    if sys.version_info < (3, 8):
+        future = asyncio.Future()
+        future.set_result(result)
+        return future
+
+    return result
+
+
+def mock_get_image_cached_result_async(session, image_id: str):
+    result = {
         "results": [
             {
                 "id": "sha256:2460522297a148c1bcb477b126451ed44cca05c916694367313be1a91c69f793",
@@ -126,22 +164,9 @@ def image_cached_result() -> dict[str, Any]:
         ]
     }
 
+    if sys.version_info < (3, 8):
+        future = asyncio.Future()
+        future.set_result(result)
+        return future
 
-@pytest.fixture()
-def license_statuses_result() -> list[dict[str, str]]:
-    return [
-        {
-            "package_name": "openssl",
-            "package_version": "1.1.1q-r0",
-            "policy": "BC_LIC_1",
-            "license": "OpenSSL",
-            "status": "OPEN",
-        },
-        {
-            "package_name": "musl",
-            "package_version": "1.2.3-r0",
-            "policy": "BC_LIC_1",
-            "license": "MIT",
-            "status": "COMPLIANT",
-        },
-    ]
+    return result
