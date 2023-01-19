@@ -53,16 +53,14 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(
-        self, f: str, file_content: str | None = None
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(self, f: str, file_content: str | None = None) -> \
+            tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if is_workflow_file(f):
             entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = super()._parse_file(f)
             if not file_content:
                 with open(f, 'r') as f_obj:
                     file_content = f_obj.read()
-            if entity_schema and \
-                    is_schema_valid(yaml.load(file_content, Loader=loader.SafeLineLoaderGhaSchema)):  # nosec
+            if entity_schema and all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
         return None
 

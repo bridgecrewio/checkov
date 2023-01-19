@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
 
+from checkov.secrets.consts import ValidationStatus
+
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -51,6 +53,9 @@ class RunnerFilter(object):
 
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
+
+        self.skip_invalid_secrets = skip_checks and any(skip_check.capitalize() == ValidationStatus.INVALID.value
+                                                        for skip_check in skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
         self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
@@ -261,6 +266,10 @@ class RunnerFilter(object):
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
         return above_min and not below_max
+
+    @staticmethod
+    def secret_validation_status_matches(secret_validation_status: str, statuses_list: list[str]) -> bool:
+        return secret_validation_status in statuses_list
 
     @staticmethod
     def notify_external_check(check_id: str) -> None:
