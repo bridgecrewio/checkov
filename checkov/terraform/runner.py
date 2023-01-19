@@ -555,7 +555,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             return
 
         for definition in resolved_paths:
-            for block_type, block_configs in definition_context[definition].items():
+            for block_type, block_configs in definition_context.get(definition, {}).items():
                 # skip if type is not a Terraform resource
                 if block_type not in CHECK_BLOCK_TYPES:
                     continue
