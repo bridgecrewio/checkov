@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.images.image_referencer import Image
-from checkov.common.images.workflow_image_referencer_provider import WorkflowImageReferencerProvider
+from checkov.common.images.workflow.image_referencer_provider import WorkflowImageReferencerProvider
 from checkov.gitlab_ci.common.resource_id_utils import generate_resource_key_recursive
 
 
