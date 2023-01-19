@@ -10,8 +10,8 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
 if TYPE_CHECKING:
-    from networkx import DiGraph, Graph
-    from igraph import Graph
+    import networkx
+    import igraph
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
@@ -21,7 +21,7 @@ class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types", "graph_framework")
 
     # TODO add to graph_connector type fot igraph and implement the extract_nodes_igraph function
-    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph],
+    def __init__(self, graph_connector: Union[igraph.Graph, networkx.DiGraph],
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[
                      str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
@@ -32,13 +32,13 @@ class GraphImageReferencerProvider:
     def extract_images_from_resources(self) -> list[Image]:
         pass
 
-    def extract_nodes(self) -> Graph:
+    def extract_nodes(self) -> networkx.Graph | igraph.Graph:
         if self.graph_framework == 'NETWORKX':
             return self.extract_nodes_networkx()
         elif self.graph_framework == 'IGRAPH':
             return self.extract_nodes_igraph()
 
-    def extract_nodes_networkx(self) -> Graph:
+    def extract_nodes_networkx(self) -> networkx.Graph:
         resource_nodes = [
             node
             for node, resource_type in self.graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
@@ -47,5 +47,5 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_igraph(self) -> Graph:
+    def extract_nodes_igraph(self) -> igraph.Graph:
         pass
