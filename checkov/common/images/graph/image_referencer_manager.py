@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Union
 
-import igraph as igraph
+import igraph
 
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
