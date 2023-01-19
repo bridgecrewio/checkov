@@ -183,6 +183,6 @@ class BaseAttributeSolver(BaseSolver):
             try:
                 value_to_check = json.loads(value_to_check)
                 return value_to_check
-            except Exception:
-                pass
+            except Exception as e:
+                logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
