@@ -9,15 +9,15 @@ resource "azurerm_app_service" "fail" {
     scm_type                 = "LocalGit"
   }
 
-logs {
-   application_logs {
-       azure_blob_storage {
-       level = "warning"
-       sas_url = "www.example.com"
-       retention_in_days = 4
+  logs {
+    application_logs {
+      azure_blob_storage {
+        level             = "warning"
+        sas_url           = "www.example.com"
+        retention_in_days = 4
+      }
     }
-}
-}
+  }
 
   app_settings = {
     "SOME_KEY" = "some-value"
@@ -46,15 +46,15 @@ resource "azurerm_app_service" "fail2" {
   }
 
   logs {
-   application_logs {
-       azure_blob_storage {
-       level = "warning"
-       sas_url = "www.example.com"
-       retention_in_days = 4
+    application_logs {
+      azure_blob_storage {
+        level             = "warning"
+        sas_url           = "www.example.com"
+        retention_in_days = 4
+      }
     }
-}
-detailed_error_messages_enabled = false
-}
+    detailed_error_messages_enabled = false
+  }
 
   connection_string {
     name  = "Database"
@@ -93,8 +93,8 @@ resource "azurerm_app_service" "pass2" {
 
   logs {
     http_logs {
-        retention_in_days = 4
-        retention_in_mb = 10
+      retention_in_days = 4
+      retention_in_mb   = 10
     }
     detailed_error_messages_enabled = true
   }

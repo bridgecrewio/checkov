@@ -1,0 +1,2 @@
+FROM alpine:3.5
+RUN curl -Lkv https://example.com

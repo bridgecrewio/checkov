@@ -11,6 +11,7 @@ from collections import defaultdict
 from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
@@ -123,7 +124,11 @@ class BaseCheckRegistry:
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check, report_type=report_type or self.report_type):
+            if runner_filter.should_run_check(
+                    check,
+                    report_type=report_type or self.report_type,
+                    file_origin_paths=[scanned_file]
+            ):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results
@@ -138,14 +143,23 @@ class BaseCheckRegistry:
         skip_info: _SkippedCheck,
     ) -> _CheckResult:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
-        result = check.run(
-            scanned_file=scanned_file,
-            entity_configuration=entity_configuration,
-            entity_name=entity_name,
-            entity_type=entity_type,
-            skip_info=skip_info,
-        )
-        return result
+        try:
+            result = check.run(
+                scanned_file=scanned_file,
+                entity_configuration=entity_configuration,
+                entity_name=entity_name,
+                entity_type=entity_type,
+                skip_info=skip_info,
+            )
+            return result
+        except Exception:
+            logging.error(f'Failed to run check {check.id} on {scanned_file}:{entity_type}.{entity_name}',
+                          exc_info=True)
+            logging.info(f'Entity configuration: {entity_configuration}')
+            return _CheckResult(
+                result=CheckResult.UNKNOWN, suppress_comment="", evaluated_keys=[],
+                results_configuration=entity_configuration, check=check, entity=entity_configuration
+            )
 
     @staticmethod
     def _directory_has_init_py(directory: str) -> bool:

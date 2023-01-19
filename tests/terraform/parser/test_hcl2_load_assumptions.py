@@ -313,10 +313,7 @@ class TestHCL2LoadAssumptions(unittest.TestCase):
     def test_weird_ternary_string_clipping(self):
         tf = 'bool_string_false = "false" ? "wrong" : "correct"'
         expect = {
-            "bool_string_false": ["false\" ? \"wrong\" : \"correct"]
-            #                     --                             --
-            #                      |                             |
-            #                      missing quotes on outer tokens :-(
+            "bool_string_false": ['${"false" ? "wrong" : "correct"}']
         }
         self.go(tf, expect)
 

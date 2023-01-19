@@ -5,18 +5,21 @@ import logging
 import os
 import re
 from collections.abc import Sequence
+from collections import defaultdict
 from copy import deepcopy
 from json import dumps, loads
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, Type, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, TYPE_CHECKING
+import itertools
 
 import deep_merge
 import hcl2
 from lark import Tree
 
-from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
+from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -26,7 +29,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, get_tf_definition_key_from_module_dependency, \
+    get_module_from_full_path, get_abs_path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -41,13 +45,15 @@ ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 
 
-def _filter_ignored_paths(root, paths, excluded_paths):
+def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
     filter_ignored_paths(root, paths, excluded_paths)
-    [paths.remove(path) for path in list(paths) if path in [default_ml_registry.external_modules_folder_name]]
+    for path in force_list(paths):
+        if path == default_ml_registry.external_modules_folder_name:
+            paths.remove(path)
 
 
 class Parser:
-    def __init__(self, module_class: Type[Module] = Module):
+    def __init__(self, module_class: type[Module] = Module) -> None:
         self.module_class = module_class
         self._parsed_directories: set[str] = set()
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
@@ -58,6 +64,7 @@ class Parser:
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
         self._loaded_modules: Set[Tuple[str, int, str]] = set()
         self.external_variables_data = []
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -86,6 +93,9 @@ class Parser:
         if self.env_vars is None:
             self.env_vars = dict(os.environ)
         self.excluded_paths = excluded_paths
+        self.visited_definition_keys = set()
+        self.module_to_resolved = {}
+        self.keys_to_remove = set()
 
     def _check_process_dir(self, directory: str) -> bool:
         if directory not in self._parsed_directories:
@@ -112,6 +122,8 @@ class Parser:
         default_ml_registry.module_content_cache = external_modules_content_cache if external_modules_content_cache else {}
         load_tf_modules(directory)
         self._parse_directory(dir_filter=lambda d: self._check_process_dir(d), vars_files=vars_files)
+        if self.enable_nested_modules:
+            self._update_resolved_modules()
 
     def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
         if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
@@ -177,7 +189,8 @@ class Parser:
                            specified_vars: Optional[Mapping[str, str]] = None,
                            vars_files: Optional[List[str]] = None,
                            root_dir: Optional[str] = None,
-                           excluded_paths: Optional[List[str]] = None):
+                           excluded_paths: Optional[List[str]] = None,
+                           nested_modules_data=None):
         """
     See `parse_directory` docs.
         :param directory:                  Directory in which .tf and .tfvars files will be loaded.
@@ -203,7 +216,7 @@ class Parser:
 
         dir_contents = list(os.scandir(directory))
         if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
-            filter_ignored_paths(root_dir, dir_contents, excluded_paths)
+            filter_ignored_paths(directory, dir_contents, excluded_paths)
 
         tf_files_to_load = []
         for file in dir_contents:
@@ -311,8 +324,12 @@ class Parser:
             logging.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
+            # Add directory to self._parsed_directories to avoid loading it as sub dir
+            if self.enable_nested_modules:
+                dir_filter(directory)
             has_more_modules = self._load_modules(directory, module_loader_registry, dir_filter,
-                                                  keys_referenced_as_modules, force_final_module_load)
+                                                  keys_referenced_as_modules, force_final_module_load,
+                                                  nested_modules_data=nested_modules_data)
 
             # Stage 4b: Variable resolution round 2 - now with (possibly more) modules
             made_var_changes = False
@@ -352,7 +369,8 @@ class Parser:
 
     def _load_modules(self, root_dir: str, module_loader_registry: ModuleLoaderRegistry,
                       dir_filter: Callable[[str], bool],
-                      keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False) -> bool:
+                      keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False,
+                      nested_modules_data=None) -> bool:
         """
         Load modules which have not already been loaded and can be loaded (don't have unresolved parameters).
 
@@ -382,7 +400,6 @@ class Parser:
                 continue
 
             for module_index, module_call in enumerate(module_calls):
-
                 if not isinstance(module_call, dict):
                     continue
 
@@ -391,9 +408,19 @@ class Parser:
                     if not isinstance(module_call_data, dict):
                         continue
 
+                    if self.enable_nested_modules:
+                        file_key = self.get_file_key_with_nested_data(file, nested_modules_data)
+                        current_nested_data = (file_key, module_index, module_call_name)
+
+                        resolved_loc_list = []
+                        if current_nested_data in self.module_to_resolved:
+                            resolved_loc_list = self.module_to_resolved[current_nested_data]
+                        self.module_to_resolved[current_nested_data] = resolved_loc_list
+
                     module_address = (file, module_index, module_call_name)
-                    if module_address in self._loaded_modules:
-                        continue
+                    if not self.enable_nested_modules:
+                        if module_address in self._loaded_modules:
+                            continue
 
                     # Variables being passed to module, "source" and "version" are reserved
                     specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
@@ -432,14 +459,20 @@ class Parser:
                             logging.info(f'Got no content for {source}:{version}')
                             continue
 
+                        new_nested_modules_data = {'module_index': module_index, 'file': file,
+                                                   'nested_modules_data': nested_modules_data}
+
                         self._internal_dir_load(directory=content.path(),
                                                 module_loader_registry=module_loader_registry,
                                                 dir_filter=dir_filter, specified_vars=specified_vars,
-                                                keys_referenced_as_modules=keys_referenced_as_modules)
+                                                keys_referenced_as_modules=keys_referenced_as_modules,
+                                                nested_modules_data=new_nested_modules_data)
 
-                        module_definitions = {path: self.out_definitions[path] for path in
-                                              list(self.out_definitions.keys()) if
-                                              self.get_dirname(path) == content.path()}
+                        module_definitions = {
+                            path: definition
+                            for path, definition in self.out_definitions.items()
+                            if self.get_dirname(path) == content.path()
+                        }
 
                         if not module_definitions:
                             continue
@@ -457,22 +490,35 @@ class Parser:
                         #       list pointing to the location of the module data that was resolved. For example:
                         #         "__resolved__": ["/the/path/module/my_module.tf[/the/path/main.tf#0]"]
 
-                        resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
-                        if resolved_loc_list is None:
-                            resolved_loc_list = []
-                            module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
+                        if not self.enable_nested_modules:
+                            resolved_loc_list = module_call_data.get(RESOLVED_MODULE_ENTRY_NAME)
+                            if resolved_loc_list is None:
+                                resolved_loc_list = []
+                                module_call_data[RESOLVED_MODULE_ENTRY_NAME] = resolved_loc_list
 
                         # NOTE: Modules can load other modules, so only append referrer information where it
                         #       has not already been added.
+
                         keys = list(module_definitions.keys())
                         for key in keys:
                             if key.endswith("]") or file.endswith("]"):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = f"{key}[{file}#{module_index}]"
+                            if self.enable_nested_modules:
+                                new_key = self.get_new_nested_module_key(key, file, module_index, nested_modules_data)
+                                if new_key in self.visited_definition_keys:
+                                    del module_definitions[key]
+                                    del self.out_definitions[key]
+                                    continue
+                            else:
+                                new_key = get_tf_definition_key_from_module_dependency(key, file, module_index)
                             module_definitions[new_key] = module_definitions[key]
                             del module_definitions[key]
                             del self.out_definitions[key]
+                            self.keys_to_remove.add(key)
+
+                            if self.enable_nested_modules:
+                                self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
                                 resolved_loc_list.append(new_key)
                             if (file, module_call_name) not in self.module_address_map:
@@ -522,13 +568,39 @@ class Parser:
 
         return module, tf_definitions
 
+    def _remove_unused_path_recursive(self, path):
+        self.out_definitions.pop(path, None)
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if path == file_key:
+                for resolved_path in self.module_to_resolved[key]:
+                    self._remove_unused_path_recursive(resolved_path)
+                self.module_to_resolved.pop(key, None)
+
+    def _update_resolved_modules(self):
+        for key in list(self.module_to_resolved.keys()):
+            file_key, module_index, module_name = key
+            if file_key in self.keys_to_remove:
+                for path in self.module_to_resolved[key]:
+                    self._remove_unused_path_recursive(path)
+                self.module_to_resolved.pop(key, None)
+
+        for key, resolved_list in self.module_to_resolved.items():
+            file_key, module_index, module_name = key
+            if file_key not in self.out_definitions:
+                continue
+            self.out_definitions[file_key]['module'][module_index][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+
     def parse_hcl_module_from_tf_definitions(
         self,
         tf_definitions: Dict[str, Dict[str, Any]],
         source_dir: str,
         source: str,
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
-        module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
+        if self.enable_nested_modules:
+            module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map_support_nested_modules(tf_definitions)
+        else:
+            module_dependency_map, tf_definitions, dep_index_mapping = self.get_module_dependency_map(tf_definitions)
         module = self.get_new_module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
@@ -576,6 +648,23 @@ class Parser:
             elif isinstance(values, Tree):
                 sorted_conf[attribute] = str(values)
         return sorted_conf
+
+    def get_file_key_with_nested_data(self, file, nested_data):
+        if not nested_data:
+            return file
+        nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
+        nested_module_index = nested_data.get('module_index')
+        return get_tf_definition_key_from_module_dependency(file, nested_str, nested_module_index)
+
+    def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
+        if not nested_data:
+            return get_tf_definition_key_from_module_dependency(key, file, module_index)
+        visited_key_to_add = get_tf_definition_key_from_module_dependency(key, file, module_index)
+        self.visited_definition_keys.add(visited_key_to_add)
+        nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
+                                                    nested_data.get('module_index'),
+                                                    nested_data.get('nested_modules_data'))
+        return get_tf_definition_key_from_module_dependency(key, f"{file}{nested_key}", module_index)
 
     @staticmethod
     def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
@@ -641,6 +730,37 @@ class Parser:
             next_level.remove(k)
             unevaluated.append(k)
         return next_level, unevaluated
+
+    @staticmethod
+    def get_nested_modules_data_as_list(file_path):
+        path = get_abs_path(file_path)
+        modules_list = []
+
+        while is_nested(file_path):
+            module, index = get_module_from_full_path(file_path)
+            modules_list.append((module, index))
+            file_path = module
+        modules_list.reverse()
+        return modules_list, path
+
+    @staticmethod
+    def get_module_dependency_map_support_nested_modules(tf_definitions):
+        module_dependency_map = defaultdict(list)
+        dep_index_mapping = defaultdict(list)
+        for tf_definition_key in tf_definitions.keys():
+            if not is_nested(tf_definition_key):
+                dir_name = os.path.dirname(tf_definition_key)
+                module_dependency_map[dir_name].append([])
+                continue
+            modules_list, path = Parser.get_nested_modules_data_as_list(tf_definition_key)
+            dir_name = os.path.dirname(path)
+            module_dependency_map[dir_name].append([m for m, i in modules_list])
+            dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
+
+        for key, dir_list in module_dependency_map.items():
+            dir_list.sort()
+            module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
+        return module_dependency_map, tf_definitions, dep_index_mapping
 
     @staticmethod
     def get_module_dependency_map(tf_definitions):

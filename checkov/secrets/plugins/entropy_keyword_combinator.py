@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
-ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3.2
 ENTROPY_KEYWORD_LIMIT = 4.5
 
 
@@ -202,13 +202,13 @@ class EntropyKeywordCombinator(BasePlugin):
             return set()
 
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
+        keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
         if is_iac:
             filetype = determine_file_type(filename)
             single_line_parser = SINGLE_LINE_PARSER.get(filetype)
             multiline_parsers = MULTILINE_PARSERS.get(filetype)
 
             # classic key-value pair
-            keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
             if keyword_on_key:
                 if single_line_parser:
                     return single_line_parser.detect_secret(
@@ -220,13 +220,24 @@ class EntropyKeywordCombinator(BasePlugin):
                         kwargs=kwargs
                     )
                 else:
-                    return self.detect_secret(
+                    # preprocess line before detecting secrets - add quotes on potential secrets to allow triggering
+                    # entropy detector
+                    for pt in keyword_on_key:
+                        if pt.secret_value:
+                            quoted_secret = f"\"{pt.secret_value}\""
+                            if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
+                                line = line.replace(pt.secret_value, f"\"{pt.secret_value}\"", 1)
+                    detected_secrets = self.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
                         line=line,
                         line_number=line_number,
                         kwargs=kwargs
                     )
+                    # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
+                    # on their value only
+                    self.remove_fp_secrets_in_keys(detected_secrets, line)
+                    return detected_secrets
 
             # not so classic key-value pair, from multiline, that is only in an array format.
             # The scan searches forwards and backwards for a potential secret pair, so no duplicates expected.
@@ -254,7 +265,8 @@ class EntropyKeywordCombinator(BasePlugin):
                         return potential_secrets
         else:
             return self.detect_secret(
-                scanners=self.high_entropy_scanners,
+                # If we found a keyword (i.e. db_pass = ), lower the threshold to the iac threshold
+                scanners=self.high_entropy_scanners if not keyword_on_key else self.high_entropy_scanners_iac,
                 filename=filename,
                 line=line,
                 line_number=line_number,
@@ -262,6 +274,14 @@ class EntropyKeywordCombinator(BasePlugin):
             )
 
         return set()
+
+    def remove_fp_secrets_in_keys(self, detected_secrets: set[PotentialSecret], line: str) -> None:
+        for detected_secret in detected_secrets:
+            if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
+                    detected_secret.secret_value):
+                # Found keyword prefix as potential secret
+                detected_secrets.remove(detected_secret)
+                break
 
     def analyze_multiline(
             self,

@@ -19,12 +19,23 @@ from checkov.terraform.runner import Runner
 
 class TestYamlPolicies(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_AccessControlGroupRuleDefine(self):
+        self.go("AccessControlGroupRuleDefine")
+
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
+
+    def test_VPCPeeringRouteTableOverlyPermissive(self):
+        self.go("VPCPeeringRouteTableOverlyPermissive")
+
+    def test_S3NotAllowAccessToAllAuthenticatedUsers(self):
+        self.go("S3NotAllowAccessToAllAuthenticatedUsers")
+
+    def test_CloudFrontHasCustomSSLCertificate(self):
+        self.go("CloudFrontHasCustomSSLCertificate")            
 
     def test_CodecommitApprovalRulesAttached(self):
         self.go("CodecommitApprovalRulesAttached")
@@ -34,6 +45,21 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_VPCHasFlowLog(self):
         self.go("VPCHasFlowLog")
+
+    def test_APIGatewayEndpointsUsesCertificateForAuthentication(self):
+        self.go("APIGatewayEndpointsUsesCertificateForAuthentication")
+
+    def test_APIGatewayRequestParameterValidationEnabled(self):
+        self.go("APIGatewayRequestParameterValidationEnabled")        
+
+    def test_CloudFrontUsesSecureProtocolsForHTTPS(self):
+        self.go("CloudFrontUsesSecureProtocolsForHTTPS")
+
+    def test_EMRClusterHasSecurityConfiguration(self):
+        self.go("EMRClusterHasSecurityConfiguration")
+
+    def test_OpenSearchDomainHasFineGrainedControl(self):
+        self.go("OpenSearchDomainHasFineGrainedControl")        
 
     def test_VPCHasRestrictedSG(self):
         self.go("VPCHasRestrictedSG")
@@ -58,6 +84,24 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_VAconfiguredToSendReports(self):
         self.go("VAconfiguredToSendReports")
+
+    def test_AWSConfigRecorderEnabled(self):
+        self.go("AWSConfigRecorderEnabled")
+
+    def test_CLoudFrontS3OriginConfigWithOAI(self):
+        self.go("CLoudFrontS3OriginConfigWithOAI")
+
+    def test_CloudFrontWebACLConfiguredWIthLog4jVulnerability(self):
+        self.go("CloudFrontWebACLConfiguredWIthLog4jVulnerability")
+
+    def test_ConfigRecorderRecordsAllGlobalResources(self):
+        self.go("ConfigRecorderRecordsAllGlobalResources")
+
+    def test_DMSEndpointHaveSSLConfigured(self):
+        self.go("DMSEndpointHaveSSLConfigured")
+
+    def test_ElastiCacheRedisConfiguredAutomaticFailOver(self):
+        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")  
 
     def test_VAconfiguredToSendReportsToAdmins(self):
         self.go("VAconfiguredToSendReportsToAdmins")
@@ -134,6 +178,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AutoScallingEnabledELB(self):
         self.go("AutoScallingEnabledELB")
 
+    def test_AutoScalingEnabledLB(self):
+        self.go("AutoScalingEnabledLB")
+
     def test_IAMGroupHasAtLeastOneUser(self):
         self.go("IAMGroupHasAtLeastOneUser")
 
@@ -200,6 +247,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_Route53ARecordAttachedResource(self):
         self.go("Route53ARecordAttachedResource")
 
+    def test_RouteTablePublicSubnetConnection(self):
+        self.go("RouteTablePublicSubnetConnection")
+
     def test_PostgresRDSHasQueryLoggingEnabled(self):
         self.go("PostgresRDSHasQueryLoggingEnabled")
 
@@ -263,11 +313,29 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3KMSEncryptedByDefault(self):
         self.go("S3KMSEncryptedByDefault")
 
+    def test_GCPNetworkDoesNotUseDefaultFirewall(self):
+        self.go("GCPNetworkDoesNotUseDefaultFirewall")
+
     def test_S3BucketReplicationConfiguration(self):
         self.go("S3BucketReplicationConfiguration")
 
     def test_AppLoadBalancerTLS12(self):
         self.go("AppLoadBalancerTLS12")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_durationIsSetToON(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_durationIsSetToON")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_executor_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_parser_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_planner_statsIsSetToOFF")
+
+    def test_GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF(self):
+        self.go("GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF")
 
     def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
         self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")

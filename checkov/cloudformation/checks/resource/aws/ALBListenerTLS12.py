@@ -43,7 +43,8 @@ class ALBListenerTLS12(BaseResourceCheck):
                     return CheckResult.FAILED
                 elif conf['Properties']['Protocol'] in ('TCP', 'UDP', 'TCP_UDP'):
                     return CheckResult.PASSED
-                for action in conf['Properties']['DefaultActions']:
+                actions = conf['Properties'].get('DefaultActions', [])
+                for action in actions:
                     if action in ConditionFunctions.__dict__.values() or action in IntrinsicFunctions.__dict__.values():
                         return CheckResult.UNKNOWN
                     redirects = action.get("RedirectConfig", [])

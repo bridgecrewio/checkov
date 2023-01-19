@@ -1,0 +1,41 @@
+---
+metadata:
+  id: "CKV2_AWS_56"
+  name: "Ensure AWS Managed IAMFullAccess IAM policy is not used."
+  category: "IAM"
+definition:
+  not:
+    or:
+      - cond_type: attribute
+        resource_types:
+        - "data.aws_iam_policy"
+        attribute: "name"
+        operator: equals
+        value: "IAMFullAccess"
+      - cond_type: attribute
+        resource_types:
+        - "data.aws_iam_policy"
+        attribute: "arn"
+        operator: contains
+        value: "IAMFullAccess" 
+      - cond_type: attribute
+        resource_types:
+        - "aws_iam_policy_attachment"
+        - "aws_iam_user_policy_attachment"
+        - "aws_iam_role_policy_attachment"
+        - "aws_iam_group_policy_attachment"
+        attribute: "policy_arn"
+        operator: contains
+        value: "IAMFullAccess"
+      - cond_type: attribute
+        resource_types:
+        - "aws_iam_role"
+        attribute: "managed_policy_arns.*"
+        operator: contains
+        value: "IAMFullAccess"      
+      - cond_type: attribute
+        resource_types:
+        - "aws_ssoadmin_managed_policy_attachment"
+        attribute: "managed_policy_arn"
+        operator: contains
+        value: "IAMFullAccess"

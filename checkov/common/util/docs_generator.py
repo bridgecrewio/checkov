@@ -36,7 +36,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
-CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/tree/master/checkov'
+CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/blob/main/checkov'
 
 
 def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
@@ -63,7 +63,12 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
 
 
 def get_check_link(absolute_path: str) -> str:
-    return f'{CODE_LINK_BASE}{absolute_path.split("/checkov")[1]}'
+    # this will do nothing unless it's a windows path
+    absolute_path = absolute_path.replace('\\', '/')
+    temp = absolute_path.split("checkov")
+    # this will even work in the likely event that you're running checkov from a folder called checkov
+    link = f'{CODE_LINK_BASE}{temp[len(temp)-1]}'
+    return link
 
 
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
@@ -89,7 +94,11 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                         # only for platform custom polices with resource_types == all
                         graph_check.resource_types = ['all']
                     for rt in graph_check.resource_types:
-                        check_link = get_check_link(inspect.getfile(graph_check.__class__))
+                        if graph_check.check_path:
+                            base_path = graph_check.check_path
+                        else:
+                            base_path = inspect.getfile(graph_check.__class__)
+                        check_link = get_check_link(base_path)
                         printable_checks_list.append(
                             (graph_check.get_output_id(use_bc_ids), checked_type, rt, graph_check.name, iac, check_link))
 
@@ -115,6 +124,9 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     if any(x in framework_list for x in ("all", "serverless")):
         add_from_repository(sls_registry, "resource", "serverless")
     if any(x in framework_list for x in ("all", "dockerfile")):
+        graph_registry = get_graph_checks_registry("dockerfile")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "dockerfile")
         add_from_repository(dockerfile_registry, "dockerfile", "dockerfile")
     if any(x in framework_list for x in ("all", "github_configuration")):
         add_from_repository(github_configuration_registry, "github_configuration", "github_configuration")

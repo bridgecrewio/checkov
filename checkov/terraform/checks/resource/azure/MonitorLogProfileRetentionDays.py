@@ -18,8 +18,11 @@ class MonitorLogProfileRetentionDays(BaseResourceCheck):
         self.evaluated_keys = ['retention_policy/[0]/enabled']
         if conf['retention_policy'][0]['enabled'][0]:
             self.evaluated_keys.append('retention_policy/[0]/days')
-            if 'days' in conf['retention_policy'][0] and force_int(conf['retention_policy'][0]['days'][0]) >= 365:
-                return CheckResult.PASSED
+            if 'days' in conf['retention_policy'][0] and conf['retention_policy'][0]['days'][0]:
+                if force_int(conf['retention_policy'][0]['days'][0]) is None:
+                    return CheckResult.UNKNOWN
+                if force_int(conf['retention_policy'][0]['days'][0]) >= 365:
+                    return CheckResult.PASSED
         else:
             if 'days' in conf['retention_policy'][0]:
                 self.evaluated_keys.append('retention_policy/[0]/days')

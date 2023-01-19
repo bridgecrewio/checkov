@@ -7,7 +7,8 @@ from checkov.common.output.common import SCADetails
 UNFIXABLE_VERSION = "N/A"
 
 TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION = {
-    "gem": "ruby"
+    "gem": "ruby",
+    "nuget": "dotNet"
 }
 
 

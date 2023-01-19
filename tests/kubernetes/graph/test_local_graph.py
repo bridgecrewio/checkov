@@ -3,7 +3,8 @@ import os
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
-from checkov.kubernetes.kubernetes_utils import K8sGraphFlags
+from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
+from checkov.kubernetes.kubernetes_utils import PARENT_RESOURCE_KEY_NAME, PARENT_RESOURCE_ID_KEY_NAME
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
@@ -41,12 +42,14 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph = KubernetesLocalGraph(definitions)
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
-        assert local_graph.vertices[0].id == 'Deployment.default.myapp'
+        assert local_graph.vertices[0].id == 'Deployment.default.deployment_name'
         assert local_graph.vertices[0].attributes.get('spec').get('template') is None
-        assert local_graph.vertices[0].metadata.name == 'myapp'
+        assert local_graph.vertices[0].metadata.name == 'deployment_name'
         assert local_graph.vertices[0].metadata.selector.match_labels.get('app') == 'myapp'
         assert local_graph.vertices[0].metadata.labels is None
-        assert local_graph.vertices[1].id == "Pod.default.{'app': 'myapp'}"
+        assert local_graph.vertices[1].id == 'Pod.default.deployment_name.app-myapp'
+        assert local_graph.vertices[1].config[PARENT_RESOURCE_KEY_NAME] == 'deployment_name'
+        assert local_graph.vertices[1].config[PARENT_RESOURCE_ID_KEY_NAME] == 'Deployment.default.deployment_name'
         assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1
         assert local_graph.vertices[1].metadata.name is None
         assert local_graph.vertices[1].metadata.selector.match_labels is None
@@ -139,3 +142,42 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(5, len(local_graph.vertices))
         self.assertEqual(4, len(local_graph.edges))
+
+    def test_extracting_pod_from_container_types(self) -> None:
+        relative_file_path = "resources/statefulstate_nested_resource.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.edges))
+
+    def test_deployment_with_incompatible_selector(self) -> None:
+        relative_file_path = "resources/faulty_resources/incompatible_selector.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(2, len(local_graph.vertices))
+        self.assertEqual(0, len(local_graph.edges))
+
+    def test_KeywordEdgeBuilder_incompatible_cluster_role_binding(self) -> None:
+        relative_file_path = "resources/faulty_resources/incompatible_clusterrolebinding.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(6, len(local_graph.vertices))
+        self.assertEqual(1, len(local_graph.edges))

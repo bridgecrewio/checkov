@@ -18,6 +18,8 @@ from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
+from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
 import re
@@ -45,7 +47,7 @@ class TestRunnerRegistry(unittest.TestCase):
         reports = runner_registry.run(root_folder=test_files_dir)
 
         # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
-        counts_by_type = {"kubernetes": 10, "terraform": 3, "cloudformation": 4}
+        counts_by_type = {"kubernetes": 14, "terraform": 3, "cloudformation": 4}
 
         for report in reports:
             self.assertEqual(
@@ -159,6 +161,23 @@ class TestRunnerRegistry(unittest.TestCase):
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
 
+    def test_run_with_empty_frameworks(self):
+        # ensures that a run with a framework that gets filtered out (e.g. --framework terraform --file abc.yaml)
+        # returns an empty report
+
+        checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+        scan_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'plan_with_hcl_for_enrichment', 'tfplan.json')
+
+        runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.filter_runners_for_files(['tfplan.json'])
+        with self.assertLogs(level='ERROR') as log:
+            reports = runner_registry.run(root_folder=None, files=[scan_file])
+            self.assertEqual(len(reports), 0)  # checking that we get an empty report, not an exception
+            self.assertIn(
+                'There are no runners to run. This can happen if you specify a file type and a framework that are not compatible',
+                ''.join(log.output))
+
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
 
@@ -177,7 +196,13 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets'})
 
         runner_registry = RunnerRegistry(
-            banner, runner_filter, *DEFAULT_RUNNERS
+            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner()
+        )
+        runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
+
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner_2()
         )
         runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
