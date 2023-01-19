@@ -44,5 +44,5 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_igraph(self) -> Graph:  # type: ignore
+    def extract_nodes_igraph(self) -> Graph:
         pass
