@@ -19,12 +19,8 @@ from tests.terraform.graph.variable_rendering.expected_data import (
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@mock.patch.dict(os.environ, {"RENDER_ASYNC_MAX_WORKERS": "50", "RENDER_VARIABLES_ASYNC": "False"})
 class TestRenderer(TestCase):
-    def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
-        os.environ['RENDER_ASYNC_MAX_WORKERS'] = '50'
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-
     def test_render_local(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_local')
         graph_manager = TerraformGraphManager('acme', ['acme'])

@@ -214,6 +214,9 @@ class Runner(BaseRunner[None]):
             if enriched_secrets_s3_path:
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
+
+            if runner_filter.skip_invalid_secrets:
+                self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
     @staticmethod
@@ -377,4 +380,27 @@ class Runner(BaseRunner[None]):
         for policy in policies_list:
             if policy.get('isCustom', False):
                 check_id = policy['incidentId']
-                metadata_integration.check_metadata[check_id] = {'id': check_id}
+                guideline = policy.get('guideline', '')
+                severity = policy.get('severity', '')
+                metadata_integration.check_metadata[check_id] = {'id': check_id,
+                                                                 'guideline': guideline,
+                                                                 'severity': severity}
+
+    @staticmethod
+    def _modify_invalid_secrets_check_result_to_skipped(report: Report) -> None:
+        checks_indexes_moved_to_skipped: list[int] = []
+
+        for check_index, check in enumerate(report.failed_checks):
+            if hasattr(check, 'validation_status') and check.validation_status == ValidationStatus.INVALID.value:
+                check.check_result["result"] = CheckResult.SKIPPED
+                check.check_result["suppress_comment"] = "Skipped invalid secret"
+                report.skipped_checks.append(check)
+                checks_indexes_moved_to_skipped.append(check_index)
+
+        for idx in sorted(checks_indexes_moved_to_skipped, reverse=True):
+            try:
+                del report.failed_checks[idx]
+            except Exception:
+                logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
+                              f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
+                              exc_info=True)

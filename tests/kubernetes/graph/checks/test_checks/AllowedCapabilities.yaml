@@ -4,12 +4,7 @@ metadata:
   category: "KUBERNETES"
 definition:
   cond_type: attribute
-  attribute: spec.template.spec.containers.*.securityContext.capabilities.add
+  attribute: spec.containers.*.securityContext.capabilities.add
   operator: not_exists
   resource_types:
-    - Deployment
-    - DaemonSet
-    - Job
-    - ReplicaSet
-    - ReplicationController
-    - StatefulSet
+    - Pod
