@@ -4,8 +4,6 @@ import os
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, Any, Mapping, Union
 
-import igraph as igraph
-
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
