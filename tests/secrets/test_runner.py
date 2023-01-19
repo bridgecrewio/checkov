@@ -313,5 +313,21 @@ class TestRunnerValid(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 0)
 
+    def test_runner_entropy_source_files(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/test_entropy_source_files"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=['secrets'],
+                                                                                   enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 2)
+        for failed in report.failed_checks:
+            if failed.check_id == 'CKV_SECRET_6':
+                self.assertEqual(failed.file_line_range, [4, 5])
+            elif failed.check_id == 'CKV_SECRET_4':
+                self.assertEqual(failed.file_line_range, [6, 7])
+            else:
+                self.fail(f'Got a bad result: {failed}')
+
+
 if __name__ == '__main__':
     unittest.main()

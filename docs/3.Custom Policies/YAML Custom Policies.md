@@ -101,6 +101,7 @@ definition:
 | Contains                     | `contains`                     |
 | Not Contains                 | `not_contains`                 |
 | Within                       | `within`                       |
+| Not Within                   | `not_within`                   |
 | Starts With                  | `starting_with`                |
 | Not Starts With              | `not_starting_with`            |
 | Ends With                    | `ending_with`                  |
@@ -324,12 +325,34 @@ Any kind of connection between resources is supported
 All resources can be referenced under `resource_types`.
 Any kind of connection between resources is supported
 
+### Dockerfile
+All official Docker instructions can be referenced under `resource_types`.
+Currently, no support for connections.
+
+#### Note
+Following attribute values are supported
+
+- `content` stores the raw data for an instruction
+- `value` stores the sanitized data for an instruction
+
+ex.
+```dockerfile
+RUN apt-get update \
+ && sudo apt-get install vim
+```
+->
+```yaml
+content: "RUN apt-get update \\\n && sudo apt-get install vim\n"
+value: "apt-get update  && sudo apt-get install vim"
+```
+
 ### GitHub Actions
 Following `resource_types` are supported
 
 - `permissions` on the root level
 - `steps`
 - `jobs`
+- `on`
 
 Following connections are supported
 
@@ -348,6 +371,8 @@ attribute: "permissions"
 operator: "not_equals"
 value: "write-all"
 ```
+
+The value for `on` can be either a map, a string or a list of strings.
 
 ### Kubernetes
 All resources can be referenced under `resource_types`.

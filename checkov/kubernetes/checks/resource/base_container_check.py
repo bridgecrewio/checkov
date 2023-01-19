@@ -74,7 +74,6 @@ class BaseK8sContainerCheck(BaseK8Check):
                 spec = conf["spec"]["template"]["spec"]
                 metadata = conf["spec"]["template"].get("metadata", {})
             except (KeyError, TypeError):
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
                 return CheckResult.UNKNOWN
         elif self.entity_type == "CronJob":
             evaluated_key_prefix = "spec/jobTemplate/spec/template/spec"
@@ -82,7 +81,6 @@ class BaseK8sContainerCheck(BaseK8Check):
                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
                 metadata = conf["spec"]["jobTemplate"]["spec"]["template"].get("metadata", {})
             except (KeyError, TypeError):
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
                 return CheckResult.UNKNOWN
         else:
             logging.info(f"entity type {self.entity_type} not supported")

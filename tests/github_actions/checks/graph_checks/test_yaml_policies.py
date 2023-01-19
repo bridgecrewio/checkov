@@ -29,7 +29,6 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         )
 
     def setUp(self) -> None:
-        os.environ["UNIQUE_TAG"] = ""
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

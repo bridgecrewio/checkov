@@ -1,0 +1,81 @@
+{
+  "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection",
+  "required_status_checks": {
+    "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/required_status_checks",
+    "contexts": [
+      "continuous-integration/travis-ci"
+    ],
+    "contexts_url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/required_status_checks/contexts",
+    "enforcement_level": "non_admins"
+  },
+  "enforce_admins": {
+    "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/enforce_admins",
+    "enabled": true
+  },
+  "required_pull_request_reviews": {
+    "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/required_pull_request_reviews",
+    "dismissal_restrictions": {
+      "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/dismissal_restrictions",
+      "users": [
+        {
+          "login": "octocat",
+          "id": 1,
+          "url": "https://api.github.com/users/octocat"
+        }
+      ],
+      "teams": [
+        {
+          "id": 1,
+          "node_id": "MDQ6VGVhbTE="
+        }
+      ]
+    },
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": true,
+    "required_approving_review_count": 2
+  },
+  "restrictions": {
+    "url": "https://api.github.com/repos/octocat/Hello-World/branches/master/protection/restrictions",
+    "users": [
+      {
+        "login": "octocat",
+        "id": 1
+      }
+    ],
+    "teams": [
+      {
+        "id": 1,
+        "node_id": "MDQ6VGVhbTE="
+      }
+    ],
+    "apps": [
+      {
+        "id": 1,
+        "slug": "octoapp",
+        "node_id": "MDExOkludGVncmF0aW9uMQ==",
+        "owner": {
+          "login": "github",
+          "id": 1
+        },
+        "permissions": {
+          "metadata": "read"
+        },
+        "events": [
+          "push"
+        ]
+      }
+    ]
+  },
+  "required_linear_history": {
+    "enabled": true
+  },
+  "allow_force_pushes": {
+    "enabled": true
+  },
+  "allow_deletions": {
+    "enabled": true
+  },
+  "required_conversation_resolution": {
+    "enabled": true
+  }
+}

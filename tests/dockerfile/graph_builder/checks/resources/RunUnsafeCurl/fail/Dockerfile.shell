@@ -1,0 +1,2 @@
+FROM alpine:3.5
+RUN echo -n -Lv https://example.com && curl -k https://example.com

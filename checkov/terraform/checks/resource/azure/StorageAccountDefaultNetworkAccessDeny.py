@@ -11,15 +11,16 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        '''
-        Ensures a storage account is not widely accessible by default, using the default action in network rules configuration.
+        """
+        Ensures a storage account is not widely accessible by default, using the default action in network rules
+        configuration.
         Network Rules can be defined either directly on the azurerm_storage_account resource,
-        or using the azurerm_storage_account_network_rules resource. If the latter is used, the check should be skipped for
+        or using the azurerm_storage_account_network_rules resource. If the latter is used, the check is skipped for
         the azurerm_storage_account resource (which would return as failed).
 
         :param default_action:
         :return: Check Result
-        '''
+        """
         network_conf = [conf]
         evaluated_key_prefix = ''
         if 'network_rules' in conf:
@@ -30,7 +31,10 @@ class StorageAccountDefaultNetworkAccessDeny(BaseResourceCheck):
             self.evaluated_keys = [f'{evaluated_key_prefix}default_action']
             if network_conf[0]['default_action'][0] == 'Deny':
                 return CheckResult.PASSED
-        return CheckResult.FAILED
+            return CheckResult.FAILED
+
+        # missing block is valid for storage accounts but not azurerm_storage_account_network_rules
+        return CheckResult.UNKNOWN
 
 
 check = StorageAccountDefaultNetworkAccessDeny()

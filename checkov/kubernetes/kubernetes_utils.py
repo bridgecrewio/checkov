@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
-from dataclasses import dataclass
 from typing import Dict, Any
 
 import dpath
@@ -19,6 +18,9 @@ from checkov.kubernetes.parser.parser import parse
 
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
+SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet", "Job", "ReplicaSet", "ReplicationController", "StatefulSet"}
+PARENT_RESOURCE_KEY_NAME = "_parent_resource"
+PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
 
@@ -213,23 +215,27 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return f'{resource_type}.{namespace}.{name}'
     labels = deepcopy(metadata.get("labels"))
     if labels:
-        labels.pop('__startline__', None)
-        labels.pop('__endline__', None)
-        return f'{resource_type}.{namespace}.{str(labels)}'
+        return build_resource_id_from_labels(resource_type, namespace, labels, resource)
     return None
+
+
+def build_resource_id_from_labels(resource_type: str,
+                                  namespace: str,
+                                  labels: dict[str, str],
+                                  resource: dict[str, Any]) -> str:
+    labels.pop('__startline__', None)
+    labels.pop('__endline__', None)
+    labels_list = [f"{k}-{v}" for k, v in labels.items()]
+    labels_string = ".".join(labels_list) if labels_list else "default"
+    parent_resource = resource.get(PARENT_RESOURCE_KEY_NAME)
+    if parent_resource:
+        resource_id = f'{resource_type}.{namespace}.{parent_resource}.{labels_string}'
+    else:
+        resource_id = f'{resource_type}.{namespace}.{labels_string}'
+    return resource_id
 
 
 def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
     if isinstance(attribute, dict):
         attribute.pop("__startline__", None)
         attribute.pop("__endline__", None)
-
-
-@dataclass()
-class K8sGraphFlags:
-    create_complex_vertices: bool
-    create_edges: bool
-
-    def __init__(self, create_complex_vertices: bool = False, create_edges: bool = False) -> None:
-        self.create_complex_vertices = create_complex_vertices or False
-        self.create_edges = create_edges or False

@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.github.base_github_configuration_check import BaseGithubCheck
+from checkov.github.base_github_configuration_check import BaseGithubCheck, HTTP
 from checkov.github.schemas.repository_webhooks import schema as repository_webhooks_schema
 from checkov.json_doc.enums import BlockType
 
@@ -23,17 +23,21 @@ class WebhookHttpsRepo(BaseGithubCheck):
         )
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]] | None:  # type:ignore[override]
-        if repository_webhooks_schema.validate(conf):
-            for item in conf:
-                if isinstance(item, dict):
-                    item_config = item.get("config", {})
-                    if not item_config:
-                        continue
-                    url = item_config.get('url', '')
-                    insecure_ssl = item_config.get('insecure_ssl', '0')
-                    if re.match("^http://", url) or insecure_ssl != '0':
-                        return CheckResult.FAILED, item_config
-            return CheckResult.PASSED, conf
+        ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
+        if 'repository_webhooks' in ckv_metadata.get('file_name', ''):
+            if repository_webhooks_schema.validate(conf):
+                for item in conf:
+                    if isinstance(item, dict):
+                        item_config = item.get("config", {})
+                        if not item_config:
+                            continue
+                        url = item_config.get('url', '')
+                        insecure_ssl = item_config.get('insecure_ssl', '0')
+                        if re.match(HTTP, url):
+                            return CheckResult.FAILED, item_config
+                        if insecure_ssl != '0':
+                            return CheckResult.FAILED, item_config
+                return CheckResult.PASSED, conf
         return CheckResult.UNKNOWN, conf
 
 

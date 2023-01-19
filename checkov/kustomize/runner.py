@@ -15,6 +15,7 @@ import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -48,6 +49,25 @@ class K8sKustomizeRunner(K8sRunner):
         self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.pbar.turn_off_progress_bar()
+
+    def run(
+        self,
+        root_folder: str | None,
+        external_checks_dir: list[str] | None = None,
+        files: list[str] | None = None,
+        runner_filter: RunnerFilter | None = None,
+        collect_skip_comments: bool = True
+    ) -> Report | list[Report]:
+        results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+
+        sca_image_report = None
+        if isinstance(results, list):
+            sca_image_report = next(result for result in results if result.check_type == CheckType.SCA_IMAGE)
+
+        if root_folder is not None:
+            fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
+
+        return results
 
     def set_external_data(
         self,
@@ -101,6 +121,13 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
+            external_run_indicator = "Bc"
+            # means this scan originated in the platform
+            if type(self.graph_manager).__name__.startswith(external_run_indicator):
+                absolute_file_path = file_abs_path
+            else:
+                absolute_file_path = realKustomizeEnvMetadata['filePath']
+
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
             record = Record(
@@ -108,7 +135,7 @@ class K8sKustomizeRunner(K8sRunner):
                 check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
-                check_class=check.__class__.__module__, file_abs_path=realKustomizeEnvMetadata['filePath'], severity=check.severity)
+                check_class=check.__class__.__module__, file_abs_path=absolute_file_path, severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
 
@@ -143,7 +170,7 @@ class K8sKustomizeRunner(K8sRunner):
                 entity_file_path: str = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path: str = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id: str = entity[CustomAttributes.ID]
-                entity_context = self.context[entity_file_path][entity_id]
+                entity_context = super().get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
                 if entity_file_abs_path in kustomize_file_mappings:
                     realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[entity_file_abs_path]]
@@ -154,14 +181,14 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
-                code_lines = entity_context.get("code_lines")
+                code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),

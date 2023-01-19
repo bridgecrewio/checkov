@@ -1,11 +1,4 @@
 {
-  "kind": "Namespace",
-  "apiVersion": "v1",
-  "metadata": {
-    "name": "nginx"
-  }
-}
-{
   "kind": "Pod",
   "apiVersion": "v1",
   "metadata": {
@@ -28,26 +21,5 @@
         ]
       }
     ]
-  }
-}
-{
-  "kind": "Service",
-  "apiVersion": "v1",
-  "metadata": {
-    "name": "my-nginx-svc",
-    "namespace": "nginx",
-    "labels": {
-      "app": "nginx"
-    }
-  },
-  "spec": {
-    "ports": [
-      {
-        "port": 80
-      }
-    ],
-    "selector": {
-      "app": "nginx"
-    }
   }
 }
