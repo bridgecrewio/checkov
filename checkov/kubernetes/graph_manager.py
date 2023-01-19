@@ -9,11 +9,12 @@ from checkov.kubernetes.kubernetes_utils import get_folder_definitions
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.graph.graph_manager import GraphManager
+    from checkov.common.typing import _LibraryGraph
 
 
 class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[dict[str, Any]]]"]):
-    def __init__(self, db_connector: DBConnector[DiGraph], source: str = "Kubernetes") -> None:
+    def __init__(self, db_connector: DBConnector[_LibraryGraph], source: str = "Kubernetes") -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
         self.graph_flags: K8sGraphFlags | None = None
 

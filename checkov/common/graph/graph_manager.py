@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Type, Any, TYPE_CHECKING, TypeVar, Generic
+from typing import Type, TYPE_CHECKING, TypeVar, Generic
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 
 if TYPE_CHECKING:
-    import networkx as nx
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
     from checkov.terraform.parser import Parser
+    from checkov.common.typing import _LibraryGraph
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
 _Definitions = TypeVar("_Definitions")
 
 
 class GraphManager(Generic[_LocalGraph, _Definitions]):
-    def __init__(self, db_connector: DBConnector[nx.DiGraph], parser: Parser | None, source: str = "") -> None:
+    def __init__(self, db_connector: DBConnector[_LibraryGraph], parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser
@@ -38,13 +38,13 @@ class GraphManager(Generic[_LocalGraph, _Definitions]):
     ) -> _LocalGraph:
         pass
 
-    def save_graph(self, graph: _LocalGraph) -> nx.DiGraph:
+    def save_graph(self, graph: _LocalGraph) -> _LibraryGraph:
         return self.db_connector.save_graph(graph)
 
-    def get_reader_endpoint(self) -> nx.DiGraph:
+    def get_reader_endpoint(self) -> _LibraryGraph:
         return self.db_connector.get_reader_endpoint()
 
-    def get_writer_endpoint(self) -> nx.DiGraph:
+    def get_writer_endpoint(self) -> _LibraryGraph:
         return self.db_connector.get_writer_endpoint()
 
     def disconnect_from_db(self) -> None:

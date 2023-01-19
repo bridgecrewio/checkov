@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.models.enums import CheckResult
     from checkov.common.runners.base_runner import BaseRunner  # noqa
+    from networkx import DiGraph
+    from igraph import Graph
 
 
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
@@ -19,6 +21,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
+_LibraryGraph = TypeVar("_LibraryGraph", DiGraph, Graph)
 
 
 class _CheckResult(TypedDict, total=False):
