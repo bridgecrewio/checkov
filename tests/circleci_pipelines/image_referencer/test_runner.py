@@ -1,4 +1,3 @@
-import logging
 from pathlib import Path
 
 from checkov.circleci_pipelines.runner import Runner
@@ -8,10 +7,13 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
+    mock_get_image_cached_result_async
+
 RESOURCES_PATH = Path(__file__).parent.parent / "resources"
 
 
-def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path, image_cached_results_for_report):
+def test_circleCI_workflow(mocker: MockerFixture, file_path, image_cached_results_for_report):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     test_file = RESOURCES_PATH / file_path
 
@@ -19,12 +21,12 @@ def test_circleCI_workflow(mocker: MockerFixture, image_cached_result, file_path
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
