@@ -9,12 +9,8 @@ from typing import Any
 
 import yaml
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
-from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
-from checkov.runner_filter import RunnerFilter
-from checkov.terraform import checks
-from checkov.terraform.runner import Runner
+from .test_yaml_policies import load_yaml_data, get_policy_results
 
 
 class TestCustomYamlPolicies(unittest.TestCase):
@@ -66,32 +62,3 @@ class TestCustomYamlPolicies(unittest.TestCase):
                     found = True
                     break
             self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
-
-
-def get_policy_results(root_folder, policy):
-    check_id = policy['metadata']['id']
-    graph_runner = Runner()
-    report = graph_runner.run(root_folder, runner_filter=RunnerFilter(checks=[check_id]))
-    return report
-
-
-def wrap_policy(policy):
-    policy['query'] = policy['definition']
-    del policy['definition']
-
-
-def load_yaml_data(source_file_name: str, dir_path: str) -> dict[str, Any] | None:
-    expected_path = os.path.join(dir_path, source_file_name)
-    if not os.path.exists(expected_path):
-        return None
-
-    with open(expected_path, "r") as f:
-        expected_data = yaml.safe_load(f)
-
-    return json.loads(json.dumps(expected_data))
-
-    def test_Route53ZoneEnableDNSSECSigning(self):
-        self.go("Route53ZoneEnableDNSSECSigning")
-
-    def test_Route53ZoneHasMatchingQueryLog(self):
-        self.go("Route53ZoneHasMatchingQueryLog")
