@@ -9,7 +9,7 @@ from checkov.common.images.image_referencer import Image
 
 if TYPE_CHECKING:
     import networkx
-    import igraph
+    import igraph  # type: ignore
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
