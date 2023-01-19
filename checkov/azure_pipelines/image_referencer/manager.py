@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.azure_pipelines.image_referencer.provider import AzurePipelinesProvider
-from checkov.common.images.workflow_image_referencer_manager import WorkflowImageReferencerManager
+from checkov.common.images.workflow.image_referencer_manager import WorkflowImageReferencerManager
 
 
 class AzurePipelinesImageReferencerManager(WorkflowImageReferencerManager):
