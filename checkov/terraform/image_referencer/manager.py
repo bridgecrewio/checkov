@@ -2,20 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from checkov.common.images.graph.image_referencer_manager import GraphImageReferencerManager
 from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
 from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 from checkov.terraform.image_referencer.provider.gcp import GcpTerraformProvider
 
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
-    from networkx import DiGraph
 
 
-class TerraformImageReferencerManager:
-    __slots__ = ("graph_connector",)
-
-    def __init__(self, graph_connector: DiGraph) -> None:
-        self.graph_connector = graph_connector
+class TerraformImageReferencerManager(GraphImageReferencerManager):
 
     def extract_images_from_resources(self) -> list[Image]:
         images = []

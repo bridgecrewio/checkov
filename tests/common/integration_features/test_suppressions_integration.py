@@ -1052,7 +1052,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
                                                       'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail8'}],
                  'checkovPolicyId': 'acme_AWS_1668010000289'}]}
 
-        expected_suppressions = ['CKV_AWS_252', 'CKV_AWS_36', 'CKV_K8S_27']
+        expected_suppressions = ['BC_AWS_GENERAL_175', 'BC_AWS_LOGGING_2', 'BC_K8S_26']
         policy_level_suppressions = suppressions_integration.get_policy_level_suppressions()
         self.assertEqual(expected_suppressions, policy_level_suppressions)
 

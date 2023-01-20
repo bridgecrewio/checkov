@@ -116,10 +116,11 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 match_labels = None
         elif isinstance(spec, dict):
             if spec.get('selector'):
-                if resource.get('kind') == "Service":
-                    match_labels = spec.get('selector')
-                else:
-                    match_labels = spec.get('selector', {}).get('matchLabels')
+                if isinstance(spec.get('selector'), dict):
+                    if resource.get('kind') == "Service":
+                        match_labels = spec.get('selector')
+                    else:
+                        match_labels = spec.get('selector', {}).get('matchLabels')
         remove_metadata_from_attribute(match_labels)
         selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')

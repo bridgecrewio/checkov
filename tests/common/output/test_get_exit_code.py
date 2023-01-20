@@ -1,6 +1,7 @@
 import argparse
 import os
 import unittest
+from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
@@ -138,10 +139,20 @@ class TestGetExitCode(unittest.TestCase):
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev, 1)
         self.assertEqual(combined_test_soft_fail_id_hard_fail_sev_fail, 0)
 
-        os.environ[PARSE_ERROR_FAIL_FLAG] = 'true'
-        r.add_parsing_error('some_file.tf')
-        self.assertEqual(r.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
-        del os.environ[PARSE_ERROR_FAIL_FLAG]
+        with mock.patch.dict(os.environ, {PARSE_ERROR_FAIL_FLAG: "true"}):
+            r.add_parsing_error("some_file.tf")
+            self.assertEqual(
+                r.get_exit_code(
+                    {
+                        "soft_fail": False,
+                        "soft_fail_checks": [],
+                        "soft_fail_threshold": None,
+                        "hard_fail_checks": [],
+                        "hard_fail_threshold": None,
+                    }
+                ),
+                1,
+            )
 
     def test_get_fail_thresholds_enforcement_rules(self):
 
