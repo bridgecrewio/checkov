@@ -22,6 +22,7 @@ class BaseAnsibleTaskCheck(BaseCheck):
         categories: Iterable[CheckCategories],
         supported_modules: Iterable[str],
         block_type: str,
+        guideline: str | None = None,
         path: str | None = None,
     ) -> None:
         supported_entities = [
@@ -36,6 +37,7 @@ class BaseAnsibleTaskCheck(BaseCheck):
             categories=categories,
             supported_entities=supported_entities,
             block_type=block_type,
+            guideline=guideline,
         )
 
         self.entity_conf: dict[str, Any]  # stores the complete entity configuration
