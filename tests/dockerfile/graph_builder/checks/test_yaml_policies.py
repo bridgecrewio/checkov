@@ -64,6 +64,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunApkAllowUntrusted(self):
         self.go("RunApkAllowUntrusted")
 
+    def test_RunAptGetAllowUnauthenticated(self):
+        self.go("RunAptGetAllowUnauthenticated")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
