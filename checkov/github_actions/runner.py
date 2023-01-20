@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import yaml
 
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.report import Report
 from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
 from checkov.github_actions.graph_builder.local_graph import GitHubActionsLocalGraph
@@ -35,7 +36,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def __init__(
         self,
         db_connector: NetworkxConnector | None = None,
-        source: str = "GitHubActions",
+        source: str = GraphSource.GITHUB_ACTIONS,
         graph_class: type[ObjectLocalGraph] = GitHubActionsLocalGraph,
         graph_manager: ObjectGraphManager | None = None,
         external_registries: dict[str, Any] | None = None

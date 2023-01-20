@@ -10,6 +10,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder import Edge
+    from checkov.common.graph.graph_builder.consts import GraphSource
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
 
 _Block = TypeVar("_Block", bound="Block")

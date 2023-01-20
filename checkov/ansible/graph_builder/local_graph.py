@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
@@ -18,13 +19,13 @@ class AnsibleLocalGraph(ObjectLocalGraph):
     def __init__(self, definitions: dict[str | Path, dict[str, Any] | list[dict[str, Any]]]) -> None:
         super().__init__(definitions=definitions)
 
-        self.source = "Ansible"
+        self.source = GraphSource.ANSIBLE
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, list):
                 logging.warning(f"definition of file {file_path} has the wrong type {type(definition)}")
-                return
+                continue
 
             file_path = str(file_path)
 
