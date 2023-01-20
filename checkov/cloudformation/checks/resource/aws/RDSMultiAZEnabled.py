@@ -14,6 +14,7 @@ class RDSMultiAZEnabled(BaseResourceCheck):
         aurora = "aurora"
         if properties:
             engine = properties.get("Engine")
+            # Aurora is replicated across all AZs and doesn't require MultiAZ to be set
             if engine and engine in aurora:
                 return CheckResult.PASSED
             value = properties.get("MultiAZ")
