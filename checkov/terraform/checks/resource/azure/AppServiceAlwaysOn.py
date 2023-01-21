@@ -3,7 +3,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 
 class AppServiceAlwaysOn(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # "Azure App Service apps are automatically unloaded when there's no traffic. Unloading apps reduces resource
         # consumption when apps share a single App Services Plan.
         # After an app have been unloaded, the next web request will trigger a cold start of the app.
@@ -18,7 +18,7 @@ class AppServiceAlwaysOn(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.PASSED)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return 'site_config/[0]/always_on/[0]'
 
 
