@@ -66,6 +66,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_RunAptGetAllowUnauthenticated(self):
         self.go("RunAptGetAllowUnauthenticated")
+    
+    def test_RunRpmNoGpgCheck(self):
+        self.go("RunRpmNoGpgCheck")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()
