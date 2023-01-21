@@ -120,3 +120,34 @@ resource "azurerm_kubernetes_cluster_node_pool" "fail2" {
     Environment = "Production"
   }
 }
+
+# unknown
+
+resource "azurerm_kubernetes_cluster_node_pool" "unknown" {
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  max_pods              = var.max_pods
+}
+
+resource "azurerm_kubernetes_cluster" "unknown_2" {
+  name                = "example-aks1"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  dns_prefix          = "exampleaks1"
+
+  default_node_pool {
+    name       = var.default_node_pool.name
+    node_count = var.default_node_pool.node_count
+    vm_size    = var.default_node_pool.vm_size
+    max_pods   = var.max_pods
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  local_account_disabled  = var.local_account_disabled
+  private_cluster_enabled = var.private_cluster
+}

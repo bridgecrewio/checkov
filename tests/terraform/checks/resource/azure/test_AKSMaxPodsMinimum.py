@@ -7,7 +7,6 @@ from checkov.terraform.checks.resource.azure.AKSMaxPodsMinimum import check
 
 
 class TestAKSMaxPodsMinimum(unittest.TestCase):
-
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -30,13 +29,14 @@ class TestAKSMaxPodsMinimum(unittest.TestCase):
         }
         skipped_resources = {}
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
         self.assertEqual(summary['skipped'], len(skipped_resources))
         self.assertEqual(summary['parsing_errors'], 0)
+        self.assertEqual(summary['resource_count'], len(passing_resources) + len(failing_resources) + 2)  # 2 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
