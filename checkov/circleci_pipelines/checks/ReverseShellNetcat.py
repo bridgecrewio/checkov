@@ -31,7 +31,7 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         else:
             if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
                 return CheckResult.FAILED, conf
-                
+
         return CheckResult.PASSED, conf
 
 

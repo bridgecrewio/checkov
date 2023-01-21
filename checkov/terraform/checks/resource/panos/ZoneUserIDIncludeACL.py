@@ -18,7 +18,7 @@ class ZoneUserIDIncludeACL(BaseResourceCheck):
 
         # Report the area of evaluation
         self.evaluated_keys = ['include_acls']
-    
+
         # Get User-ID status, boolean value
         user_id_enabled = conf.get('enable_user_id')
 
@@ -36,10 +36,10 @@ class ZoneUserIDIncludeACL(BaseResourceCheck):
 
                     # Check for empty strings
                     if acl.strip() == "":
-                        
+
                         # An empty string is no ACL, which is a fail
                         return CheckResult.FAILED
-                
+
                 # No empty strings found in Include ACL definition, so this is a pass
                 return CheckResult.PASSED
 
