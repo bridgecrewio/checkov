@@ -371,23 +371,24 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
 
     # find second group
     second_separator = _find_separator_index(':', input_str, first_separator)
-    if first_separator is None:
+    if second_separator is None:
         return
     groups.append(input_str[first_separator + 1:second_separator])
 
     if not stack:
-        return groups, 0, len(input_str) - 1
+        groups.append(input_str[second_separator + 1:])
+        return groups, 0, len(input_str)
 
     start = stack[-1][1]
-    end = len(input_str) - 1
+    end = len(input_str)
     for i in range(second_separator + 1, len(input_str)):
         char = input_str[i]
         _update_stack_if_needed(char, i)
         if not stack:
-            end = i
+            end = i + 1
             break
         if len(stack) + 1 == end_stack:
-            end = i - 1
+            end = i
             break
 
     groups.append(input_str[second_separator + 1:end])
