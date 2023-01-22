@@ -17,7 +17,7 @@ from checkov.bicep.utils import clean_file_path, get_scannable_file_paths
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 
-from checkov.common.typing import _LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -52,7 +52,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
 
     def __init__(
         self,
-        db_connector: _LibraryGraphConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = GraphSource.BICEP,
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: BicepGraphManager | None = None,

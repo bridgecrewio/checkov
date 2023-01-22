@@ -7,7 +7,7 @@ from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import _LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -53,7 +53,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: _LibraryGraphConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,

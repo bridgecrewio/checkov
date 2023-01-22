@@ -8,12 +8,12 @@ from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_manager import GraphManager
-    from checkov.common.typing import _LibraryGraph
+    from checkov.common.typing import LibraryGraph
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
 
 
 class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]"]):
-    def __init__(self, db_connector: DBConnector[_LibraryGraph], source: str) -> None:
+    def __init__(self, db_connector: DBConnector[LibraryGraph], source: str) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(

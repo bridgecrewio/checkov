@@ -8,7 +8,7 @@ from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-from checkov.common.typing import _LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
@@ -69,7 +69,7 @@ class Runner(TerraformRunner):
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
                  graph_manager: TerraformGraphManager | None = None,
-                 db_connector: _LibraryGraphConnector | IgraphConnector | None = None,
+                 db_connector: LibraryGraphConnector | IgraphConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
                  source: str = GraphSource.TERRAFORM) -> None:
         super().__init__(

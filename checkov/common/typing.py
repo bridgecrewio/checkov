@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
@@ -23,8 +23,8 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-_LibraryGraph = TypeVar("_LibraryGraph", DiGraph, Graph)
-_LibraryGraphConnector = TypeVar("_LibraryGraphConnector", NetworkxConnector, IgraphConnector)
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
+LibraryGraphConnector: TypeAlias = "Union[NetworkxConnector, IgraphConnector]"
 
 
 class _CheckResult(TypedDict, total=False):

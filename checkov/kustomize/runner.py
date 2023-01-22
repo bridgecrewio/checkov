@@ -27,7 +27,7 @@ from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import _LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ class K8sKustomizeRunner(K8sRunner):
     def __init__(
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: _LibraryGraphConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None

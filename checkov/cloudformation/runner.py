@@ -17,7 +17,7 @@ from checkov.cloudformation.image_referencer.manager import CloudFormationImageR
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import _LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
@@ -40,7 +40,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
 
     def __init__(
             self,
-            db_connector: _LibraryGraphConnector | None = None,
+            db_connector: LibraryGraphConnector | None = None,
             source: str = GraphSource.CLOUDFORMATION,
             graph_class: Type[CloudformationLocalGraph] = CloudformationLocalGraph,
             graph_manager: CloudformationGraphManager | None = None,

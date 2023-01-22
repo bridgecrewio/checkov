@@ -24,7 +24,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
-    from checkov.common.typing import _LibraryGraphConnector
+    from checkov.common.typing import LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
     from networkx import DiGraph
@@ -35,7 +35,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
 
     def __init__(
         self,
-        db_connector: _LibraryGraphConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = GraphSource.GITHUB_ACTIONS,
         graph_class: type[ObjectLocalGraph] = GitHubActionsLocalGraph,
         graph_manager: ObjectGraphManager | None = None,

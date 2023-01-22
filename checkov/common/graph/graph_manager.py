@@ -8,14 +8,14 @@ from checkov.common.graph.db_connectors.db_connector import DBConnector
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
     from checkov.terraform.parser import Parser
-    from checkov.common.typing import _LibraryGraph
+    from checkov.common.typing import LibraryGraph
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
 _Definitions = TypeVar("_Definitions")
 
 
 class GraphManager(Generic[_LocalGraph, _Definitions]):
-    def __init__(self, db_connector: DBConnector[_LibraryGraph], parser: Parser | None, source: str = "") -> None:
+    def __init__(self, db_connector: DBConnector[LibraryGraph], parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser
@@ -38,13 +38,13 @@ class GraphManager(Generic[_LocalGraph, _Definitions]):
     ) -> _LocalGraph:
         pass
 
-    def save_graph(self, graph: _LocalGraph) -> _LibraryGraph:
+    def save_graph(self, graph: _LocalGraph) -> LibraryGraph:
         return self.db_connector.save_graph(graph)
 
-    def get_reader_endpoint(self) -> _LibraryGraph:
+    def get_reader_endpoint(self) -> LibraryGraph:
         return self.db_connector.get_reader_endpoint()
 
-    def get_writer_endpoint(self) -> _LibraryGraph:
+    def get_writer_endpoint(self) -> LibraryGraph:
         return self.db_connector.get_writer_endpoint()
 
     def disconnect_from_db(self) -> None:

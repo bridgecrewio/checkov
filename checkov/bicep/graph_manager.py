@@ -12,12 +12,12 @@ from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_manager import GraphManager
-    from checkov.common.typing import _LibraryGraph
+    from checkov.common.typing import LibraryGraph
     from pycep.typing import BicepJson
 
 
 class BicepGraphManager(GraphManager[BicepLocalGraph, "dict[Path, BicepJson]"]):
-    def __init__(self, db_connector: DBConnector[_LibraryGraph], source: str = GraphSource.BICEP) -> None:
+    def __init__(self, db_connector: DBConnector[LibraryGraph], source: str = GraphSource.BICEP) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
