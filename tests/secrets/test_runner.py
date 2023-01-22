@@ -28,7 +28,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_sanity_check_secrets(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/sanity/secrets"
+        valid_dir_path = current_dir + "/sanity/secrets"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], checks=['CKV_SECRET_6']))
@@ -40,7 +40,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_sanity_check_non_secrets(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/sanity/non_secrets"
+        valid_dir_path = current_dir + "/sanity/non_secrets"
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], checks=['CKV_SECRET_6']))
