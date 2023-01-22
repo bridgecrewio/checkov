@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.281...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.289...HEAD)
+
+## [2.2.289](https://github.com/bridgecrewio/checkov/compare/2.2.281...2.2.289) - 2023-01-22
+
+### Feature
+
+- **general:** add Ansible framework - [#4244](https://github.com/bridgecrewio/checkov/pull/4244)
+- **general:** Allow using `--repo-root-for-plan-enrichment` flag in GitHub Actions - [#4292](https://github.com/bridgecrewio/checkov/pull/4292)
+- **secrets:** add new sanity test files for base64 entropy detector - [#4298](https://github.com/bridgecrewio/checkov/pull/4298)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4265](https://github.com/bridgecrewio/checkov/pull/4265)
+
+### Bug Fix
+
+- **sca:** fix dependency tree cli print - [#4282](https://github.com/bridgecrewio/checkov/pull/4282)
+- **terraform:** fix Exception in image ref - [#4297](https://github.com/bridgecrewio/checkov/pull/4297)
+- **terraform:** fix in variable rendering - [#4296](https://github.com/bridgecrewio/checkov/pull/4296)
+- **terraform:** Fix policy str in graph checks - [#4286](https://github.com/bridgecrewio/checkov/pull/4286)
 
 ## [2.2.281](https://github.com/bridgecrewio/checkov/compare/2.2.278...2.2.281) - 2023-01-19
 
