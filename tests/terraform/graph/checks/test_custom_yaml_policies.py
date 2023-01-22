@@ -5,7 +5,9 @@ import unittest
 import warnings
 from pathlib import Path
 
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.models.enums import CheckResult
+from checkov.common.checks_infra.registry import Registry
 from .test_yaml_policies import load_yaml_data, get_policy_results
 
 
@@ -33,7 +35,8 @@ class TestCustomYamlPolicies(unittest.TestCase):
                     assert policy is not None
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
-                    report = get_policy_results(dir_path, policy)
+                    registry = Registry(policy_dir_path, NXGraphCheckParser())
+                    report = get_policy_results(dir_path, policy, [registry])
                     expected = load_yaml_data("expected.yaml", dir_path)
 
                     expected_to_fail = expected.get('fail', [])
