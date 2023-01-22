@@ -13,7 +13,7 @@ import dpath.util
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import _LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
@@ -64,7 +64,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def __init__(
         self,
         parser: Parser | None = None,
-        db_connector: NetworkxConnector | IgraphConnector | None = None,
+        db_connector: _LibraryGraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
         source: str = GraphSource.TERRAFORM,
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,

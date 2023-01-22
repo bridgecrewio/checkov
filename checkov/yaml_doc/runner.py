@@ -9,7 +9,7 @@ from checkov.common.util.consts import START_LINE, END_LINE
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
-    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.typing import _LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
 
@@ -19,7 +19,7 @@ class Runner(ObjectRunner):
 
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: _LibraryGraphConnector | None = None,
         source: str = "yaml",
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,

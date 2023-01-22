@@ -11,7 +11,7 @@ from typing import Any, TYPE_CHECKING, Callable
 from typing_extensions import TypedDict
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import _LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -38,7 +38,7 @@ class GhaMetadata(TypedDict):
 class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: _LibraryGraphConnector | None = None,
         source: str | None = None,
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,
