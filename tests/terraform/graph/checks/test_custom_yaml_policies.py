@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-import json
 import os
 import unittest
 import warnings
 from pathlib import Path
-from typing import Any
-
-import yaml
 
 from checkov.common.models.enums import CheckResult
 from .test_yaml_policies import load_yaml_data, get_policy_results
