@@ -35,6 +35,7 @@ flake8 = "*"
 dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
+parameterized = "*"
 
 [packages]
 #
@@ -83,7 +84,6 @@ pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platfor
 schema = "*"
 requests = ">=2.26.0"
 yarl = "*"
-igraph = "*"
 
 [requires]
 python_version = "3.7"

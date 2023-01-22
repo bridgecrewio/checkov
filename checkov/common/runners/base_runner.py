@@ -43,7 +43,6 @@ def strtobool(val: str) -> int:
 
 
 CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
-CHECKOV_GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
@@ -65,9 +64,10 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
         db_connector_class = None
-        if CHECKOV_GRAPH_FRAMEWORK == "IGRAPH":
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
+        if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
-        elif CHECKOV_GRAPH_FRAMEWORK == "NETWORKX":
+        elif graph_framework == "NETWORKX":
             db_connector_class = NetworkxConnector
 
         self.db_connector = db_connector_class()

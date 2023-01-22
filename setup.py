@@ -30,6 +30,7 @@ setup(
             "GitPython==3.1.7",
             "bandit",
             "jsonschema",
+            "parameterized"
         ]
     },
     install_requires=[

@@ -20,7 +20,7 @@ from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH, CHECKOV_GRAPH_FRAMEWORK
+from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
