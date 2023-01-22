@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -45,7 +46,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
     def __init__(
         self,
         db_connector: NetworkxConnector | None = None,
-        source: str = "Dockerfile",
+        source: str = GraphSource.DOCKERFILE,
         graph_class: type[DockerfileLocalGraph] = DockerfileLocalGraph,
         graph_manager: DockerfileGraphManager | None = None,
     ) -> None:
