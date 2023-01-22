@@ -19,6 +19,7 @@ from checkov.common.graph.db_connectors.igraph.igraph_db_connector import Igraph
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
@@ -52,7 +53,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
     def __init__(
         self,
         db_connector: NetworkxConnector | IgraphConnector | None = None,
-        source: str = "Bicep",
+        source: str = GraphSource.BICEP,
         graph_class: Type[BicepLocalGraph] = BicepLocalGraph,
         graph_manager: BicepGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None

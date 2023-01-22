@@ -1,0 +1,11 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: disabled
+      get_url:
+        url: https://example.com/path/file.conf
+        dest: /etc/foo.conf
+        force_basic_auth: yes
+        validate_certs: false
