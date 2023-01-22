@@ -131,12 +131,16 @@ def evaluate_conditional_expression(input_str: str) -> str:
             return input_str
         evaluated_condition = evaluate_terraform(groups[0])
         condition_substr = input_str[start:end]
-        if convert_to_bool(evaluated_condition):
+        bool_evaluated_condition = convert_to_bool(evaluated_condition)
+        if bool_evaluated_condition is True:
             true_val = str(evaluate_terraform(groups[1])).strip()
             input_str = input_str.replace(condition_substr, true_val)
-        else:
+        elif bool_evaluated_condition is False:
             false_val = str(evaluate_terraform(groups[2])).strip()
             input_str = input_str.replace(condition_substr, false_val)
+        else:
+            # in case we didn't succeed to evaluate condition we shouldn't put any value.
+            break
         condition = find_conditional_expression_groups(input_str)
 
     return input_str
@@ -362,14 +366,14 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
                     return i
             _update_stack_if_needed(char, i)
 
-    # find first group
+    # find first separator
     first_separator = _find_separator_index('?', input_str, 0, update_end_stack=True)
     if first_separator is None:
         return
     start = 0 if not stack else stack[-1][1]
     groups.append(input_str[start:first_separator])
 
-    # find second group
+    # find second separator
     second_separator = _find_separator_index(':', input_str, first_separator)
     if second_separator is None:
         return
