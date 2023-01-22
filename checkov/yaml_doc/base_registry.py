@@ -57,19 +57,35 @@ class Registry(BaseCheckRegistry):
                             skip_info
                         )
         if isinstance(entity, list):
-            for item in entity:
-                if entity_name in item:
-                    result = self.update_result(
-                        check,
-                        item[entity_name],
-                        entity_name,
-                        entity_type,
-                        results,
-                        scanned_file,
-                        skip_info
-                    )
-                    if result == CheckResult.FAILED:
-                        break
+            analyzed_entities = jmespath.search(entity_type, entity)
+            if isinstance(analyzed_entities, list):
+                for item in analyzed_entities:
+                    if isinstance(item, str):
+                        item = self.set_lines_for_item(item)
+                    if STARTLINE_MARK != item and ENDLINE_MARK != item:
+                        self.update_result(
+                            check,
+                            item,
+                            entity_type,
+                            entity_type,
+                            results,
+                            scanned_file,
+                            skip_info
+                        )
+            else:
+                for item in entity:
+                    if entity_name in item:
+                        result = self.update_result(
+                            check,
+                            item[entity_name],
+                            entity_name,
+                            entity_type,
+                            results,
+                            scanned_file,
+                            skip_info
+                        )
+                        if result == CheckResult.FAILED:
+                            break
 
     def _scan_yaml_object(
             self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any],

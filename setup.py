@@ -89,6 +89,7 @@ setup(
     packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
+        "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
@@ -98,6 +99,7 @@ setup(
     },
     package_data={
         "checkov": ["py.typed"],
+        "checkov.ansible.checks.graph_checks": ["*.yaml"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
         "checkov.dockerfile.checks.graph_checks": ["*.yaml"],

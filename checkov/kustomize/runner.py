@@ -15,6 +15,7 @@ import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -40,7 +41,7 @@ class K8sKustomizeRunner(K8sRunner):
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
