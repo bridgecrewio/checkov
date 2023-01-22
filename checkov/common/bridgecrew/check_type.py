@@ -3,12 +3,13 @@ from dataclasses import dataclass
 
 @dataclass
 class CheckType:
-    BITBUCKET_PIPELINES = "bitbucket_pipelines"
-    CIRCLECI_PIPELINES = "circleci_pipelines"
+    ANSIBLE = "ansible"
     ARGO_WORKFLOWS = "argo_workflows"
     ARM = "arm"
     AZURE_PIPELINES = "azure_pipelines"
     BICEP = "bicep"
+    BITBUCKET_PIPELINES = "bitbucket_pipelines"
+    CIRCLECI_PIPELINES = "circleci_pipelines"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
     GITHUB_CONFIGURATION = "github_configuration"

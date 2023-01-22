@@ -1,0 +1,5 @@
+pass:
+  - "tasks.ansible.builtin.yum.default"
+  - "tasks.yum.enabled"
+fail:
+  - "tasks.yum.disabled"
