@@ -35,7 +35,7 @@ class TestCombinatorPluginMultilineJson(unittest.TestCase):
 
         # then
         assert end_time-start_time < 1  # assert the time limit is not too long for parsing long lines.
-        self.assertEqual(len(report.failed_checks), 5)
+        self.assertEqual(len(report.failed_checks), 6)
         # None of the results is related to multiline scanning - all is detected even if multiline scanning is disabled.
         # This is a different result compared to same data in .yml file.
         self.assertEqual(report.parsing_errors, [])
