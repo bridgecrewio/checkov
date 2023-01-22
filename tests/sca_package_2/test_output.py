@@ -15,8 +15,7 @@ from checkov.sca_package_2.output import (
     CveCount,
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
-    get_vulnerabilities_details_no_deps
-
+    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json
 
 
 def test_create_report_cve_record():
@@ -687,7 +686,6 @@ def test_create_cli_table_for_sca_package_with_dependencies():
     ]
 
     cli_output = create_cli_output(True, cves_records)
-    print(cli_output)
     # then
     assert cli_output == "".join([
         "\t/package-lock.json - CVEs Summary:\n",
@@ -775,3 +773,74 @@ def test_create_cli_output_without_dependencies():
 
          ]
     )
+
+def test_create_cli_table_for_package_with_diff_CVEs():
+    # given
+    rootless_file_path = "package-lock.json"
+    file_abs_path = "/path/to/package-lock.json"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
+    # when
+
+    cves_records = [
+        create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            vulnerability_details=details["details"],
+            licenses='Unknown',
+            root_package_version=details["root_package_version"],
+            root_package_name=details["root_package_name"],
+            root_package_fixed_version=details.get('root_package_fix_version', None)
+        )
+        for details in get_vulnerabilities_details_package_lock_json()
+    ]
+
+    cli_output = create_cli_output(True, cves_records)
+    # then
+    assert cli_output == "".join([
+        "\t/package-lock.json - CVEs Summary:\n",
+        '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+        '\t│ Total CVEs: 27       │ critical: 4          │ high: 11             │ medium: 11           │ low: 1               │ skipped: 0           │\n',
+        '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+        '\t│ To fix 25/27 CVEs, go to https://www.bridgecrew.cloud/                                                                                  │\n',
+        '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+        "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ cypress              │ PRISMA-2021-0070     │ medium               │ 3.8.3                │ 7.2.0                │ 7.2.0                │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ forever              │                      │                      │ 2.0.0                │                      │ N/A                  │\n',
+        '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ low                  │ 0.2.0                │                      │                      │\n',
+        '\t│ component            │                      │                      │                      │                      │                      │\n',
+        '\t│ ├─ glob-parent       │ CVE-2020-28469       │ high                 │ 3.1.0                │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ medium               │                      │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 1.2.5                │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ high                 │ 0.10.0               │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ high                 │ 0.6.9                │                      │                      │\n',
+        '\t│ │                    │ CVE-2002-21803       │ high                 │                      │                      │                      │\n',
+        '\t│ └─ unset-value       │ PRISMA-2022-0049     │ high                 │ 1.0.0                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ grunt                │ CVE-2022-1537        │ high                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │\n',
+        '\t│                      │ CVE-2022-0436        │ medium               │                      │ 1.5.2                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ helmet               │ GHSA-C3M8-X3CG-QM2C  │ medium               │ 2.3.0                │ 2.4.0                │ 2.4.0                │\n',
+        '\t│ ├─ debug             │ CVE-2017-16137       │ medium               │ 2.2.0                │ 2.4.0                │                      │\n',
+        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ medium               │ 1.2.2                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ marked               │ CVE-2022-21681       │ high                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
+        '\t│                      │ CVE-2022-21680       │ high                 │                      │ 4.0.10               │                      │\n',
+        '\t│                      │ PRISMA-2021-0013     │ medium               │                      │ 1.1.1                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mocha                │ PRISMA-2022-0230     │ high                 │ 2.5.3                │ N/A                  │ N/A                  │\n',
+        '\t│                      │ PRISMA-2022-0335     │ medium               │                      │ N/A                  │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mongodb              │ GHSA-MH5C-679W-HH4R  │ high                 │ 2.2.36               │ 3.1.13               │ 3.1.13               │\n',
+        '\t│ └─ bson              │ CVE-2020-7610        │ critical             │ 1.0.9                │                      │                      │\n',
+        '\t│                      │ CVE-2019-2391        │ medium               │                      │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ swig                 │                      │                      │ 1.4.2                │                      │ N/A                  │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ critical             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ medium               │                      │                      │                      │\n',
+        '\t│ └─ uglify-js         │ CVE-2015-8858        │ high                 │ 2.4.24               │                      │                      │\n',
+        '\t│                      │ PRISMA-2021-0169     │ medium               │                      │                      │                      │\n',
+        '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])
