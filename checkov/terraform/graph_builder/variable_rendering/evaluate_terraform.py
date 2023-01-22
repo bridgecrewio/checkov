@@ -250,9 +250,9 @@ def evaluate_map(input_str: str) -> str:
             curly_start = curly_match["start"]
             curly_end = curly_match["end"]
             replaced_matching_map = ' ' + input_str[curly_start: curly_end + 1] + ' '
-            for i in range(1, len(replaced_matching_map)-1):
-                if replaced_matching_map[i] == "=" and replaced_matching_map[i-1] not in ["=", "!"] and replaced_matching_map[i+1] != "=":
-                    replaced_matching_map[i] = ":"
+            for i in range(1, len(replaced_matching_map) - 1):
+                if replaced_matching_map[i] == "=" and replaced_matching_map[i - 1] not in ["=", "!"] and replaced_matching_map[i + 1] != "=":
+                    replaced_matching_map = f'{replaced_matching_map[:i]}:{replaced_matching_map[i + 1:]}'
             input_str = input_str.replace(input_str[curly_start : curly_end + 1], replaced_matching_map[1:-1])
 
     # find map access like {a: b}[a] and extract the right value - b
