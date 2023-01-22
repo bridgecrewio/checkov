@@ -23,17 +23,20 @@ def test_all_frameworks_are_tested() -> None:
     checkov_runners = {value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")}
 
     # remove frameworks, which are not applicable
-    checkov_runners.difference_update({
-        CheckType.BITBUCKET_CONFIGURATION,
-        CheckType.GITHUB_CONFIGURATION,
-        CheckType.GITLAB_CONFIGURATION,
-        CheckType.JSON,
-        CheckType.SCA_IMAGE,
-        CheckType.SCA_PACKAGE,
-        CheckType.YAML,
-    })
+    checkov_runners.difference_update(
+        {
+            CheckType.BITBUCKET_CONFIGURATION,
+            CheckType.GITHUB_CONFIGURATION,
+            CheckType.GITLAB_CONFIGURATION,
+            CheckType.JSON,
+            CheckType.SCA_IMAGE,
+            CheckType.SCA_PACKAGE,
+            CheckType.YAML,
+        }
+    )
 
     assert checkov_runners == {
+        CheckType.ANSIBLE,
         CheckType.ARGO_WORKFLOWS,
         CheckType.ARM,
         CheckType.AZURE_PIPELINES,
@@ -53,6 +56,10 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.TERRAFORM,
         CheckType.TERRAFORM_PLAN,
     }, "Don't forget to add a test case for the new runner here"
+
+
+def test_ansible_framework(caplog: LogCaptureFixture) -> None:
+    run_framework_test(caplog=caplog, framework=CheckType.ANSIBLE)
 
 
 def test_argo_workflows_framework(caplog: LogCaptureFixture) -> None:

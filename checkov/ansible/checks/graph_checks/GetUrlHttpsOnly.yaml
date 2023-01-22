@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_ANSIBLE_2"
+  name: "Ensure that HTTPS url is used with get_url"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.ansible.builtin.get_url
+    - tasks.get_url
+  attribute: url
+  operator: starting_with
+  value: "https://"
