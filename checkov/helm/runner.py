@@ -13,6 +13,7 @@ import yaml
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -32,7 +33,7 @@ class K8sHelmRunner(k8_runner):
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -81,7 +82,7 @@ class DockerfileLocalGraph(LocalGraph[Block]):
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
                     id=resource_type,
-                    source="Dockerfile",
+                    source=GraphSource.DOCKERFILE,
                 )
             )
 
