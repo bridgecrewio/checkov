@@ -1,0 +1,16 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: filter
+      amazon.aws.ec2_instance:
+        state: absent
+        filters:
+          instance-state-name: running
+
+    - name: instance_id
+      amazon.aws.ec2_instance:
+        state: restarted
+        instance_ids:
+          - i-12345678

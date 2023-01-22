@@ -65,6 +65,7 @@ class RunnerFilter(object):
         self.check_threshold = None
         self.skip_check_threshold = None
         self.checks = []
+        self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
         self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
@@ -207,7 +208,7 @@ class RunnerFilter(object):
             explicit_skip or
             regex_match or
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-            check_id in self.suppressed_policies
+            (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
         logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
         logging.debug(
@@ -215,7 +216,7 @@ class RunnerFilter(object):
 
         if should_skip_check:
             result = False
-            logging.debug(f'should_skip_check {check_id}: {result}')
+            logging.debug(f'should_skip_check {check_id}: {should_skip_check}')
         elif should_run_check:
             result = True
             logging.debug(f'should_run_check {check_id}: {result}')
