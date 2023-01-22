@@ -75,6 +75,7 @@ setup(
         "schema",
         "requests>=2.26.0",
         "yarl",
+        "igraph"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
