@@ -130,7 +130,7 @@ class GitLabSast:
             "location": {
                 "file": record.repo_file_path.lstrip("/"),
             },
-            "name": record.check_name,
+            "name": record.short_description,
             "description": details.get("description"),
             "severity": SEVERITY_TO_GITLAB_LEVEL.get(severity, DEFAULT_SEVERITY_GITLAB_LEVEL),
             "solution": details.get("status"),
@@ -154,6 +154,6 @@ class GitLabSast:
             "location": {
                 "file": record.repo_file_path.lstrip("/"),
             },
-            "name": record.check_name,
+            "name": record.short_description,
             "description": f"Package {details['package_name']}@{details['package_version']} has license {details['license']}",
         }
