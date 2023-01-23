@@ -493,3 +493,6 @@ To skip this API call use the flag `--no-guide`.
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
 If you need direct support you can contact us at info@bridgecrew.io.
+
+## Python Version Support
+We follow the official support cycle of Python and we use automated tests for all supported versions of Python. This means we currently support Python 3.7 - 3.11, inclusive. Note that Python 3.7 is reaching EOL on June 2023. After that time, we will have a short grace period where we will continue 3.7 support, and then it will no longer be considered supported for Checkov. If you run into any issues with any non-EOL Python version, please open an Issue.
