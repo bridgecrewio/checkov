@@ -84,7 +84,7 @@ jobs:
           pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install --no-cache-dir dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -135,7 +135,7 @@ jobs:
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install --no-cache-dir dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone terraform-aws-components
         run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
         working-directory: ${{ env.working-directory }}
@@ -175,7 +175,7 @@ jobs:
           pipenv --python ${{ env.PYTHON_VERSION }}     
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install --no-cache-dir dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Run dogfood tests
         run: |
           pipenv run pytest
