@@ -1,0 +1,10 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: https
+      ansible.builtin.get_url:
+        url: https://example.com/path/file.conf
+        dest: /etc/foo.conf
+        mode: '0440'

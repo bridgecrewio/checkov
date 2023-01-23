@@ -10,3 +10,13 @@ Resources:
       MasterUserPassword: 'password'
       MonitoringInterval: '60'
       MonitoringRoleArn: 'arn:aws:iam::123456789012:role/rds-monitoring-role'
+  EnabledNumber:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'
+      MonitoringInterval: 30
+      MonitoringRoleArn: 'arn:aws:iam::123456789012:role/rds-monitoring-role'

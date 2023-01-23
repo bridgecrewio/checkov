@@ -41,7 +41,7 @@ flake8-bugbear = "*"
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
 bc-python-hcl2 = "==0.3.51"
-bc-detect-secrets = "==1.4.8"
+bc-detect-secrets = "==1.4.9"
 bc-jsonpath-ng = "==1.5.8"
 deep-merge = "*"
 tabulate = "*"
@@ -81,6 +81,8 @@ pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sy
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 schema = "*"
 requests = ">=2.26.0"
+yarl = "*"
+igraph = "*"
 
 [requires]
 python_version = "3.7"

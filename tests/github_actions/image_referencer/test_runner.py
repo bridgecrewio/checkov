@@ -8,28 +8,31 @@ from checkov.github_actions.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async, mock_get_image_cached_result_async
+
 RESOURCES_PATH = Path(__file__).parent.parent / "resources/.github/workflows"
 
 
-def test_github_action_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_github_action_workflow(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
+
     file_name = "workflow_with_string_container.yml"
     image_name = "node:14.16"
-    image_id = "sha256:f9b91f78b0"
+    image_id = "sha256:2460522297"
     code_lines = "12-13"
-    image_resource_postfixes = ['zlib', 'openssl', 'musl']
+    image_resource_postfixes = ["go", "openssl", "musl"]
     test_file = RESOURCES_PATH / file_name
 
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=license_statuses_result,
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_license_statuses_async,
     )
     # 'workflow_with_string_container.yml (node:14.16 lines:12-13 (sha256:f9b91f78b0)).musl'
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
@@ -52,11 +55,11 @@ def test_github_action_workflow(mocker: MockerFixture, image_cached_result, lice
     }
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == "node:14.16"
     assert sca_image_report.image_cached_results[0]["packages"] == [
-        {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ['Zlib']}
+        {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
     ]
 
     assert len(sca_image_report.passed_checks) == 1
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 4
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
