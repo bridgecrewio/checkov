@@ -690,17 +690,18 @@ class Checkov:
                                 'created it, not the token ID visible later on. If you are using environment variables, '
                                 'make sure they are properly set and exported.')
 
-            if self.config.repo_id is None and not self.config.list:
+            if not self.config.list:
                 # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
-                # so the repo is not required
-                self.parser.error("--repo-id argument is required when using --bc-api-key")
-            elif self.config.repo_id:
-                repo_id_sections = self.config.repo_id.split('/')
-                if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
-                    self.parser.error(
-                        "--repo-id argument format should be 'organization/repository_name' E.g "
-                        "bridgecrewio/checkov"
-                    )
+                # so the repo is not required and ignored
+                if self.config.repo_id is None:
+                    self.parser.error("--repo-id argument is required when using --bc-api-key")
+                else:
+                    repo_id_sections = self.config.repo_id.split('/')
+                    if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
+                        self.parser.error(
+                            "--repo-id argument format should be 'organization/repository_name' E.g "
+                            "bridgecrewio/checkov"
+                        )
 
             try:
                 bc_integration.bc_api_key = self.config.bc_api_key
