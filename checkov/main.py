@@ -840,7 +840,7 @@ class Checkov:
             return exit_code
         elif self.config.docker_image:
             if self.config.bc_api_key is None:
-                self.parser.error(f"--bc-api-key argument is required when using {self.config.docker_image}")
+                self.parser.error(f"--bc-api-key argument is required when using --docker-image or --image ")
                 return None
             if self.config.dockerfile_path is None:
                 self.parser.error("--dockerfile-path argument is required when using --docker-image or --image")
