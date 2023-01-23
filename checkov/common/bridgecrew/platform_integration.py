@@ -434,7 +434,7 @@ class BcPlatformIntegration:
             _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
-            sleep(3)
+            sleep(4)
             try:
                 _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
             except ClientError:
