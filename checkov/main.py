@@ -11,6 +11,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
+import platform
 
 import argcomplete  # type:ignore[import]
 import configargparse
@@ -144,7 +145,10 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         "python_executable": sys.executable,
         "python_version": sys.version,
         "checkov_executable": sys.argv[0],
-        "args": parser.format_values(sanitize=True).split('\n')
+        "args": parser.format_values(sanitize=True).split('\n'),
+        "OS_system_info": platform.platform(),
+        "CPU_architecture": platform.processor(),
+        "Python_implementation":platform.python_implementation()
     }
 
     logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
@@ -391,7 +395,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         return exit_code
     elif config.docker_image:
         if config.bc_api_key is None:
-            parser.error(f"--bc-api-key argument is required when using --docker-image or --image")
+            parser.error("--bc-api-key argument is required when using --docker-image or --image")
             return None
         if config.dockerfile_path is None:
             parser.error("--dockerfile-path argument is required when using --docker-image or --image")
@@ -572,7 +576,9 @@ class Checkov:
             "python_executable": sys.executable,
             "python_version": sys.version,
             "checkov_executable": sys.argv[0],
-            "args": self.parser.format_values(sanitize=True).split('\n')
+            "args": self.parser.format_values(sanitize=True).split('\n'),
+            "logs": logger.
+
         }
 
         logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
@@ -840,7 +846,7 @@ class Checkov:
             return exit_code
         elif self.config.docker_image:
             if self.config.bc_api_key is None:
-                self.parser.error(f"--bc-api-key argument is required when using --docker-image or --image ")
+                self.parser.error("--bc-api-key argument is required when using --docker-image or --image ")
                 return None
             if self.config.dockerfile_path is None:
                 self.parser.error("--dockerfile-path argument is required when using --docker-image or --image")
