@@ -57,6 +57,7 @@ jobs:
         with:
           languages: python
           setup-python-dependencies: false
+          config-file: ./.github/codeql-config.yml
       - name: Autobuild
         uses: github/codeql-action/autobuild@515828d97454b8354517688ddc5b48402b723750  # v2
       - name: Perform CodeQL Analysis
