@@ -1,0 +1,5 @@
+pass:
+  - "google_sql_database_instance.postgresql-instance-ok-1"
+  - "google_sql_database_instance.postgresql-instance-ok-2"
+fail:
+  - "google_sql_database_instance.postgresql-instance-not-ok-1"

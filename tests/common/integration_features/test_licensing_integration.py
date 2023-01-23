@@ -40,7 +40,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'SCA'})
 
         self.assertEqual(set(checkov_runners), {
-            'bitbucket_pipelines', 'circleci_pipelines', 'argo_workflows', 'arm', 'azure_pipelines', 'bicep',
+            'bitbucket_pipelines', 'circleci_pipelines', 'ansible', 'argo_workflows', 'arm', 'azure_pipelines', 'bicep',
             'cloudformation', 'dockerfile', 'github_configuration', 'github_actions', 'gitlab_configuration',
             'gitlab_ci', 'bitbucket_configuration', 'helm', 'json', 'yaml', 'kubernetes', 'kustomize', 'openapi',
             'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan'
@@ -58,6 +58,7 @@ class TestLicensingIntegration(unittest.TestCase):
 
         self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CIRCLECI_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.ANSIBLE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
         self.assertEqual(CodeCategoryMapping.get(CheckType.BICEP), CodeCategoryType.IAC)
@@ -84,6 +85,7 @@ class TestLicensingIntegration(unittest.TestCase):
 
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BITBUCKET_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CIRCLECI_PIPELINES), CustomerSubscription.IAC)
+        self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ANSIBLE), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARM), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.AZURE_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BICEP), CustomerSubscription.IAC)
