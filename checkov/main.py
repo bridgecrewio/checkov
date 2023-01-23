@@ -11,7 +11,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
-import platform
 
 import argcomplete  # type:ignore[import]
 import configargparse
@@ -146,7 +145,6 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         "python_version": sys.version,
         "checkov_executable": sys.argv[0],
         "args": parser.format_values(sanitize=True).split('\n')
-
     }
 
     logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
@@ -575,7 +573,6 @@ class Checkov:
             "python_version": sys.version,
             "checkov_executable": sys.argv[0],
             "args": self.parser.format_values(sanitize=True).split('\n')
-
         }
 
         logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
