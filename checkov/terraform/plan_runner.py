@@ -249,7 +249,8 @@ class Runner(TerraformRunner):
     def get_entity_context_and_evaluations(self, entity):
         raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
                                               entity[CustomAttributes.FILE_PATH])
-        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
+        if raw_context:
+            raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path):
