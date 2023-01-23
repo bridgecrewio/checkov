@@ -4,6 +4,7 @@ import json
 import logging
 import os.path
 import re
+import time
 import uuid
 import webbrowser
 from collections import namedtuple
@@ -430,7 +431,17 @@ class BcPlatformIntegration:
 
         base_path = re.sub(r'checkov/(.*?)/src', r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
-        _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        try:
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        except ClientError:
+            logging.warning("Got access denied, retrying as s3 role changes should be propagated")
+            sleep(3)
+            try:
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            except ClientError:
+                logging.error("Getting access denied consistently, aborting secrets verification")
+                return None
+
         return s3_path
 
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
