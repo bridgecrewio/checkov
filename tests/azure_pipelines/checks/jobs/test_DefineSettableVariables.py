@@ -16,8 +16,8 @@ def test_examples():
     summary = report.get_summary()
 
     passing_resources = {
-        f"jobs[1](PassSetNormalVariable).steps[0]",
-        f"jobs[1](PassSetNormalVariable).steps[1]",
+        f"stages[0](Example).jobs[0](PassDefineSettableVariables).steps[0]",
+        f"stages[0](Example).jobs[0](PassDefineSettableVariables).steps[1]",
     }
 
     failing_resources = {
