@@ -481,7 +481,10 @@ class BcPlatformIntegration:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
                 raise
             except JSONDecodeError:
-                logging.warning(f"Response of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                if request and request.data:
+                    logging.warning(f"Response of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                else:
+                    logging.warning(f"Response of {self.integrations_api_url} is empty")
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 raise
             finally:
