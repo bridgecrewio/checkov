@@ -395,7 +395,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         return exit_code
     elif config.docker_image:
         if config.bc_api_key is None:
-            parser.error(f"--bc-api-key argument is required when using --docker-image or --image")
+            parser.error("--bc-api-key argument is required when using --docker-image or --image")
             return None
         if config.dockerfile_path is None:
             parser.error("--dockerfile-path argument is required when using --docker-image or --image")
@@ -848,7 +848,7 @@ class Checkov:
             return exit_code
         elif self.config.docker_image:
             if self.config.bc_api_key is None:
-                self.parser.error(f"--bc-api-key argument is required when using --docker-image or --image ")
+                self.parser.error("--bc-api-key argument is required when using --docker-image or --image ")
                 return None
             if self.config.dockerfile_path is None:
                 self.parser.error("--dockerfile-path argument is required when using --docker-image or --image")
