@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.azure_pipelines.checks.base_azure_pipelines_check import BaseAzurePipelinesCheck
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.yaml_doc.enums import BlockType
 
 
@@ -14,6 +14,7 @@ class DetectImageUsage(BaseAzurePipelinesCheck):
         super().__init__(
             name=name,
             id=id,
+            categories=(CheckCategories.SUPPLY_CHAIN,),
             block_type=BlockType.ARRAY,
             supported_entities=('*.image[]', '*.vmImage[]', '*.container[]')
         )
