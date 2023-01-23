@@ -1,0 +1,22 @@
+metadata:
+  name: "Ensure PostgreSQL database flag 'log_parser_stats' is set to 'off'"
+  id: "CKV2_GCP_15"
+  category: "LOGGING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "database_version"
+      operator: "not_contains"
+      value: "POSTGRES"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "settings.database_flags[*]"
+      operator: "jsonpath_not_exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_sql_database_instance"
+      attribute: "settings.database_flags[?(@.name == log_parser_stats & @.value == on)]"
+      operator: "jsonpath_not_exists"

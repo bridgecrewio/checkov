@@ -1,4 +1,4 @@
 pass:
-  - 'Deployment.default.my-nginx'
+  - 'Pod.default.my-nginx.app-nginx'
 fail:
-  - 'StatefulSet.default.cassandra'
+  - 'Pod.default.cassandra.app-cassandra'

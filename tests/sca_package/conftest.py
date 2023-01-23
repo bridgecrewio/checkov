@@ -8,8 +8,6 @@ from pytest_mock import MockerFixture
 
 import pytest
 
-os.environ['CHECKOV_RUN_SCA_PACKAGE_SCAN_V2'] = 'false'
-
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.common.output.report import Report
@@ -17,6 +15,11 @@ from checkov.sca_package.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
+
+@pytest.fixture(autouse=True)
+def mock_env_vars():
+    with mock.patch.dict(os.environ, {"CHECKOV_RUN_SCA_PACKAGE_SCAN_V2": "false"}):
+        yield
 
 
 @pytest.fixture()

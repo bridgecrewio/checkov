@@ -26,10 +26,12 @@ class TestKubernetesGraphManager(TestGraph):
                 "Service.default.a"],
             os.path.join(root_dir, "graph.yaml"): [
                 "StatefulSet.default.cassandra",
-                "Deployment.default.my-nginx"]
+                "Deployment.default.my-nginx",
+                "Pod.default.cassandra.app-cassandra",
+                "Pod.default.my-nginx.app-nginx"]
         }
-        self.assertEqual(5, len(local_graph.vertices))
-        self.assertEqual(5, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(7, len(local_graph.vertices))
+        self.assertEqual(7, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
 
         for v in local_graph.vertices:
             self.assertIn(v.name, expected_resources_by_file[v.path])

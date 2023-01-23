@@ -220,18 +220,24 @@ class EntropyKeywordCombinator(BasePlugin):
                         kwargs=kwargs
                     )
                 else:
+                    # preprocess line before detecting secrets - add quotes on potential secrets to allow triggering
+                    # entropy detector
                     for pt in keyword_on_key:
                         if pt.secret_value:
                             quoted_secret = f"\"{pt.secret_value}\""
                             if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
                                 line = line.replace(pt.secret_value, f"\"{pt.secret_value}\"", 1)
-                    return self.detect_secret(
+                    detected_secrets = self.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
                         line=line,
                         line_number=line_number,
                         kwargs=kwargs
                     )
+                    # postprocess detected secrets - filter out potential secrets on keyword and re-run secret detection
+                    # on their value only
+                    self.remove_fp_secrets_in_keys(detected_secrets, line)
+                    return detected_secrets
 
             # not so classic key-value pair, from multiline, that is only in an array format.
             # The scan searches forwards and backwards for a potential secret pair, so no duplicates expected.
@@ -268,6 +274,14 @@ class EntropyKeywordCombinator(BasePlugin):
             )
 
         return set()
+
+    def remove_fp_secrets_in_keys(self, detected_secrets: set[PotentialSecret], line: str) -> None:
+        for detected_secret in detected_secrets:
+            if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
+                    detected_secret.secret_value):
+                # Found keyword prefix as potential secret
+                detected_secrets.remove(detected_secret)
+                break
 
     def analyze_multiline(
             self,

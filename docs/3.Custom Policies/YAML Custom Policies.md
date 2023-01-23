@@ -317,6 +317,22 @@ definition:
 
 ## Supported Frameworks
 
+### Ansible
+Following `resource_types` are supported
+
+- `tasks.[module name]`
+
+ex.
+```yaml
+cond_type: attribute
+resource_types:
+  - tasks.ansible.builtin.uri
+  - tasks.uri
+attribute: url
+operator: starting_with
+value: "https://"
+```
+
 ### Bicep
 All resources can be referenced under `resource_types`.
 Any kind of connection between resources is supported

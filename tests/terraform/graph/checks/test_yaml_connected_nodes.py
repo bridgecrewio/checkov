@@ -7,7 +7,6 @@ from .test_yaml_policies import load_yaml_data, get_policy_results
 
 class TestYamlConnectedNodes(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
