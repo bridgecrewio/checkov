@@ -145,10 +145,8 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         "python_executable": sys.executable,
         "python_version": sys.version,
         "checkov_executable": sys.argv[0],
-        "args": parser.format_values(sanitize=True).split('\n'),
-        "OS_system_info": platform.platform(),
-        "CPU_architecture": platform.processor(),
-        "Python_implementation": platform.python_implementation()
+        "args": parser.format_values(sanitize=True).split('\n')
+
     }
 
     logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
@@ -576,10 +574,7 @@ class Checkov:
             "python_executable": sys.executable,
             "python_version": sys.version,
             "checkov_executable": sys.argv[0],
-            "args": self.parser.format_values(sanitize=True).split('\n'),
-            "OS_system_info": platform.platform(),
-            "CPU_architecture": platform.processor(),
-            "Python_implementation": platform.python_implementation()
+            "args": self.parser.format_values(sanitize=True).split('\n')
 
         }
 
