@@ -269,6 +269,11 @@ checkov --framework sca_image --docker-image sha256:1234example --dockerfile-pat
 checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
 ```
 
+You can use --image flag also to scan container image instead of --docker-image:
+```sh
+checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
+
 Run an SCA scan of packages in a repo:
 ```sh
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
