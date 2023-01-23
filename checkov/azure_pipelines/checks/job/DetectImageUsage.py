@@ -15,8 +15,8 @@ class DetectImageUsage(BaseAzurePipelinesCheck):
             name=name,
             id=id,
             categories=(CheckCategories.SUPPLY_CHAIN,),
-            block_type=BlockType.ARRAY,
-            supported_entities=('*.image[]', '*.vmImage[]', '*.container[]')
+            supported_entities=('*.image[]', '*.vmImage[]', '*.container[]'),
+            block_type=BlockType.ARRAY
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
