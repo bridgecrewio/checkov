@@ -17,7 +17,7 @@ import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
-
+import platform
 from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
@@ -144,7 +144,10 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         "python_executable": sys.executable,
         "python_version": sys.version,
         "checkov_executable": sys.argv[0],
-        "args": parser.format_values(sanitize=True).split('\n')
+        "args": parser.format_values(sanitize=True).split('\n'),
+        "OS_system_info": platform.platform(),
+        "CPU_architecture": platform.processor(),
+        "Python_implementation": platform.python_implementation()
     }
 
     logger.debug(f'Run metadata: {json.dumps(run_metadata, indent=2)}')
@@ -572,7 +575,10 @@ class Checkov:
             "python_executable": sys.executable,
             "python_version": sys.version,
             "checkov_executable": sys.argv[0],
-            "args": self.parser.format_values(sanitize=True).split('\n')
+            "args": self.parser.format_values(sanitize=True).split('\n'),
+            "OS_system_info": platform.platform(),
+            "CPU_architecture": platform.processor(),
+            "Python_implementation": platform.python_implementation()
         }
 
         logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
