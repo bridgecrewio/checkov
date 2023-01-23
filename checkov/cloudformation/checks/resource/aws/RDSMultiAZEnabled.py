@@ -15,6 +15,7 @@ class RDSMultiAZEnabled(BaseResourceCheck):
         if properties:
             engine = properties.get("Engine")
             # Aurora is replicated across all AZs and doesn't require MultiAZ to be set
+            # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html#cfn-rds-dbinstance-multiaz
             if engine and engine in aurora:
                 return CheckResult.PASSED
             value = properties.get("MultiAZ")
