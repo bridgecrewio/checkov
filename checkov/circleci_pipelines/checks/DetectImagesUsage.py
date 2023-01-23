@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 
 
-class DetectImageUsage(BaseCircleCIPipelinesCheck):
+class CircleCiPipelinesDetectImageUsage(BaseCircleCIPipelinesCheck):
     def __init__(self) -> None:
         name = "Detecting image usages in circleci pipelines"
         id = "CKV_CIRCLECIPIPELINES_8"
@@ -24,4 +24,4 @@ class DetectImageUsage(BaseCircleCIPipelinesCheck):
         return CheckResult.PASSED, conf
 
 
-check = DetectImageUsage()
+check = CircleCiPipelinesDetectImageUsage()

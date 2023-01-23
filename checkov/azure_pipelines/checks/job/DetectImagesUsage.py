@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.yaml_doc.enums import BlockType
 
 
-class DetectImageUsage(BaseAzurePipelinesCheck):
+class AzurePipelinesDetectImageUsage(BaseAzurePipelinesCheck):
     def __init__(self) -> None:
         name = "Detecting image usages in azure pipelines workflows"
         id = "CKV_AZUREPIPELINES_5"
@@ -23,4 +23,4 @@ class DetectImageUsage(BaseAzurePipelinesCheck):
         return CheckResult.PASSED, conf
 
 
-check = DetectImageUsage()
+check = AzurePipelinesDetectImageUsage()

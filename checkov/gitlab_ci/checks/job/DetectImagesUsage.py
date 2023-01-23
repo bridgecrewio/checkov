@@ -7,7 +7,7 @@ from checkov.gitlab_ci.checks.base_gitlab_ci_check import BaseGitlabCICheck
 from checkov.yaml_doc.enums import BlockType
 
 
-class DetectImageUsage(BaseGitlabCICheck):
+class GitLabCiDetectImageUsage(BaseGitlabCICheck):
     def __init__(self) -> None:
         name = "Detecting image usages in gitlab workflows"
         id = "CKV_GITLABCI_3"
@@ -22,4 +22,4 @@ class DetectImageUsage(BaseGitlabCICheck):
         return CheckResult.PASSED, conf
 
 
-check = DetectImageUsage()
+check = GitLabCiDetectImageUsage()
