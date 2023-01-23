@@ -51,10 +51,12 @@ def test_iac_output():
     # remove dynamic data
     for vul in output["vulnerabilities"]:
         del vul["id"]
+        del vul["links"]
+        for ident in vul["identifiers"]:
+            del ident["url"]
     assert output["vulnerabilities"] == [
         {
-            "identifiers": [{"name": "CKV2_AWS_6", "type": "checkov", "url": None, "value": "CKV2_AWS_6"}],
-            "links": [{"url": None}],
+            "identifiers": [{"name": "CKV2_AWS_6", "type": "checkov", "value": "CKV2_AWS_6"}],
             "location": {"file": "fixtures/main.tf", "start_line": 1, "end_line": 8},
             "name": "Ensure that S3 bucket has a Public Access block",
             "description": "Further info can be found None",
@@ -62,8 +64,7 @@ def test_iac_output():
             "solution": "Further info can be found None",
         },
         {
-            "identifiers": [{"name": "CKV_AWS_18", "type": "checkov", "url": None, "value": "CKV_AWS_18"}],
-            "links": [{"url": None}],
+            "identifiers": [{"name": "CKV_AWS_18", "type": "checkov", "value": "CKV_AWS_18"}],
             "location": {"file": "fixtures/main.tf", "start_line": 1, "end_line": 8},
             "name": "Ensure the S3 bucket has access logging enabled",
             "description": "Further info can be found None",
