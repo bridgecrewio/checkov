@@ -4,7 +4,6 @@ import json
 import logging
 import os.path
 import re
-import time
 import uuid
 import webbrowser
 from collections import namedtuple
