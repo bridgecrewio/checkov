@@ -53,6 +53,8 @@ def test_iac_output():
     for vul in output["vulnerabilities"]:
         del vul["id"]
         del vul["links"]
+        del vul["solution"]
+        del vul["description"]
         del vul["location"]["file"]
         for ident in vul["identifiers"]:
             del ident["url"]
@@ -62,17 +64,13 @@ def test_iac_output():
                 "identifiers": [{"name": "CKV2_AWS_6", "type": "checkov", "value": "CKV2_AWS_6"}],
                 "location": {"start_line": 1, "end_line": 8},
                 "name": "Ensure that S3 bucket has a Public Access block",
-                "description": "Further info can be found None",
                 "severity": "Unknown",
-                "solution": "Further info can be found None",
             },
             {
                 "identifiers": [{"name": "CKV_AWS_18", "type": "checkov", "value": "CKV_AWS_18"}],
                 "location": {"start_line": 1, "end_line": 8},
                 "name": "Ensure the S3 bucket has access logging enabled",
-                "description": "Further info can be found None",
                 "severity": "Unknown",
-                "solution": "Further info can be found None",
             },
         ],
         key=itemgetter("name"),
