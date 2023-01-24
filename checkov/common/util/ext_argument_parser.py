@@ -116,12 +116,6 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             version=version,
         )
         self.add(
-            "--support",
-            action="store_true",
-            help="store your logs to support ASAP",
-            default=None
-        )
-        self.add(
             "-d",
             "--directory",
             action="append",
