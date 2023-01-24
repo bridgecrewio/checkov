@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.8",
+        "bc-detect-secrets==1.4.9",
         "bc-jsonpath-ng==1.5.8",
         "deep-merge",
         "tabulate",
@@ -60,13 +60,13 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<4.0.0",
+        "cyclonedx-python-lib<4.0.0,>=2.4.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
         "aiodns",
         "aiomultiprocess",
-        "jsonschema>=4.6.0,<5.0.0",
+        "jsonschema<5.0.0,>=4.6.0",
         "prettytable>=3.0.0",
         "pycep-parser==0.3.9",
         "charset-normalizer",
@@ -74,6 +74,8 @@ setup(
         "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "schema",
         "requests>=2.26.0",
+        "yarl",
+        "igraph"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
@@ -87,6 +89,7 @@ setup(
     packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
+        "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
@@ -96,6 +99,7 @@ setup(
     },
     package_data={
         "checkov": ["py.typed"],
+        "checkov.ansible.checks.graph_checks": ["*.yaml"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
         "checkov.dockerfile.checks.graph_checks": ["*.yaml"],

@@ -7,7 +7,7 @@ from checkov.kubernetes.image_referencer.base_provider import BaseKubernetesProv
 
 if TYPE_CHECKING:
     from networkx import DiGraph
-    from checkov.kubernetes.image_referencer.base_provider import _ExtractImagesCallableAlias
+    from checkov.common.images.graph.image_referencer_provider import _ExtractImagesCallableAlias
 
 
 class KubernetesProvider(BaseKubernetesProvider):

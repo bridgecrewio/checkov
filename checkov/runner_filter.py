@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
 
+from checkov.secrets.consts import ValidationStatus
+
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -52,6 +54,9 @@ class RunnerFilter(object):
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
 
+        self.skip_invalid_secrets = skip_checks and any(skip_check.capitalize() == ValidationStatus.INVALID.value
+                                                        for skip_check in skip_checks)
+
         self.use_enforcement_rules = use_enforcement_rules
         self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
 
@@ -60,6 +65,7 @@ class RunnerFilter(object):
         self.check_threshold = None
         self.skip_check_threshold = None
         self.checks = []
+        self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
         self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
@@ -202,7 +208,7 @@ class RunnerFilter(object):
             explicit_skip or
             regex_match or
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-            check_id in self.suppressed_policies
+            (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
         logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
         logging.debug(
@@ -210,7 +216,7 @@ class RunnerFilter(object):
 
         if should_skip_check:
             result = False
-            logging.debug(f'should_skip_check {check_id}: {result}')
+            logging.debug(f'should_skip_check {check_id}: {should_skip_check}')
         elif should_run_check:
             result = True
             logging.debug(f'should_run_check {check_id}: {result}')
@@ -261,6 +267,10 @@ class RunnerFilter(object):
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
         return above_min and not below_max
+
+    @staticmethod
+    def secret_validation_status_matches(secret_validation_status: str, statuses_list: list[str]) -> bool:
+        return secret_validation_status in statuses_list
 
     @staticmethod
     def notify_external_check(check_id: str) -> None:

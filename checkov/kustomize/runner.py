@@ -15,6 +15,7 @@ import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -40,7 +41,7 @@ class K8sKustomizeRunner(K8sRunner):
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
         db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
@@ -170,7 +171,7 @@ class K8sKustomizeRunner(K8sRunner):
                 entity_file_path: str = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path: str = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id: str = entity[CustomAttributes.ID]
-                entity_context = self.context[entity_file_path][entity_id]
+                entity_context = super().get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
                 if entity_file_abs_path in kustomize_file_mappings:
                     realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[entity_file_abs_path]]
@@ -181,14 +182,14 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
-                code_lines = entity_context.get("code_lines")
+                code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),

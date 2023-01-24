@@ -4,6 +4,7 @@ import json
 import logging
 import os.path
 import re
+import uuid
 import webbrowser
 from collections import namedtuple
 from concurrent import futures
@@ -58,6 +59,7 @@ EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
 # found at https://regexland.com/base64/
 BASE64_PATTERN = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
+REPO_PATH_PATTERN = re.compile(r'checkov/(.*?)/src')
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
 
@@ -422,9 +424,24 @@ class BcPlatformIntegration:
                           f' repo_path={self.repo_path}, bucket={self.bucket}')
             return None
 
-        repo_path_without_src = os.path.dirname(self.repo_path)
-        s3_path = f'{repo_path_without_src}/{checkov_results_prefix}/{CheckType.SECRETS}/secrets_to_verify.json'
-        _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        if not bc_integration.bc_api_key or not os.getenv("CKV_VALIDATE_SECRETS"):
+            logging.debug('Skipping persistence of enriched secrets object as secrets verification is off,'
+                          ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
+            return None
+
+        base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
+        s3_path = f'{base_path}/{uuid.uuid4()}.json'
+        try:
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+        except ClientError:
+            logging.warning("Got access denied, retrying as s3 role changes should be propagated")
+            sleep(4)
+            try:
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            except ClientError:
+                logging.error("Getting access denied consistently, aborting secrets verification")
+                return None
+
         return s3_path
 
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
@@ -481,6 +498,8 @@ class BcPlatformIntegration:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
                 raise
             except JSONDecodeError:
+                if request:
+                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 raise
             finally:
