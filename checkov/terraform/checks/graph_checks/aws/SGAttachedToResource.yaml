@@ -22,6 +22,7 @@ definition:
         - aws_dms_replication_instance
         - aws_docdb_cluster
         - aws_ec2_client_vpn_network_association
+        - aws_ec2_spot_fleet_request
         - aws_ecs_service
         - aws_efs_mount_target
         - aws_eks_cluster
