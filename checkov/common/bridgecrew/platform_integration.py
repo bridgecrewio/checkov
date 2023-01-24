@@ -59,6 +59,7 @@ EMAIL_PATTERN = re.compile(r"[^@]+@[^@]+\.[^@]+")
 UUID_V4_PATTERN = re.compile(r"^[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}$")
 # found at https://regexland.com/base64/
 BASE64_PATTERN = re.compile(r"^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$")
+REPO_PATH_PATTERN = re.compile(r'checkov/(.*?)/src')
 
 ACCOUNT_CREATION_TIME = 180  # in seconds
 
@@ -428,7 +429,7 @@ class BcPlatformIntegration:
                           ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return None
 
-        base_path = re.sub(r'checkov/(.*?)/src', r'original_secrets/\1', self.repo_path)
+        base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
             _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
