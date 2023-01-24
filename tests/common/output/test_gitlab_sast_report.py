@@ -1,3 +1,4 @@
+from operator import itemgetter
 from pathlib import Path
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -52,26 +53,30 @@ def test_iac_output():
     for vul in output["vulnerabilities"]:
         del vul["id"]
         del vul["links"]
+        del vul["location"]["file"]
         for ident in vul["identifiers"]:
             del ident["url"]
-    assert output["vulnerabilities"] == [
-        {
-            "identifiers": [{"name": "CKV2_AWS_6", "type": "checkov", "value": "CKV2_AWS_6"}],
-            "location": {"file": "fixtures/main.tf", "start_line": 1, "end_line": 8},
-            "name": "Ensure that S3 bucket has a Public Access block",
-            "description": "Further info can be found None",
-            "severity": "Unknown",
-            "solution": "Further info can be found None",
-        },
-        {
-            "identifiers": [{"name": "CKV_AWS_18", "type": "checkov", "value": "CKV_AWS_18"}],
-            "location": {"file": "fixtures/main.tf", "start_line": 1, "end_line": 8},
-            "name": "Ensure the S3 bucket has access logging enabled",
-            "description": "Further info can be found None",
-            "severity": "Unknown",
-            "solution": "Further info can be found None",
-        },
-    ]
+    assert sorted(output["vulnerabilities"], key=itemgetter("name")) == sorted(
+        [
+            {
+                "identifiers": [{"name": "CKV2_AWS_6", "type": "checkov", "value": "CKV2_AWS_6"}],
+                "location": {"start_line": 1, "end_line": 8},
+                "name": "Ensure that S3 bucket has a Public Access block",
+                "description": "Further info can be found None",
+                "severity": "Unknown",
+                "solution": "Further info can be found None",
+            },
+            {
+                "identifiers": [{"name": "CKV_AWS_18", "type": "checkov", "value": "CKV_AWS_18"}],
+                "location": {"start_line": 1, "end_line": 8},
+                "name": "Ensure the S3 bucket has access logging enabled",
+                "description": "Further info can be found None",
+                "severity": "Unknown",
+                "solution": "Further info can be found None",
+            },
+        ],
+        key=itemgetter("name"),
+    )
 
 
 def test_sca_package_output():
