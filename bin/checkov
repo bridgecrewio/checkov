@@ -2,7 +2,7 @@
 from checkov.main import Checkov
 import warnings
 import sys
-#fedsfcsd
+
 if __name__ == '__main__':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=SyntaxWarning)
