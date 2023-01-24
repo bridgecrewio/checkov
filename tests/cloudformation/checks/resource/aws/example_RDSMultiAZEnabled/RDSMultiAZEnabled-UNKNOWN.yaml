@@ -3,7 +3,7 @@ Resources:
     Type: 'AWS::RDS::DBInstance'
     Properties:
       DBName: 'mydb_enabled'
-      DBInstanceClass: 'db.t3.micro'
+      DBInstanceClass: 'db.r3.2xlarge'
       Engine: 'aurora-mysql'
       MasterUsername: 'master'
       MasterUserPassword: 'password'
