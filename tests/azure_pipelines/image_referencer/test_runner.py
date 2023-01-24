@@ -39,7 +39,7 @@ def test_azure_pipelines_workflow(mocker: MockerFixture):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(azure_pipelines_report.resources) == 0
-    assert len(azure_pipelines_report.passed_checks) == 0
+    assert len(azure_pipelines_report.passed_checks) == 1
     assert len(azure_pipelines_report.failed_checks) == 2
     assert len(azure_pipelines_report.skipped_checks) == 0
     assert len(azure_pipelines_report.parsing_errors) == 0
