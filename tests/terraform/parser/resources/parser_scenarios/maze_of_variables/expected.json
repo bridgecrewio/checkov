@@ -41,7 +41,7 @@
         "bucket": {
           "source": ["./bucket"],
           "name": ["module-input"],
-          "__resolved__": ["bucket/bucket.tf[maze.tf#0]"],
+          "__resolved__": ["bucket/bucket.tf([{maze.tf#0}])"],
           "__start_line__": 20,
           "__end_line__": 23,
           "__address__": "bucket"
@@ -63,7 +63,7 @@
       }
     ]
   },
-  "bucket/bucket.tf[maze.tf#0]": {
+  "bucket/bucket.tf([{maze.tf#0}])": {
     "variable": [
       {
         "name": {
