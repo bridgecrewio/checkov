@@ -18,6 +18,7 @@ from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
 
+from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
@@ -108,7 +109,8 @@ DEFAULT_RUNNERS = [
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner()
+    azure_pipelines_runner(),
+    ansible_runner(),
 ]
 
 

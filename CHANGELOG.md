@@ -1,6 +1,34 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.281...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.292...HEAD)
+
+## [2.2.292](https://github.com/bridgecrewio/checkov/compare/2.2.289...2.2.292) - 2023-01-23
+
+### Feature
+
+- **terraform:** new app service checks for azurerm - [#4072](https://github.com/bridgecrewio/checkov/pull/4072)
+
+### Bug Fix
+
+- **general:** In case of a non-JSON response, log the response - [#4304](https://github.com/bridgecrewio/checkov/pull/4304)
+- **terraform_plan:** fix in deep analysis - [#4306](https://github.com/bridgecrewio/checkov/pull/4306)
+- **terraform:** fix default behaviour of CKV_GCP_19 - [#4289](https://github.com/bridgecrewio/checkov/pull/4289)
+
+## [2.2.289](https://github.com/bridgecrewio/checkov/compare/2.2.281...2.2.289) - 2023-01-22
+
+### Feature
+
+- **general:** add Ansible framework - [#4244](https://github.com/bridgecrewio/checkov/pull/4244)
+- **general:** Allow using `--repo-root-for-plan-enrichment` flag in GitHub Actions - [#4292](https://github.com/bridgecrewio/checkov/pull/4292)
+- **secrets:** add new sanity test files for base64 entropy detector - [#4298](https://github.com/bridgecrewio/checkov/pull/4298)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4265](https://github.com/bridgecrewio/checkov/pull/4265)
+
+### Bug Fix
+
+- **sca:** fix dependency tree cli print - [#4282](https://github.com/bridgecrewio/checkov/pull/4282)
+- **terraform:** fix Exception in image ref - [#4297](https://github.com/bridgecrewio/checkov/pull/4297)
+- **terraform:** fix in variable rendering - [#4296](https://github.com/bridgecrewio/checkov/pull/4296)
+- **terraform:** Fix policy str in graph checks - [#4286](https://github.com/bridgecrewio/checkov/pull/4286)
 
 ## [2.2.281](https://github.com/bridgecrewio/checkov/compare/2.2.278...2.2.281) - 2023-01-19
 
