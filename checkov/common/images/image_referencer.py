@@ -231,6 +231,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
 
             image_id = ImageReferencer.inspect(image.name)
             if not image_id:
+                logging.info(f"(IR debug) No image with {image.name=} found. hence {image_id=}.")
                 return None
 
             scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
