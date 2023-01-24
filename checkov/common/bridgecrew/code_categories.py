@@ -14,11 +14,13 @@ class CodeCategoryType:
 
 
 CodeCategoryMapping = {
-    CheckType.BITBUCKET_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
-    CheckType.CIRCLECI_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.ANSIBLE: CodeCategoryType.IAC,
+    CheckType.ARGO_WORKFLOWS: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.ARM: CodeCategoryType.IAC,
     CheckType.AZURE_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.BICEP: CodeCategoryType.IAC,
+    CheckType.BITBUCKET_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
+    CheckType.CIRCLECI_PIPELINES: CodeCategoryType.SUPPLY_CHAIN,
     CheckType.CLOUDFORMATION: CodeCategoryType.IAC,
     CheckType.DOCKERFILE: CodeCategoryType.IAC,
     CheckType.GITHUB_CONFIGURATION: CodeCategoryType.SUPPLY_CHAIN,
@@ -38,7 +40,6 @@ CodeCategoryMapping = {
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
-    CheckType.ARGO_WORKFLOWS: CodeCategoryType.SUPPLY_CHAIN
 }
 
 

@@ -23,7 +23,6 @@ class TestYamlPolicies(TestYamlPoliciesBase):
                          os.path.join(file_dir, "test_checks"), "cloudformation", __file__, args)
 
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

@@ -8,6 +8,7 @@ from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -69,7 +70,7 @@ class Runner(TerraformRunner):
                  graph_manager: TerraformGraphManager | None = None,
                  db_connector: NetworkxConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
-                 source: str = "Terraform") -> None:
+                 source: str = GraphSource.TERRAFORM) -> None:
         super().__init__(
             graph_class=graph_class,
             graph_manager=graph_manager,
@@ -248,7 +249,8 @@ class Runner(TerraformRunner):
     def get_entity_context_and_evaluations(self, entity):
         raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
                                               entity[CustomAttributes.FILE_PATH])
-        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
+        if raw_context:
+            raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path):

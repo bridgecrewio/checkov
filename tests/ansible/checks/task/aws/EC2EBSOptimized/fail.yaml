@@ -1,0 +1,27 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: default
+      amazon.aws.ec2_instance:
+        name: "public-compute-instance"
+        key_name: "prod-ssh-key"
+        vpc_subnet_id: subnet-5ca1ab1e
+        instance_type: c5.large
+        security_group: default
+        network:
+          assign_public_ip: true
+        image_id: ami-123456
+
+    - name: disabled
+      ec2_instance:
+        name: "public-compute-instance"
+        key_name: "prod-ssh-key"
+        vpc_subnet_id: subnet-5ca1ab1e
+        instance_type: c5.large
+        security_group: default
+        network:
+          assign_public_ip: false
+        image_id: ami-123456
+        ebs_optimized: false

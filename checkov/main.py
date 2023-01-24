@@ -18,6 +18,10 @@ import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
+
+
+from checkov.ansible.runner import Runner as ansible_runner
+
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
@@ -31,6 +35,8 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
     integration as suppressions_integration
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
+    integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -108,7 +114,8 @@ DEFAULT_RUNNERS = [
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner()
+    azure_pipelines_runner(),
+    ansible_runner(),
 ]
 
 
@@ -332,8 +339,11 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
-
-    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
+    policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
+    bc_cloned_checks = custom_policies_integration.bc_cloned_checks
+    runner_filter.bc_cloned_checks = bc_cloned_checks
+    custom_policies_integration.policy_level_suppression = policy_level_suppression
+    runner_filter.set_suppressed_policies(policy_level_suppression)
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -390,13 +400,13 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         return exit_code
     elif config.docker_image:
         if config.bc_api_key is None:
-            parser.error("--bc-api-key argument is required when using --docker-image")
+            parser.error("--bc-api-key argument is required when using --docker-image or --image")
             return None
         if config.dockerfile_path is None:
-            parser.error("--dockerfile-path argument is required when using --docker-image")
+            parser.error("--dockerfile-path argument is required when using --docker-image or --image")
             return None
         if config.branch is None:
-            parser.error("--branch argument is required when using --docker-image")
+            parser.error("--branch argument is required when using --docker-image or --image")
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
@@ -681,6 +691,7 @@ class Checkov:
                 print(self.parser.format_values(sanitize=True))
                 return None
 
+
             if self.config.bc_api_key == '':
                 self.parser.error(
                     'The --bc-api-key flag was specified but the value was blank. If this value was passed as a '
@@ -701,7 +712,7 @@ class Checkov:
                     # so the repo is not required
                     self.parser.error("--repo-id argument is required when using --bc-api-key")
                 elif self.config.repo_id:
-                    repo_id_sections = self.config.repo_id.split('/')
+        repo_id_sections = self.config.repo_id.split('/')
                     if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
                         self.parser.error(
                             "--repo-id argument format should be 'organization/repository_name' E.g "
@@ -757,6 +768,7 @@ class Checkov:
             if self.config.skip_download or BC_SKIP_MAPPING.upper() == "TRUE":
                 bc_integration.skip_download = True
 
+
             try:
                 bc_integration.get_platform_run_config()
             except Exception:
@@ -773,6 +785,7 @@ class Checkov:
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
+
             integration_feature_registry.run_pre_scan()
 
             runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
@@ -783,6 +796,8 @@ class Checkov:
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
 
             runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
+
+
 
             if self.config.use_enforcement_rules:
                 runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -915,6 +930,7 @@ class Checkov:
                     url=self.url,
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
+
                 )
                 return exit_code
             elif not self.config.quiet:
