@@ -15,7 +15,7 @@ class DetectImageUsage(BaseAzurePipelinesCheck):
             name=name,
             id=id,
             categories=(CheckCategories.SUPPLY_CHAIN,),
-            supported_entities=("*.image[]", "*.vmImage[]", "*.container[]"),
+            supported_entities=("jobs[]", "*.container[]"),
             block_type=BlockType.ARRAY,
         )
 
