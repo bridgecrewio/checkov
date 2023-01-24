@@ -29,8 +29,9 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, get_tf_definition_key_from_module_dependency, \
-    get_module_from_full_path, get_abs_path
+from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, \
+    get_tf_definition_key_from_module_dependency, \
+    get_module_from_full_path, get_abs_path, TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_PREFIX
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -720,12 +721,12 @@ class Parser:
                     found = True
                     break
             if not found:
-                do_not_eval_yet.append(key.split('[')[0])
+                do_not_eval_yet.append(key.split(TERRAFORM_NESTED_MODULE_PATH_PREFIX)[0])
                 unevaluated.append(key)
             else:
                 next_level.append(key)
 
-        move_to_uneval = list(filter(lambda k: k.split('[')[0] in do_not_eval_yet, next_level))
+        move_to_uneval = list(filter(lambda k: k.split(TERRAFORM_NESTED_MODULE_PATH_PREFIX)[0] in do_not_eval_yet, next_level))
         for k in move_to_uneval:
             next_level.remove(k)
             unevaluated.append(k)
@@ -773,8 +774,8 @@ class Parser:
         module_dependency_map = {}
         copy_of_tf_definitions = {}
         dep_index_mapping: Dict[Tuple[str, str], List[str]] = {}
-        origin_keys = list(filter(lambda k: not k.endswith(']'), tf_definitions.keys()))
-        unevaluated_keys = list(filter(lambda k: k.endswith(']'), tf_definitions.keys()))
+        origin_keys = list(filter(lambda k: not k.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING), tf_definitions.keys()))
+        unevaluated_keys = list(filter(lambda k: k.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING), tf_definitions.keys()))
         for file_path in origin_keys:
             dir_name = os.path.dirname(file_path)
             module_dependency_map[dir_name] = [[]]
