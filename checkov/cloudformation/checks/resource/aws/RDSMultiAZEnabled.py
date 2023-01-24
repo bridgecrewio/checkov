@@ -23,3 +23,4 @@ class RDSMultiAZEnabled(BaseResourceValueCheck):
         return 'Properties/MultiAZ'
 
 check = RDSMultiAZEnabled()
+
