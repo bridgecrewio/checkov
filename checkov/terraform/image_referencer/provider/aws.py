@@ -77,9 +77,10 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
     containers = resource.get("container")
     if containers:
         for container in force_list(containers):
-            name = container.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 
