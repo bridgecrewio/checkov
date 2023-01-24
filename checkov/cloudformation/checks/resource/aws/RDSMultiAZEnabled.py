@@ -1,7 +1,7 @@
-from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
-class RDSMultiAZEnabled(BaseResourceCheck):
+class RDSMultiAZEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that RDS instances have Multi-AZ enabled"
         id = "CKV_AWS_157"
@@ -10,19 +10,16 @@ class RDSMultiAZEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        properties = conf.get("Properties")
-        aurora = "aurora"
-        if properties:
-            engine = properties.get("Engine")
-            # Aurora is replicated across all AZs and doesn't require MultiAZ to be set
-            # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html#cfn-rds-dbinstance-multiaz
-            if engine and engine in aurora:
-                return CheckResult.PASSED
-            value = properties.get("MultiAZ")
-            if isinstance(value, bool):
-                value = str(value).lower()
-            if value == "true":
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+        # Aurora is replicated across all AZs and doesn't require MultiAZ to be set
+        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-rds-dbinstance.html#cfn-rds-dbinstance-multiaz
+        if 'Properties' in conf.keys():
+            if 'Engine' in conf['Properties'].keys():
+                if 'aurora' in conf['Properties']['Engine']:
+                    return CheckResult.UNKNOWN
+        # Database is not Aurora; Use base class implementation
+        return super().scan_resource_conf(conf)
+            
+    def get_inspected_key(self):
+        return 'Properties/MultiAZ'
 
 check = RDSMultiAZEnabled()
