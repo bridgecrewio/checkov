@@ -9,7 +9,7 @@ from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class AndConnectionSolver(ComplexConnectionSolver):
@@ -18,7 +18,7 @@ class AndConnectionSolver(ComplexConnectionSolver):
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)
 
-    def get_operation(self, graph_connector: DiGraph) -> \
+    def get_operation(self, graph_connector: LibraryGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         if not self.vertices_under_resource_types:
             return [], [], []

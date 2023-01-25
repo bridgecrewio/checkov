@@ -20,7 +20,7 @@ from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")

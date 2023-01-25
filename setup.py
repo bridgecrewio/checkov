@@ -29,8 +29,7 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema",
-            "parameterized"
+            "jsonschema"
         ]
     },
     install_requires=[

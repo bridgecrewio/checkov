@@ -11,7 +11,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class BaseConnectionSolver(BaseSolver):
@@ -34,7 +34,7 @@ class BaseConnectionSolver(BaseSolver):
         self.excluded_vertices: List[Dict[str, Any]] = []
         self.unknown_vertices: List[Dict[str, Any]] = []
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         self.set_vertices(graph_connector, [], [])
 
         subgraph = self.reduce_graph_by_target_types(graph_connector)
@@ -109,6 +109,14 @@ class BaseConnectionSolver(BaseSolver):
         resource_nodes.update(connection_nodes)
 
         return graph_connector.subgraph(resource_nodes)
+
+    def populate_checks_results(self, origin_attributes: Dict[str, Any], destination_attributes: Dict[str, Any], passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]) -> None:
+        if origin_attributes in self.excluded_vertices or destination_attributes in self.excluded_vertices:
+            failed.extend([origin_attributes, destination_attributes])
+        elif origin_attributes in self.unknown_vertices or destination_attributes in self.unknown_vertices:
+            unknown.extend([origin_attributes, destination_attributes])
+        else:
+            passed.extend([origin_attributes, destination_attributes])
 
     def get_operation(self, graph_connector: DiGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
