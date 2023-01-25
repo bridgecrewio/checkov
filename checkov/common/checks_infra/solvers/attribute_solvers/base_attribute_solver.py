@@ -40,7 +40,7 @@ class BaseAttributeSolver(BaseSolver):
         self.is_jsonpath_check = is_jsonpath_check
         self.parsed_attributes: Dict[Optional[str], Any] = {}
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices: List[Dict[str, Any]] = []
