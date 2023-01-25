@@ -1,9 +1,13 @@
 from pathlib import Path
 
+import pytest
+
 from checkov.ansible.checks.registry import registry
 from checkov.ansible.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.runner_filter import RunnerFilter
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
@@ -12,8 +16,14 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def test_registry_has_type():
     assert registry.report_type == CheckType.ANSIBLE
 
-
-def test_runner_honors_enforcement_rules():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_runner_honors_enforcement_rules(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "site.yml"
 
@@ -22,7 +32,7 @@ def test_runner_honors_enforcement_rules():
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
     filter.enforcement_rule_configs = {CheckType.ANSIBLE: Severities[BcSeverities.OFF]}
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=filter)
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=filter)
 
     # then
     summary = report.get_summary()
@@ -32,13 +42,19 @@ def test_runner_honors_enforcement_rules():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_passing_check():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_runner_passing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "site.yml"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_135"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_135"]))
 
     # then
     summary = report.get_summary()
@@ -48,13 +64,19 @@ def test_runner_passing_check():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_failing_check():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_runner_failing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "site.yml"
 
     # when
-    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_88"]))
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_88"]))
 
     # then
     summary = report.get_summary()
@@ -64,13 +86,19 @@ def test_runner_failing_check():
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
-
-def test_runner_with_flat_tasks():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_runner_with_flat_tasks(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "tasks.yml"
 
     # when
-    report = Runner().run(
+    report = Runner(db_connector=graph_connector()).run(
         root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_ANSIBLE_1", "CKV_ANSIBLE_2"])
     )
 
@@ -96,8 +124,14 @@ def test_runner_with_flat_tasks():
     assert passing_resources == passed_check_resources
     assert failing_resources == failed_check_resources
 
-
-def test_get_resource():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_get_resource(graph_connector):
     # given
     file_path = "/example/site.yml"
     key = '[].tasks[?"amazon.aws.ec2_instance" != null][].[].tasks[?"amazon.aws.ec2_instance" != null][].CKV_AWS_135[6:12]'
@@ -131,7 +165,7 @@ def test_get_resource():
             "__endline__": 17,
         }
     ]
-    runner = Runner()
+    runner = Runner(db_connector=graph_connector())
     runner.definitions = {file_path: definition}
 
     # when
@@ -146,8 +180,14 @@ def test_get_resource():
     # then
     assert new_key == "tasks.amazon.aws.ec2_instance.enabled"
 
-
-def test_get_resource_without_name():
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector
+    ]
+)
+def test_get_resource_without_name(graph_connector):
     # given
     file_path = "/example/site.yml"
     key = '[].tasks[?"amazon.aws.ec2_instance" != null][].[].tasks[?"amazon.aws.ec2_instance" != null][].CKV_AWS_135[6:12]'
@@ -180,7 +220,7 @@ def test_get_resource_without_name():
             "__endline__": 17,
         }
     ]
-    runner = Runner()
+    runner = Runner(db_connector=graph_connector())
     runner.definitions = {file_path: definition}
 
     # when

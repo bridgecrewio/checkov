@@ -3,17 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.graph.db_connectors.db_connector import DBConnector
-from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
+from checkov.common.graph.graph_manager import GraphManager
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraphConnector
     from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
 
 
 class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[str, Any] | list[dict[str, Any]]]"]):
-    def __init__(self, db_connector: DBConnector[DiGraph], source: str) -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
