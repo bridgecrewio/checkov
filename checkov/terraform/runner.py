@@ -12,7 +12,7 @@ import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
@@ -65,7 +65,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def __init__(
         self,
         parser: Parser | None = None,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
         source: str = GraphSource.TERRAFORM,
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
@@ -81,7 +81,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
             source=source,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector or self.db_connector,
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}

@@ -12,7 +12,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
-    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.typing import LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
     from collections.abc import Iterable
@@ -23,7 +23,7 @@ class Runner(YamlRunner):
 
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = "Ansible",
         graph_class: type[ObjectLocalGraph] = AnsibleLocalGraph,
         graph_manager: ObjectGraphManager | None = None,

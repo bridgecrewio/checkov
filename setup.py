@@ -29,7 +29,7 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema",
+            "jsonschema"
         ]
     },
     install_requires=[
@@ -52,6 +52,7 @@ setup(
         "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
+        "igraph",
         "dockerfile-parse",
         "docker",
         "configargparse",
