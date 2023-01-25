@@ -9,7 +9,9 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
 
 from checkov.common.graph.graph_manager import GraphManager
-from checkov.common.typing import LibraryGraph
+
+if TYPE_CHECKING:
+    from checkov.common.typing import LibraryGraph
 
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):

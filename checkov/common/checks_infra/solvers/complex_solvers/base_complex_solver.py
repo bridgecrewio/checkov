@@ -51,7 +51,6 @@ class BaseComplexSolver(BaseSolver):
                     failed_vertices.append(data)
             return passed_vertices, failed_vertices, unknown_vertices
 
-
         for _, data in graph_connector.nodes(data=True):
             if self.resource_type_pred(data, self.resource_types):
                 result = self.get_operation(data)

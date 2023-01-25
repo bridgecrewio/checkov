@@ -10,7 +10,6 @@ from checkov.kubernetes.kubernetes_utils import get_folder_definitions
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 
 if TYPE_CHECKING:
-    from checkov.common.graph.graph_manager import GraphManager
     from checkov.common.typing import LibraryGraph
 
 

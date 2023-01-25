@@ -10,7 +10,6 @@ from checkov.dockerfile.graph_builder.local_graph import DockerfileLocalGraph
 from checkov.dockerfile.utils import get_scannable_file_paths, get_files_definitions
 
 if TYPE_CHECKING:
-    from checkov.common.graph.graph_manager import GraphManager
     from checkov.common.typing import LibraryGraph
     from dockerfile_parse.parser import _Instruction  # only in extra_stubs
 

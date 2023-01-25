@@ -11,7 +11,6 @@ from checkov.common.graph.graph_manager import GraphManager
 from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
 
 if TYPE_CHECKING:
-    from checkov.common.graph.graph_manager import GraphManager
     from checkov.common.typing import LibraryGraph
     from pycep.typing import BicepJson
 

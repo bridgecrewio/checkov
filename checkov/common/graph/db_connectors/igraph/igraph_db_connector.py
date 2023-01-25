@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from random import randrange
 from typing import TYPE_CHECKING, TypeVar
 
-from igraph import Graph, plot
+from igraph import Graph
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_builder import CustomAttributes
