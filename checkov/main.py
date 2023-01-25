@@ -18,6 +18,8 @@ import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
+
+from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
@@ -31,10 +33,11 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
     integration as suppressions_integration
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
+    integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
-    integration as licensing_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners
@@ -108,7 +111,8 @@ DEFAULT_RUNNERS = [
     sca_image_runner(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
-    azure_pipelines_runner()
+    azure_pipelines_runner(),
+    ansible_runner(),
 ]
 
 
@@ -163,13 +167,12 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
 
     if config.bc_api_key and not config.include_all_checkov_policies:
         if config.skip_download and not config.external_checks_dir:
-            print(
-                'You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
-                'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
-                'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
-                'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
-                '--external-checks-dir options.',
-                file=sys.stderr)
+            print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
+                  'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                  'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
+                  'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
+                  '--external-checks-dir options.',
+                  file=sys.stderr)
             exit_run(config.no_fail_on_crash)
         elif config.skip_download:
             print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
@@ -196,8 +199,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         config.var_file = [os.path.abspath(f) for f in config.var_file]
 
     runner_filter = RunnerFilter(framework=config.framework, skip_framework=config.skip_framework, checks=config.check,
-                                 skip_checks=config.skip_check,
-                                 include_all_checkov_policies=config.include_all_checkov_policies,
+                                 skip_checks=config.skip_check, include_all_checkov_policies=config.include_all_checkov_policies,
                                  download_external_modules=bool(convert_str_to_bool(config.download_external_modules)),
                                  external_modules_download_path=config.external_modules_download_path,
                                  evaluate_variables=bool(convert_str_to_bool(config.evaluate_variables)),
@@ -205,8 +207,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
                                  all_external=config.run_all_external_checks, var_files=config.var_file,
                                  skip_cve_package=config.skip_cve_package, show_progress_bar=not config.quiet,
                                  use_enforcement_rules=config.use_enforcement_rules,
-                                 enable_secret_scan_all_files=bool(
-                                     convert_str_to_bool(config.enable_secret_scan_all_files)),
+                                 enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
                                  deep_analysis=config.deep_analysis,
                                  repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
@@ -279,7 +280,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
             should_run_contributor_metrics = source.report_contributor_metrics and config.repo_id and config.prisma_api_url
             logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
             if should_run_contributor_metrics:
-                try:  # collect contributor info and upload
+                try:        # collect contributor info and upload
                     report_contributor_metrics(config.repo_id, source.name, bc_integration)
                 except Exception as e:
                     logger.warning(f"Unable to report contributor metrics due to: {e}")
@@ -320,12 +321,11 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         if not config.include_all_checkov_policies:
             # stack trace gets printed in the exception handlers above
             # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
-            print(
-                'An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
-                'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
-                'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
-                '(but note that this will not include any custom platform configurations or policy metadata).',
-                file=sys.stderr)
+            print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                  'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                  'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                  '(but note that this will not include any custom platform configurations or policy metadata).',
+                  file=sys.stderr)
             exit_run(config.no_fail_on_crash)
 
     bc_integration.get_prisma_build_policies(config.policy_metadata_filter)
@@ -338,16 +338,18 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
     logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
     runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
-
-    runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
+    policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
+    bc_cloned_checks = custom_policies_integration.bc_cloned_checks
+    runner_filter.bc_cloned_checks = bc_cloned_checks
+    custom_policies_integration.policy_level_suppression = policy_level_suppression
+    runner_filter.set_suppressed_policies(policy_level_suppression)
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
 
     if config.list:
         print_checks(frameworks=config.framework, use_bc_ids=config.output_bc_ids,
-                     include_all_checkov_policies=config.include_all_checkov_policies,
-                     filtered_policy_ids=runner_filter.filtered_policy_ids)
+                     include_all_checkov_policies=config.include_all_checkov_policies, filtered_policy_ids=runner_filter.filtered_policy_ids)
         return None
 
     baseline = None
@@ -377,8 +379,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
             if baseline:
                 baseline.compare_and_reduce_reports(scan_reports)
             if bc_integration.is_integration_configured():
-                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths,
-                                                  included_paths=[config.external_modules_download_path])
+                bc_integration.persist_repository(root_folder, excluded_paths=runner_filter.excluded_paths, included_paths=[config.external_modules_download_path])
                 bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
                 bc_integration.persist_scan_results(scan_reports)
                 bc_integration.persist_run_metadata(run_metadata)
@@ -398,13 +399,13 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         return exit_code
     elif config.docker_image:
         if config.bc_api_key is None:
-            parser.error("--bc-api-key argument is required when using --docker-image")
+            parser.error("--bc-api-key argument is required when using --docker-image or --image")
             return None
         if config.dockerfile_path is None:
-            parser.error("--dockerfile-path argument is required when using --docker-image")
+            parser.error("--dockerfile-path argument is required when using --docker-image or --image")
             return None
         if config.branch is None:
-            parser.error("--branch argument is required when using --docker-image")
+            parser.error("--branch argument is required when using --docker-image or --image")
             return None
         files = [os.path.abspath(config.dockerfile_path)]
         runner = sca_image_runner()
@@ -455,8 +456,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
             bc_integration.persist_scan_results(scan_reports)
             bc_integration.persist_run_metadata(run_metadata)
             url = commit_repository(config)
-        exit_code = runner_registry.print_reports(scan_reports, config, url=url,
-                                                  created_baseline_path=created_baseline_path, baseline=baseline)
+        exit_code = runner_registry.print_reports(scan_reports, config, url=url, created_baseline_path=created_baseline_path, baseline=baseline)
         return exit_code
     elif not config.quiet:
         print(f"{banner}")
@@ -479,12 +479,10 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         logger.warning('--no-guide is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
     if config.skip_suppressions:
-        logger.warning(
-            '--skip-suppressions is deprecated and will be removed in a future release. Use --skip-download instead')
+        logger.warning('--skip-suppressions is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
     if config.skip_policy_download:
-        logger.warning(
-            '--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
+        logger.warning('--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead')
         config.skip_download = True
 
     elif not config.bc_api_key and not config.include_all_checkov_policies:
@@ -496,8 +494,7 @@ def normalize_config(config: Namespace, parser: ExtArgumentParser) -> None:
         parser.error('Must specify an API key with --use-enforcement-rules')
 
     if config.policy_metadata_filter and not (config.bc_api_key and config.prisma_api_url):
-        logger.warning(
-            '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
+        logger.warning('--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.')
 
 
 class Checkov:
@@ -578,7 +575,6 @@ class Checkov:
         self._parse_mask_to_resource_attributes_to_omit()
 
     def run(self, banner: str = checkov_banner) -> int | None:
-
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -604,13 +600,12 @@ class Checkov:
 
             if self.config.bc_api_key and not self.config.include_all_checkov_policies:
                 if self.config.skip_download and not self.config.external_checks_dir:
-                    print(
-                        'You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
-                        'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
-                        'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
-                        'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
-                        '--external-checks-dir options.',
-                        file=sys.stderr)
+                    print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
+                          'With these arguments, Checkov cannot fetch metadata to determine what is a local Checkov-only '
+                          'policy and what is a platform policy, so no policies will be evaluated. Please re-run Checkov '
+                          'and either remove the --skip-download option, or use the --include-all-checkov-policies and / or '
+                          '--external-checks-dir options.',
+                          file=sys.stderr)
                     self.exit_run()
                 elif self.config.skip_download:
                     print('You are using an API key along with --skip-download but not --include-all-checkov-policies. '
@@ -619,8 +614,7 @@ class Checkov:
                           'will be evaluated.',
                           file=sys.stderr)
                 else:
-                    logger.debug(
-                        'Using API key and not --include-all-checkov-policies - only running platform policies '
+                    logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
                         '(this is the default behavior, and this message is just for debugging purposes)')
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
@@ -701,24 +695,24 @@ class Checkov:
                 logger.debug(f'Using API key ending with {self.config.bc_api_key[-8:]}')
 
                 if not bc_integration.is_token_valid(self.config.bc_api_key):
-                    raise Exception(
-                        'The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
-                        'access key and secret key. For Prisma, the value must be in the form '
-                        'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
-                        'created it, not the token ID visible later on. If you are using environment variables, '
-                        'make sure they are properly set and exported.')
+                    raise Exception('The provided API key does not appear to be a valid Bridgecrew API key or Prisma Cloud '
+                                    'access key and secret key. For Prisma, the value must be in the form '
+                                    'ACCESS_KEY::SECRET_KEY. For Bridgecrew, make sure to copy the token value from when you '
+                                    'created it, not the token ID visible later on. If you are using environment variables, '
+                                    'make sure they are properly set and exported.')
 
-                if self.config.repo_id is None and not self.config.list:
+                if not self.config.list:
                     # if you are only listing policies, then the API key will be used to fetch policies, but that's it,
-                    # so the repo is not required
-                    self.parser.error("--repo-id argument is required when using --bc-api-key")
-                elif self.config.repo_id:
-                    repo_id_sections = self.config.repo_id.split('/')
-                    if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
-                        self.parser.error(
-                            "--repo-id argument format should be 'organization/repository_name' E.g "
-                            "bridgecrewio/checkov"
-                        )
+                    # so the repo is not required and ignored
+                    if self.config.repo_id is None:
+                        self.parser.error("--repo-id argument is required when using --bc-api-key")
+                    else:
+                        repo_id_sections = self.config.repo_id.split('/')
+                        if len(repo_id_sections) < 2 or any(len(section) == 0 for section in repo_id_sections):
+                            self.parser.error(
+                                "--repo-id argument format should be 'organization/repository_name' E.g "
+                                "bridgecrewio/checkov"
+                            )
 
                 try:
                     bc_integration.bc_api_key = self.config.bc_api_key
@@ -751,9 +745,7 @@ class Checkov:
                         logger.debug(message, exc_info=True)
                     else:
                         logger.error(message)
-                        logger.error(
-                            'Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support',
-                            exc_info=True)
+                        logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
                     self.exit_run()
             else:
                 logger.debug('No API key found. Scanning locally only.')
@@ -761,8 +753,7 @@ class Checkov:
 
             if self.config.check and self.config.skip_check:
                 if any(item in runner_filter.checks for item in runner_filter.skip_checks):
-                    self.parser.error(
-                        "The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
+                    self.parser.error("The check ids specified for '--check' and '--skip-check' must be mutually exclusive.")
                     return None
 
             BC_SKIP_MAPPING = os.getenv("BC_SKIP_MAPPING", "FALSE")
@@ -775,26 +766,30 @@ class Checkov:
                 if not self.config.include_all_checkov_policies:
                     # stack trace gets printed in the exception handlers above
                     # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
-                    print(
-                        'An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
-                        'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
-                        'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
-                        '(but note that this will not include any custom platform configurations or policy metadata).',
-                        file=sys.stderr)
+                    print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                          'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                          'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                          '(but note that this will not include any custom platform configurations or policy metadata).',
+                          file=sys.stderr)
                     self.exit_run()
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
             integration_feature_registry.run_pre_scan()
-
+            policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
+            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
+            runner_filter.bc_cloned_checks = bc_cloned_checks
+            custom_policies_integration.policy_level_suppression = policy_level_suppression
             runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
-
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
-
-            runner_filter.set_suppressed_policies(suppressions_integration.get_policy_level_suppressions())
+            policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
+            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
+            runner_filter.bc_cloned_checks = bc_cloned_checks
+            custom_policies_integration.policy_level_suppression = policy_level_suppression
+            runner_filter.set_suppressed_policies(policy_level_suppression)
 
             if self.config.use_enforcement_rules:
                 runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
