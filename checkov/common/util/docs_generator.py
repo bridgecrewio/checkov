@@ -61,7 +61,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
                                        include_all_checkov_policies=include_all_checkov_policies,
                                        filtered_policy_ids=filtered_policy_ids or [])
     print(
-        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC", "Resource Link"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
