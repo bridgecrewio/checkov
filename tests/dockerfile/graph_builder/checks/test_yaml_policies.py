@@ -23,9 +23,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
         db_connector = None
         if self.graph_framework == 'NETWORKX':
-            db_connector = NetworkxConnector()
+            db_connector = NetworkxConnector
         elif self.graph_framework == 'IGRAPH':
-            db_connector = IgraphConnector()
+            db_connector = IgraphConnector
 
         graph_manager = DockerfileGraphManager(db_connector=db_connector())
         super().__init__(
