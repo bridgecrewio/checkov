@@ -3,12 +3,12 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import List, Any, Tuple, Dict, TYPE_CHECKING, Optional
 
-from igraph import Graph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 if TYPE_CHECKING:
+    from igraph import Graph
     from networkx import DiGraph
 
 

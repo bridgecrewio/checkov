@@ -7,7 +7,6 @@ import platform
 from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType

@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
@@ -70,7 +70,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         elif graph_framework == "NETWORKX":
             db_connector_class = NetworkxConnector
 
-        self.db_connector = db_connector_class()
+        self.db_connector: LibraryGraphConnector = db_connector_class()
 
     @abstractmethod
     def run(
