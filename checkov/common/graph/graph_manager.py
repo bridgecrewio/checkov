@@ -1,21 +1,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any
-
-from checkov.common.graph.db_connectors.db_connector import DBConnector
+from typing import Type, TYPE_CHECKING, TypeVar, Generic
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
     from checkov.terraform.parser import Parser
-    from checkov.common.typing import LibraryGraph
+    from checkov.common.typing import LibraryGraph, LibraryGraphConnector
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
 _Definitions = TypeVar("_Definitions")
 
 
 class GraphManager(Generic[_LocalGraph, _Definitions]):
-    def __init__(self, db_connector: DBConnector[LibraryGraph], parser: Parser | None, source: str = "") -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser

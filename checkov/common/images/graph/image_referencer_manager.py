@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from networkx import DiGraph
-    from igraph import Graph  # type: ignore
+    from igraph import Graph
 
 
 class GraphImageReferencerManager:

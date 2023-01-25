@@ -10,12 +10,12 @@ from checkov.dockerfile.graph_builder.local_graph import DockerfileLocalGraph
 from checkov.dockerfile.utils import get_scannable_file_paths, get_files_definitions
 
 if TYPE_CHECKING:
-    from checkov.common.typing import LibraryGraph
+    from checkov.common.typing import LibraryGraphConnector
     from dockerfile_parse.parser import _Instruction  # only in extra_stubs
 
 
 class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[str, list[_Instruction]]]"]):
-    def __init__(self, db_connector: DBConnector[LibraryGraph], source: str = GraphSource.DOCKERFILE) -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.DOCKERFILE) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(

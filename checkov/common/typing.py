@@ -6,10 +6,9 @@ from typing_extensions import TypeAlias, TypedDict
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.db_connectors.db_connector import DBConnector
     from checkov.common.models.enums import CheckResult
     from checkov.common.runners.base_runner import BaseRunner  # noqa
-    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-    from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
     from networkx import DiGraph
     from igraph import Graph
 
@@ -24,7 +23,7 @@ _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
-LibraryGraphConnector: TypeAlias = "Union[NetworkxConnector, IgraphConnector]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
 
 
 class _CheckResult(TypedDict, total=False):

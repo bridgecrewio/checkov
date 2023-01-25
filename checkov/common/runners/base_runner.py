@@ -58,13 +58,13 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     external_registries: list[BaseRegistry] | None = None
     graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
-    db_connector: LibraryGraphConnector | None = None
+    db_connector: LibraryGraphConnector
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        db_connector_class = NetworkxConnector
+        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = NetworkxConnector
         graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
         if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
