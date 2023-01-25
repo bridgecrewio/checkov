@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import Type, Any, TYPE_CHECKING
 
-from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
@@ -11,11 +10,11 @@ from checkov.terraform.parser import Parser
 from checkov.common.graph.graph_manager import GraphManager
 
 if TYPE_CHECKING:
-    from checkov.common.typing import LibraryGraph
+    from checkov.common.typing import LibraryGraphConnector
 
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
-    def __init__(self, db_connector: DBConnector[LibraryGraph], source: str = "") -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
         super().__init__(db_connector=db_connector, parser=Parser(), source=source)
 
     def build_graph_from_source_directory(

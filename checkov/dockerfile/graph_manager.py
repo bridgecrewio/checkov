@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.dockerfile.graph_builder.local_graph import DockerfileLocalGraph

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Type, TYPE_CHECKING, TypeVar, Generic
+from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
