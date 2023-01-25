@@ -99,12 +99,13 @@ def persist_run_metadata(
         run_metadata: dict[str, str | list[str]] | str, s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> None:
     try:
-        if not isinstance(run_metadata, str):
-            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
-            s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
-        else:
+        if isinstance(run_metadata, str):
             object_path = f'{full_repo_object_key}/{checkov_results_prefix}/log_test.txt'
             s3_client.put_object(Bucket=bucket, Key=object_path, Body=run_metadata)
+        else:
+            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
+            s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
+
     except Exception:
         logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
         raise
