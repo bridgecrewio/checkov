@@ -69,7 +69,7 @@ class Runner(TerraformRunner):
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
                  graph_manager: TerraformGraphManager | None = None,
-                 db_connector: LibraryGraphConnector | IgraphConnector | None = None,
+                 db_connector: LibraryGraphConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
                  source: str = GraphSource.TERRAFORM) -> None:
         super().__init__(
@@ -177,7 +177,7 @@ class Runner(TerraformRunner):
         return self.get_graph_checks_report(root_folder, runner_filter)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
-        graph_manager = TerraformGraphManager(db_connector=self.db_connector_class())
+        graph_manager = TerraformGraphManager(db_connector=self.db_connector)
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
             self.repo_root_for_plan_enrichment,
             render_variables=True
