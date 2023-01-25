@@ -48,7 +48,7 @@ class BaseAttributeSolver(BaseSolver):
         unknown_vertices: List[Dict[str, Any]] = []
         if isinstance(graph_connector, Graph):
             if self.resource_types:
-                select_kwargs = {"resource_type_in": self.resource_types}
+                select_kwargs = {"resource_type_in": list(self.resource_types)}
             else:
                 select_kwargs = {"block_type__in": SUPPORTED_BLOCK_TYPES}
 
