@@ -78,9 +78,9 @@ class TestYamlPoliciesBase(TestCase):
             source_dir=root_folder,
             local_graph_class=local_graph_class,
         )
-        nx_graph = self.graph_manager.save_graph(local_graph)
+        graph = self.graph_manager.save_graph(local_graph)
         registry = self.get_checks_registry()
-        checks_results = registry.run_checks(nx_graph, RunnerFilter(checks=[check_id]), None)
+        checks_results = registry.run_checks(graph, RunnerFilter(checks=[check_id]), None)
         return self.create_report_from_graph_checks_results(checks_results, policy['metadata'])
 
     def get_checks_registry(self):
