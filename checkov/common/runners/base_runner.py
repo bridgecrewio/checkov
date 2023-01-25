@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
@@ -58,6 +58,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     external_registries: list[BaseRegistry] | None = None
     graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
+    db_connector: LibraryGraphConnector | None = None
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []

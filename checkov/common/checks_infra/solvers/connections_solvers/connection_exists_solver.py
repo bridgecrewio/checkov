@@ -31,9 +31,9 @@ class ConnectionExistsSolver(BaseConnectionSolver):
     def get_operation(
         self, graph_connector: LibraryGraph
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-        passed = []
-        failed = []
-        unknown = []
+        passed: List[Dict[str, Any]] = []
+        failed: List[Dict[str, Any]] = []
+        unknown: List[Dict[str, Any]] = []
         if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
             failed.extend(self.vertices_under_resource_types)
             failed.extend(self.vertices_under_connected_resources_types)

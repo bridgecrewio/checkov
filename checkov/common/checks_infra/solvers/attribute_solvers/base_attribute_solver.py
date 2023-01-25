@@ -50,7 +50,7 @@ class BaseAttributeSolver(BaseSolver):
             if self.resource_types:
                 select_kwargs = {"resource_type_in": list(self.resource_types)}
             else:
-                select_kwargs = {"block_type__in": SUPPORTED_BLOCK_TYPES}
+                select_kwargs = {"block_type__in": list(SUPPORTED_BLOCK_TYPES)}
 
             for data in graph_connector.vs.select(**select_kwargs)["attr"]:
                 result = self.get_operation(vertex=data)
