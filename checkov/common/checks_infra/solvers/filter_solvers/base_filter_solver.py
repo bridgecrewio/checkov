@@ -23,5 +23,5 @@ class BaseFilterSolver(BaseSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Callable[..., bool]:
         raise NotImplementedError()
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError()

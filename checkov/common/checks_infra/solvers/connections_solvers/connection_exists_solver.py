@@ -102,8 +102,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             [
                 v
                 for v in itertools.chain(
-                self.vertices_under_resource_types, self.vertices_under_connected_resources_types
-            )
+                    self.vertices_under_resource_types, self.vertices_under_connected_resources_types
+                )
                 if v not in itertools.chain(passed, unknown)
             ]
         )

@@ -32,7 +32,7 @@ class BaseComplexSolver(BaseSolver):
     def get_operation(self, vertex: Dict[str, Any]) -> Optional[bool]:
         raise NotImplementedError()
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed_vertices = []
         failed_vertices = []
         unknown_vertices = []

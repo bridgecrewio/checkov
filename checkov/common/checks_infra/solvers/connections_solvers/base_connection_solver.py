@@ -49,7 +49,7 @@ class BaseConnectionSolver(BaseSolver):
     def is_associated_vertex(self, vertex_type: str) -> bool:
         return vertex_type in itertools.chain(self.resource_types, self.connected_resources_types)
 
-    def set_vertices(self, graph_connector: DiGraph, exclude_vertices: List[Dict[str, Any]], unknown_vertices: List[Dict[str, Any]]) -> None:
+    def set_vertices(self, graph_connector: LibraryGraph, exclude_vertices: List[Dict[str, Any]], unknown_vertices: List[Dict[str, Any]]) -> None:
         if isinstance(graph_connector, Graph):
             select_kwargs = {}
             if self.resource_types:
@@ -80,7 +80,7 @@ class BaseConnectionSolver(BaseSolver):
             if v in unknown_vertices
         ]
 
-    def reduce_graph_by_target_types(self, graph_connector: DiGraph) -> DiGraph:
+    def reduce_graph_by_target_types(self, graph_connector: LibraryGraph) -> LibraryGraph:
         # no need to create a subgraph, if there are no vertices to be checked
         if not self.vertices_under_resource_types:
             return graph_connector
@@ -118,7 +118,7 @@ class BaseConnectionSolver(BaseSolver):
         else:
             passed.extend([origin_attributes, destination_attributes])
 
-    def get_operation(self, graph_connector: DiGraph) -> \
+    def get_operation(self, graph_connector: LibraryGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError
 
