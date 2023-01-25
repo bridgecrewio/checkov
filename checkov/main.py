@@ -615,7 +615,7 @@ class Checkov:
                           file=sys.stderr)
                 else:
                     logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
-                        '(this is the default behavior, and this message is just for debugging purposes)')
+                                 '(this is the default behavior, and this message is just for debugging purposes)')
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.
