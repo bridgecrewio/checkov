@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.299...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.302...HEAD)
+
+## [2.2.302](https://github.com/bridgecrewio/checkov/compare/2.2.299...2.2.302) - 2023-01-25
+
+### Feature
+
+- **general:** igraph library support - [#4327](https://github.com/bridgecrewio/checkov/pull/4327)
+
+### Bug Fix
+
+- **general:** add missing header in --list output - [#4329](https://github.com/bridgecrewio/checkov/pull/4329)
+- **kubernetes:** extract pods only for supported resources - [#4330](https://github.com/bridgecrewio/checkov/pull/4330)
+- **sca:** catch exceptional error during SCA results polling - [#4331](https://github.com/bridgecrewio/checkov/pull/4331)
+- **terraform:** change terraform nested modules path separators - [#4319](https://github.com/bridgecrewio/checkov/pull/4319)
+- **terraform:** handle unexpected container definition type - [#4328](https://github.com/bridgecrewio/checkov/pull/4328)
 
 ## [2.2.299](https://github.com/bridgecrewio/checkov/compare/2.2.292...2.2.299) - 2023-01-24
 
