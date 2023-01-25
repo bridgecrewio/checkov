@@ -41,7 +41,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Bicep and ARM template files.
+ * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
  * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
@@ -269,6 +269,11 @@ checkov --framework sca_image --docker-image sha256:1234example --dockerfile-pat
 checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
 ```
 
+You can use --image flag also to scan container image instead of --docker-image for shortener:
+```sh
+checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
+
 Run an SCA scan of packages in a repo:
 ```sh
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
@@ -493,3 +498,6 @@ To skip this API call use the flag `--no-guide`.
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
 If you need direct support you can contact us at info@bridgecrew.io.
+
+## Python Version Support
+We follow the official support cycle of Python and we use automated tests for all supported versions of Python. This means we currently support Python 3.7 - 3.11, inclusive. Note that Python 3.7 is reaching EOL on June 2023. After that time, we will have a short grace period where we will continue 3.7 support until September 2023, and then it will no longer be considered supported for Checkov. If you run into any issues with any non-EOL Python version, please open an Issue.

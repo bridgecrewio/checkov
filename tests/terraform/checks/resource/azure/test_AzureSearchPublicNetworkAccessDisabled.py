@@ -1,53 +1,41 @@
+import os
 import unittest
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AzureSearchPublicNetworkAccessDisabled import check
-from checkov.common.models.enums import CheckResult
 
 
 class TestAzureSearchPublicNetworkAccessDisabled(unittest.TestCase):
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_search_service" "example" {
-              name                = "example-search-service"
-              resource_group_name = azurerm_resource_group.example.name
-              location            = azurerm_resource_group.example.location
-              sku                 = "standard"
-              public_network_access_enabled = true
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_search_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_search_service" "example" {
-              name                = "example-search-service"
-              resource_group_name = azurerm_resource_group.example.name
-              location            = azurerm_resource_group.example.location
-              sku                 = "standard"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_search_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = os.path.join(current_dir, "example_AzureSearchPublicNetworkAccessDisabled")
+        report = runner.run(root_folder=test_files_dir,
+                            runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_search_service" "example" {
-              name                = "example-search-service"
-              resource_group_name = azurerm_resource_group.example.name
-              location            = azurerm_resource_group.example.location
-              sku                 = "standard"
-              public_network_access_enabled = false
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_search_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            'azurerm_search_service.pass'
+        }
+        failing_resources = {
+            'azurerm_search_service.fail',
+            'azurerm_search_service.fail2'
+        }
+        skipped_resources = {}
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary['passed'], len(passing_resources))
+        self.assertEqual(summary['failed'], len(failing_resources))
+        self.assertEqual(summary['skipped'], len(skipped_resources))
+        self.assertEqual(summary['parsing_errors'], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':

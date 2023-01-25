@@ -47,7 +47,7 @@ class TestRunnerRegistry(unittest.TestCase):
         reports = runner_registry.run(root_folder=test_files_dir)
 
         # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
-        counts_by_type = {"kubernetes": 10, "terraform": 3, "cloudformation": 4}
+        counts_by_type = {"kubernetes": 14, "terraform": 3, "cloudformation": 4}
 
         for report in reports:
             self.assertEqual(
