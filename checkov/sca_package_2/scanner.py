@@ -5,6 +5,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+from requests import JSONDecodeError
+
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.http_utils import request_wrapper
 
@@ -73,7 +75,13 @@ class Scanner:
                 headers=bc_integration.get_default_headers("GET"),
                 params={"repoId": bc_integration.repo_id}
             )
-            response_json = response.json()
+
+            try:
+                response_json = response.json()
+            except JSONDecodeError:
+                logging.error(f"Unexpected response from {self.bc_cli_scan_api_url}: {response.text}")
+                return {}
+
             current_state = response_json.get("status", "")
             if not current_state:
                 logging.error("Failed to poll scan results.")
