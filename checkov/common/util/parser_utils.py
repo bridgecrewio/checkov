@@ -15,6 +15,7 @@ _ARG_VAR_PATTERN = re.compile(r"[a-zA-Z_]+(\.[a-zA-Z_]+)+")
 
 TERRAFORM_NESTED_MODULE_PATH_PREFIX = '([{'
 TERRAFORM_NESTED_MODULE_PATH_ENDING = '}])'
+TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH = 3
 
 
 @dataclass
@@ -347,7 +348,7 @@ def get_tf_definition_key_from_module_dependency(path: str, module_dependency: s
 def get_module_from_full_path(file_path: str) -> Tuple[Optional[str], Optional[str]]:
     if not is_nested(file_path):
         return None, None
-    tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + 3: -3]
+    tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     if is_nested(tmp_path):
         module = get_abs_path(tmp_path) + tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX):]
         index = tmp_path[tmp_path.index('#') + 1:tmp_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)]

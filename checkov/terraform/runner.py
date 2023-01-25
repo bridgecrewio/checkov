@@ -27,7 +27,7 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
-    TERRAFORM_NESTED_MODULE_PATH_ENDING
+    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -587,7 +587,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         If the file path does not contain a referred, the tuple will contain the original file path and None.
         """
         if file_path.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) and TERRAFORM_NESTED_MODULE_PATH_PREFIX in file_path:
-            return file_path[:file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)], file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + 3: -3]
+            return file_path[:file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)], \
+                   file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
         else:
             return file_path, None
 

@@ -6,6 +6,8 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
 
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+
 if TYPE_CHECKING:
     from networkx import DiGraph
 
@@ -51,7 +53,7 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
         module_dependency = module_dependency[0]
     return [
         module_dependency[3:module_dependency.index('.tf#') + len('.tf')],
-        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-3]
+        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     ]
 
 
