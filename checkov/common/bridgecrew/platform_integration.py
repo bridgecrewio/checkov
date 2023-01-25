@@ -444,7 +444,7 @@ class BcPlatformIntegration:
 
         return s3_path
 
-    def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
+    def persist_run_metadata(self, run_metadata: dict[str, str | list[str]] | str) -> None:
         if not self.use_s3_integration:
             return
         if not self.bucket or not self.repo_path:

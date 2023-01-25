@@ -96,7 +96,7 @@ def persist_checks_results(
 
 
 def persist_run_metadata(
-        run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        run_metadata: dict[str, str | list[str]] | str, s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> None:
     try:
         if not isinstance(run_metadata, str):
