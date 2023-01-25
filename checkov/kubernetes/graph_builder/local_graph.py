@@ -153,10 +153,10 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 all_resources.append(conf)
                 return
             template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+            spec.pop('template', None)
         if is_invalid_k8_pod_definition(template):
             all_resources.append(conf)
             return
-        spec.pop('template', None)
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
 
