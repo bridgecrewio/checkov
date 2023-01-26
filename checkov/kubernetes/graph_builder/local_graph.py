@@ -157,6 +157,8 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 return
             template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
             spec.pop('template', None)
+        else:
+            template = None
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
 
