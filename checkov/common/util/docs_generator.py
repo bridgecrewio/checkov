@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
 
+from checkov.ansible.checks.registry import registry as ansible_registry
 from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.azure_pipelines.checks.registry import registry as azure_pipelines_registry
@@ -37,6 +38,9 @@ from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/blob/main/checkov'
+SKIP_CHECK_IDS = {
+    "CKV_SECRET_10",  # this is an intermediate step, which is needed for another check
+}
 
 
 def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
@@ -57,7 +61,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
                                        include_all_checkov_policies=include_all_checkov_policies,
                                        filtered_policy_ids=filtered_policy_ids or [])
     print(
-        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC", "Resource Link"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
@@ -160,8 +164,16 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "openapi")):
         add_from_repository(openapi_registry, "resource", "OpenAPI")
+    if any(x in framework_list for x in ("all", "ansible")):
+        graph_registry = get_graph_checks_registry("ansible")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Ansible")
+        add_from_repository(ansible_registry, "resource", "Ansible")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
+            if check_id in SKIP_CHECK_IDS:
+                continue
+
             if not filtered_policy_ids or check_id in filtered_policy_ids:
                 if use_bc_ids:
                     check_id = metadata_integration.get_bc_id(check_id)

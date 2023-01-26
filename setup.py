@@ -29,7 +29,7 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema",
+            "jsonschema"
         ]
     },
     install_requires=[
@@ -52,6 +52,7 @@ setup(
         "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
+        "igraph",
         "dockerfile-parse",
         "docker",
         "configargparse",
@@ -74,6 +75,8 @@ setup(
         "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "schema",
         "requests>=2.26.0",
+        "yarl",
+        "igraph"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
@@ -87,6 +90,7 @@ setup(
     packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
+        "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
@@ -96,6 +100,7 @@ setup(
     },
     package_data={
         "checkov": ["py.typed"],
+        "checkov.ansible.checks.graph_checks": ["*.yaml"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
         "checkov.dockerfile.checks.graph_checks": ["*.yaml"],

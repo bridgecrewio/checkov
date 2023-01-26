@@ -1,6 +1,93 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.274...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.302...HEAD)
+
+## [2.2.302](https://github.com/bridgecrewio/checkov/compare/2.2.299...2.2.302) - 2023-01-25
+
+### Feature
+
+- **general:** igraph library support - [#4327](https://github.com/bridgecrewio/checkov/pull/4327)
+
+### Bug Fix
+
+- **general:** add missing header in --list output - [#4329](https://github.com/bridgecrewio/checkov/pull/4329)
+- **kubernetes:** extract pods only for supported resources - [#4330](https://github.com/bridgecrewio/checkov/pull/4330)
+- **sca:** catch exceptional error during SCA results polling - [#4331](https://github.com/bridgecrewio/checkov/pull/4331)
+- **terraform:** change terraform nested modules path separators - [#4319](https://github.com/bridgecrewio/checkov/pull/4319)
+- **terraform:** handle unexpected container definition type - [#4328](https://github.com/bridgecrewio/checkov/pull/4328)
+
+## [2.2.299](https://github.com/bridgecrewio/checkov/compare/2.2.292...2.2.299) - 2023-01-24
+
+### Feature
+
+- **azure:** change detect image source - [#4320](https://github.com/bridgecrewio/checkov/pull/4320)
+- **general:** add empty azure image check - [#4308](https://github.com/bridgecrewio/checkov/pull/4308)
+- **general:** add logs for async license and image retrieval  - [#4317](https://github.com/bridgecrewio/checkov/pull/4317)
+- **sca:** Support the new --image flag along the --docker-image flag  - [#4314](https://github.com/bridgecrewio/checkov/pull/4314)
+
+### Bug Fix
+
+- **general:** ignore repo_id setting when list flag is set - [#4313](https://github.com/bridgecrewio/checkov/pull/4313)
+- **kubernetes:** handle k8s resource with missing required data - [#4318](https://github.com/bridgecrewio/checkov/pull/4318)
+- **secrets:** Change s3 path for enriched secrets upload - [#4275](https://github.com/bridgecrewio/checkov/pull/4275)
+- **terraform:** handle unexpected container type - [#4311](https://github.com/bridgecrewio/checkov/pull/4311)
+
+### Documentation
+
+- **general:** Update README for supported Python versions - [#4305](https://github.com/bridgecrewio/checkov/pull/4305)
+
+## [2.2.292](https://github.com/bridgecrewio/checkov/compare/2.2.289...2.2.292) - 2023-01-23
+
+### Feature
+
+- **terraform:** new app service checks for azurerm - [#4072](https://github.com/bridgecrewio/checkov/pull/4072)
+
+### Bug Fix
+
+- **general:** In case of a non-JSON response, log the response - [#4304](https://github.com/bridgecrewio/checkov/pull/4304)
+- **terraform_plan:** fix in deep analysis - [#4306](https://github.com/bridgecrewio/checkov/pull/4306)
+- **terraform:** fix default behaviour of CKV_GCP_19 - [#4289](https://github.com/bridgecrewio/checkov/pull/4289)
+
+## [2.2.289](https://github.com/bridgecrewio/checkov/compare/2.2.281...2.2.289) - 2023-01-22
+
+### Feature
+
+- **general:** add Ansible framework - [#4244](https://github.com/bridgecrewio/checkov/pull/4244)
+- **general:** Allow using `--repo-root-for-plan-enrichment` flag in GitHub Actions - [#4292](https://github.com/bridgecrewio/checkov/pull/4292)
+- **secrets:** add new sanity test files for base64 entropy detector - [#4298](https://github.com/bridgecrewio/checkov/pull/4298)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4265](https://github.com/bridgecrewio/checkov/pull/4265)
+
+### Bug Fix
+
+- **sca:** fix dependency tree cli print - [#4282](https://github.com/bridgecrewio/checkov/pull/4282)
+- **terraform:** fix Exception in image ref - [#4297](https://github.com/bridgecrewio/checkov/pull/4297)
+- **terraform:** fix in variable rendering - [#4296](https://github.com/bridgecrewio/checkov/pull/4296)
+- **terraform:** Fix policy str in graph checks - [#4286](https://github.com/bridgecrewio/checkov/pull/4286)
+
+## [2.2.281](https://github.com/bridgecrewio/checkov/compare/2.2.278...2.2.281) - 2023-01-19
+
+### Feature
+
+- **general:** add Image referencer igraph support - [#4277](https://github.com/bridgecrewio/checkov/pull/4277)
+- **general:** Support aiohttp for IR API calls - [#4274](https://github.com/bridgecrewio/checkov/pull/4274)
+
+### Bug Fix
+
+- **general:** Enable running cloned policies in case the OOTB policy is suppressed - [#4281](https://github.com/bridgecrewio/checkov/pull/4281)
+- **secrets:** change default secret validation status to unavailable - [#4284](https://github.com/bridgecrewio/checkov/pull/4284)
+- **terraform:** fix error for push_skipped_checks_down with definition that not in the definition context - [#4272](https://github.com/bridgecrewio/checkov/pull/4272)
+
+## [2.2.278](https://github.com/bridgecrewio/checkov/compare/2.2.274...2.2.278) - 2023-01-18
+
+### Feature
+
+- **azure:** Add image referencer in azure pipelines - [#4234](https://github.com/bridgecrewio/checkov/pull/4234)
+- **gha:** fix yaml parsing of multi files - [#4270](https://github.com/bridgecrewio/checkov/pull/4270)
+- **secrets:** fix to keyword combinator to reduce FPs - [#4260](https://github.com/bridgecrewio/checkov/pull/4260)
+
+### Bug Fix
+
+- **secrets:** add guideline and severity to custom secret check metadata - [#4276](https://github.com/bridgecrewio/checkov/pull/4276)
 
 ## [2.2.274](https://github.com/bridgecrewio/checkov/compare/2.2.271...2.2.274) - 2023-01-17
 

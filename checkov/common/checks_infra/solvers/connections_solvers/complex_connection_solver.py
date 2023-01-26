@@ -12,7 +12,7 @@ from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver impor
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
@@ -77,7 +77,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         sorted_connection_solvers.extend(connection_solvers_with_filtered_resource_types)
         return sorted_connection_solvers
 
-    def run_attribute_solvers(self, graph_connector: DiGraph) -> \
+    def run_attribute_solvers(self, graph_connector: LibraryGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         attribute_solvers = [
             sub_solver

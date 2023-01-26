@@ -9,7 +9,7 @@ from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class OrConnectionSolver(ComplexConnectionSolver):
@@ -18,7 +18,7 @@ class OrConnectionSolver(ComplexConnectionSolver):
     def __init__(self, solvers: Optional[List[BaseSolver]], operator: str) -> None:
         super().__init__(solvers, operator)
 
-    def get_operation(self, graph_connector: DiGraph) -> \
+    def get_operation(self, graph_connector: LibraryGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed, failed, unknown = self.run_attribute_solvers(graph_connector)
         connection_solvers = [sub_solver for sub_solver in self.solvers if isinstance(sub_solver, BaseConnectionSolver)]

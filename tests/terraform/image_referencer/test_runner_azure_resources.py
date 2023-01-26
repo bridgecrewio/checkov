@@ -5,11 +5,13 @@ from pytest_mock import MockerFixture
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
+from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
+    mock_get_image_cached_result_async
 
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-def test_batch_resources(mocker: MockerFixture, image_cached_result):
+def test_batch_resources(mocker: MockerFixture):
     # given
     file_name = "batch.tf"
     image_name = "centos7"
@@ -18,12 +20,12 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -42,14 +44,14 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
-    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib"}
+    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go"}
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_containers_resources(mocker: MockerFixture, image_cached_result):
+def test_containers_resources(mocker: MockerFixture):
     # given
     file_name = "containers.tf"
     image_name_1 = "busybox"
@@ -60,12 +62,12 @@ def test_containers_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -85,16 +87,16 @@ def test_containers_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_linux_function_resources(mocker: MockerFixture, image_cached_result):
+def test_app_service_linux_function_resources(mocker: MockerFixture):
     # given
     file_name = "app_service_linux_function.tf"
     image_name_1 = "azure-app-service/samples/aspnethelloworld:latest"
@@ -105,12 +107,12 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, image_cache
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -130,16 +132,16 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, image_cache
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_result):
+def test_app_service_linux_web_resources(mocker: MockerFixture):
     # given
     file_name = "app_service_linux_web.tf"
     image_name_1 = "mcr.microsoft.com/appsvc/staticsite:latest"
@@ -150,12 +152,12 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -168,23 +170,23 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, image_cached_res
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 2
-    assert len(tf_report.failed_checks) == 11
+    assert len(tf_report.passed_checks) == 4
+    assert len(tf_report.failed_checks) == 12
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
+def test_spring_cloud_resources(mocker: MockerFixture):
     # given
     file_name = "spring_cloud.tf"
     image_name = "springio/gs-spring-boot-docker"
@@ -193,12 +195,12 @@ def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -217,14 +219,14 @@ def test_spring_cloud_resources(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
-    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib"}
+    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go"}
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_result):
+def test_app_service_windows_web_resources(mocker: MockerFixture):
     # given
     file_name = "app_service_windows_web.tf"
     image_name_1 = "hello-world:latest"
@@ -235,12 +237,12 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
@@ -253,17 +255,17 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, image_cached_r
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 2
-    assert len(tf_report.failed_checks) == 11
+    assert len(tf_report.passed_checks) == 4
+    assert len(tf_report.failed_checks) == 12
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0

@@ -7,8 +7,9 @@ from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
@@ -52,15 +53,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
         report_type: str = check_type
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__(file_extensions=K8_POSSIBLE_ENDINGS)
+        db_connector = db_connector or self.db_connector
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = \
