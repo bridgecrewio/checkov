@@ -195,7 +195,7 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(0, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
 
-    def test_deployment_with_missing_metadata(self) -> None:
+    def test_custom_resource_should_not_extract_pod(self) -> None:
         relative_file_path = "resources/custom_resource.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
