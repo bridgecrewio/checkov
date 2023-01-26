@@ -32,7 +32,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner()
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['secrets'], checks=['CKV_SECRET_6']))
-        self.assertEqual(len(report.failed_checks), 6)
+        self.assertEqual(len(report.failed_checks), 5)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
