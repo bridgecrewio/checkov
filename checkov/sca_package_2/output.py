@@ -345,7 +345,8 @@ def create_package_overview_table_part(
             package_table.header = False
             package_table.clear_rows()
 
-        details["cves"].sort(key=lambda x: "" if x["root_package_name"] == x['package_name'] else x['package_name'])
+        details["cves"].sort(key=lambda x: ("" if x["root_package_name"] == x['package_name'] else x['package_name'], x['package_version']))
+
         last_package_alias = get_package_alias(details['cves'][-1]['package_name'],
                                                details['cves'][-1]['package_version'])
         previous_package = ""

@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-from checkov.common.graph.db_connectors.db_connector import DBConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.kubernetes_utils import get_folder_definitions
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraphConnector
 
 
 class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[dict[str, Any]]]"]):
-    def __init__(self, db_connector: DBConnector[DiGraph], source: str = "Kubernetes") -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.KUBERNETES) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
         self.graph_flags: K8sGraphFlags | None = None
 
