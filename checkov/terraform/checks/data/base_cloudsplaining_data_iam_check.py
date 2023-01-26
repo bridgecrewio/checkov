@@ -5,13 +5,13 @@ from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.data.base_check import BaseDataCheck
-from checkov.terraform.checks.data.base_cloudsplaining_data_iam_scanner import BaseCloudsplainingDataIAMScanner
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_check import BaseCloudsplainingIAMScanner
 from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter import (
     convert_terraform_conf_to_iam_policy,
 )
 
 
-class BaseCloudsplainingDataIAMCheck(BaseDataCheck, BaseCloudsplainingDataIAMScanner, ABC):
+class BaseCloudsplainingDataIAMCheck(BaseDataCheck, BaseCloudsplainingIAMScanner, ABC):
     def __init__(self, name: str, id: str) -> None:
         super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_data=["aws_iam_policy_document"])
 
