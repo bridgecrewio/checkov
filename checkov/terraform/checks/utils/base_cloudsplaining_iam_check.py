@@ -5,30 +5,22 @@ from typing import Dict, List, Any, Union
 
 from cloudsplaining.scan.policy_document import PolicyDocument
 
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.terraform.checks.data.base_check import BaseDataCheck
-from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter import (
-    convert_terraform_conf_to_iam_policy,
-)
+from checkov.common.models.enums import CheckResult
 
 
-class BaseCloudsplainingIAMCheck(BaseDataCheck):
+class BaseCloudsplainingIAMScanner:
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
     policy_document_cache: Dict[str, PolicyDocument] = {}  # noqa: CCE003
 
-    def __init__(self, name: str, id: str) -> None:
-        super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_data=["aws_iam_policy_document"])
-
-    def scan_data_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        if "statement" in conf.keys():
+    def scan_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if self.should_scan_conf(conf):
             try:
-                if self.entity_path not in BaseCloudsplainingIAMCheck.policy_document_cache.keys():
-                    converted_conf = convert_terraform_conf_to_iam_policy(conf)
-                    policy = PolicyDocument(converted_conf)
-                    BaseCloudsplainingIAMCheck.policy_document_cache[self.entity_path] = policy
+                if self.cache_key not in BaseCloudsplainingIAMScanner.policy_document_cache.keys():
+                    policy = self.convert_to_iam_policy(conf)
+                    BaseCloudsplainingIAMScanner.policy_document_cache[self.cache_key] = policy
                 violations = self.cloudsplaining_analysis(
-                    BaseCloudsplainingIAMCheck.policy_document_cache[self.entity_path]
+                    BaseCloudsplainingIAMScanner.policy_document_cache[self.cache_key]
                 )
             except Exception:
                 # this might occur with templated iam policies where ARN is not in place or similar
@@ -38,6 +30,19 @@ class BaseCloudsplainingIAMCheck(BaseDataCheck):
                 logging.debug(f"detailed cloudsplainging finding: {json.dumps(violations, indent=2, default=str)}")
                 return CheckResult.FAILED
         return CheckResult.PASSED
+
+    @property
+    @abstractmethod
+    def cache_key(self) -> str:
+        pass
+
+    @abstractmethod
+    def should_scan_conf(self, conf: Dict[str, List[Any]]) -> bool:
+        pass
+
+    @abstractmethod
+    def convert_to_iam_policy(self, conf: Dict[str, List[Any]]) -> PolicyDocument:
+        pass
 
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> Union[List[str], List[Dict[str, Any]]]:
