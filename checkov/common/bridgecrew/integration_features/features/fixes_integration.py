@@ -130,5 +130,8 @@ class FixesIntegration(BaseIntegrationFeature):
         # not used
         pass
 
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
 
 integration = FixesIntegration(bc_integration)

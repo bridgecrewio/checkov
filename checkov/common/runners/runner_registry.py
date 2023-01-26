@@ -23,6 +23,7 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
     integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
@@ -42,6 +43,7 @@ from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
@@ -141,6 +143,8 @@ class RunnerRegistry:
             reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
 
         merged_reports = self._merge_reports(reports)
+
+        integration_feature_registry.run_post_scan(merged_reports)
 
         if bc_integration.bc_api_key:
             self.secrets_omitter_class(merged_reports).omit()
@@ -615,6 +619,18 @@ class RunnerRegistry:
                 image_referencing_runners.add(cast(ImageReferencer, runner))
 
         return image_referencing_runners
+
+    def run_3d_checks(self, merged_reports, policies_3d) -> list:
+        for policy in policies_3d:
+            converted_check = CustomPoliciesIntegration._convert_raw_check(policy)
+            parser = NXGraphCheckParser()
+            check = parser.parse_raw_check(raw_check=converted_check)
+            # combination_type = definition.get('combination_type')
+
+            parser = NXGraphCheckParser()
+
+            pass
+        return merged_reports
 
     @staticmethod
     def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:

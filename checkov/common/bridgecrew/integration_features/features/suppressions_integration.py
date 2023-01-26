@@ -222,5 +222,9 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                     break
         return policy_level_suppressions
 
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
+
 
 integration = SuppressionsIntegration(bc_integration)
