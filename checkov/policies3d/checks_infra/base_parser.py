@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from checkov.common.policies3d.checks_infra.base_check import Base3dPolicyCheck
+from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
 
 
 class Base3dPolicyCheckParser:

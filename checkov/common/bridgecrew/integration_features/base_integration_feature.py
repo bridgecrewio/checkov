@@ -38,6 +38,6 @@ class BaseIntegrationFeature(ABC):
         pass
 
     @abstractmethod
-    def post_scan(self, merged_reports: list[Report]) -> None:
+    def post_scan(self, merged_reports: list[Report]) -> Report | None:
         """Runs after all runners complete"""
         pass

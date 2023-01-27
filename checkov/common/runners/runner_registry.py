@@ -143,11 +143,12 @@ class RunnerRegistry:
             reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
 
         merged_reports = self._merge_reports(reports)
-
-        integration_feature_registry.run_post_scan(merged_reports)
-
         if bc_integration.bc_api_key:
             self.secrets_omitter_class(merged_reports).omit()
+
+        post_scan_reports = integration_feature_registry.run_post_scan(merged_reports)
+        if post_scan_reports:
+            merged_reports.extend(post_scan_reports)
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
