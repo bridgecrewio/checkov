@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.302...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.304...HEAD)
+
+## [2.2.304](https://github.com/bridgecrewio/checkov/compare/2.2.302...2.2.304) - 2023-01-26
+
+### Bug Fix
+
+- **kubernetes:** skip extracting pods for custom resources - [#4334](https://github.com/bridgecrewio/checkov/pull/4334)
+- **sca:** require requests 2.27.0 - [#4339](https://github.com/bridgecrewio/checkov/pull/4339)
+
+### Documentation
+
+- **general:** fix env var name to `CKV_IGNORE_HIDDEN_DIRECTORIES` - [#4335](https://github.com/bridgecrewio/checkov/pull/4335)
 
 ## [2.2.302](https://github.com/bridgecrewio/checkov/compare/2.2.299...2.2.302) - 2023-01-25
 
