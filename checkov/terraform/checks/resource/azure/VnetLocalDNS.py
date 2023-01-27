@@ -22,21 +22,22 @@ class VnetLocalDNS(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "dns_servers" in conf and conf["dns_servers"] and isinstance(conf["dns_servers"], list):
             dns_servers = conf["dns_servers"][0]
-            for ip in dns_servers:
-                if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list):
-                    address_spaces = conf["address_space"][0]
-                    for address_range in address_spaces:
-                        if not isinstance(address_range, str):
-                            continue
-                        try:
-                            net = ip_network(address_range)
-                            ip_add = ip_address(ip) if isinstance(ip, str) else None
-                        except ValueError:
-                            return CheckResult.UNKNOWN
-                        if isinstance(ip, str) and ip_add in net:
-                            return CheckResult.PASSED
-            self.evaluated_keys = ["dns_servers"]
-            return CheckResult.FAILED
+            if dns_servers:
+                for ip in dns_servers:
+                    if "address_space" in conf and conf["address_space"] and isinstance(conf["address_space"], list):
+                        address_spaces = conf["address_space"][0]
+                        for address_range in address_spaces:
+                            if not isinstance(address_range, str):
+                                continue
+                            try:
+                                net = ip_network(address_range)
+                                ip_add = ip_address(ip) if isinstance(ip, str) else None
+                            except ValueError:
+                                return CheckResult.UNKNOWN
+                            if isinstance(ip, str) and ip_add in net:
+                                return CheckResult.PASSED
+                self.evaluated_keys = ["dns_servers"]
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
