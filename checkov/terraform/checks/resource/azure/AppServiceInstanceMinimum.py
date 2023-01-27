@@ -21,7 +21,7 @@ class AppServiceInstanceMinimum(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         worker_count = conf.get("worker_count")
         if worker_count and isinstance(worker_count, list):
-            if worker_count[0] > 1:
+            if isinstance(worker_count[0], int) and worker_count[0] > 1:
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
