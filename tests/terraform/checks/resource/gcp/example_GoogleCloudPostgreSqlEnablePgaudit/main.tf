@@ -9,6 +9,8 @@ resource "google_sql_database_instance" "fail" {
     database_flags {
       name  = "cloudsql.enable_pgaudit"
       value = "off"
+      bla   = "blabla"
+      bla2   = "blabla2"
     }
     database_flags {
       name  = "log_connections"
