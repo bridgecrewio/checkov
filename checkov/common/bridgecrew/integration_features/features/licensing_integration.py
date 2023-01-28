@@ -79,4 +79,5 @@ class LicensingIntegration(BaseIntegrationFeature):
         # not used
         pass
 
+
 integration = LicensingIntegration(bc_integration)

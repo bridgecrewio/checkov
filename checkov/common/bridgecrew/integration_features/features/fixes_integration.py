@@ -134,4 +134,5 @@ class FixesIntegration(BaseIntegrationFeature):
         # not used
         pass
 
+
 integration = FixesIntegration(bc_integration)

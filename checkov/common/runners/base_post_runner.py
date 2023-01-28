@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class BasePostRunner(ABC):
-    check_type = ""
+    check_type = ''  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         self.pbar = ProgressBar(self.check_type)
@@ -27,5 +27,4 @@ class BasePostRunner(ABC):
             scan_reports: list[Report],
             runner_filter: RunnerFilter | None = None
     ) -> Report | list[Report]:
-        pass
-
+        raise NotImplementedError()

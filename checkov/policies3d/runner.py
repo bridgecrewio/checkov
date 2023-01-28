@@ -4,7 +4,6 @@ import logging
 from enum import Enum
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -25,7 +24,7 @@ class Policy3dRunner(BasePostRunner):
     def __init__(self) -> None:
         super().__init__()
 
-    def run(   #type:ignore[override]
+    def run(  # type:ignore[override]
             self,
             checks: list[Base3dPolicyCheck] | None = None,
             scan_reports: list[Report] | None = None,
@@ -103,7 +102,8 @@ class Policy3dRunner(BasePostRunner):
                         if relevant_vulns:
                             image_related_resource = image.get('relatedResourceId')
                             if not image_related_resource:
-                                logging.debug("[policies3d/runner](solve_check_cve) Found vulnerabilities on image without a related resource, skipping")
+                                logging.debug(
+                                    "[policies3d/runner](solve_check_cve) Found vulnerabilities on image without a related resource, skipping")
                                 break
                             if image_related_resource in cve_results_map:
                                 cve_results_map[image_related_resource].extend(relevant_vulns)
@@ -127,5 +127,3 @@ class Policy3dRunner(BasePostRunner):
             entity_tags=None,
             severity=check.severity,
         )
-
-

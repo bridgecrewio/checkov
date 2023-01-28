@@ -23,7 +23,6 @@ from checkov.common.bridgecrew.integration_features.features.repo_config_integra
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
     integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
-from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
@@ -43,7 +42,6 @@ from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
