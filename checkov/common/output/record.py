@@ -81,7 +81,7 @@ class Record:
         self.bc_category = bc_category
         self.benchmarks = benchmarks
         self.description = description  # used by SARIF output
-        self.short_description = short_description  # used by SARIF output
+        self.short_description = short_description  # used by SARIF and GitLab SAST output
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None

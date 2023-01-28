@@ -161,7 +161,7 @@ def test_get_sarif_json(sca_image_report_scope_function):
                                   'rules':
                                       [{'id': 'BC_LIC_1',
                                         'name': 'SCA license',
-                                        'shortDescription': {'text': 'SCA license'},
+                                        'shortDescription': {'text': 'License Apache-2.0-Fake - perl: 5.34.0-3ubuntu1'},
                                         'fullDescription': {'text': 'SCA license'},
                                         'help': {
                                             'text': '"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl"'},
