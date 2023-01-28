@@ -29,6 +29,7 @@ from checkov.common.images.image_referencer import ImageReferencer
 from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner
@@ -51,7 +52,7 @@ if TYPE_CHECKING:
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
-OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "sarif", "csv"]
+OUTPUT_CHOICES = ("cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "gitlab_sast", "sarif", "csv")
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
@@ -287,6 +288,7 @@ class RunnerRegistry:
         junit_reports = []
         github_reports = []
         cyclonedx_reports = []
+        gitlab_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -312,6 +314,8 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
+                if "gitlab_sast" in config.output:
+                    gitlab_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
@@ -453,6 +457,16 @@ class RunnerRegistry:
                 )
 
                 data_outputs[cyclonedx_format] = cyclonedx_output
+        if "gitlab_sast" in config.output:
+            gl_sast = GitLabSast(reports=gitlab_reports)
+
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="gitlab_sast",
+                output=json.dumps(gl_sast.sast_json, indent=4),
+            )
+
+            data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -468,6 +482,7 @@ class RunnerRegistry:
             'junitxml': 'results_junitxml.xml',
             'cyclonedx': 'results_cyclonedx.xml',
             'cyclonedx_json': 'results_cyclonedx.json',
+            'gitlab_sast': 'results_gitlab_sast.json',
         }
 
         if config.output_file_path:
