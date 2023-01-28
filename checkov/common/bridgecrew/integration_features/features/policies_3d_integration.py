@@ -8,7 +8,6 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.policies3d.checks_parser import Policy3dParser
-from checkov.common.util.type_forcers import force_list
 from checkov.policies3d.runner import Policy3dRunner
 
 if TYPE_CHECKING:
@@ -58,36 +57,33 @@ class Policies3DIntegration(BaseIntegrationFeature):
         return check
 
     def post_scan(self, scan_reports: list[Report]) -> Report | None:
-        # 1. get the 3d policies from self.bc_integration['customer_run_config']['Policies3D']
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.debug('In the post scan for custom policies, but nothing was fetched from the platform')
+                logging.debug('In the post scan for 3d policies, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')
-            # 2. for each policy:
             checks = []
             runner = Policy3dRunner()
             for policy in policies:
                 try:
-                    logging.debug(f"Loading policy id: {policy.get('id')}")
+                    logging.debug(f"Loading 3d policy id: {policy.get('id')}")
                     converted_check = self._convert_raw_check(policy)
-                    # resource_types = Registry._get_resource_types(converted_check['metadata'])
                     check = self.platform_policy_parser.parse_raw_check(converted_check)
                     check.severity = Severities[policy['severity']]
                     check.bc_id = check.id
                     checks.append(check)
                 except Exception:
-                    logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
+                    logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
 
             report = runner.run(checks=checks, scan_reports=scan_reports)
             return report
 
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
+            logging.debug("Scanning without applying 3d policies from the platform.", exc_info=True)
             return None
 
 

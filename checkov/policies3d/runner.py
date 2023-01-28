@@ -1,24 +1,21 @@
 from __future__ import annotations
 
 import logging
-import os
-from typing import TYPE_CHECKING, Any
+from enum import Enum
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 
-# Import of the checks registry for a specific resource type
-from checkov.common.graph.checks_infra.registry import BaseRegistry
-
 from checkov.common.runners.base_post_runner import BasePostRunner
 from checkov.common.util.type_forcers import force_list
 from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
-if TYPE_CHECKING:
-    from checkov.common.checks.base_check_registry import BaseCheckRegistry
+
+class CVEAttribute(str, Enum):
+    RISK_FACTORS = "risk_factors"
 
 
 class Policy3dRunner(BasePostRunner):
@@ -47,47 +44,33 @@ class Policy3dRunner(BasePostRunner):
 
         reports_by_fw = {report.check_type: report for report in scan_reports}
         for check in checks:
-            record = self.run_check(check, reports_by_fw)
-            record.set_guideline(check.guideline)
-            report.add_record(record=record)
+            records = self.run_check(check, reports_by_fw)
+            for record in records:
+                report.add_record(record=record)
 
         self.pbar.close()
-
         return report
 
-    def run_check(self, check: Base3dPolicyCheck, reports_by_fw: dict) -> Record:
-        check_result = CheckResult.PASSED
-        record_rel_file_path = ''
-        record_abs_file_path = ''
-        record_code_block = ''
-        record_line_range = [-1, -1]
-        record_resource = ''
+    def run_check(self, check: Base3dPolicyCheck, reports_by_fw: dict) -> list[Record]:
+        records = []
+        iac_results_map = self.solve_check_iac(check, reports_by_fw)
+        cve_results_map = self.solve_check_cve(check, reports_by_fw)
 
-        cve_results_map = {}
-        if check.cve:
-            cve_report = reports_by_fw.get('sca_image')
-            if cve_report:
-                image_results = cve_report.image_cached_results
-                # extract what's need to be checked
-                risk_factor = None
-                for attribute, value in check.cve.items():
-                    if attribute == 'risk_factors':
-                        risk_factor = value[0]
+        for iac_resource, iac_records in iac_results_map.items():
+            for cve_resource in cve_results_map:
+                if iac_resource == cve_resource:
+                    # This means we found the combination on the same resource -> create a violation for that resource
+                    check_result = CheckResult.FAILED
+                    record = self.get_record(check, iac_records[0], check_result)
+                    record.set_guideline(check.guideline)
+                    records.append(record)
 
-                # get all relevant cve scan reports
-                if risk_factor:
-                    for image in image_results:
-                        relevant_vulns = [vuln for vuln in image.get('vulnerabilities', []) if
-                                          risk_factor in force_list(vuln.get('riskFactors', []))]
-                        if relevant_vulns:
-                            image_related_resource = image.get('relatedResourceId')
-                            if image_related_resource in cve_results_map:
-                                cve_results_map[image_related_resource].extend(relevant_vulns)
-                            else:
-                                cve_results_map[image_related_resource] = relevant_vulns
+        self.pbar.update()
+        return records
+
+    def solve_check_iac(self, check, reports_by_fw):
         iac_results_map = {}
         if check.iac:
-            # extract what's need to be checked
             for fw, bc_check_ids in check.iac.items():
                 fw_report = reports_by_fw.get(fw)
                 if fw_report:
@@ -99,30 +82,47 @@ class Policy3dRunner(BasePostRunner):
                                 iac_results_map[resource_id].append(record)
                             else:
                                 iac_results_map[resource_id] = [record]
+        return iac_results_map
 
-        # create the final result
-        for iac_resource in iac_results_map:
-            for cve_resource in cve_results_map:
-                if iac_resource == cve_resource:
-                    check_result = CheckResult.FAILED
-                    print(iac_resource)
+    def solve_check_cve(self, check, reports_by_fw):
+        cve_results_map = {}
+        if check.cve:
+            cve_report = reports_by_fw.get(CheckType.SCA_IMAGE)
+            if cve_report:
+                image_results = cve_report.image_cached_results
+                risk_factor = None
+                for attribute, value in check.cve.items():
+                    if attribute == CVEAttribute.RISK_FACTORS:
+                        risk_factor = value[0]
 
-        record = Record(
+                if risk_factor:
+                    for image in image_results:
+                        relevant_vulns = [vuln for vuln in image.get('vulnerabilities', []) if
+                                          risk_factor in force_list(vuln.get('riskFactors', []))]
+                        if relevant_vulns:
+                            image_related_resource = image.get('relatedResourceId')
+                            if image_related_resource in cve_results_map:
+                                cve_results_map[image_related_resource].extend(relevant_vulns)
+                            else:
+                                cve_results_map[image_related_resource] = relevant_vulns
+        return cve_results_map
+
+    def get_record(self, check, iac_record, check_result):
+        return Record(
             check_id=check.id,
             bc_check_id=check.bc_id,
             check_name=check.name,
             check_result={'result': check_result},
-            code_block=record_code_block,
-            file_path=record_rel_file_path,
-            file_line_range=record_line_range,
-            resource=record_resource,
+            code_block=iac_record.code_block,
+            file_path=iac_record.file_path,
+            file_line_range=iac_record.file_line_range,
+            resource=f'{iac_record.file_path}:{iac_record.resource}',
             # type:ignore[arg-type]  # key is str not BaseCheck
             evaluations=None,
             check_class=check.__class__.__module__,
-            file_abs_path=record_abs_file_path,
+            file_abs_path=iac_record.file_abs_path,
             entity_tags=None,
             severity=check.severity,
         )
-        self.pbar.update()
-        return record
+
 
