@@ -10,10 +10,10 @@ class GooglePolicyIsPrivate(BaseDataCheck):
         ensure policy defined is not public
         policy should not set 'allUsers' or 'allAuthenticatedUsers' in the attribute 'member'/'members'
         """
-        name = "Policy should not define public access"
+        name = "Ensure IAM policy should not define public access"
         id = "CKV_GCP_113"
-        supported_data = ["google_iam_policy"]
-        categories = [CheckCategories.IAM]
+        supported_data = ("google_iam_policy",)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
     def scan_data_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
