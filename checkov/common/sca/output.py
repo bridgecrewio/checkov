@@ -77,6 +77,7 @@ def create_report_license_record(
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
+        short_description=f"License {licenses_status['license']} - {package_name}: {package_version}",
         vulnerability_details=details,
     )
     return record
