@@ -4,6 +4,7 @@ import logging
 from enum import Enum
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -19,12 +20,12 @@ class CVEAttribute(str, Enum):
 
 
 class Policy3dRunner(BasePostRunner):
-    check_type = CheckType.POLICY_3D  # type:ignore[attr-defined]  # noqa: CCE003  # a static attribute
+    check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
 
-    def run(
+    def run(   #type:ignore[override]
             self,
             checks: list[Base3dPolicyCheck] | None = None,
             scan_reports: list[Report] | None = None,
@@ -51,7 +52,7 @@ class Policy3dRunner(BasePostRunner):
         self.pbar.close()
         return report
 
-    def run_check(self, check: Base3dPolicyCheck, reports_by_fw: dict) -> list[Record]:
+    def run_check(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> list[Record]:
         records = []
         iac_results_map = self.solve_check_iac(check, reports_by_fw)
         cve_results_map = self.solve_check_cve(check, reports_by_fw)
@@ -68,8 +69,8 @@ class Policy3dRunner(BasePostRunner):
         self.pbar.update()
         return records
 
-    def solve_check_iac(self, check, reports_by_fw):
-        iac_results_map = {}
+    def solve_check_iac(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Record]]:
+        iac_results_map: dict[str, list[Record]] = {}
         if check.iac:
             for fw, bc_check_ids in check.iac.items():
                 fw_report = reports_by_fw.get(fw)
@@ -84,8 +85,8 @@ class Policy3dRunner(BasePostRunner):
                                 iac_results_map[resource_id] = [record]
         return iac_results_map
 
-    def solve_check_cve(self, check, reports_by_fw):
-        cve_results_map = {}
+    def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Record]]:
+        cve_results_map: dict[str, list[Record]] = {}
         if check.cve:
             cve_report = reports_by_fw.get(CheckType.SCA_IMAGE)
             if cve_report:
@@ -101,13 +102,16 @@ class Policy3dRunner(BasePostRunner):
                                           risk_factor in force_list(vuln.get('riskFactors', []))]
                         if relevant_vulns:
                             image_related_resource = image.get('relatedResourceId')
+                            if not image_related_resource:
+                                logging.debug("[policies3d/runner](solve_check_cve) Found vulnerabilities on image without a related resource, skipping")
+                                break
                             if image_related_resource in cve_results_map:
                                 cve_results_map[image_related_resource].extend(relevant_vulns)
                             else:
                                 cve_results_map[image_related_resource] = relevant_vulns
         return cve_results_map
 
-    def get_record(self, check, iac_record, check_result):
+    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, check_result: CheckResult) -> Record:
         return Record(
             check_id=check.id,
             bc_check_id=check.bc_id,
@@ -117,7 +121,6 @@ class Policy3dRunner(BasePostRunner):
             file_path=iac_record.file_path,
             file_line_range=iac_record.file_line_range,
             resource=f'{iac_record.file_path}:{iac_record.resource}',
-            # type:ignore[arg-type]  # key is str not BaseCheck
             evaluations=None,
             check_class=check.__class__.__module__,
             file_abs_path=iac_record.file_abs_path,

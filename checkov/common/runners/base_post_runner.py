@@ -7,6 +7,7 @@ from checkov.common.checks.base_check import BaseCheck
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.output.report import Report
+from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
@@ -16,13 +17,13 @@ if TYPE_CHECKING:
 class BasePostRunner(ABC):
     check_type = ""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pbar = ProgressBar(self.check_type)
 
     @abstractmethod
     def run(
             self,
-            checks: list[BaseCheck],
+            checks: list[BaseCheck | Base3dPolicyCheck],
             scan_reports: list[Report],
             runner_filter: RunnerFilter | None = None
     ) -> Report | list[Report]:

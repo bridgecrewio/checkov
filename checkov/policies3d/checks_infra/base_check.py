@@ -26,8 +26,8 @@ class Base3dPolicyCheck:
         self.bc_category: Optional[str] = None
         self.frameworks: List[str] = []
         self.check_path: str = ""
-        self.iac = []
-        self.cve = []
+        self.iac: Dict[str, Any] = {}
+        self.cve: Dict[str, Any] = {}
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver

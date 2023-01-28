@@ -61,7 +61,7 @@ class Policies3DIntegration(BaseIntegrationFeature):
             if not self.bc_integration.customer_run_config_response:
                 logging.debug('In the post scan for 3d policies, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
-                return
+                return None
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')

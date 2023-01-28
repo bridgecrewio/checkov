@@ -621,18 +621,6 @@ class RunnerRegistry:
 
         return image_referencing_runners
 
-    def run_3d_checks(self, merged_reports, policies_3d) -> list:
-        for policy in policies_3d:
-            converted_check = CustomPoliciesIntegration._convert_raw_check(policy)
-            parser = NXGraphCheckParser()
-            check = parser.parse_raw_check(raw_check=converted_check)
-            # combination_type = definition.get('combination_type')
-
-            parser = NXGraphCheckParser()
-
-            pass
-        return merged_reports
-
     @staticmethod
     def strip_code_blocks_from_json(report_jsons: List[Dict[str, Any]]) -> None:
         for report in report_jsons:
