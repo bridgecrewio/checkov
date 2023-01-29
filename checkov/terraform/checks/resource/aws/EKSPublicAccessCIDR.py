@@ -25,7 +25,7 @@ class EKSPublicAccessCIDR(BaseResourceCheck):
             elif "public_access_cidrs" in conf["vpc_config"][0]:
                 self.evaluated_keys = ['vpc_config/[0]/public_access_cidrs']
                 cidrs = conf["vpc_config"][0]["public_access_cidrs"]
-                if cidrs and len(cidrs[0]) and "0.0.0.0/0" not in cidrs[0]:
+                if cidrs and isinstance(cidrs, list) and len(cidrs[0]) and "0.0.0.0/0" not in cidrs[0]:
                     return CheckResult.PASSED
             return CheckResult.FAILED
         return CheckResult.UNKNOWN
