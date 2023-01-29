@@ -931,7 +931,10 @@ class Checkov:
             return None
         finally:
             if self.config.support:
-                bc_integration.persist_run_metadata(log_stream.getvalue())
+                if not self.config.bc_api_key:
+                    self.parser.error("--bc-api-key argument is required when using --support")
+                else:
+                    bc_integration.persist_run_metadata(log_stream.getvalue())
 
     def exit_run(self) -> None:
         exit(0) if self.config.no_fail_on_crash else exit(2)

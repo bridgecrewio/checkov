@@ -100,7 +100,7 @@ def persist_run_metadata(
 ) -> None:
     try:
         if isinstance(run_metadata, str):
-            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/log_test.txt'
+            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.txt'
             s3_client.put_object(Bucket=bucket, Key=object_path, Body=run_metadata)
         else:
             object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'

@@ -118,7 +118,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--support",
             action="store_true",
-            help="store your logs to support ASAP",
+            help="Enable debug logs and upload the logs to the server. Requires a Bridgecrew or Prisma Cloud API key.",
             default=None
         )
         self.add(
