@@ -5,7 +5,7 @@ from typing import Dict, List, Any, Union
 
 from checkov.common.models.enums import CheckResult
 
-from cloudsplaining.scan.policy_document import PolicyDocument
+from cloudsplaining.scan.policy_document import PolicyDocument  # noqa: TC002
 
 
 class BaseTerraformCloudsplainingIAMScanner:
