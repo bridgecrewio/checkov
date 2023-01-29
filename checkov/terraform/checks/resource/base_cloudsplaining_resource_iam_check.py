@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
 
 
-class BaseTerraformCloudsplaininResourceIAMCheck(BaseResourceCheck, BaseTerraformCloudsplainingIAMScanner, ABC):
+class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerraformCloudsplainingIAMScanner, ABC):
     def __init__(self, name: str, id: str) -> None:
         super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_resources=["aws_iam_policy"])
 
