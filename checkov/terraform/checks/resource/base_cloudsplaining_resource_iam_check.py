@@ -4,10 +4,10 @@ from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.terraform.checks.utils.base_cloudsplaining_iam_check import BaseCloudsplainingIAMScanner
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_check import BaseTerraformCloudsplainingIAMScanner
 
 
-class BaseCloudsplaininResourceIAMCheck(BaseResourceCheck, BaseCloudsplainingIAMScanner):
+class BaseTerraformCloudsplaininResourceIAMCheck(BaseResourceCheck, BaseTerraformCloudsplainingIAMScanner):
     def __init__(self, name: str, id: str) -> None:
         super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_resources=["aws_iam_policy"])
 
