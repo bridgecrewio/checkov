@@ -110,6 +110,16 @@ class ImageReferencer:
             return ""
 
 
+def is_valid_public_image_name(image_name: str) -> bool:
+    if image_name.startswith('localhost'):
+        return False
+    if '[' in image_name:
+        return False
+    if '<' in image_name:
+        return False
+    return True
+
+
 class ImageReferencerMixin(Generic[_Definitions]):
     """Mixin class to simplify image reference search"""
 
@@ -139,7 +149,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         root_path = Path(root_path) if root_path else None
         check_class = f"{image_scanner.__module__}.{image_scanner.__class__.__qualname__}"
         report_type = CheckType.SCA_IMAGE
-        image_names_to_query = list(set(map(lambda i: i.name, images)))
+        image_names_to_query = list(set(filter(lambda i: is_valid_public_image_name(i), map(lambda i: i.name, images))))
         results = asyncio.run(self._fetch_image_results_async(image_names_to_query))
 
         license_statuses_by_image = asyncio.run(self._fetch_licenses_per_image(image_names_to_query, results))
@@ -154,7 +164,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 runner_filter=runner_filter,
                 report_type=report_type,
                 bc_integration=bc_integration,
-                cached_results=results[image_names_to_query.index(image.name)],
+                cached_results=results.get(image_names_to_query.index(image.name)) or {},
                 license_statuses=license_statuses_by_image.get(image.name) or []
             )
 
@@ -196,7 +206,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
                 related_resource_id=image.related_resource_id,
-                root_folder=root_path)
+                root_folder=root_path
+            )
             report.image_cached_results.append(image_scanning_report)
 
             result = cached_results.get("results", [{}])[0]
