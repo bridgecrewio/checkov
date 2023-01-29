@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import json
 import logging
+import typing
 from abc import abstractmethod
 from typing import Dict, List, Any, Union
 
 from checkov.common.models.enums import CheckResult
 
-from cloudsplaining.scan.policy_document import PolicyDocument  # noqa: TC002
+if typing.TYPE_CHECKING:
+    from cloudsplaining.scan.policy_document import PolicyDocument
 
 
 class BaseTerraformCloudsplainingIAMScanner:
