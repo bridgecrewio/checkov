@@ -99,7 +99,7 @@ class Policy3dRunner(BasePostRunner):
                 if risk_factor:
                     for image in image_results:
                         matching_cves = [vuln for vuln in image.get('vulnerabilities', []) if
-                                          risk_factor in force_list(vuln.get('riskFactors', []))]
+                                         risk_factor in force_list(vuln.get('riskFactors', []))]
                         if matching_cves:
                             image_related_resource = image.get('relatedResourceId')
                             if not image_related_resource:
