@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Dict, List, Any
 
 from cloudsplaining.scan.policy_document import PolicyDocument
@@ -11,7 +10,7 @@ from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter i
 )
 
 
-class BaseCloudsplainingDataIAMCheck(BaseDataCheck, BaseCloudsplainingIAMScanner, ABC):
+class BaseCloudsplainingDataIAMCheck(BaseDataCheck, BaseCloudsplainingIAMScanner):
     def __init__(self, name: str, id: str) -> None:
         super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_data=["aws_iam_policy_document"])
 
