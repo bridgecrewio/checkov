@@ -23,3 +23,6 @@ class TestImageReferencerBase(unittest.TestCase):
 
     def test_valid_image_name_2(self):
         self.assertTrue(self.run_is_valid_public_image_valid('ubuntu'))
+
+    def test_valid_image_name_3(self):
+        self.assertTrue(self.run_is_valid_public_image_valid('gcr.io/develop/notifier:aa123aa'))
