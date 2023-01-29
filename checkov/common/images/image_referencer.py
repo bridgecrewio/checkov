@@ -155,6 +155,11 @@ class ImageReferencerMixin(Generic[_Definitions]):
         license_statuses_by_image = asyncio.run(self._fetch_licenses_per_image(image_names_to_query, results))
 
         for image in images:
+            try:
+                results_index = image_names_to_query.index(image.name)
+                cached_results = results[results_index]
+            except ValueError:
+                cached_results = {}
             self._add_image_records(
                 report=report,
                 root_path=root_path,
@@ -164,7 +169,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 runner_filter=runner_filter,
                 report_type=report_type,
                 bc_integration=bc_integration,
-                cached_results=results.get(image_names_to_query.index(image.name)) or {},
+                cached_results=cached_results,
                 license_statuses=license_statuses_by_image.get(image.name) or []
             )
 
