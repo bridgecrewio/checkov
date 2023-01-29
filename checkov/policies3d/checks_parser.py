@@ -15,8 +15,6 @@ class Policy3dParser(Base3dPolicyCheckParser):
         check.id = raw_check.get("metadata", {}).get("id", "")
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
-        check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         check.guideline = raw_check.get("metadata", {}).get("guideline")
-        check.check_path = kwargs.get("check_path", "")
 
         return check
