@@ -4,7 +4,7 @@ from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from checkov.terraform.checks.utils.base_cloudsplaining_iam_check import BaseTerraformCloudsplainingIAMScanner
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
 
 
 class BaseTerraformCloudsplaininResourceIAMCheck(BaseResourceCheck, BaseTerraformCloudsplainingIAMScanner):

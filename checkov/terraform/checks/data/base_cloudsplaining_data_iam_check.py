@@ -4,7 +4,7 @@ from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.data.base_check import BaseDataCheck
-from checkov.terraform.checks.utils.base_cloudsplaining_iam_check import BaseTerraformCloudsplainingIAMScanner
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
 from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter import (
     convert_terraform_conf_to_iam_policy,
 )
