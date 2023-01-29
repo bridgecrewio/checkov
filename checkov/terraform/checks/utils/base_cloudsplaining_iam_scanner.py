@@ -11,16 +11,16 @@ from cloudsplaining.scan.policy_document import PolicyDocument  # noqa: TC002
 class BaseTerraformCloudsplainingIAMScanner:
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
-    terraform_policy_document_cache: Dict[str, PolicyDocument] = {}  # noqa: CCE003
+    policy_document_cache: Dict[str, PolicyDocument] = {}  # noqa: CCE003
 
     def scan_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if self.should_scan_conf(conf):
             try:
-                if self.cache_key not in BaseTerraformCloudsplainingIAMScanner.terraform_policy_document_cache.keys():
+                if self.cache_key not in BaseTerraformCloudsplainingIAMScanner.policy_document_cache.keys():
                     policy = self.convert_to_iam_policy(conf)
-                    BaseTerraformCloudsplainingIAMScanner.terraform_policy_document_cache[self.cache_key] = policy
+                    BaseTerraformCloudsplainingIAMScanner.policy_document_cache[self.cache_key] = policy
                 violations = self.cloudsplaining_analysis(
-                    BaseTerraformCloudsplainingIAMScanner.terraform_policy_document_cache[self.cache_key]
+                    BaseTerraformCloudsplainingIAMScanner.policy_document_cache[self.cache_key]
                 )
             except Exception:
                 # this might occur with templated iam policies where ARN is not in place or similar
