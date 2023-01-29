@@ -48,7 +48,9 @@ class Policies3DIntegration(BaseIntegrationFeature):
         metadata = {
             'id': policy['id'],
             'name': policy['title'],
-            'category': policy['category']
+            'category': policy['category'],
+            'guideline': policy['guideline'],
+            'severity': policy['severity']
         }
         check = {
             'metadata': metadata,
