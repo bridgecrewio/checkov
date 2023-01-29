@@ -16,6 +16,7 @@ nav_order: 1
 |  5 | CKV_AZUREPIPELINES_3 | azure_pipelines | stages[].jobs[].steps[] | Ensure set variable is not marked as a secret       | Azure Pipelines | https://github.com/bridgecrewio/checkov/blob/main/checkov/azure_pipelines/checks/job/SetSecretVariable.py  |
 |  6 | CKV_AZUREPIPELINES_5 | azure_pipelines | *.container[]           | Detecting image usages in azure pipelines workflows | Azure Pipelines | https://github.com/bridgecrewio/checkov/blob/main/checkov/azure_pipelines/checks/job/DetectImagesUsage.py  |
 |  7 | CKV_AZUREPIPELINES_5 | azure_pipelines | jobs[]                  | Detecting image usages in azure pipelines workflows | Azure Pipelines | https://github.com/bridgecrewio/checkov/blob/main/checkov/azure_pipelines/checks/job/DetectImagesUsage.py  |
+|  8 | CKV_AZUREPIPELINES_5 | azure_pipelines | stages[].jobs[]         | Detecting image usages in azure pipelines workflows | Azure Pipelines | https://github.com/bridgecrewio/checkov/blob/main/checkov/azure_pipelines/checks/job/DetectImagesUsage.py  |
 
 
 ---

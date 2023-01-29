@@ -21,6 +21,8 @@ class ContainerLatestTag(BaseAzurePipelinesCheck):
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
         container = conf.get("container")
+        if container and isinstance(container, dict):
+            container = container.get('image')
         if container and isinstance(container, str):
             if ":" in container:
                 # some image tag
