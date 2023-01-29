@@ -54,14 +54,16 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
 
     def build_graph(self, render_variables: bool) -> None:
         foreach_blocks = self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
-        handle_foreach_rendering(foreach_blocks)
-        logging.info(f"[TerraformLocalGraph] finished handling foreach blocks")
+        if self.enable_foreach_handling:
+            handle_foreach_rendering(foreach_blocks)
+            logging.info(f"[TerraformLocalGraph] finished handling foreach blocks")
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
@@ -97,7 +99,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.in_edges[i] = []
             self.out_edges[i] = []
 
-            if FOREACH_STRING in block.attributes.keys() and block.block_type in ('resource', 'module'):
+            if self.enable_foreach_handling and FOREACH_STRING in block.attributes.keys() and block.block_type in ('resource', 'module'):
                 foreach_blocks[block.block_type].append(block)
         return foreach_blocks
 
