@@ -95,20 +95,21 @@ class Policy3dRunner(BasePostRunner):
                     if attribute == CVEAttribute.RISK_FACTORS:
                         risk_factor = value[0]
 
+                # currently checks only for risk factor filters, to be extended
                 if risk_factor:
                     for image in image_results:
-                        relevant_vulns = [vuln for vuln in image.get('vulnerabilities', []) if
+                        matching_cves = [vuln for vuln in image.get('vulnerabilities', []) if
                                           risk_factor in force_list(vuln.get('riskFactors', []))]
-                        if relevant_vulns:
+                        if matching_cves:
                             image_related_resource = image.get('relatedResourceId')
                             if not image_related_resource:
                                 logging.debug(
-                                    "[policies3d/runner](solve_check_cve) Found vulnerabilities on image without a related resource, skipping")
+                                    "[policies3d/runner](solve_check_cve) Found vulnerabilities of an image without a related resource, skipping")
                                 break
                             if image_related_resource in cve_results_map:
-                                cve_results_map[image_related_resource].extend(relevant_vulns)
+                                cve_results_map[image_related_resource].extend(matching_cves)
                             else:
-                                cve_results_map[image_related_resource] = relevant_vulns
+                                cve_results_map[image_related_resource] = matching_cves
         return cve_results_map
 
     def get_record(self, check: Base3dPolicyCheck, iac_record: Record, check_result: CheckResult) -> Record:
