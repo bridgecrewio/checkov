@@ -15,7 +15,7 @@ definition:
           resource_types:
             - azurerm_sql_server
             - azurerm_mssql_server
-          attribute: "extended_auditing_policy.retention_in_days"
+          attribute: "extended_auditing_policy.*.retention_in_days"
           operator: greater_than_or_equal
           value: 90
         - and:
