@@ -91,11 +91,11 @@ class Policy3dRunner(BasePostRunner):
             if cve_report:
                 image_results = cve_report.image_cached_results
                 risk_factor = None
+                # currently checks only for a single risk factor condition on the cves, to be extended
                 for attribute, value in check.cve.items():
                     if attribute == CVEAttribute.RISK_FACTORS:
                         risk_factor = value[0]
 
-                # currently checks only for risk factor filters, to be extended
                 if risk_factor:
                     for image in image_results:
                         matching_cves = [vuln for vuln in image.get('vulnerabilities', []) if
