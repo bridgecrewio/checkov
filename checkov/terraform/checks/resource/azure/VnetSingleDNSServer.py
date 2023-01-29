@@ -19,7 +19,7 @@ class VnetSingleDNSServer(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         if "dns_servers" in conf and conf["dns_servers"] and isinstance(conf["dns_servers"], list):
             dns_servers = conf["dns_servers"][0]
-            if len(dns_servers) == 1:
+            if dns_servers and len(dns_servers) == 1:
                 self.evaluated_keys = ["dns_servers"]
                 return CheckResult.FAILED
         return CheckResult.PASSED
