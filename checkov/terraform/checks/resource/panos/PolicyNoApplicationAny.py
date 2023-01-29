@@ -32,7 +32,7 @@ class PolicyNoApplicationAny(BaseResourceCheck):
 
                     # If applications is defined, get the value
                     apps = secrule['applications']
-                    
+
                     # The value "any" is overly permissive and is therefore a fail. The value "any" can only appear on its on, "any" with any other values in the list is rejected by Terraform during apply stage
                     if apps[0][0] == "any":
                         return CheckResult.FAILED
@@ -40,7 +40,7 @@ class PolicyNoApplicationAny(BaseResourceCheck):
                 else:
                     # If "applications" attribute is not defined, this is not valid and will fail during Terraform plan stage, and should therefore be a fail
                     return CheckResult.FAILED
-            
+
             # No "any" found for the "applications" attribute for any rules, therefore we have a pass
             return CheckResult.PASSED
 

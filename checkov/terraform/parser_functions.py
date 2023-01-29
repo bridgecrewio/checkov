@@ -80,7 +80,7 @@ def tonumber(original, **_):
     except ValueError:
         return FUNCTION_FAILED
 
-    
+
 def tostring(original, **_):
     # Indicates a safe string, all good
     if original.startswith('"') and original.endswith('"'):

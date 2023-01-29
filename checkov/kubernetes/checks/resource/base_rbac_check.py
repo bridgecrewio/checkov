@@ -47,7 +47,7 @@ class BaseRbacK8sCheck(BaseK8Check):
                     return CheckResult.PASSED
             # all operations were found, therefore the check fails
             return CheckResult.FAILED
-        
+
         return CheckResult.PASSED
 
     # Check if a rule has an apigroup, verb, and resource specified in @operation
