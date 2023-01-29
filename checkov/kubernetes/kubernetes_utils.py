@@ -185,7 +185,7 @@ def is_invalid_k8_definition(definition: Dict[str, Any]) -> bool:
         or isinstance(definition.get("kind"), int)
         or not isinstance(definition.get('metadata'), dict)
     )
-    
+
 
 def is_invalid_k8_pod_definition(definition: Dict[str, Any]) -> bool:
     if not isinstance(definition, dict):
