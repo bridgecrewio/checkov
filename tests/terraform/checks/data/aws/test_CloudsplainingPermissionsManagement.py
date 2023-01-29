@@ -6,7 +6,7 @@ from checkov.terraform.checks.data.aws.IAMPermissionsManagement import check
 from checkov.terraform.runner import Runner
 
 
-class TestCloudsplainingIAMWrite(unittest.TestCase):
+class TestCloudsplainingPermissionManagement(unittest.TestCase):
     def setUp(self):
         from checkov.terraform.checks.data.base_cloudsplaining_data_iam_check import BaseCloudsplainingDataIAMCheck
 
