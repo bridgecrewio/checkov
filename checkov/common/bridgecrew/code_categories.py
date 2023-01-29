@@ -40,6 +40,7 @@ CodeCategoryMapping = {
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
+    CheckType.POLICY_3D: CodeCategoryType.IMAGES  # actually a combination of all code categories but currently image scannning is common to all of the 3d policies
 }
 
 
