@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, Any, Mapping, Union
+from typing import TYPE_CHECKING, Callable, Any, Mapping, Union, Generator
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
@@ -18,7 +18,6 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types", "graph_framework")
 
-    # TODO add to graph_connector type fot igraph and implement the extract_nodes_igraph function
     def __init__(self, graph_connector: Union[igraph.Graph, networkx.DiGraph],
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[
                      str, _ExtractImagesCallableAlias]):
@@ -30,11 +29,13 @@ class GraphImageReferencerProvider:
     def extract_images_from_resources(self) -> list[Image]:
         pass
 
-    def extract_nodes(self) -> networkx.Graph | igraph.Graph:
+    def extract_nodes(self) -> networkx.Graph | igraph.Graph | None:
         if self.graph_framework == 'NETWORKX':
             return self.extract_nodes_networkx()
-        else:
+        elif self.graph_framework == 'IGRAPH':
             return self.extract_nodes_igraph()
+        else:
+            return None
 
     def extract_nodes_networkx(self) -> networkx.Graph:
         resource_nodes = [
@@ -46,4 +47,24 @@ class GraphImageReferencerProvider:
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_igraph(self) -> igraph.Graph:
-        pass
+        resource_nodes = [
+            node
+            for node, resource_type in zip(self.graph_connector.vs['name'], self.graph_connector.vs['resource_type'])
+            if resource_type and resource_type in self.supported_resource_types
+        ]
+        return self.graph_connector.subgraph(resource_nodes)
+
+    def extract_resource(self, supported_resources_graph: networkx.Graph | igraph.Graph) -> Generator[dict[str, Any], None, None]:
+        if self.graph_framework == 'NETWORKX':
+            for _, resource in supported_resources_graph.nodes(data=True):
+                yield resource
+        elif self.graph_framework == 'IGRAPH':
+            for v in supported_resources_graph.vs:
+                resource = {
+                    'name': v['name'],
+                    'block_type_': v['block_type_'],
+                    'resource_type': v['resource_type']
+                }
+                resource.update(v['attr'])
+                yield resource
+

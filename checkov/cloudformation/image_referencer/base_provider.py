@@ -16,7 +16,7 @@ class BaseCloudFormationProvider(GraphImageReferencerProvider):
 
         supported_resources_graph = self.extract_nodes()
 
-        for _, resource in supported_resources_graph.nodes(data=True):
+        for resource in self.extract_resource(supported_resources_graph):
             image_names: list[str] = []
             resource_type = resource[CustomAttributes.RESOURCE_TYPE]
 
