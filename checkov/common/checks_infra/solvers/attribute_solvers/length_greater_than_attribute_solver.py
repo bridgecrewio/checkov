@@ -12,7 +12,7 @@ class LengthGreaterThanAttributeSolver(BaseAttributeSolver):
         attr = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
         if attr is None:
             return False
-        
+
         value_int = force_int(self.value)
 
         if value_int is None:

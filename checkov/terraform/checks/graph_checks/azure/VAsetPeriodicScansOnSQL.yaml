@@ -32,7 +32,7 @@ definition:
         - cond_type: attribute
           resource_types:
             - azurerm_mssql_server_vulnerability_assessment 
-          attribute: 'recurring_scans.enabled'
+          attribute: 'recurring_scans.*.enabled'
           operator:  equals
           value: true
         - cond_type: filter

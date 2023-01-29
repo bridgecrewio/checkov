@@ -36,7 +36,7 @@ jobs:
           git add -u
           git commit -m "update pipenv packages"
         env:
-          GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04  # v4
