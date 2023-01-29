@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
@@ -19,13 +20,13 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
     def __init__(self, definitions: dict[str | Path, dict[str, Any] | list[dict[str, Any]]]) -> None:
         super().__init__(definitions=definitions)
 
-        self.source = "GitHubActions"
+        self.source = GraphSource.GITHUB_ACTIONS
         self.job_steps_map: "dict[tuple[str, str], list[tuple[str, str]]]" = defaultdict(list)
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, dict):
-                logging.warning(f"definition of file {file_path} has the wrong type {type(definition)}")
+                logging.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
                 return
 
             file_path = str(file_path)

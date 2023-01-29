@@ -47,6 +47,21 @@ resource "azurerm_mssql_server_vulnerability_assessment" "okLegacyExample" {
   }
 }
 
+resource "azurerm_mssql_server_vulnerability_assessment" "okLegacyExampleAsList" {
+  server_security_alert_policy_id = azurerm_mssql_server_security_alert_policy.okLegacyExample.id
+  storage_container_path          = "${azurerm_storage_account.okLegacyExample.primary_blob_endpoint}${azurerm_storage_container.okLegacyExample.name}/"
+  storage_account_access_key      = azurerm_storage_account.okLegacyExample.primary_access_key
+
+  recurring_scans = [{
+    enabled                   = true
+    email_subscription_admins = true
+    emails = [
+      "email@example1.com",
+      "email@example2.com"
+    ]
+  }]
+}
+
 resource "azurerm_resource_group" "okExample" {
   name     = "okExample-resources"
   location = "West Europe"

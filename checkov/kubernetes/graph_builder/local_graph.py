@@ -144,14 +144,21 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         if not template or not isinstance(template, dict):
             all_resources.append(conf)
             return
-        if conf.get('kind') in SUPPORTED_POD_CONTAINERS_TYPES:
-            # means this is a Pod resource nested in a supported template container resource
-            template[PARENT_RESOURCE_ID_KEY_NAME] = get_resource_id(conf)
-            template[PARENT_RESOURCE_KEY_NAME] = conf.get('metadata', {}).get('name', "")
         if is_invalid_k8_pod_definition(template):
             all_resources.append(conf)
             return
-        spec.pop('template', None)
+        if conf.get('kind') in SUPPORTED_POD_CONTAINERS_TYPES:
+            # means this is a Pod resource nested in a supported template container resource
+            template[PARENT_RESOURCE_ID_KEY_NAME] = get_resource_id(conf)
+            metadata = conf.get('metadata', {})
+            if not metadata:
+                # resource does not contain all required fields and can not be associated with the pod
+                all_resources.append(conf)
+                return
+            template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+            spec.pop('template', None)
+        else:
+            template = {}
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
 

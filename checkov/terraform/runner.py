@@ -12,7 +12,8 @@ import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -24,7 +25,9 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_tf_definition_key_from_module_dependency
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
+    get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
+    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -62,9 +65,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def __init__(
         self,
         parser: Parser | None = None,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
-        source: str = "Terraform",
+        source: str = GraphSource.TERRAFORM,
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: TerraformGraphManager | None = None
     ) -> None:
@@ -78,7 +81,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
             source=source,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector or self.db_connector,
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
@@ -583,8 +586,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         returns a tuple containing the file path (e.g., "module/module.tf") and referrer (e.g., "main.tf#0").
         If the file path does not contain a referred, the tuple will contain the original file path and None.
         """
-        if file_path.endswith("]") and "[" in file_path:
-            return file_path[:file_path.index("[")], file_path[file_path.index("[") + 1: -1]
+        if file_path.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) and TERRAFORM_NESTED_MODULE_PATH_PREFIX in file_path:
+            return file_path[:file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)], \
+                file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
         else:
             return file_path, None
 

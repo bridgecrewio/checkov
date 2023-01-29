@@ -15,6 +15,7 @@ import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -26,7 +27,7 @@ from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 if TYPE_CHECKING:
@@ -39,8 +40,8 @@ class K8sKustomizeRunner(K8sRunner):
     def __init__(
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:

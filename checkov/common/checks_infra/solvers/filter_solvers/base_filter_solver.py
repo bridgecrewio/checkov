@@ -6,7 +6,7 @@ from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class BaseFilterSolver(BaseSolver):
@@ -23,5 +23,5 @@ class BaseFilterSolver(BaseSolver):
     def _get_operation(self, *args: Any, **kwargs: Any) -> Callable[..., bool]:
         raise NotImplementedError()
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError()

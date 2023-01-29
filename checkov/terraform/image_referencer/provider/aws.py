@@ -64,9 +64,10 @@ def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> lis
     definitions = extract_json(resource.get("container_definitions"))
     if isinstance(definitions, list):
         for definition in definitions:
-            name = definition.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(definition, dict):
+                name = definition.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 
@@ -77,9 +78,10 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
     containers = resource.get("container")
     if containers:
         for container in force_list(containers):
-            name = container.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 

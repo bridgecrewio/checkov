@@ -306,6 +306,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--docker-image",
+            "--image",
             help="Scan docker images by name or ID. Only works with --bc-api-key flag",
         )
         self.add(
