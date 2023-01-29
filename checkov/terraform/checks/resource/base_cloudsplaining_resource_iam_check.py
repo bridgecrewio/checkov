@@ -23,5 +23,5 @@ class BaseTerraformCloudsplaininResourceIAMCheck(BaseResourceCheck, BaseTerrafor
         return "policy" in conf.keys()
 
     def convert_to_iam_policy(self, conf: Dict[str, Any]) -> PolicyDocument:
-        policy = conf['policy']  # type: Dict[str, Any]
+        policy = conf['policy'][0]  # type: Dict[str, Any]
         return PolicyDocument(policy)
