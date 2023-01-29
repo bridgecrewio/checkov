@@ -1,13 +1,11 @@
 import json
 import logging
-import typing
 from abc import abstractmethod
 from typing import Dict, List, Any, Union
 
 from checkov.common.models.enums import CheckResult
 
-if typing.TYPE_CHECKING:
-    from cloudsplaining.scan.policy_document import PolicyDocument
+from cloudsplaining.scan.policy_document import PolicyDocument
 
 
 class BaseCloudsplainingIAMScanner:
