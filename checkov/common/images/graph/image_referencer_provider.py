@@ -53,7 +53,8 @@ class GraphImageReferencerProvider:
         ]
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_resource(self, supported_resources_graph: networkx.Graph | igraph.Graph) -> Generator[dict[str, Any], None, None]:
+    def extract_resource(self, supported_resources_graph: networkx.Graph | igraph.Graph) -> \
+            Generator[dict[str, Any], dict[str, Any], dict[str, Any]]:
         def extract_resource_networkx(graph: networkx.Graph) -> Generator[dict[str, Any], None, None]:
             for _, resource in graph.nodes(data=True):
                 yield resource
