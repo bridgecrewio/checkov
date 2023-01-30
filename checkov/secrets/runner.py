@@ -121,7 +121,7 @@ class Runner(BaseRunner[None]):
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
-                    f = open(f"runnable_plugin_{plugins_index}.py", "wb")
+                    f = open(f"runnable_plugin_{plugins_index}.py", "w")
                     f.write(runnable_plugin)
                     f.close()
                     plugins_used.append({
