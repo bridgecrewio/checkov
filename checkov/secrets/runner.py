@@ -181,7 +181,7 @@ class Runner(BaseRunner[None]):
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
                 if secret_key in secrets_duplication:
-                    logging.debug(f'Secrets was filter - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
+                    logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -238,14 +238,13 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-            if plugins_index > 0:
-                self.cleanup_plugin_files(plugins_index)
+            self.cleanup_plugin_files(plugins_index)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
     def cleanup_plugin_files(self, amount: int) -> None:
-        for index in range(0, amount):
+        for index in range(1, amount):
             try:
                 os.remove(f"runnable_plugin_{index}.py")
                 logging.info(f"Removed runnable plugin at index {index}")
