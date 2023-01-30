@@ -16,7 +16,7 @@ class CustomAttributes:
     RENDERING_BREADCRUMBS = "rendering_breadcrumbs_"
     SOURCE = "source_"
     RESOURCE_TYPE = "resource_type"
-    RESOURCE_ID = "resource_id"
+    RESOURCE_ID = "resource_id_"
     SOURCE_MODULE = "source_module_"
     MODULE_DEPENDENCY = "module_dependency_"
     MODULE_DEPENDENCY_NUM = "module_dependency_num_"
