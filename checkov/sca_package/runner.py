@@ -135,9 +135,10 @@ class Runner(BaseRunner[None]):
         excluded_paths: set[str],
         exclude_package_json: bool = True,
         excluded_file_names: set[str] | None = None,
-        extra_supported_package_files: set[str] = set()
+        extra_supported_package_files: set[str] | None = None
     ) -> set[Path]:
         excluded_file_names = excluded_file_names or set()
+        extra_supported_package_files = extra_supported_package_files or set()
         input_paths: set[Path] = set()
         if root_path:
             input_paths = {
