@@ -71,10 +71,10 @@ class Policy3dRunner(BasePostRunner):
     def solve_check_iac(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Record]]:
         iac_results_map: dict[str, list[Record]] = {}
         if check.iac:
-            for fw, bc_check_ids in check.iac.items():
-                fw_report = reports_by_fw.get(fw)
-                if fw_report:
-                    fw_records = fw_report.failed_checks
+            for framework, bc_check_ids in check.iac.items():
+                framework_report = reports_by_fw.get(framework)
+                if framework_report:
+                    fw_records = framework_report.failed_checks
                     for record in fw_records:
                         if record.bc_check_id in bc_check_ids:
                             resource_id = f'{record.file_abs_path}:{record.resource}'
