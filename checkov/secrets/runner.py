@@ -244,7 +244,7 @@ class Runner(BaseRunner[None]):
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
-    def cleanup_plugin_files(self, amount: int):
+    def cleanup_plugin_files(self, amount: int) -> None:
         for index in range(0, amount):
             try:
                 os.remove(f"runnable_plugin_{index}.py")
