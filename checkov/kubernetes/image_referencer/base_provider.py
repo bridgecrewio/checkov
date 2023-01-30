@@ -16,7 +16,7 @@ class BaseKubernetesProvider(GraphImageReferencerProvider):
 
         supported_resources_graph = self.extract_nodes()
 
-        for _, resource in supported_resources_graph.nodes(data=True):
+        for resource in self.extract_resource(supported_resources_graph):
             resource_type = resource[CustomAttributes.RESOURCE_TYPE]
 
             extract_images_func = self.supported_resource_types.get(resource_type)

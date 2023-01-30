@@ -30,12 +30,10 @@ class GraphImageReferencerProvider:
         pass
 
     def extract_nodes(self) -> networkx.Graph | igraph.Graph | None:
-        if self.graph_framework == 'NETWORKX':
-            return self.extract_nodes_networkx()
-        elif self.graph_framework == 'IGRAPH':
+        if self.graph_framework == 'IGRAPH':
             return self.extract_nodes_igraph()
-        else:
-            return None
+        else:  # the default value of the graph framework is 'NETWORKX'
+            return self.extract_nodes_networkx()
 
     def extract_nodes_networkx(self) -> networkx.Graph:
         resource_nodes = [
@@ -49,22 +47,32 @@ class GraphImageReferencerProvider:
     def extract_nodes_igraph(self) -> igraph.Graph:
         resource_nodes = [
             node
-            for node, resource_type in zip(self.graph_connector.vs['name'], self.graph_connector.vs['resource_type'])
+            for node, resource_type in zip(self.graph_connector.vs['name'],
+                                           self.graph_connector.vs[CustomAttributes.RESOURCE_TYPE])
             if resource_type and resource_type in self.supported_resource_types
         ]
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_resource(self, supported_resources_graph: networkx.Graph | igraph.Graph) -> Generator[dict[str, Any], None, None]:
-        if self.graph_framework == 'NETWORKX':
-            for _, resource in supported_resources_graph.nodes(data=True):
+        def extract_resource_networkx(graph: networkx.Graph) -> Generator[dict[str, Any], None, None]:
+            for _, resource in graph.nodes(data=True):
                 yield resource
-        elif self.graph_framework == 'IGRAPH':
-            for v in supported_resources_graph.vs:
+
+        def extract_resource_igraph(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
+            for v in graph.vs:
                 resource = {
                     'name': v['name'],
-                    'block_type_': v['block_type_'],
-                    'resource_type': v['resource_type']
+                    'block_type_': v[CustomAttributes.BLOCK_TYPE],
+                    'resource_type': v[CustomAttributes.RESOURCE_TYPE]
                 }
                 resource.update(v['attr'])
                 yield resource
+
+        graph_resource = None
+        if self.graph_framework == 'NETWORKX':
+            graph_resource = extract_resource_networkx(supported_resources_graph)
+        elif self.graph_framework == 'IGRAPH':
+            graph_resource = extract_resource_igraph(supported_resources_graph)
+
+        return graph_resource  # type: ignore
 

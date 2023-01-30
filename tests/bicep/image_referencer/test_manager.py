@@ -1,10 +1,20 @@
+import os
+
+import igraph
+import pytest
 from networkx import DiGraph
 
 from checkov.bicep.image_referencer.manager import BicepImageReferencerManager
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
 
-def test_extract_images_from_resources():
+@pytest.mark.parametrize("graph_framework", [
+    'NETWORKX',
+    'IGRAPH',
+])
+def test_extract_images_from_resources(graph_framework):
+    os.environ['CHECKOV_GRAPH_FRAMEWORK'] = graph_framework
     # given
     resource = {
         "file_path_": "/batch.bicep",
@@ -25,8 +35,18 @@ def test_extract_images_from_resources():
         },
         "resource_type": "Microsoft.Batch/batchAccounts/pools",
     }
-    graph = DiGraph()
-    graph.add_node(1, **resource)
+    if graph_framework == 'NETWORKX':
+        graph = DiGraph()
+        graph.add_node(1, **resource)
+    else:
+        graph = igraph.Graph()
+        attr = resource
+        graph.add_vertex(
+            name='1',
+            block_type_='resource',
+            resource_type=attr[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in attr else None,
+            attr=attr,
+        )
 
     # when
     images = BicepImageReferencerManager(graph_connector=graph).extract_images_from_resources()

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
+
+import igraph
 
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class GcpTerraformProvider(BaseTerraformProvider):
-    def __init__(self, graph_connector: DiGraph) -> None:
+    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph]) -> None:
         super().__init__(
             graph_connector=graph_connector,
             supported_resource_types=SUPPORTED_GCP_IMAGE_RESOURCE_TYPES,
