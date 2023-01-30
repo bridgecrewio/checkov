@@ -116,7 +116,7 @@ class Runner(BaseRunner[None]):
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
-                runnable_plugins = get_runnable_plugins(policies_list)
+                runnable_plugins: dict[str, bytes] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
                 if len(runnable_plugins) > 0:
                     plugins_index += 1

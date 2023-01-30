@@ -88,8 +88,8 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
     return custom_detectors
 
 
-def get_runnable_plugins(policies: List[Dict[str, Any]]) -> Dict[str, str]:
-    runnables = {}
+def get_runnable_plugins(policies: List[Dict[str, Any]]) -> Dict[str, bytes]:
+    runnables: dict[str, bytes] = {}
     for policy in policies:
         code = policy['code']
         if code:
@@ -101,8 +101,8 @@ def get_runnable_plugins(policies: List[Dict[str, Any]]) -> Dict[str, str]:
                         if isinstance(encoded_payload, list):
                             encoded_payload = encoded_payload[0]
                         decoded_payload = decompress_file_gzip_base64(encoded_payload)
-                        name = policy['title']
+                        name: str = policy['title']
                         runnables[name] = decoded_payload
             except Exception as e:
-                logging.warning(f"Could not parse runnable policy {policy['code']} due to: {e}")
+                logging.warning(f"Could not parse runnable policy {policy['title']} due to: {e}")
     return runnables
