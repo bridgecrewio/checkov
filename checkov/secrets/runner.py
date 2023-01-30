@@ -110,7 +110,7 @@ class Runner(BaseRunner[None]):
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
 
-        # load random entropy string detector
+        # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         if customer_run_config:

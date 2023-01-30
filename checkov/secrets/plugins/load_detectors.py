@@ -96,7 +96,7 @@ def get_runnable_plugins(policies: List[Dict[str, Any]]) -> Dict[str, bytes]:
             try:
                 code_dict = yaml.safe_load(code)
                 if 'definition' in code_dict:
-                    if 'value' in code_dict['definition'] and 'is_runnable' in code_dict['definition']:
+                    if 'is_runnable' in code_dict['definition'] and 'value' in code_dict['definition']:
                         encoded_payload = code_dict['definition']['value']
                         if isinstance(encoded_payload, list):
                             encoded_payload = encoded_payload[0]
