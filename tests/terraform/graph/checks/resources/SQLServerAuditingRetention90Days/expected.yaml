@@ -2,6 +2,7 @@ pass:
   - "azurerm_sql_server.deprecated"
   - "azurerm_mssql_server.deprecated"
   - "azurerm_mssql_server.long"
+  - "azurerm_mssql_server.as_list"
 fail:
   - "azurerm_sql_server.default"
   - "azurerm_mssql_server.default"

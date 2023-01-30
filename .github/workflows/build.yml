@@ -103,7 +103,7 @@ jobs:
           PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         run: |
-          pipenv run checkov -s -d terragoat --bc-api-key $PRISMA_KEY --repo-id yuvalyacoby/terragoat > checkov_report_prisma.txt
+          pipenv run checkov -s -d terragoat --bc-api-key "$PRISMA_KEY" --repo-id yuvalyacoby/terragoat > checkov_report_prisma.txt
           grep "prismacloud.io" checkov_report_prisma.txt
           exit $?
   unit-tests:
@@ -158,7 +158,7 @@ jobs:
       - name: Calculate version
         run: |
           git fetch --tags
-          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
           echo "latest tag: $latest_tag"
           if [[ -z "${{ inputs.versionBump }}" ]]
           then
@@ -168,22 +168,22 @@ jobs:
           fi
           case $version in
             minor)
-              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
+              new_tag=$(echo "$latest_tag" | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b+1 , 0)}')
               ;;
             major)
-              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
+              new_tag=$(echo "$latest_tag" | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a+1, 0 , 0)}')
               ;;
             patch)
-              new_tag=$(echo $latest_tag | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
+              new_tag=$(echo "$latest_tag" | awk -F. -v a="$1" -v b="$2" -v c="$3" '{printf("%d.%d.%d", $1+a, $2+b , $3+1)}')
               ;;
           esac
 
           echo "new tag: $new_tag"
-          echo "version=$new_tag" >> $GITHUB_OUTPUT
+          echo "version=$new_tag" >> "$GITHUB_OUTPUT"
           
           # grab major version for later image tag usage         
           major_version=$(echo "${new_tag}" | head -c1)
-          echo "major_version=$major_version" >> $GITHUB_OUTPUT
+          echo "major_version=$major_version" >> "$GITHUB_OUTPUT"
         id: calculateVersion
       - name: version
         env:
@@ -211,7 +211,7 @@ jobs:
           export scansdoc="docs/5.Policy Index/serverless.md"
           pipenv run python checkov/main.py --list --framework cloudformation >> "$scansdoc"
           git add "docs/5.Policy Index/*"
-          git commit --reuse-message=HEAD@{1} || echo "No changes to commit"
+          git commit --reuse-message="HEAD@{1}" || echo "No changes to commit"
           
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
@@ -222,11 +222,10 @@ jobs:
           echo "version = '$new_tag'" > 'checkov/version.py'
           echo "checkov==$new_tag" > 'kubernetes/requirements.txt'
 
-          git commit --reuse-message=HEAD@{1} checkov/version.py kubernetes/requirements.txt || echo "No changes to commit"
+          git commit --reuse-message="HEAD@{1}" checkov/version.py kubernetes/requirements.txt || echo "No changes to commit"
           git push origin
           git tag $new_tag
           git push --tags
-          RELEASE_NOTE=$(git log -1 --pretty=%B)
         id: version
       - name: create python package
         run: |
@@ -259,7 +258,7 @@ jobs:
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18  # v2
         with:
           platforms: 'arm64,arm'
-      - uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325  # v2
+      - uses: docker/setup-buildx-action@5e716dcfd653738c2d1db099bfba194a84158be4  # v2
       - name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
         with:
@@ -330,8 +329,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> $GITHUB_OUTPUT
-          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
+          echo "version=$checkov_version" >> "$GITHUB_OUTPUT"
+          echo "major_version=$checkov_major_version" >> "$GITHUB_OUTPUT"
         id: versions
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
@@ -353,8 +352,8 @@ jobs:
         run: |
           checkov_version=${{ needs.bump-version.outputs.version }}
           checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> $GITHUB_OUTPUT
-          echo "major_version=$checkov_major_version" >> $GITHUB_OUTPUT
+          echo "version=$checkov_version" >> "$GITHUB_OUTPUT"
+          echo "major_version=$checkov_major_version" >> "$GITHUB_OUTPUT"
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@d2068fdcc539fd7afb855991c7d7b52f29028016  # v5
         with:
