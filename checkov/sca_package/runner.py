@@ -145,17 +145,18 @@ class Runner(BaseRunner[None]):
                 if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
             }
 
-            package_lock_parent_paths = set()
+            package_json_lock_parent_paths = set()
             if exclude_package_json:
-                # filter out package.json, if package-lock.json exists
-                package_lock_parent_paths = {
-                    file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
+                # filter out package.json, if package-lock.json or yarn.lock exists
+                package_json_lock_parent_paths = {
+                    file_path.parent for file_path in input_paths if
+                    file_path.name in {"package-lock.json", "yarn.lock"}
                 }
 
             input_paths = {
                 file_path
                 for file_path in input_paths
-                if (file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths) and file_path.name not in excluded_file_names
+                if (file_path.name != "package.json" or file_path.parent not in package_json_lock_parent_paths) and file_path.name not in excluded_file_names
             }
 
         for file in files or []:
