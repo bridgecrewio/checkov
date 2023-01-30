@@ -7,7 +7,7 @@ import platform
 from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
@@ -68,13 +68,13 @@ class Runner(TerraformRunner):
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
                  graph_manager: TerraformGraphManager | None = None,
-                 db_connector: NetworkxConnector | None = None,
+                 db_connector: LibraryGraphConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
                  source: str = GraphSource.TERRAFORM) -> None:
         super().__init__(
             graph_class=graph_class,
             graph_manager=graph_manager,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector,
             external_registries=external_registries,
             source=source,
         )
@@ -176,7 +176,7 @@ class Runner(TerraformRunner):
         return self.get_graph_checks_report(root_folder, runner_filter)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
-        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph_manager = TerraformGraphManager(db_connector=self.db_connector)
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
             self.repo_root_for_plan_enrichment,
             render_variables=True

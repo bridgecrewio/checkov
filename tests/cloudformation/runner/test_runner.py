@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 import pytest
+from parameterized import parameterized_class
 
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation import cfn_utils
@@ -14,13 +15,18 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.cloudformation.parser import parse
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
 from checkov.common.output.report import Report
 from checkov.cloudformation.cfn_utils import create_definitions
 
-
+@parameterized_class([
+   {"db_connector": NetworkxConnector},
+   {"db_connector": IgraphConnector}
+])
 class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -40,7 +46,7 @@ class TestRunnerValid(unittest.TestCase):
         # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
         dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
@@ -63,7 +69,7 @@ class TestRunnerValid(unittest.TestCase):
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
@@ -85,7 +91,7 @@ class TestRunnerValid(unittest.TestCase):
         # this is the relative path to the file to scan (what would actually get passed to the -f arg)
         file_rel_path = os.path.relpath(scan_file_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_rel_path],
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
@@ -107,7 +113,7 @@ class TestRunnerValid(unittest.TestCase):
         file_rel_path = os.path.relpath(scan_file_path)
         file_abs_path = os.path.abspath(scan_file_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_abs_path],
                             runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
@@ -140,7 +146,7 @@ class TestRunnerValid(unittest.TestCase):
         AnyFailingCheck()
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework='cloudformation', checks=[custom_check_id])
@@ -232,7 +238,7 @@ class TestRunnerValid(unittest.TestCase):
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             root_folder=dir_abs_path,
             external_checks_dir=None,
             runner_filter=RunnerFilter(framework=["cloudformation"], download_external_modules=False)
@@ -274,7 +280,7 @@ class TestRunnerValid(unittest.TestCase):
         }
         context = {f'{dir_abs_path}/s3.yaml': {'Parameters': {'KmsMasterKeyId': {'start_line': 5, 'end_line': 9, 'code_lines': [(5, '    "KmsMasterKeyId": {\n'), (6, '      "Description": "Company Name",\n'), (7, '      "Type": "String",\n'), (8, '      "Default": "kms_id"\n'), (9, '    },\n')]}, 'DBName': {'start_line': 10, 'end_line': 14, 'code_lines': [(10, '    "DBName": {\n'), (11, '      "Description": "Name of the Database",\n'), (12, '      "Type": "String",\n'), (13, '      "Default": "db"\n'), (14, '    }\n')]}}, 'Resources': {'MySourceQueue': {'start_line': 17, 'end_line': 22, 'code_lines': [(17, '    "MySourceQueue": {\n'), (18, '      "Type": "AWS::SQS::Queue",\n'), (19, '      "Properties": {\n'), (20, '        "KmsMasterKeyId": { "Ref": "KmsMasterKeyId" }\n'), (21, '      }\n'), (22, '    },\n')], 'skipped_checks': []}, 'MyDB': {'start_line': 23, 'end_line': 32, 'code_lines': [(23, '    "MyDB": {\n'), (24, '      "Type": "AWS::RDS::DBInstance",\n'), (25, '      "Properties": {\n'), (26, '        "DBName": { "Ref": "DBName" },\n'), (27, '        "DBInstanceClass": "db.t3.micro",\n'), (28, '        "Engine": "mysql",\n'), (29, '        "MasterUsername": "master",\n'), (30, '        "MasterUserPassword": "password"\n'), (31, '      }\n'), (32, '    }\n')], 'skipped_checks': []}}, 'Outputs': {'DBAppPublicDNS': {'start_line': 35, 'end_line': 38, 'code_lines': [(35, '    "DBAppPublicDNS": {\n'), (36, '      "Description": "DB App Public DNS Name",\n'), (37, '      "Value": { "Fn::GetAtt" : [ "MyDB", "PublicDnsName" ] }\n'), (38, '    }\n')]}}}}
         breadcrumbs = {}
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         runner.set_external_data(definitions, context, breadcrumbs)
         report = Report('cloudformation')
         runner.check_definitions(root_folder=dir_abs_path, runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False), report=report)
@@ -288,7 +294,7 @@ class TestRunnerValid(unittest.TestCase):
 
         dir_abs_path = os.path.abspath(scan_dir_path)
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=dir_abs_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='cloudformation', download_external_modules=False, checks=["CKV_AWS_21"]))
 
@@ -299,7 +305,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_invalid_properties_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.yaml")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
@@ -307,7 +313,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_invalid_properties_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid_properties.json")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
@@ -315,7 +321,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_no_properties_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "no_properties.yaml")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
@@ -324,7 +330,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "graph.yaml")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         filter = RunnerFilter(framework=['cloudformation'], use_enforcement_rules=True)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
@@ -338,7 +344,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_no_properties_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "no_properties.json")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
@@ -347,7 +353,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_error_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid.yaml")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
@@ -355,7 +361,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_skip_sub_dict_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "skip_sub_dict.json")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 0)
@@ -363,7 +369,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_parsing_error_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "invalid.json")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
@@ -394,7 +400,7 @@ class TestRunnerValid(unittest.TestCase):
         check.severity = Severities[BcSeverities.LOW]
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
 
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             None,
             files=[scan_file_path],
             runner_filter=RunnerFilter(framework=['cloudformation'], checks=[custom_check_id])
@@ -422,7 +428,7 @@ class TestRunnerValid(unittest.TestCase):
         check = AnyFailingCheck()
         check.severity = Severities[BcSeverities.LOW]
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
@@ -452,7 +458,7 @@ class TestRunnerValid(unittest.TestCase):
         check = AnyFailingCheck()
         check.severity = Severities[BcSeverities.HIGH]
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
@@ -482,7 +488,7 @@ class TestRunnerValid(unittest.TestCase):
         check = AnyFailingCheck()
         check.severity = Severities[BcSeverities.LOW]
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_denylist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
@@ -512,7 +518,7 @@ class TestRunnerValid(unittest.TestCase):
         check = AnyFailingCheck()
         check.severity = Severities[BcSeverities.HIGH]
 
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         checks_denylist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,

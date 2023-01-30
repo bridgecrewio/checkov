@@ -6,6 +6,7 @@ import re
 import json
 from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
+from igraph import Graph
 from bc_jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -19,7 +20,7 @@ from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
@@ -39,12 +40,30 @@ class BaseAttributeSolver(BaseSolver):
         self.is_jsonpath_check = is_jsonpath_check
         self.parsed_attributes: Dict[Optional[str], Any] = {}
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
         passed_vertices: List[Dict[str, Any]] = []
         failed_vertices: List[Dict[str, Any]] = []
         unknown_vertices: List[Dict[str, Any]] = []
+        if isinstance(graph_connector, Graph):
+            if self.resource_types:
+                select_kwargs = {"resource_type_in": list(self.resource_types)}
+            else:
+                select_kwargs = {"block_type__in": list(SUPPORTED_BLOCK_TYPES)}
+
+            for data in graph_connector.vs.select(**select_kwargs)["attr"]:
+                result = self.get_operation(vertex=data)
+                # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+                if result is None:
+                    unknown_vertices.append(data)
+                elif result:
+                    passed_vertices.append(data)
+                else:
+                    failed_vertices.append(data)
+
+            return passed_vertices, failed_vertices, unknown_vertices
+
         for _, data in graph_connector.nodes(data=True):
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
                     and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:

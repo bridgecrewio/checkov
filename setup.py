@@ -29,7 +29,7 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema",
+            "jsonschema"
         ]
     },
     install_requires=[
@@ -52,6 +52,7 @@ setup(
         "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
+        "igraph",
         "dockerfile-parse",
         "docker",
         "configargparse",
@@ -73,7 +74,7 @@ setup(
         "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "schema",
-        "requests>=2.26.0",
+        "requests>=2.27.0",
         "yarl",
         "igraph"
     ],

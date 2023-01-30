@@ -64,9 +64,10 @@ def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> lis
     definitions = extract_json(resource.get("container_definitions"))
     if isinstance(definitions, list):
         for definition in definitions:
-            name = definition.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(definition, dict):
+                name = definition.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 

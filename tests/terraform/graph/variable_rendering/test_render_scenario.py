@@ -6,6 +6,7 @@ from unittest import mock
 
 import jmespath
 
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -315,7 +316,7 @@ def load_expected_data(source_file_name, dir_path, remove_abs_dir=False):
     #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
     #                                    HERE       & HERE
     #
-    resolved_pattern = re.compile(r"(.+)\[(.+)#(\d+)]")  # groups:  location (1), referrer (2), index (3)
+    resolved_pattern = re.compile(r"(.+)\(\[\{(.+)#(\d+)}]\)")  # groups:  location (1), referrer (2), index (3)
 
     # Expected files should have the filenames relative to their base directory, but the parser will
     # use the absolute path. This loop with replace relative filenames with absolute.
@@ -359,7 +360,7 @@ def _make_module_ref_absolute(match, dir_path) -> str:
         module_referrer = unify_dependency_path(module_referrer_fixed)
     else:
         module_referrer = os.path.join(dir_path, module_referrer)
-    return f"{module_location}[{module_referrer}#{match[3]}]"
+    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}#{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
 def remove_prefix_dir_from_path(prefix_to_remove, dict_to_handle):

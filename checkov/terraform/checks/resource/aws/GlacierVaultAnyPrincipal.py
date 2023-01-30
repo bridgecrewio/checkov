@@ -29,7 +29,10 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
                     policy_obj = json.loads(policy_obj)
                 except Exception:
                     return CheckResult.UNKNOWN
-        policy = Policy(policy_obj)
+        try:
+            policy = Policy(policy_obj)
+        except TypeError:
+            return CheckResult.UNKNOWN
         if policy.is_internet_accessible():
             return CheckResult.FAILED
         return CheckResult.PASSED

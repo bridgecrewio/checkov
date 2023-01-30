@@ -6,7 +6,7 @@ nav_order: 1
 
 # dockerfile resource scans (auto generated)
 
-|    |               | Id         | Type       | Entity                                                                                                       | Policy     | IaC                                                                                                                        |
+|    | Id            | Type       | Entity     | Policy                                                                                                       | IaC        | Resource Link                                                                                                              |
 |----|---------------|------------|------------|--------------------------------------------------------------------------------------------------------------|------------|----------------------------------------------------------------------------------------------------------------------------|
 |  0 | CKV_DOCKER_1  | dockerfile | EXPOSE     | Ensure port 22 is not exposed                                                                                | dockerfile | https://github.com/bridgecrewio/checkov/blob/main/checkov/dockerfile/checks/ExposePort22.py                                |
 |  1 | CKV_DOCKER_2  | dockerfile | *          | Ensure that HEALTHCHECK instructions have been added to container images                                     | dockerfile | https://github.com/bridgecrewio/checkov/blob/main/checkov/dockerfile/checks/HealthcheckExists.py                           |

@@ -1,8 +1,14 @@
+from parameterized import parameterized_class
+
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 import os
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@parameterized_class([
+   {"graph_framework": "NETWORKX"},
+   {"graph_framework": "IGRAPH"}
+])
 class TestNotQuery(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME

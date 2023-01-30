@@ -24,7 +24,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, list):
-                logging.warning(f"definition of file {file_path} has the wrong type {type(definition)}")
+                logging.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
                 continue
 
             file_path = str(file_path)
