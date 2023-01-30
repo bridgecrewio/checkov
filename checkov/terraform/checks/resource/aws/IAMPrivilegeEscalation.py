@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class ResourceCloudSplainingPrivilegeEscalation(BaseTerraformCloudsplainingResourceIAMCheck):
     def __init__(self) -> None:
         name = "Ensure IAM policies does not allow privilege escalation"
-        id = "CKV_AWS_110"
+        id = "CKV_AWS_286"
         super().__init__(name=name, id=id)
 
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> Union[List[str], List[Dict[str, Any]]]:
