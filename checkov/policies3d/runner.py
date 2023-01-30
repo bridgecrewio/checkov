@@ -14,9 +14,15 @@ from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
 
-class CVEAttribute(str, Enum):
+class CVECheckAttribute(str, Enum):
     RISK_FACTORS = "risk_factors"
 
+class CVEReportAttribute(str, Enum):
+    RISK_FACTORS = 'riskFactors'
+
+CVE_CHECK_TO_REPORT_ATTRIBUTE = {
+    CVECheckAttribute.RISK_FACTORS: CVEReportAttribute.RISK_FACTORS
+}
 
 class Policy3dRunner(BasePostRunner):
     check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
@@ -42,9 +48,9 @@ class Policy3dRunner(BasePostRunner):
 
         self.pbar.initiate(len(checks))
 
-        reports_by_fw = {report.check_type: report for report in scan_reports}
+        reports_by_framework = {report.check_type: report for report in scan_reports}
         for check in checks:
-            records = self.collect_check(check, reports_by_fw)
+            records = self.collect_check(check, reports_by_framework)
             for record in records:
                 report.add_record(record=record)
 
@@ -90,22 +96,21 @@ class Policy3dRunner(BasePostRunner):
             cve_report = reports_by_fw.get(CheckType.SCA_IMAGE)
             if cve_report:
                 image_results = cve_report.image_cached_results
-                risk_factor = None
-                # currently checks only for a single risk factor condition on the cves, to be extended
                 for attribute, value in check.cve.items():
-                    if attribute == CVEAttribute.RISK_FACTORS:
-                        risk_factor = value[0]
-
-                if risk_factor:
-                    for image in image_results:
-                        matching_cves = [vuln for vuln in image.get('vulnerabilities', []) if
-                                         risk_factor in force_list(vuln.get('riskFactors', []))]
+                    for image_result in image_results:
+                        matching_cves = [vuln for vuln in image_result.get('vulnerabilities', []) if
+                                         value[0] in force_list(vuln.get(CVE_CHECK_TO_REPORT_ATTRIBUTE[attribute], []))]
                         if matching_cves:
-                            image_related_resource = image.get('relatedResourceId')
+                            image_related_resource = image_result.get('relatedResourceId')
                             if not image_related_resource:
                                 logging.debug(
                                     "[policies3d/runner](solve_check_cve) Found vulnerabilities of an image without a related resource, skipping")
                                 break
+
+                            # The current logic for multiple cve conditions in the policy is of "OR" - we add all of
+                            # the matching cves, even if matched only by a single policy attribute. To implement an
+                            # "AND" logic for the combination of conditions, the matching cves need to be filtered
+                            # before being added to the result.
                             if image_related_resource in cve_results_map:
                                 cve_results_map[image_related_resource].extend(matching_cves)
                             else:
