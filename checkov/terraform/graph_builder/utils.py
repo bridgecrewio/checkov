@@ -25,10 +25,10 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 def is_local_path(root_dir: str, source: str) -> bool:
     # https://www.terraform.io/docs/modules/sources.html#local-paths
     return (
-            source.startswith("./")
-            or source.startswith("/./")
-            or source.startswith("../")
-            or source in os.listdir(root_dir)
+        source.startswith("./")
+        or source.startswith("/./")
+        or source.startswith("../")
+        or source in os.listdir(root_dir)
     )
 
 

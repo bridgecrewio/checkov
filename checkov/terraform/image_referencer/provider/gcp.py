@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union
 
-import igraph
 
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    import igraph
 
 
 class GcpTerraformProvider(BaseTerraformProvider):

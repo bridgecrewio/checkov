@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Union
 
-import igraph
 
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.common.util.type_forcers import force_list, extract_json
@@ -10,6 +9,7 @@ from checkov.terraform.image_referencer.base_provider import BaseTerraformProvid
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    import igraph
 
 
 class AwsTerraformProvider(BaseTerraformProvider):
