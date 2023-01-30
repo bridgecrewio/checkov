@@ -527,3 +527,16 @@ class TestLocalGraph(TestCase):
 
         assert json.dumps(vertices).replace(resources_dir, '') == json.dumps(expected.get('vertices')).replace(resources_dir, '')
         assert json.dumps(edges) == json.dumps(expected.get('edges'))
+
+    def test_reset_edges(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/reset_edges'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+        local_graph.reset_edges()
+        assert local_graph.edges == []
+        assert len(local_graph.vertices) == 3
+        for i in range(len(local_graph.vertices)):
+            assert local_graph.out_edges[i] == []
+            assert local_graph.in_edges[i] == []
