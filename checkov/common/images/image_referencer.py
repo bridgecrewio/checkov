@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 
 _Definitions = TypeVar("_Definitions")
 
+INVALID_IMAGE_NAME_CHARS = ("[", "{", "(", "<", "$")
+
 
 def fix_related_resource_ids(report: Report | None, tmp_dir: str) -> None:
     """Remove tmp dir prefix from 'relatedResourceId'"""
@@ -113,9 +115,10 @@ class ImageReferencer:
 def is_valid_public_image_name(image_name: str) -> bool:
     if image_name.startswith('localhost'):
         return False
-    if '[' in image_name:
+    if any(char in image_name for char in INVALID_IMAGE_NAME_CHARS):
         return False
-    if '<' in image_name:
+    if image_name.count(":") > 1:
+        # if there is more than one colon, then it is typically a private registry with port reference
         return False
     return True
 
