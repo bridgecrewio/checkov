@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
+from typing import Dict, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
@@ -10,6 +11,7 @@ from checkov.common.output.report import Report
 
 from checkov.common.runners.base_post_runner import BasePostRunner
 from checkov.common.util.type_forcers import force_list
+from checkov.policies3d.Policy3dRecord import Policy3dRecord
 from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
@@ -63,11 +65,11 @@ class Policy3dRunner(BasePostRunner):
         cve_results_map = self.solve_check_cve(check, reports_by_fw)
 
         for iac_resource, iac_records in iac_results_map.items():
-            for cve_resource in cve_results_map:
+            for cve_resource, vulnerabilities in cve_results_map.items():
                 if iac_resource == cve_resource:
                     # This means we found the combination on the same resource -> create a violation for that resource
                     check_result = CheckResult.FAILED
-                    record = self.get_record(check, iac_records[0], check_result)
+                    record = self.get_record(check, iac_records[0], vulnerabilities, check_result)
                     record.set_guideline(check.guideline)
                     records.append(record)
 
@@ -102,11 +104,13 @@ class Policy3dRunner(BasePostRunner):
                                          value[0] in force_list(vuln.get(CVE_CHECK_TO_REPORT_ATTRIBUTE[attribute], []))]
                         if matching_cves:
                             image_related_resource = image_result.get('relatedResourceId')
-                            if not image_related_resource:
+                            image_name = image_result.get('dockerImageName')
+                            if not image_related_resource or not image_name:
                                 logging.debug(
-                                    "[policies3d/runner](solve_check_cve) Found vulnerabilities of an image without a related resource, skipping")
+                                    "[policies3d/runner](solve_check_cve) Found vulnerabilities of an image without a related resource or image name, skipping")
                                 break
-
+                            for cve in matching_cves:
+                                cve['dockerImageName'] = image_name
                             # The current logic for multiple cve conditions in the policy is of "OR" - we add all of
                             # the matching cves, even if matched only by a single policy attribute. To implement an
                             # "AND" logic for the combination of conditions, the matching cves need to be filtered
@@ -117,8 +121,8 @@ class Policy3dRunner(BasePostRunner):
                                 cve_results_map[image_related_resource] = matching_cves
         return cve_results_map
 
-    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, check_result: CheckResult) -> Record:
-        return Record(
+    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, vulnerabilities: Dict[str, Any], check_result: CheckResult) -> Record:
+        return Policy3dRecord(
             check_id=check.id,
             bc_check_id=check.bc_id,
             check_name=check.name,
@@ -132,4 +136,5 @@ class Policy3dRunner(BasePostRunner):
             file_abs_path=iac_record.file_abs_path,
             entity_tags=None,
             severity=check.severity,
+            vulnerabilities=vulnerabilities
         )
