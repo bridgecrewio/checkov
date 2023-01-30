@@ -134,7 +134,8 @@ class Runner(BaseRunner[None]):
         files: list[str] | None,
         excluded_paths: set[str],
         exclude_package_json: bool = True,
-        excluded_file_names: set[str] | None = None
+        excluded_file_names: set[str] | None = None,
+        extra_supported_package_files: set[str] = set()
     ) -> set[Path]:
         excluded_file_names = excluded_file_names or set()
         input_paths: set[Path] = set()
@@ -142,7 +143,7 @@ class Runner(BaseRunner[None]):
             input_paths = {
                 file_path
                 for file_path in root_path.glob("**/*")
-                if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
+                if file_path.name in SUPPORTED_PACKAGE_FILES.union(extra_supported_package_files) and not any(p in file_path.parts for p in excluded_paths)
             }
 
             package_json_lock_parent_paths = set()
