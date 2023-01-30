@@ -23,6 +23,7 @@ def test_examples():
     failing_resources = {
         f"jobs[0](FailLatestTag)",
         f"stages[0](Example).jobs[0](FailNoTag)",
+        f"jobs[2](FailAnotherLatestTag)"
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}

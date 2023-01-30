@@ -155,7 +155,7 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
             nextchar_plus_2 = string[idx + 2]
         except IndexError:
             nextchar_plus_2 = None
-        
+
         if nextchar == '"' and (nextchar_plus_1 != '"' or nextchar_plus_2 != '"'):
             return parse_string(string, idx + 1, strict)
         if nextchar == '"' and nextchar_plus_1 == '"' and nextchar_plus_2 == '"':

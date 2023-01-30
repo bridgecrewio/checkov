@@ -31,6 +31,6 @@ class AvoidDoublePipelines(BaseGitlabCICheck):
                     if c > 1:
                         return CheckResult.FAILED, conf
         return CheckResult.PASSED, conf
-        
+
 
 check = AvoidDoublePipelines()

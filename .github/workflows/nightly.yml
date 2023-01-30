@@ -32,9 +32,9 @@ jobs:
             create_release=false
           fi
 
-          echo "create_release=$create_release" >> $GITHUB_OUTPUT
-          echo "latest_release_version=$latest_gh_release" >> $GITHUB_OUTPUT
-          echo "version=$latest_tag" >> $GITHUB_OUTPUT
+          echo "create_release=$create_release" >> "$GITHUB_OUTPUT"
+          echo "latest_release_version=$latest_gh_release" >> "$GITHUB_OUTPUT"
+          echo "version=$latest_tag" >> "$GITHUB_OUTPUT"
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
