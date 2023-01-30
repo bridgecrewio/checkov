@@ -6,3 +6,4 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: TestFunction.Arn
       Principal: apigateway.amazonaws.com
+

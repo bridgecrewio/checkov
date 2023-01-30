@@ -1,12 +1,12 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.LambdaFunctionURLAuth import check
+from checkov.cloudformation.checks.resource.aws.LambdaServicePermission import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestLambdaFunctionURLAuth(unittest.TestCase):
+class TestLambdaServicePermission(unittest.TestCase):
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -17,7 +17,8 @@ class TestLambdaFunctionURLAuth(unittest.TestCase):
 
         passing_resources = {
             "AWS::Lambda::Permission.FunctionPassingArnPermission",
-            "AWS::Lambda::Permission.FunctionPassingAccountPermission"
+            "AWS::Lambda::Permission.FunctionPassingAccountPermission",
+            "AWS::Lambda::Permission.FunctionNotServicePrincipalPermission"
         }
         failing_resources = {
             "AWS::Lambda::Permission.FunctionFailPermission",
@@ -26,7 +27,7 @@ class TestLambdaFunctionURLAuth(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary['passed'], 1)
+        self.assertEqual(summary['passed'], 3)
         self.assertEqual(summary['failed'], 1)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)

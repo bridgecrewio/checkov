@@ -15,3 +15,10 @@ Resources:
       FunctionName: TestFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: 9012345678
+  
+  FunctionNotServicePrincipalPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction.Arn
+      Principal: "9012345678"
