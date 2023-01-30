@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  FunctionPassingArnPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: ApiGateway.Arn
+  
+  FunctionPassingAccountPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: TestFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: 9012345678
