@@ -1,18 +1,27 @@
 import os
 from unittest import mock
 
-from checkov.terraform.graph_manager import TerraformGraphManager
+import pytest
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-def test_for_each_resource():
+@pytest.mark.parametrize(
+    "block_index,expected_res",
+    [
+        (0, {'bucket_a', 'bucket_b'}),
+        (1, {'key1': '${var.a}', 'key2': '${var.b}'}),
+        (2, None)
+    ]
+)
+def test_for_each_resource(block_index, expected_res):
+    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+    from checkov.terraform.graph_manager import TerraformGraphManager
     dir_name = 'foreach_resources/static_foreach_value'
     resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, 'resources', dir_name))
 
     graph_manager = TerraformGraphManager('m', ['m'])
-    local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
-    assert local_graph.vertices[0].attributes.get('foreach_value') == {'bucket_a', 'bucket_b'}
-    assert local_graph.vertices[1].attributes.get('foreach_value') == {'key1': '${var.a}', 'key2': '${var.b}'}
-    assert not local_graph.vertices[2].attributes.get('foreach_value')
+    local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=False)
+    foreach_handler = ForeachHandler(local_graph)
+    res = foreach_handler._get_foreach_statement(block_index)
+    assert res == expected_res
