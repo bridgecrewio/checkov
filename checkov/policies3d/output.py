@@ -5,6 +5,7 @@ import logging
 from collections import defaultdict
 from typing import List, Dict, Any
 
+from colorama import Style
 from prettytable import PrettyTable, SINGLE_BORDER
 from termcolor import colored
 
@@ -21,7 +22,7 @@ def create_cli_output( *cve_records: list[Record]) -> str:
     cli_outputs = []
 
     for record in itertools.chain(*cve_records):
-        cli_outputs.append(record.to_string())
+        cli_outputs.append(record.to_string() + Style.RESET_ALL)
         if not record.vulnerabilities:
             #  this shouldn't happen
             logging.error(f"'vulnerabilities' is not set for {record.check_id}")
@@ -67,10 +68,11 @@ def create_cli_cves_table(file_path: str, package_details_map: Dict[str, Dict[st
         table_width=table_width, column_width=column_width, package_details_map=package_details_map
     )
 
-    return colored(
+    return (
+        Style.BRIGHT +
         f"\tRefered Image's Matching CVEs:\n"
-        f"{''.join(package_table_lines)}\n",
-        'white'
+        f"{''.join(package_table_lines)}\n" +
+        Style.RESET_ALL
     )
 
 
@@ -78,7 +80,10 @@ def create_package_overview_table_part(
         table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     package_table_lines: List[str] = []
-    package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
+    package_table = PrettyTable(
+        min_table_width=table_width,
+        max_table_width=table_width
+    )
     package_table.set_style(SINGLE_BORDER)
     package_table.field_names = [
         "Image",
@@ -117,11 +122,6 @@ def create_package_overview_table_part(
         package_table.max_width = column_width
 
         for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
-            if idx == 0:
-                # hack to make multiple tables look like one
-                line = line.replace(package_table.top_left_junction_char, package_table.left_junction_char).replace(
-                    package_table.top_right_junction_char, package_table.right_junction_char
-                )
             if package_idx > 0:
                 # hack to make multiple package tables look like one
                 line = line.replace(package_table.top_junction_char, package_table.junction_char)
