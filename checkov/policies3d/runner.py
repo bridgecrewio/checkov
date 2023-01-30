@@ -29,7 +29,7 @@ class Policy3dRunner(BasePostRunner):
             checks: list[Base3dPolicyCheck] | None = None,
             scan_reports: list[Report] | None = None,
             runner_filter: RunnerFilter | None = None
-    ) -> Report | list[Report]:
+    ) -> Report:
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

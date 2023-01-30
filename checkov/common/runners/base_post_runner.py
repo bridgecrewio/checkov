@@ -26,5 +26,5 @@ class BasePostRunner(ABC):
             checks: list[BaseCheck | Base3dPolicyCheck],
             scan_reports: list[Report],
             runner_filter: RunnerFilter | None = None
-    ) -> Report | list[Report]:
+    ) -> Report:
         raise NotImplementedError()
