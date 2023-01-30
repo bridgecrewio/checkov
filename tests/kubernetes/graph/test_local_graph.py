@@ -194,3 +194,16 @@ class TestKubernetesLocalGraph(TestGraph):
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(0, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
+
+    def test_custom_resource_should_not_extract_pod(self) -> None:
+        relative_file_path = "resources/custom_resource.yaml"
+        definitions = {}
+        file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
+        (definitions[relative_file_path], definitions_raw) = parse(file)
+        graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
+
+        local_graph = KubernetesLocalGraph(definitions)
+        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
+        self.assertEqual(1, len(local_graph.vertices))
+        self.assertEqual(0, len(local_graph.edges))

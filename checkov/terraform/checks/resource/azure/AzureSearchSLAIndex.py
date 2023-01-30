@@ -26,6 +26,8 @@ class AzureSearchSLAIndex(BaseResourceCheck):
 
         replica_count = conf.get("replica_count")
         if replica_count and isinstance(replica_count, list):
+            if not isinstance(replica_count[0], int):
+                return CheckResult.UNKNOWN
             if replica_count[0] >= 3:
                 return CheckResult.PASSED
 

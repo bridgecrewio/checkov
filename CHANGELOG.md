@@ -1,6 +1,39 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.302...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.312...HEAD)
+
+## [2.2.312](https://github.com/bridgecrewio/checkov/compare/2.2.305...2.2.312) - 2023-01-29
+
+### Feature
+
+- **azure:** fix container latest tag missing results - [#4337](https://github.com/bridgecrewio/checkov/pull/4337)
+
+### Bug Fix
+
+- **azure:** Add `.*.` in azure checks to check in lists as well - [#4355](https://github.com/bridgecrewio/checkov/pull/4355)
+- **azure:** Azure checks fixes - [#4342](https://github.com/bridgecrewio/checkov/pull/4342)
+- **azure:** Azure checks fixes - [#4354](https://github.com/bridgecrewio/checkov/pull/4354)
+- **azure:** Support string function_app min_tls_version as well - [#4357](https://github.com/bridgecrewio/checkov/pull/4357)
+- **kubernetes:** k8s checks fixes - [#4343](https://github.com/bridgecrewio/checkov/pull/4343)
+- **sca:** Fix multiple issues related to IR - [#4358](https://github.com/bridgecrewio/checkov/pull/4358)
+- **terraform:** Terraform checks fixes - [#4344](https://github.com/bridgecrewio/checkov/pull/4344)
+
+## [2.2.305](https://github.com/bridgecrewio/checkov/compare/2.2.304...2.2.305) - 2023-01-28
+
+### Feature
+
+- **general:** Add GitLab SAST output - [#4315](https://github.com/bridgecrewio/checkov/pull/4315)
+
+## [2.2.304](https://github.com/bridgecrewio/checkov/compare/2.2.302...2.2.304) - 2023-01-26
+
+### Bug Fix
+
+- **kubernetes:** skip extracting pods for custom resources - [#4334](https://github.com/bridgecrewio/checkov/pull/4334)
+- **sca:** require requests 2.27.0 - [#4339](https://github.com/bridgecrewio/checkov/pull/4339)
+
+### Documentation
+
+- **general:** fix env var name to `CKV_IGNORE_HIDDEN_DIRECTORIES` - [#4335](https://github.com/bridgecrewio/checkov/pull/4335)
 
 ## [2.2.302](https://github.com/bridgecrewio/checkov/compare/2.2.299...2.2.302) - 2023-01-25
 

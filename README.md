@@ -390,7 +390,7 @@ Default is `LOG_LEVEL=WARNING`.
 To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
-To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECTORY_ENV` environment variable `export IGNORE_HIDDEN_DIRECTORY_ENV=false`
+To cancel skipping directories beginning with `.` override `CKV_IGNORE_HIDDEN_DIRECTORIES` environment variable `export CKV_IGNORE_HIDDEN_DIRECTORIES=false`
 
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`.
  Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
