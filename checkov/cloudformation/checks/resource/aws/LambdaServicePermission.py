@@ -1,8 +1,7 @@
-from typing import Any
+from typing import List
 
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class LambdaPermission(BaseResourceValueCheck):
