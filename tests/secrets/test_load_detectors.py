@@ -45,7 +45,7 @@ class TestLoadDetectors(unittest.TestCase):
         ]
         runnables = get_runnable_plugins(policies_list)
         assert len(runnables) == 1
-        assert runnables["incident2"] == b'hello'
+        assert runnables["incident2"] == 'hello'
 
 
     def test_modify_secrets_policy_to_detectors(self) -> None:
