@@ -21,7 +21,7 @@ class TestImageReferencerBase(unittest.TestCase):
     def test_localhost_image_name(self):
         self.assertFalse(self.run_is_valid_public_image_valid('localhost:320000/video-conferencing-ms-example'))
 
-    def test_cnmae_with_port_image_name(self):
+    def test_cname_with_port_image_name(self):
         self.assertFalse(self.run_is_valid_public_image_valid('example.local:5004/video-conferencing-ms-example:1.2.3'))
 
     def test_valid_image_name(self):
