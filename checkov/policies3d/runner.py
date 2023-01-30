@@ -44,14 +44,14 @@ class Policy3dRunner(BasePostRunner):
 
         reports_by_fw = {report.check_type: report for report in scan_reports}
         for check in checks:
-            records = self.run_check(check, reports_by_fw)
+            records = self.collect_check(check, reports_by_fw)
             for record in records:
                 report.add_record(record=record)
 
         self.pbar.close()
         return report
 
-    def run_check(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> list[Record]:
+    def collect_check(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> list[Record]:
         records = []
         iac_results_map = self.solve_check_iac(check, reports_by_fw)
         cve_results_map = self.solve_check_cve(check, reports_by_fw)
