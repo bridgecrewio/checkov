@@ -9,7 +9,7 @@ class LambdaPermission(BaseResourceCheck):
         name = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
         id = "CKV_AWS_286"
         supported_resources = ["AWS::Lambda::Permission"]
-        categories = [CheckCategories.GENERAL_SECURITY,]
+        categories = [CheckCategories.GENERAL_SECURITY, ]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -23,5 +23,6 @@ class LambdaPermission(BaseResourceCheck):
 
     def get_evaluated_keys(self) -> List[str]:
         return ['Properties/Principal', 'Properties/SourceArn', 'Properties/SourceAccount']
+
 
 check = LambdaPermission()
