@@ -17,7 +17,9 @@ class LambdaPermission(BaseResourceCheck):
         if properties is not None:
             principal = properties.get('Principal')
             if 'amazonaws.com' in principal:
-                if not properties.get('SourceArn') and not properties.get('SourceAccount'):
+                if properties.get('SourceArn') or properties.get('SourceAccount'):
+                    return CheckResult.PASSED
+                else:
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
