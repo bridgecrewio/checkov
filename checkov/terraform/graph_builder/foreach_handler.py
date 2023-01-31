@@ -5,10 +5,13 @@ import re
 from typing import Any, Optional, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
+
+FOREACH_STRING = 'for_each'
+COUNT_STRING = 'count'
+REFERENCES_VALUES = r"(var|module|local)\."
 
 
 class ForeachHandler:
@@ -20,23 +23,20 @@ class ForeachHandler:
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]):
-        # old_resources_to_delete_edges: list[TerraformBlock] = []
-        # new_resource_to_create_edges: list[TerraformBlock] = []
-        for i in resources_blocks:
-            foreach_statement = self._get_foreach_statement(i)
+        for block_index in resources_blocks:
+            foreach_statement = self._get_foreach_statement(block_index)
             # empty foreach_statement -> leave the main resource
             if foreach_statement is None:
                 continue
             # new_resources = self._create_new_foreach_resources(i, foreach_statement)
-            # old_resources_to_delete_edges.append(tf_block)
-            # new_resource_to_create_edges.extend(create_new_foreach_resources(tf_block))
-        # delete_edges_from_old_resource(old_resources_to_delete_edges)
-        # create_edges_for_new_foreach_resources(new_resource_to_create_edges)
 
     def _get_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
+        attributes = self.local_graph.vertices[block_index].attributes
+        if not attributes.get(FOREACH_STRING) and not attributes.get(COUNT_STRING):
+            return
         try:
             if self._is_static_statement(block_index):
-                return evaluate_terraform(self.extract_str_from_list(self.local_graph.vertices[block_index].attributes.get('for_each')))
+                return self._handle_static_statement(block_index)
             else:
                 # TODO implement foreach statement rendering
                 return None
@@ -49,22 +49,65 @@ class ForeachHandler:
         foreach statement can be list/map of strings or map, if its string we need to render it for sure.
         """
         block = self.local_graph.vertices[block_index]
-        foreach_statement = evaluate_terraform(block.attributes.get("for_each", [""]))
-        if isinstance(foreach_statement, list) and len(foreach_statement) == 1:
-            foreach_statement = foreach_statement[0]
-        return not (isinstance(foreach_statement, str) and re.search(r"(var|module|local)\.", foreach_statement))
+        foreach_statement = evaluate_terraform(block.attributes.get(FOREACH_STRING))
+        count_statement = evaluate_terraform(block.attributes.get(COUNT_STRING))
+
+        def _is_static_foreach_statement(statement: list[str] | dict[str, Any]) -> bool:
+            if isinstance(statement, list):
+                statement = ForeachHandler.extract_from_list(statement)
+            if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
+                return False
+            if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
+                return False
+            return True
+
+        def _is_static_count_statement(statement: list[str] | int) -> bool:
+            if isinstance(statement, list):
+                statement = ForeachHandler.extract_from_list(statement)
+            if isinstance(statement, int):
+                return True
+            if isinstance(statement, str) and not re.search(REFERENCES_VALUES, statement):
+                return True
+            return False
+
+        if foreach_statement:
+            return _is_static_foreach_statement(foreach_statement)
+        if count_statement:
+            return _is_static_count_statement(count_statement)
+        return False
 
     @staticmethod
-    def extract_str_from_list(val: list[str] | str | dict[str, Any]) -> list[str] | str | dict[str, Any]:
-        if isinstance(val, list) and len(val) == 1 and isinstance(val[0], str):
-            return val[0]
-        return val
+    def extract_from_list(val: list[str] | list[int]) -> list[str] | list[int] | int | str:
+        return val[0] if len(val) == 1 and isinstance(val[0], (str, int)) else val
 
-    def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]) -> list[int]:
-        raise NotImplementedError
+    def _handle_static_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any] | int]:
+        attrs = self.local_graph.vertices[block_index].attributes
+        foreach_statement = attrs.get(FOREACH_STRING)
+        count_statement = attrs.get(COUNT_STRING)
 
-    def _delete_edges_from_old_resource(self, block: list[TerraformBlock]):
-        raise NotImplementedError
+        def _handle_static_foreach_statement(statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
+            if isinstance(statement, list):
+                statement = ForeachHandler.extract_from_list(statement)
+            evaluated_statement = evaluate_terraform(statement)
+            if isinstance(evaluated_statement, set):
+                evaluated_statement = list(evaluated_statement)
+            if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
+                return evaluated_statement
+            return
 
-    def _create_edges_for_new_foreach_resources(self, blocks: list[TerraformBlock]):
+        def _handle_static_count_statement(statement: list[str] | int) -> Optional[int]:
+            if isinstance(statement, list):
+                statement = ForeachHandler.extract_from_list(statement)
+            evaluated_statement = evaluate_terraform(statement)
+            if isinstance(evaluated_statement, int):
+                return evaluated_statement
+            return
+
+        if foreach_statement:
+            return _handle_static_foreach_statement(foreach_statement)
+        if count_statement:
+            return _handle_static_count_statement(count_statement)
+        return
+
+    def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]):
         raise NotImplementedError

@@ -100,7 +100,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.in_edges[i] = []
             self.out_edges[i] = []
 
-            if self.enable_foreach_handling and FOREACH_STRING in block.attributes.keys() and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
+            if self.enable_foreach_handling and FOREACH_STRING in block.attributes and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
