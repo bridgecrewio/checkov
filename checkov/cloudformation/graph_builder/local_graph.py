@@ -139,6 +139,9 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
             for property, value in globals_vertex.attributes.items():
                 if property.endswith((START_LINE, END_LINE)):
                     continue
+                if property.startswith("Tags"):
+                    # TODO: support Tags properly
+                    continue
 
                 for vertex in related_vertices:
                     if property not in vertex.attributes:
