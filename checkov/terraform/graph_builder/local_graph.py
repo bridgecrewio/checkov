@@ -65,7 +65,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if self.enable_foreach_handling:
             foreach_handler = ForeachHandler(self)
             foreach_handler.handle_foreach_rendering(self.foreach_blocks)
-            logging.info(f"[TerraformLocalGraph] finished handling foreach blocks")
+            logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
