@@ -65,7 +65,7 @@ class GitLabSast:
                     vulnerability = None
                     if check.check_id.startswith("BC_LIC"):
                         vulnerability = self._create_license_vulnerability(record=check)
-                    elif check.check_id.startswith("CKV_CVE"):
+                    elif check.check_id.startswith(("BC_VUL", "CKV_CVE")):
                         vulnerability = self._create_cve_vulnerability(record=check)
 
                     if vulnerability:

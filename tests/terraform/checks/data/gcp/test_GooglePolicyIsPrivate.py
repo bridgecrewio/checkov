@@ -2,34 +2,29 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.data.aws.IAMPrivilegeEscalation import check
+from checkov.terraform.checks.data.gcp.GooglePolicyIsPrivate import check
 from checkov.terraform.runner import Runner
 
 
-class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
-    def setUp(self):
-        from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
-        # needs to be reset, because the cache belongs to the class not instance
-        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
-
+class TestGooglePolicyIsPrivate(unittest.TestCase):
     def test(self):
-        test_files_dir = Path(__file__).parent / "example_CloudSplainingPrivilegeEscalation"
+        test_files_dir = Path(__file__).parent / "example_GooglePolicyIsPrivate"
 
         report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_iam_policy_document.pass",
+            "google_iam_policy.pass",
         }
         failing_resources = {
-            "aws_iam_policy_document.fail",
+            "google_iam_policy.fail",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
