@@ -25,7 +25,6 @@ RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 ])
 class TestRunnerAwsResources(unittest.TestCase):
     def setUp(self) -> None:
-
         self.mocker = MockerFixture(None)
 
     def test_apprunner_resources(self):
