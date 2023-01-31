@@ -1,11 +1,10 @@
 from typing import Dict, Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.models.consts import ANY_VALUE
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
-class SQSQueueEncryption(BaseResourceValueCheck):
+class SQSQueueEncryption(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure all data stored in the SQS queue is encrypted"
         id = "CKV_AWS_27"
@@ -13,16 +12,16 @@ class SQSQueueEncryption(BaseResourceValueCheck):
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
-        if conf.get('sqs_managed_sse_enabled'):
-            return CheckResult.PASSED
-        return super().scan_resource_conf(conf)
-
-    def get_inspected_key(self) -> str:
-        return 'kms_master_key_id'
-
-    def get_expected_value(self) -> str:
-        return ANY_VALUE
+    def scan_resource_conf(self, conf):
+        if conf.get('sqs_managed_sse_enabled') and isinstance(conf.get('sqs_managed_sse_enabled'), list):
+            if conf.get('sqs_managed_sse_enabled')[0]:
+                return CheckResult.PASSED
+            return CheckResult.FAILED
+        if conf.get("kms_master_key_id") and isinstance(conf.get('kms_master_key_id'), list):
+            if conf.get('kms_master_key_id')[0]:
+                return CheckResult.PASSED
+            return CheckResult.FAILED
+        return CheckResult.FAILED
 
 
 check = SQSQueueEncryption()
