@@ -9,7 +9,7 @@ class LinuxVMUsesSSH(BaseResourceValueCheck):
         """
         If enabled, Uses SSH
         """
-        name = "Ensure Windows VM enables SSH with keys for secure communication"
+        name = "Ensure linux VM enables SSH with keys for secure communication"
         id = "CKV_AZURE_178"
         supported_resources = ("azurerm_linux_virtual_machine", "azurerm_linux_virtual_machine_scale_set")
         categories = (CheckCategories.GENERAL_SECURITY,)
