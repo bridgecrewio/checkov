@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import os
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, Any, Mapping, Union, Generator
@@ -45,11 +46,10 @@ class GraphImageReferencerProvider:
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_igraph(self) -> igraph.Graph:
-        zip_object = zip(self.graph_connector.vs['name'],
-                         self.graph_connector.vs[CustomAttributes.RESOURCE_TYPE])
         resource_nodes = [
             node
-            for node, resource_type in zip_object
+            for node, resource_type in itertools.zip_longest(self.graph_connector.vs['name'],
+                                                             self.graph_connector.vs[CustomAttributes.RESOURCE_TYPE])
             if resource_type and resource_type in self.supported_resource_types
         ]
         return self.graph_connector.subgraph(resource_nodes)
