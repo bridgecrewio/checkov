@@ -460,7 +460,6 @@ class BcPlatformIntegration:
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        print(logs_stream.getvalue())
         persist_logs_stream(logs_stream, self.s3_client, self.bucket, self.repo_path)
 
     def commit_repository(self, branch: str) -> str | None:
