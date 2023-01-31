@@ -6,8 +6,8 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class GoogleStoragePublicAccessPrevention(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Public access prevention should be enforced"
-        id = "CKV_GCP_112"
+        name = "Ensure public access prevention is enforced on Cloud Storage bucket"
+        id = "CKV_GCP_114"
         supported_resources = ["google_storage_bucket"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
