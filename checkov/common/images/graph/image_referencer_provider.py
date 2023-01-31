@@ -45,10 +45,11 @@ class GraphImageReferencerProvider:
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_igraph(self) -> igraph.Graph:
+        zip_object = zip(self.graph_connector.vs['name'],
+                         self.graph_connector.vs[CustomAttributes.RESOURCE_TYPE])
         resource_nodes = [
             node
-            for node, resource_type in list(zip(self.graph_connector.vs['name'],
-                                                self.graph_connector.vs[CustomAttributes.RESOURCE_TYPE]))
+            for node, resource_type in zip_object
             if resource_type and resource_type in self.supported_resource_types
         ]
         return self.graph_connector.subgraph(resource_nodes)
