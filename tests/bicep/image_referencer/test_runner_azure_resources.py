@@ -24,8 +24,6 @@ RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 ])
 class TestRunnerAwsResources(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         self.mocker = MockerFixture(None)
 
     def test_batch_resources(self):
@@ -50,7 +48,8 @@ class TestRunnerAwsResources(unittest.TestCase):
         )
 
         # when
-        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
         # then
         assert len(reports) == 2
@@ -104,7 +103,8 @@ class TestRunnerAwsResources(unittest.TestCase):
         )
 
         # when
-        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
         # then
         assert len(reports) == 2
@@ -148,7 +148,8 @@ class TestRunnerAwsResources(unittest.TestCase):
         )
 
         # when
-        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
         # then
         assert len(reports) == 2
@@ -171,6 +172,7 @@ class TestRunnerAwsResources(unittest.TestCase):
         assert len(sca_image_report.failed_checks) == 6
         assert len(sca_image_report.skipped_checks) == 0
         assert len(sca_image_report.parsing_errors) == 0
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -17,8 +17,6 @@ from checkov.common.images.image_referencer import Image
 ])
 class TestK8S(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
@@ -58,8 +56,9 @@ class TestK8S(unittest.TestCase):
             )
 
         # when
-        provider = KubernetesProvider(graph_connector=self.graph)
-        images = provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            provider = KubernetesProvider(graph_connector=self.graph)
+            images = provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -99,8 +98,9 @@ class TestK8S(unittest.TestCase):
             )
 
         # when
-        provider = KubernetesProvider(graph_connector=self.graph)
-        images = provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            provider = KubernetesProvider(graph_connector=self.graph)
+            images = provider.extract_images_from_resources()
 
         # then
         assert not images

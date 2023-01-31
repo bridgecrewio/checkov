@@ -17,8 +17,6 @@ from checkov.common.images.image_referencer import Image
 ])
 class TestAws(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
@@ -63,8 +61,9 @@ class TestAws(unittest.TestCase):
             )
 
         # when
-        aws_provider = AwsCloudFormationProvider(graph_connector=self.graph)
-        images = aws_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            aws_provider = AwsCloudFormationProvider(graph_connector=self.graph)
+            images = aws_provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -107,8 +106,9 @@ class TestAws(unittest.TestCase):
             )
 
         # when
-        aws_provider = AwsCloudFormationProvider(graph_connector=self.graph)
-        images = aws_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            aws_provider = AwsCloudFormationProvider(graph_connector=self.graph)
+            images = aws_provider.extract_images_from_resources()
 
         # then
         assert not images

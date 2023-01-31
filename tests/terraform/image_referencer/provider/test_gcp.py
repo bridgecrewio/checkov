@@ -16,13 +16,11 @@ from checkov.terraform.image_referencer.provider.gcp import GcpTerraformProvider
 ])
 class TestGcp(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
             self.graph = igraph.Graph()
-
+        
     def test_extract_images_from_resources(self):
         # given
         resource = {
@@ -50,8 +48,9 @@ class TestGcp(unittest.TestCase):
             )
 
         # when
-        gcp_provider = GcpTerraformProvider(graph_connector=self.graph)
-        images = gcp_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            gcp_provider = GcpTerraformProvider(graph_connector=self.graph)
+            images = gcp_provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -91,8 +90,9 @@ class TestGcp(unittest.TestCase):
             )
 
         # when
-        gcp_provider = GcpTerraformProvider(graph_connector=self.graph)
-        images = gcp_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            gcp_provider = GcpTerraformProvider(graph_connector=self.graph)
+            images = gcp_provider.extract_images_from_resources()
 
         # then
         assert not images

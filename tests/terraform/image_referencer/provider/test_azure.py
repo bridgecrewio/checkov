@@ -1,4 +1,3 @@
-import os
 import unittest
 from unittest import mock
 
@@ -17,8 +16,6 @@ from checkov.terraform.image_referencer.provider.azure import AzureTerraformProv
 ])
 class TestAzure(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
@@ -53,8 +50,9 @@ class TestAzure(unittest.TestCase):
             )
 
         # when
-        azure_provider = AzureTerraformProvider(graph_connector=self.graph)
-        images = azure_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            azure_provider = AzureTerraformProvider(graph_connector=self.graph)
+            images = azure_provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -91,8 +89,9 @@ class TestAzure(unittest.TestCase):
             )
 
         # when
-        azure_provider = AzureTerraformProvider(graph_connector=self.graph)
-        images = azure_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            azure_provider = AzureTerraformProvider(graph_connector=self.graph)
+            images = azure_provider.extract_images_from_resources()
 
         # then
         assert not images

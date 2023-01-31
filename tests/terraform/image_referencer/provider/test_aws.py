@@ -16,8 +16,6 @@ from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
 ])
 class TestAws(unittest.TestCase):
     def setUp(self) -> None:
-        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
-        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
@@ -75,26 +73,26 @@ class TestAws(unittest.TestCase):
             }
 
         if self.graph_framework == 'NETWORKX':
-            self.graph.add_node(1, **resource)
-            self.graph.add_node(2, **module_resource)
+                self.graph.add_node(1, **resource)
+                self.graph.add_node(2, **module_resource)
         elif self.graph_framework == 'IGRAPH':
-            self.graph.add_vertex(
-                name='1',
-                block_type_='resource',
-                resource_type=resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
-                attr=resource,
-            )
-            self.graph.add_vertex(
-                name='batch',
-                block_type_='module',
-                resource_type=module_resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in module_resource else None,
-                attr=module_resource,
-            )
-
+                self.graph.add_vertex(
+                    name='1',
+                    block_type_='resource',
+                    resource_type=resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
+                    attr=resource,
+                )
+                self.graph.add_vertex(
+                    name='batch',
+                    block_type_='module',
+                    resource_type=module_resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in module_resource else None,
+                    attr=module_resource,
+                )
 
         # when
-        aws_provider = AwsTerraformProvider(graph_connector=self.graph)
-        images = aws_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            aws_provider = AwsTerraformProvider(graph_connector=self.graph)
+            images = aws_provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -140,6 +138,7 @@ class TestAws(unittest.TestCase):
             ],
             "resource_type": "aws_ecs_task_definition",
         }
+
         if self.graph_framework == 'NETWORKX':
             self.graph.add_node(1, **resource)
         elif self.graph_framework == 'IGRAPH':
@@ -152,8 +151,9 @@ class TestAws(unittest.TestCase):
             )
 
         # when
-        aws_provider = AwsTerraformProvider(graph_connector=self.graph)
-        images = aws_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            aws_provider = AwsTerraformProvider(graph_connector=self.graph)
+            images = aws_provider.extract_images_from_resources()
 
         # then
         assert images == [
@@ -202,8 +202,9 @@ class TestAws(unittest.TestCase):
             )
 
         # when
-        aws_provider = AwsTerraformProvider(graph_connector=self.graph)
-        images = aws_provider.extract_images_from_resources()
+        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+            aws_provider = AwsTerraformProvider(graph_connector=self.graph)
+            images = aws_provider.extract_images_from_resources()
 
         # then
         assert not images
