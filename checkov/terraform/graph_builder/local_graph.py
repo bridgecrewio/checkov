@@ -283,6 +283,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if len(target_variables) == 1:
                 self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
 
+    def reset_edges(self) -> None:
+        self.edges = []
+        self.out_edges = defaultdict(list)
+        self.in_edges = defaultdict(list)
+        for i in range(len(self.vertices)):
+            self.out_edges[i] = []
+            self.in_edges[i] = []
+
     def _build_cross_variable_edges(self):
         target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
                                 self.vertices[v].block_type == BlockType.RESOURCE and any(
