@@ -73,7 +73,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
-from checkov.logging_init import log_stream
+from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
@@ -687,6 +687,9 @@ class Checkov:
                 return None
 
             if self.config.bc_api_key == '':
+                if self.config.support:
+                    self.parser.error("--bc-api-key argument is required when using --support")
+
                 self.parser.error(
                     'The --bc-api-key flag was specified but the value was blank. If this value was passed as a '
                     'secret, you may need to double check the mapping.'
@@ -931,10 +934,7 @@ class Checkov:
             return None
         finally:
             if self.config.support:
-                if not self.config.bc_api_key:
-                    self.parser.error("--bc-api-key argument is required when using --support")
-                else:
-                    bc_integration.persist_run_metadata(log_stream.getvalue())
+                bc_integration.persist_logs_stream(logs_stream)
 
     def exit_run(self) -> None:
         exit(0) if self.config.no_fail_on_crash else exit(2)

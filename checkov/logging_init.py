@@ -17,4 +17,5 @@ logging.getLogger("urllib3").propagate = False
 log_stream = StringIO()
 stream_handler = logging.StreamHandler(stream=log_stream)
 stream_handler.setFormatter(log_formatter)
+stream_handler.setLevel(logging.DEBUG)
 root_logger.addHandler(stream_handler)

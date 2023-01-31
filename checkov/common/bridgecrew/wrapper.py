@@ -4,8 +4,11 @@ import logging
 import os
 import json
 import itertools
+from io import StringIO
 from typing import Any, TYPE_CHECKING
 from collections import defaultdict
+import tarfile
+import io
 
 import dpath.util
 
@@ -96,16 +99,30 @@ def persist_checks_results(
 
 
 def persist_run_metadata(
-        run_metadata: dict[str, str | list[str]] | str, s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
 ) -> None:
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
     try:
-        if isinstance(run_metadata, str):
-            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.txt'
-            s3_client.put_object(Bucket=bucket, Key=object_path, Body=run_metadata)
-        else:
-            object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
-            s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
 
+    except Exception:
+        logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        raise
+
+
+def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: str, full_repo_object_key: str) -> None:
+    file_io = io.BytesIO()
+    str_data = logs_stream.getvalue().encode('utf8')
+    bio = io.BytesIO(str_data)
+    with tarfile.open(fileobj=file_io, mode='w:gz') as tar:
+        info = tar.tarinfo(name='logs_file.txt')
+        bio.seek(0)
+        info.size = logs_stream.tell()
+        tar.addfile(info, bio)
+    file_io.seek(0)
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.tar.gz'
+    try:
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:
         logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
         raise
