@@ -95,7 +95,7 @@ class TestAzure(unittest.TestCase):
             )
 
         # when
-        with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
+        with mock.patch.dict(os.environ, {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
             azure_provider = AzureTerraformProvider(graph_connector=self.graph)
             images = azure_provider.extract_images_from_resources()
 
