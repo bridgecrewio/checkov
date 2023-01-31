@@ -66,7 +66,9 @@ class CloudformationBlock(Block):
                     key_to_update = ".".join(attribute_key_parts[i:])
                     break
 
-            if isinstance(obj_to_update, dict):
+            if isinstance(obj_to_update, list):
+                key_to_update = int(key_to_update)
+            if isinstance(obj_to_update, (dict, list)):
                 obj_to_update[key_to_update] = attribute_value
             else:
                 logging.info(f"Failed to update an attribute, values: {obj_to_update}, {key_to_update}, {attribute_value}")
