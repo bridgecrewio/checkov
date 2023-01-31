@@ -932,6 +932,10 @@ class Checkov:
 
                 bc_integration.onboarding()
             return None
+        except:
+            logging.error("Exception traceback:", exc_info=True)
+            raise
+
         finally:
             if self.config.support:
                 bc_integration.persist_logs_stream(logs_stream)

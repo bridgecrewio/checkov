@@ -7,14 +7,13 @@ import itertools
 from io import StringIO
 from typing import Any, TYPE_CHECKING
 from collections import defaultdict
-import tarfile
-import io
 
 import dpath.util
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
+from checkov.common.util.file_utils import compress_string_io_tar
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -111,20 +110,12 @@ def persist_run_metadata(
 
 
 def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: str, full_repo_object_key: str) -> None:
-    file_io = io.BytesIO()
-    str_data = logs_stream.getvalue().encode('utf8')
-    bio = io.BytesIO(str_data)
-    with tarfile.open(fileobj=file_io, mode='w:gz') as tar:
-        info = tar.tarinfo(name='logs_file.txt')
-        bio.seek(0)
-        info.size = logs_stream.tell()
-        tar.addfile(info, bio)
-    file_io.seek(0)
+    file_io = compress_string_io_tar(logs_stream)
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.tar.gz'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:
-        logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        logging.error(f"failed to persist logs stream into S3 bucket {bucket}", exc_info=True)
         raise
 
 
