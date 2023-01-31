@@ -222,6 +222,59 @@ def test_find_scannable_files_exclude_go_and_requirements():
         EXAMPLES_DIR / "requirements.txt"
     }
 
+def test_find_scannable_files_extra_supported_packages():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock"},
+        extra_supported_package_files={'yarn.lock'}
+    )
+
+    # then
+    assert len(input_output_paths) == 2
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt",
+        EXAMPLES_DIR / "package-lock.json"
+    }
+
+def test_find_scannable_files_extra_supported_packages2():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock"},
+        extra_supported_package_files={'yarn.lock', 'package-lock.json'}
+    )
+
+    # then
+    assert len(input_output_paths) == 2
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt",
+        EXAMPLES_DIR / "package-lock.json"
+    }
+
+def test_find_scannable_files_extra_supported_packages3():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock", 'package-lock.json'},
+        extra_supported_package_files={'yarn.lock', 'package-lock.json'}
+    )
+
+    # then
+    assert len(input_output_paths) == 1
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt"
+    }
+
 
 def test_find_scannable_files_with_package_json():
     # when
