@@ -932,7 +932,7 @@ class Checkov:
 
                 bc_integration.onboarding()
             return None
-        except:
+        except BaseException:
             logging.error("Exception traceback:", exc_info=True)
             raise
 
