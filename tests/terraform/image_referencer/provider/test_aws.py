@@ -14,14 +14,13 @@ from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
    {"graph_framework": "NETWORKX"},
    {"graph_framework": "IGRAPH"}
 ])
-class TestK8S(unittest.TestCase):
+class TestAws(unittest.TestCase):
     def setUp(self) -> None:
         os.environ['CHECKOV_GRAPH_FRAMEWORK'] = self.graph_framework
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore
             self.graph = igraph.Graph()
-
 
     @mock.patch.dict(os.environ, {"BC_ROOT_DIR": "/tmp/checkov/cshayner/cshayner/terraform-aws-batch/master/src"})
     def test_extract_images_from_resources_with_external_module(self):
@@ -53,7 +52,6 @@ class TestK8S(unittest.TestCase):
             "module_dependency_num_": "0",
             "id_": "aws_batch_job_definition.batch",
         }
-
         module_resource = {
                 "block_name_": "batch",
                 "block_type_": "module",
@@ -115,85 +113,100 @@ class TestK8S(unittest.TestCase):
             ),
         ]
 
+    def test_extract_images_from_resources(self):
+        # given
+        resource = {
+            "file_path_": "/ecs.tf",
+            "__end_line__": 31,
+            "__start_line__": 1,
+            "container_definitions": [
+                {
+                    "name": "first",
+                    "image": "nginx",
+                    "cpu": 10,
+                    "memory": 512,
+                    "essential": True,
+                    "portMappings": [{"containerPort": 80, "hostPort": 80}],
+                },
+                {
+                    "name": "second",
+                    "image": "python:3.9-alpine",
+                    "cpu": 10,
+                    "memory": 256,
+                    "essential": True,
+                    "portMappings": [{"containerPort": 443, "hostPort": 443}],
+                },
+            ],
+            "resource_type": "aws_ecs_task_definition",
+        }
+        if self.graph_framework == 'NETWORKX':
+            self.graph.add_node(1, **resource)
+        elif self.graph_framework == 'IGRAPH':
+            self.graph.add_vertex(
+                name='1',
+                block_type_='resource',
+                resource_type=resource[
+                    CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
+                attr=resource,
+            )
 
-# def test_extract_images_from_resources():
-#     # given
-#     resource = {
-#         "file_path_": "/ecs.tf",
-#         "__end_line__": 31,
-#         "__start_line__": 1,
-#         "container_definitions": [
-#             {
-#                 "name": "first",
-#                 "image": "nginx",
-#                 "cpu": 10,
-#                 "memory": 512,
-#                 "essential": True,
-#                 "portMappings": [{"containerPort": 80, "hostPort": 80}],
-#             },
-#             {
-#                 "name": "second",
-#                 "image": "python:3.9-alpine",
-#                 "cpu": 10,
-#                 "memory": 256,
-#                 "essential": True,
-#                 "portMappings": [{"containerPort": 443, "hostPort": 443}],
-#             },
-#         ],
-#         "resource_type": "aws_ecs_task_definition",
-#     }
-#     graph = DiGraph()
-#     graph.add_node(1, **resource)
-#
-#     # when
-#     aws_provider = AwsTerraformProvider(graph_connector=graph)
-#     images = aws_provider.extract_images_from_resources()
-#
-#     # then
-#     assert images == [
-#         Image(
-#             file_path="/ecs.tf",
-#             name="nginx",
-#             start_line=1,
-#             end_line=31,
-#             related_resource_id='/ecs.tf:None'
-#         ),
-#         Image(
-#             file_path="/ecs.tf",
-#             name="python:3.9-alpine",
-#             start_line=1,
-#             end_line=31,
-#             related_resource_id='/ecs.tf:None'
-#         ),
-#     ]
-#
-#
-# def test_extract_images_from_resources_with_no_image():
-#     # given
-#     resource = {
-#         "file_path_": "/ecs.tf",
-#         "__end_line__": 31,
-#         "__start_line__": 1,
-#         "container_definitions": [
-#             {
-#                 "name": "first",
-#                 "cpu": 10,
-#                 "memory": 512,
-#                 "essential": True,
-#                 "portMappings": [{"containerPort": 80, "hostPort": 80}],
-#             },
-#         ],
-#         "resource_type": "aws_ecs_task_definition",
-#     }
-#     graph = DiGraph()
-#     graph.add_node(1, **resource)
-#
-#     # when
-#     aws_provider = AwsTerraformProvider(graph_connector=graph)
-#     images = aws_provider.extract_images_from_resources()
-#
-#     # then
-#     assert not images
+        # when
+        aws_provider = AwsTerraformProvider(graph_connector=self.graph)
+        images = aws_provider.extract_images_from_resources()
+
+        # then
+        assert images == [
+            Image(
+                file_path="/ecs.tf",
+                name="nginx",
+                start_line=1,
+                end_line=31,
+                related_resource_id='/ecs.tf:None'
+            ),
+            Image(
+                file_path="/ecs.tf",
+                name="python:3.9-alpine",
+                start_line=1,
+                end_line=31,
+                related_resource_id='/ecs.tf:None'
+            ),
+        ]
+
+    def test_extract_images_from_resources_with_no_image(self):
+        # given
+        resource = {
+            "file_path_": "/ecs.tf",
+            "__end_line__": 31,
+            "__start_line__": 1,
+            "container_definitions": [
+                {
+                    "name": "first",
+                    "cpu": 10,
+                    "memory": 512,
+                    "essential": True,
+                    "portMappings": [{"containerPort": 80, "hostPort": 80}],
+                },
+            ],
+            "resource_type": "aws_ecs_task_definition",
+        }
+        if self.graph_framework == 'NETWORKX':
+            self.graph.add_node(1, **resource)
+        elif self.graph_framework == 'IGRAPH':
+            self.graph.add_vertex(
+                name='1',
+                block_type_='resource',
+                resource_type=resource[
+                    CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
+                attr=resource,
+            )
+
+        # when
+        aws_provider = AwsTerraformProvider(graph_connector=self.graph)
+        images = aws_provider.extract_images_from_resources()
+
+        # then
+        assert not images
+
 
 if __name__ == '__main__':
     unittest.main()

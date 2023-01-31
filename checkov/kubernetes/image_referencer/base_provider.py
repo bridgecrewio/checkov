@@ -28,7 +28,7 @@ class BaseKubernetesProvider(GraphImageReferencerProvider):
                             name=name,
                             start_line=resource[START_LINE],
                             end_line=resource[END_LINE],
-                            related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
+                            related_resource_id=f'{removeprefix(resource.get("file_path_", ""), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
                         )
                     )
 
