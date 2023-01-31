@@ -19,7 +19,7 @@ from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+from checkov.terraform.graph_builder.foreach_handler import ForeachHandler, FOREACH_STRING
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -34,7 +34,6 @@ from checkov.terraform.graph_builder.variable_rendering.renderer import Terrafor
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
-FOREACH_STRING = 'for_each'
 
 
 class Undetermined(TypedDict):
@@ -81,7 +80,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 self._build_cross_variable_edges()
                 logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
 
-    def _create_vertices(self):
+    def _create_vertices(self) -> None:
         logging.info("Creating vertices")
         self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):

@@ -14,15 +14,15 @@ COUNT_STRING = 'count'
 REFERENCES_VALUES = r"(var|module|local)\."
 
 
-class ForeachHandler:
+class ForeachHandler(object):
     def __init__(self, local_graph: TerraformLocalGraph) -> None:
         self.local_graph = local_graph
 
-    def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]):
+    def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
         # handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
-    def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]):
+    def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
         for block_index in resources_blocks:
             foreach_statement = self._get_foreach_statement(block_index)
             # empty foreach_statement -> leave the main resource
@@ -54,7 +54,7 @@ class ForeachHandler:
 
         def _is_static_foreach_statement(statement: list[str] | dict[str, Any]) -> bool:
             if isinstance(statement, list):
-                statement = ForeachHandler.extract_from_list(statement)
+                statement = self.extract_from_list(statement)
             if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
                 return False
             if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
@@ -63,7 +63,7 @@ class ForeachHandler:
 
         def _is_static_count_statement(statement: list[str] | int) -> bool:
             if isinstance(statement, list):
-                statement = ForeachHandler.extract_from_list(statement)
+                statement = self.extract_from_list(statement)
             if isinstance(statement, int):
                 return True
             if isinstance(statement, str) and not re.search(REFERENCES_VALUES, statement):
@@ -87,7 +87,7 @@ class ForeachHandler:
 
         def _handle_static_foreach_statement(statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
             if isinstance(statement, list):
-                statement = ForeachHandler.extract_from_list(statement)
+                statement = self.extract_from_list(statement)
             evaluated_statement = evaluate_terraform(statement)
             if isinstance(evaluated_statement, set):
                 evaluated_statement = list(evaluated_statement)
@@ -97,7 +97,7 @@ class ForeachHandler:
 
         def _handle_static_count_statement(statement: list[str] | int) -> Optional[int]:
             if isinstance(statement, list):
-                statement = ForeachHandler.extract_from_list(statement)
+                statement = self.extract_from_list(statement)
             evaluated_statement = evaluate_terraform(statement)
             if isinstance(evaluated_statement, int):
                 return evaluated_statement
@@ -109,5 +109,5 @@ class ForeachHandler:
             return _handle_static_count_statement(count_statement)
         return
 
-    def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]):
+    def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]) -> None:
         raise NotImplementedError
