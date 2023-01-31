@@ -50,7 +50,7 @@ class BaseTerraformProvider(GraphImageReferencerProvider):
                         name=name,
                         start_line=start_line,
                         end_line=end_line,
-                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{related_resource_id}'
+                        related_resource_id=f'{removeprefix(resource.get("file_path_", ""), os.getenv("BC_ROOT_DIR", ""))}:{related_resource_id}'
                     )
                 )
 
