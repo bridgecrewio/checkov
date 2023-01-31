@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.312...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.316...HEAD)
+
+## [2.2.316](https://github.com/bridgecrewio/checkov/compare/2.2.312...2.2.316) - 2023-01-30
+
+### Feature
+
+- **sca:** ignore package.json file when yarn.lock exists - [#4370](https://github.com/bridgecrewio/checkov/pull/4370)
+- **terraform:** GCP check kms policy does not define public access - [#4190](https://github.com/bridgecrewio/checkov/pull/4190)
+- **terraform:** GCP check policy isn't public - [#4194](https://github.com/bridgecrewio/checkov/pull/4194)
+
+### Bug Fix
+
+- **sca:** support BC_VUL_X IDs in GitLab SAST output - [#4360](https://github.com/bridgecrewio/checkov/pull/4360)
 
 ## [2.2.312](https://github.com/bridgecrewio/checkov/compare/2.2.305...2.2.312) - 2023-01-29
 
