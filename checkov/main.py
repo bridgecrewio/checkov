@@ -687,9 +687,6 @@ class Checkov:
                 return None
 
             if self.config.bc_api_key == '':
-                if self.config.support:
-                    self.parser.error("--bc-api-key argument is required when using --support")
-
                 self.parser.error(
                     'The --bc-api-key flag was specified but the value was blank. If this value was passed as a '
                     'secret, you may need to double check the mapping.'
@@ -751,6 +748,8 @@ class Checkov:
                         logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
                     self.exit_run()
             else:
+                if self.config.support:
+                    logger.warning("--bc-api-key argument is required when using --support")
                 logger.debug('No API key found. Scanning locally only.')
                 self.config.include_all_checkov_policies = True
 
