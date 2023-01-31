@@ -16,7 +16,8 @@ from checkov.terraform.image_referencer.provider.aws import AwsTerraformProvider
 ])
 class TestAws(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['CHECKOV_GRAPH_FRAMEWORK'] = self.graph_framework
+        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
+        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore

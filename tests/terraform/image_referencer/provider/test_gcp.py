@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import mock
 
 import igraph
 from networkx import DiGraph
@@ -15,7 +16,8 @@ from checkov.terraform.image_referencer.provider.gcp import GcpTerraformProvider
 ])
 class TestGcp(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['CHECKOV_GRAPH_FRAMEWORK'] = self.graph_framework
+        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
+        self.environ_patch.start()
         if self.graph_framework == 'NETWORKX':  # type: ignore
             self.graph = DiGraph()
         elif self.graph_framework == 'IGRAPH':  # type: ignore

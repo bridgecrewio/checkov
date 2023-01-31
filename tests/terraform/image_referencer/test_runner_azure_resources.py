@@ -1,6 +1,7 @@
 import os
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from parameterized import parameterized_class
 from pytest_mock import MockerFixture
@@ -20,7 +21,8 @@ RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 ])
 class TestRunnerAwsResources(unittest.TestCase):
     def setUp(self) -> None:
-        os.environ['CHECKOV_GRAPH_FRAMEWORK'] = self.graph_framework
+        self.environ_patch = mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework})
+        self.environ_patch.start()
         self.mocker = MockerFixture(None)
             
     def test_batch_resources(self):
