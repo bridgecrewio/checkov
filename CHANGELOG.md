@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.316...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.320...HEAD)
+
+## [2.2.320](https://github.com/bridgecrewio/checkov/compare/2.2.316...2.2.320) - 2023-01-31
+
+### Feature
+
+- **sca:** Add a --support flag - [#4323](https://github.com/bridgecrewio/checkov/pull/4323)
+- **sca:** added extra supported package files to find_scannable_files - [#4378](https://github.com/bridgecrewio/checkov/pull/4378)
+- **terraform:** add reset edges function to terraform local graph - [#4373](https://github.com/bridgecrewio/checkov/pull/4373)
+- **terraform:** Added base class for cloudsplaining iam checks to be integrated between data and resource objects - [#4338](https://github.com/bridgecrewio/checkov/pull/4338)
+- **terraform:** Added basic check with test for tf resource with IAM privilege escalation - [#4376](https://github.com/bridgecrewio/checkov/pull/4376)
+
+### Bug Fix
+
+- **cloudformation:** Skip SAM Global Tags propagation - [#4383](https://github.com/bridgecrewio/checkov/pull/4383)
+- **sca:** extend image name validation - [#4377](https://github.com/bridgecrewio/checkov/pull/4377)
+- **terraform:** simple check naming fix - [#4371](https://github.com/bridgecrewio/checkov/pull/4371)
 
 ## [2.2.316](https://github.com/bridgecrewio/checkov/compare/2.2.312...2.2.316) - 2023-01-30
 
