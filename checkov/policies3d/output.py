@@ -3,16 +3,15 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
-from typing import List, Dict, Any, TYPE_CHECKING
+from typing import List, Dict, Any
 
 from colorama import Style
 from prettytable import PrettyTable, SINGLE_BORDER
+from termcolor import colored
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
-
-if TYPE_CHECKING:
-    from checkov.policies3d.Policy3dRecord import Policy3dRecord
+from checkov.policies3d.record import Policy3dRecord
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
@@ -20,49 +19,48 @@ def compare_cve_severity(cve: Dict[str, str]) -> int:
     return Severities[severity].level
 
 
-def create_cli_output(*cve_records: list[Record | Policy3dRecord]) -> str:
-    cli_outputs: "list[str]" = []
+def create_cli_output( *records: list[Policy3dRecord]) -> str:
+    cli_outputs = []
 
-    for record in itertools.chain(*cve_records):
-        if isinstance(record, Record):
-            # shouldn't happen
-            continue
-
-        cli_outputs.append(record.to_string() + Style.RESET_ALL)
-        if not record.vulnerabilities:
-            #  this shouldn't happen
-            logging.error(f"'vulnerabilities' is not set for {record.check_id}")
-            continue
-
-        package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
-
-        for cve in record.vulnerabilities:
-            image_name = cve.get('dockerImageName')
-            package_name = cve.get('packageName')
-            package_version = cve.get('packageVersion')
-            severity_str = cve.get('severity', BcSeverities.NONE).lower()
-
-            package_cves_details_map[package_name].setdefault("cves", []).append(
-                {
-                    "id": cve.get('cveId'),
-                    "severity": severity_str
-                }
-            )
-
-            if package_name in package_cves_details_map:
-                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
-                package_cves_details_map[package_name]["current_version"] = package_version
-                package_cves_details_map[package_name]["image_name"] = image_name
-
-        if len(package_cves_details_map.keys()):
-            cli_outputs.append(
-                create_cli_cves_table(
-                    file_path=record.file_path,
-                    package_details_map=package_cves_details_map,
-                )
-            )
+    for record in itertools.chain(*records):
+        cli_outputs.append(record.render_iac_output() + Style.RESET_ALL)
+        cli_outputs.append(render_cve_output(record) + Style.RESET_ALL)
 
     return "\n".join(cli_outputs)
+
+def render_cve_output(record: Policy3dRecord) -> str:
+    if not record.vulnerabilities:
+        #  this shouldn't happen
+        logging.error(f"'vulnerabilities' is not set for {record.check_id}")
+        return ''
+
+    package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
+
+    for cve in record.vulnerabilities:
+        image_name = cve.get('dockerImageName')
+        package_name = cve.get('packageName')
+        package_version = cve.get('packageVersion')
+        severity_str = cve.get('severity', BcSeverities.NONE).lower()
+
+        package_cves_details_map[package_name].setdefault("cves", []).append(
+            {
+                "id": cve.get('cveId'),
+                "severity": severity_str
+            }
+        )
+
+        if package_name in package_cves_details_map:
+            package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
+            package_cves_details_map[package_name]["current_version"] = package_version
+            package_cves_details_map[package_name]["image_name"] = image_name
+
+    if len(package_cves_details_map.keys()):
+        return (
+            create_cli_cves_table(
+                file_path=record.file_path,
+                package_details_map=package_cves_details_map,
+            )
+        )
 
 
 def create_cli_cves_table(file_path: str, package_details_map: Dict[str, Dict[str, Any]]) -> str:
@@ -76,7 +74,7 @@ def create_cli_cves_table(file_path: str, package_details_map: Dict[str, Dict[st
 
     return (
         Style.BRIGHT +
-        f"\tRefered Image's Matching CVEs:\n"
+        f"\tImage Referenced with Matching CVEs:\n"
         f"{''.join(package_table_lines)}\n" +
         Style.RESET_ALL
     )
@@ -127,7 +125,7 @@ def create_package_overview_table_part(
         package_table.min_width = column_width
         package_table.max_width = column_width
 
-        for line in package_table.get_string().splitlines(keepends=True):
+        for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
             if package_idx > 0:
                 # hack to make multiple package tables look like one
                 line = line.replace(package_table.top_junction_char, package_table.junction_char)
