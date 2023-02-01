@@ -44,6 +44,24 @@ class ForeachHandler(object):
             logging.info(f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
             return None
 
+    def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
+        if isinstance(statement, list):
+            statement = self.extract_from_list(statement)
+        if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
+            return False
+        if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
+            return False
+        return True
+
+    def _is_static_count_statement(self, statement: list[str] | int) -> bool:
+        if isinstance(statement, list):
+            statement = self.extract_from_list(statement)
+        if isinstance(statement, int):
+            return True
+        if isinstance(statement, str) and not re.search(REFERENCES_VALUES, statement):
+            return True
+        return False
+
     def _is_static_statement(self, block_index: int) -> bool:
         """
         foreach statement can be list/map of strings or map, if its string we need to render it for sure.
@@ -51,62 +69,42 @@ class ForeachHandler(object):
         block = self.local_graph.vertices[block_index]
         foreach_statement = evaluate_terraform(block.attributes.get(FOREACH_STRING))
         count_statement = evaluate_terraform(block.attributes.get(COUNT_STRING))
-
-        def _is_static_foreach_statement(statement: list[str] | dict[str, Any]) -> bool:
-            if isinstance(statement, list):
-                statement = self.extract_from_list(statement)
-            if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
-                return False
-            if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
-                return False
-            return True
-
-        def _is_static_count_statement(statement: list[str] | int) -> bool:
-            if isinstance(statement, list):
-                statement = self.extract_from_list(statement)
-            if isinstance(statement, int):
-                return True
-            if isinstance(statement, str) and not re.search(REFERENCES_VALUES, statement):
-                return True
-            return False
-
         if foreach_statement:
-            return _is_static_foreach_statement(foreach_statement)
+            return self._is_static_foreach_statement(foreach_statement)
         if count_statement:
-            return _is_static_count_statement(count_statement)
+            return self._is_static_count_statement(count_statement)
         return False
 
     @staticmethod
     def extract_from_list(val: list[str] | list[int]) -> list[str] | list[int] | int | str:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int)) else val
 
+    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
+        if isinstance(statement, list):
+            statement = self.extract_from_list(statement)
+        evaluated_statement = evaluate_terraform(statement)
+        if isinstance(evaluated_statement, set):
+            evaluated_statement = list(evaluated_statement)
+        if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
+            return evaluated_statement
+        return
+
+    def _handle_static_count_statement(self, statement: list[str] | int) -> Optional[int]:
+        if isinstance(statement, list):
+            statement = self.extract_from_list(statement)
+        evaluated_statement = evaluate_terraform(statement)
+        if isinstance(evaluated_statement, int):
+            return evaluated_statement
+        return
+
     def _handle_static_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any] | int]:
         attrs = self.local_graph.vertices[block_index].attributes
         foreach_statement = attrs.get(FOREACH_STRING)
         count_statement = attrs.get(COUNT_STRING)
-
-        def _handle_static_foreach_statement(statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
-            if isinstance(statement, list):
-                statement = self.extract_from_list(statement)
-            evaluated_statement = evaluate_terraform(statement)
-            if isinstance(evaluated_statement, set):
-                evaluated_statement = list(evaluated_statement)
-            if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
-                return evaluated_statement
-            return
-
-        def _handle_static_count_statement(statement: list[str] | int) -> Optional[int]:
-            if isinstance(statement, list):
-                statement = self.extract_from_list(statement)
-            evaluated_statement = evaluate_terraform(statement)
-            if isinstance(evaluated_statement, int):
-                return evaluated_statement
-            return
-
         if foreach_statement:
-            return _handle_static_foreach_statement(foreach_statement)
+            return self._handle_static_foreach_statement(foreach_statement)
         if count_statement:
-            return _handle_static_count_statement(count_statement)
+            return self._handle_static_count_statement(count_statement)
         return
 
     def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]) -> None:
