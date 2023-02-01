@@ -6,6 +6,8 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
 
+import igraph
+
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 
 if TYPE_CHECKING:
@@ -66,7 +68,7 @@ MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 
 
 def get_vertices_references(
-    str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
+        str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
 ) -> List[TerraformVertexReference]:
     vertices_references = []
     words_in_str_value = str_value.split()
@@ -115,7 +117,7 @@ def get_vertices_references(
 
 
 def get_vertex_reference_from_alias(
-    block_type_str: str, aliases: Dict[str, Dict[str, BlockType]], val: List[str]
+        block_type_str: str, aliases: Dict[str, Dict[str, BlockType]], val: List[str]
 ) -> Optional[TerraformVertexReference]:
     block_type = ""
     if block_type_str in aliases:
@@ -168,10 +170,10 @@ DEFAULT_CLEANUP_FUNCTIONS: List[Callable[[str], str]] = [
 
 
 def get_referenced_vertices_in_value(
-    value: Union[str, List[str], Dict[str, str]],
-    aliases: Dict[str, Dict[str, BlockType]],
-    resources_types: List[str],
-    cleanup_functions: Optional[List[Callable[[str], str]]] = None,
+        value: Union[str, List[str], Dict[str, str]],
+        aliases: Dict[str, Dict[str, BlockType]],
+        resources_types: List[str],
+        cleanup_functions: Optional[List[Callable[[str], str]]] = None,
 ) -> List[TerraformVertexReference]:
     references_vertices: "list[TerraformVertexReference]" = []
 
@@ -231,7 +233,7 @@ def generate_possible_strings_from_wildcards(origin_string: str, max_entries: in
         new_generated_strings = []
         for s in generated_strings:
             before_wildcard = s[:wildcard_index]
-            after_wildcard = s[wildcard_index + 1 :]
+            after_wildcard = s[wildcard_index + 1:]
             for i in range(max_entries):
                 new_generated_strings.append(before_wildcard + str(i) + after_wildcard)
         generated_strings = new_generated_strings
@@ -275,13 +277,17 @@ def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: 
     resource_id = resource.get(CustomAttributes.ID)
     # for external modules resources the id should start with the prefix module.[module_name]
     if resource.get(CustomAttributes.MODULE_DEPENDENCY):
-        referred_id = file_path_to_referred_id.get(f'{resource.get(CustomAttributes.FILE_PATH)}[{resource.get(CustomAttributes.MODULE_DEPENDENCY)}#{resource.get(CustomAttributes.MODULE_DEPENDENCY_NUM)}]')
+        referred_id = file_path_to_referred_id.get(
+            f'{resource.get(CustomAttributes.FILE_PATH)}[{resource.get(CustomAttributes.MODULE_DEPENDENCY)}#{resource.get(CustomAttributes.MODULE_DEPENDENCY_NUM)}]')
         resource_id = f'{referred_id}.{resource_id}'
     return resource_id
 
 
-def setup_file_path_to_referred_id(graph_object: DiGraph) -> dict[str, str]:
+def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, str]:
     file_path_to_module_id = {}
+    for node in graph_object.nodes.values():
+        if node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE:
+            modules = node
     modules = [node for node in graph_object.nodes.values() if
                node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
     for modules_data in modules:
@@ -289,3 +295,25 @@ def setup_file_path_to_referred_id(graph_object: DiGraph) -> dict[str, str]:
             for path in module_content.get("__resolved__", []):
                 file_path_to_module_id[path] = f"module.{module_name}"
     return file_path_to_module_id
+
+
+def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
+    file_path_to_module_id = {}
+    for v in graph_object.vs:
+        if v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE:
+            modules = v
+    modules = [v for v in graph_object.vs if
+               v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
+    for module_vertex in modules:
+        module_name = module_vertex['name']
+        module_content = module_vertex['attr'].get(CustomAttributes.CONFIG, {})
+        for path in module_content.get('batch').get("__resolved__", []):
+            file_path_to_module_id[path] = f"module.{module_name}"
+    return file_path_to_module_id
+
+
+def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict[str, str]:
+    if isinstance(graph_object, igraph.Graph):
+        return get_file_path_to_referred_id_igraph(graph_object)
+    else:  # the default value of the graph framework is 'NETWORKX'
+        return get_file_path_to_referred_id_networkx(graph_object)

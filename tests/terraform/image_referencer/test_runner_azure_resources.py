@@ -1,5 +1,7 @@
 from pathlib import Path
+from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.output.report import CheckType
@@ -11,7 +13,8 @@ from tests.common.image_referencer.test_utils import mock_get_empty_license_stat
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-def test_batch_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch.tf"
     image_name = "centos7"
@@ -29,7 +32,8 @@ def test_batch_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -51,7 +55,8 @@ def test_batch_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_containers_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_containers_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "containers.tf"
     image_name_1 = "busybox"
@@ -71,7 +76,8 @@ def test_containers_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -96,7 +102,8 @@ def test_containers_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_linux_function_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_app_service_linux_function_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_linux_function.tf"
     image_name_1 = "azure-app-service/samples/aspnethelloworld:latest"
@@ -116,7 +123,8 @@ def test_app_service_linux_function_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -141,7 +149,8 @@ def test_app_service_linux_function_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_linux_web_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_app_service_linux_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_linux_web.tf"
     image_name_1 = "mcr.microsoft.com/appsvc/staticsite:latest"
@@ -161,7 +170,8 @@ def test_app_service_linux_web_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -186,7 +196,8 @@ def test_app_service_linux_web_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_spring_cloud_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_spring_cloud_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "spring_cloud.tf"
     image_name = "springio/gs-spring-boot-docker"
@@ -204,7 +215,8 @@ def test_spring_cloud_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -226,7 +238,8 @@ def test_spring_cloud_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_app_service_windows_web_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_app_service_windows_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_windows_web.tf"
     image_name_1 = "hello-world:latest"
@@ -246,7 +259,8 @@ def test_app_service_windows_web_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2

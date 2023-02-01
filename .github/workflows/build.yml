@@ -270,6 +270,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96  # v4
+        with:
+          images: ${{ env.DH_IMAGE_NAME }}
       - name: Build and export image to Docker
         # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
         # so it is built and loaded to Docker and in the next step pushed to the registry
@@ -278,6 +283,7 @@ jobs:
           context: .
           no-cache: true
           load: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
           tags: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
       - name: Push Docker image
         id: docker_push
