@@ -1,5 +1,6 @@
 import argparse
 import json
+import shutil
 import unittest
 
 import os
@@ -8,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from _pytest.capture import CaptureFixture
+from checkov.common.output.extra_resource import ExtraResource
 
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.check_type import CheckType
@@ -160,6 +162,59 @@ class TestRunnerRegistry(unittest.TestCase):
             self.assertEqual('Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
+
+    def test_csv_invulnerable_report(self):
+        report = Report('sca_package')
+        report.extra_resources.add(
+            ExtraResource(
+                file_abs_path='/package.json',
+                file_path='/package.json',
+                resource='package.json.babel-jest',
+                vulnerability_details={'package_name': 'babel-jest',
+                                       'package_version': '',
+                                       'licenses': 'Unknown',
+                                       'package_type': ''},
+            )
+        )
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        results_path_dir = Path(current_dir) / 'packages_csv_results'
+        if results_path_dir.exists() and results_path_dir.is_dir():
+            shutil.rmtree(results_path_dir)
+
+        os.mkdir(results_path_dir)
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=False,
+            output=['csv'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=str(results_path_dir),
+            use_enforcement_rules=None,
+            bc_api_key='121223'
+        )
+
+        # when
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(banner, runner_filter)
+        runner_registry.print_reports(scan_reports=[report], config=config)
+
+        oss_packages_csv_file_name = ""
+        for f in os.listdir(results_path_dir):
+            if f.endswith('oss_packages.csv'):
+                oss_packages_csv_file_name = f
+                break
+
+        assert oss_packages_csv_file_name
+
+        oss_packages_csv = open(f'{results_path_dir}/{oss_packages_csv_file_name}')
+        results = oss_packages_csv.read()
+        expected_results = 'Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses' \
+                           '\nbabel-jest,,/package.json,,,,,Unknown\n'
+
+        assert results == expected_results
+
 
     def test_run_with_empty_frameworks(self):
         # ensures that a run with a framework that gets filtered out (e.g. --framework terraform --file abc.yaml)
