@@ -5,7 +5,6 @@ import re
 from re import Pattern
 from typing import Any, TYPE_CHECKING
 
-from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 from detect_secrets.util.filetype import FileType
 from detect_secrets.plugins.keyword import DENYLIST
 from detect_secrets.plugins.keyword import AFFIX_REGEX
@@ -23,6 +22,7 @@ if TYPE_CHECKING:
     from checkov.secrets.parsers.multiline_parser import BaseMultiLineParser
     from detect_secrets.core.potential_secret import PotentialSecret
     from detect_secrets.util.code_snippet import CodeSnippet
+    from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
 
 MAX_KEYWORD_LIMIT = 500
 
