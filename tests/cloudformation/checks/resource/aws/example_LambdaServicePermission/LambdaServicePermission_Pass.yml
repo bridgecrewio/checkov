@@ -22,3 +22,21 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: TestFunction.Arn
       Principal: "9012345678"
+  
+  ExampleS3ServicePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: TestFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !GetAtt bucket.Arn
+  
+  ExampleEventsServicePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: TestFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !GetAtt bucket.Arn
