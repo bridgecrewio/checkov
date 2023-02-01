@@ -193,7 +193,7 @@ def detect_secret(
         scanners: tuple[HighEntropyStringsPlugin, ...],
         filename: str,
         line: str,
-        line_number: int,
+        line_number: int = 0,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
     for entropy_scanner in scanners:
@@ -207,7 +207,7 @@ def analyze_multiline(
         filename: str,
         scanners: tuple[HighEntropyStringsPlugin, ...],
         multiline_parser: BaseMultiLineParser,
-        line_number: int = 0,
+        line_number: int,
         context: CodeSnippet | None = None,
         raw_context: CodeSnippet | None = None,
         value_pattern: dict[Pattern[str], int] | None = None,
