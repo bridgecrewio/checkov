@@ -10,7 +10,8 @@ class CodeCategoryType:
     OPEN_SOURCE = "OPEN_SOURCE"
     SECRETS = "SECRETS"
     IMAGES = "IMAGES"
-    SUPPLY_CHAIN = "SUPPLY_CHAIN"
+    SUPPLY_CHAIN = "SUPPLY_CHAIN",
+    SAST = "SAST"
 
 
 CodeCategoryMapping = {
@@ -40,6 +41,7 @@ CodeCategoryMapping = {
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
+    CheckType.SAST: CodeCategoryType.SAST,
 }
 
 

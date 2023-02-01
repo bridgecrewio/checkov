@@ -73,6 +73,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+from checkov.sast.runner import Runner as sast_runner
 from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
@@ -113,6 +114,7 @@ DEFAULT_RUNNERS = [
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
     ansible_runner(),
+    sast_runner()
 ]
 
 
@@ -210,7 +212,8 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
                                  deep_analysis=config.deep_analysis,
-                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment,
+                                 sast_config=[])
 
     source_env_val = os.getenv('BC_SOURCE', 'cli')
     source = get_source_type(source_env_val)
@@ -651,7 +654,8 @@ class Checkov:
                 block_list_secret_scan=self.config.block_list_secret_scan,
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-                resource_attr_to_omit=self.config.mask
+                resource_attr_to_omit=self.config.mask,
+                sast_config=self.config.sast_config
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')

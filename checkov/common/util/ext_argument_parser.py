@@ -6,7 +6,7 @@ from typing import Any, TYPE_CHECKING, cast
 
 import configargparse
 
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, sast_types
 from checkov.common.runners.runner_registry import OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -211,7 +211,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--framework",
             help="Filter scan to run only on specific infrastructure code frameworks",
-            choices=checkov_runners + ["all"],
+            choices=checkov_runners + ["all"] + sast_types,
             default=["all"],
             env_var="CKV_FRAMEWORK",
             nargs="+",
@@ -513,4 +513,10 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "masking the desired attribute for resource (or for all resources, if no resource given)."
                  "Notice: one entry can contain several variables, seperated with a comma. For example:"
                  "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
+        )
+        self.add(
+            "--sast-config",
+            action="append",
+            default=[],
+            help=""
         )

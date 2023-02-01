@@ -29,7 +29,12 @@ class CheckType:
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
+    SAST = 'sast'
 
-
+class SastType:
+    SAST_PYTHON = 'sast_python'
 # needs to be at the end
+
+
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+sast_types = [value for attr, value in SastType.__dict__.items() if not attr.startswith("__")]
