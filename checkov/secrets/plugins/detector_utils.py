@@ -193,7 +193,7 @@ def detect_secret(
         scanners: tuple[HighEntropyStringsPlugin, ...],
         filename: str,
         line: str,
-        line_number: int = 0,
+        line_number: int,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
     for entropy_scanner in scanners:
@@ -221,7 +221,7 @@ def analyze_multiline(
     for possible_secret in value_secrets:
         secret_adjust = format_reducing_noise_secret(possible_secret)
 
-        entropy_on_value = detect_secret(
+        potential_secrets = detect_secret(
             scanners=scanners,
             filename=filename,
             line=secret_adjust,
@@ -229,7 +229,7 @@ def analyze_multiline(
             kwargs=kwargs
         )
 
-        if entropy_on_value:
+        if potential_secrets:
             possible_keywords: set[str] = set()
             backwards_range = range(context.target_index - 1, -1, -1)
             forward_range = range(context.target_index + 1, len(context.lines))
@@ -247,6 +247,6 @@ def analyze_multiline(
 
             for other_value in possible_keywords:
                 if extract_from_string(pattern=value_pattern, string=other_value):
-                    secrets |= entropy_on_value
+                    secrets |= potential_secrets
                     break
     return secrets
