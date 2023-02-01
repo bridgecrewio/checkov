@@ -1,10 +1,8 @@
-import unittest
 from unittest import mock
 
 import igraph
 import pytest
 from networkx import DiGraph
-from parameterized import parameterized_class
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
