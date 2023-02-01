@@ -7,6 +7,7 @@ BASIC_ROLES = [
     "roles/viewer",
 ]
 
+
 class AbsGoogleBasicRoles(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         self.evaluated_keys = ['role']
