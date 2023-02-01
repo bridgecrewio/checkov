@@ -243,6 +243,13 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 end_line = entity[END_LINE]
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
+                    if entity.get(CustomAttributes.BLOCK_NAME) == 'permissions' and start_line == 0 and end_line == 0:
+                        # reconstruct permissions start-end lines since we do not have that information during graph build
+                        for line in self.definitions_raw[entity_file_path]:
+                            if line and 'permissions' in line[1]:
+                                start_line = line[0]
+                                end_line = line[0]
+                                break
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
