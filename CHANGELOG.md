@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.320...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.327...HEAD)
+
+## [2.2.327](https://github.com/bridgecrewio/checkov/compare/2.2.320...2.2.327) - 2023-02-01
+
+### Feature
+
+- **gha:** add gha permissions lines - [#4372](https://github.com/bridgecrewio/checkov/pull/4372)
+- **sca:** add extract nodes igraph - [#4359](https://github.com/bridgecrewio/checkov/pull/4359)
+- **sca:** create bom report when extra_resources is not empty - [#4388](https://github.com/bridgecrewio/checkov/pull/4388)
+- **secrets:** add support for runnable secrets plugins - [#4368](https://github.com/bridgecrewio/checkov/pull/4368)
+- **terraform:** add CKV_GCP_114 to ensure that Public Access Prevention is enforced on GoogleCloudStorage bucket. - [#4347](https://github.com/bridgecrewio/checkov/pull/4347)
+- **terraform:** Add cloudsplaining checks to tf aws_iam_policy CKV_AWS_287-290 - [#4386](https://github.com/bridgecrewio/checkov/pull/4386)
+- **terraform:** get static foreach/count values of resources - [#4374](https://github.com/bridgecrewio/checkov/pull/4374)
 
 ## [2.2.320](https://github.com/bridgecrewio/checkov/compare/2.2.316...2.2.320) - 2023-01-31
 
