@@ -275,6 +275,9 @@ jobs:
         uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96  # v4
         with:
           images: ${{ env.DH_IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.authors=Bridgecrew
+            org.opencontainers.image.version=${{ needs.bump-version.outputs.version }}
       - name: Build and export image to Docker
         # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
         # so it is built and loaded to Docker and in the next step pushed to the registry
@@ -292,6 +295,7 @@ jobs:
           context: .
           platforms: 'linux/amd64,linux/arm64'
           push: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
           tags: |
             ${{ env.DH_IMAGE_NAME }}:latest
             ${{ env.DH_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}
