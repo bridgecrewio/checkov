@@ -279,6 +279,7 @@ class TestRunnerValid(unittest.TestCase):
 
         # then
         assert len(report.failed_checks) == 1
+        assert report.failed_checks[0].file_line_range == [7, 8]
         assert len(report.passed_checks) == 0
         assert len(report.skipped_checks) == 0
         assert len(report.parsing_errors) == 0
