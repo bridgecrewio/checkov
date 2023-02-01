@@ -16,11 +16,16 @@ class LambdaPermission(BaseResourceCheck):
         properties = conf.get('Properties')
         if properties is not None:
             principal = properties.get('Principal')
-            if 'amazonaws.com' in principal:
-                if properties.get('SourceArn') or properties.get('SourceAccount'):
-                    return CheckResult.PASSED
-                else:
-                    return CheckResult.FAILED
+            principal_parts = principal.split('.')
+            try:
+                if principal_parts[1] == 'amazonaws' and principal_parts[2] == 'com':
+                    if properties.get('SourceArn') or properties.get('SourceAccount'):
+                        return CheckResult.PASSED
+                    else:
+                        return CheckResult.FAILED
+            except IndexError:
+                # Not a service principal, so pass.
+                return CheckResult.PASSED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:

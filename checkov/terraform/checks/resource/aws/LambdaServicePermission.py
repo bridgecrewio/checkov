@@ -21,13 +21,17 @@ class LambdaServicePermission(BaseResourceCheck):
         # Replace this with the custom logic for your check
         principal = conf.get("principal", [])
         self.evaluated_keys = ["principal"]
-        if "amazonaws.com" in principal[0]:  # This confirms that the principal is set as a service principal.
-            if 'source_arn' in conf.keys() or 'source_account' in conf.keys():  # If either of these are set, we're good and the check should pass.
-                self.evaluated_keys = ["principal", "source_account", "source_arn"]
-                return CheckResult.PASSED
-            else:
-                self.evaluated_keys = ["principal", "source_account", "source_arn"]
-                return CheckResult.FAILED
+        principal_parts = principal[0].split('.')
+        try:
+            if principal_parts[1] == 'amazonaws' and principal_parts[2] == 'com':  # This confirms that the principal is set as a service principal.
+                if 'source_arn' in conf.keys() or 'source_account' in conf.keys():  # If either of these are set, we're good and the check should pass.
+                    self.evaluated_keys = ["principal", "source_account", "source_arn"]
+                    return CheckResult.PASSED
+                else:
+                    self.evaluated_keys = ["principal", "source_account", "source_arn"]
+                    return CheckResult.FAILED
+        except IndexError:
+            return CheckResult.PASSED
         return CheckResult.PASSED
 
 
