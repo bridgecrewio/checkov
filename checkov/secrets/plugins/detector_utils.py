@@ -196,14 +196,14 @@ def detect_secret(
         line_number: int = 0,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
-    for entropy_scanner in scanners:
-        matches = entropy_scanner.analyze_line(filename, line, line_number, **kwargs)
+    for scanner in scanners:
+        matches = scanner.analyze_line(filename, line, line_number, **kwargs)
         if matches:
             return matches
     return set()
 
 
-def analyze_multiline(
+def analyze_multiline_keyword_combinator(
         filename: str,
         scanners: tuple[HighEntropyStringsPlugin, ...],
         multiline_parser: BaseMultiLineParser,

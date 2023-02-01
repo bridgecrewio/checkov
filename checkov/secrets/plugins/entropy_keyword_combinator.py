@@ -18,7 +18,7 @@ from detect_secrets.plugins.base import BasePlugin
 
 from detect_secrets.util.filetype import determine_file_type
 from checkov.secrets.plugins.detector_utils import SINGLE_LINE_PARSER, MULTILINE_PARSERS, \
-    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, analyze_multiline
+    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, analyze_multiline_keyword_combinator
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 
@@ -187,7 +187,7 @@ class EntropyKeywordCombinator(BasePlugin):
                     value_keyword_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(parser_file_type)
                     secret_keyword_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(parser_file_type)
 
-                    potential_secrets = analyze_multiline(
+                    potential_secrets = analyze_multiline_keyword_combinator(
                         filename=filename,
                         scanners=self.high_entropy_scanners,
                         multiline_parser=multiline_parser,
