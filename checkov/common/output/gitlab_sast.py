@@ -79,7 +79,7 @@ class GitLabSast:
     def _create_iac_vulnerability(self, record: Record) -> dict[str, Any]:
         severity = record.severity.name.lower() if record.severity else ""
 
-        vulnerability = {
+        vulnerability: "dict[str, Any]" = {
             "id": str(uuid4()),
             "identifiers": [
                 {
@@ -118,7 +118,7 @@ class GitLabSast:
 
         severity = record.severity.name.lower() if record.severity else ""
 
-        vulnerability = {
+        vulnerability: "dict[str, Any]" = {
             "id": str(uuid4()),
             "identifiers": [
                 {
