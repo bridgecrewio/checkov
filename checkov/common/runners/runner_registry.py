@@ -312,10 +312,11 @@ class RunnerRegistry:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
-                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
-                    cyclonedx_reports.append(report)
                 if "gitlab_sast" in config.output:
                     gitlab_reports.append(report)
+            if not report.is_empty() or len(report.extra_resources):
+                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
+                    cyclonedx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
