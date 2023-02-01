@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum
-from typing import Dict, Any
+from typing import Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
@@ -19,20 +19,20 @@ from checkov.runner_filter import RunnerFilter
 class CVECheckAttribute(str, Enum):
     RISK_FACTORS = "risk_factors"
 
+
 class CVEReportAttribute(str, Enum):
     RISK_FACTORS = 'riskFactors'
+
 
 CVE_CHECK_TO_REPORT_ATTRIBUTE = {
     CVECheckAttribute.RISK_FACTORS: CVEReportAttribute.RISK_FACTORS
 }
 
-class Policy3dRunner(BasePostRunner):
+
+class Policy3dRunner(BasePostRunner[Base3dPolicyCheck]):
     check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
 
-    def __init__(self) -> None:
-        super().__init__()
-
-    def run(  # type:ignore[override]
+    def run(
             self,
             checks: list[Base3dPolicyCheck] | None = None,
             scan_reports: list[Report] | None = None,
@@ -92,8 +92,8 @@ class Policy3dRunner(BasePostRunner):
                                 iac_results_map[resource_id] = [record]
         return iac_results_map
 
-    def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Record]]:
-        cve_results_map: dict[str, list[Record]] = {}
+    def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[dict[str, Any]]]:
+        cve_results_map: dict[str, list[dict[str, Any]]] = {}
         if check.cve:
             cve_report = reports_by_fw.get(CheckType.SCA_IMAGE)
             if cve_report:
@@ -121,7 +121,13 @@ class Policy3dRunner(BasePostRunner):
                                 cve_results_map[image_related_resource] = matching_cves
         return cve_results_map
 
-    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, vulnerabilities: Dict[str, Any], check_result: CheckResult) -> Record:
+    def get_record(
+        self,
+        check: Base3dPolicyCheck,
+        iac_record: Record,
+        vulnerabilities: list[dict[str, Any]],
+        check_result: CheckResult,
+    ) -> Record:
         return Policy3dRecord(
             check_id=check.id,
             bc_check_id=check.bc_id,

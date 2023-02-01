@@ -3,14 +3,16 @@ from __future__ import annotations
 import itertools
 import logging
 from collections import defaultdict
-from typing import List, Dict, Any
+from typing import List, Dict, Any, TYPE_CHECKING
 
 from colorama import Style
 from prettytable import PrettyTable, SINGLE_BORDER
-from termcolor import colored
 
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.output.record import Record, DEFAULT_SEVERITY
+
+if TYPE_CHECKING:
+    from checkov.policies3d.Policy3dRecord import Policy3dRecord
 
 
 def compare_cve_severity(cve: Dict[str, str]) -> int:
@@ -18,10 +20,14 @@ def compare_cve_severity(cve: Dict[str, str]) -> int:
     return Severities[severity].level
 
 
-def create_cli_output( *cve_records: list[Record]) -> str:
-    cli_outputs = []
+def create_cli_output(*cve_records: list[Record | Policy3dRecord]) -> str:
+    cli_outputs: "list[str]" = []
 
     for record in itertools.chain(*cve_records):
+        if isinstance(record, Record):
+            # shouldn't happen
+            continue
+
         cli_outputs.append(record.to_string() + Style.RESET_ALL)
         if not record.vulnerabilities:
             #  this shouldn't happen
@@ -121,7 +127,7 @@ def create_package_overview_table_part(
         package_table.min_width = column_width
         package_table.max_width = column_width
 
-        for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
+        for line in package_table.get_string().splitlines(keepends=True):
             if package_idx > 0:
                 # hack to make multiple package tables look like one
                 line = line.replace(package_table.top_junction_char, package_table.junction_char)

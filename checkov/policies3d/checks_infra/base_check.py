@@ -7,6 +7,7 @@ from checkov.common.graph.checks_infra.enums import SolverType
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
+    from checkov.policies3d.runner import CVECheckAttribute
 
 
 class Base3dPolicyCheck:
@@ -20,4 +21,4 @@ class Base3dPolicyCheck:
         self.severity: Optional[Severity] = None
         self.bc_category: Optional[str] = None
         self.iac: Dict[str, Any] = {}
-        self.cve: Dict[str, Any] = {}
+        self.cve: Dict[CVECheckAttribute, Any] = {}
