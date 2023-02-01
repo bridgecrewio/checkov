@@ -79,19 +79,13 @@ class GitLabSast:
     def _create_iac_vulnerability(self, record: Record) -> dict[str, Any]:
         severity = record.severity.name.lower() if record.severity else ""
 
-        return {
+        vulnerability = {
             "id": str(uuid4()),
             "identifiers": [
                 {
                     "name": record.check_id,
                     "type": "checkov",
-                    "url": record.guideline,
                     "value": record.check_id,
-                }
-            ],
-            "links": [
-                {
-                    "url": record.guideline,
                 }
             ],
             "location": {
@@ -105,6 +99,17 @@ class GitLabSast:
             "solution": f"Further info can be found {record.guideline}",
         }
 
+        if record.guideline:
+            # url can't be None
+            vulnerability["identifiers"][0]["url"] = record.guideline
+            vulnerability["links"] = [
+                {
+                    "url": record.guideline,
+                }
+            ]
+
+        return vulnerability
+
     def _create_cve_vulnerability(self, record: Record) -> dict[str, Any] | None:
         details = record.vulnerability_details
         if not details:
@@ -113,19 +118,13 @@ class GitLabSast:
 
         severity = record.severity.name.lower() if record.severity else ""
 
-        return {
+        vulnerability = {
             "id": str(uuid4()),
             "identifiers": [
                 {
                     "name": record.short_description,
                     "type": "cve",
-                    "url": details.get("link"),
                     "value": details["id"],
-                }
-            ],
-            "links": [
-                {
-                    "url": details.get("link"),
                 }
             ],
             "location": {
@@ -136,6 +135,18 @@ class GitLabSast:
             "severity": SEVERITY_TO_GITLAB_LEVEL.get(severity, DEFAULT_SEVERITY_GITLAB_LEVEL),
             "solution": details.get("status"),
         }
+
+        link = details.get("link")
+        if link:
+            # url can't be None
+            vulnerability["identifiers"][0]["url"] = link
+            vulnerability["links"] = [
+                {
+                    "url": link,
+                }
+            ]
+
+        return vulnerability
 
     def _create_license_vulnerability(self, record: Record) -> dict[str, Any] | None:
         details = record.vulnerability_details
