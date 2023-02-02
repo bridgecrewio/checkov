@@ -113,7 +113,7 @@ class Runner(BaseRunner[None]):
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
-        work_path = os.getenv('WORKDIR', current_dir)
+        work_path = str(os.getenv('WORKDIR', current_dir))
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
