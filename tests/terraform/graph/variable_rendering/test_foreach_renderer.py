@@ -35,7 +35,7 @@ def test_static_foreach_resource(block_index, expected_res, obj):
     graph_manager = TerraformGraphManager('m', ['m'])
     local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=False)
     foreach_handler = ForeachHandler(local_graph)
-    res = foreach_handler._get_foreach_statement(block_index)
+    res = foreach_handler._get_static_foreach_statement(block_index)
     if obj:
         assert_object_equal(res, expected_res)
     else:
@@ -89,3 +89,20 @@ def test_foreach_resource():
             assert_object_equal(res[key], expected_res[key])
         else:
             assert res[key] == expected_res[key]
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
+def test_build_sub_graph():
+    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+    from checkov.terraform.graph_manager import TerraformGraphManager
+    dir_name = 'foreach_resources'
+    resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, 'resources', dir_name))
+
+    graph_manager = TerraformGraphManager('m', ['m'])
+    local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=False)
+    foreach_handler = ForeachHandler(local_graph)
+    blocks = [6, 7, 8, 9, 10, 21, 22, 24, 25]
+    sub_graph = foreach_handler._build_sub_graph(blocks)
+    assert all(sub_graph.vertices[i] for i in blocks)
+    assert not all(sub_graph.vertices[i] for i in range(len(sub_graph.vertices)))
+    assert len(sub_graph.edges) < len(local_graph.edges)

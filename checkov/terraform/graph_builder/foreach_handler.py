@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -14,6 +14,7 @@ from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform impor
 FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'
 REFERENCES_VALUES = r"(var|module|local)\."
+FOR_EACH_BLOCK_TYPE = TypeVar("FOR_EACH_BLOCK_TYPE", bound="dict[int, Optional[list[str] | dict[str, Any] | int]]")
 
 
 class ForeachHandler(object):
@@ -26,20 +27,19 @@ class ForeachHandler(object):
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
         block_index_to_statement = self._get_statements(resources_blocks)
-        # new_resources = self._create_new_foreach_resources(block_index_to_statement)
+        self._create_new_foreach_resources(block_index_to_statement)
 
-    def _get_statements(self, resources_blocks: list[int]) -> dict[int, Optional[list[str] | dict[str, Any] | int]]:
-        block_index_to_statement: dict[int, Optional[list[str] | dict[str, Any] | int]] = {}
+    def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
+        block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
         for block_index in resources_blocks:
-            foreach_statement = self._get_foreach_statement(block_index)
+            foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
-            # empty foreach_statement -> leave the main resource
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
         rendered_statements = self._handle_dynamic_statement(blocks_to_render)
         block_index_to_statement.update(rendered_statements)
         return block_index_to_statement
 
-    def _get_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
+    def _get_static_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
         attributes = self.local_graph.vertices[block_index].attributes
         if not attributes.get(FOREACH_STRING) and not attributes.get(COUNT_STRING):
             return
@@ -115,8 +115,8 @@ class ForeachHandler(object):
             return self._handle_static_count_statement(count_statement)
         return
 
-    def _handle_dynamic_statement(self, blocks_to_render: list[int]) -> dict[int, Optional[list[str] | dict[str, Any] | int]]:
-        rendered_statements_by_idx: dict[int, Optional[list[str] | dict[str, Any] | int]] = {}
+    def _handle_dynamic_statement(self, blocks_to_render: list[int]) -> FOR_EACH_BLOCK_TYPE:
+        rendered_statements_by_idx: FOR_EACH_BLOCK_TYPE = {}
         sub_graph = self._build_sub_graph(blocks_to_render)
         self._render_sub_graph(sub_graph, blocks_to_render)
         for block_idx in blocks_to_render:
@@ -137,10 +137,8 @@ class ForeachHandler(object):
         sub_graph = TerraformLocalGraph(self.local_graph.module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
-            if block.block_type == BlockType.RESOURCE and i not in blocks_to_render:
-                sub_graph.vertices[i] = {}
-            else:
-                sub_graph.vertices[i] = block  # type:ignore
+            if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
+                sub_graph.vertices[i] = block  # type: ignore
         sub_graph.edges = [
             edge for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
@@ -148,5 +146,5 @@ class ForeachHandler(object):
         sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
 
-    def _create_new_foreach_resources(self, block_index_to_statement: dict[int, Optional[list[str] | dict[str, Any] | int]]) -> None:
-        raise NotImplementedError
+    def _create_new_foreach_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
+        pass

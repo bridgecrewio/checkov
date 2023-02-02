@@ -62,9 +62,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if self.enable_foreach_handling:
-            foreach_handler = ForeachHandler(self)
-            foreach_handler.handle_foreach_rendering(self.foreach_blocks)
-            logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
+            try:
+                foreach_handler = ForeachHandler(self)
+                foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
+            except Exception as e:
+                logging.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
