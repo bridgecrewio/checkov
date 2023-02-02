@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, Any
 
-from checkov.policies3d.checks_infra.base_parser import Base3dPolicyCheckParser
-from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
+from checkov.policies_3d.checks_infra.base_parser import Base3dPolicyCheckParser
+from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
 
 
 class Policy3dParser(Base3dPolicyCheckParser):

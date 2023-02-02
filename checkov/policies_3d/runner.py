@@ -11,8 +11,8 @@ from checkov.common.output.report import Report
 
 from checkov.common.runners.base_post_runner import BasePostRunner
 from checkov.common.util.type_forcers import force_list
-from checkov.policies3d.record import Policy3dRecord
-from checkov.policies3d.checks_infra.base_check import Base3dPolicyCheck
+from checkov.policies_3d.record import Policy3dRecord
+from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
 
@@ -59,7 +59,7 @@ class Policy3dRunner(BasePostRunner):
         self.pbar.close()
         return report
 
-    def collect_check(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> list[Record]:
+    def collect_check(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> list[Policy3dRecord]:
         records = []
         iac_results_map = self.solve_check_iac(check, reports_by_fw)
         cve_results_map = self.solve_check_cve(check, reports_by_fw)
@@ -69,8 +69,8 @@ class Policy3dRunner(BasePostRunner):
                 if iac_resource == cve_resource:
                     # This means we found the combination on the same resource -> create a violation for that resource
                     check_result = CheckResult.FAILED
-                    iac_bc_check_ids = [record.bc_check_id for record in iac_records]
-                    record = self.get_record(check, iac_records[0], vulnerabilities, check_result, iac_bc_check_ids)
+                    iac_records = [record for record in iac_records]
+                    record = self.get_record(check, iac_records[0], vulnerabilities, check_result, iac_records)
                     record.set_guideline(check.guideline)
                     records.append(record)
 
@@ -123,7 +123,7 @@ class Policy3dRunner(BasePostRunner):
         return cve_results_map
 
     def get_record(self, check: Base3dPolicyCheck, iac_record: Record, vulnerabilities: Dict[str, Any],
-                   check_result: CheckResult, iac_bc_check_ids: list[str]) -> Record:
+                   check_result: CheckResult, iac_records: list[Record]) -> Policy3dRecord:
         return Policy3dRecord(
             check_id=check.id,
             bc_check_id=check.bc_id,
@@ -136,8 +136,7 @@ class Policy3dRunner(BasePostRunner):
             evaluations=None,
             check_class=check.__class__.__module__,
             file_abs_path=iac_record.file_abs_path,
-            entity_tags=None,
             severity=check.severity,
             vulnerabilities=vulnerabilities,
-            iac_bc_check_ids=iac_bc_check_ids
+            iac_records=iac_records
         )

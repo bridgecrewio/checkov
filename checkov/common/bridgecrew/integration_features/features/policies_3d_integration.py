@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
-from checkov.policies3d.checks_parser import Policy3dParser
-from checkov.policies3d.runner import Policy3dRunner
+from checkov.policies_3d.checks_parser import Policy3dParser
+from checkov.policies_3d.runner import Policy3dRunner
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration

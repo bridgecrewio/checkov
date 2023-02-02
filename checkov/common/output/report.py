@@ -25,7 +25,7 @@ from checkov.sca_package_2.output import create_cli_output as create_sca_package
 
 from checkov.sca_package.output import create_cli_output as create_sca_package_cli_output_v1
 
-from checkov.policies3d.output import create_cli_output as create_3d_policy_cli_output
+from checkov.policies_3d.output import create_cli_output as create_3d_policy_cli_output
 
 from checkov.version import version
 
@@ -228,7 +228,7 @@ class Report:
 
         elif self.check_type == CheckType.POLICY_3D:
             if self.failed_checks or self.skipped_checks:
-                output_data += create_3d_policy_cli_output(self.failed_checks, self.skipped_checks)
+                output_data += create_3d_policy_cli_output(self.failed_checks, self.skipped_checks)  # type:ignore[arg-type]
 
         else:
             if not is_quiet:

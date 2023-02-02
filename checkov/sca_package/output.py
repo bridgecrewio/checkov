@@ -8,9 +8,10 @@ from typing import List, Union, Dict, Any
 
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.output.common import compare_table_items_severity
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION
 from checkov.common.typing import _LicenseStatus
@@ -70,11 +71,6 @@ def calculate_lowest_compliant_version(
             return str(lowest_version)
 
     return UNFIXABLE_VERSION
-
-
-def compare_cve_severity(cve: Dict[str, str]) -> int:
-    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
-    return Severities[severity].level
 
 
 def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
@@ -147,7 +143,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     )
 
             if package_name in package_cves_details_map:
-                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[package_name]["cves"].sort(key=compare_table_items_severity, reverse=True)
                 package_cves_details_map[package_name]["current_version"] = package_version
                 package_cves_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
