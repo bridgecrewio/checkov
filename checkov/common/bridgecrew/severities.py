@@ -16,10 +16,11 @@ class BcSeverities:
     INFO = 'INFO'
     LOW = 'LOW'
     MEDIUM = 'MEDIUM'
+    MODERATE = 'MODERATE'
     HIGH = 'HIGH'
     CRITICAL = 'CRITICAL'
-    MODERATE = 'MODERATE'
     IMPORTANT = 'IMPORTANT'
+    UNIMPORTANT = 'UNIMPORTANT'
     OFF = 'OFF'
 
 
@@ -32,6 +33,7 @@ Severities = {
     BcSeverities.HIGH: Severity(BcSeverities.HIGH, 4),
     BcSeverities.IMPORTANT: Severity(BcSeverities.HIGH, 4),
     BcSeverities.CRITICAL: Severity(BcSeverities.CRITICAL, 5),
+    BcSeverities.UNIMPORTANT: Severity(BcSeverities.HIGH, 999),
     BcSeverities.OFF: Severity(BcSeverities.OFF, 999),
 }
 
