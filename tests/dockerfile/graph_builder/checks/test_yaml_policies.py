@@ -70,6 +70,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunRpmNoGpgCheck(self):
         self.go("RunRpmNoGpgCheck")
 
+    def test_RunRpmNoSignature(self):
+        self.go("RunRpmNoSignature")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
