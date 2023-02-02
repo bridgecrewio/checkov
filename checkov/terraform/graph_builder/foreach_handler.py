@@ -6,9 +6,7 @@ from typing import Any, Optional, TYPE_CHECKING, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
-
-if TYPE_CHECKING:
-    from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+import checkov.terraform.graph_builder.local_graph as l_graph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
 
 FOREACH_STRING = 'for_each'
@@ -18,7 +16,7 @@ FOR_EACH_BLOCK_TYPE = TypeVar("FOR_EACH_BLOCK_TYPE", bound="dict[int, Optional[l
 
 
 class ForeachHandler(object):
-    def __init__(self, local_graph: TerraformLocalGraph) -> None:
+    def __init__(self, local_graph: l_graph.TerraformLocalGraph) -> None:
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
@@ -70,7 +68,7 @@ class ForeachHandler(object):
             return True
         return False
 
-    def _is_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> bool:
+    def _is_static_statement(self, block_index: int, sub_graph: Optional[l_graph.TerraformLocalGraph] = None) -> bool:
         """
         foreach statement can be list/map of strings or map, if its string we need to render it for sure.
         """
@@ -105,7 +103,7 @@ class ForeachHandler(object):
             return evaluated_statement
         return
 
-    def _handle_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> Optional[list[str] | dict[str, Any] | int]:
+    def _handle_static_statement(self, block_index: int, sub_graph: Optional[l_graph.TerraformLocalGraph] = None) -> Optional[list[str] | dict[str, Any] | int]:
         attrs = self.local_graph.vertices[block_index].attributes if not sub_graph else sub_graph.vertices[block_index].attributes
         foreach_statement = attrs.get(FOREACH_STRING)
         count_statement = attrs.get(COUNT_STRING)
@@ -127,14 +125,13 @@ class ForeachHandler(object):
         return rendered_statements_by_idx
 
     @staticmethod
-    def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+    def _render_sub_graph(sub_graph: l_graph.TerraformLocalGraph, blocks_to_render: list[int]) -> None:
         renderer = TerraformVariableRenderer(sub_graph)
         renderer.vertices_index_to_render = blocks_to_render
         renderer.render_variables_from_local_graph()
 
-    def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
-        from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
-        sub_graph = TerraformLocalGraph(self.local_graph.module)
+    def _build_sub_graph(self, blocks_to_render: list[int]) -> l_graph.TerraformLocalGraph:
+        sub_graph = l_graph.TerraformLocalGraph(self.local_graph.module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
