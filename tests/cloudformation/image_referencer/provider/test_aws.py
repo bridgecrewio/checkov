@@ -1,10 +1,17 @@
+
+from unittest import mock
+
+import igraph
+import pytest
 from networkx import DiGraph
 
 from checkov.cloudformation.image_referencer.provider.aws import AwsCloudFormationProvider
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 
 
-def test_extract_images_from_resources():
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_extract_images_from_resources(graph_framework):
     # given
     resource = {
         "file_path_": "/ecs.yaml",
@@ -31,12 +38,23 @@ def test_extract_images_from_resources():
         ],
         "resource_type": "AWS::ECS::TaskDefinition",
     }
-    graph = DiGraph()
-    graph.add_node(1, **resource)
+    if graph_framework == 'IGRAPH':
+        graph = igraph.Graph()
+        attr = resource
+        graph.add_vertex(
+            name='1',
+            block_type_='resource',
+            resource_type=attr[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in attr else None,
+            attr=attr,
+        )
+    else:
+        graph = DiGraph()
+        graph.add_node(1, **resource)
 
     # when
-    aws_provider = AwsCloudFormationProvider(graph_connector=graph)
-    images = aws_provider.extract_images_from_resources()
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        aws_provider = AwsCloudFormationProvider(graph_connector=graph)
+        images = aws_provider.extract_images_from_resources()
 
     # then
     assert images == [
@@ -51,7 +69,8 @@ def test_extract_images_from_resources():
     ]
 
 
-def test_extract_images_from_resources_with_no_image():
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_extract_images_from_resources_with_no_image(graph_framework):
     # given
     resource = {
         "file_path_": "/ecs.yaml",
@@ -68,12 +87,24 @@ def test_extract_images_from_resources_with_no_image():
         ],
         "resource_type": "AWS::ECS::TaskDefinition",
     }
-    graph = DiGraph()
-    graph.add_node(1, **resource)
+    if graph_framework == 'IGRAPH':
+        graph = igraph.Graph()
+        attr = resource
+        graph.add_vertex(
+            name='1',
+            block_type_='resource',
+            resource_type=attr[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in attr else None,
+            attr=attr,
+        )
+    else:
+        graph = DiGraph()
+        graph.add_node(1, **resource)
 
     # when
-    aws_provider = AwsCloudFormationProvider(graph_connector=graph)
-    images = aws_provider.extract_images_from_resources()
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        aws_provider = AwsCloudFormationProvider(graph_connector=graph)
+        images = aws_provider.extract_images_from_resources()
 
     # then
     assert not images
+

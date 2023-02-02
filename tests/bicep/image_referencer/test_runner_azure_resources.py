@@ -1,5 +1,7 @@
 from pathlib import Path
+from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
@@ -15,7 +17,8 @@ from tests.common.image_referencer.test_utils import (
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-def test_batch_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -37,7 +40,8 @@ def test_batch_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -72,7 +76,8 @@ def test_batch_resources(mocker: MockerFixture):
     ]
 
 
-def test_container_instance_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_container_instance_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "container_instance.bicep"
     image_name_1 = "busybox"
@@ -92,7 +97,8 @@ def test_container_instance_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -117,7 +123,8 @@ def test_container_instance_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_web_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "web.bicep"
     image_name_1 = "nginx"
@@ -137,7 +144,8 @@ def test_web_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2

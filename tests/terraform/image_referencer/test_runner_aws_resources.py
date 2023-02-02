@@ -1,5 +1,7 @@
 from pathlib import Path
+from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
@@ -15,7 +17,8 @@ from tests.common.image_referencer.test_utils import (
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
-def test_apprunner_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -36,7 +39,8 @@ def test_apprunner_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -57,12 +61,12 @@ def test_apprunner_resources(mocker: MockerFixture):
         f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert (
-        sca_image_report.image_cached_results[0]["dockerImageName"]
-        == "public.ecr.aws/aws-containers/hello-app-runner:latest"
+            sca_image_report.image_cached_results[0]["dockerImageName"]
+            == "public.ecr.aws/aws-containers/hello-app-runner:latest"
     )
     assert (
-        "terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example"
-        in sca_image_report.image_cached_results[0]["relatedResourceId"]
+            "terraform/image_referencer/resources/aws/apprunner.tf:aws_apprunner_service.example"
+            in sca_image_report.image_cached_results[0]["relatedResourceId"]
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
@@ -74,8 +78,8 @@ def test_apprunner_resources(mocker: MockerFixture):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-
-def test_batch_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch.tf"
     image_name = "busybox"
@@ -93,7 +97,8 @@ def test_batch_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -114,8 +119,8 @@ def test_batch_resources(mocker: MockerFixture):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-
-def test_codebuild_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "codebuild.tf"
     image_name = "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0"
@@ -133,7 +138,8 @@ def test_codebuild_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -154,8 +160,8 @@ def test_codebuild_resources(mocker: MockerFixture):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-
-def test_ecs_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_ecs_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "ecs.tf"
     image_name_1 = "nginx"
@@ -175,7 +181,8 @@ def test_ecs_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -199,8 +206,8 @@ def test_ecs_resources(mocker: MockerFixture):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-
-def test_lightsail_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_lightsail_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "lightsail.tf"
     image_name = "amazon/amazon-lightsail:hello-world"
@@ -218,7 +225,8 @@ def test_lightsail_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2

@@ -1,5 +1,8 @@
-from pathlib import Path
 
+from pathlib import Path
+from unittest import mock
+
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
@@ -15,7 +18,8 @@ from tests.common.image_referencer.test_utils import (
 RESOURCES_PATH = Path(__file__).parent / "resources/gcp"
 
 
-def test_cloud_run_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_cloud_run_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -36,7 +40,8 @@ def test_cloud_run_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -58,8 +63,8 @@ def test_cloud_run_resources(mocker: MockerFixture):
     }
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == "gcr.io/cloudrun/hello"
     assert (
-        "terraform/image_referencer/resources/gcp/cloud_run.tf:google_cloud_run_service.example"
-        in sca_image_report.image_cached_results[0]["relatedResourceId"]
+            "terraform/image_referencer/resources/gcp/cloud_run.tf:google_cloud_run_service.example"
+            in sca_image_report.image_cached_results[0]["relatedResourceId"]
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
@@ -72,7 +77,8 @@ def test_cloud_run_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_cloud_run_v2_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_cloud_run_v2_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "cloud_run_v2.tf"
     image_name_1 = "gcr.io/cloudrun/job"
@@ -92,7 +98,8 @@ def test_cloud_run_v2_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -117,7 +124,8 @@ def test_cloud_run_v2_resources(mocker: MockerFixture):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_cloudbuild_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_cloudbuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "cloudbuild.tf"
     image_name_1 = "gcr.io/cloud-builders/gsutil"
@@ -137,7 +145,8 @@ def test_cloudbuild_resources(mocker: MockerFixture):
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
