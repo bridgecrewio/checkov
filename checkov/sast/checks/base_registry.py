@@ -41,4 +41,4 @@ class Registry(BaseCheckRegistry):
                             if lang in [l.value for l in sast_languages]:
                                 checks.add(os.path.join(root, file))
                                 break
-        self.checks = list(checks)
+        self.checks += list(checks)

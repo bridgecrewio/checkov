@@ -61,7 +61,8 @@ class Runner():
         
         registry.load_checks(runner_filter.sast_languages)
         if external_checks_dir:
-            registry.load_external_checks(external_checks_dir)
+            for external_checks in external_checks_dir:
+                registry.load_external_checks(external_checks, runner_filter.sast_languages)
 
         if root_folder:
             targets = [root_folder]
@@ -121,5 +122,3 @@ class Runner():
             code_block.append((index, line))
             index += 1
         return code_block
-        
-        

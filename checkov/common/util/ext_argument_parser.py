@@ -211,7 +211,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--framework",
             help="Filter scan to run only on specific infrastructure code frameworks",
-            choices=checkov_runners + ["all"] + sast_types,
+            choices=checkov_runners + sast_types + ["all"],
             default=["all"],
             env_var="CKV_FRAMEWORK",
             nargs="+",

@@ -11,3 +11,4 @@ class ExtendedEnum(Enum):
 class SastLanguages(ExtendedEnum):
     PYTHON = 'python'
     JAVA = 'java'
+    JAVASCRIPT = 'javascript'
