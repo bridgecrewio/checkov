@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import logging
 import semgrep.output_from_core as core
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.severities import get_severity
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
@@ -25,6 +27,12 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+
+SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY = {
+    RuleSeverity.ERROR: 'HIGH',
+    RuleSeverity.WARNING: 'MEDIUM',
+    RuleSeverity.INFO: 'LOW',
+}
 
 @dataclass
 class SemgrepOutput:
@@ -87,9 +95,31 @@ class Runner():
 
     def _get_report(self, semgrep_output: SemgrepOutput) -> Report:
         report = Report(self.check_type)
-        
         for rule, matches in semgrep_output.matches.items():
             for match in matches:
-                record = Record(check_id=rule.id, bc_check_id=None, check_name=None, check_result=None, code_block=None,
-                                file_path=None, file_line_range=None, resource=None, evaluations=None, check_class=None,
-                                file_abs_path=None, entity_tags=None, severity=None)
+                check_id = rule.id.split('.')[-1]
+                check_name = rule.metadata.get('name', '')
+                code_block = Runner._get_code_block(match.lines, match.start.line)
+                file_abs_path = match.match.location.path
+                file_path = file_abs_path.split('/')[-1]
+                severity = get_severity(SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY.get(rule.severity))
+                file_line_range = [match.start.line, match.end.line]
+                check_result = {'result': CheckResult.FAILED, 'evaluated_keys': {}}
+
+                record = Record(check_id=check_id, check_name=check_name, resource=None, evaluations={},
+                                check_class=None, check_result=check_result, code_block=code_block,
+                                file_path=file_path, file_line_range=file_line_range,
+                                file_abs_path=file_abs_path, severity=severity)
+                report.add_record(record)
+        return report
+    
+    @staticmethod
+    def _get_code_block(lines, start):
+        code_block = []
+        index = start
+        for line in lines:
+            code_block.append((index, line))
+            index += 1
+        return code_block
+        
+        
