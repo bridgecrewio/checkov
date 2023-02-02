@@ -8,4 +8,4 @@ definition:
       - RUN
     attribute: value
     operator: not_regex_match
-    value: ".*(apt-get[^\\|&;]*\\s+--allow-unauthenticated).*"
+    value: ".*(apt-get[^\\|&;]*\\s+--((allow-unauthenticated)|(force-yes))).*"
