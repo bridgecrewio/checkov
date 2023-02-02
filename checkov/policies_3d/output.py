@@ -17,23 +17,20 @@ from checkov.policies_3d.record import Policy3dRecord
 
 TABLE_WIDTH = 136
 
-def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
-    evaluation_message = ""
-    suppress_comment = ""
+def merge_line_with_previous_table(line, table):
+    # hack to make multiple package tables look like one
+    line = line.replace(table.top_junction_char, table.junction_char)
+    line = line.replace(table.top_left_junction_char, table.left_junction_char)
+    line = line.replace(table.top_right_junction_char, table.right_junction_char)
+    return line
 
+
+def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
+    suppress_comment = ""
     check_message = colored('Check: {}: "{}"\n'.format(record.get_output_id(use_bc_ids=True), record.check_name),
                             "white")
-    guideline_message = ""
-    if record.guideline:
-        guideline_message = (
-                "\tGuide: "
-                + Style.BRIGHT
-                + colored(f"{record.guideline}\n", "blue", attrs=["underline"])
-                + Style.RESET_ALL
-        )
-
+    guideline_message = Record.get_guideline_string(record.guideline)
     severity_message = f'\tSeverity: {record.severity.name}\n' if record.severity else ''
-
     resource_blocks = ''
     resource_block_ids = set()
 
@@ -44,41 +41,10 @@ def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
             continue
 
         resource_details = colored(f'\n\tResource: {iac_record.file_path}:{iac_record.resource}', attrs=['bold'])
-
-        code_lines = ""
-        if iac_record.code_block:
-            code_lines = "\n{}\n".format(
-                "".join([iac_record._code_line_string(iac_record.code_block, not (ANSI_COLORS_DISABLED))]))
-
-        detail = ""
-        if iac_record.details:
-            detail_buffer = [colored(f"\tDetails: {iac_record.details[0]}\n", "blue")]
-
-            for t in iac_record.details[1:]:
-                detail_buffer.append(colored(f"\t         {t}\n", "blue"))
-
-            detail = "".join(detail_buffer)
-
-        caller_file_details = ""
-        if iac_record.caller_file_path and iac_record.caller_file_line_range:
-            caller_file_details = colored(
-                "\tCalling File: {}:{}\n".format(
-                    record.caller_file_path, "-".join([str(x) for x in record.caller_file_line_range])
-                ),
-                "magenta",
-            )
-        if record.evaluations:
-            for (var_name, var_evaluations) in record.evaluations.items():
-                var_file = var_evaluations["var_file"]
-                var_definitions = var_evaluations["definitions"]
-                for definition_obj in var_definitions:
-                    definition_expression = definition_obj["definition_expression"]
-                    if record._is_expression_in_code_lines(definition_expression):
-                        evaluation_message = evaluation_message + colored(
-                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(var_evaluations["value"], "yellow")}" '
-                            f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
-                            "white",
-                        )
+        code_lines = Record.get_code_lines_string(iac_record.code_block)
+        detail = Record.get_details_string(iac_record.details)
+        caller_file_details = Record.get_caller_file_details_string(iac_record.caller_file_path, iac_record.caller_file_line_range)
+        evaluation_message = Record.get_evaluation_string(iac_record.evaluations)
 
         resource_blocks += f'{detail}{caller_file_details}{resource_details}{code_lines}{evaluation_message}'
         resource_block_ids.add(resource_id)
@@ -89,7 +55,7 @@ def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
     if record.check_result["result"] == CheckResult.SKIPPED:
         return f"{check_message}{severity_message}{suppress_comment}{guideline_message}"
     else:
-        return f"{check_message}{severity_message}{evaluation_message}{guideline_message}"
+        return f"{check_message}{severity_message}{guideline_message}"
 
 
 def create_cli_output( *records: list[Policy3dRecord]) -> str:
@@ -216,13 +182,8 @@ def create_package_overview_table_part(
         for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
             if package_idx > 0:
                 # hack to make multiple package tables look like one
-                line = line.replace(package_table.top_junction_char, package_table.junction_char)
-                line = line.replace(package_table.top_left_junction_char, package_table.left_junction_char)
-                line = line.replace(package_table.top_right_junction_char, package_table.right_junction_char)
-
-
+                line = merge_line_with_previous_table(line, package_table)
             package_table_lines.append(f"\t{line}")
-
 
     return package_table_lines
 
@@ -317,11 +278,7 @@ def create_iac_violations_overview_table_part(
 
         for idx, line in enumerate(iac_table.get_string().splitlines(keepends=True)):
             if resource_idx > 0:
-                # hack to make multiple package tables look like one
-                line = line.replace(iac_table.top_junction_char, iac_table.junction_char)
-                line = line.replace(iac_table.top_left_junction_char, iac_table.left_junction_char)
-                line = line.replace(iac_table.top_right_junction_char, iac_table.right_junction_char)
-
+                line = merge_line_with_previous_table(line, iac_table)
             iac_table_lines.append(f"\t{line}")
 
     return iac_table_lines

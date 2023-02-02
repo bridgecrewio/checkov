@@ -128,6 +128,7 @@ def test_create_complex_cli_output(policy_3d_record_multi_iac_multi_cve):
          '\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┘\n']
     )
 
+
 def test_create_empty_cli_output():
     # given
     records = []
