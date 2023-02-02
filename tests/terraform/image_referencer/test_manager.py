@@ -1,10 +1,16 @@
+from unittest import mock
+
+import igraph
+import pytest
 from networkx import DiGraph
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 
 
-def test_extract_images_from_resources():
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_extract_images_from_resources(graph_framework):
     # given
     aws_resource = {
         "file_path_": "/ecs.tf",
@@ -50,13 +56,39 @@ def test_extract_images_from_resources():
         },
         "resource_type": "google_cloud_run_service",
     }
-    graph = DiGraph()
-    graph.add_node(1, **aws_resource)
-    graph.add_node(2, **azure_resource)
-    graph.add_node(3, **gcp_resource)
+
+    if graph_framework == 'IGRAPH':
+        graph = igraph.Graph()
+        graph.add_vertex(
+            name='first',
+            block_type_='resource',
+            resource_type=aws_resource[
+                CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in aws_resource else None,
+            attr=aws_resource,
+        )
+        graph.add_vertex(
+            name='2',
+            block_type_='resource',
+            resource_type=azure_resource[
+                CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in azure_resource else None,
+            attr=azure_resource,
+        )
+        graph.add_vertex(
+            name='3',
+            block_type_='resource',
+            resource_type=gcp_resource[
+                CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in gcp_resource else None,
+            attr=gcp_resource,
+        )
+    else:
+        graph = DiGraph()
+        graph.add_node(1, **aws_resource)
+        graph.add_node(2, **azure_resource)
+        graph.add_node(3, **gcp_resource)
 
     # when
-    images = TerraformImageReferencerManager(graph_connector=graph).extract_images_from_resources()
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        images = TerraformImageReferencerManager(graph_connector=graph).extract_images_from_resources()
 
     # then
     assert images == [
@@ -76,3 +108,4 @@ def test_extract_images_from_resources():
             related_resource_id="/cloud_run.tf:None",
         ),
     ]
+

@@ -26,6 +26,7 @@ nav_order: 1
 | 15 | CKV_SECRET_17 | Stripe Access Key                | secrets  | Stripe Access Key                | secrets | https://github.com/bridgecrewio/checkov/blob/main/checkov/common/bridgecrew/integration_features/features/policy_metadata_integration.py |
 | 16 | CKV_SECRET_18 | Twilio API Key                   | secrets  | Twilio API Key                   | secrets | https://github.com/bridgecrewio/checkov/blob/main/checkov/common/bridgecrew/integration_features/features/policy_metadata_integration.py |
 | 17 | CKV_SECRET_19 | Hex High Entropy String          | secrets  | Hex High Entropy String          | secrets | https://github.com/bridgecrewio/checkov/blob/main/checkov/common/bridgecrew/integration_features/features/policy_metadata_integration.py |
+| 18 | CKV_SECRET_78 | Random High Entropy String       | secrets  | Random High Entropy String       | secrets | https://github.com/bridgecrewio/checkov/blob/main/checkov/common/bridgecrew/integration_features/features/policy_metadata_integration.py |
 
 
 ---
