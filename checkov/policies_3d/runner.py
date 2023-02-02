@@ -19,12 +19,15 @@ from checkov.runner_filter import RunnerFilter
 class CVECheckAttribute(str, Enum):
     RISK_FACTORS = "risk_factors"
 
+
 class CVEReportAttribute(str, Enum):
     RISK_FACTORS = 'riskFactors'
+
 
 CVE_CHECK_TO_REPORT_ATTRIBUTE = {
     CVECheckAttribute.RISK_FACTORS: CVEReportAttribute.RISK_FACTORS
 }
+
 
 class Policy3dRunner(BasePostRunner):
     check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
@@ -93,8 +96,8 @@ class Policy3dRunner(BasePostRunner):
                                 iac_results_map[resource_id] = [record]
         return iac_results_map
 
-    def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Record]]:
-        cve_results_map: dict[str, list[Record]] = {}
+    def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Dict[str, Any]]]:
+        cve_results_map: dict[str, list[Dict[str, Any]]] = {}
         if check.cve:
             cve_report = reports_by_fw.get(CheckType.SCA_IMAGE)
             if cve_report:
@@ -122,7 +125,7 @@ class Policy3dRunner(BasePostRunner):
                                 cve_results_map[image_related_resource] = matching_cves
         return cve_results_map
 
-    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, vulnerabilities: Dict[str, Any],
+    def get_record(self, check: Base3dPolicyCheck, iac_record: Record, vulnerabilities: list[Dict[str, Any]],
                    check_result: CheckResult, iac_records: list[Record]) -> Policy3dRecord:
         return Policy3dRecord(
             check_id=check.id,

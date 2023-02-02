@@ -7,13 +7,13 @@ from checkov.common.graph.checks_infra.enums import SolverType
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
-    from checkov.policies3d.runner import CVECheckAttribute
+    from checkov.policies_3d.runner import CVECheckAttribute
 
 
 class Base3dPolicyCheck:
     def __init__(self) -> None:
         self.id = ""
-        self.bc_id = None
+        self.bc_id = ""
         self.name = ""
         self.category = ""
         self.type: Optional[SolverType] = None

@@ -9,15 +9,16 @@ from colorama import Style
 from prettytable import PrettyTable, SINGLE_BORDER
 from termcolor import colored
 
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY, ANSI_COLORS_DISABLED
+from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.output.common import compare_table_items_severity
 from checkov.policies_3d.record import Policy3dRecord
 
 TABLE_WIDTH = 136
 
-def merge_line_with_previous_table(line, table):
+
+def merge_line_with_previous_table(line: str, table: PrettyTable) -> str:
     # hack to make multiple package tables look like one
     line = line.replace(table.top_junction_char, table.junction_char)
     line = line.replace(table.top_left_junction_char, table.left_junction_char)
@@ -44,7 +45,7 @@ def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
         code_lines = Record.get_code_lines_string(iac_record.code_block)
         detail = Record.get_details_string(iac_record.details)
         caller_file_details = Record.get_caller_file_details_string(iac_record.caller_file_path, iac_record.caller_file_line_range)
-        evaluation_message = Record.get_evaluation_string(iac_record.evaluations)
+        evaluation_message = Record.get_evaluation_string(iac_record.evaluations, iac_record.code_block)
 
         resource_blocks += f'{detail}{caller_file_details}{resource_details}{code_lines}{evaluation_message}'
         resource_block_ids.add(resource_id)
@@ -58,7 +59,7 @@ def create_iac_code_blocks_output(record: Policy3dRecord) -> str:
         return f"{check_message}{severity_message}{guideline_message}"
 
 
-def create_cli_output( *records: list[Policy3dRecord]) -> str:
+def create_cli_output(*records: list[Policy3dRecord]) -> str:
     cli_outputs = []
 
     for record in itertools.chain(*records):
@@ -74,7 +75,7 @@ def create_cli_output( *records: list[Policy3dRecord]) -> str:
         if cves_table:
             cli_outputs.append(cves_table + Style.RESET_ALL)
 
-        secrets_table = []
+        secrets_table = ''  # noqa: F841
         # TODO create a function for creating secrets table, when secrets get into 3d policies
         # Table should have the columns: Secret, Secrety Type, Violation ID, Validation Status (value in red)
 
@@ -91,7 +92,7 @@ def render_cve_output(record: Policy3dRecord) -> str | None:
 
     for cve in record.vulnerabilities:
         image_name = cve.get('dockerImageName')
-        package_name = cve.get('packageName')
+        package_name = cve.get('packageName', '')
         package_version = cve.get('packageVersion')
         severity_str = cve.get('severity', BcSeverities.NONE).upper()
 
@@ -179,13 +180,14 @@ def create_package_overview_table_part(
         package_table.min_width = column_width
         package_table.max_width = column_width
 
-        for idx, line in enumerate(package_table.get_string().splitlines(keepends=True)):
+        for line in package_table.get_string().splitlines(keepends=True):
             if package_idx > 0:
                 # hack to make multiple package tables look like one
                 line = merge_line_with_previous_table(line, package_table)
             package_table_lines.append(f"\t{line}")
 
     return package_table_lines
+
 
 def render_iac_violations_table(record: Policy3dRecord) -> str | None:
     if not record.iac_records:
@@ -197,11 +199,12 @@ def render_iac_violations_table(record: Policy3dRecord) -> str | None:
 
     for iac_record in record.iac_records:
         resource = iac_record.resource
+        severity = (iac_record.severity.name if iac_record.severity else DEFAULT_SEVERITY).upper()
         resource_violation_details_map[resource].setdefault('violations', []).append(
             {
                 'id': iac_record.bc_check_id,
                 'title': iac_record.check_name,
-                'severity': iac_record.severity.name
+                'severity': severity
             }
         )
 
@@ -217,6 +220,7 @@ def render_iac_violations_table(record: Policy3dRecord) -> str | None:
         )
 
     return None
+
 
 def create_iac_violations_table(file_path: str, resource_violation_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 5  # it really has only 4 columns, but the title would get a width of two columns
@@ -271,12 +275,15 @@ def create_iac_violations_overview_table_part(
 
         iac_table.align = "l"
         # the column widths are manipulated here with -2s so all the printed tables have eventually the same width
-        iac_table.min_width = column_width - 2
-        iac_table.max_width = column_width - 2
-        iac_table.min_width['Title'] = 2 * column_width - 2
-        iac_table.max_width['Title'] = 2 * column_width - 2
+        regular_width = column_width - 2
+        double_width = 2 * column_width - 2
 
-        for idx, line in enumerate(iac_table.get_string().splitlines(keepends=True)):
+        iac_table.min_width = regular_width
+        iac_table.max_width = regular_width
+        iac_table.min_width['Title'] = double_width  # type:ignore[index]
+        iac_table.max_width['Title'] = double_width  # type:ignore[index]
+
+        for line in iac_table.get_string().splitlines(keepends=True):
             if resource_idx > 0:
                 line = merge_line_with_previous_table(line, iac_table)
             iac_table_lines.append(f"\t{line}")

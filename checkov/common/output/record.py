@@ -106,7 +106,7 @@ class Record:
         return "".join(re.findall(re.compile(r"[^ ${\}]+"), expression))
 
     @staticmethod
-    def _is_expression_in_code_lines(expression: str, code_block) -> bool:
+    def _is_expression_in_code_lines(expression: str, code_block: List[Tuple[int, str]]) -> bool:
         stripped_expression = Record._trim_special_chars(expression)
         return any(stripped_expression in Record._trim_special_chars(line) for (_, line) in code_block)
 
@@ -129,7 +129,7 @@ class Record:
         return "".join(code_output)
 
     @staticmethod
-    def get_guideline_string(guideline) -> str:
+    def get_guideline_string(guideline: Optional[str]) -> str:
         if guideline:
             return (
                 "\tGuide: "
@@ -140,13 +140,13 @@ class Record:
         return ''
 
     @staticmethod
-    def get_code_lines_string(code_block) -> str:
+    def get_code_lines_string(code_block: List[Tuple[int, str]]) -> str:
         if code_block:
             return "\n{}\n".format("".join([Record._code_line_string(code_block, not (ANSI_COLORS_DISABLED))]))
         return ''
 
     @staticmethod
-    def get_details_string(details) -> str:
+    def get_details_string(details: List[str]) -> str:
         if details:
             detail_buffer = [colored(f"\tDetails: {details[0]}\n", "blue")]
             for t in details[1:]:
@@ -155,7 +155,7 @@ class Record:
         return ''
 
     @staticmethod
-    def get_caller_file_details_string(caller_file_path, caller_file_line_range) -> str:
+    def get_caller_file_details_string(caller_file_path: Optional[str], caller_file_line_range: Optional[Tuple[int, int]]) -> str:
         if caller_file_path and caller_file_line_range:
             return colored(
                 "\tCalling File: {}:{}\n".format(
@@ -166,7 +166,7 @@ class Record:
         return ''
 
     @staticmethod
-    def get_evaluation_string(evaluations, code_block) -> str:
+    def get_evaluation_string(evaluations: Optional[Dict[str, Any]], code_block: List[Tuple[int, str]]) -> str:
         if evaluations:
             for (var_name, var_evaluations) in evaluations.items():
                 var_file = var_evaluations["var_file"]
