@@ -5,6 +5,8 @@ import re
 from typing import Any, Optional, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -23,12 +25,19 @@ class ForeachHandler(object):
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
+        block_index_to_statement = self._get_statements(resources_blocks)
+        # new_resources = self._create_new_foreach_resources(block_index_to_statement)
+
+    def _get_statements(self, resources_blocks: list[int]) -> dict[int, Optional[list[str] | dict[str, Any] | int]]:
+        block_index_to_statement: dict[int, Optional[list[str] | dict[str, Any] | int]] = {}
         for block_index in resources_blocks:
             foreach_statement = self._get_foreach_statement(block_index)
+            block_index_to_statement[block_index] = foreach_statement
             # empty foreach_statement -> leave the main resource
-            if foreach_statement is None:
-                continue
-            # new_resources = self._create_new_foreach_resources(i, foreach_statement)
+        blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
+        rendered_statements = self._handle_dynamic_statement(blocks_to_render)
+        block_index_to_statement.update(rendered_statements)
+        return block_index_to_statement
 
     def _get_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
         attributes = self.local_graph.vertices[block_index].attributes
@@ -38,7 +47,6 @@ class ForeachHandler(object):
             if self._is_static_statement(block_index):
                 return self._handle_static_statement(block_index)
             else:
-                # TODO implement foreach statement rendering
                 return None
         except Exception as e:
             logging.info(f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
@@ -62,11 +70,11 @@ class ForeachHandler(object):
             return True
         return False
 
-    def _is_static_statement(self, block_index: int) -> bool:
+    def _is_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> bool:
         """
         foreach statement can be list/map of strings or map, if its string we need to render it for sure.
         """
-        block = self.local_graph.vertices[block_index]
+        block = self.local_graph.vertices[block_index] if not sub_graph else sub_graph.vertices[block_index]
         foreach_statement = evaluate_terraform(block.attributes.get(FOREACH_STRING))
         count_statement = evaluate_terraform(block.attributes.get(COUNT_STRING))
         if foreach_statement:
@@ -97,8 +105,8 @@ class ForeachHandler(object):
             return evaluated_statement
         return
 
-    def _handle_static_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any] | int]:
-        attrs = self.local_graph.vertices[block_index].attributes
+    def _handle_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> Optional[list[str] | dict[str, Any] | int]:
+        attrs = self.local_graph.vertices[block_index].attributes if not sub_graph else sub_graph.vertices[block_index].attributes
         foreach_statement = attrs.get(FOREACH_STRING)
         count_statement = attrs.get(COUNT_STRING)
         if foreach_statement:
@@ -107,5 +115,38 @@ class ForeachHandler(object):
             return self._handle_static_count_statement(count_statement)
         return
 
-    def _create_new_foreach_resources(self, block_index: int, foreach_statement: list[str] | dict[str, Any]) -> None:
+    def _handle_dynamic_statement(self, blocks_to_render: list[int]) -> dict[int, Optional[list[str] | dict[str, Any] | int]]:
+        rendered_statements_by_idx: dict[int, Optional[list[str] | dict[str, Any] | int]] = {}
+        sub_graph = self._build_sub_graph(blocks_to_render)
+        self._render_sub_graph(sub_graph, blocks_to_render)
+        for block_idx in blocks_to_render:
+            if not self._is_static_statement(block_idx, sub_graph):
+                rendered_statements_by_idx[block_idx] = None
+            else:
+                rendered_statements_by_idx[block_idx] = self._handle_static_statement(block_idx, sub_graph)
+        return rendered_statements_by_idx
+
+    @staticmethod
+    def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
+        renderer = TerraformVariableRenderer(sub_graph)
+        renderer.vertices_index_to_render = blocks_to_render
+        renderer.render_variables_from_local_graph()
+
+    def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
+        from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+        sub_graph = TerraformLocalGraph(self.local_graph.module)
+        sub_graph.vertices = [{}] * len(self.local_graph.vertices)
+        for i, block in enumerate(self.local_graph.vertices):
+            if block.block_type == BlockType.RESOURCE and i not in blocks_to_render:
+                sub_graph.vertices[i] = {}
+            else:
+                sub_graph.vertices[i] = block  # type:ignore
+        sub_graph.edges = [
+            edge for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
+        ]
+        sub_graph.in_edges = self.local_graph.in_edges
+        sub_graph.out_edges = self.local_graph.out_edges
+        return sub_graph
+
+    def _create_new_foreach_resources(self, block_index_to_statement: dict[int, Optional[list[str] | dict[str, Any] | int]]) -> None:
         raise NotImplementedError

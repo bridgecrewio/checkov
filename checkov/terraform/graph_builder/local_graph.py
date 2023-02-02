@@ -19,7 +19,7 @@ from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.graph_builder.foreach_handler import ForeachHandler, FOREACH_STRING
+from checkov.terraform.graph_builder.foreach_handler import ForeachHandler, FOREACH_STRING, COUNT_STRING
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -99,7 +99,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.in_edges[i] = []
             self.out_edges[i] = []
 
-            if self.enable_foreach_handling and FOREACH_STRING in block.attributes and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
+            if self.enable_foreach_handling and (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes) \
+                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
