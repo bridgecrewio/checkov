@@ -35,7 +35,11 @@ class Registry(BaseCheckRegistry):
                 if file_ending not in CHECKS_POSSIBLE_ENDING:
                     continue
                 with open(os.path.join(root, file), "r") as f:
-                    rules = yaml.safe_load(f).get('rules', [])
+                    try:
+                        rules = yaml.safe_load(f).get('rules', [])
+                    except Exception:
+                        logging.warning(f'cant parse rule file {file}')
+                        continue
                     for rule in rules:
                         for lang in rule.get('languages', []):
                             if lang in [l.value for l in sast_languages]:
