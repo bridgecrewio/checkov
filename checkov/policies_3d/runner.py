@@ -94,6 +94,12 @@ class Policy3dRunner(BasePostRunner):
                                 iac_results_map[resource_id].append(record)
                             else:
                                 iac_results_map[resource_id] = [record]
+
+                    # the following implements the AND logic for the list of iac expected check ids
+                    for resource in list(iac_results_map.keys()):
+                        if len(iac_results_map[resource]) != len(bc_check_ids):
+                            del iac_results_map[resource]
+
         return iac_results_map
 
     def solve_check_cve(self, check: Base3dPolicyCheck, reports_by_fw: dict[str, Report]) -> dict[str, list[Dict[str, Any]]]:

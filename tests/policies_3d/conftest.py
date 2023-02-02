@@ -64,6 +64,15 @@ def k8s_report(k8s_record_1, k8s_record_2, k8s_record_3) -> Report:
     report.add_record(k8s_record_3)
     return report
 
+
+@pytest.fixture()
+def k8s_report_2(k8s_record_1, k8s_record_3) -> Report:
+    report = Report(check_type='kubernetes')
+    report.add_record(k8s_record_1)
+    report.add_record(k8s_record_3)
+    return report
+
+
 @pytest.fixture()
 def cve_1() -> dict[str, Any]:
     return {'cveId': 'CVE-2022-42898', 'status': 'fixed in 1.19.2-2ubuntu0.1', 'severity': 'medium',
@@ -104,6 +113,10 @@ def sca_image_report(sca_image_cached_results) -> Report:
 @pytest.fixture()
 def scan_reports(k8s_report, sca_image_report) -> list[Report]:
     return [k8s_report, sca_image_report]
+
+@pytest.fixture()
+def scan_reports_2(k8s_report_2, sca_image_report) -> list[Report]:
+    return [k8s_report_2, sca_image_report]
 
 
 @pytest.fixture()
