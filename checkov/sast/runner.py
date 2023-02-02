@@ -13,7 +13,7 @@ from checkov.sast.checks.registry import registry
 from semgrep.semgrep_main import main as run_semgrep
 from semgrep.output import OutputSettings, OutputHandler
 from semgrep.constants import OutputFormat, RuleSeverity
-from semgrep.rule_match import RuleMatchMap
+from semgrep.rule_match import RuleMatchMap, RuleMatch
 from semgrep.target_manager import FileTargetingLog
 from semgrep.profile_manager import ProfileManager
 from semgrep.profiling import ProfilingData
@@ -69,9 +69,12 @@ class Runner():
         if files:
             targets = files
         config = registry.checks
+        if not config:
+            logger.warning('no valid checks')
+            return Report(self.check_type)
         
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        report = self._get_report(semgrep_output)
+        report = self._get_report(semgrep_output.matches)
         return report
 
     @staticmethod
@@ -94,9 +97,9 @@ class Runner():
                                        parsing_data, explanations, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
 
-    def _get_report(self, semgrep_output: SemgrepOutput) -> Report:
+    def _get_report(self, filtered_matches_by_rule: Dict[Rule, List[RuleMatch]]) -> Report:
         report = Report(self.check_type)
-        for rule, matches in semgrep_output.matches.items():
+        for rule, matches in filtered_matches_by_rule.items():
             for match in matches:
                 check_id = rule.id.split('.')[-1]
                 check_name = rule.metadata.get('name', '')

@@ -5,6 +5,7 @@ from collections import defaultdict
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities, Severity
+from checkov.common.sast.enums import SastLanguages
 from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 
@@ -731,6 +732,17 @@ class TestRunnerFilter(unittest.TestCase):
 
         for k, v in combined_file_real_parsed_content.items():
             assert v == runner_filter.resource_attr_to_omit.get(k)
+    
+    def test_get_sast_languages(self):
+        sast_langs = RunnerFilter.get_sast_languages(['sast'])
+        assert SastLanguages.PYTHON in sast_langs
+        assert SastLanguages.JAVA in sast_langs
+        assert SastLanguages.JAVASCRIPT in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['sast_python'])
+        assert SastLanguages.PYTHON in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_javascript'])
+        assert SastLanguages.PYTHON in sast_langs
+        assert SastLanguages.JAVASCRIPT in sast_langs
 
 
 if __name__ == '__main__':
