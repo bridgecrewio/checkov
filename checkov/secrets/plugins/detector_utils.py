@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from checkov.secrets.parsers.multiline_parser import BaseMultiLineParser
     from detect_secrets.core.potential_secret import PotentialSecret
     from detect_secrets.util.code_snippet import CodeSnippet
-    from detect_secrets.plugins.high_entropy_strings import HighEntropyStringsPlugin
+    from detect_secrets.plugins.base import BasePlugin
 
 MAX_KEYWORD_LIMIT = 500
 
@@ -190,7 +190,7 @@ def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) ->
 
 
 def detect_secret(
-        scanners: tuple[HighEntropyStringsPlugin, ...],
+        scanners: tuple[BasePlugin, ...],
         filename: str,
         line: str,
         line_number: int = 0,
@@ -205,7 +205,7 @@ def detect_secret(
 
 def analyze_multiline_keyword_combinator(
         filename: str,
-        scanners: tuple[HighEntropyStringsPlugin, ...],
+        scanners: tuple[BasePlugin, ...],
         multiline_parser: BaseMultiLineParser,
         line_number: int,
         context: CodeSnippet | None = None,
