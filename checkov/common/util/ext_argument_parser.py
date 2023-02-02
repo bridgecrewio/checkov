@@ -514,9 +514,3 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Notice: one entry can contain several variables, seperated with a comma. For example:"
                  "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
         )
-        self.add(
-            "--sast-config",
-            action="append",
-            default=[],
-            help=""
-        )

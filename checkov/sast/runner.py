@@ -7,6 +7,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
+from checkov.sast.checks.registry import registry
 from semgrep.semgrep_main import main as run_semgrep
 from semgrep.output import OutputSettings, OutputHandler
 from semgrep.constants import OutputFormat, RuleSeverity
@@ -27,19 +28,18 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class SemgrepOutput:
-    matches: RuleMatchMap = None
-    errors: List[SemgrepError] = []
-    all_targets: Set[Path] = set()
-    renamed_targets: Set[Path] = set()
-    target_manager_ignore_log: FileTargetingLog = None
-    filtered_rules: List[Rule] = []
-    profiler: ProfileManager = None
-    profiling_data: ProfilingData = None
-    parsing_data: ParsingData = None
-    explanations: List[core.MatchingExplanation] = []
-    shown_severities: Collection[RuleSeverity] = None
-    target_manager_lockfile_scan_info:  Dict[str, int] = {}
-
+    matches: RuleMatchMap
+    errors: List[SemgrepError]
+    all_targets: Set[Path]
+    renamed_targets: Set[Path]
+    target_manager_ignore_log: FileTargetingLog
+    filtered_rules: List[Rule]
+    profiler: ProfileManager
+    profiling_data: ProfilingData
+    parsing_data: ParsingData
+    explanations: List[core.MatchingExplanation]
+    shown_severities: Collection[RuleSeverity]
+    target_manager_lockfile_scan_info: Dict[str, int]
 
 
 class Runner():
@@ -47,29 +47,26 @@ class Runner():
 
     def run(self, root_folder: str | None, external_checks_dir: list[str] | None = None, files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None, collect_skip_comments: bool = True) -> Report:
-        report = Report(self.check_type)
-
-        output_settings = OutputSettings(output_format=OutputFormat.JSON)
         StringIO()
+        output_settings = OutputSettings(output_format=OutputFormat.JSON)
         output_handler = OutputHandler(output_settings)
+        
+        registry.load_checks(runner_filter.sast_languages)
+        if external_checks_dir:
+            registry.load_external_checks(external_checks_dir)
 
         if root_folder:
             targets = [root_folder]
         if files:
             targets = files
-
-        config = runner_filter.sast_config
+        config = registry.checks
         
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-
-        record = Record(check_id=None, bc_check_id=None, check_name=None, check_result=None, code_block=None,
-                        file_path=None, file_line_range=None, resource=None, evaluations=None, check_class=None,
-                        file_abs_path=None, entity_tags=None, severity=None)
-
+        report = self._get_report(semgrep_output)
         return report
 
     @staticmethod
-    def _get_semgrep_output(targets, config, output_handler) -> SemgrepOutput:
+    def _get_semgrep_output(targets: List[str], config: List[str], output_handler: OutputHandler) -> SemgrepOutput:
         (filtered_matches_by_rule,
          semgrep_errors,
          all_targets,
@@ -87,3 +84,12 @@ class Runner():
                                        target_manager_ignore_log, filtered_rules, profiler, profiling_data,
                                        parsing_data, explanations, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
+
+    def _get_report(self, semgrep_output: SemgrepOutput) -> Report:
+        report = Report(self.check_type)
+        
+        for rule, matches in semgrep_output.matches.items():
+            for match in matches:
+                record = Record(check_id=rule.id, bc_check_id=None, check_name=None, check_result=None, code_block=None,
+                                file_path=None, file_line_range=None, resource=None, evaluations=None, check_class=None,
+                                file_abs_path=None, entity_tags=None, severity=None)

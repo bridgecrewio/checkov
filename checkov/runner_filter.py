@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
+from checkov.common.bridgecrew.check_type import CheckType
 
 from checkov.secrets.consts import ValidationStatus
 
@@ -13,6 +14,7 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeC
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.common.sast.enums import SastLanguages
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -48,8 +50,7 @@ class RunnerFilter(object):
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
-            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
-            sast_config: Optional[List[str]] = None
+            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -128,7 +129,10 @@ class RunnerFilter(object):
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit
         )
-        self.sast_config = sast_config
+        self.sast_languages: Optional[List[SastLanguages]] = RunnerFilter.get_sast_languages(framework)
+        if self.sast_languages:
+            self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
+            self.framework.append(CheckType.SAST)
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
@@ -340,3 +344,17 @@ class RunnerFilter(object):
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
         logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions
+
+    @staticmethod
+    def get_sast_languages(frameworks):
+        langs = set()
+        for framework in frameworks:
+            if framework == CheckType.SAST:
+                for lang in SastLanguages:
+                    langs.add(lang)
+                return list(langs)
+            if not framework.startswith(CheckType.SAST):
+                continue
+            lang = '_'.join(framework.split('_')[1:])
+            langs.add(SastLanguages[lang.upper()])
+        return list(langs)
