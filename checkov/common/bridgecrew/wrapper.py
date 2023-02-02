@@ -4,6 +4,7 @@ import logging
 import os
 import json
 import itertools
+from io import StringIO
 from typing import Any, TYPE_CHECKING
 from collections import defaultdict
 
@@ -12,6 +13,7 @@ import dpath.util
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
+from checkov.common.util.file_utils import compress_string_io_tar
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -101,8 +103,19 @@ def persist_run_metadata(
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
+
     except Exception:
         logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        raise
+
+
+def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: str, full_repo_object_key: str) -> None:
+    file_io = compress_string_io_tar(logs_stream)
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.tar.gz'
+    try:
+        s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
+    except Exception:
+        logging.error(f"failed to persist logs stream into S3 bucket {bucket}", exc_info=True)
         raise
 
 
