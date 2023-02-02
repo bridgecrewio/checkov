@@ -108,7 +108,7 @@ def render_cve_output(record: Policy3dRecord) -> str | None:
             package_cves_details_map[package_name]["current_version"] = package_version
             package_cves_details_map[package_name]["image_name"] = image_name
 
-    if len(package_cves_details_map.keys()):
+    if package_cves_details_map:
         return (
             create_cli_cves_table(
                 file_path=record.file_path,
