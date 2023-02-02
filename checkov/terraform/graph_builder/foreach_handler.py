@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Optional, TYPE_CHECKING, TypeVar
+from typing import Any, Optional, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
