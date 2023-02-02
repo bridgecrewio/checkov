@@ -170,8 +170,16 @@ class Scanner:
             input_path: Path,
     ) -> Dict[str, Any]:
         output_path = Path(f'results-{input_path.name}.json')
-
-        command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} coderepo scan --address {docker_image_scanning_integration.get_proxy_address()} --token {docker_image_scanning_integration.get_bc_api_key()} --details --output-file \"{output_path}\" {input_path}"
+        if bc_integration.prisma_cloud_compute_url:
+            address = bc_integration.prisma_cloud_compute_url
+            username, password = bc_integration.bc_api_key.split('::')
+            authentication = f"--user {username} --password {password}"
+        else:
+            address = docker_image_scanning_integration.get_proxy_address()
+            token = docker_image_scanning_integration.get_bc_api_key()
+            authentication = f"--token {token}"
+        command = f"{Path(bridgecrew_dir) / TWISTCLI_FILE_NAME} coderepo scan --address {address} {authentication} --details --output-file \"{output_path}\" {input_path}"
+        logging.debug(f"TwistCLI: {command}")
         process = await asyncio.create_subprocess_shell(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )

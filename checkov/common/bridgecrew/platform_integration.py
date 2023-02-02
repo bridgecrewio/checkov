@@ -100,6 +100,7 @@ class BcPlatformIntegration:
         self.scan_reports: list[Report] = []
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
         self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.prisma_cloud_compute_url: str | None = None
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
@@ -168,7 +169,7 @@ class BcPlatformIntegration:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
         if not self.bc_api_key:
             # should usually not happen
-            raise ValueError("A Prisma Cloud or Birdgecrew token was not set")
+            raise ValueError("A Prisma Cloud or Bridgecrew token was not set")
         if '::' not in self.bc_api_key:
             raise ValueError(
                 "A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
@@ -179,7 +180,7 @@ class BcPlatformIntegration:
                                     body=json.dumps({"username": username, "password": password}),
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
-            logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
+            logging.error(f'Received 401 response from the Prisma Cloud login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
@@ -209,6 +210,23 @@ class BcPlatformIntegration:
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
                 self.http = urllib3.PoolManager()
+
+    def get_prisma_cloud_compute_url(self) -> str:
+        """
+        Use the Prisma Cloud API to identify the the user's Prisma Cloud Compute Tenant
+        Allowing us to execute twistcli image scans against the user's Prisma Cloud Compute Tenant
+        Allowing image scans to honor the user's Defend > Images > Vulnerabilities > Rules
+        Allowing users to view image scan results in Monitor > Vulnerabilities > Images > CI
+        """
+        token = self.get_auth_token()
+        request = self.http.request("GET", f"{self.prisma_api_url}/meta_info",  # type:ignore[no-untyped-call]
+                                    headers=merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers()))
+        if request.status != 200:
+            error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+            logging.error(error_message)
+            raise BridgecrewAuthError(error_message)
+        url: str = json.loads(request.data.decode("utf8"))['twistlockUrl']
+        return url
 
     def setup_bridgecrew_credentials(
         self,
@@ -243,7 +261,9 @@ class BcPlatformIntegration:
             if self.prisma_api_url == PRISMA_GOV_API_URL:
                 region = GOV_CLOUD_REGION
                 use_accelerate_endpoint = False
-            logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
+            logging.info(f'Using Prisma Cloud API URL: {self.prisma_api_url}')
+            self.prisma_cloud_compute_url = self.get_prisma_cloud_compute_url()
+            logging.info(f'Using Prisma Cloud Compute URL: {self.prisma_cloud_compute_url}')
 
         if self.bc_source and self.bc_source.upload_results:
             try:
