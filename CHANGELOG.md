@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.327...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.330...HEAD)
+
+## [2.2.330](https://github.com/bridgecrewio/checkov/compare/2.2.327...2.2.330) - 2023-02-02
+
+### Feature
+
+- **sca:** Add a --support flag   - [#4397](https://github.com/bridgecrewio/checkov/pull/4397)
+- **sca:** Add a --support flag --revert - [#4396](https://github.com/bridgecrewio/checkov/pull/4396)
+- **secrets:** add workdir info to secrets scanner - [#4400](https://github.com/bridgecrewio/checkov/pull/4400)
+- **secrets:** extract new detector_utils file from entropy keyword combinator - [#4385](https://github.com/bridgecrewio/checkov/pull/4385)
+
+### Bug Fix
+
+- **general:** Remove empty links from GitLab SAST output - [#4393](https://github.com/bridgecrewio/checkov/pull/4393)
 
 ## [2.2.327](https://github.com/bridgecrewio/checkov/compare/2.2.320...2.2.327) - 2023-02-01
 
