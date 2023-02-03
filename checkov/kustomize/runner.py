@@ -25,6 +25,7 @@ from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kustomize.utils import get_kustomize_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -283,39 +284,31 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         if shutil.which(self.kubectl_command) is not None:
             try:
-                proc = subprocess.Popen([self.kubectl_command, 'version', '--client=true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
+                proc = subprocess.run([self.kubectl_command, 'version', '--client=true'], capture_output=True)  # nosec
+                version_output = proc.stdout.decode("utf-8")
 
-                if "Client Version:" in oString:
-                    kubectlVersionMajor = oString.split('\n')[0].split('Major:\"')[1].split('"')[0]
-                    kubectlVersionMinor = oString.split('\n')[0].split('Minor:\"')[1].split('"')[0]
-                    kubectlVersion = float(f"{kubectlVersionMajor}.{kubectlVersionMinor}")
-                    if kubectlVersion >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectlVersion}")
+                if "Client Version:" in version_output:
+                    kubectl_version_major = version_output.split('\n')[0].split('Major:\"')[1].split('"')[0]
+                    kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
+                    kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
+                    if kubectl_version >= 1.14:
+                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
                         self.templateRendererCommand = self.kubectl_command
                         return None
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e.decode()}")
+                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
 
         elif shutil.which(self.kustomize_command) is not None:
-            try:
-                proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
-
-                if "Version:" in oString:
-                    kustomizeVersionOutput = oString[oString.find('/') + 1: oString.find('G') - 1]
-                    logging.info(f"Found working version of {self.check_type} dependancy {self.kustomize_command}: {kustomizeVersionOutput}")
-                    self.templateRendererCommand = self.kustomize_command
-                    return None
-                else:
-                    return self.check_type
-
-            except Exception:
-                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e.decode()}")
-
+            kustomize_version = get_kustomize_version(kustomize_command=self.kubectl_command)
+            if kustomize_version:
+                logging.info(
+                    f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
+                )
+                self.templateRendererCommand = self.kustomize_command
+                return None
+            else:
+                return self.check_type
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
