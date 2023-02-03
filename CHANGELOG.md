@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.330...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.331...HEAD)
+
+## [2.2.331](https://github.com/bridgecrewio/checkov/compare/2.2.330...2.2.331) - 2023-02-03
+
+### Bug Fix
+
+- **general:** fix compact json output - [#4406](https://github.com/bridgecrewio/checkov/pull/4406)
 
 ## [2.2.330](https://github.com/bridgecrewio/checkov/compare/2.2.327...2.2.330) - 2023-02-02
 
