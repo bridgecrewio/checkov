@@ -8,4 +8,4 @@ definition:
       - RUN
     attribute: value
     operator: not_regex_match
-    value: ".*(rpm[^\\|&;]*\\s+--no((digest)|(signature)|(verify))).*"
+    value: ".*(rpm[^\\|&;]*\\s+--no((digest)|(signature)|(verify)|(filedigest))).*"

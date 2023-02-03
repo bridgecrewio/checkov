@@ -7,3 +7,5 @@ RUN rpm -i python3.rpm ;\
     echo "--nodigest"
 RUN rpm -i python3.rpm ;\
     echo "--noverify"
+RUN rpm -i python3.rpm ||\
+    echo "--nofiledigest"

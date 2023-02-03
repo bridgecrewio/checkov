@@ -7,10 +7,6 @@ pass:
   - 'pass/Dockerfile.RUN'
   - 'pass/Dockerfile.RUN'
   - 'pass/Dockerfile.RUN'
-  - 'pass/Dockerfile.RUN'
-  - 'pass/Dockerfile.RUN'
-  - 'pass/Dockerfile.RUN'
-  - 'pass/Dockerfile.RUN'
 fail:
   - 'fail/Dockerfile.yum.RUN'
   - 'fail/Dockerfile.yum.RUN'
@@ -22,10 +18,5 @@ fail:
   - 'fail/Dockerfile.dnf.RUN'
   - 'fail/Dockerfile.dnf.RUN'
   - 'fail/Dockerfile.dnf.RUN'
-  - 'fail/Dockerfile.rpm.RUN'
-  - 'fail/Dockerfile.rpm.RUN'
-  - 'fail/Dockerfile.rpm.RUN'
-  - 'fail/Dockerfile.rpm.RUN'
-  - 'fail/Dockerfile.rpm.RUN'
 evaluated_keys:
   - 'value'

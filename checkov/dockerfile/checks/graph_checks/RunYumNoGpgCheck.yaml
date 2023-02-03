@@ -8,4 +8,4 @@ definition:
       - RUN
     attribute: value
     operator: not_regex_match
-    value: ".*(((rpm)|(dnf)|(yum))[^\\|&;]*\\s+--nogpgcheck).*"
+    value: ".*(((dnf)|(yum))[^\\|&;]*\\s+--nogpgcheck).*"

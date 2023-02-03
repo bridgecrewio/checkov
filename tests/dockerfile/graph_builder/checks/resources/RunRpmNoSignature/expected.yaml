@@ -4,7 +4,9 @@ pass:
   - 'pass/Dockerfile.RUN'
   - 'pass/Dockerfile.RUN'
   - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
 fail:
+  - 'fail/Dockerfile.RUN'
   - 'fail/Dockerfile.RUN'
   - 'fail/Dockerfile.RUN'
   - 'fail/Dockerfile.RUN'
