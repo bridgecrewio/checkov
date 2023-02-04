@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import subprocess
+import subprocess  # nosec
 
 
 def get_kustomize_version(kustomize_command: str) -> str | None:
