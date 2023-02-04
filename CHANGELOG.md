@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.331...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.332...HEAD)
+
+## [2.2.332](https://github.com/bridgecrewio/checkov/compare/2.2.331...2.2.332) - 2023-02-04
+
+### Bug Fix
+
+- **cloudformation:** Don't fail Aurora instances for MultiAZ not being set - [#4316](https://github.com/bridgecrewio/checkov/pull/4316)
 
 ## [2.2.331](https://github.com/bridgecrewio/checkov/compare/2.2.330...2.2.331) - 2023-02-03
 
