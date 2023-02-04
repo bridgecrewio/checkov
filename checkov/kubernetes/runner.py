@@ -27,6 +27,7 @@ from checkov.kubernetes.kubernetes_utils import (
     get_resource_id,
     K8_POSSIBLE_ENDINGS,
     PARENT_RESOURCE_ID_KEY_NAME,
+    create_check_result,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -258,10 +259,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_context = self.get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
-                clean_check_result: _CheckResult = {
-                    "result": check_result["result"],
-                    "evaluated_keys": check_result["evaluated_keys"],
-                }
+                clean_check_result = create_check_result(
+                    check_result=check_result, entity_context=entity_context, check_id=check.id
+                )
 
                 record = Record(
                     check_id=check.id,
