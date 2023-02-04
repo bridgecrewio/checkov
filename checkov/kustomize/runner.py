@@ -300,7 +300,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
 
         elif shutil.which(self.kustomize_command) is not None:
-            kustomize_version = get_kustomize_version(kustomize_command=self.kubectl_command)
+            kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
             if kustomize_version:
                 logging.info(
                     f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
