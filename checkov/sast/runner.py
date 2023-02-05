@@ -1,8 +1,7 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 import logging
-import semgrep.output_from_core as core
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.models.enums import CheckResult
@@ -10,20 +9,24 @@ from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.sast.checks.registry import registry
-from semgrep.semgrep_main import main as run_semgrep
-from semgrep.output import OutputSettings, OutputHandler
-from semgrep.constants import OutputFormat, RuleSeverity
-from semgrep.rule_match import RuleMatchMap, RuleMatch
-from semgrep.target_manager import FileTargetingLog
-from semgrep.profile_manager import ProfileManager
-from semgrep.profiling import ProfilingData
-from semgrep.parsing_data import ParsingData
-from semgrep.error import SemgrepError
-from semgrep.rule import Rule
-
-from typing import Collection, List, Set, Dict
+from typing import Collection, List, Set, Dict, TYPE_CHECKING
 from io import StringIO
 from pathlib import Path
+
+
+if TYPE_CHECKING:
+    import semgrep.output_from_core as core
+    from semgrep.semgrep_main import main as run_semgrep
+    from semgrep.output import OutputSettings, OutputHandler
+    from semgrep.constants import OutputFormat, RuleSeverity
+    from semgrep.rule_match import RuleMatchMap, RuleMatch
+    from semgrep.target_manager import FileTargetingLog
+    from semgrep.profile_manager import ProfileManager
+    from semgrep.profiling import ProfilingData
+    from semgrep.parsing_data import ParsingData
+    from semgrep.error import SemgrepError
+    from semgrep.rule import Rule
+
 
 logger = logging.getLogger(__name__)
 
