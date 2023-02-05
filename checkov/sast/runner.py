@@ -12,7 +12,7 @@ from checkov.sast.checks.registry import registry
 from semgrep.semgrep_main import main as run_semgrep
 from semgrep.output import OutputSettings, OutputHandler
 from semgrep.constants import OutputFormat, RuleSeverity
-from typing import Collection, List, Set, Dict, TYPE_CHECKING
+from typing import Collection, List, Set, Dict, Tuple, TYPE_CHECKING
 from io import StringIO
 from pathlib import Path
 
@@ -122,19 +122,19 @@ class Runner():
         return report
 
     @staticmethod
-    def _get_code_block(lines, start):
+    def _get_code_block(lines: List[str], start: int) -> List[Tuple[int, str]]:
         code_block = []
         index = start
         for line in lines:
             code_block.append((index, line))
             index += 1
         return Runner._cut_code_block_ident(code_block)
-    
+
     @staticmethod
-    def _cut_code_block_ident(code_block):
-        min_ident =  len(code_block[0][1]) - len(code_block[0][1].lstrip())
+    def _cut_code_block_ident(code_block: List[Tuple[int, str]]) -> List[Tuple[int, str]]:
+        min_ident = len(code_block[0][1]) - len(code_block[0][1].lstrip())
         for item in code_block[1:]:
-            current_min_ident =  len(item[1]) - len(item[1].lstrip())
+            current_min_ident = len(item[1]) - len(item[1].lstrip())
             if current_min_ident < min_ident:
                 min_ident = current_min_ident
 
