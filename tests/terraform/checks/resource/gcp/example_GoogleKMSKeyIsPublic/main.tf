@@ -65,6 +65,14 @@ HERE
 }
 
 
+resource "google_kms_crypto_key_iam_policy" "pass3" {
+  crypto_key_id = google_kms_crypto_key.pass.id
+  policy_data   = <<HERE
+    "bindings"
+HERE
+}
+
+
 resource "google_kms_crypto_key_iam_binding" "pass" {
   crypto_key_id = google_kms_crypto_key.key.id
   role          = "roles/cloudkms.cryptoKeyEncrypter"
