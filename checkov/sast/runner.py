@@ -34,6 +34,7 @@ SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY = {
     RuleSeverity.INFO: 'LOW',
 }
 
+
 @dataclass
 class SemgrepOutput:
     matches: RuleMatchMap
@@ -58,7 +59,7 @@ class Runner():
         StringIO()
         output_settings = OutputSettings(output_format=OutputFormat.JSON)
         output_handler = OutputHandler(output_settings)
-        
+
         registry.load_checks(runner_filter.sast_languages)
         if external_checks_dir:
             for external_checks in external_checks_dir:
@@ -72,7 +73,7 @@ class Runner():
         if not config:
             logger.warning('no valid checks')
             return Report(self.check_type)
-        
+
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
         report = self._get_report(semgrep_output.matches)
         return report
@@ -116,7 +117,7 @@ class Runner():
                                 file_abs_path=file_abs_path, severity=severity)
                 report.add_record(record)
         return report
-    
+
     @staticmethod
     def _get_code_block(lines, start):
         code_block = []

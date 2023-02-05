@@ -31,11 +31,12 @@ class CheckType:
     TERRAFORM_PLAN = "terraform_plan"
     SAST = 'sast'
 
+
 class SastType:
     SAST_PYTHON = 'sast_python'
     SAST_JAVA = 'sast_java'
     SAST_JAVASCRIPT = 'sast_javascript'
-    
+
 
 # needs to be at the end
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]

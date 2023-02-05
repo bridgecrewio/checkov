@@ -20,7 +20,7 @@ class Registry(BaseCheckRegistry):
 
     def load_checks(self, sast_languages: List[SastLanguages]) -> None:
         self._load_checks_from_dir(self.checks_dir, sast_languages)
-        
+
     def load_external_checks(self, dir: str, sast_languages: List[SastLanguages]) -> None:
         self._load_checks_from_dir(dir, sast_languages)
 
@@ -42,7 +42,7 @@ class Registry(BaseCheckRegistry):
                         continue
                     for rule in rules:
                         for lang in rule.get('languages', []):
-                            if lang in [l.value for l in sast_languages]:
+                            if lang in [lan.value for lan in sast_languages]:
                                 checks.add(os.path.join(root, file))
                                 break
         self.checks += list(checks)
