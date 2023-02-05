@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Generator
+from typing import Generator, Optional
 from typing import Any
 from typing import TYPE_CHECKING
 from typing import Pattern
@@ -195,6 +195,8 @@ class EntropyKeywordCombinator(BasePlugin):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
+            is_added: Optional[bool] = None,
+            is_removed: Optional[bool] = None,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         if len(line) > MAX_LINE_LENGTH:

@@ -39,6 +39,8 @@ class CustomRegexDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
+            is_added: Optional[bool] = None,
+            is_removed: Optional[bool] = None,
             **kwargs: Any
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it."""
