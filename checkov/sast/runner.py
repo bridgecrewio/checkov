@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.models.enums import CheckResult
@@ -9,6 +9,9 @@ from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.sast.checks.registry import registry
+from semgrep.semgrep_main import main as run_semgrep
+from semgrep.output import OutputSettings, OutputHandler
+from semgrep.constants import OutputFormat, RuleSeverity
 from typing import Collection, List, Set, Dict, TYPE_CHECKING
 from io import StringIO
 from pathlib import Path
@@ -16,9 +19,6 @@ from pathlib import Path
 
 if TYPE_CHECKING:
     import semgrep.output_from_core as core
-    from semgrep.semgrep_main import main as run_semgrep
-    from semgrep.output import OutputSettings, OutputHandler
-    from semgrep.constants import OutputFormat, RuleSeverity
     from semgrep.rule_match import RuleMatchMap, RuleMatch
     from semgrep.target_manager import FileTargetingLog
     from semgrep.profile_manager import ProfileManager
