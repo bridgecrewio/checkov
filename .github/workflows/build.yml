@@ -54,8 +54,6 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
-        with:
-          kustomize-version: 4.x
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
