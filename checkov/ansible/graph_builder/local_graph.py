@@ -73,7 +73,6 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 # ex. ansible.builtin.command: cat /etc/passwd
                 config = {SELF_REFERENCE: config}
 
-
             attributes = deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
