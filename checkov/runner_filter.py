@@ -346,7 +346,9 @@ class RunnerFilter(object):
         self.suppressed_policies = policy_level_suppressions
 
     @staticmethod
-    def get_sast_languages(frameworks):
+    def get_sast_languages(frameworks: Optional[List[str]]) -> Optional[List[SastLanguages]]:
+        if not framework:
+            return []
         langs = set()
         for framework in frameworks:
             if framework == CheckType.SAST:
