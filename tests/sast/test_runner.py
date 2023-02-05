@@ -112,3 +112,12 @@ def test_sast_runner():
     assert report.failed_checks[2].file_abs_path == os.path.join(source, 'aa.java')
     assert report.failed_checks[2].file_line_range == [40, 40]
     assert report.failed_checks[2].check_result.get('result') == CheckResult.FAILED
+    
+
+def test_code_block_cut_ident():
+    code_block = [(1, '    def aa():'), [2, '        hi = 0']]
+    code_block_cut_ident = Runner._cut_code_block_ident(code_block)
+    assert code_block_cut_ident[0][0] == 1
+    assert code_block_cut_ident[0][1] == 'def aa():'
+    assert code_block_cut_ident[1][0] == 2
+    assert code_block_cut_ident[1][1] == '    hi = 0'
