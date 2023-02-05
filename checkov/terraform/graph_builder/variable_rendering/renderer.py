@@ -80,7 +80,10 @@ class TerraformVariableRenderer(VariableRenderer):
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
-        origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
+        try:
+            origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
+        except AttributeError:
+            return
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         referenced_vertices = get_referenced_vertices_in_value(
