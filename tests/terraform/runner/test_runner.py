@@ -1114,6 +1114,19 @@ class TestRunnerValid(unittest.TestCase):
         self.assertFalse(found_inside)
         self.assertFalse(found_outside)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_nested_modules_caller_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=f"{current_dir}/resources/nested_modules_caller_file",
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(len(report.passed_checks), 0)
+        record = report.failed_checks[0]
+        self.assertIsNotNone(record.caller_file_path)
+        self.assertIsNotNone(record.caller_file_line_range)
+
     def test_module_failure_reporting_772(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
