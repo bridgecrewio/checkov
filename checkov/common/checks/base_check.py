@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+import os
 from abc import abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any, Callable, Optional
 
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckResult, CheckCategories, CheckFailLevel
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
 
@@ -40,6 +41,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
         self.details: List[str] = []
+        self.check_fail_level = os.environ.get('CHECKOV_CHECK_FAIL_LEVEL', CheckFailLevel.ERROR)
 
     def run(
         self,
@@ -76,9 +78,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
                 self.logger.debug(message)
 
             except Exception:
-                self.logger.error(
-                    f"Failed to run check: {self.name} for configuration: {entity_configuration} at file: {scanned_file}"
-                )
+                self.log_check_error(scanned_file=scanned_file, entity_type=entity_type, entity_name=entity_name,
+                                     entity_configuration=entity_configuration)
                 raise
         return check_result
 
@@ -109,3 +110,12 @@ class BaseCheck(metaclass=MultiSignatureMeta):
 
     def get_output_id(self, use_bc_ids: bool) -> str:
         return self.bc_id if self.bc_id and use_bc_ids else self.id
+
+    def log_check_error(self, scanned_file: str, entity_type: str, entity_name: str,
+                        entity_configuration: Dict[str, List[Any]]) -> None:
+        if self.check_fail_level == CheckFailLevel.ERROR:
+            logging.error(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}',
+                          exc_info=True)
+        if self.check_fail_level == CheckFailLevel.WARNING:
+            logging.warning(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}')
+        logging.info(f'Entity configuration: {entity_configuration}')
