@@ -35,7 +35,7 @@ def test_sast_runner_get_semgrep_output():
     checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks')
     source_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
     output = runner._get_semgrep_output([source_dir], [checks_dir], output_handler)
-    a = 0
+    assert 1 == 2
 
 
 def test_sast_runner_create_report():
