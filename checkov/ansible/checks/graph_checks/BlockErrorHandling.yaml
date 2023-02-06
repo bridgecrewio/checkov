@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_ANSIBLE_3"
+  name: "Ensure block is handling task errors properly"
+  category: "BACKUP_AND_RECOVERY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - block
+  attribute: rescue
+  operator: exists
