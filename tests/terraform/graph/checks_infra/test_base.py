@@ -2,7 +2,7 @@ import os
 from unittest import TestCase
 from unittest import mock
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -17,7 +17,7 @@ class TestBaseSolver(TestCase):
             self.graph_framework = "NETWORKX"
         with mock.patch.dict(os.environ, {"CHECKOV_GRAPH_FRAMEWORK": self.graph_framework}):
             self.source = "Terraform"
-            self.registry = Registry(parser=NXGraphCheckParser(), checks_dir=self.checks_dir)
+            self.registry = Registry(parser=GraphCheckParser(), checks_dir=self.checks_dir)
             self.registry.load_checks()
             self.runner = Runner(external_registries=[self.registry])
 

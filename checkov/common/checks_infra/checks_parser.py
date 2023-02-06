@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
 from checkov.common.checks_infra.solvers import (
@@ -52,7 +53,8 @@ from checkov.common.checks_infra.solvers import (
     NumberOfWordsGreaterThanAttributeSolver,
     NumberOfWordsGreaterThanOrEqualAttributeSolver,
     NumberOfWordsLessThanAttributeSolver,
-    NumberOfWordsLessThanOrEqualAttributeSolver, NotWithinAttributeSolver,
+    NumberOfWordsLessThanOrEqualAttributeSolver,
+    NotWithinAttributeSolver,
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
@@ -147,7 +149,41 @@ condition_type_to_solver_type = {
 JSONPATH_PREFIX = "jsonpath_"
 
 
-class NXGraphCheckParser(BaseGraphCheckParser):
+class GraphCheckParser(BaseGraphCheckParser):
+    def validate_check_config(self, file_path: str, raw_check: dict[str, dict[str, Any]]) -> bool:
+        missing_fields = []
+
+        # check existence of metadata block
+        if "metadata" in raw_check:
+            metadata = raw_check["metadata"]
+            if "id" not in metadata:
+                missing_fields.append("metadata.id")
+            if "name" not in metadata:
+                missing_fields.append("metadata.name")
+            if "category" not in metadata:
+                missing_fields.append("metadata.category")
+        else:
+            missing_fields.extend(("metadata.id", "metadata.name", "metadata.category"))
+
+        # check existence of definition block
+        if "definition" not in raw_check:
+            missing_fields.append("definition")
+
+        if missing_fields:
+            logging.warning(f"Custom policy {file_path} is missing required fields {', '.join(missing_fields)}")
+            return False
+
+        # check if definition block is not obviously invalid
+        definition = raw_check["definition"]
+        if not isinstance(definition, (list, dict)):
+            logging.warning(
+                f"Custom policy {file_path} has an invalid 'definition' block type '{type(definition).__name__}', "
+                "needs to be either a 'list' or 'dict'"
+            )
+            return False
+
+        return True
+
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
         policy_definition = raw_check.get("definition", {})
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"))
@@ -251,6 +287,11 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         if not solver:
             raise NotImplementedError(f"solver type {check.type} with operator {check.operator} is not supported")
         return solver
+
+
+class NXGraphCheckParser(GraphCheckParser):
+    # TODO: delete after downstream adjustments
+    pass
 
 
 def get_complex_operator(raw_check: Dict[str, Any]) -> Optional[str]:
