@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import logging
 import re
+from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 import checkov.terraform.graph_builder.local_graph as l_graph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -13,6 +16,9 @@ FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'
 REFERENCES_VALUES = r"(var|module|local)\."
 FOR_EACH_BLOCK_TYPE = TypeVar("FOR_EACH_BLOCK_TYPE", bound="dict[int, Optional[list[str] | dict[str, Any] | int]]")
+COUNT_KEY = 'count.index'
+EACH_KEY = 'each.key'
+EACH_VALUE = 'each.value'
 
 
 class ForeachHandler(object):
@@ -143,5 +149,75 @@ class ForeachHandler(object):
         sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
 
+    def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
+        for i in range(statement):
+            self._create_new_resource(main_resource, i)
+
+    def _update_count_attributes(self, attrs: dict[str, Any], new_value: int):
+        for k, v in attrs.items():
+            if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and COUNT_KEY in v[0]:
+                attrs[k] = attrs[k][0].replace("${" + COUNT_KEY + "}", str(new_value))
+                attrs[k] = attrs[k][0].replace(COUNT_KEY, str(new_value))
+            elif isinstance(v, dict):
+                self._update_count_attributes(v, new_value)
+
+    def _update_foreach_attributes(self, attrs: dict[str, Any], new_value: str, new_key: Optional[str | int] = ''):
+        for k, v in attrs.items():
+            if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str):
+                if EACH_KEY in v[0]:
+                    attrs[k][0] = attrs[k][0].replace("${" + EACH_KEY + "}", str(new_key) or str(new_value))
+                    attrs[k][0] = attrs[k][0].replace(EACH_KEY, str(new_key) or str(new_value))
+                if EACH_VALUE in v[0]:
+                    attrs[k][0] = attrs[k][0].replace("${" + EACH_VALUE + "}", str(new_value))
+                    attrs[k][0] = attrs[k][0].replace(EACH_KEY, str(new_value))
+            elif isinstance(v, dict):
+                self._update_foreach_attributes(v, new_value, new_key)
+
+    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = ''):
+        new_resource = deepcopy(main_resource)
+        if isinstance(new_value, int):
+            self._update_count_attributes(new_resource.attributes, new_value)
+        else:
+            self._update_foreach_attributes(new_resource.attributes, new_value, new_key)
+        if new_key:
+            self._add_index_to_block_properties(new_resource, new_key)
+        else:
+            self._add_index_to_block_properties(new_resource, new_value)
+        self.local_graph.vertices.append(new_resource)
+
+    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
+        if isinstance(statement, list):
+            for new_value in statement:
+                self._create_new_resource(main_resource, new_value)
+        if isinstance(statement, dict):
+            for new_key, new_value in statement.items():
+                self._create_new_resource(main_resource, new_value, new_key=new_key)
+
+    def _delete_main_resource(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
+        new_vertices = [
+            block for i, block in enumerate(self.local_graph.vertices) if i not in block_index_to_statement or not block_index_to_statement[i]
+        ]
+        self.local_graph.vertices = new_vertices
+
+    @staticmethod
+    def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
+        block_type, block_name = block.name.split('.')
+        block.id = f"{block.id}[{idx}]"
+        block.name = f"{block.name}[{idx}]"
+        address = CustomAttributes.TF_RESOURCE_ADDRESS
+        if block.attributes.get(address):
+            block.attributes[address] = f"{block.attributes[address]}[{idx}]"
+        if block.config.get(block_type, {}).get(block_name, {}).get(address):
+            block.config[address] = f"{block.config[address]}[{idx}]"
+        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+            block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
+
     def _create_new_foreach_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
-        pass
+        for block_idx, statement in block_index_to_statement.items():
+            if not statement:
+                continue
+            if isinstance(statement, int):
+                self._create_new_resources_count(statement, self.local_graph.vertices[block_idx])
+            if isinstance(statement, (list, dict)):
+                self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
+        self._delete_main_resource(block_index_to_statement)
