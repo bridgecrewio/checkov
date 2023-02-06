@@ -1,10 +1,16 @@
+from unittest import mock
+
+import igraph
+import pytest
 from networkx import DiGraph
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.kubernetes.image_referencer.provider.k8s import KubernetesProvider
 from checkov.common.images.image_referencer import Image
 
 
-def test_extract_images_from_resources():
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_extract_images_from_resources(graph_framework):
     # given
     resource = {
         "file_path_": "/pod.yaml",
@@ -26,12 +32,22 @@ def test_extract_images_from_resources():
         },
         "resource_type": "Pod",
     }
-    graph = DiGraph()
-    graph.add_node(1, **resource)
+    if graph_framework == 'IGRAPH':
+        graph = igraph.Graph()
+        graph.add_vertex(
+            name='1',
+            block_type_='resource',
+            resource_type=resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
+            attr=resource,
+        )
+    else:
+        graph = DiGraph()
+        graph.add_node(1, **resource)
 
     # when
-    provider = KubernetesProvider(graph_connector=graph)
-    images = provider.extract_images_from_resources()
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        provider = KubernetesProvider(graph_connector=graph)
+        images = provider.extract_images_from_resources()
 
     # then
     assert images == [
@@ -46,7 +62,8 @@ def test_extract_images_from_resources():
     ]
 
 
-def test_extract_images_from_resources_with_no_image():
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_extract_images_from_resources_with_no_image(graph_framework):
     # given
     resource = {
         "file_path_": "/pod.yaml",
@@ -61,12 +78,23 @@ def test_extract_images_from_resources_with_no_image():
         },
         "resource_type": "Pod",
     }
-    graph = DiGraph()
-    graph.add_node(1, **resource)
+    if graph_framework == 'IGRAPH':
+        graph = igraph.Graph()
+        graph.add_vertex(
+            name='1',
+            block_type_='resource',
+            resource_type=resource[
+                CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
+            attr=resource,
+        )
+    else:
+        graph = DiGraph()
+        graph.add_node(1, **resource)
 
     # when
-    provider = KubernetesProvider(graph_connector=graph)
-    images = provider.extract_images_from_resources()
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        provider = KubernetesProvider(graph_connector=graph)
+        images = provider.extract_images_from_resources()
 
     # then
     assert not images

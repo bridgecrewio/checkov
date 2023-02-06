@@ -38,6 +38,7 @@ from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
+from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -52,6 +53,7 @@ SECRET_TYPE_TO_ID = {
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
     'Base64 High Entropy String': 'CKV_SECRET_6',
+    'Random High Entropy String': 'CKV_SECRET_78',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
@@ -108,6 +110,28 @@ class Runner(BaseRunner[None]):
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
 
+        # load runnable plugins
+        customer_run_config = bc_integration.customer_run_config_response
+        plugins_index = 0
+        work_path = str(os.getenv('WORKDIR', current_dir))
+        if customer_run_config:
+            policies_list = customer_run_config.get('secretsPolicies', [])
+            if policies_list:
+                runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
+                logging.info(f"Found {len(runnable_plugins)} runnable plugins")
+                if len(runnable_plugins) > 0:
+                    plugins_index += 1
+                for name, runnable_plugin in runnable_plugins.items():
+                    f = open(f"{work_path}/runnable_plugin_{plugins_index}.py", "w")
+                    f.write(runnable_plugin)
+                    f.close()
+                    plugins_used.append({
+                        'name': name.replace(' ', ''),
+                        'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
+                    })
+                    plugins_index += 1
+                    logging.info(f"Loaded runnable plugin {name}")
+        # load internal regex detectors
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
         logging.info(f"Custom detector found at {detector_path}. Loading...")
         plugins_used.append({
@@ -154,11 +178,11 @@ class Runner(BaseRunner[None]):
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
-                    logging.debug(f'Secrets was filter - no check_id line_number {secret.line_number}')
+                    logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
                 if secret_key in secrets_duplication:
-                    logging.debug(f'Secrets was filter - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
+                    logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -215,9 +239,18 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
+            self.cleanup_plugin_files(work_path, plugins_index)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
+
+    def cleanup_plugin_files(self, work_path: str, amount: int) -> None:
+        for index in range(1, amount):
+            try:
+                os.remove(f"{work_path}/runnable_plugin_{index}.py")
+                logging.info(f"Removed runnable plugin at index {index}")
+            except Exception as e:
+                logging.info(f"Failed removing file at index {index} due to: {e}")
 
     @staticmethod
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:

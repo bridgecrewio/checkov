@@ -19,7 +19,7 @@ class BaseTerraformProvider(GraphImageReferencerProvider):
         supported_resources_graph = self.extract_nodes()
         file_path_to_referred_id = setup_file_path_to_referred_id(self.graph_connector)
 
-        for _, resource in supported_resources_graph.nodes(data=True):
+        for resource in self.extract_resource(supported_resources_graph):
             image_names: list[str] = []
             resource_type = resource[CustomAttributes.RESOURCE_TYPE]
 
@@ -50,7 +50,7 @@ class BaseTerraformProvider(GraphImageReferencerProvider):
                         name=name,
                         start_line=start_line,
                         end_line=end_line,
-                        related_resource_id=f'{removeprefix(resource.get("file_path_"), os.getenv("BC_ROOT_DIR", ""))}:{related_resource_id}'
+                        related_resource_id=f'{removeprefix(resource.get("file_path_", ""), os.getenv("BC_ROOT_DIR", ""))}:{related_resource_id}'
                     )
                 )
 

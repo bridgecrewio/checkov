@@ -49,11 +49,13 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        if: ${{ runner.os != 'windows' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
-      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-        if: ${{ runner.os != 'windows' }}
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
@@ -115,6 +117,12 @@ jobs:
         uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: 3.7
+      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -122,8 +130,6 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-        if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -270,6 +276,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96  # v4
+        with:
+          images: ${{ env.DH_IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.authors=Bridgecrew
+            org.opencontainers.image.version=${{ needs.bump-version.outputs.version }}
       - name: Build and export image to Docker
         # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
         # so it is built and loaded to Docker and in the next step pushed to the registry
@@ -278,6 +292,7 @@ jobs:
           context: .
           no-cache: true
           load: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
           tags: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
       - name: Push Docker image
         id: docker_push
@@ -286,6 +301,7 @@ jobs:
           context: .
           platforms: 'linux/amd64,linux/arm64'
           push: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
           tags: |
             ${{ env.DH_IMAGE_NAME }}:latest
             ${{ env.DH_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}

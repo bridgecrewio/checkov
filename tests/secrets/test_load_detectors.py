@@ -4,11 +4,49 @@ from typing import Any, Dict, List
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.plugins.load_detectors import modify_secrets_policy_to_detectors
+from checkov.secrets.plugins.load_detectors import modify_secrets_policy_to_detectors, get_runnable_plugins
 from checkov.secrets.runner import Runner
 
 
-class TestCustomRegexDetector(unittest.TestCase):
+class TestLoadDetectors(unittest.TestCase):
+
+    def test_get_runnable_plugins(self) -> None:
+        policies_list: List[Dict[str, Any]] = [
+            {
+                "incidentId": "incident1",
+                "category": "Secrets",
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - one_value\n",
+                "title": "incident1",
+            },
+            {
+                "incidentId": "incident2",
+                "category": "Secrets",
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - H4sIAPmp12MC/8tIzcnJBwCGphA2BQAAAA==\n  is_runnable: true\n",
+                "title": "incident2",
+            },
+            {
+                "incidentId": "incident3",
+                "category": "Secrets",
+                "code": "",
+                "title": "incident3",
+            },
+            {
+                "incidentId": "incident4",
+                "category": "Secrets",
+                "code": "bad_code",
+                "title": "incident4",
+            },
+            {
+                "incidentId": "incident5",
+                "category": "Secrets",
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - invalid\n  is_runnable: true\n",
+                "title": "incident5",
+            },
+        ]
+        runnables = get_runnable_plugins(policies_list)
+        assert len(runnables) == 1
+        assert runnables["incident2"] == 'hello'
+
 
     def test_modify_secrets_policy_to_detectors(self) -> None:
         policies_list: List[Dict[str, Any]] = [

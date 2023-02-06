@@ -312,10 +312,11 @@ class RunnerRegistry:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
-                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
-                    cyclonedx_reports.append(report)
                 if "gitlab_sast" in config.output:
                     gitlab_reports.append(report)
+            if not report.is_empty() or len(report.extra_resources):
+                if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
+                    cyclonedx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
@@ -637,8 +638,9 @@ class RunnerRegistry:
             results = report.get('results', {})
             for result in results.values():
                 for result_dict in result:
-                    result_dict["code_block"] = None
-                    result_dict["connected_node"] = None
+                    if isinstance(result_dict, dict):
+                        result_dict["code_block"] = None
+                        result_dict["connected_node"] = None
 
     @staticmethod
     def extract_git_info_from_account_id(account_id: str) -> tuple[str, str]:
