@@ -113,7 +113,7 @@ resource "aws_kinesis_stream" "unencrypted_stream" {
   shard_count = 1
 }
 
-resource "aws_s3_bucket" "unencrypted_bucket" {
+resource "aws_s3_bucket" "encrypted_bucket_by_default" {
   bucket = "unencrypted"
 }
 
