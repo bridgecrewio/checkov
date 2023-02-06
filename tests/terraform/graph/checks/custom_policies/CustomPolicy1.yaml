@@ -1,5 +1,6 @@
 metadata:
-  category: "general"
+  name: "example"
+  category: "GENERAL_SECURITY"
   scope:
   provider: "aws"
   id: "CKV2_AWS_888"
