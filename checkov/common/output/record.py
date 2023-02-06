@@ -194,16 +194,8 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
 
-        # Improve this part by leveraging inheritance of SecretsRecord
-        secret_validation_status_string = ""  # nosec
-        if self.check_result["result"] == CheckResult.FAILED and \
-                hasattr(self, 'validation_status') and \
-                os.getenv("CKV_VALIDATE_SECRETS") and \
-                hasattr(self, '_get_secret_validation_status_message'):  # for typing purposes, can't check with isinstance cause of circular dependency
-            secret_validation_status_string = self._get_secret_validation_status_message()
-
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{secret_validation_status_string}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
             return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"

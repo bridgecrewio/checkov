@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
 
-from checkov.common.typing import _SkippedCheck
+from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
@@ -15,6 +15,9 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.util.type_forcers import force_list
 from checkov.kubernetes.parser.parser import parse
+
+if TYPE_CHECKING:
+    from checkov.common.typing import _SkippedCheck, _CheckResult, _EntityContext
 
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
@@ -239,3 +242,20 @@ def remove_metadata_from_attribute(attribute: dict[str, Any] | None) -> None:
     if isinstance(attribute, dict):
         attribute.pop("__startline__", None)
         attribute.pop("__endline__", None)
+
+
+def create_check_result(check_result: _CheckResult, entity_context: _EntityContext, check_id: str) -> _CheckResult:
+    """Creates a cleaned version of check_result for further usage"""
+
+    clean_check_result: _CheckResult = {
+        "result": check_result["result"],
+        "evaluated_keys": check_result["evaluated_keys"],
+    }
+
+    for skipped_check in entity_context.get("skipped_checks", []):
+        if skipped_check["id"] == check_id:
+            clean_check_result["result"] = CheckResult.SKIPPED
+            clean_check_result["suppress_comment"] = skipped_check["suppress_comment"]
+            break
+
+    return clean_check_result
