@@ -8,7 +8,7 @@ from typing import Any, TYPE_CHECKING
 
 import yaml
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.runner_filter import RunnerFilter
@@ -48,6 +48,11 @@ class Registry(BaseRegistry):
                         if not isinstance(check_json, dict):
                             self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
                             continue
+
+                        if not self.parser.validate_check_config(file_path=f.name, raw_check=check_json):
+                            # proper log messages are generated inside the method
+                            continue
+
                         check = self.parser.parse_raw_check(
                             check_json, resources_types=self._get_resource_types(check_json), check_path=f'{dir}/{file}'
                         )
@@ -72,7 +77,7 @@ _registry_instances: dict[str, Registry] = {}
 def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
         _registry_instances[check_type] = Registry(
-            parser=NXGraphCheckParser(),
+            parser=GraphCheckParser(),
             checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
         )
     return _registry_instances[check_type]
