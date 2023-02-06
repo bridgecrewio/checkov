@@ -92,7 +92,7 @@ class CustomRegexDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             is_multiline: bool = False,
-            **kwargs
+            **kwargs: Any
     ) -> None:
         current_denylist: Set[Pattern[str]] = self.multiline_denylist if is_multiline else self.denylist
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
