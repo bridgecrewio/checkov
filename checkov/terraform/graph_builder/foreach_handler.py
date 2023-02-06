@@ -151,33 +151,37 @@ class ForeachHandler(object):
 
     def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
         for i in range(statement):
-            self._create_new_resource(main_resource, i)
+            self._create_new_resource(main_resource, i, '')
 
     def _update_count_attributes(self, attrs: dict[str, Any], new_value: int):
         for k, v in attrs.items():
-            if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and COUNT_KEY in v[0]:
-                attrs[k] = attrs[k][0].replace("${" + COUNT_KEY + "}", str(new_value))
-                attrs[k] = attrs[k][0].replace(COUNT_KEY, str(new_value))
+            if isinstance(v, list):
+                for i, item in enumerate(v):
+                    if isinstance(item, str) and (COUNT_KEY in item or "${" + COUNT_KEY + "}" in item):
+                        v[i] = item.replace("${" + COUNT_KEY + "}", str(new_value))
+                        v[i] = v[i].replace(COUNT_KEY, str(new_value))
             elif isinstance(v, dict):
                 self._update_count_attributes(v, new_value)
 
-    def _update_foreach_attributes(self, attrs: dict[str, Any], new_value: str, new_key: Optional[str | int] = ''):
+    def _update_foreach_attributes(self, attrs: dict[str, Any], new_value: str | int, new_key: Optional[str | int] = ''):
         for k, v in attrs.items():
-            if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str):
-                if EACH_KEY in v[0]:
-                    attrs[k][0] = attrs[k][0].replace("${" + EACH_KEY + "}", str(new_key) or str(new_value))
-                    attrs[k][0] = attrs[k][0].replace(EACH_KEY, str(new_key) or str(new_value))
-                if EACH_VALUE in v[0]:
-                    attrs[k][0] = attrs[k][0].replace("${" + EACH_VALUE + "}", str(new_value))
-                    attrs[k][0] = attrs[k][0].replace(EACH_KEY, str(new_value))
+            if isinstance(v, list):
+                for i, item in enumerate(v):
+                    if isinstance(item, str):
+                        if EACH_KEY in item:
+                            v[i] = item.replace("${" + EACH_KEY + "}", str(new_key) or str(new_value))
+                            v[i] = v[i].replace(EACH_KEY, str(new_key) or str(new_value))
+                        if EACH_VALUE in item:
+                            v[i] = item.replace("${" + EACH_VALUE + "}", str(new_value))
+                            v[i] = v[i].replace(EACH_VALUE, str(new_value))
             elif isinstance(v, dict):
                 self._update_foreach_attributes(v, new_value, new_key)
 
-    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = ''):
+    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: str = ''):
         new_resource = deepcopy(main_resource)
-        if isinstance(new_value, int):
+        if main_resource.attributes.get(COUNT_STRING):
             self._update_count_attributes(new_resource.attributes, new_value)
-        else:
+        elif main_resource.attributes.get(FOREACH_STRING):
             self._update_foreach_attributes(new_resource.attributes, new_value, new_key)
         if new_key:
             self._add_index_to_block_properties(new_resource, new_key)
@@ -188,7 +192,7 @@ class ForeachHandler(object):
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
         if isinstance(statement, list):
             for new_value in statement:
-                self._create_new_resource(main_resource, new_value)
+                self._create_new_resource(main_resource, new_value, new_key='')
         if isinstance(statement, dict):
             for new_key, new_value in statement.items():
                 self._create_new_resource(main_resource, new_value, new_key=new_key)
@@ -204,11 +208,10 @@ class ForeachHandler(object):
         block_type, block_name = block.name.split('.')
         block.id = f"{block.id}[{idx}]"
         block.name = f"{block.name}[{idx}]"
-        address = CustomAttributes.TF_RESOURCE_ADDRESS
-        if block.attributes.get(address):
-            block.attributes[address] = f"{block.attributes[address]}[{idx}]"
-        if block.config.get(block_type, {}).get(block_name, {}).get(address):
-            block.config[address] = f"{block.config[address]}[{idx}]"
+        attr_address = block.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+        config_address = block.config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+        block.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = f"{attr_address}[{idx}]"
+        block.config[CustomAttributes.TF_RESOURCE_ADDRESS] = f"{config_address}[{idx}]"
         if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
             block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
 
