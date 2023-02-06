@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Optional, List, Tuple, Dict, Any
 
 from termcolor import colored
 
+from checkov.common.models.enums import CheckResult
 from checkov.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.severities import Severity
@@ -15,9 +17,9 @@ from checkov.common.typing import _CheckResult
 WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
-                                          f' and should be prioritized\n', "red"),
-    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized\n',
-    ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret\n',
+                                          f' and should be prioritized', "red"),
+    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized',
+    ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret',
     ValidationStatus.UNAVAILABLE.value: ''
 }
 
@@ -78,6 +80,16 @@ class SecretsRecord(Record):
                          definition_context_file_path=definition_context_file_path
                          )
         self.validation_status = validation_status
+
+    def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
+        processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)
+        validation_status_message = self._get_secret_validation_status_message()
+        if validation_status_message and self.check_result["result"] == CheckResult.FAILED and os.getenv("CKV_VALIDATE_SECRETS"):
+            # if needed insert validation status message
+            splitted_record = processed_record.split("\n")
+            splitted_record.insert(2, validation_status_message)
+            processed_record = "\n".join(splitted_record)
+        return processed_record
 
     def _get_secret_validation_status_message(self) -> str:
         message = None
