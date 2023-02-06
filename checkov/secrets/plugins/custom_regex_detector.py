@@ -84,8 +84,8 @@ class CustomRegexDetector(RegexBasedDetector):
                 except Exception:
                     is_verified = False
                 regex_data = self.multiline_regex_to_metadata[multiline_regex.pattern]
-                ps = PotentialSecret(type=regex_data["Name"], filename=filename, secret=match,
-                                     line_number=line_number, is_verified=is_verified)
+                ps = PotentialSecret(type=regex_data["Name"], filename=filename, secret=f"'{match}'",
+                                     line_number=line_number, is_verified=True)
                 ps.check_id = self.multiline_regex_to_metadata[multiline_regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
                 output.add(ps)
         return output
