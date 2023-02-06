@@ -23,6 +23,7 @@ class TestECRPolicy(unittest.TestCase):
             "aws_ecr_repository_policy.pass_conditional",
             "aws_ecr_repository_policy.cond_any_pass",
             "aws_ecr_repository_policy.cond_equals_pass",
+            "aws_ecr_repository_policy.pass_without_principal"
         }
         failing_resources = {
             "aws_ecr_repository_policy.fail",
