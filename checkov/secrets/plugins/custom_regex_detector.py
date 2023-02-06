@@ -68,7 +68,10 @@ class CustomRegexDetector(RegexBasedDetector):
                 with open(filename, 'r') as f:
                     file_content = f.read()
             except Exception:
-                pass
+                logging.error(
+                    "Could not open file in order to detect secrets}",
+                    extra={"file_path": filename}
+                )
             if not file_content:
                 return output
 
