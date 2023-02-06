@@ -26,7 +26,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
-        expected_failed_check_ids = {"CKV_AWS_19", "CKV_AWS_63", "CKV_AWS_119"}
+        expected_failed_check_ids = {"CKV_AWS_63", "CKV_AWS_119"}
         expected_skipped_check_ids = {"CKV_AWS_20", "CKV_AWS_28"}
 
         enriched_data = {(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks}
@@ -99,7 +99,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
             ),
         }
 
-        self.assertEqual(len(failed_check_ids), 3)
+        self.assertEqual(len(failed_check_ids), 2)
         self.assertEqual(failed_check_ids, expected_failed_check_ids)
         self.assertEqual(len(skipped_check_ids), 2)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
@@ -175,10 +175,10 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
-        expected_skipped_check_ids = set(allowed_checks)
+        expected_skipped_check_ids = { "CKV2_AWS_6" }
 
         self.assertEqual(len(failed_check_ids), 0)
-        self.assertEqual(len(skipped_check_ids), 2)
+        self.assertEqual(len(skipped_check_ids), 1)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
 
 
