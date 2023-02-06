@@ -26,9 +26,16 @@ class CustomRegexDetector(RegexBasedDetector):
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
+        self.multiline_denylist = set()
+        self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
+        self._did_analyzed_file: dict[str, bool] = dict()
         detectors = load_detectors()
 
         for detector in detectors:
+            if detector.get("isMultiline"):
+                self.multiline_denylist.add(re.compile('{}'.format(detector["Regex"])))
+                self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                continue
             self.denylist.add(re.compile('{}'.format(detector["Regex"])))
             self.regex_to_metadata[detector["Regex"]] = detector
 
@@ -59,10 +66,34 @@ class CustomRegexDetector(RegexBasedDetector):
                 logging.info(
                     f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
+        # ToDo: Extract it to external function (and use it above as well)
+        if not self._did_analyzed_file.get(filename):
+            self._did_analyzed_file[filename] = True
+            file_content = None
+            try:
+                with open(filename, 'r') as f:
+                    file_content = f.read()
+            except Exception as exc:
+                pass
+            if not file_content:
+                return output
+            for match, multiline_regex in self.analyze_string(file_content, self.multiline_denylist, **kwargs):
+                try:
+                    verified_result = call_function_with_arguments(self.verify, secret=match, context=raw_context)
+                    is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
+                except Exception:
+                    is_verified = False
+                regex_data = self.multiline_regex_to_metadata[multiline_regex.pattern]
+                ps = PotentialSecret(type=regex_data["Name"], filename=filename, secret=match,
+                                     line_number=line_number, is_verified=is_verified)
+                ps.check_id = self.multiline_regex_to_metadata[multiline_regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
+                output.add(ps)
         return output
 
-    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
-        for regex in self.denylist:
+    def analyze_string(self, string: str, regex_denylist: Optional[Set] = None, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type: ignore # type:ignore[override]
+        if not regex_denylist:
+            regex_denylist = self.denylist
+        for regex in regex_denylist:
             for match in regex.findall(string):
                 if isinstance(match, tuple):
                     for submatch in filter(bool, match):
