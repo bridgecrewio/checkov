@@ -42,7 +42,7 @@ class IgraphConnector(DBConnector[Graph]):
             attr = vertex.get_attribute_dict()
             self.graph.add_vertex(
                 name=attr[CustomAttributes.HASH],
-                block_type=vertex.block_type,
+                block_type_=vertex.block_type,
                 resource_type=attr[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in attr else None,
                 # label=attr[CustomAttributes.BLOCK_NAME],
                 # color=colors.get(attr["kind"], "red"),
