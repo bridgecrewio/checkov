@@ -154,6 +154,7 @@ class ForeachHandler(object):
             self._create_new_resource(main_resource, i, '')
 
     def _update_count_attributes(self, attrs: dict[str, Any], new_value: int):
+        attrs.pop(COUNT_STRING)
         for _, v in attrs.items():
             if isinstance(v, list):
                 for i, item in enumerate(v):
@@ -164,6 +165,7 @@ class ForeachHandler(object):
                 self._update_count_attributes(v, new_value)
 
     def _update_foreach_attributes(self, attrs: dict[str, Any], new_value: str | int, new_key: Optional[str | int] = ''):
+        attrs.pop(FOREACH_STRING)
         for _, v in attrs.items():
             if isinstance(v, list):
                 for i, item in enumerate(v):
