@@ -1,0 +1,7 @@
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_lambda_function
+  attribute: runtime
+  operator: equals
+  value: python3.9

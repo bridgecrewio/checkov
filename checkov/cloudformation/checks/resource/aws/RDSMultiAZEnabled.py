@@ -3,11 +3,11 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 
 class RDSMultiAZEnabled(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that RDS instances have Multi-AZ enabled"
         id = "CKV_AWS_157"
-        supported_resources = ['AWS::RDS::DBInstance']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ("AWS::RDS::DBInstance",)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
@@ -19,8 +19,8 @@ class RDSMultiAZEnabled(BaseResourceValueCheck):
                     return CheckResult.UNKNOWN
         # Database is not Aurora; Use base class implementation
         return super().scan_resource_conf(conf)
-            
-    def get_inspected_key(self):
+
+    def get_inspected_key(self) -> str:
         return 'Properties/MultiAZ'
 
 

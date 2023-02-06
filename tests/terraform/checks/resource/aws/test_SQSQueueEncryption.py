@@ -1,28 +1,41 @@
+import os
 import unittest
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.SQSQueueEncryption import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
-class TestS3Encryption(unittest.TestCase):
+class TestBSQSQueueEncryption(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure(self):
-        resource_conf = {'name': ['terraform-example-queue']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_SQSQueueEncryption"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        resource_conf = {'name': ['terraform-example-queue'], 'kms_master_key_id': ['alias/aws/sqs'],
-                         'kms_data_key_reuse_period_seconds': [300]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passing_resources = {
+            "aws_sqs_queue.pass",
+            "aws_sqs_queue.pass2"
+        }
+        failing_resources = {
+            "aws_sqs_queue.fail",
+            "aws_sqs_queue.fail2",
+            "aws_sqs_queue.fail3",
+        }
 
-    def test_failure2(self):
-        resource_conf = {'name': ['terraform-example-queue'], 'kms_master_key_id': [''],
-                         'kms_data_key_reuse_period_seconds': [300]}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
