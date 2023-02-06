@@ -4,10 +4,14 @@ from pathlib import Path
 from unittest import mock
 from unittest.case import TestCase
 
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+from parameterized import parameterized
+
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, force_by_type, \
+    extract_variable_type
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from tests.terraform.graph.variable_rendering.expected_data import (
     expected_terragoat_local_resource_prefix,
@@ -419,3 +423,49 @@ class TestRenderer(TestCase):
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('identity').get('identity_ids') == 'null'
         assert resources_vertex[0].attributes.get('identity').get('type') == 'SystemAssigned'
+
+    def test_force_by_type(self):
+        cases = [
+            (["foo", "string"], "foo"),
+            (["true", "bool"], True),
+            (["false", ""], "false"),
+            (["false", "bana"], "false"),
+            ([1, "string"], "1"),
+            ([1, "list"], [1]),
+            ([1, "map"], None),
+
+        ]
+
+        for test_input, expected in cases:
+            with self.subTest(test_input):
+                assert force_by_type(var=test_input[0], forced_type=test_input[1]) == expected
+
+    def test_extract_variable_type(self):
+        config = {'min_tls_version': {'__end_line__': 5, '__start_line__': 1, 'default': ['1.1'], 'description': ['Minimum TLS version supported'], 'type': ['${string}']}}
+        name = 'min_tls_version'
+        string_var = TerraformBlock(
+            block_type=BlockType.VARIABLE,
+            name=name,
+            config=config,
+            path='',
+            attributes=config[name],
+            source="Terraform"
+        )
+
+        var_type = extract_variable_type(string_var)
+        self.assertEqual("string", var_type)
+
+        config = {'min_tls_version': {'__end_line__': 5, '__start_line__': 1, 'default': ['1.1'],
+                                      'description': ['Minimum TLS version supported']}}
+        name = 'min_tls_version'
+        no_type_var = TerraformBlock(
+            block_type=BlockType.VARIABLE,
+            name=name,
+            config=config,
+            path='',
+            attributes=config[name],
+            source="Terraform"
+        )
+
+        var_type = extract_variable_type(no_type_var)
+        self.assertEqual("", var_type)

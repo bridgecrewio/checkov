@@ -12,12 +12,13 @@ from json import JSONDecodeError
 import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from lark.tree import Tree
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
-from checkov.common.util.type_forcers import force_int
+from checkov.common.util.type_forcers import force_int, force_string, force_bool, force_list, force_dict
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import (
@@ -93,18 +94,21 @@ class TerraformVariableRenderer(VariableRenderer):
             origin_vertex = self.local_graph.vertices[edge.origin]
             destination_vertex = self.local_graph.vertices[edge.dest]
             if origin_vertex.block_type == BlockType.VARIABLE and destination_vertex.block_type == BlockType.MODULE:
+                variable_type = extract_variable_type(origin_vertex)
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
                     changed_attribute_value=destination_vertex.attributes[origin_vertex.name],
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
+                    value_enforced_type=variable_type
                 )
                 return
             if (
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
+                variable_type = extract_variable_type(origin_vertex)
                 destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]  # evaluate the last specified variable based on .tfvars precedence
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
@@ -112,6 +116,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     vertex=edge.origin,
                     change_origin_id=edge.dest,
                     attribute_at_dest=edge.label,
+                    value_enforced_type=variable_type
                 )
                 return
 
@@ -136,6 +141,11 @@ class TerraformVariableRenderer(VariableRenderer):
                 )
                 if evaluated_attribute_value is not None:
                     val_to_eval = self.replace_value(edge, val_to_eval, replaced_key, evaluated_attribute_value, True)
+
+                value_enforced_type = ""
+                dest_vertex = self.local_graph.vertices[edge.dest]
+                if dest_vertex.block_type == BlockType.VARIABLE:
+                    value_enforced_type = extract_variable_type(dest_vertex)
                 if not multiple_edges and val_to_eval != origin_val:
                     self.update_evaluated_value(
                         changed_attribute_key=edge.label,
@@ -143,6 +153,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         vertex=edge.origin,
                         change_origin_id=edge.dest,
                         attribute_at_dest=key_path_in_dest_vertex,
+                        value_enforced_type=value_enforced_type
                     )
 
         if multiple_edges and val_to_eval != origin_val:
@@ -246,6 +257,7 @@ class TerraformVariableRenderer(VariableRenderer):
         vertex: int,
         change_origin_id: int,
         attribute_at_dest: Optional[Union[str, List[str]]] = None,
+        value_enforced_type: Optional[str] = ""
     ) -> None:
         """
         The function updates the value of changed_attribute_key with changed_attribute_value for vertex
@@ -259,6 +271,8 @@ class TerraformVariableRenderer(VariableRenderer):
         evaluated_attribute_value = (
             str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluate_terraform(str_to_evaluate)
         )
+        if value_enforced_type:
+            evaluated_attribute_value = force_by_type(evaluated_attribute_value, value_enforced_type)
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
         )
@@ -572,3 +586,26 @@ def get_lookup_value(block_content, dynamic_argument) -> str:
     elif 'True' in block_content[dynamic_argument]:
         lookup_value = 'true'
     return lookup_value
+
+
+def extract_variable_type(vertex: TerraformBlock) -> str:
+    var_type = vertex.get_attribute_dict().get("type")
+    if var_type:
+        var_type = evaluate_terraform(var_type)
+        return var_type
+    else:
+        return ""
+
+
+def force_by_type(var: Any, forced_type: str) -> Any:
+    types_to_forcer = {
+        "string": force_string,
+        "bool": force_bool,
+        "list": force_list,
+        "map": force_dict
+    }
+
+    # if forcer is nor implemented, return the identity function
+    forcer = types_to_forcer.get(forced_type, lambda x: x)
+
+    return forcer(var)

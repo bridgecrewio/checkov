@@ -67,6 +67,14 @@ def force_dict(obj: Any) -> dict[str, Any] | None:
     return None
 
 
+def force_string(obj: Any) -> str:
+    return str(obj)
+
+
+def force_bool(obj: Any) -> bool:
+    return bool(obj)
+
+
 def is_json(data: str) -> bool:
     try:
         parsed = json.loads(data)
