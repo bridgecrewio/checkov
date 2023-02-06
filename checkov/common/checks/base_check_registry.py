@@ -89,7 +89,7 @@ class BaseCheckRegistry:
             res = self.checks[entity].copy() if entity in self.checks.keys() else []
             # check wildcards
             for pattern, checks in self.wildcard_checks.items():
-                if fnmatch.fnmatchcase(entity, pattern):
+                if entity and fnmatch.fnmatchcase(entity, pattern):
                     res += checks
             return res
 

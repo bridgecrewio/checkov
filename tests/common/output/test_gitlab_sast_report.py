@@ -52,12 +52,13 @@ def test_iac_output():
     # remove dynamic data
     for vul in output["vulnerabilities"]:
         del vul["id"]
-        del vul["links"]
         del vul["solution"]
         del vul["description"]
         del vul["location"]["file"]
-        for ident in vul["identifiers"]:
-            del ident["url"]
+        if "links" in vul:
+            del vul["links"]
+            for ident in vul["identifiers"]:
+                del ident["url"]
     assert sorted(output["vulnerabilities"], key=itemgetter("name")) == sorted(
         [
             {
@@ -171,7 +172,7 @@ def test_sca_package_output():
             "description": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ...",
             "severity": "Medium",
             "solution": "fixed in 3.0.1, 2.2.9, 1.11.27",
-        }
+        },
     ]
 
 

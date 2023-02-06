@@ -5,7 +5,7 @@ import unittest
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -163,9 +163,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # for this test, we simulate some of the check registry manipulation; otherwise the singleton
         # instance will be modified and break other tests.
 
-        parser = NXGraphCheckParser()
+        parser = GraphCheckParser()
 
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
@@ -405,9 +405,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # for this test, we simulate some of the check registry manipulation; otherwise the singleton
         # instance will be modified and break other tests.
 
-        parser = NXGraphCheckParser()
+        parser = GraphCheckParser()
 
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do

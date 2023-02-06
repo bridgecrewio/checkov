@@ -1,0 +1,7 @@
+Resources:
+  MyDBAurora:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb_enabled'
+      DBInstanceClass: 'db.r3.2xlarge'
+      Engine: 'aurora-mysql'
