@@ -113,6 +113,7 @@ class Runner(BaseRunner[None]):
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
+        work_path = str(os.getenv('WORKDIR', current_dir))
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
@@ -121,12 +122,12 @@ class Runner(BaseRunner[None]):
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
-                    f = open(f"runnable_plugin_{plugins_index}.py", "w")
+                    f = open(f"{work_path}/runnable_plugin_{plugins_index}.py", "w")
                     f.write(runnable_plugin)
                     f.close()
                     plugins_used.append({
                         'name': name.replace(' ', ''),
-                        'path': f'file://runnable_plugin_{plugins_index}.py'
+                        'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
                     })
                     plugins_index += 1
                     logging.info(f"Loaded runnable plugin {name}")
@@ -238,15 +239,15 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-            self.cleanup_plugin_files(plugins_index)
+            self.cleanup_plugin_files(work_path, plugins_index)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
-    def cleanup_plugin_files(self, amount: int) -> None:
+    def cleanup_plugin_files(self, work_path: str, amount: int) -> None:
         for index in range(1, amount):
             try:
-                os.remove(f"runnable_plugin_{index}.py")
+                os.remove(f"{work_path}/runnable_plugin_{index}.py")
                 logging.info(f"Removed runnable plugin at index {index}")
             except Exception as e:
                 logging.info(f"Failed removing file at index {index} due to: {e}")

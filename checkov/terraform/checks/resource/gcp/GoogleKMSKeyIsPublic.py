@@ -26,6 +26,8 @@ class GoogleKMSKeyIsPublic(BaseResourceCheck):
         policy_data = conf.get("policy_data")
         if policy_data and isinstance(policy_data, list):
             for policy in policy_data:
+                if not isinstance(policy, dict):
+                    continue
                 bindings = policy.get("bindings")
                 if bindings and isinstance(bindings, list):
                     for binding in bindings:

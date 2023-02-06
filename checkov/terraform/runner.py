@@ -371,7 +371,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
                     full_definition_path = entity_id.split('.')
-                    module_name_index = len(full_definition_path) - full_definition_path[::-1].index(BlockType.MODULE)  # the next item after the last 'module' prefix is the module name
+                    module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
