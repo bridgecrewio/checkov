@@ -38,7 +38,7 @@ def test_sast_runner_get_semgrep_output():
     a = 0
 
 
-def test_sast_runner_get_report():
+def test_sast_runner_create_report():
     raw_rule = {'id': 'checkov.sast.checks.rules.python.CKV_SAST_1', 'patterns': [{'pattern': 'set_port($ARG)'}, {'metavariable-comparison': {'metavariable': '$ARG', 'comparison': '$ARG < 1024'}}], 'message': 'module setting superuser port', 'languages': ['python'], 'severity': 'INFO', 'metadata': {'cwe': ['CWE-289: Authentication Bypass by Alternate Name'], 'name': 'superuser port', 'category': 'security', 'technology': ['gorilla'], 'confidence': 'MEDIUM', 'license': 'Commons Clause License Condition v1.0[LGPL-2.1-only]', 'references': ['https://cwe.mitre.org/data/definitions/289.html'], 'subcategory': ['audit'], 'impact': 'MEDIUM', 'likelihood': 'LOW'}}
     rule = Rule(raw_rule)
     rule_match = core.CoreMatch(rule_id=core.RuleId(value='checkov.sast.checks.rules.python.CKV_SAST_1'),
@@ -58,7 +58,7 @@ def test_sast_runner_get_report():
                       message='module setting superuser port')
     filtered_matches_by_rule = {rule: [match]}
     runner = Runner()
-    report = runner._get_report(filtered_matches_by_rule)
+    report = runner._create_report(filtered_matches_by_rule)
     assert report.check_type == CheckType.SAST
     assert len(report.failed_checks) == 1
     assert report.failed_checks[0].check_id == 'CKV_SAST_1'

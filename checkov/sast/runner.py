@@ -78,7 +78,7 @@ class Runner():
             return Report(self.check_type)
 
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        report = self._get_report(semgrep_output.matches)
+        report = self._create_report(semgrep_output.matches)
         return report
 
     @staticmethod
@@ -101,7 +101,7 @@ class Runner():
                                        parsing_data, explanations, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
 
-    def _get_report(self, filtered_matches_by_rule: Dict[Rule, List[RuleMatch]]) -> Report:
+    def _create_report(self, filtered_matches_by_rule: Dict[Rule, List[RuleMatch]]) -> Report:
         report = Report(self.check_type)
         for rule, matches in filtered_matches_by_rule.items():
             for match in matches:
