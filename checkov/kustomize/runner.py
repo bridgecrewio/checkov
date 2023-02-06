@@ -158,9 +158,11 @@ class K8sKustomizeRunner(K8sRunner):
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        if not self.context:
+        if self.context is None:
             # this shouldn't happen
             logging.error("Context for Kustomize runner was not set")
+            return report
+        if not self.context:
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
