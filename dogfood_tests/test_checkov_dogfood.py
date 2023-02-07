@@ -51,6 +51,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.KUBERNETES,
         CheckType.KUSTOMIZE,
         CheckType.OPENAPI,
+        CheckType.SAST,
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,

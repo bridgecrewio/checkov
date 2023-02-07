@@ -5,7 +5,7 @@ from typing import Any, TYPE_CHECKING, cast
 
 import configargparse
 
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, sast_types
 from checkov.common.runners.runner_registry import OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -212,7 +212,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--framework",
             help="Filter scan to run only on specific infrastructure code frameworks",
-            choices=checkov_runners + ["all"],
+            choices=checkov_runners + sast_types + ["all"],
             default=["all"],
             env_var="CKV_FRAMEWORK",
             nargs="+",

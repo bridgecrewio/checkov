@@ -1,0 +1,40 @@
+rules:
+- id: seam-log-injection
+  patterns:
+  - pattern: |
+      $LOG.$INFO($X + $Y,...)
+  - pattern-either:
+    - pattern-inside: |
+        import org.jboss.seam.log.Log;
+        ...
+    - pattern-inside: |
+        org.jboss.seam.log.Log $LOG = ...;
+        ...
+  - metavariable-regex:
+      metavariable: $INFO
+      regex: (debug|error|fatal|info|trace|warn)
+  languages: [java]
+  message: >-
+    Seam Logging API support an expression language to introduce bean property to log messages.
+    The expression language can also be the source to unwanted code execution.
+    In this context, an expression is built with a dynamic value.
+    The source of the value(s) should be verified to avoid that unfiltered values fall into this risky
+    code evaluation.
+  metadata:
+    cwe:
+    - "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+    owasp:
+    - A03:2021 - Injection
+    source-rule-url: https://find-sec-bugs.github.io/bugs.htm#SEAM_LOG_INJECTION
+    category: security
+    technology:
+    - jboss
+    confidence: LOW
+    references:
+    - https://owasp.org/Top10/A03_2021-Injection
+    subcategory:
+    - audit
+    likelihood: LOW
+    impact: MEDIUM
+    name: seam log injection
+  severity: ERROR
