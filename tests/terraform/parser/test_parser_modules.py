@@ -7,7 +7,8 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.terraform.parser import Parser
 
 
@@ -71,17 +72,17 @@ class TestParserInternals(unittest.TestCase):
         expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
         expected_file_names = [
             expected_main_file,
-            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
 
-            os.path.join(directory, expected_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'rules.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'rules.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
         ]
 
         if not nested_modules:

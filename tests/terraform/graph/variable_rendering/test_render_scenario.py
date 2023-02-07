@@ -6,7 +6,8 @@ from unittest import mock
 
 import jmespath
 
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -352,7 +353,7 @@ def _make_module_ref_absolute(match, dir_path) -> str:
     module_referrer = match[2]
     if PATH_SEPARATOR in module_referrer:
         module_referrer_fixed = []
-        if '#' in module_referrer:
+        if TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR in module_referrer:
             module_referrer = module_referrer[:-2]
         for ref in module_referrer.split(PATH_SEPARATOR):
             if not os.path.isabs(ref):
@@ -360,7 +361,7 @@ def _make_module_ref_absolute(match, dir_path) -> str:
         module_referrer = unify_dependency_path(module_referrer_fixed)
     else:
         module_referrer = os.path.join(dir_path, module_referrer)
-    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}#{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
+    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
 def remove_prefix_dir_from_path(prefix_to_remove, dict_to_handle):
