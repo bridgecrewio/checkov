@@ -1,6 +1,51 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.330...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.341...HEAD)
+
+## [2.2.341](https://github.com/bridgecrewio/checkov/compare/2.2.335...2.2.341) - 2023-02-06
+
+### Feature
+
+- **ansible:** add support for Ansible blocks - [#4419](https://github.com/bridgecrewio/checkov/pull/4419)
+- **general:** Control check failure logging level - [#4431](https://github.com/bridgecrewio/checkov/pull/4431)
+- **graph:** add validation for graph checks - [#4352](https://github.com/bridgecrewio/checkov/pull/4352)
+- **kubernetes:** support inline skips for Kubernetes graph checks - [#4412](https://github.com/bridgecrewio/checkov/pull/4412)
+- **secrets:** remove secrets dependency in generic record - [#4424](https://github.com/bridgecrewio/checkov/pull/4424)
+
+### Bug Fix
+
+- **kustomize:** remove redundant error in kustomize runner - [#4428](https://github.com/bridgecrewio/checkov/pull/4428)
+
+### Documentation
+
+- **general:** fix graph check link in docs - [#4420](https://github.com/bridgecrewio/checkov/pull/4420)
+
+## [2.2.335](https://github.com/bridgecrewio/checkov/compare/2.2.332...2.2.335) - 2023-02-05
+
+### Feature
+
+- **kustomize:** support kustomize v5 - [#4411](https://github.com/bridgecrewio/checkov/pull/4411)
+- **terraform:** [Foreach/Count Handling] Render dynamic foreach/count statement - [#4398](https://github.com/bridgecrewio/checkov/pull/4398)
+
+### Bug Fix
+
+- **general:** Checks edge-cases fixes in terraform and openapi - [#4414](https://github.com/bridgecrewio/checkov/pull/4414)
+- **general:** Skip resources with no 'Type' defined + Checks containing wildcards for resource types leads to crash - [#4408](https://github.com/bridgecrewio/checkov/pull/4408)
+- **terraform:** fix getting the module for resource named 'module' - [#4418](https://github.com/bridgecrewio/checkov/pull/4418)
+- **terraform:** retire CKV_AWS_128 in favour of CKV_AWS_162 - [#4350](https://github.com/bridgecrewio/checkov/pull/4350)
+- **terraform:** SQS check was all types of wrong - [#4382](https://github.com/bridgecrewio/checkov/pull/4382)
+
+## [2.2.332](https://github.com/bridgecrewio/checkov/compare/2.2.331...2.2.332) - 2023-02-04
+
+### Bug Fix
+
+- **cloudformation:** Don't fail Aurora instances for MultiAZ not being set - [#4316](https://github.com/bridgecrewio/checkov/pull/4316)
+
+## [2.2.331](https://github.com/bridgecrewio/checkov/compare/2.2.330...2.2.331) - 2023-02-03
+
+### Bug Fix
+
+- **general:** fix compact json output - [#4406](https://github.com/bridgecrewio/checkov/pull/4406)
 
 ## [2.2.330](https://github.com/bridgecrewio/checkov/compare/2.2.327...2.2.330) - 2023-02-02
 
