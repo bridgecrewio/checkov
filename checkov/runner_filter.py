@@ -9,7 +9,7 @@ import re
 
 from checkov.secrets.consts import ValidationStatus
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
@@ -58,7 +58,7 @@ class RunnerFilter(object):
                                                         for skip_check in skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
-        self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
+        self.enforcement_rule_configs: Optional[Dict[str, Severity | List[Severity]]] = None
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -139,10 +139,13 @@ class RunnerFilter(object):
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
-            config = enforcement_rule_configs.get(code_category)
-            if not config:
-                raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
-            self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
+            if 'sca_' in report_type:
+                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for c in code_category}
+            else:
+                config = enforcement_rule_configs.get(code_category)
+                if not config:
+                    raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
+                self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def should_run_check(
             self,
@@ -164,7 +167,12 @@ class RunnerFilter(object):
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
             if not self.check_threshold and not self.skip_check_threshold:
-                check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
+                if '_CVE_' in check_id:
+                    check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
+                elif '_LIC_' in check_id:
+                    check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
+                else:
+                    check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
                 skip_check_threshold = None
             else:
                 check_threshold = self.check_threshold
