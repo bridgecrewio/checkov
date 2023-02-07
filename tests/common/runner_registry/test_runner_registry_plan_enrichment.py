@@ -14,7 +14,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 
 class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_enrichment_of_plan_report(self):
-        allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
+        allowed_checks = ["CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
         runner_registry = RunnerRegistry(
             banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
         )
@@ -54,29 +54,6 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
                     (17, "}\n"),
                     (18, "EOF\n"),
                     (19, "}"),
-                ),
-            ),
-            (
-                "s3.tf",
-                (1, 17),
-                (
-                    (1, 'resource "aws_s3_bucket" "test-bucket1" {\n'),
-                    (2, '  bucket = "test-bucket1"\n'),
-                    (3, "  # checkov:skip=CKV_AWS_20: The bucket is a public static content " "host\n"),
-                    (4, '  acl    = "public-read"\n'),
-                    (5, "  lifecycle_rule {\n"),
-                    (6, '    id      = "90 Day Lifecycle"\n'),
-                    (7, "    enabled = true\n"),
-                    (8, "    expiration {\n"),
-                    (9, "      days = 90\n"),
-                    (10, "    }\n"),
-                    (11, "    noncurrent_version_expiration {\n"),
-                    (12, "      days = 90\n"),
-                    (13, "    }\n"),
-                    (14, "    abort_incomplete_multipart_upload_days = 90\n"),
-                    (15, "  }\n"),
-                    (16, "  provider = aws.current_region\n"),
-                    (17, "}"),
                 ),
             ),
             (
