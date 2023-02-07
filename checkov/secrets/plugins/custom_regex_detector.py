@@ -39,9 +39,11 @@ class CustomRegexDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             raw_context: Optional[CodeSnippet] = None,
+            is_added: bool = False,
+            is_removed: bool = False,
             **kwargs: Any
     ) -> Set[PotentialSecret]:
-        """This examines a line and finds all possible secret values in it."""
+        """This examines a line and finds all possible secret values in it"""
         output: Set[PotentialSecret] = set()
         for match, regex in self.analyze_string(line, **kwargs):
             try:
