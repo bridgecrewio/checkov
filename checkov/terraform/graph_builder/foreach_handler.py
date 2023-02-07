@@ -136,16 +136,17 @@ class ForeachHandler(object):
         renderer.render_variables_from_local_graph()
 
     def _build_sub_graph(self, blocks_to_render: list[int]) -> l_graph.TerraformLocalGraph:
-        sub_graph = l_graph.TerraformLocalGraph(self.local_graph.module)
+        module = deepcopy(self.local_graph.module)
+        sub_graph = l_graph.TerraformLocalGraph(module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = block  # type: ignore
+                sub_graph.vertices[i] = deepcopy(block)  # type: ignore
         sub_graph.edges = [
-            edge for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
+            deepcopy(edge) for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
-        sub_graph.in_edges = self.local_graph.in_edges
-        sub_graph.out_edges = self.local_graph.out_edges
+        sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
+        sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
         return sub_graph
 
     def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
@@ -180,11 +181,14 @@ class ForeachHandler(object):
 
     def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: str = ''):
         new_resource = deepcopy(main_resource)
+        block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
             self._update_attributes(new_resource.attributes, {COUNT_KEY: str(new_value)})
+            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), {COUNT_KEY: str(new_value)})
         elif main_resource.attributes.get(FOREACH_STRING):
             key_to_val_changes = self._build_key_to_val_changes(str(new_value), str(new_key))
             self._update_attributes(new_resource.attributes, key_to_val_changes)
+            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), key_to_val_changes)
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
         self.local_graph.vertices.append(new_resource)

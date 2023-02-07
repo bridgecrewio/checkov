@@ -1,9 +1,16 @@
+import json
 import os
 from unittest import mock
 
 import pytest
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
+
+
+def load_expected_data(path):
+    dir_name = os.path.realpath(os.path.join(TEST_DIRNAME, path))
+    with open(dir_name, "r") as f:
+        return json.load(f)
 
 
 def assert_object_equal(res, expected_res):
@@ -164,3 +171,14 @@ def test_resources_flow():
     assert resources[0].attributes.get('name') == ["us-west-2"]
     assert resources[0].attributes.get('region') == ["bucket_a"]
     assert list(resources[0].config.get('aws_s3_bucket').keys())[0] == 'foreach_map[bucket_a]'
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_tf_definitions_and_breadcrumbs():
+    from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
+    dir_name = 'foreach_examples/depend_resources'
+    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, dir_name)
+    expected_data = load_expected_data('expected_data_foreach.json')
+    assert tf_definitions == expected_data['tf_definitions']
+    assert breadcrumbs == expected_data['breadcrumbs']
