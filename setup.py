@@ -29,13 +29,13 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema"
+            "jsonschema",
         ]
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
         "bc-detect-secrets==1.4.9",
-        "bc-jsonpath-ng==1.5.8",
+        "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
         "colorama",
@@ -61,7 +61,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib<4.0.0,>=2.4.0",
+        "cyclonedx-python-lib>=2.4.0,<4.0.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
@@ -76,7 +76,6 @@ setup(
         "schema",
         "requests>=2.27.0",
         "yarl",
-        "igraph"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
