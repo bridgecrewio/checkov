@@ -114,7 +114,7 @@ resource "aws_kinesis_stream" "unencrypted_stream" {
 }
 
 resource "aws_s3_bucket" "encrypted_bucket_by_default" {
-  bucket = "unencrypted"
+  bucket = "encrypted"
 }
 
 resource "aws_s3_bucket" "encrypted_bucket" {
