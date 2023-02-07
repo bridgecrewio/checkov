@@ -125,7 +125,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 logging.info(
                     f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
-    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type: ignore # type:ignore[override]
+    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         regex_denylist: Set[Pattern[str]] = kwargs.get("regex_denylist", self.denylist)  # type: ignore[assignment]
         for regex in regex_denylist:
             for match in regex.findall(string):
