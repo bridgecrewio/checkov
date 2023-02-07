@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import inspect
 from typing import List, Optional, Tuple, Union
@@ -20,6 +21,7 @@ from checkov.circleci_pipelines.registry import registry as circleci_pipelines_r
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
+from checkov.common.runners.base_runner import strtobool
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
 from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry
@@ -38,6 +40,7 @@ from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/blob/main/checkov'
+CREATE_MARKDOWN_HYPERLINKS = strtobool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", "FALSE"))
 SKIP_CHECK_IDS = {
     "CKV_SECRET_10",  # this is an intermediate step, which is needed for another check
 }
@@ -72,6 +75,10 @@ def get_check_link(absolute_path: str) -> str:
     temp = absolute_path.split("checkov")
     # this will even work in the likely event that you're running checkov from a folder called checkov
     link = f'{CODE_LINK_BASE}{temp[len(temp)-1]}'
+
+    if CREATE_MARKDOWN_HYPERLINKS:
+        return f"[{absolute_path.rsplit('/', maxsplit=1)[1]}]({link})"
+
     return link
 
 

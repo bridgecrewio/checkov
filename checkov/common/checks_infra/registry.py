@@ -54,7 +54,7 @@ class Registry(BaseRegistry):
                             continue
 
                         check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{dir}/{file}'
+                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{root}/{file}'
                         )
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:

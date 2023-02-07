@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.335...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.341...HEAD)
+
+## [2.2.341](https://github.com/bridgecrewio/checkov/compare/2.2.335...2.2.341) - 2023-02-06
+
+### Feature
+
+- **ansible:** add support for Ansible blocks - [#4419](https://github.com/bridgecrewio/checkov/pull/4419)
+- **general:** Control check failure logging level - [#4431](https://github.com/bridgecrewio/checkov/pull/4431)
+- **graph:** add validation for graph checks - [#4352](https://github.com/bridgecrewio/checkov/pull/4352)
+- **kubernetes:** support inline skips for Kubernetes graph checks - [#4412](https://github.com/bridgecrewio/checkov/pull/4412)
+- **secrets:** remove secrets dependency in generic record - [#4424](https://github.com/bridgecrewio/checkov/pull/4424)
+
+### Bug Fix
+
+- **kustomize:** remove redundant error in kustomize runner - [#4428](https://github.com/bridgecrewio/checkov/pull/4428)
+
+### Documentation
+
+- **general:** fix graph check link in docs - [#4420](https://github.com/bridgecrewio/checkov/pull/4420)
 
 ## [2.2.335](https://github.com/bridgecrewio/checkov/compare/2.2.332...2.2.335) - 2023-02-05
 

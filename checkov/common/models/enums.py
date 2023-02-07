@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum, IntEnum
 
 
@@ -52,3 +53,9 @@ class ScanDataFormat(Enum):
 class ErrorStatus(IntEnum):
     SUCCESS = 0
     ERROR = 2
+
+
+@dataclass
+class CheckFailLevel:
+    WARNING = 'WARNING'
+    ERROR = 'ERROR'
