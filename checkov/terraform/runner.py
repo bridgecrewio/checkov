@@ -12,7 +12,8 @@ import dpath.util
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -24,7 +25,9 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, get_tf_definition_key_from_module_dependency
+from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
+    get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
+    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -42,13 +45,13 @@ from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
+from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.images.image_referencer import Image
-    from checkov.common.typing import ResourceAttributesToOmit
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -62,9 +65,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def __init__(
         self,
         parser: Parser | None = None,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
-        source: str = "Terraform",
+        source: str = GraphSource.TERRAFORM,
         graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
         graph_manager: TerraformGraphManager | None = None
     ) -> None:
@@ -78,7 +81,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
             source=source,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector or self.db_connector,
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
@@ -205,8 +208,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter,
-                                resource_attributes_to_omit: ResourceAttributesToOmit | None = None) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
@@ -241,12 +243,19 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             if referrer_id:
                                 resource = f'{referrer_id}.{resource_id}'
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
+                    elif entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id:
+                        # for plan resources
+                        resource = entity[CustomAttributes.TF_RESOURCE_ADDRESS]
+                        if not self.enable_nested_modules:
+                            resource = get_resource_id_without_nested_modules(resource)
                     entity_config = self.get_graph_resource_entity_config(entity)
-                    censored_code_lines = omit_secret_value_from_graph_checks(check=check, check_result=check_result,
-                                                                              entity_code_lines=entity_context.get(
-                                                                                  'code_lines'),
-                                                                              entity_config=entity_config,
-                                                                              resource_attributes_to_omit=resource_attributes_to_omit)
+                    censored_code_lines = omit_secret_value_from_graph_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_context.get('code_lines'),
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -362,7 +371,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
                     full_definition_path = entity_id.split('.')
-                    module_name_index = len(full_definition_path) - full_definition_path[::-1].index(BlockType.MODULE)  # the next item after the last 'module' prefix is the module name
+                    module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
@@ -423,8 +432,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             tags = get_resource_tags(entity_type, entity_config)
             if results:
                 for check, check_result in results.items():
-                    censored_code_lines = omit_secret_value_from_checks(check, check_result, entity_code_lines,
-                                                                        entity_config)
+                    censored_code_lines = omit_secret_value_from_checks(
+                        check=check,
+                        check_result=check_result,
+                        entity_code_lines=entity_code_lines,
+                        entity_config=entity_config,
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
+                    )
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -544,7 +558,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             return
 
         for definition in resolved_paths:
-            for block_type, block_configs in definition_context[definition].items():
+            for block_type, block_configs in definition_context.get(definition, {}).items():
                 # skip if type is not a Terraform resource
                 if block_type not in CHECK_BLOCK_TYPES:
                     continue
@@ -572,8 +586,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         returns a tuple containing the file path (e.g., "module/module.tf") and referrer (e.g., "main.tf#0").
         If the file path does not contain a referred, the tuple will contain the original file path and None.
         """
-        if file_path.endswith("]") and "[" in file_path:
-            return file_path[:file_path.index("[")], file_path[file_path.index("[") + 1: -1]
+        if file_path.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) and TERRAFORM_NESTED_MODULE_PATH_PREFIX in file_path:
+            return file_path[:file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)], \
+                file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
         else:
             return file_path, None
 

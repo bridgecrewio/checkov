@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import yaml
 
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.report import Report
 from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
 from checkov.github_actions.graph_builder.local_graph import GitHubActionsLocalGraph
@@ -23,7 +24,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
-    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.typing import LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
     from networkx import DiGraph
@@ -34,8 +35,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
 
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "GitHubActions",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.GITHUB_ACTIONS,
         graph_class: type[ObjectLocalGraph] = GitHubActionsLocalGraph,
         graph_manager: ObjectGraphManager | None = None,
         external_registries: dict[str, Any] | None = None
@@ -53,16 +54,14 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(
-        self, f: str, file_content: str | None = None
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(self, f: str, file_content: str | None = None) -> \
+            tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if is_workflow_file(f):
             entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = super()._parse_file(f)
             if not file_content:
                 with open(f, 'r') as f_obj:
                     file_content = f_obj.read()
-            if entity_schema and \
-                    is_schema_valid(yaml.load(file_content, Loader=loader.SafeLineLoaderGhaSchema)):  # nosec
+            if entity_schema and all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
         return None
 

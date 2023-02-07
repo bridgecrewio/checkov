@@ -27,6 +27,7 @@ def test_get_checks_returned_check_number():
         (
             ["all"],
             {
+                "Ansible",
                 "Argo Workflows",
                 "arm",
                 "Azure Pipelines",
@@ -50,6 +51,7 @@ def test_get_checks_returned_check_number():
         (
             None,
             {
+                "Ansible",
                 "Argo Workflows",
                 "arm",
                 "Azure Pipelines",

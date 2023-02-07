@@ -2,7 +2,9 @@ import os
 import warnings
 from pathlib import Path
 from typing import List
+from parameterized import parameterized_class
 
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -14,9 +16,19 @@ from checkov.github_actions.graph_builder.local_graph import GitHubActionsLocalG
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 
+@parameterized_class([
+   {"graph_framework": "NETWORKX"},
+   {"graph_framework": "IGRAPH"}
+])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        graph_manager = ObjectGraphManager(db_connector=NetworkxConnector(), source="GitHubActions")
+        db_connector = None
+        if self.graph_framework == 'NETWORKX':
+            db_connector = NetworkxConnector()
+        elif self.graph_framework == 'IGRAPH':
+            db_connector = IgraphConnector()
+
+        graph_manager = ObjectGraphManager(db_connector=db_connector, source="GitHubActions")
         super().__init__(
             graph_manager=graph_manager,
             real_graph_checks_path=str(
@@ -29,7 +41,6 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         )
 
     def setUp(self) -> None:
-        os.environ["UNIQUE_TAG"] = ""
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

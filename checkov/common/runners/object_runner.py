@@ -11,7 +11,7 @@ from typing import Any, TYPE_CHECKING, Callable
 from typing_extensions import TypedDict
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -38,7 +38,7 @@ class GhaMetadata(TypedDict):
 class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str | None = None,
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,
@@ -51,7 +51,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
         if source and graph_class:
             # if they are not all set, then ignore it
-            db_connector = db_connector or NetworkxConnector()
+            db_connector = db_connector or self.db_connector
             self.source = source
             self.graph_class = graph_class
             self.graph_manager = (
@@ -243,6 +243,13 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 end_line = entity[END_LINE]
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
+                    if entity.get(CustomAttributes.BLOCK_NAME) == 'permissions' and start_line == 0 and end_line == 0:
+                        # reconstruct permissions start-end lines since we do not have that information during graph build
+                        for line in self.definitions_raw[entity_file_path]:
+                            if line and 'permissions' in line[1]:
+                                start_line = line[0]
+                                end_line = line[0]
+                                break
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

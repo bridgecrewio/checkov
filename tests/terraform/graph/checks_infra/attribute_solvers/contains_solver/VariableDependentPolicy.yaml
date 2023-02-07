@@ -1,0 +1,25 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "VariableDependentPolicy"
+scope:
+  provider: "aws"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_s3_bucket_acl"
+      attribute: "access_control_policy.grant.*.grantee.id"
+      operator: "contains"
+      value: "data.aws_canonical_user_id.current.id"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_s3_bucket_acl"
+      attribute: "access_control_policy.grant.*.grantee.id"
+      operator: "contains"
+      value: "xyz"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_s3_bucket_acl"
+      attribute: "access_control_policy.grant.*.grantee.id"
+      operator: "not_exists"

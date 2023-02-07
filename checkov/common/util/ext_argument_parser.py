@@ -116,6 +116,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             version=version,
         )
         self.add(
+            "--support",
+            action="store_true",
+            help="Enable debug logs and upload the logs to the server. Requires a Bridgecrew or Prisma Cloud API key.",
+            default=None
+        )
+        self.add(
             "-d",
             "--directory",
             action="append",
@@ -306,6 +312,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--docker-image",
+            "--image",
             help="Scan docker images by name or ID. Only works with --bc-api-key flag",
         )
         self.add(
@@ -497,4 +504,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             env_var="CKV_NO_FAIL_ON_CRASH",
             action="store_true",
             help="Return exit code 0 instead of 2",
+        )
+        self.add(
+            "--mask",
+            action="append",
+            default=[],
+            help="List of <resource_type>:<variable> OR <variable> only. Each entry in the list will be used for"
+                 "masking the desired attribute for resource (or for all resources, if no resource given)."
+                 "Notice: one entry can contain several variables, seperated with a comma. For example:"
+                 "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
         )

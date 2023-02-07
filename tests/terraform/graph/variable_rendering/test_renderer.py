@@ -19,12 +19,8 @@ from tests.terraform.graph.variable_rendering.expected_data import (
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@mock.patch.dict(os.environ, {"RENDER_ASYNC_MAX_WORKERS": "50", "RENDER_VARIABLES_ASYNC": "False"})
 class TestRenderer(TestCase):
-    def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
-        os.environ['RENDER_ASYNC_MAX_WORKERS'] = '50'
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-
     def test_render_local(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_local')
         graph_manager = TerraformGraphManager('acme', ['acme'])
@@ -415,3 +411,11 @@ class TestRenderer(TestCase):
         assert resources_vertex[0].attributes.get('ingress')[0].get('ipv6_cidr_blocks') == 'null'
         assert resources_vertex[0].attributes.get('ingress')[0].get('self') == 'false'
         assert resources_vertex[0].attributes.get('ingress')[0].get('cidr_blocks') == ['10.248.180.0/23', '10.248.186.0/23']
+
+    def test_dynamic_with_conditional_expression(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_with_conditional_expression"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('identity').get('identity_ids') == 'null'
+        assert resources_vertex[0].attributes.get('identity').get('type') == 'SystemAssigned'

@@ -1,18 +1,23 @@
 import json
 import os
 from unittest import TestCase
-import mock
+from parameterized import parameterized_class
 
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.terraform.runner import Runner
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
-
+@parameterized_class([
+   {"db_connector": NetworkxConnector},
+   {"db_connector": IgraphConnector}
+])
 class TestGraphBuilder(TestCase):
     def test_build_graph(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
         source_files = ["pass_s3.tf", "variables.tf"]
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(None, None, files=list(map(lambda f: f'{resources_path}/{f}', source_files)))
         tf_definitions = runner.definitions
         self.assertEqual(3, len(report.failed_checks))
@@ -26,7 +31,7 @@ class TestGraphBuilder(TestCase):
 
     def test_run_clean(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=resources_path)
         self.assertEqual(4, len(report.failed_checks))
         self.assertEqual(6, len(report.passed_checks))
@@ -34,7 +39,7 @@ class TestGraphBuilder(TestCase):
 
     def test_run_persistent_data(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         data_path = os.path.join(os.path.dirname(__file__), "persistent_data.json")
         with open(data_path) as f:
             data = json.load(f)
@@ -50,7 +55,7 @@ class TestGraphBuilder(TestCase):
 
     def test_module_and_variables(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "modules-and-vars")
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=resources_path)
         self.assertLessEqual(2, len(report.failed_checks))
         self.assertLessEqual(12, len(report.passed_checks))

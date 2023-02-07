@@ -24,7 +24,7 @@ class GithubRepositoryCollaborators(BaseGithubCheck):
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'repository_collaborators' in ckv_metadata.get('file_name', ''):
-            if repository_collaborators_schema.validate(conf):
+            if conf and repository_collaborators_schema.validate(conf):
                 admin_collaborators = 0
                 for item in conf:
                     if isinstance(item, dict):

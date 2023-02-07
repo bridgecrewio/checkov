@@ -1,0 +1,20 @@
+metadata:
+  id: "CKV2_AWS_52"
+  name: "Ensure AWS ElasticSearch/OpenSearch Fine-grained access control is enabled"
+  category: "IAM"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+      - "aws_opensearch_domain"
+      - "aws_elasticsearch_domain"
+      attribute: "advanced_security_options.internal_user_database_enabled"
+      operator: "equals"
+      value: "true"
+    - cond_type: "attribute"
+      resource_types:
+      - "aws_opensearch_domain"
+      - "aws_elasticsearch_domain"
+      attribute: "advanced_security_options.enabled"
+      operator: "equals"
+      value: "true"  

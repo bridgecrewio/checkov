@@ -26,7 +26,7 @@ Specify a `name`, `ID`, `relevant resources` and `categories`.
 
 **Note for Supported Resources Parameter:** If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all Terraform resources.
 
-The following example produces a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/master/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
+The following example produces a policy that ensures that new RDS services spun-up are encrypted at rest, given a scanned Terraform configuration ([CKV_AWS_16](https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/aws/RDSEncryption.py)).
 1. Create a new file in the AWS check directory ``checkov/terraform/checks/resource/aws/RDSEncryption.py``.
 2. Import the following:
 
@@ -111,7 +111,7 @@ def scan_resource_conf(self, conf):
 ```
 
 Produces the following CLI report:
-![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan-cli-details.png)
+![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/checkov-scan-cli-details.png)
 
 7. Conclude the policy name and operationalize it with the statement:
 

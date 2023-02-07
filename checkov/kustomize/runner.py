@@ -15,6 +15,7 @@ import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -24,9 +25,10 @@ from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kustomize.utils import get_kustomize_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 
 if TYPE_CHECKING:
@@ -39,8 +41,8 @@ class K8sKustomizeRunner(K8sRunner):
     def __init__(
         self,
         graph_class: type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
@@ -157,8 +159,9 @@ class K8sKustomizeRunner(K8sRunner):
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kustomize runner was not set")
+            if self.context is None:
+                # this shouldn't happen
+                logging.error("Context for Kustomize runner was not set")
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
@@ -170,7 +173,7 @@ class K8sKustomizeRunner(K8sRunner):
                 entity_file_path: str = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path: str = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_id: str = entity[CustomAttributes.ID]
-                entity_context = self.context[entity_file_path][entity_id]
+                entity_context = super().get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
                 if entity_file_abs_path in kustomize_file_mappings:
                     realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[entity_file_abs_path]]
@@ -181,14 +184,14 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
-                code_lines = entity_context.get("code_lines")
+                code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
@@ -282,39 +285,31 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         if shutil.which(self.kubectl_command) is not None:
             try:
-                proc = subprocess.Popen([self.kubectl_command, 'version', '--client=true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
+                proc = subprocess.run([self.kubectl_command, 'version', '--client=true'], capture_output=True)  # nosec
+                version_output = proc.stdout.decode("utf-8")
 
-                if "Client Version:" in oString:
-                    kubectlVersionMajor = oString.split('\n')[0].split('Major:\"')[1].split('"')[0]
-                    kubectlVersionMinor = oString.split('\n')[0].split('Minor:\"')[1].split('"')[0]
-                    kubectlVersion = float(f"{kubectlVersionMajor}.{kubectlVersionMinor}")
-                    if kubectlVersion >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectlVersion}")
+                if "Client Version:" in version_output:
+                    kubectl_version_major = version_output.split('\n')[0].split('Major:\"')[1].split('"')[0]
+                    kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
+                    kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
+                    if kubectl_version >= 1.14:
+                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
                         self.templateRendererCommand = self.kubectl_command
                         return None
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e.decode()}")
+                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
 
         elif shutil.which(self.kustomize_command) is not None:
-            try:
-                proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
-
-                if "Version:" in oString:
-                    kustomizeVersionOutput = oString[oString.find('/') + 1: oString.find('G') - 1]
-                    logging.info(f"Found working version of {self.check_type} dependancy {self.kustomize_command}: {kustomizeVersionOutput}")
-                    self.templateRendererCommand = self.kustomize_command
-                    return None
-                else:
-                    return self.check_type
-
-            except Exception:
-                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e.decode()}")
-
+            kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
+            if kustomize_version:
+                logging.info(
+                    f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
+                )
+                self.templateRendererCommand = self.kustomize_command
+                return None
+            else:
+                return self.check_type
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type

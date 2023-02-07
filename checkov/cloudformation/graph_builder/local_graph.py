@@ -11,6 +11,7 @@ from checkov.cloudformation.graph_builder.utils import GLOBALS_RESOURCE_TYPE_MAP
 from checkov.cloudformation.graph_builder.variable_rendering.renderer import CloudformationVariableRenderer
 from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, ConditionFunctions, ResourceAttributes, \
     TemplateSections
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.parsers.node import DictNode
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
@@ -29,7 +30,7 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
     SUPPORTED_FN_CONNECTION_KEYS = (IntrinsicFunctions.GET_ATT, ConditionFunctions.IF,
                                     IntrinsicFunctions.REF, IntrinsicFunctions.FIND_IN_MAP, IntrinsicFunctions.CONDITION)
 
-    def __init__(self, cfn_definitions: dict[str, dict[str, Any]], source: str = "CloudFormation") -> None:
+    def __init__(self, cfn_definitions: dict[str, dict[str, Any]], source: str = GraphSource.CLOUDFORMATION) -> None:
         super().__init__()
         self.definitions = cfn_definitions
         self.source = source
@@ -137,6 +138,9 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
 
             for property, value in globals_vertex.attributes.items():
                 if property.endswith((START_LINE, END_LINE)):
+                    continue
+                if property.startswith("Tags"):
+                    # TODO: support Tags properly
                     continue
 
                 for vertex in related_vertices:

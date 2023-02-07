@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import re
 import inspect
 from typing import List, Optional, Tuple, Union
 
 from tabulate import tabulate
 
+from checkov.ansible.checks.registry import registry as ansible_registry
 from checkov.argo_workflows.checks.registry import registry as argo_workflows_registry
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.azure_pipelines.checks.registry import registry as azure_pipelines_registry
@@ -19,6 +21,7 @@ from checkov.circleci_pipelines.registry import registry as circleci_pipelines_r
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
+from checkov.common.runners.base_runner import strtobool
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
 from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry
@@ -37,6 +40,10 @@ from checkov.runner_filter import RunnerFilter
 
 ID_PARTS_PATTERN = re.compile(r'([^_]*)_([^_]*)_(\d+)')
 CODE_LINK_BASE = 'https://github.com/bridgecrewio/checkov/blob/main/checkov'
+CREATE_MARKDOWN_HYPERLINKS = strtobool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", "FALSE"))
+SKIP_CHECK_IDS = {
+    "CKV_SECRET_10",  # this is an intermediate step, which is needed for another check
+}
 
 
 def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int, int, str]]:
@@ -57,7 +64,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
                                        include_all_checkov_policies=include_all_checkov_policies,
                                        filtered_policy_ids=filtered_policy_ids or [])
     print(
-        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC", "Resource Link"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
@@ -68,6 +75,10 @@ def get_check_link(absolute_path: str) -> str:
     temp = absolute_path.split("checkov")
     # this will even work in the likely event that you're running checkov from a folder called checkov
     link = f'{CODE_LINK_BASE}{temp[len(temp)-1]}'
+
+    if CREATE_MARKDOWN_HYPERLINKS:
+        return f"[{absolute_path.rsplit('/', maxsplit=1)[1]}]({link})"
+
     return link
 
 
@@ -160,8 +171,16 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
         add_from_repository(bicep_resource_registry, "resource", "Bicep")
     if any(x in framework_list for x in ("all", "openapi")):
         add_from_repository(openapi_registry, "resource", "OpenAPI")
+    if any(x in framework_list for x in ("all", "ansible")):
+        graph_registry = get_graph_checks_registry("ansible")
+        graph_registry.load_checks()
+        add_from_repository(graph_registry, "resource", "Ansible")
+        add_from_repository(ansible_registry, "resource", "Ansible")
     if any(x in framework_list for x in ("all", "secrets")):
         for check_id, check_type in CHECK_ID_TO_SECRET_TYPE.items():
+            if check_id in SKIP_CHECK_IDS:
+                continue
+
             if not filtered_policy_ids or check_id in filtered_policy_ids:
                 if use_bc_ids:
                     check_id = metadata_integration.get_bc_id(check_id)

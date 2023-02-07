@@ -7,8 +7,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Any
 
+from parameterized import parameterized_class
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 from checkov.dockerfile.runner import Runner, get_files_definitions
@@ -17,7 +21,10 @@ from checkov.runner_filter import RunnerFilter
 
 RESOURCES_DIR = Path(__file__).parent / "resources"
 
-
+@parameterized_class([
+   {"db_connector": NetworkxConnector},
+   {"db_connector": IgraphConnector}
+])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = registry.checks
@@ -28,7 +35,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_empty_dockerfile(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/empty_dockerfile"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all'))
         self.assertEqual(report.failed_checks, [])
@@ -39,7 +46,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_name_variations(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/name_variations"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all'))
         self.assertEqual(len(report.resources), 2)
@@ -49,7 +56,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_failing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='all',checks=['CKV_DOCKER_1']))
         self.assertEqual(len(report.failed_checks), 1)
@@ -60,7 +67,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         filter = RunnerFilter(framework=['dockerfile'], use_enforcement_rules=True)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
@@ -75,7 +82,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_failing_check_with_file_path(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_file_path = current_dir + "/resources/expose_port/fail/Dockerfile"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(
             files=[valid_file_path],
             external_checks_dir=None,
@@ -89,7 +96,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_runner_passing_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/pass"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=["all"],checks=["CKV_DOCKER_1", "CKV2_DOCKER_1"]))
         self.assertEqual(len(report.passed_checks), 2)
@@ -108,7 +115,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = Path(__file__).parent / "resources/expose_port/skip"
 
         # when
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             root_folder=str(valid_dir_path),
             external_checks_dir=None,
             runner_filter=RunnerFilter(
@@ -150,7 +157,7 @@ class TestRunnerValid(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='dockerfile', checks=[custom_check_id]))
 
@@ -178,7 +185,7 @@ class TestRunnerValid(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='dockerfile', checks=['MEDIUM']))
 
@@ -207,7 +214,7 @@ class TestRunnerValid(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='dockerfile', checks=['CRITICAL']))
 
@@ -236,7 +243,7 @@ class TestRunnerValid(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='dockerfile', checks=['MEDIUM']))
 
@@ -265,7 +272,7 @@ class TestRunnerValid(unittest.TestCase):
 
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/expose_port/fail"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework='dockerfile', skip_checks=['MEDIUM']))
 
@@ -275,7 +282,7 @@ class TestRunnerValid(unittest.TestCase):
     def test_skip_wildcard_check(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/wildcard_skip"
-        runner = Runner()
+        runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['dockerfile']))
         self.assertEqual(len(report.skipped_checks), 1)
@@ -313,7 +320,7 @@ class TestRunnerValid(unittest.TestCase):
         test_file = RESOURCES_DIR / "name_variations/Dockerfile.prod"
 
         # when
-        report = Runner().run(
+        report = Runner(db_connector=self.db_connector()).run(
             files=[str(test_file)],
             runner_filter=RunnerFilter(framework=['dockerfile'], checks=["CKV_DOCKER_4"])  # chose a check, which will find nothing
         )

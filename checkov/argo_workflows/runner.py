@@ -41,7 +41,7 @@ class Runner(YamlRunner, ImageReferencer):
         return None
 
     def _get_workflow_file_content(self, file_path: str) -> str | None:
-        if not file_path.endswith((".yaml", ",yml")):
+        if not file_path.endswith((".yaml", ".yml")):
             return None
 
         content = Path(file_path).read_text()

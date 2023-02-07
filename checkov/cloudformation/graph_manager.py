@@ -8,15 +8,15 @@ from checkov.cloudformation.cfn_utils import get_folder_definitions
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
-from checkov.common.graph.db_connectors.db_connector import DBConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_manager import GraphManager
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraphConnector
 
 
 class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[str, dict[str, Any]]"]):
-    def __init__(self, db_connector: DBConnector[DiGraph], source: str = "CloudFormation") -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.CLOUDFORMATION) -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(

@@ -81,7 +81,7 @@ class Record:
         self.bc_category = bc_category
         self.benchmarks = benchmarks
         self.description = description  # used by SARIF output
-        self.short_description = short_description  # used by SARIF output
+        self.short_description = short_description  # used by SARIF and GitLab SAST output
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
@@ -193,6 +193,7 @@ class Record:
                         )
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 

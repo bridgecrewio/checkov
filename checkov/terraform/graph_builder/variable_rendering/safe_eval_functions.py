@@ -161,7 +161,7 @@ def timeadd(input_str: str, time_delta: str) -> str:
             delta = timedelta(microseconds=(amount / 1000))
 
         dt = update_datetime(dt, delta, adding)
-        
+
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 

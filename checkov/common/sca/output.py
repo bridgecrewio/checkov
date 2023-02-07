@@ -27,6 +27,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.output.common import format_licenses_to_string
 
 if TYPE_CHECKING:
+    from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
     from checkov.common.typing import _LicenseStatus, _CheckResult
@@ -76,6 +77,7 @@ def create_report_license_record(
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
+        short_description=f"License {licenses_status['license']} - {package_name}: {package_version}",
         vulnerability_details=details,
     )
     return record
@@ -496,16 +498,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
             should_call_raise_for_status=True
         )
         response_json = response.json()
-        license_statuses: list[_LicenseStatus] = [
-            {
-                "package_name": license_violation.get("name", ""),
-                "package_version": license_violation.get("version", ""),
-                "policy": license_violation.get("policy", "BC_LIC1"),
-                "license": license_violation.get("license", ""),
-                "status": license_violation.get("status", "COMPLIANT")
-            }
-            for license_violation in response_json.get("violations", [])
-        ]
+        license_statuses: list[_LicenseStatus] = _extract_license_statuses(response_json)
         return license_statuses
     except Exception:
         error_message = (
@@ -515,3 +508,45 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
         logging.info(error_message, exc_info=True)
 
     return []
+
+
+async def get_license_statuses_async(session: ClientSession, packages: list[dict[str, Any]], image_name: str) \
+        -> dict[str, str | list[_LicenseStatus]]:
+    """
+    This is an async implementation of `get_license_statuses`. The only change is we're getting a session
+    as an input, and the asyncio behavior is managed in the calling method.
+    """
+    requests_input = _get_request_input(packages)
+    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
+    if not requests_input:
+        return {'image_name': image_name, 'licenses': []}
+    try:
+        async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
+                                   json={"packages": requests_input}) as resp:
+            response_json = await resp.json()
+
+        license_statuses = _extract_license_statuses(response_json)
+        return {'image_name': image_name, 'licenses': license_statuses}
+    except Exception as e:
+        error_message = (
+            "failing when trying to get licenses-violations. it is apparently some unexpected "
+            "connection issue. please try later. in case it keeps happening, please report."
+            f"Error: {str(e)}"
+        )
+        logging.info(error_message, exc_info=True)
+
+        return {'image_name': image_name, 'licenses': []}
+
+
+def _extract_license_statuses(response_json: dict[str, list[dict[str, str]]]) -> list[_LicenseStatus]:
+    license_statuses: list[_LicenseStatus] = [
+        {
+            "package_name": license_violation.get("name", ""),
+            "package_version": license_violation.get("version", ""),
+            "policy": license_violation.get("policy", "BC_LIC1"),
+            "license": license_violation.get("license", ""),
+            "status": license_violation.get("status", "COMPLIANT")
+        }
+        for license_violation in response_json.get("violations", [])
+    ]
+    return license_statuses

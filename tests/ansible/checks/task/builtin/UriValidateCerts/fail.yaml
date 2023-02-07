@@ -1,0 +1,12 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: disabled
+      uri:
+        url: https://www.example.com
+        return_content: yes
+        validate_certs: false
+      register: this
+      failed_when: "'AWESOME' not in this.content"

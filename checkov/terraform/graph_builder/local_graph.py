@@ -19,6 +19,7 @@ from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
+import checkov.terraform.graph_builder.foreach_handler as foreach_module
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -52,12 +53,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
+        self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
+        if self.enable_foreach_handling:
+            try:
+                foreach_handler = foreach_module.ForeachHandler(self)
+                foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
+            except Exception as e:
+                logging.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
@@ -66,7 +76,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.update_nested_modules_address()
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "False")):
+            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
                 # experimental flag on building cross variable edges for terraform graph
                 logging.info("Building cross variable edges")
                 edges_count = len(self.edges)
@@ -91,6 +101,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
             self.in_edges[i] = []
             self.out_edges[i] = []
+
+            if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
+                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
+                self.foreach_blocks[block.block_type].append(i)
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
@@ -272,6 +286,14 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if len(target_variables) == 1:
                 self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
 
+    def reset_edges(self) -> None:
+        self.edges = []
+        self.out_edges = defaultdict(list)
+        self.in_edges = defaultdict(list)
+        for i in range(len(self.vertices)):
+            self.out_edges[i] = []
+            self.in_edges[i] = []
+
     def _build_cross_variable_edges(self):
         target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
                                 self.vertices[v].block_type == BlockType.RESOURCE and any(
@@ -291,11 +313,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return False
         edge = Edge(origin_vertex_index, dest_vertex_index, label)
         if cross_variable_edges:
-            if edge in self.edges or self.vertices[edge.dest].block_type != BlockType.RESOURCE or \
-                    self.vertices[edge.origin].block_type != BlockType.RESOURCE:
+            if self.vertices[dest_vertex_index].block_type != BlockType.RESOURCE or \
+                    self.vertices[origin_vertex_index].block_type != BlockType.RESOURCE:
+                return False
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
             edge.label = CROSS_VARIABLE_EDGE_PREFIX + edge.label
-            if edge in self.edges:
+            if edge in self.out_edges[origin_vertex_index]:
                 return False
         self.edges.append(edge)
         self.out_edges[origin_vertex_index].append(edge)
@@ -610,9 +634,12 @@ def update_list_attribute(
 
             inner_config[idx] = new_value
             return config
-
+    entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
-        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        if entry_to_update == -1:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        elif entry_to_update == i:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=".".join(key_parts[1:]), new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
 

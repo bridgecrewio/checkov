@@ -4,8 +4,10 @@ import logging
 import fnmatch
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
 import re
+
+from checkov.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severity, Severities
@@ -45,11 +47,15 @@ class RunnerFilter(object):
             enable_secret_scan_all_files: bool = False,
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
-            repo_root_for_plan_enrichment: Optional[List[str]] = None
+            repo_root_for_plan_enrichment: Optional[List[str]] = None,
+            resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
         skip_checks = convert_csv_string_arg_to_list(skip_checks)
+
+        self.skip_invalid_secrets = skip_checks and any(skip_check.capitalize() == ValidationStatus.INVALID.value
+                                                        for skip_check in skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
         self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
@@ -59,6 +65,7 @@ class RunnerFilter(object):
         self.check_threshold = None
         self.skip_check_threshold = None
         self.checks = []
+        self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
         self.skip_checks_regex_patterns = defaultdict(lambda: [])
         self.show_progress_bar = show_progress_bar
@@ -117,6 +124,17 @@ class RunnerFilter(object):
         self.suppressed_policies: List[str] = []
         self.deep_analysis = deep_analysis
         self.repo_root_for_plan_enrichment = repo_root_for_plan_enrichment
+        self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
+            resource_attr_to_omit
+        )
+
+    @staticmethod
+    def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
+        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
+        # In order to create new object (and not a reference to the given one)
+        if resource_attr_to_omit_input:
+            resource_attributes_to_omit.update(resource_attr_to_omit_input)
+        return resource_attributes_to_omit
 
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
@@ -173,11 +191,13 @@ class RunnerFilter(object):
         )
 
         if not should_run_check:
+            logging.debug(f'Should run check {check_id}: False')
             return False
 
         # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
         # It can, however, be skipped.
         if not is_policy_filtered:
+            logging.debug(f'not is_policy_filtered {check_id}: should_run_check = False')
             should_run_check = False
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
@@ -188,17 +208,22 @@ class RunnerFilter(object):
             explicit_skip or
             regex_match or
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-            check_id in self.suppressed_policies
+            (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
+        logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
+        logging.debug(
+            f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}')
 
         if should_skip_check:
             result = False
+            logging.debug(f'should_skip_check {check_id}: {should_skip_check}')
         elif should_run_check:
             result = True
+            logging.debug(f'should_run_check {check_id}: {result}')
         else:
             result = False
+            logging.debug(f'default {check_id}: {result}')
 
-        logging.debug(f'Should run check {check_id}: {result}')
         return result
 
     def _match_regex_pattern(self, check_id: str, file_origin_paths: List[str] | None, root_folder: str | None) -> bool:
@@ -242,6 +267,10 @@ class RunnerFilter(object):
         above_min = (not self.check_threshold) or self.check_threshold.level <= severity.level
         below_max = self.skip_check_threshold and self.skip_check_threshold.level >= severity.level
         return above_min and not below_max
+
+    @staticmethod
+    def secret_validation_status_matches(secret_validation_status: str, statuses_list: list[str]) -> bool:
+        return secret_validation_status in statuses_list
 
     @staticmethod
     def notify_external_check(check_id: str) -> None:

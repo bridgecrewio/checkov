@@ -4,10 +4,11 @@ import logging
 import os
 import platform
 
-from typing import Type, Optional, TYPE_CHECKING
+from typing import Type, Optional
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -22,12 +23,11 @@ from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.plan_utils import create_definitions, build_definitions_context
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context, \
+    get_resource_id_without_nested_modules
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
-if TYPE_CHECKING:
-    from checkov.common.typing import ResourceAttributesToOmit
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -68,13 +68,13 @@ class Runner(TerraformRunner):
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
                  graph_manager: TerraformGraphManager | None = None,
-                 db_connector: NetworkxConnector | None = None,
+                 db_connector: LibraryGraphConnector | None = None,
                  external_registries: list[BaseRegistry] | None = None,
-                 source: str = "Terraform") -> None:
+                 source: str = GraphSource.TERRAFORM) -> None:
         super().__init__(
             graph_class=graph_class,
             graph_manager=graph_manager,
-            db_connector=db_connector or NetworkxConnector(),
+            db_connector=db_connector,
             external_registries=external_registries,
             source=source,
         )
@@ -99,6 +99,8 @@ class Runner(TerraformRunner):
             collect_skip_comments: bool = True
     ) -> Report | list[Report]:
         runner_filter = runner_filter or RunnerFilter()
+        # Update resource_attr_to_omit according to plan runner hardcoded RESOURCE_ATTRIBUTES_TO_OMIT
+        self._extend_resource_attributes_to_omit(runner_filter)
         self.deep_analysis = runner_filter.deep_analysis
         if runner_filter.repo_root_for_plan_enrichment:
             self.repo_root_for_plan_enrichment = os.path.abspath(runner_filter.repo_root_for_plan_enrichment[0])
@@ -112,7 +114,12 @@ class Runner(TerraformRunner):
                 self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
-                        report.add_resource(f'{vertex.path}:{vertex.id}')
+                        address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                        if self.enable_nested_modules:
+                            report.add_resource(f'{vertex.path}:{address}')
+                        else:
+                            resource_id = get_resource_id_without_nested_modules(address)
+                            report.add_resource(f'{vertex.path}:{resource_id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph()
@@ -127,10 +134,11 @@ class Runner(TerraformRunner):
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.definitions:
-            graph_report = self._get_graph_report(root_folder=root_folder,
-                                                  runner_filter=runner_filter,
-                                                  tf_local_graph=tf_local_graph,
-                                                  resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
+            graph_report = self._get_graph_report(
+                root_folder=root_folder,
+                runner_filter=runner_filter,
+                tf_local_graph=tf_local_graph
+            )
             merge_reports(report, graph_report)
 
         if runner_filter.run_image_referencer:
@@ -146,22 +154,33 @@ class Runner(TerraformRunner):
 
         return report
 
-    def _get_graph_report(self, root_folder: str, runner_filter: RunnerFilter,
-                          tf_local_graph: Optional[TerraformLocalGraph],
-                          resource_attributes_to_omit: ResourceAttributesToOmit) -> Report:
+    @staticmethod
+    def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter):
+        for k, v in RESOURCE_ATTRIBUTES_TO_OMIT.items():
+            # It's ok as runner_filter is ALWAYS default dict with set() as value
+            runner_filter.resource_attr_to_omit[k].update(v)
+
+    def _get_graph_report(
+            self,
+            root_folder: str,
+            runner_filter: RunnerFilter,
+            tf_local_graph: Optional[TerraformLocalGraph]
+    ) -> Report:
         if self._should_run_deep_analysis and tf_local_graph:
             deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             deep_analysis_graph_manager.filter_report(graph_report)
             return graph_report
-        return self.get_graph_checks_report(root_folder, runner_filter, resource_attributes_to_omit)
+        return self.get_graph_checks_report(root_folder, runner_filter)
 
     def _create_terraform_graph(self) -> TerraformLocalGraph:
-        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
-        tf_local_graph, _ = graph_manager.build_graph_from_source_directory(self.repo_root_for_plan_enrichment,
-                                                                            render_variables=True)
+        graph_manager = TerraformGraphManager(db_connector=self.db_connector)
+        tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
+            self.repo_root_for_plan_enrichment,
+            render_variables=True
+        )
         self.graph_manager = graph_manager
         return tf_local_graph
 
@@ -188,12 +207,12 @@ class Runner(TerraformRunner):
             for entity in entities:
                 context_parser = parser_registry.context_parsers[block_type]
                 definition_path = context_parser.get_entity_context_path(entity)
-                entity_id = ".".join(definition_path)
                 # Entity can exist only once per dir, for file as well
                 entity_context = self.get_entity_context(definition_path, full_file_path)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
+                entity_id = entity_address if self.enable_nested_modules else get_resource_id_without_nested_modules(entity_address)
                 _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
@@ -201,13 +220,12 @@ class Runner(TerraformRunner):
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
                         # can't be evaluated in TF plan
                         continue
-
                     censored_code_lines = omit_secret_value_from_checks(
                         check=check,
                         check_result=check_result,
                         entity_code_lines=entity_code_lines,
                         entity_config=entity_config,
-                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT
+                        resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
                     record = Record(
                         check_id=check.id,
@@ -231,7 +249,8 @@ class Runner(TerraformRunner):
     def get_entity_context_and_evaluations(self, entity):
         raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
                                               entity[CustomAttributes.FILE_PATH])
-        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
+        if raw_context:
+            raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path):

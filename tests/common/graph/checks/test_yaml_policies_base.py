@@ -11,7 +11,7 @@ from typing import List, Optional, Any
 from unittest import TestCase
 
 from checkov.cloudformation.runner import Runner
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.output.record import Record
@@ -78,13 +78,13 @@ class TestYamlPoliciesBase(TestCase):
             source_dir=root_folder,
             local_graph_class=local_graph_class,
         )
-        nx_graph = self.graph_manager.save_graph(local_graph)
+        graph = self.graph_manager.save_graph(local_graph)
         registry = self.get_checks_registry()
-        checks_results = registry.run_checks(nx_graph, RunnerFilter(checks=[check_id]), None)
+        checks_results = registry.run_checks(graph, RunnerFilter(checks=[check_id]), None)
         return self.create_report_from_graph_checks_results(checks_results, policy['metadata'])
 
     def get_checks_registry(self):
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=self.real_graph_checks_path)
+        registry = Registry(parser=GraphCheckParser(), checks_dir=self.real_graph_checks_path)
         registry.load_checks()
         if self.checks_dir:
             registry.load_external_checks(self.checks_dir)

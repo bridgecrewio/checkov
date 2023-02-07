@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
+from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
@@ -25,6 +27,7 @@ from checkov.kubernetes.kubernetes_utils import (
     get_resource_id,
     K8_POSSIBLE_ENDINGS,
     PARENT_RESOURCE_ID_KEY_NAME,
+    create_check_result,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -51,15 +54,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
         report_type: str = check_type
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__(file_extensions=K8_POSSIBLE_ENDINGS)
+        db_connector = db_connector or self.db_connector
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = \
@@ -97,17 +100,17 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                         self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
+            self.spread_list_items()
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
                 logging.info("creating Kubernetes graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                local_graph = self.graph_manager.build_graph_from_definitions(deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
                     report.add_resource(f'{file_abs_path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions = local_graph.definitions
         self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
@@ -131,6 +134,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     return [report, image_report]
 
         return report
+
+    def spread_list_items(self) -> None:
+        for _, file_conf in self.definitions.items():
+            for resource in file_conf:
+                if resource.get('kind') == "List":
+                    file_conf.extend(item for item in resource.get("items", []) if item)
+                    file_conf.remove(resource)
 
     def check_definitions(
         self, root_folder: str | None, runner_filter: RunnerFilter, report: Report, collect_skip_comments: bool = True
@@ -249,10 +259,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
                 entity_context = self.get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
-                clean_check_result: _CheckResult = {
-                    "result": check_result["result"],
-                    "evaluated_keys": check_result["evaluated_keys"],
-                }
+                clean_check_result = create_check_result(
+                    check_result=check_result, entity_context=entity_context, check_id=check.id
+                )
 
                 record = Record(
                     check_id=check.id,

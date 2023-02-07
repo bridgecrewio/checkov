@@ -9,6 +9,7 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
 from checkov.common.graph.graph_builder.utils import calculate_hash
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -172,7 +173,7 @@ class TestLocalGraph(TestCase):
         expected_inner_modules = [
             [
                 f'{resources_dir}/prod/main.tf',
-                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
+                f'{resources_dir}/prod/sub-prod/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
             ],
             [
                 f'{resources_dir}/stage/main.tf'
@@ -186,16 +187,16 @@ class TestLocalGraph(TestCase):
         expected_inner_modules = [
             [
                 f'{resources_dir}/prod/main.tf',
-                f'{resources_dir}/prod/sub-prod/main.tf[{resources_dir}/prod/main.tf#0]',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/prod/sub-prod/main.tf#0[{resources_dir}/prod/main.tf#0]]',
+                f'{resources_dir}/prod/sub-prod/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/sub-prod/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
             ],
             [
                 f'{resources_dir}/stage/main.tf',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/stage/main.tf#0]',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/stage/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
             ],
             [
                 f'{resources_dir}/test/main.tf',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf[{resources_dir}/test/main.tf#0]',
+                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/test/main.tf#0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
             ],
         ]
         self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'], expected_inner_modules)
@@ -526,3 +527,16 @@ class TestLocalGraph(TestCase):
 
         assert json.dumps(vertices).replace(resources_dir, '') == json.dumps(expected.get('vertices')).replace(resources_dir, '')
         assert json.dumps(edges) == json.dumps(expected.get('edges'))
+
+    def test_reset_edges(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/reset_edges'))
+        hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+        local_graph.reset_edges()
+        assert local_graph.edges == []
+        assert len(local_graph.vertices) == 3
+        for i in range(len(local_graph.vertices)):
+            assert local_graph.out_edges[i] == []
+            assert local_graph.in_edges[i] == []

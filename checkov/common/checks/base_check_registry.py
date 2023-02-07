@@ -89,7 +89,7 @@ class BaseCheckRegistry:
             res = self.checks[entity].copy() if entity in self.checks.keys() else []
             # check wildcards
             for pattern, checks in self.wildcard_checks.items():
-                if fnmatch.fnmatchcase(entity, pattern):
+                if entity and fnmatch.fnmatchcase(entity, pattern):
                     res += checks
             return res
 
@@ -153,9 +153,6 @@ class BaseCheckRegistry:
             )
             return result
         except Exception:
-            logging.error(f'Failed to run check {check.id} on {scanned_file}:{entity_type}.{entity_name}',
-                          exc_info=True)
-            logging.info(f'Entity configuration: {entity_configuration}')
             return _CheckResult(
                 result=CheckResult.UNKNOWN, suppress_comment="", evaluated_keys=[],
                 results_configuration=entity_configuration, check=check, entity=entity_configuration
