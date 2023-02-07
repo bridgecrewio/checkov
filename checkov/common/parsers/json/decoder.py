@@ -131,11 +131,11 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
     parse_string = context.parse_string
     match_number = NUMBER_RE.match
     strict = context.strict
-    parse_float = context.parse_float  # type:ignore[misc]  # mypy bug
-    parse_int = context.parse_int  # type:ignore[misc]
-    parse_constant = context.parse_constant  # type:ignore[misc]
-    object_hook = context.object_hook  # type:ignore[misc]
-    object_pairs_hook = context.object_pairs_hook  # type:ignore[misc]
+    parse_float = context.parse_float
+    parse_int = context.parse_int
+    parse_constant = context.parse_constant
+    object_hook = context.object_hook
+    object_pairs_hook = context.object_pairs_hook
     memo = context.memo
 
     # pylint: disable=R0911
@@ -178,16 +178,16 @@ def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
         if m is not None:
             integer, frac, exp = m.groups()
             if frac or exp:
-                res = parse_float(integer + (frac or '') + (exp or ''))  # type:ignore[call-arg]  # mypy bug
+                res = parse_float(integer + (frac or '') + (exp or ''))
             else:
-                res = parse_int(integer)  # type:ignore[call-arg]  # mypy bug
+                res = parse_int(integer)
             return res, m.end()
         if nextchar == 'N' and string[idx:idx + 3] == 'NaN':
-            return parse_constant('NaN'), idx + 3  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('NaN'), idx + 3
         if nextchar == 'I' and string[idx:idx + 8] == 'Infinity':
-            return parse_constant('Infinity'), idx + 8  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('Infinity'), idx + 8
         if nextchar == '-' and string[idx:idx + 9] == '-Infinity':
-            return parse_constant('-Infinity'), idx + 9  # type:ignore[call-arg]  # mypy bug
+            return parse_constant('-Infinity'), idx + 9
 
         raise StopIteration(idx)
 

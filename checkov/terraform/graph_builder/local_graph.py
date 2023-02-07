@@ -640,9 +640,12 @@ def update_list_attribute(
 
             inner_config[idx] = new_value
             return config
-
+    entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
-        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        if entry_to_update == -1:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        elif entry_to_update == i:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=".".join(key_parts[1:]), new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
 

@@ -38,7 +38,7 @@ class IgraphConnector(DBConnector[Graph]):
         # random_colors_len = len(random_colors)
         # randrange(len(random_colors))
 
-        for vertex in local_graph.vertices:
+        for index, vertex in enumerate(local_graph.vertices):
             attr = vertex.get_attribute_dict()
             self.graph.add_vertex(
                 name=attr[CustomAttributes.HASH],
@@ -47,6 +47,7 @@ class IgraphConnector(DBConnector[Graph]):
                 # label=attr[CustomAttributes.BLOCK_NAME],
                 # color=colors.get(attr["kind"], "red"),
                 attr=attr,
+                block_index=index
             )
 
         edges_to_add = [
