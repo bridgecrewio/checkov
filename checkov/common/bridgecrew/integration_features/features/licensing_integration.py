@@ -67,7 +67,10 @@ class LicensingIntegration(BaseIntegrationFeature):
 
     @staticmethod
     def get_subscription_for_runner(runner_check_type: str) -> CustomerSubscription:
-        return CategoryToSubscriptionMapping[CodeCategoryMapping[runner_check_type]]
+        if 'sca_' in runner_check_type:
+            return CustomerSubscription.SCA
+        else:
+            return CategoryToSubscriptionMapping[CodeCategoryMapping[runner_check_type]]
 
     def post_runner(self, scan_report: Report) -> None:
         pass
