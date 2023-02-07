@@ -99,7 +99,8 @@ class CustomRegexDetector(RegexBasedDetector):
     ) -> None:
         current_denylist: Set[Pattern[str]] = self.multiline_deny_list if is_multiline else self.denylist
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
-        for match, regex in self.analyze_string(string_to_analyze, regex_denylist=current_denylist, **kwargs):
+        kwargs["regex_denylist"] = current_denylist
+        for match, regex in self.analyze_string(string_to_analyze, **kwargs):
             try:
                 verified_result = call_function_with_arguments(self.verify, secret=match, context=context)
                 is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
