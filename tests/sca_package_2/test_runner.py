@@ -95,7 +95,7 @@ def test_upload_scannable_files_file_config():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
-                      s3_file_key='go.mod')
+                      s3_file_key='go.mod'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
                       s3_file_key='Microsoft.NET.Sdk.csproj')
     }
