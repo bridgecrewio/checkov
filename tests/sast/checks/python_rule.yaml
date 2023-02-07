@@ -21,6 +21,6 @@ rules:
       references:
       - https://cwe.mitre.org/data/definitions/289.html
       subcategory:
-      - audit
+      - audit1
       impact: MEDIUM
       likelihood: LOW
