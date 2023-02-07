@@ -63,29 +63,30 @@ class CustomRegexDetector(RegexBasedDetector):
             **kwargs
         )
 
-        if filename not in self._analyzed_files:
-            self._analyzed_files.add(filename)
-            file_content = None
-            try:
-                with open(filename, 'r') as f:
-                    file_content = f.read()
-            except Exception:
-                logging.warning(
-                    "Could not open file in order to detect secrets}",
-                    extra={"file_path": filename}
-                )
-            if not file_content:
-                return output
-
-            self._find_potential_secret(
-                filename=filename,
-                string_to_analyze=file_content,
-                output=output,
-                line_number=0,
-                context=raw_context,
-                is_multiline=True,
-                **kwargs
-            )
+        # ToDo: Comment out once fix performence #  type: ignore
+        # if filename not in self._analyzed_files:
+        #     self._analyzed_files.add(filename)
+        #     file_content = None
+        #     try:
+        #         with open(filename, 'r') as f:
+        #             file_content = f.read()
+        #     except Exception:
+        #         logging.warning(
+        #             "Could not open file in order to detect secrets}",
+        #             extra={"file_path": filename}
+        #         )
+        #     if not file_content:
+        #         return output
+        # this should be indented:
+        # self._find_potential_secret(
+        #     filename=filename,
+        #     string_to_analyze=file_content,
+        #     output=output,
+        #     line_number=0,
+        #     context=raw_context,
+        #     is_multiline=True,
+        #     **kwargs
+        # )
 
         return output
 
