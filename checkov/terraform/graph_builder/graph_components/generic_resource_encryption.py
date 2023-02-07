@@ -15,7 +15,11 @@ class GenericResourceEncryption(GenericResourceEncryptionBase):
                          enabled_by_default,
                          node_to_node_encryption="node_to_node_encryption")
         if self.resource_type.startswith("aws_"):
-            self.default_description = EncryptionTypes.DEFAULT_KMS.value
+            if self.resource_type == 'aws_s3_bucket':
+                # for s3 buckets the default is SSE-S3 which uses AES256
+                self.default_description = EncryptionTypes.AES256.value
+            else:
+                self.default_description = EncryptionTypes.DEFAULT_KMS.value
 
 
 # This map allows dynamically creating the check for each resource type based on GenericResourceEncryption.
@@ -95,6 +99,7 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
             ],
             "server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.kms_master_key_id": [],
         },
+        enabled_by_default=True
     ),
     "aws_s3_bucket_inventory": GenericResourceEncryption(
         "aws_s3_bucket_inventory", {"destination.bucket.encryption": []}

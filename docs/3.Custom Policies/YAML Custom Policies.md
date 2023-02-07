@@ -320,6 +320,7 @@ definition:
 ### Ansible
 Following `resource_types` are supported
 
+- `block`
 - `tasks.[module name]`
 
 ex.
@@ -331,6 +332,21 @@ resource_types:
 attribute: url
 operator: starting_with
 value: "https://"
+```
+
+#### Note
+In the case a module can be used without parameters by just adding the value to it, 
+then it can be queried via a the special attribute `__self__`.
+
+ex.
+```yaml
+cond_type: "attribute"
+resource_types:
+  - "ansible.builtin.command"
+  - "command"
+attribute: "__self__"
+operator: "not_contains"
+value: "vim"
 ```
 
 ### Bicep
