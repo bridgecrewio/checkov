@@ -89,14 +89,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info("Creating vertices")
         self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
+            self.vertices[i] = block
             self._add_block_data_to_graph(i, block)
             if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
                     and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
 
     def _add_block_data_to_graph(self, idx: int, block: TerraformBlock) -> None:
-        self.vertices[idx] = block
-
         self.vertices_by_block_type[block.block_type].append(idx)
         self.vertices_block_name_map[block.block_type][block.name].append(idx)
 
@@ -111,6 +110,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.out_edges[idx] = []
 
     def _arrange_graph_data(self) -> None:
+        # reset all the relevant data
+        self.vertices_by_block_type = defaultdict(list)
+        self.vertices_block_name_map = defaultdict(lambda: defaultdict(list))
+        self.map_path_to_module = {}
+        self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency_by_name = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
         for i, block in enumerate(self.vertices):
             self._add_block_data_to_graph(i, block)
 
