@@ -24,9 +24,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
 
     def is_valid(self) -> bool:
         return (
-            self.bc_integration.is_integration_configured()
-            and not self.bc_integration.skip_download
-            and not self.integration_feature_failures
+                self.bc_integration.is_integration_configured()
+                and not self.bc_integration.skip_download
+                and not self.integration_feature_failures
         )
 
     def pre_scan(self) -> None:
@@ -49,7 +49,8 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.debug("Scanning without applying scanning configs from the platform.", exc_info=True)
 
     @staticmethod
-    def _get_code_category_object(code_category_config: dict[str, Any], code_category_type: str) -> CodeCategoryConfiguration | None:
+    def _get_code_category_object(code_category_config: dict[str, Any],
+                                  code_category_type: str) -> CodeCategoryConfiguration | None:
         if code_category_type not in code_category_config:
             return None
         soft_fail_threshold = Severities[code_category_config[code_category_type]['softFailThreshold']]
@@ -106,17 +107,21 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             logging.info('Found exactly one matching enforcement rule for the specified repo')
             self.enforcement_rule = matched_rules[0]
 
-        logging.debug('Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
+        logging.debug(
+            'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
-        for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]:
-            config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'], code_category_type)
+        for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if
+                                   not attr.startswith("__")]:
+            config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'],
+                                                                     code_category_type)
             if config:
                 self.code_category_configs[code_category_type] = config
 
     def is_code_review_disabled(self, code_category_type: str) -> bool:
         config = self.code_category_configs[code_category_type]
-        if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]:
+        if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[
+            BcSeverities.OFF]:
             return True
         return False
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
 from typing_extensions import TypeAlias, TypedDict
 
+from checkov.common.bridgecrew.code_categories import CodeCategoryType
+
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck
@@ -76,6 +78,11 @@ class _ExitCodeThresholds(TypedDict):
     soft_fail_threshold: Severity | None
     hard_fail_checks: list[str]
     hard_fail_threshold: Severity | None
+
+
+class _ScaExitCodeThresholds(TypedDict):
+    LICENSES: _ExitCodeThresholds
+    VULNERABILITIES: _ExitCodeThresholds
 
 
 class _LicenseStatus(TypedDict):

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Dict, List, Union
 
 from checkov.common.bridgecrew.severities import Severity, BcSeverities, Severities
 from checkov.common.bridgecrew.check_type import CheckType
@@ -13,7 +14,7 @@ class CodeCategoryType:
     BUILD_INTEGRITY = "BUILD_INTEGRITY"
 
 
-CodeCategoryMapping = {
+CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] = {
     CheckType.ANSIBLE: CodeCategoryType.IAC,
     CheckType.ARGO_WORKFLOWS: CodeCategoryType.BUILD_INTEGRITY,
     CheckType.ARM: CodeCategoryType.IAC,

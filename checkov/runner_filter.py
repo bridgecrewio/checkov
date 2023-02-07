@@ -167,7 +167,7 @@ class RunnerFilter(object):
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
             if not self.check_threshold and not self.skip_check_threshold:
-                if '_CVE_' in check_id:
+                if '_CVE_' in check_id or '_PRISMA_' in check_id:
                     check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
                 elif '_LIC_' in check_id:
                     check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
