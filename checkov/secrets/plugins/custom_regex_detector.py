@@ -79,7 +79,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 filename=filename,
                 string_to_analyze=file_content,
                 output=output,
-                line_number=line_number,
+                line_number=0,
                 context=raw_context,
                 is_multiline=True,
                 **kwargs
