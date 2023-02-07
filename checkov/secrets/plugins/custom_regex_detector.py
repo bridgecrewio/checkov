@@ -28,7 +28,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self.denylist = set()
         self.multiline_denylist = set()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
-        self._did_analyzed_file: dict[str, bool] = dict()
+        self._analyzed_files: Set[str] = set()
         detectors = load_detectors()
 
         for detector in detectors:
@@ -61,14 +61,14 @@ class CustomRegexDetector(RegexBasedDetector):
             **kwargs
         )
 
-        if not self._did_analyzed_file.get(filename):
-            self._did_analyzed_file[filename] = True
+        if filename not in self._analyzed_files:
+            self._analyzed_files.add(filename)
             file_content = None
             try:
                 with open(filename, 'r') as f:
                     file_content = f.read()
             except Exception:
-                logging.error(
+                logging.warning(
                     "Could not open file in order to detect secrets}",
                     extra={"file_path": filename}
                 )
@@ -99,7 +99,7 @@ class CustomRegexDetector(RegexBasedDetector):
     ) -> None:
         current_denylist: Set[Pattern[str]] = self.multiline_denylist if is_multiline else self.denylist
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
-        for match, regex in self.analyze_string(string_to_analyze, current_denylist, **kwargs):
+        for match, regex in self.analyze_string(string_to_analyze, regex_denylist=current_denylist, **kwargs):
             try:
                 verified_result = call_function_with_arguments(self.verify, secret=match, context=context)
                 is_verified = True if verified_result == VerifiedResult.VERIFIED_TRUE else False
@@ -124,10 +124,10 @@ class CustomRegexDetector(RegexBasedDetector):
                 logging.info(
                     f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
-    def analyze_string(self, string: str, regex_denylist: Optional[Set] = None, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type: ignore # type:ignore[override]
-        if regex_denylist is None:
-            regex_denylist = self.denylist
-        for regex in regex_denylist:
+    def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type: ignore # type:ignore[override]
+        regex_denylist: Optional[Set[Pattern[str]]] = set()
+        regex_denylist = kwargs.get("regex_denylist", self.denylist)  # type: ignore
+        for regex in regex_denylist: # type: ignore
             for match in regex.findall(string):
                 if isinstance(match, tuple):
                     for submatch in filter(bool, match):
