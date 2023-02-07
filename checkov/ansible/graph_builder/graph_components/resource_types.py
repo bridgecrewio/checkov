@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class ResourceType(str, Enum):
+    BLOCK = "block"
     TASKS = "tasks"
 
     def __str__(self) -> str:
