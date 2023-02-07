@@ -5,10 +5,14 @@ import linecache
 import logging
 import os
 import re
+import tempfile
+
+import git
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
+from git import InvalidGitRepositoryError, GitCommandError
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -73,6 +77,8 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
+
+SCAN_HISTORY = True
 
 
 class Runner(BaseRunner[None]):
@@ -166,6 +172,7 @@ class Runner(BaseRunner[None]):
                         elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
                                 file):
                             files_to_scan.append(os.path.join(root, file))
+                self._scan_history(root_folder, secrets)
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
@@ -437,3 +444,46 @@ class Runner(BaseRunner[None]):
                 logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
+
+    @staticmethod
+    def _scan_history(root_folder: str, secrets: SecretsCollection):
+        if not SCAN_HISTORY:
+            return
+
+        try:
+            repo = git.Repo(root_folder)
+        except InvalidGitRepositoryError:
+            logging.error(f"Folder {root_folder} is not a GIT project")
+            return
+
+        scanned_file_count = 0
+        skipped_file_count = 0
+        commits = list(repo.iter_commits(repo.active_branch, max_count=6))
+        # [*scan.scan_diff(full_file_path)]
+        for commit_idx in range(len(commits) - 1, 0, -1):
+            next_commit_idx = commit_idx - 1
+            added_commit_hash = commits[next_commit_idx].hexsha
+            git_diff = commits[commit_idx].diff(added_commit_hash, create_patch=True)
+
+            for file_diff in git_diff:
+                try:
+                    diff_file_content = repo.git.show(f"{added_commit_hash}:{file_diff.b_path}")
+                except GitCommandError:
+                    logging.info(f"File path {file_diff.b_path} does not exist in commit {added_commit_hash}")
+                    continue
+
+                if len(file_content) > 100000:
+                    skipped_file_count += 1
+                    continue
+
+                with tempfile.NamedTemporaryFile() as file:
+                    file.write(file_content.encode("utf-8", errors="replace"))
+                    file_results = [*scan.scan_diff(file.name)]
+                    if file_results:
+                        logging.info(
+                            f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
+                        logging.info(file_results)
+
+                scanned_file_count += 1
+
+        logging.info(f"Scanned {scanned_file_count} historical files")
