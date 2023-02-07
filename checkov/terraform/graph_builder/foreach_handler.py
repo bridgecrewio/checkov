@@ -5,7 +5,6 @@ import re
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -153,42 +152,41 @@ class ForeachHandler(object):
         for i in range(statement):
             self._create_new_resource(main_resource, i, '')
 
-    def _update_count_attributes(self, attrs: dict[str, Any], new_value: int):
-        attrs.pop(COUNT_STRING)
-        for _, v in attrs.items():
-            if isinstance(v, list):
-                for i, item in enumerate(v):
-                    if isinstance(item, str) and (COUNT_KEY in item or "${" + COUNT_KEY + "}" in item):
-                        v[i] = item.replace("${" + COUNT_KEY + "}", str(new_value))
-                        v[i] = v[i].replace(COUNT_KEY, str(new_value))
-            elif isinstance(v, dict):
-                self._update_count_attributes(v, new_value)
+    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, str]) -> None:
+        attrs.pop(COUNT_STRING, None)
+        attrs.pop(FOREACH_STRING, None)
+        for key_to_change, val_to_change in key_to_val_changes.items():
+            for k, v in attrs.items():
+                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
+                    attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", val_to_change)
+                    attrs[k][0] = attrs[k][0].replace(key_to_change, val_to_change)
+                elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
+                    for i, item in enumerate(v):
+                        if isinstance(item, str) and (key_to_change in item or "${" + key_to_change + "}" in item):
+                            v[i] = item.replace("${" + key_to_change + "}", val_to_change)
+                            v[i] = v[i].replace(key_to_change, val_to_change)
+                elif isinstance(v, dict):
+                    self._update_attributes(v, {key_to_change: val_to_change})
 
-    def _update_foreach_attributes(self, attrs: dict[str, Any], new_value: str | int, new_key: Optional[str | int] = ''):
-        attrs.pop(FOREACH_STRING)
-        for _, v in attrs.items():
-            if isinstance(v, list):
-                for i, item in enumerate(v):
-                    if isinstance(item, str):
-                        if EACH_KEY in item:
-                            v[i] = item.replace("${" + EACH_KEY + "}", str(new_key) or str(new_value))
-                            v[i] = v[i].replace(EACH_KEY, str(new_key) or str(new_value))
-                        if EACH_VALUE in item:
-                            v[i] = item.replace("${" + EACH_VALUE + "}", str(new_value))
-                            v[i] = v[i].replace(EACH_VALUE, str(new_value))
-            elif isinstance(v, dict):
-                self._update_foreach_attributes(v, new_value, new_key)
+    @staticmethod
+    def _build_key_to_val_changes(new_val: str, new_key: str = ''):
+        key_to_val_changes: dict[str, str] = {
+            EACH_VALUE: new_val,
+            EACH_KEY: new_val
+        }
+        if new_key:
+            key_to_val_changes[EACH_KEY] = new_key
+        return key_to_val_changes
 
     def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: str = ''):
         new_resource = deepcopy(main_resource)
         if main_resource.attributes.get(COUNT_STRING):
-            self._update_count_attributes(new_resource.attributes, new_value)
+            self._update_attributes(new_resource.attributes, {COUNT_KEY: str(new_value)})
         elif main_resource.attributes.get(FOREACH_STRING):
-            self._update_foreach_attributes(new_resource.attributes, new_value, new_key)
-        if new_key:
-            self._add_index_to_block_properties(new_resource, new_key)
-        else:
-            self._add_index_to_block_properties(new_resource, new_value)
+            key_to_val_changes = self._build_key_to_val_changes(str(new_value), str(new_key))
+            self._update_attributes(new_resource.attributes, key_to_val_changes)
+        idx_to_change = new_key or new_value
+        self._add_index_to_block_properties(new_resource, idx_to_change)
         self.local_graph.vertices.append(new_resource)
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
@@ -210,10 +208,6 @@ class ForeachHandler(object):
         block_type, block_name = block.name.split('.')
         block.id = f"{block.id}[{idx}]"
         block.name = f"{block.name}[{idx}]"
-        attr_address = block.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-        config_address = block.config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-        block.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = f"{attr_address}[{idx}]"
-        block.config[CustomAttributes.TF_RESOURCE_ADDRESS] = f"{config_address}[{idx}]"
         if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
             block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
 

@@ -65,6 +65,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             try:
                 foreach_handler = foreach_module.ForeachHandler(self)
                 foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                self._arrange_graph_data()
+                self._build_edges()
                 logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
             except Exception as e:
                 logging.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
@@ -87,24 +89,30 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info("Creating vertices")
         self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
-            self.vertices[i] = block
-
-            self.vertices_by_block_type[block.block_type].append(i)
-            self.vertices_block_name_map[block.block_type][block.name].append(i)
-
-            if block.block_type == BlockType.MODULE:
-                # map between file paths and module vertices indexes from that file
-                self.map_path_to_module.setdefault(block.path, []).append(i)
-
-            self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(i)
-            self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(i)
-
-            self.in_edges[i] = []
-            self.out_edges[i] = []
-
+            self._add_block_data_to_graph(i, block)
             if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
                     and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
+
+    def _add_block_data_to_graph(self, idx: int, block: TerraformBlock) -> None:
+        self.vertices[idx] = block
+
+        self.vertices_by_block_type[block.block_type].append(idx)
+        self.vertices_block_name_map[block.block_type][block.name].append(idx)
+
+        if block.block_type == BlockType.MODULE:
+            # map between file paths and module vertices indexes from that file
+            self.map_path_to_module.setdefault(block.path, []).append(idx)
+
+        self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(idx)
+        self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(idx)
+
+        self.in_edges[idx] = []
+        self.out_edges[idx] = []
+
+    def _arrange_graph_data(self) -> None:
+        for i, block in enumerate(self.vertices):
+            self._add_block_data_to_graph(i, block)
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
@@ -285,14 +293,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             ]
             if len(target_variables) == 1:
                 self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
-
-    def reset_edges(self) -> None:
-        self.edges = []
-        self.out_edges = defaultdict(list)
-        self.in_edges = defaultdict(list)
-        for i in range(len(self.vertices)):
-            self.out_edges[i] = []
-            self.in_edges[i] = []
 
     def _build_cross_variable_edges(self):
         target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
