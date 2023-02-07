@@ -8,7 +8,8 @@ from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
 
 import igraph
 
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -18,7 +19,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 
-MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\(\[\{.+\#.+\}\]\)")
+MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\(\[\{.+\#\*\#.+\}\]\)")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -54,8 +55,8 @@ def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
     if isinstance(module_dependency, list) and len(module_dependency) > 0:
         module_dependency = module_dependency[0]
     return [
-        module_dependency[3:module_dependency.index('.tf#') + len('.tf')],
-        module_dependency[module_dependency.index('.tf#') + len('.tf#'):-TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
+        module_dependency[3:module_dependency.index(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}') + len('.tf')],
+        module_dependency[module_dependency.index(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}') + len(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}'):-TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     ]
 
 
