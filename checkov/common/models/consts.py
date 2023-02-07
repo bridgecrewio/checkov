@@ -16,7 +16,9 @@ SUPPORTED_PACKAGE_FILES = {
 }
 SUPPORTED_FILES = SUPPORTED_PACKAGE_FILES.union({"Dockerfile"})
 
-DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.mod", "paket.dependencies", "paket.lock"}
+DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.mod", "paket.dependencies", "paket.lock", "packages.config"}
+
+SCANNABLE_PACKAGE_FILES_EXTENSIONS = {".csproj"}
 
 SCANNABLE_PACKAGE_FILES = SUPPORTED_PACKAGE_FILES | DEPENDENCY_TREE_SUPPORTED_FILES
 
