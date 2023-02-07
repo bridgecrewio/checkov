@@ -26,14 +26,14 @@ class CustomRegexDetector(RegexBasedDetector):
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
-        self.multiline_denylist = set()
+        self.multiline_deny_list = set()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
         detectors = load_detectors()
 
         for detector in detectors:
             if detector.get("isMultiline"):
-                self.multiline_denylist.add(re.compile('{}'.format(detector["Regex"])))
+                self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
                 self.multiline_regex_to_metadata[detector["Regex"]] = detector
                 continue
             self.denylist.add(re.compile('{}'.format(detector["Regex"])))
@@ -97,7 +97,7 @@ class CustomRegexDetector(RegexBasedDetector):
             is_multiline: bool = False,
             **kwargs: Any
     ) -> None:
-        current_denylist: Set[Pattern[str]] = self.multiline_denylist if is_multiline else self.denylist
+        current_denylist: Set[Pattern[str]] = self.multiline_deny_list if is_multiline else self.denylist
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
         for match, regex in self.analyze_string(string_to_analyze, regex_denylist=current_denylist, **kwargs):
             try:
@@ -127,7 +127,7 @@ class CustomRegexDetector(RegexBasedDetector):
     def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type: ignore # type:ignore[override]
         regex_denylist: Optional[Set[Pattern[str]]] = set()
         regex_denylist = kwargs.get("regex_denylist", self.denylist)  # type: ignore
-        for regex in regex_denylist: # type: ignore
+        for regex in regex_denylist:  # type: ignore
             for match in regex.findall(string):
                 if isinstance(match, tuple):
                     for submatch in filter(bool, match):
