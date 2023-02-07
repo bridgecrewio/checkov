@@ -40,7 +40,8 @@ from checkov.runner_filter import RunnerFilter
                 "kustomize",
                 "sca_package",
                 "openapi",
-                "sca_image"
+                "sca_image",
+                "sast"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

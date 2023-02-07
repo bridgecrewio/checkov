@@ -73,6 +73,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+from checkov.sast.runner import Runner as sast_runner
 from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
@@ -113,6 +114,7 @@ DEFAULT_RUNNERS = [
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
     ansible_runner(),
+    sast_runner()
 ]
 
 
