@@ -165,7 +165,7 @@ class TestLoadDetectors(unittest.TestCase):
             True for x in range(0, len(detector_obj)) if detector_obj[x]['Check_ID'] == detectors_result[x]['Check_ID'])
         assert len(detectors_result) == len(detector_obj)
 
-    def test_test_custom_regex_detector(self):
+    def test_custom_regex_detector(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
         bc_integration.customer_run_config_response = {"secretsPolicies": [
@@ -238,7 +238,7 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
 
-    def test_test_custom_regex_detector_value_str(self):
+    def test_custom_regex_detector_value_str(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
         bc_integration.customer_run_config_response = {"secretsPolicies": [
@@ -311,7 +311,7 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
 
-    def test_test_custom_regex_detector_in_custom_limit_characters(self):
+    def test_custom_regex_detector_in_custom_limit_characters(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
         bc_integration.customer_run_config_response = {"secretsPolicies": [
@@ -353,7 +353,7 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 1)
 
-    def test_test_custom_regex_detector_out_custom_limit_characters(self):
+    def test_custom_regex_detector_out_custom_limit_characters(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
         bc_integration.customer_run_config_response = {"secretsPolicies": [
@@ -394,3 +394,109 @@ class TestLoadDetectors(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 0)
+
+    def test_modify_secrets_policy_to_multiline_detectors(self) -> None:
+        policies_list: List[Dict[str, Any]] = [
+            {
+                "incidentId": "test1",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes": [
+                    "aws_instance"
+                ],
+                "provider": "AWS",
+                "remediationIds": [],
+                "customerName": "lshind",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  value:\n  - '{[\\s\\S]*}'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "frameworks": [
+                    "CloudFormation",
+                    "Terraform"
+                ],
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            },
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  value:\n  - '{[\\s\\S]*paz*}'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            },
+            {
+                "incidentId": "test3",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": [
+                        "1234567"
+                    ],
+                    "cond_type": "secrets"
+                },
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test3",
+                "isCustom": True,
+                "code": "",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]
+        detector_obj = modify_secrets_policy_to_detectors(policies_list)
+        detectors_expected_result: List[Dict[str, Any]] = [
+            {"Name": "test1", "Check_ID": "test1", "Regex": "{[\\s\\S]*}", "isMultiline": False},
+            {"Name": "test2", "Check_ID": "test2", "Regex": "{[\\s\\S]*paz*}", "isMultiline": True},
+            {"Name": "test3", "Check_ID": "test3", "Regex": "1234567", "isMultiline": False}
+        ]
+        detector_obj.sort(key=lambda detector: detector['Check_ID'])
+        detectors_expected_result.sort(key=lambda detector: detector['Check_ID'])  # type: ignore
+        assert all(
+            True for x in range(0, len(detector_obj)) if
+            detector_obj[x]['Check_ID'] == detectors_expected_result[x]['Check_ID'] and
+            detector_obj[x]['isMultiline'] == detectors_expected_result[x]['isMultiline'])
+        assert len(detectors_expected_result) == len(detector_obj)
