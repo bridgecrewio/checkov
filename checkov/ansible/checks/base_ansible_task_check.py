@@ -28,7 +28,12 @@ class BaseAnsibleTaskCheck(BaseCheck):
         supported_entities = [
             entity
             for module in supported_modules
-            for entity in (f'[].tasks[?"{module}" != null][]', f'[?"{module}" != null][]')
+            for entity in (
+                f'[].tasks[?"{module}" != null][]',
+                f'[?"{module}" != null][]',
+                f'[].tasks[].block[?"{module}" != null][]',
+                f'[].block[?"{module}" != null][]',
+            )
         ]
 
         super().__init__(
