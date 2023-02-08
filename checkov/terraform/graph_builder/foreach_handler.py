@@ -151,11 +151,14 @@ class ForeachHandler(object):
 
     def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
         for i in range(statement):
-            self._create_new_resource(main_resource, i, '')
+            self._create_new_resource(main_resource, i)
 
-    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, str]) -> None:
+    @staticmethod
+    def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
         attrs.pop(COUNT_STRING, None)
         attrs.pop(FOREACH_STRING, None)
+
+    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, str]) -> None:
         for key_to_change, val_to_change in key_to_val_changes.items():
             for k, v in attrs.items():
                 if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
@@ -176,25 +179,24 @@ class ForeachHandler(object):
                     self._update_attributes(v, {key_to_change: val_to_change})
 
     @staticmethod
-    def _build_key_to_val_changes(new_val: str, new_key: str = ''):
-        key_to_val_changes: dict[str, str] = {
+    def _build_key_to_val_changes(new_val: str, new_key: str):
+        return {
             EACH_VALUE: new_val,
-            EACH_KEY: new_val
+            EACH_KEY: new_key
         }
-        if new_key:
-            key_to_val_changes[EACH_KEY] = new_key
-        return key_to_val_changes
 
-    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: str = ''):
+    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = None):
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
-            self._update_attributes(new_resource.attributes, {COUNT_KEY: new_value})
-            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), {COUNT_KEY: new_value})
-        elif main_resource.attributes.get(FOREACH_STRING):
+            key_to_val_changes = {COUNT_KEY: new_value}
+        else:
             key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
-            self._update_attributes(new_resource.attributes, key_to_val_changes)
-            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), key_to_val_changes)
+        self._pop_foreach_attrs(new_resource.attributes)
+        self._pop_foreach_attrs(new_resource.config.get(block_type, {}).get(block_name, {}))
+        self._update_attributes(new_resource.attributes, key_to_val_changes)
+        self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), key_to_val_changes)
+
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
         self.local_graph.vertices.append(new_resource)
@@ -202,7 +204,7 @@ class ForeachHandler(object):
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
         if isinstance(statement, list):
             for new_value in statement:
-                self._create_new_resource(main_resource, new_value, new_key='')
+                self._create_new_resource(main_resource, new_value, new_key=new_value)
         if isinstance(statement, dict):
             for new_key, new_value in statement.items():
                 self._create_new_resource(main_resource, new_value, new_key=new_key)
@@ -227,6 +229,6 @@ class ForeachHandler(object):
                 continue
             if isinstance(statement, int):
                 self._create_new_resources_count(statement, self.local_graph.vertices[block_idx])
-            if isinstance(statement, (list, dict)):
+            else:
                 self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
         self._delete_main_resource(block_index_to_statement)

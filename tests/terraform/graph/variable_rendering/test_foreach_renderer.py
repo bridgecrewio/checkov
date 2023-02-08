@@ -151,11 +151,11 @@ def test_resources_flow():
     assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[bucket_a]': [2], 'aws_s3_bucket.foreach_map[bucket_b]': [3]}
 
     assert local_graph.edges[0].dest == 1
-    assert local_graph.edges[0].origin == 0
-    assert local_graph.edges[0].label == 'for_each'
+    assert local_graph.edges[0].origin == 2
+    assert local_graph.edges[0].label == 'location'
 
-    assert local_graph.edges[1].dest == 2
-    assert local_graph.edges[1].origin == 0
+    assert local_graph.edges[1].dest == 1
+    assert local_graph.edges[1].origin == 3
     assert local_graph.edges[1].label == 'location'
 
     assert len(local_graph.vertices) == 4
