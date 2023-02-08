@@ -4,18 +4,12 @@ metadata:
   category: "IAM"
 definition:
   or:
-    - and:
-        - cond_type: filter
-          attribute: resource_type
-          operator: within
-          value:
-            - aws_cloudfront_distribution
-        - cond_type: connection
-          resource_types:
-            - aws_cloudfront_distribution
-          connected_resource_types:
-            - aws_s3_bucket
-          operator: not_exists
+    - cond_type: attribute
+      resource_types:
+        - aws_cloudfront_distribution
+      attribute: "origin.*.domain_name"
+      operator: not_contains
+      value: "aws_s3_bucket."
     - cond_type: attribute
       resource_types:
         - aws_cloudfront_distribution
@@ -26,5 +20,3 @@ definition:
         - aws_cloudfront_distribution
       attribute: "origin.*.origin_access_control_id"
       operator: "exists"         
-        
-    
