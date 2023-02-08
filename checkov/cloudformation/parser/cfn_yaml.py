@@ -32,7 +32,7 @@ try:
 
     cyaml = True
 except ImportError:
-    from yaml.parser import Parser
+    from yaml.parser import Parser  # type:ignore[assignment]
 
     cyaml = False
 
@@ -167,7 +167,7 @@ class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Resolver)
         if cyaml:
             Parser.__init__(self, stream)
         else:
-            Parser.__init__(self)
+            Parser.__init__(self)  # type:ignore[call-arg]  # cyaml checks if it is the normal or C version
         Composer.__init__(self)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)

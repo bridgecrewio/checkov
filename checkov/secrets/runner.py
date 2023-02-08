@@ -467,7 +467,8 @@ class Runner(BaseRunner[None]):
 
             for file_diff in git_diff:
                 try:
-                    diff_file_content = repo.git.show(f"{added_commit_hash}:{file_diff.b_path}")
+                    file_content = repo.git.show(f"{added_commit_hash}:{file_diff.b_path}")
+                    file_diff_content = repo.git.diff(added_commit_hash, file_diff.b_path)
                 except GitCommandError:
                     logging.info(f"File path {file_diff.b_path} does not exist in commit {added_commit_hash}")
                     continue
@@ -476,13 +477,11 @@ class Runner(BaseRunner[None]):
                     skipped_file_count += 1
                     continue
 
-                with tempfile.NamedTemporaryFile() as file:
-                    file.write(file_content.encode("utf-8", errors="replace"))
-                    file_results = [*scan.scan_diff(file.name)]
-                    if file_results:
-                        logging.info(
-                            f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
-                        logging.info(file_results)
+                file_results = [*scan.scan_diff(file_diff_content)]
+                if file_results:
+                    logging.info(
+                        f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
+                    logging.info(file_results)
 
                 scanned_file_count += 1
 
