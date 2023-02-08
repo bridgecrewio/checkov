@@ -1,3 +1,4 @@
+import os.path
 import tarfile
 import base64
 import gzip
@@ -57,3 +58,26 @@ def compress_string_io_tar(string_io: io.StringIO) -> io.BytesIO:
     except Exception:
         logging.exception("failed to compress logging file")
         raise
+
+def read_file_safe(file_path: str) -> str:
+        try:
+            with open(file_path, 'r') as f:
+                file_content = f.read()
+                return file_content
+        except Exception:
+            logging.warning(
+                "Could not open file",
+                extra={"file_path": file_path}
+            )
+            return ""
+
+
+def get_file_size_safe(file_path: str) -> int:
+    try:
+        return os.path.getsize(file_path)
+    except Exception:
+        logging.warning(
+            "Could not obtain file size",
+            extra={"file_path": file_path}
+        )
+        return -1
