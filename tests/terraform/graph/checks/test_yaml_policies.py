@@ -363,7 +363,6 @@ class TestYamlPolicies(unittest.TestCase):
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
                     report = get_policy_results(dir_path, policy)
-                    expected = load_yaml_data("expected.yaml", dir_path)
 
                     expected_to_fail = expected.get('fail', [])
                     expected_to_pass = expected.get('pass', [])
