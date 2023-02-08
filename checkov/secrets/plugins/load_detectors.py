@@ -8,7 +8,6 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import decompress_file_gzip_base64
 
 
-
 def load_detectors() -> list[dict[str, Any]]:
     detectors: List[dict[str, Any]] = []
     try:
