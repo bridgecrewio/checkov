@@ -105,11 +105,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
 
         if permissions is None:
             # if 'permissions' is not set in a file, then it is automatically 'write-all'
-            permissions = {
-                "permissions": "write-all",
-                START_LINE: 0,
-                END_LINE: 0,
-            }
+            permissions = "write-all"
 
         if not permissions or not isinstance(permissions, (str, dict)):
             return
@@ -122,7 +118,11 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                 END_LINE: 0,
             }
         else:
-            config = permissions
+            config = {
+                "permissions": permissions,
+                START_LINE: permissions[START_LINE],
+                END_LINE: permissions[END_LINE],
+            }
 
         attributes = deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
@@ -146,13 +146,17 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
 
         if isinstance(on, (str, list)):
             # to get the correct line numbers we would need to check the raw definition
-            config = {
+            config: "dict[str, Any]" = {
                 "on": on,
                 START_LINE: 0,
                 END_LINE: 0,
             }
         elif isinstance(on, dict):
-            config = on
+            config = {
+                "on": on,
+                START_LINE: on[START_LINE],
+                END_LINE: on[END_LINE],
+            }
         else:
             return
 
