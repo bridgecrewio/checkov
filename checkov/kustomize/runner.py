@@ -135,8 +135,8 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_file_path_parts = realKustomizeEnvMetadata['filePath'].split(self.original_root_dir)
                     if len(repo_file_path_parts) > 1:
-                        prefix = {self.original_root_dir}
-                        if not self.original_root_dir.startswith('/'):
+                        prefix = self.original_root_dir
+                        if not prefix.startswith('/'):
                             prefix = f'/{prefix}'
                         repo_file_path = f'{prefix}{self.original_root_dir.join(repo_file_path_parts[1:])}'
 
