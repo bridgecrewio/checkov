@@ -117,6 +117,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
         self.vertices_by_module_dependency_by_name = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.edges = []
+        for i in range(len(self.vertices)):
+            self.out_edges[i] = []
+            self.in_edges[i] = []
 
         for i, block in enumerate(self.vertices):
             self._add_block_data_to_graph(i, block)

@@ -158,7 +158,7 @@ class ForeachHandler(object):
         attrs.pop(COUNT_STRING, None)
         attrs.pop(FOREACH_STRING, None)
 
-    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, str]) -> None:
+    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, Any]) -> None:
         for key_to_change, val_to_change in key_to_val_changes.items():
             for k, v in attrs.items():
                 if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
