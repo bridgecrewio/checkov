@@ -246,7 +246,7 @@ class RunnerRegistry:
                 category_rules: Dict[CodeCategoryType, CodeCategoryConfiguration] = {
                     category: repo_config_integration.code_category_configs.get(category) for category in code_category_types  # type:ignore[misc] # not null
                 }
-                ret: _ScaExitCodeThresholds = {
+                return cast(_ScaExitCodeThresholds, {
                     category: {
                         'soft_fail': category_rules[category].is_global_soft_fail(),
                         'soft_fail_checks': soft_fail_on_checks,
@@ -254,10 +254,9 @@ class RunnerRegistry:
                         'hard_fail_checks': hard_fail_on_checks,
                         'hard_fail_threshold': category_rules[category].hard_fail_threshold
                     } for category in code_category_types
-                }
-                return ret
+                })
             else:
-                code_category_type = CodeCategoryMapping[report_type]
+                code_category_type: CodeCategoryType = CodeCategoryMapping[report_type]
                 enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs.get(code_category_type)
 
                 if enf_rule:
@@ -270,14 +269,13 @@ class RunnerRegistry:
         else:
             logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 
-        ret: _ExitCodeThresholds = {
+        return cast(_ExitCodeThresholds, {
             'soft_fail': soft_fail,
             'soft_fail_checks': soft_fail_on_checks,
             'soft_fail_threshold': soft_fail_threshold,
             'hard_fail_checks': hard_fail_on_checks,
             'hard_fail_threshold': hard_fail_threshold
-        }
-        return ret
+        })
 
     def print_reports(
             self,

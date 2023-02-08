@@ -154,16 +154,16 @@ class Report:
         hard_fail_threshold: Optional[Severity | Dict[str, Severity]]
 
         if has_split_enforcement:
-            exit_code_thresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
+            sca_thresholds: _ScaExitCodeThresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
             # these three are the same even in split enforcement rules
-            generic_thresholds: _ExitCodeThresholds = next(iter(exit_code_thresholds.values()))
+            generic_thresholds = next(iter(sca_thresholds.values()))
             soft_fail_on_checks = generic_thresholds['soft_fail_checks']
             soft_fail_threshold = generic_thresholds['soft_fail_threshold']
             hard_fail_on_checks = generic_thresholds['hard_fail_checks']
 
             # these two can be different for licenses / vulnerabilities
-            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in exit_code_thresholds.items()}
-            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in exit_code_thresholds.items()}
+            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in sca_thresholds.items()}
+            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in sca_thresholds.items()}
 
             failed_checks_by_category = {
                 CodeCategoryType.LICENSES: [fc for fc in self.failed_checks if '_LIC_' in fc.check_id],
@@ -176,7 +176,7 @@ class Report:
                 not failed_checks_by_category[cast(CodeCategoryType, c)] or (
                     not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and soft_fail[c]
                 )
-                for c in exit_code_thresholds.keys()
+                for c in sca_thresholds.keys()
             ):
                 logging.debug(
                     'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty for all SCA types - returning 0')
@@ -184,17 +184,17 @@ class Report:
 
             if any(
                 not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and failed_checks_by_category[cast(CodeCategoryType, c)]
-                for c in exit_code_thresholds.keys()
+                for c in sca_thresholds.keys()
             ):
                 logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
                 return 1
         else:
-            exit_code_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
-            soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
-            soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
-            hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']
-            hard_fail_threshold = exit_code_thresholds['hard_fail_threshold']
-            soft_fail = exit_code_thresholds['soft_fail']
+            non_sca_thresholds: _ExitCodeThresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
+            soft_fail_on_checks = non_sca_thresholds['soft_fail_checks']
+            soft_fail_threshold = non_sca_thresholds['soft_fail_threshold']
+            hard_fail_on_checks = non_sca_thresholds['hard_fail_checks']
+            hard_fail_threshold = non_sca_thresholds['hard_fail_threshold']
+            soft_fail = non_sca_thresholds['soft_fail']
 
             has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
             has_hard_fail_values = hard_fail_threshold or hard_fail_on_checks
