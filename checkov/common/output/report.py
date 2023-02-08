@@ -213,17 +213,20 @@ class Report:
             severity = failed_check.severity
             secret_validation_status = failed_check.validation_status if hasattr(failed_check, 'validation_status') else ''
 
+            hf_threshold: Severity
+            sf: bool
+
             if has_split_enforcement:
                 category = CodeCategoryType.LICENSES if '_LIC_' in check_id else CodeCategoryType.VULNERABILITIES
                 hard_fail_threshold = cast(Dict[str, Severity], hard_fail_threshold)
-                hf_threshold: Severity = hard_fail_threshold[category]
+                hf_threshold = hard_fail_threshold[category]
                 soft_fail = cast(Dict[str, bool], soft_fail)
-                sf: bool = soft_fail[category]
+                sf = soft_fail[category]
             else:
                 hard_fail_threshold = cast(Severity, hard_fail_threshold)
-                hf_threshold: Severity = hard_fail_threshold
+                hf_threshold = hard_fail_threshold
                 soft_fail = cast(bool, soft_fail)
-                sf: bool = soft_fail
+                sf = soft_fail
 
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
             hard_fail_severity = severity and hf_threshold and severity.level >= hf_threshold.level
