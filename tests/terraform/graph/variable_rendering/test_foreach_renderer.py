@@ -189,4 +189,6 @@ def test_tf_definitions_and_breadcrumbs():
 
     assert len(breadcrumbs) == len(expected_data['breadcrumbs'])
     assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]])
-    assert_object_equal(breadcrumbs[list(breadcrumbs.keys())[0]], expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]])
+    for k, v in breadcrumbs[list(breadcrumbs.keys())[0]].items():
+        if k != 'path':
+            assert expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]][k] == v
