@@ -336,8 +336,12 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                     end_line: int = job_instance.get(END_LINE, -1)
                     end_line_to_job_name_dict[end_line] = job_name
 
-                    steps = [step for step in job_instance.get('steps', []) or [] if step]
-                    if steps:
-                        for step in steps:
-                            end_line_to_job_name_dict[step.get(END_LINE)] = job_name
+                    steps: list[dict[str, Any]] = [step for step in job_instance.get('steps', []) or [] if step]
+                    if not steps:
+                        continue
+
+                    for step in steps:
+                        if not isinstance(step, dict):
+                            continue
+                        end_line_to_job_name_dict[step.get(END_LINE)] = job_name  # type: ignore
         return end_line_to_job_name_dict
