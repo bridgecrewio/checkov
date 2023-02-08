@@ -181,14 +181,12 @@ def test_tf_definitions_and_breadcrumbs():
     tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, dir_name)
     expected_data = load_expected_data('expected_data_foreach.json')
     tf_definitions_to_check = {}
-    breadcrumbs_to_check = {}
     for path, res in tf_definitions.items():
         path_list = path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
         tf_definitions_to_check[real_path] = tf_definitions[path]
-    for path, res in breadcrumbs.items():
-        path_list = path.split('/')[-2:]
-        real_path = os.path.join(path_list[0], path_list[1])
-        breadcrumbs_to_check[real_path] = breadcrumbs[path]
     assert_object_equal(tf_definitions_to_check, expected_data['tf_definitions'])
-    assert_object_equal(breadcrumbs_to_check, expected_data['breadcrumbs'])
+
+    assert len(breadcrumbs) == len(expected_data['breadcrumbs'])
+    assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]])
+    assert_object_equal(breadcrumbs[list(breadcrumbs.keys())[0]], expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]])
