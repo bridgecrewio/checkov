@@ -187,8 +187,22 @@ def test_tf_definitions_and_breadcrumbs():
         tf_definitions_to_check[real_path] = tf_definitions[path]
     assert_object_equal(tf_definitions_to_check, expected_data['tf_definitions'])
 
-    assert len(breadcrumbs) == len(expected_data['breadcrumbs'])
-    assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]])
-    for k, v in breadcrumbs[list(breadcrumbs.keys())[0]].items():
-        if k != 'path':
-            assert expected_data['breadcrumbs'][list(expected_data['breadcrumbs'].keys())[0]][k] == v
+    expected_breadcrumbs = expected_data['breadcrumbs']
+    assert len(breadcrumbs) == len(expected_breadcrumbs)
+    assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
+
+    for name in ['[bucket_a]', '[bucket_b]']:
+        assert f'aws_s3_bucket.foreach_map{name}' in breadcrumbs[list(breadcrumbs.keys())[0]]
+
+        location_var = 'location'
+        assert list(breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [location_var]
+        assert list(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'].keys()) == [location_var]
+
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['type'] == 'variable'
+        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['type'] == 'variable'
+
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['name'] == 'test'
+        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['name'] == 'test'
+
+        assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
+        assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
