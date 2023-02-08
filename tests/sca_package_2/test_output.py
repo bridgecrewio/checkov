@@ -11,7 +11,6 @@ from checkov.sca_package_2.output import (
     create_cli_cves_table,
     create_cli_license_violations_table,
     create_cli_output,
-    compare_cve_severity,
     CveCount,
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
@@ -641,27 +640,6 @@ def test_create_cli_output_without_cve_records():
             "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n",
         ]
     )
-
-
-def test_compare_cve_severity():
-    # given
-    cve = [
-        {"id": "CVE-2016-6186", "severity": "medium", "fixed_version": "1.8.14"},
-        {"id": "CVE-2016-7401", "severity": "high", "fixed_version": "1.8.15"},
-        {"id": "CVE-2021-33203", "severity": "medium", "fixed_version": "2.2.24"},
-        {"id": "CVE-2019-19844", "severity": "critical", "fixed_version": "1.11.27"},
-    ]
-
-    # when
-    cve.sort(key=compare_cve_severity, reverse=True)
-
-    # then
-    assert cve == [
-        {"id": "CVE-2019-19844", "severity": "critical", "fixed_version": "1.11.27"},
-        {"id": "CVE-2016-7401", "severity": "high", "fixed_version": "1.8.15"},
-        {"id": "CVE-2016-6186", "severity": "medium", "fixed_version": "1.8.14"},
-        {"id": "CVE-2021-33203", "severity": "medium", "fixed_version": "2.2.24"},
-    ]
 
 
 def test_create_cli_table_for_sca_package_with_dependencies():
