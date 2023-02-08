@@ -147,6 +147,14 @@ class RunnerFilter(object):
                     raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
                 self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
+    def extract_enforcement_rule_threshold(self, check_id: str, report_type: str):
+        if '_CVE_' in check_id or '_PRISMA_' in check_id:
+            return self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
+        elif '_LIC_' in check_id:
+            return self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
+        else:
+            return self.enforcement_rule_configs[report_type]
+
     def should_run_check(
             self,
             check: BaseCheck | BaseGraphCheck | None = None,
@@ -164,15 +172,13 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
+        # TODO remove after test suite
+        assert ('_CVE_' in check_id or '_PRISMA_' in check_id or '_LIC_' in check_id) == (report_type and 'sca_' in report_type)
+
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
             if not self.check_threshold and not self.skip_check_threshold:
-                if '_CVE_' in check_id or '_PRISMA_' in check_id:
-                    check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
-                elif '_LIC_' in check_id:
-                    check_threshold = self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
-                else:
-                    check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
+                check_threshold = self.extract_enforcement_rule_threshold(check_id, report_type)
                 skip_check_threshold = None
             else:
                 check_threshold = self.check_threshold
