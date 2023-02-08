@@ -6,7 +6,7 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
@@ -152,6 +152,7 @@ class Report:
         has_split_enforcement = CodeCategoryType.LICENSES in exit_code_thresholds
 
         if has_split_enforcement:
+            exit_code_thresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
             # these three are the same even in split enforcement rules
             generic_thresholds = next(iter(exit_code_thresholds.values()))
             soft_fail_on_checks = generic_thresholds['soft_fail_checks']
@@ -186,6 +187,7 @@ class Report:
                 logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
                 return 1
         else:
+            exit_code_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
             soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
             soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
             hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']

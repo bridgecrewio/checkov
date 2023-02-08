@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
 from typing_extensions import TypeAlias, TypedDict
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryType
-
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck

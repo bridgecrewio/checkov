@@ -153,7 +153,7 @@ class RunnerFilter(object):
         elif 'sca_' in report_type:  # vulnerability
             return self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
         else:
-            return self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
+            return self.enforcement_rule_configs[report_type]  # type:ignore[return-value] # mypy can't handle the union
 
     def should_run_check(
             self,
@@ -174,6 +174,9 @@ class RunnerFilter(object):
 
         # TODO remove after test suite
         assert ('_CVE_' in check_id or '_PRISMA_' in check_id or '_LIC_' in check_id or '_GHSA_' in check_id) == (report_type is not None and 'sca_' in report_type)
+
+        check_threshold: Optional[Severity] = None
+        skip_check_threshold: Optional[Severity] = None
 
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:

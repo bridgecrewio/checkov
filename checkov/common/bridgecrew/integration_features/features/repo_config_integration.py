@@ -24,9 +24,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
 
     def is_valid(self) -> bool:
         return (
-                self.bc_integration.is_integration_configured()
-                and not self.bc_integration.skip_download
-                and not self.integration_feature_failures
+            self.bc_integration.is_integration_configured()
+            and not self.bc_integration.skip_download
+            and not self.integration_feature_failures
         )
 
     def pre_scan(self) -> None:
@@ -119,8 +119,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
 
     def is_code_review_disabled(self, code_category_type: str) -> bool:
         config = self.code_category_configs[code_category_type]
-        if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[
-            BcSeverities.OFF]:
+        if config.hard_fail_threshold == Severities[BcSeverities.OFF] and config.soft_fail_threshold == Severities[BcSeverities.OFF]:
             return True
         return False
 
