@@ -206,3 +206,21 @@ def test_tf_definitions_and_breadcrumbs():
 
         assert breadcrumbs[list(breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
         assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
+
+
+@pytest.mark.parametrize(
+    "attrs,k_v_to_change,expected_res",
+    [
+        ({"test_key": ["${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]}),
+        ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
+        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}),
+        ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
+        ({"test_key": ["test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]})
+    ]
+)
+def test_update_attrs(attrs, k_v_to_change, expected_res):
+    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+    local_graph = build_and_get_graph_by_path('')[0]
+    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler._update_attributes(attrs, k_v_to_change)
+    assert attrs == expected_res
