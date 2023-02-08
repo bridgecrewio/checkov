@@ -390,7 +390,7 @@ class Parser:
             if self.get_dirname(file) != root_dir:
                 continue
             # Don't process a file reference which has already been processed
-            if file.endswith("]"):
+            if file.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
                 continue
 
             file_data = self.out_definitions.get(file)
@@ -502,7 +502,7 @@ class Parser:
 
                         keys = list(module_definitions.keys())
                         for key in keys:
-                            if key.endswith("]") or file.endswith("]"):
+                            if key.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) or file.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
                                 continue
                             keys_referenced_as_modules.add(key)
                             if self.enable_nested_modules:

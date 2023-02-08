@@ -11,8 +11,8 @@
                     "__start_line__": 5,
                     "__end_line__": 9,
                     "__resolved__": [
-                        "/tf_module/module/main.tf([{/tf_module/main.tf#0}])",
-                        "/tf_module/module/variable.tf([{/tf_module/main.tf#0}])"
+                        "/tf_module/module/main.tf([{/tf_module/main.tf#*#0}])",
+                        "/tf_module/module/variable.tf([{/tf_module/main.tf#*#0}])"
                     ]
                 }
             },
@@ -23,8 +23,8 @@
                     "__start_line__": 11,
                     "__end_line__": 15,
                     "__resolved__": [
-                        "/tf_module/module/main.tf([{/tf_module/main.tf#1}])",
-                        "/tf_module/module/variable.tf([{/tf_module/main.tf#1}])"
+                        "/tf_module/module/main.tf([{/tf_module/main.tf#*#1}])",
+                        "/tf_module/module/variable.tf([{/tf_module/main.tf#*#1}])"
                     ]
                 }
             }
@@ -50,7 +50,7 @@
             }
         ]
     },
-    "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#0}])": {
+    "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#*#0}])": {
         "locals": [
             {"bucket2": ["${var.bucket2}"], "__start_line__": 1, "__end_line__": 3}
         ],
@@ -70,12 +70,12 @@
             }
         ]
     },
-    "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#0}])": {
+    "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#*#0}])": {
         "variable": [
             {"bucket2": {"type": ["${string}"], "__start_line__": 1, "__end_line__": 3}}
         ]
     },
-    "/tf_module/module/main.tf([{/tf_module/main.tf#0}])": {
+    "/tf_module/module/main.tf([{/tf_module/main.tf#*#0}])": {
         "module": [
             {
                 "inner_s3_module": {
@@ -84,19 +84,19 @@
                     "__start_line__": 1,
                     "__end_line__": 4,
                     "__resolved__": [
-                        "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#0}])",
-                        "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#0}])"
+                        "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#*#0}])",
+                        "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#*#0}])"
                     ]
                 }
             }
         ]
     },
-    "/tf_module/module/variable.tf([{/tf_module/main.tf#0}])": {
+    "/tf_module/module/variable.tf([{/tf_module/main.tf#*#0}])": {
         "variable": [
             {"bucket": {"type": ["${string}"], "__start_line__": 1, "__end_line__": 3}}
         ]
     },
-    "/tf_module/module/main.tf([{/tf_module/main.tf#1}])": {
+    "/tf_module/module/main.tf([{/tf_module/main.tf#*#1}])": {
         "module": [
             {
                 "inner_s3_module": {
@@ -105,14 +105,14 @@
                     "__start_line__": 1,
                     "__end_line__": 4,
                     "__resolved__": [
-                        "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#0}])",
-                        "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#0}])"
+                        "/tf_module/module/module2/main.tf([{/tf_module/module/main.tf#*#0}])",
+                        "/tf_module/module/module2/variable.tf([{/tf_module/module/main.tf#*#0}])"
                     ]
                 }
             }
         ]
     },
-    "/tf_module/module/variable.tf([{/tf_module/main.tf#1}])": {
+    "/tf_module/module/variable.tf([{/tf_module/main.tf#*#1}])": {
         "variable": [
             {"bucket": {"type": ["${string}"], "__start_line__": 1, "__end_line__": 3}}
         ]
