@@ -697,6 +697,10 @@ class TestRunnerFilter(unittest.TestCase):
                 CodeCategoryType.LICENSES: Severities[BcSeverities.HIGH],
                 CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.MEDIUM]
             },
+            'sca_image': {
+                CodeCategoryType.LICENSES: Severities[BcSeverities.HIGH],
+                CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.MEDIUM]
+            },
             'secrets': Severities[BcSeverities.OFF],
             'serverless': Severities[BcSeverities.LOW],
             'terraform': Severities[BcSeverities.LOW],

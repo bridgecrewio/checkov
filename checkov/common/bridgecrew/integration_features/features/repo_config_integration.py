@@ -111,8 +111,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
-        for code_category_type in [value for attr, value in CodeCategoryType.__dict__.items() if
-                                   not attr.startswith("__")]:
+        for code_category_type in [e.value for e in CodeCategoryType]:
             config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'],
                                                                      code_category_type)
             if config:

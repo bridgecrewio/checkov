@@ -140,7 +140,7 @@ class RunnerFilter(object):
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
             if isinstance(code_category, list):
-                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for c in code_category}
+                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for c in code_category}  # type:ignore[union-attr] # will not be None
             else:
                 config = enforcement_rule_configs.get(code_category)
                 if not config:
@@ -148,12 +148,12 @@ class RunnerFilter(object):
                 self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def extract_enforcement_rule_threshold(self, check_id: str, report_type: str) -> Severity:
-        if '_CVE_' in check_id or '_PRISMA_' in check_id:
-            return self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
-        elif '_LIC_' in check_id:
+        if 'sca_' in report_type and '_LIC_' in check_id:
             return self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
+        elif 'sca_' in report_type:  # vulnerability
+            return self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
         else:
-            return self.enforcement_rule_configs[report_type]
+            return self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
 
     def should_run_check(
             self,
@@ -173,7 +173,7 @@ class RunnerFilter(object):
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
         # TODO remove after test suite
-        assert ('_CVE_' in check_id or '_PRISMA_' in check_id or '_LIC_' in check_id) == (report_type is not None and 'sca_' in report_type)
+        assert ('_CVE_' in check_id or '_PRISMA_' in check_id or '_LIC_' in check_id or '_GHSA_' in check_id) == (report_type is not None and 'sca_' in report_type)
 
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
