@@ -1,6 +1,6 @@
 {
   "breadcrumbs": {
-    "/../../resources/foreach_examples/depend_resources/main.tf": {
+    "depend_resources/main.tf": {
       "aws_s3_bucket.foreach_map[bucket_a]": {
         "location": [
           {
@@ -24,7 +24,7 @@
     }
   },
   "tf_definitions": {
-    "/Users/cshayner/development/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/variable.tf": {
+    "depend_resources/variable.tf": {
       "variable": [
         {
           "foreach_map": {
@@ -51,7 +51,7 @@
         }
       ]
     },
-    "/Users/cshayner/development/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/main.tf": {
+    "depend_resources/main.tf": {
       "resource": [
         {
           "aws_s3_bucket": {

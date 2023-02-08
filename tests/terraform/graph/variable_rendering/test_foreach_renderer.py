@@ -8,7 +8,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 def load_expected_data(path):
-    dir_name = os.path.join(TEST_DIRNAME, path)
+    dir_name = os.path.realpath(os.path.join(TEST_DIRNAME, path))
     with open(dir_name, "r") as f:
         return json.load(f)
 
@@ -23,7 +23,7 @@ def assert_object_equal(res, expected_res):
 
 def build_and_get_graph_by_path(path, render_var=False):
     from checkov.terraform.graph_manager import TerraformGraphManager
-    resources_dir = os.path.join(TEST_DIRNAME, 'resources', path)
+    resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, 'resources', path))
     graph_manager = TerraformGraphManager('m', ['m'])
     local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=render_var)
     return local_graph, tf_definitions
@@ -180,5 +180,13 @@ def test_tf_definitions_and_breadcrumbs():
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, dir_name)
     expected_data = load_expected_data('expected_data_foreach.json')
+    for path, res in tf_definitions.items():
+        path_list = path.split('/')[-2:]
+        real_path = os.path.join(path_list[0], path_list[1])
+        tf_definitions[real_path] = tf_definitions.pop(path)
+    for path, res in breadcrumbs.items():
+        path_list = path.split('/')[-2:]
+        real_path = os.path.join(path_list[0], path_list[1])
+        breadcrumbs[real_path] = breadcrumbs.pop(path)
     assert tf_definitions == expected_data['tf_definitions']
     assert breadcrumbs == expected_data['breadcrumbs']

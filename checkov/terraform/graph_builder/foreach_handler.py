@@ -159,13 +159,19 @@ class ForeachHandler(object):
         for key_to_change, val_to_change in key_to_val_changes.items():
             for k, v in attrs.items():
                 if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
-                    attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", val_to_change)
-                    attrs[k][0] = attrs[k][0].replace(key_to_change, val_to_change)
+                    if attrs[k][0] == "${" + key_to_change + "}":
+                        attrs[k][0] = val_to_change
+                    else:
+                        attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
+                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
                         if isinstance(item, str) and (key_to_change in item or "${" + key_to_change + "}" in item):
-                            v[i] = item.replace("${" + key_to_change + "}", val_to_change)
-                            v[i] = v[i].replace(key_to_change, val_to_change)
+                            if v[i] == "${" + key_to_change + "}":
+                                v[i] = val_to_change
+                            else:
+                                v[i] = item.replace("${" + key_to_change + "}", str(val_to_change))
+                                v[i] = v[i].replace(key_to_change, str(val_to_change))
                 elif isinstance(v, dict):
                     self._update_attributes(v, {key_to_change: val_to_change})
 
@@ -183,10 +189,10 @@ class ForeachHandler(object):
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
-            self._update_attributes(new_resource.attributes, {COUNT_KEY: str(new_value)})
-            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), {COUNT_KEY: str(new_value)})
+            self._update_attributes(new_resource.attributes, {COUNT_KEY: new_value})
+            self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), {COUNT_KEY: new_value})
         elif main_resource.attributes.get(FOREACH_STRING):
-            key_to_val_changes = self._build_key_to_val_changes(str(new_value), str(new_key))
+            key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
             self._update_attributes(new_resource.attributes, key_to_val_changes)
             self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), key_to_val_changes)
         idx_to_change = new_key or new_value
