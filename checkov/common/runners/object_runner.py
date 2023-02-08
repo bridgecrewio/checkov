@@ -341,7 +341,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         continue
 
                     for step in steps:
-                        if not isinstance(step, dict):
+                        if not isinstance(step, dict) or END_LINE not in step:
                             continue
-                        end_line_to_job_name_dict[step.get(END_LINE)] = job_name  # type: ignore
+                        end_line_to_job_name_dict[step.get(END_LINE)] = job_name  # type: ignore[index] #
         return end_line_to_job_name_dict
