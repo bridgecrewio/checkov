@@ -215,7 +215,8 @@ def test_tf_definitions_and_breadcrumbs():
         ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
         ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}),
         ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
-        ({"test_key": ["test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]})
+        ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}),
+        ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]})
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_res):
