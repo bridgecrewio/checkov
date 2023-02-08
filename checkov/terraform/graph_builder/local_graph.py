@@ -561,10 +561,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 for module in source_module:
                     address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = f'{address_prefix}{vertex.name}'
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            entity_context_path = context_parser.get_entity_context_path(vertex.config)
+            resource_id = '.'.join(entity_context_path)
+            address = f'{address_prefix}{resource_id}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-            context_parser = parser_registry.context_parsers[vertex.block_type]
             vertex_context = vertex.config
             definition_path = context_parser.get_entity_definition_path(vertex.config)
             for path in definition_path:
