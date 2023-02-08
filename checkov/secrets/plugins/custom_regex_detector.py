@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
-    MAX_FILE_SIZE: int = 4 * 1024 # 4KB
+    MAX_FILE_SIZE: int = 4 * 1024
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
