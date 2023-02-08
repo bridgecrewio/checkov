@@ -190,5 +190,5 @@ def test_tf_definitions_and_breadcrumbs():
         path_list = path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
         breadcrumbs_to_check[real_path] = breadcrumbs[path]
-    assert tf_definitions_to_check == expected_data['tf_definitions']
-    assert breadcrumbs_to_check == expected_data['breadcrumbs']
+    assert_object_equal(tf_definitions_to_check, expected_data['tf_definitions'])
+    assert_object_equal(breadcrumbs_to_check, expected_data['breadcrumbs'])
