@@ -87,7 +87,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
-        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,

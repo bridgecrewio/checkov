@@ -647,6 +647,6 @@ def update_list_attribute(
 def get_path_with_nested_modules(block: TerraformBlock) -> str:
     if not block.module_dependency:
         return block.path
-    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
+    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
         return unify_dependency_path([block.module_dependency, block.path])
     return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)
