@@ -6,7 +6,8 @@ from unittest import mock
 
 import jmespath
 
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -312,11 +313,11 @@ def load_expected_data(source_file_name, dir_path, remove_abs_dir=False):
     if remove_abs_dir:
         return expected_data
 
-    # Convert to absolute path:   "buckets/bucket.tf[main.tf#0]"
+    # Convert to absolute path:   "buckets/bucket.tf([{main.tf#*#0}])"
     #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
     #                                    HERE       & HERE
     #
-    resolved_pattern = re.compile(r"(.+)\(\[\{(.+)#(\d+)}]\)")  # groups:  location (1), referrer (2), index (3)
+    resolved_pattern = re.compile(r"(.+)\(\[\{(.+)#\*#(\d+)}]\)")  # groups:  location (1), referrer (2), index (3)
 
     # Expected files should have the filenames relative to their base directory, but the parser will
     # use the absolute path. This loop with replace relative filenames with absolute.
@@ -352,15 +353,15 @@ def _make_module_ref_absolute(match, dir_path) -> str:
     module_referrer = match[2]
     if PATH_SEPARATOR in module_referrer:
         module_referrer_fixed = []
-        if '#' in module_referrer:
-            module_referrer = module_referrer[:-2]
+        if TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR in module_referrer:
+            module_referrer = module_referrer[:-(TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH + 1)]
         for ref in module_referrer.split(PATH_SEPARATOR):
             if not os.path.isabs(ref):
                 module_referrer_fixed.append(os.path.join(dir_path, ref))
         module_referrer = unify_dependency_path(module_referrer_fixed)
     else:
         module_referrer = os.path.join(dir_path, module_referrer)
-    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}#{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
+    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
 def remove_prefix_dir_from_path(prefix_to_remove, dict_to_handle):

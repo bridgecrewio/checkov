@@ -4,7 +4,7 @@
       {
         "bucket1": {
           "source": ["./bucket1"],
-          "__resolved__": ["bucket1/bucket.tf([{buckets.tf#0}])"],
+          "__resolved__": ["bucket1/bucket.tf([{buckets.tf#*#0}])"],
           "__start_line__": 1,
           "__end_line__": 3,
           "__address__": "bucket1"
@@ -24,7 +24,7 @@
       }
     ]
   },
-  "bucket1/bucket2/bucket3/bucket.tf([{buckets.tf->bucket1/bucket.tf->bucket1/bucket2/bucket.tf#0#0}])": {
+  "bucket1/bucket2/bucket3/bucket.tf([{buckets.tf->bucket1/bucket.tf->bucket1/bucket2/bucket.tf#*#0#*#0}])": {
     "resource": [
       {
         "aws_s3_bucket": {
@@ -39,12 +39,12 @@
       }
     ]
   },
-  "bucket1/bucket2/bucket.tf([{buckets.tf->bucket1/bucket.tf#0}])": {
+  "bucket1/bucket2/bucket.tf([{buckets.tf->bucket1/bucket.tf#*#0}])": {
     "module": [
       {
         "bucket3": {
           "source": ["./bucket3"],
-          "__resolved__": ["bucket1/bucket2/bucket3/bucket.tf([{bucket1/bucket2/bucket.tf#0}])"],
+          "__resolved__": ["bucket1/bucket2/bucket3/bucket.tf([{bucket1/bucket2/bucket.tf#*#0}])"],
           "__start_line__": 1,
           "__end_line__": 3,
           "__address__": "module.bucket1.module.bucket2.bucket3"
@@ -66,12 +66,12 @@
       }
     ]
   },
-  "bucket1/bucket.tf([{buckets.tf#0}])": {
+  "bucket1/bucket.tf([{buckets.tf#*#0}])": {
     "module": [
       {
         "bucket2": {
           "source": ["./bucket2"],
-          "__resolved__": ["bucket1/bucket2/bucket.tf([{bucket1/bucket.tf#0}])"],
+          "__resolved__": ["bucket1/bucket2/bucket.tf([{bucket1/bucket.tf#*#0}])"],
           "__start_line__": 1,
           "__end_line__": 3,
           "__address__": "module.bucket1.bucket2"

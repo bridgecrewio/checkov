@@ -57,7 +57,6 @@ SECRET_TYPE_TO_ID = {
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
     'Base64 High Entropy String': 'CKV_SECRET_6',
-    'Random High Entropy String': 'CKV_SECRET_78',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
