@@ -135,7 +135,10 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_file_path_parts = realKustomizeEnvMetadata['filePath'].split(self.original_root_dir)
                     if len(repo_file_path_parts) > 1:
-                        repo_file_path = f'{self.original_root_dir}{self.original_root_dir.join(repo_file_path_parts[1:])}'
+                        prefix = {self.original_root_dir}
+                        if not self.original_root_dir.startswith('/'):
+                            prefix = f'/{prefix}'
+                        repo_file_path = f'{prefix}{self.original_root_dir.join(repo_file_path_parts[1:])}'
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
