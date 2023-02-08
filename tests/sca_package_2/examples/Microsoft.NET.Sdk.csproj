@@ -7,7 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="3.7.101.28" />
-    <PackageReference Include="DSInternals.Common" Version="4.7.0" />
+    <PackageReference Include="DSInternals.Common" Version="4.8.0" />
     <PackageReference Include="EnumStringValues" Version="4.0.0" />
     <PackageReference Include="jQuery" Version="3.0.0" />
     <PackageReference Include="log4net" Version="2.0.9" />
