@@ -180,13 +180,15 @@ def test_tf_definitions_and_breadcrumbs():
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, breadcrumbs = convert_graph_vertices_to_tf_definitions(local_graph.vertices, dir_name)
     expected_data = load_expected_data('expected_data_foreach.json')
+    tf_definitions_to_check = {}
+    breadcrumbs_to_check = {}
     for path, res in tf_definitions.items():
         path_list = path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
-        tf_definitions[real_path] = tf_definitions.pop(path)
+        tf_definitions_to_check[real_path] = tf_definitions[path]
     for path, res in breadcrumbs.items():
         path_list = path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
-        breadcrumbs[real_path] = breadcrumbs.pop(path)
-    assert tf_definitions == expected_data['tf_definitions']
-    assert breadcrumbs == expected_data['breadcrumbs']
+        breadcrumbs_to_check[real_path] = breadcrumbs[path]
+    assert tf_definitions_to_check == expected_data['tf_definitions']
+    assert breadcrumbs_to_check == expected_data['breadcrumbs']
