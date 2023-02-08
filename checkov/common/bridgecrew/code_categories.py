@@ -11,7 +11,6 @@ class CodeCategoryType:
     SECRETS = "SECRETS"
     IMAGES = "IMAGES"
     SUPPLY_CHAIN = "SUPPLY_CHAIN"
-    POLICY_3D = "POLICY_3D"
 
 
 CodeCategoryMapping = {
@@ -41,7 +40,7 @@ CodeCategoryMapping = {
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
-    CheckType.POLICY_3D: CodeCategoryType.POLICY_3D
+    CheckType.POLICY_3D: CodeCategoryType.IMAGES
 }
 
 
