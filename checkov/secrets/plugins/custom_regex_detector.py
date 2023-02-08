@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os.path
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
 
 from detect_secrets.constants import VerifiedResult
