@@ -4,7 +4,7 @@ import logging
 import fnmatch
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict, cast
 import re
 
 from checkov.secrets.consts import ValidationStatus
@@ -149,11 +149,11 @@ class RunnerFilter(object):
 
     def extract_enforcement_rule_threshold(self, check_id: str, report_type: str) -> Severity:
         if 'sca_' in report_type and '_LIC_' in check_id:
-            return self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES]  # type:ignore[index] # mypy thinks it might be null
+            return cast(Severity, self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES])  # type:ignore[index] # mypy thinks it might be null
         elif 'sca_' in report_type:  # vulnerability
-            return self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES]  # type:ignore[index] # mypy thinks it might be null
+            return cast(Severity, self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES])  # type:ignore[index] # mypy thinks it might be null
         else:
-            return self.enforcement_rule_configs[report_type]  # type:ignore[return-value] # mypy can't handle the union
+            return cast(Severity, self.enforcement_rule_configs[report_type])  # type:ignore[index] # mypy thinks it might be null
 
     def should_run_check(
             self,
