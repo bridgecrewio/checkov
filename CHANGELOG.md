@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.341...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.348...HEAD)
+
+## [2.2.348](https://github.com/bridgecrewio/checkov/compare/2.2.341...2.2.348) - 2023-02-07
+
+### Feature
+
+- **cloudformation:** support new default s3 encryption - [#4429](https://github.com/bridgecrewio/checkov/pull/4429)
+- **graph:** added indices to igraph nodes - [#4433](https://github.com/bridgecrewio/checkov/pull/4433)
+- **secrets:** Add args to analyze line is added and is removed for git history scan - [#4426](https://github.com/bridgecrewio/checkov/pull/4426)
+
+### Bug Fix
+
+- **secrets:** Comment out checkob multiline regex detectors - [#4441](https://github.com/bridgecrewio/checkov/pull/4441)
+- **terraform:** Fix updating resource config - [#4432](https://github.com/bridgecrewio/checkov/pull/4432)
+
+### Platform
+
+- **secrets:** Add secrets custom regex on file - [#4430](https://github.com/bridgecrewio/checkov/pull/4430)
 
 ## [2.2.341](https://github.com/bridgecrewio/checkov/compare/2.2.335...2.2.341) - 2023-02-06
 
