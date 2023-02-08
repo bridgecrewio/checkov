@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV2_AWS_42"
+  name: "Ensure AWS CloudFront distribution uses custom SSL certificate"
+  category: "NETWORKING"
+definition:
+  or:
+  - cond_type: "attribute"
+    resource_types:
+     - "aws_cloudfront_distribution"
+    attribute: "viewer_certificate.iam_certificate_id"
+    operator: "exists"
+  - cond_type: "attribute"
+    resource_types:
+     - "aws_cloudfront_distribution"
+    attribute: "viewer_certificate.acm_certificate_arn"
+    operator: "exists"

@@ -85,3 +85,12 @@ Resources:
       DefaultActions:
         - Type: forward
           TargetGroupArn: default-target-group
+
+  ListenerHTTPFAILED1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: 443
+      Protocol: HTTP
+      Certificates:
+        - CertificateArn: test-cert

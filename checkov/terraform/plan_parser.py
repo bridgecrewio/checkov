@@ -1,14 +1,28 @@
 from __future__ import annotations
 
 import itertools
+import json
+import logging
 from typing import Optional, Tuple, Dict, List, Any
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import DictNode, ListNode
 from checkov.terraform.context_parsers.tf_plan import parse
 
 SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
+
+RESOURCE_TYPES_JSONIFY = {
+    "aws_batch_job_definition": "container_properties",
+    "aws_ecs_task_definition": "container_definitions",
+    "aws_iam_policy": "policy",
+    "aws_iam_role": "assume_role_policy",
+    "aws_iam_role_policy": "policy",
+    "aws_iam_group_policy": "policy",
+    "aws_iam_user_policy": "policy",
+    "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
+}
 
 
 def _is_simple_type(obj: Any) -> bool:
@@ -37,10 +51,20 @@ def _is_list_of_dicts(obj: Any) -> bool:
     return False
 
 
-def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional[str] = None) -> Dict[str, List[Any]]:
+def _hclify(
+    obj: dict[str, Any],
+    conf: dict[str, Any] | None = None,
+    parent_key: str | None = None,
+    resource_type: str | None = None,
+) -> dict[str, list[Any]]:
     ret_dict = {}
+
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
+
+    if resource_type and resource_type in RESOURCE_TYPES_JSONIFY:
+        jsonify(obj=obj, resource_type=resource_type)
+
     if hasattr(obj, "start_mark") and hasattr(obj, "end_mark"):
         obj["start_line"] = obj.start_mark.line
         obj["end_line"] = obj.end_mark.line
@@ -54,6 +78,10 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
         if _is_list_of_dicts(value):
             child_list = []
             conf_val = conf.get(key, []) if conf else []
+            if not isinstance(conf_val, list):
+                # this occurs, when a resource in the current state has no value for that argument
+                conf_val = [conf_val]
+
             for internal_val, internal_conf_val in itertools.zip_longest(value, conf_val):
                 if isinstance(internal_val, dict):
                     child_list.append(_hclify(internal_val, internal_conf_val, parent_key=key))
@@ -79,11 +107,26 @@ def _hclify(obj: DictNode, conf: Optional[DictNode] = None, parent_key: Optional
                 ret_dict[conf_key] = [ref]
                 found_ref = True
         if not found_ref:
-            for value in conf.values():
-                if isinstance(value, dict) and "references" in value.keys():
-                    ret_dict["references_"] = value["references"]
+            ret_dict[CustomAttributes.REFERENCES] = [
+                value["references"]
+                for value in conf.values()
+                if isinstance(value, dict) and "references" in value
+            ]
 
     return ret_dict
+
+
+def jsonify(obj: dict[str, Any], resource_type: str) -> None:
+    """Tries to create a dict from a string of a supported resource type attribute"""
+
+    jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
+    if jsonify_key in obj:
+        try:
+            obj[jsonify_key] = json.loads(obj[jsonify_key])
+        except json.JSONDecodeError:
+            logging.debug(
+                f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
+            )
 
 
 def _prepare_resource_block(
@@ -111,7 +154,11 @@ def _prepare_resource_block(
     if mode == "managed":
         expressions = conf.get("expressions") if conf else None
 
-        resource_conf = _hclify(resource.get("values", {"start_line": 0, "end_line": 0}), expressions)
+        resource_conf = _hclify(
+            obj=resource.get("values", {"start_line": 0, "end_line": 0}),
+            conf=expressions,
+            resource_type=resource.get("type"),
+        )
         resource_address = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
 

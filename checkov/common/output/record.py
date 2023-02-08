@@ -50,7 +50,9 @@ class Record:
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = None
+        details: Optional[List[str]] = None,
+        check_len: int | None = None,
+        definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -79,11 +81,13 @@ class Record:
         self.bc_category = bc_category
         self.benchmarks = benchmarks
         self.description = description  # used by SARIF output
-        self.short_description = short_description  # used by SARIF output
+        self.short_description = short_description  # used by SARIF and GitLab SAST output
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
         self.details: List[str] = details or []
+        self.check_len = check_len
+        self.definition_context_file_path = definition_context_file_path
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -137,7 +141,7 @@ class Record:
         elif self.check_result["result"] == CheckResult.SKIPPED:
             status = CheckResult.SKIPPED.name
             status_color = "blue"
-            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
+            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result.get("suppress_comment", ""))
 
         check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
         guideline_message = ""
@@ -189,6 +193,7 @@ class Record:
                         )
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 

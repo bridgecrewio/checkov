@@ -1,17 +1,24 @@
-import os
 from pathlib import Path
+from unittest import mock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
 from checkov.common.output.report import CheckType
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
+from tests.common.image_referencer.test_utils import (
+    mock_get_empty_license_statuses_async,
+    mock_get_license_statuses_async,
+    mock_get_image_cached_result_async,
+)
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
-def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license_statuses_result):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -23,16 +30,17 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=license_statuses_result,
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_license_statuses_async,
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -48,9 +56,9 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
 
     assert len(sca_image_report.resources) == 3
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).musl",
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).openssl",
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).musl",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).openssl",
+        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
     }
     assert (
         sca_image_report.image_cached_results[0]["dockerImageName"]
@@ -61,17 +69,18 @@ def test_apprunner_resources(mocker: MockerFixture, image_cached_result, license
         in sca_image_report.image_cached_results[0]["relatedResourceId"]
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
-        {"type": "os", "name": "zlib", "version": "1.2.12-r1", "licenses": ["Zlib"]}
+        {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
     ]
 
     assert len(sca_image_report.passed_checks) == 1
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 4
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_batch_resources(mocker: MockerFixture, image_cached_result):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch.yaml"
     image_name_1 = "nvidia/cuda"
@@ -82,16 +91,17 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -107,16 +117,17 @@ def test_batch_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "codebuild.yaml"
     image_name = "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:3.0"
@@ -125,16 +136,17 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -149,14 +161,15 @@ def test_codebuild_resources(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
-    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib"}
+    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go"}
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_ecs_resources(mocker: MockerFixture, image_cached_result):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_ecs_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "ecs.yaml"
     image_name_1 = "amazon/amazon-ecs-sample"
@@ -167,16 +180,17 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -192,16 +206,17 @@ def test_ecs_resources(mocker: MockerFixture, image_cached_result):
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:f9b91f78b0)).zlib",
-        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:f9b91f78b0)).zlib",
+        f"{file_name} ({image_name_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_name_2} lines:{code_lines_2} (sha256:2460522297)).go",
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 2
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
 
-def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
+@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+def test_lightsail_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "lightsail.yaml"
     image_name = "nginx:latest"
@@ -210,16 +225,17 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     runner_filter = RunnerFilter(run_image_referencer=True)
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=[],
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
     )
 
     # when
-    reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -234,8 +250,9 @@ def test_lightsail_resources(mocker: MockerFixture, image_cached_result):
     assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
-    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:f9b91f78b0)).zlib"}
+    assert sca_image_report.resources == {f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go"}
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 1
+    assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
+

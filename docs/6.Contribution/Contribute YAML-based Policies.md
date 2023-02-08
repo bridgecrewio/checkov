@@ -9,7 +9,7 @@ nav_order: 3
 
 1. Define a policy as described [here](https://www.checkov.io/3.Custom%20Policies/YAML%20Custom%20Policies.html).
 2. Create a branch under the `checkov2` fork (will be changed + the URLs after merge) - `https://github.com/bridgecrewio/checkov`
-3. Add `<policy_name>.yaml` file to `https://github.com/bridgecrewio/checkov/tree/master/checkov/terraform/graph/checks` inside the relevant provider folder that matches your current policy.
+3. Add `<policy_name>.yaml` file to `https://github.com/bridgecrewio/checkov/tree/main/checkov/terraform/checks/graph_checks` inside the relevant provider folder that matches your current policy.
 
 ## Example
 `checkov/terraform/checks/graph_checks/aws/EBSAddedBackup.yaml`
@@ -35,7 +35,7 @@ definition:
 ```
 
 ## YAML Format Testing
-1 - Add the test resources directory to: `https://github.com/bridgecrewio/checkov/tree/master/tests/terraform/graph/checks/resources` and create a folder with the same name as your Custom Policy. In this folder, add the Terraform file(s) which are resources for testing the policy, and `expected.yaml` - all the resources that should pass and the resources that should fail.
+1 - Add the test resources directory to: `https://github.com/bridgecrewio/checkov/tree/main/tests/terraform/graph/checks/resources` and create a folder with the same name as your Custom Policy. In this folder, add the Terraform file(s) which are resources for testing the policy, and `expected.yaml` - all the resources that should pass and the resources that should fail.
 
 ### Terraform Files Example 
 `tests//terraform/graph/checks/resources/EBSAddedBackup/main.tf`

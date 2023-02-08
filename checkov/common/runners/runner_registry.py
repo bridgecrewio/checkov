@@ -10,28 +10,36 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, TypeVar
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
 
 from typing_extensions import Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
+    integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.typing import _ExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
+from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
 from checkov.terraform.runner import Runner as tf_runner
@@ -41,18 +49,17 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
 
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
-
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
-OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "sarif", "csv"]
+OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "gitlab_sast", "sarif", "csv"]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
 class RunnerRegistry:
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner) -> None:
+    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
+                 secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter) -> None:
         self.logger = logging.getLogger(__name__)
         self.runner_filter = runner_filter
         self.runners = list(runners)
@@ -62,6 +69,8 @@ class RunnerRegistry:
         self.filter_runner_framework()
         self.tool = tool_name
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
+        self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
+        self.secrets_omitter_class = secrets_omitter_class
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -74,12 +83,21 @@ class RunnerRegistry:
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
-        integration_feature_registry.run_pre_runner()
-        if len(self.runners) == 1:
-            reports: Iterable[Report | list[Report]] = [
-                self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
-                                    runner_filter=self.runner_filter,
-                                    collect_skip_comments=collect_skip_comments)]
+        if not self.runners:
+            logging.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
+                          '(e.g., `--file xyz.yaml --framework terraform`), or if you specify a framework with missing dependencies (e.g., '
+                          'helm or kustomize, which require those tools to be on your system). Running with LOG_LEVEL=DEBUG may provide more information.')
+            return []
+        elif len(self.runners) == 1:
+            runner_check_type = self.runners[0].check_type
+            if self.licensing_integration.is_runner_valid(runner_check_type):
+                reports: Iterable[Report | list[Report]] = [
+                    self.runners[0].run(root_folder, external_checks_dir=external_checks_dir, files=files,
+                                        runner_filter=self.runner_filter,
+                                        collect_skip_comments=collect_skip_comments)]
+            else:
+                # This is the only runner, so raise a clear indication of failure
+                raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
             def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
                 report = runner.run(
@@ -96,9 +114,37 @@ class RunnerRegistry:
 
                 return report
 
-            reports = parallel_runner.run_function(func=_parallel_run, items=self.runners, group_size=1)
+            valid_runners = []
+            invalid_runners = []
+
+            for runner in self.runners:
+                if self.licensing_integration.is_runner_valid(runner.check_type):
+                    valid_runners.append(runner)
+                else:
+                    invalid_runners.append(runner)
+
+            # if all runners are disabled (most likely to occur if the user specified --framework for only disabled runners)
+            # then raise a clear error
+            # if some frameworks are disabled and the user used --framework, log a warning so they see it
+            # if some frameworks are disabled and the user did not use --framework, then log at a lower level so that we have it for troubleshooting
+            frameworks_specified = self.runner_filter.framework and 'all' not in self.runner_filter.framework
+            if not valid_runners:
+                runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
+                error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
+                                f'You must subscribe to one or more of the categories below to get results for these frameworks.{os.linesep}{runners_categories}'
+                logging.error(error_message)
+                raise ModuleNotEnabledError(error_message)
+            elif invalid_runners:
+                level = logging.WARNING if frameworks_specified else logging.INFO
+                for runner in invalid_runners:
+                    logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
+
+            reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
 
         merged_reports = self._merge_reports(reports)
+
+        if bc_integration.bc_api_key:
+            self.secrets_omitter_class(merged_reports).omit()
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
@@ -128,8 +174,11 @@ class RunnerRegistry:
         integration_feature_registry.run_post_runner(scan_report)
         if metadata_integration.check_metadata:
             RunnerRegistry.enrich_report_with_guidelines(scan_report)
-        if repo_root_for_plan_enrichment:
-            enriched_resources = RunnerRegistry.get_enriched_resources(repo_root_for_plan_enrichment)
+        if repo_root_for_plan_enrichment and not self.runner_filter.deep_analysis:
+            enriched_resources = RunnerRegistry.get_enriched_resources(
+                repo_roots=repo_root_for_plan_enrichment,
+                download_external_modules=self.runner_filter.download_external_modules,
+            )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
         self.scan_reports.append(scan_report)
@@ -145,6 +194,10 @@ class RunnerRegistry:
                           exc_info=True)
 
     @staticmethod
+    def is_error_in_reports(reports: List[Report]) -> bool:
+        return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
+
+    @staticmethod
     def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
 
         soft_fail = config.soft_fail
@@ -157,6 +210,8 @@ class RunnerRegistry:
                 val = val.upper()
                 if not soft_fail_threshold or Severities[val].level > soft_fail_threshold.level:
                     soft_fail_threshold = Severities[val]
+            elif val.capitalize() in SECRET_VALIDATION_STATUSES:
+                soft_fail_on_checks.append(val.capitalize())
             else:
                 soft_fail_on_checks.append(val)
 
@@ -171,6 +226,8 @@ class RunnerRegistry:
                 val = val.upper()
                 if not hard_fail_threshold or Severities[val].level < hard_fail_threshold.level:
                     hard_fail_threshold = Severities[val]
+            elif val.capitalize() in SECRET_VALIDATION_STATUSES:
+                hard_fail_on_checks.append(val.capitalize())
             else:
                 hard_fail_on_checks.append(val)
 
@@ -231,6 +288,7 @@ class RunnerRegistry:
         junit_reports = []
         github_reports = []
         cyclonedx_reports = []
+        gitlab_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -254,6 +312,9 @@ class RunnerRegistry:
                     sarif_reports.append(report)
                 if "cli" in config.output:
                     cli_reports.append(report)
+                if "gitlab_sast" in config.output:
+                    gitlab_reports.append(report)
+            if not report.is_empty() or len(report.extra_resources):
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
                 if "csv" in config.output:
@@ -397,6 +458,16 @@ class RunnerRegistry:
                 )
 
                 data_outputs[cyclonedx_format] = cyclonedx_output
+        if "gitlab_sast" in config.output:
+            gl_sast = GitLabSast(reports=gitlab_reports)
+
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="gitlab_sast",
+                output=json.dumps(gl_sast.sast_json, indent=4),
+            )
+
+            data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -412,6 +483,7 @@ class RunnerRegistry:
             'junitxml': 'results_junitxml.xml',
             'cyclonedx': 'results_cyclonedx.xml',
             'cyclonedx_json': 'results_cyclonedx.json',
+            'gitlab_sast': 'results_gitlab_sast.json',
         }
 
         if config.output_file_path:
@@ -506,15 +578,19 @@ class RunnerRegistry:
                 record.set_guideline(guideline)
 
     @staticmethod
-    def get_enriched_resources(repo_roots: list[str | Path]) -> dict[str, dict[str, Any]]:
+    def get_enriched_resources(
+        repo_roots: list[str | Path], download_external_modules: bool
+    ) -> dict[str, dict[str, Any]]:
         repo_definitions = {}
         for repo_root in repo_roots:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
+            repo_root = os.path.abspath(repo_root)
             Parser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
+                download_external_modules=download_external_modules,
             )
             repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 
@@ -562,8 +638,9 @@ class RunnerRegistry:
             results = report.get('results', {})
             for result in results.values():
                 for result_dict in result:
-                    result_dict["code_block"] = None
-                    result_dict["connected_node"] = None
+                    if isinstance(result_dict, dict):
+                        result_dict["code_block"] = None
+                        result_dict["connected_node"] = None
 
     @staticmethod
     def extract_git_info_from_account_id(account_id: str) -> tuple[str, str]:

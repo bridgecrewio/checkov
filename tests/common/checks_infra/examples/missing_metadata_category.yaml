@@ -1,0 +1,10 @@
+metadata:
+  name: "Ensure Lambda function runs with Python 3.9"
+  id: CUSTOM_1
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_lambda_function
+  attribute: runtime
+  operator: equals
+  value: python3.9

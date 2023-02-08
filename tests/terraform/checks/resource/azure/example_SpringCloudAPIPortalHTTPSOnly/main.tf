@@ -28,7 +28,7 @@ resource "azurerm_spring_cloud_api_portal" "fail2" {
   }
 }
 
- resource "azurerm_spring_cloud_api_portal" "pass" {
+resource "azurerm_spring_cloud_api_portal" "pass" {
   name                          = "default"
   spring_cloud_service_id       = azurerm_spring_cloud_service.example.id
   gateway_ids                   = [azurerm_spring_cloud_gateway.example.id]

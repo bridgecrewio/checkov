@@ -88,7 +88,7 @@ def aws_provider_lines_without_secrets():
             (8, '  alias      = "plain_text_access_keys_provider"\n'),
             (9, '  region     = "us-west-1"\n'),
             (10, '  access_key = "AKIAI***************"\n'),
-            (11, '  secret_key = "wJalrXUtnF******************************"\n'),
+            (11, '  secret_key = "wJalrX**********************************"\n'),
             (12, '}\n')]
 
 
@@ -148,98 +148,27 @@ def tfplan_resource_lines_without_secrets():
             (44, '                                "tags":\n'),
             (45, '                                {},\n'),
             (46, '                                "timeouts": null,\n'),
-            (47, '                                "value": "IClnjeTb8fg*********************************",\n'),
+            (47, '                                "value": "IClnje**************************************",\n'),
             (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
             (49,
              '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]
 
-
 @pytest.fixture
-def tfplan_definitions_with_secrets():
-    return {'/Users/arielk/dev/terragoat/tfplan.json': {
-        'resource': [
-            {'azurerm_key_vault_secret': {
-                'test_123': {
-                    'content_type': [''],
-                    'expiration_date': [None],
-                    'id': [
-                        'https://test-123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/t3stK3yR4nd0mN0tR34l'],
-                    'key_vault_id': ['abcd/subscriptions/1234/resourceGroups/xyz'], 'name': ['test-123-abcdse-02'],
-                    'not_before_date': [None], 'resource_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'resource_versionless_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'tags': [{'__startline__': 45, '__endline__': 45, 'start_line': 44, 'end_line': 44}],
-                    'timeouts': [None], 'value': ['t3stK3yR4nd0mN0tR34l/syQIyk9='],
-                    'version': ['t3stK3yR4nd0mN0tR34l'],
-                    'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02'],
-                    '__startline__': [35], '__endline__': [50], 'start_line': [34], 'end_line': [49],
-                    '__address__': 'module.test.azurerm_key_vault_secret.te_primary_cs["te-st123-abcdse-02"]'}}},
-            {'azurerm_key_vault_secret': {
-                'test_01_key': {
-                    'content_type': [''],
-                    'expiration_date': [None],
-                    'id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/t3stK3yR4nd0mN0tR34l'],
-                    'key_vault_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'name': ['test-123-abcdse-02-primary-key'],
-                    'not_before_date': [None],
-                    'resource_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'resource_versionless_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'tags': [
-                        {'__startline__': 77,
-                         '__endline__': 77,
-                         'start_line': 76,
-                         'end_line': 76}],
-                    'timeouts': [None],
-                    'value': ['t3stK3yR4nd0mN0tR34l/syQIyk9='],
-                    'version': ['t3stK3yR4nd0mN0tR34l'],
-                    'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key'],
-                    '__startline__': [67],
-                    '__endline__': [82],
-                    'start_line': [66],
-                    'end_line': [81],
-                    '__address__': 'module.test.azurerm_key_vault_secret.te_primary_key["test-123-abcdse-02"]'}}}]}}
+def tfplan_resource_lines_without_secrets_multiple_keys():
+    return [(35, '                            {\n'),
+            (36, '                                "content_type": "",\n'),
+            (37, '                                "expiration_date": null,\n'),
+            (38, '                                "id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/352d0b63ac873c528170cb366b570da5",\n'),
+            (39, '                                "key_vault_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (40, '                                "name": "test-123-abcdse-02-primary-key",\n'),
+            (41, '                                "not_before_date": null,\n'),
+            (42, '                                "resource_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (43, '                                "resource_versionless_id": "abcd/subscriptions/123/resourceGroups/abcd",\n'),
+            (44, '                                "tags":\n'),
+            (45, '                                {},\n'),
+            (46, '                                "timeouts": null,\n'),
+            (47, '                                "value": "IClnje**************************************",\n'),
+            (48, '                                "version": "123d0b**************************",\n'),
 
-
-@pytest.fixture
-def tfplan_definitions_without_secrets():
-    return {'/Users/arielk/dev/terragoat/tfplan.json': {
-        'resource': [
-            {'azurerm_key_vault_secret': {
-                'test_123': {
-                    'content_type': [''],
-                    'expiration_date': [None],
-                    'id': [
-                        'https://test-123-abcdse-02.vault.azure.net/secrets/te-st123-abcdse-02-primary-cs/t3stK3yR4nd0mN0tR34l'],
-                    'key_vault_id': ['abcd/subscriptions/1234/resourceGroups/xyz'], 'name': ['test-123-abcdse-02'],
-                    'not_before_date': [None], 'resource_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'resource_versionless_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'tags': [{'__startline__': 45, '__endline__': 45, 'start_line': 44, 'end_line': 44}],
-                    'timeouts': [None],
-                    'value': ['t3stK3y**********************'],
-                    'version': ['t3stK3yR4nd0mN0tR34l'],
-                    'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02'],
-                    '__startline__': [35], '__endline__': [50], 'start_line': [34], 'end_line': [49],
-                    '__address__': 'module.test.azurerm_key_vault_secret.te_primary_cs["te-st123-abcdse-02"]'}}},
-            {'azurerm_key_vault_secret': {
-                'test_01_key': {
-                    'content_type': [''],
-                    'expiration_date': [None],
-                    'id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key/t3stK3yR4nd0mN0tR34l'],
-                    'key_vault_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'name': ['test-123-abcdse-02-primary-key'],
-                    'not_before_date': [None],
-                    'resource_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'resource_versionless_id': ['abcd/subscriptions/1234/resourceGroups/xyz'],
-                    'tags': [
-                        {'__startline__': 77,
-                         '__endline__': 77,
-                         'start_line': 76,
-                         'end_line': 76}],
-                    'timeouts': [None],
-                    'value': ['t3stK3y**********************'],
-                    'version': ['t3stK3yR4nd0mN0tR34l'],
-                    'versionless_id': ['https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02-primary-key'],
-                    '__startline__': [67],
-                    '__endline__': [82],
-                    'start_line': [66],
-                    'end_line': [81],
-                    '__address__': 'module.test.azurerm_key_vault_secret.te_primary_key["test-123-abcdse-02"]'}}}]}}
+            (49,
+             '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]

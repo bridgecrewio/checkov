@@ -14,17 +14,16 @@ from termcolor import colored
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ErrorStatus
 from checkov.common.typing import _ExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
 
-if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
-    from checkov.sca_package_2.output import create_cli_output
-else:
-    from checkov.sca_package.output import create_cli_output
+from checkov.sca_package_2.output import create_cli_output as create_cli_output_v2
+
+from checkov.sca_package.output import create_cli_output as create_cli_output_v1
 
 from checkov.version import version
 
@@ -53,6 +52,10 @@ class Report:
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
         self.image_cached_results: List[dict[str, Any]] = []
+        self.error_status: ErrorStatus = ErrorStatus.SUCCESS
+
+    def set_error_status(self, error_status: ErrorStatus) -> None:
+        self.error_status = error_status
 
     def add_parsing_errors(self, errors: "Iterable[str]") -> None:
         for file in errors:
@@ -100,6 +103,16 @@ class Report:
                 },
                 "summary": self.get_summary(),
             }
+        if full_report:
+            return {
+                "check_type": self.check_type,
+                "checks": {
+                    "passed_checks": [check.__dict__ for check in self.passed_checks],
+                    "failed_checks": [check.__dict__ for check in self.failed_checks],
+                    "skipped_checks": [check.__dict__ for check in self.skipped_checks]
+                },
+                "image_cached_results": [res.__dict__ for res in self.image_cached_results]
+            }
         else:
             return {
                 "check_type": self.check_type,
@@ -146,13 +159,16 @@ class Report:
             check_id = failed_check.check_id
             bc_check_id = failed_check.bc_check_id
             severity = failed_check.severity
+            secret_validation_status = failed_check.validation_status if hasattr(failed_check, 'validation_status') else ''
 
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
             hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
             explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
             explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
-            implicit_soft_fail = not explicit_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
-            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity
+            explicit_secrets_soft_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, soft_fail_on_checks)
+            explicit_secrets_hard_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, hard_fail_on_checks)
+            implicit_soft_fail = not explicit_hard_fail and not explicit_secrets_hard_fail and not soft_fail_on_checks and not soft_fail_threshold
+            implicit_hard_fail = not explicit_soft_fail and not soft_fail_severity and not explicit_secrets_soft_fail
 
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
@@ -204,8 +220,10 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
+                create_cli_output = create_cli_output_v2 if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else create_cli_output_v1
                 output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
                                                  self.skipped_checks)
+
         else:
             if not is_quiet:
                 for record in self.passed_checks:
@@ -537,7 +555,8 @@ class Report:
     ) -> "Report":
         # This enriches reports with the appropriate filepath, line numbers, and codeblock
         for record in report.failed_checks:
-            enriched_resource = enriched_resources.get(record.resource)
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            enriched_resource = enriched_resources.get(resource_raw_id)
             if enriched_resource:
                 record.file_path = enriched_resource["scanned_file"]
                 record.file_line_range = enriched_resource["entity_lines_range"]
@@ -551,7 +570,8 @@ class Report:
         module_address_len = len("module.")
         skip_records = []
         for record in report.failed_checks:
-            resource_skips = enriched_resources.get(record.resource, {}).get(
+            resource_raw_id = Report.get_plan_resource_raw_id(record.resource)
+            resource_skips = enriched_resources.get(resource_raw_id, {}).get(
                 "skipped_checks", []
             )
             for skip in resource_skips:
@@ -577,6 +597,17 @@ class Report:
             if record in report.failed_checks:
                 report.failed_checks.remove(record)
         return report
+
+    @staticmethod
+    def get_plan_resource_raw_id(resource_id: str) -> str:
+        """
+        return the resource raw id without the modules and the indexes
+        example: from resource_id='module.module_name.type.name[1]' return 'type.name'
+        """
+        resource_raw_id = ".".join(resource_id.split(".")[-2:])
+        if '[' in resource_raw_id:
+            resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
+        return resource_raw_id
 
 
 def merge_reports(base_report: Report, report_to_merge: Report) -> None:

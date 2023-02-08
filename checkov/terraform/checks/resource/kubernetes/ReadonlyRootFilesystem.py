@@ -16,7 +16,8 @@ class ReadonlyRootFilesystem(BaseResourceCheck):
     def scan_resource_conf(self, conf) -> CheckResult:
         spec = conf.get('spec', [None])[0]
         evaluated_keys_path = "spec"
-
+        if not spec:
+            return CheckResult.UNKNOWN
         if spec.get("template") and isinstance(spec.get("template"), list):
             template = spec.get("template")[0]
             if template.get("spec") and isinstance(template.get("spec"), list):

@@ -11,7 +11,7 @@ from typing import Any, TYPE_CHECKING, Callable
 from typing_extensions import TypedDict
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
@@ -38,7 +38,7 @@ class GhaMetadata(TypedDict):
 class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str | None = None,
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,
@@ -51,7 +51,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
         if source and graph_class:
             # if they are not all set, then ignore it
-            db_connector = db_connector or NetworkxConnector()
+            db_connector = db_connector or self.db_connector
             self.source = source
             self.graph_class = graph_class
             self.graph_manager = (
@@ -118,33 +118,36 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 if CHECKOV_CREATE_GRAPH and self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
-        if files:
-            self._load_files(files)
+        if not self.context or not self.definitions:
+            if files:
+                self._load_files(files)
 
-        if root_folder:
-            self.root_folder = root_folder
+            if root_folder:
+                self.root_folder = root_folder
 
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
-                files_to_load = [os.path.join(root, f_name) for f_name in f_names]
-                self._load_files(files_to_load=files_to_load)
+                for root, d_names, f_names in os.walk(root_folder):
+                    filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
+                    filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
+                    files_to_load = [os.path.join(root, f_name) for f_name in f_names]
+                    self._load_files(files_to_load=files_to_load)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info(f"Creating {self.source} graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(
-                definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
-            )
-            logging.info(f"Successfully created {self.source} graph")
+            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+                logging.info(f"Creating {self.source} graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(
+                    definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
+                )
 
-            self.graph_manager.save_graph(local_graph)
+                logging.info(f"Successfully created {self.source} graph")
+
+                self.graph_manager.save_graph(local_graph)
+        else:
+            logging.info("Going to use existing graph")
+            self.populate_metadata_dict()
 
         self.pbar.initiate(len(self.definitions))
 
         # run Python checks
-        self.add_python_check_results(
-            report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder
-        )
+        self.add_python_check_results(report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
         if CHECKOV_CREATE_GRAPH and self.graph_registry:
@@ -187,9 +190,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(
-                            file_path, key, check.supported_entities, self.definitions[file_path]  # type:ignore[arg-type]  # key is str not BaseCheck
-                        ),
+                        resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -208,9 +209,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         code_block=self.definitions_raw[file_path][start - 1:end + 1],
                         file_path=f"/{os.path.relpath(file_path, root_folder)}",
                         file_line_range=[start, end + 1],
-                        resource=self.get_resource(
-                            file_path, key, check.supported_entities,  # type:ignore[arg-type]  # key is str not BaseCheck
-                        ),
+                        resource=self.get_resource(file_path, key, check.supported_entities, start, end),  # type:ignore[arg-type]  # key is str not BaseCheck
                         evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(file_path),
@@ -244,6 +243,13 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 end_line = entity[END_LINE]
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
+                    if entity.get(CustomAttributes.BLOCK_NAME) == 'permissions' and start_line == 0 and end_line == 0:
+                        # reconstruct permissions start-end lines since we do not have that information during graph build
+                        for line in self.definitions_raw[entity_file_path]:
+                            if line and 'permissions' in line[1]:
+                                start_line = line[0]
+                                end_line = line[0]
+                                break
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -286,7 +292,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         return []
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None) -> str:
+                     start_line: int = -1, end_line: int = -1) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod
@@ -335,12 +341,3 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         for step in steps:
                             end_line_to_job_name_dict[step.get(END_LINE)] = job_name
         return end_line_to_job_name_dict
-
-    @staticmethod
-    def get_start_and_end_lines(key: str) -> list[int]:
-        check_name = key.split('.')[-1]
-        try:
-            start_end_line_bracket_index = check_name.index('[')
-        except ValueError:
-            return [-1, -1]
-        return [int(x) for x in check_name[start_end_line_bracket_index + 1: len(check_name) - 1].split(':')]

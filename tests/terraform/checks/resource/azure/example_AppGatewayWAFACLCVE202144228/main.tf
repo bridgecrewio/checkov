@@ -69,6 +69,25 @@ resource "azurerm_web_application_firewall_policy" "owasp_3_1_disabled_different
   policy_settings {}
 }
 
+resource "azurerm_web_application_firewall_policy" "empty_disabled_rules" {
+  location            = "germanywestcentral"
+  name                = "example"
+  resource_group_name = "example"
+
+  managed_rules {
+    managed_rule_set {
+      type    = "OWASP"
+      version = "3.1"
+
+      rule_group_override {
+        rule_group_name = "REQUEST-944-APPLICATION-ATTACK-JAVA"
+      }
+    }
+  }
+
+  policy_settings {}
+}
+
 # fail
 
 resource "azurerm_web_application_firewall_policy" "owasp_3_0" {

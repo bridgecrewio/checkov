@@ -32,10 +32,10 @@ class PolicyNoSrcAnyDstAny(BaseResourceCheck):
 
                     # If source_addresses is defined, get the value
                     source_addresses = secrule['source_addresses']
-                    
+
                     # source_addresses can have a list of values, so iterate over each value
                     for src_address in source_addresses[0]:
-                    
+
                         # The value "any" is overly permissive for source_addresses only if combined with destination_address=any...
                         if src_address == "any":
 
@@ -47,11 +47,11 @@ class PolicyNoSrcAnyDstAny(BaseResourceCheck):
 
                                 # destination_addresses can have a list of values, so iterate over each value
                                 for dst_address in destination_addresses[0]:
-                                
+
                                     # If the value of destination_addresses is also "any" as well as source_addresses=any, this is overly permissive
                                     if dst_address == "any":
                                         return CheckResult.FAILED
-                            
+
                             else:
                                 # If "destination_addresses" attribute is not defined, this is not valid and will fail during Terraform plan stage, and should therefore be a fail
                                 return CheckResult.FAILED
@@ -59,10 +59,10 @@ class PolicyNoSrcAnyDstAny(BaseResourceCheck):
                 else:
                     # If "source_addresses" attribute is not defined, this is not valid and will fail during Terraform plan stage, and should therefore be a fail
                     return CheckResult.FAILED
-                
+
             # We have been through all rules and not found one with failure where source_addresses and destination_addresses both have the value 'any', so this is a pass
             return CheckResult.PASSED
-            
+
         # If there's no rules we have nothing to check
         return CheckResult.UNKNOWN
 

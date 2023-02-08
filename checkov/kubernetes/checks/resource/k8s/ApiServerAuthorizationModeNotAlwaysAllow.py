@@ -20,7 +20,7 @@ class ApiServerAuthorizationModeNotAlwaysAllow(BaseK8sContainerCheck):
                         if "AlwaysAllow" in modes.split(","):
                             return CheckResult.FAILED
                         break
-           
+
         return CheckResult.PASSED
 
 

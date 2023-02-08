@@ -92,7 +92,7 @@ class Runner(YamlRunner, JsonRunner):
             return False
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     definitions: dict[str, Any] | None = None) -> str:
+                     start_line: int = -1, end_line: int = -1) -> str:
         return ",".join(supported_entities)
 
     def load_file(self, filename: str | Path) -> str:

@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_AWS_53"
+  name: "Ensure AWS API gateway request is validated"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "aws_api_gateway_method"
+  attribute: "request_validator_id"
+  operator: "exists"

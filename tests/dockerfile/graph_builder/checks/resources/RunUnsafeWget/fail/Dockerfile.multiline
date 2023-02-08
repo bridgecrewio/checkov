@@ -1,0 +1,4 @@
+FROM alpine:3.5
+RUN wget \
+    --no-check-certificate \
+    https://example.com
