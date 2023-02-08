@@ -27,7 +27,8 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
-    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -382,7 +383,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
                 if referrer_id:
                     entity_id = f"{referrer_id}.{entity_id}"  # ex: module.my_module.aws_s3_bucket.my_bucket
-                    abs_caller_file = module_referrer[:module_referrer.rindex("#")]
+                    abs_caller_file = module_referrer[:module_referrer.rindex(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR)]
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
                     try:
