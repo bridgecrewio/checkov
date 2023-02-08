@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 import re
+from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 import checkov.terraform.graph_builder.local_graph as l_graph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
@@ -13,6 +15,9 @@ FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'
 REFERENCES_VALUES = r"(var|module|local)\."
 FOR_EACH_BLOCK_TYPE = TypeVar("FOR_EACH_BLOCK_TYPE", bound="dict[int, Optional[list[str] | dict[str, Any] | int]]")
+COUNT_KEY = 'count.index'
+EACH_KEY = 'each.key'
+EACH_VALUE = 'each.value'
 
 
 class ForeachHandler(object):
@@ -131,17 +136,99 @@ class ForeachHandler(object):
         renderer.render_variables_from_local_graph()
 
     def _build_sub_graph(self, blocks_to_render: list[int]) -> l_graph.TerraformLocalGraph:
-        sub_graph = l_graph.TerraformLocalGraph(self.local_graph.module)
+        module = deepcopy(self.local_graph.module)
+        sub_graph = l_graph.TerraformLocalGraph(module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = block  # type: ignore
+                sub_graph.vertices[i] = deepcopy(block)  # type: ignore
         sub_graph.edges = [
-            edge for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
+            deepcopy(edge) for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
-        sub_graph.in_edges = self.local_graph.in_edges
-        sub_graph.out_edges = self.local_graph.out_edges
+        sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
+        sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
         return sub_graph
 
+    def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
+        for i in range(statement):
+            self._create_new_resource(main_resource, i)
+
+    @staticmethod
+    def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
+        attrs.pop(COUNT_STRING, None)
+        attrs.pop(FOREACH_STRING, None)
+
+    def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, Any]) -> None:
+        for key_to_change, val_to_change in key_to_val_changes.items():
+            for k, v in attrs.items():
+                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
+                    if attrs[k][0] == "${" + key_to_change + "}":
+                        attrs[k][0] = val_to_change
+                    else:
+                        attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
+                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
+                    for i, item in enumerate(v):
+                        if isinstance(item, str) and (key_to_change in item or "${" + key_to_change + "}" in item):
+                            if v[i] == "${" + key_to_change + "}":
+                                v[i] = val_to_change
+                            else:
+                                v[i] = item.replace("${" + key_to_change + "}", str(val_to_change))
+                                v[i] = v[i].replace(key_to_change, str(val_to_change))
+                elif isinstance(v, dict):
+                    self._update_attributes(v, {key_to_change: val_to_change})
+
+    @staticmethod
+    def _build_key_to_val_changes(new_val: str, new_key: str):
+        return {
+            EACH_VALUE: new_val,
+            EACH_KEY: new_key
+        }
+
+    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = None):
+        new_resource = deepcopy(main_resource)
+        block_type, block_name = new_resource.name.split('.')
+        if main_resource.attributes.get(COUNT_STRING):
+            key_to_val_changes = {COUNT_KEY: new_value}
+        else:
+            key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
+        self._pop_foreach_attrs(new_resource.attributes)
+        self._pop_foreach_attrs(new_resource.config.get(block_type, {}).get(block_name, {}))
+        self._update_attributes(new_resource.attributes, key_to_val_changes)
+        self._update_attributes(new_resource.config.get(block_type, {}).get(block_name, {}), key_to_val_changes)
+
+        idx_to_change = new_key or new_value
+        self._add_index_to_block_properties(new_resource, idx_to_change)
+        self.local_graph.vertices.append(new_resource)
+
+    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
+        if isinstance(statement, list):
+            for new_value in statement:
+                self._create_new_resource(main_resource, new_value, new_key=new_value)
+        if isinstance(statement, dict):
+            for new_key, new_value in statement.items():
+                self._create_new_resource(main_resource, new_value, new_key=new_key)
+
+    def _delete_main_resource(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
+        new_vertices = [
+            block for i, block in enumerate(self.local_graph.vertices) if i not in block_index_to_statement or not block_index_to_statement[i]
+        ]
+        self.local_graph.vertices = new_vertices
+
+    @staticmethod
+    def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
+        block_type, block_name = block.name.split('.')
+        block.id = f"{block.id}[{idx}]"
+        block.name = f"{block.name}[{idx}]"
+        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+            block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
+
     def _create_new_foreach_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
-        pass
+        for block_idx, statement in block_index_to_statement.items():
+            if not statement:
+                continue
+            if isinstance(statement, int):
+                self._create_new_resources_count(statement, self.local_graph.vertices[block_idx])
+            else:
+                self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
+        self._delete_main_resource(block_index_to_statement)
