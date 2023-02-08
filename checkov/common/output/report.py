@@ -163,8 +163,8 @@ class Report:
             hard_fail_on_checks = generic_thresholds['hard_fail_checks']
 
             # these two can be different for licenses / vulnerabilities
-            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in sca_thresholds.items()}
-            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in sca_thresholds.items()}
+            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object, can't possibly be more clear
+            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object
 
             failed_checks_by_category = {
                 CodeCategoryType.LICENSES: [fc for fc in self.failed_checks if '_LIC_' in fc.check_id],
@@ -216,11 +216,14 @@ class Report:
             if has_split_enforcement:
                 category = CodeCategoryType.LICENSES if '_LIC_' in check_id else CodeCategoryType.VULNERABILITIES
                 hard_fail_threshold = cast(Dict[str, Severity], hard_fail_threshold)
-                hf_threshold = hard_fail_threshold[category]
-                sf = soft_fail[category]
+                hf_threshold: Severity = hard_fail_threshold[category]
+                soft_fail = cast(Dict[str, bool], soft_fail)
+                sf: bool = soft_fail[category]
             else:
-                hf_threshold = hard_fail_threshold
-                sf = soft_fail
+                hard_fail_threshold = cast(Severity, hard_fail_threshold)
+                hf_threshold: Severity = hard_fail_threshold
+                soft_fail = cast(bool, soft_fail)
+                sf: bool = soft_fail
 
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
             hard_fail_severity = severity and hf_threshold and severity.level >= hf_threshold.level

@@ -257,7 +257,7 @@ class RunnerRegistry:
                 })
             else:
                 code_category_type: CodeCategoryType = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
-                enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs.get[code_category_type]
+                enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs[code_category_type]
 
                 if enf_rule:
                     logging.debug('Use enforcement rules is TRUE')
