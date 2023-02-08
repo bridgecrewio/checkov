@@ -1,12 +1,11 @@
-from dataclasses import dataclass
+from enum import Enum
 from typing import Dict, List, Union
 
 from checkov.common.bridgecrew.severities import Severity, BcSeverities, Severities
 from checkov.common.bridgecrew.check_type import CheckType
 
 
-@dataclass
-class CodeCategoryType:
+class CodeCategoryType(str, Enum):
     IAC = "IAC"
     VULNERABILITIES = "VULNERABILITIES"
     SECRETS = "SECRETS"

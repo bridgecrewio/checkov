@@ -632,7 +632,7 @@ class TestRepoConfigIntegration(unittest.TestCase):
 
     def test_enforcement_rule_constants(self):
         # tests to ensure that the correct constants get updated as rules and runners change
-        module_keys = [value for attr, value in CodeCategoryType.__dict__.items() if not attr.startswith("__")]
+        module_keys = [e.value for e in CodeCategoryType]
         self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'VULNERABILITIES', 'LICENSES', 'BUILD_INTEGRITY'})
 
     def test_global_soft_fail(self):
