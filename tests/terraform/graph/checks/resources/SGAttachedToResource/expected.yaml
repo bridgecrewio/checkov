@@ -11,6 +11,7 @@ pass:
   - "aws_security_group.pass_ec2_client_vpn"
   - "aws_security_group.pass_ec2_launch_config"
   - "aws_security_group.pass_ec2_launch_template"
+  - "aws_security_group.pass_ec2_spot_fleet_request"
   - "aws_security_group.pass_ecs"
   - "aws_security_group.pass_efs"
   - "aws_security_group.pass_eks"
