@@ -244,7 +244,7 @@ class RunnerRegistry:
             if 'sca_' in report_type:
                 code_category_types: List[CodeCategoryType] = cast(List[CodeCategoryType], CodeCategoryMapping[report_type])
                 category_rules: Dict[CodeCategoryType, CodeCategoryConfiguration] = {
-                    category: repo_config_integration.code_category_configs.get(category) for category in code_category_types  # type:ignore[misc] # not null
+                    category: repo_config_integration.code_category_configs[category] for category in code_category_types
                 }
                 return cast(_ScaExitCodeThresholds, {
                     category: {
@@ -256,8 +256,8 @@ class RunnerRegistry:
                     } for category in code_category_types
                 })
             else:
-                code_category_type: CodeCategoryType = CodeCategoryMapping[report_type]
-                enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs.get(code_category_type)
+                code_category_type: CodeCategoryType = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
+                enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs.get[code_category_type]
 
                 if enf_rule:
                     logging.debug('Use enforcement rules is TRUE')

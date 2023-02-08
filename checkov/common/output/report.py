@@ -152,11 +152,12 @@ class Report:
         has_split_enforcement = CodeCategoryType.LICENSES in exit_code_thresholds
 
         hard_fail_threshold: Optional[Severity | Dict[str, Severity]]
+        soft_fail: Optional[bool | Dict[str, bool]]
 
         if has_split_enforcement:
             sca_thresholds: _ScaExitCodeThresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
             # these three are the same even in split enforcement rules
-            generic_thresholds = next(iter(sca_thresholds.values()))
+            generic_thresholds: _ExitCodeThresholds = cast(_ExitCodeThresholds, next(iter(sca_thresholds.values())))
             soft_fail_on_checks = generic_thresholds['soft_fail_checks']
             soft_fail_threshold = generic_thresholds['soft_fail_threshold']
             hard_fail_on_checks = generic_thresholds['hard_fail_checks']
@@ -214,6 +215,7 @@ class Report:
 
             if has_split_enforcement:
                 category = CodeCategoryType.LICENSES if '_LIC_' in check_id else CodeCategoryType.VULNERABILITIES
+                hard_fail_threshold = cast(Dict[str, Severity], hard_fail_threshold)
                 hf_threshold = hard_fail_threshold[category]
                 sf = soft_fail[category]
             else:

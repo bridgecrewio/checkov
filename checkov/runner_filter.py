@@ -172,11 +172,8 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
-        # TODO remove after test suite
-        assert ('_CVE_' in check_id or '_PRISMA_' in check_id or '_LIC_' in check_id or '_GHSA_' in check_id) == (report_type is not None and 'sca_' in report_type)
-
-        check_threshold: Optional[Severity] = None
-        skip_check_threshold: Optional[Severity] = None
+        check_threshold: Optional[Severity]
+        skip_check_threshold: Optional[Severity]
 
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
