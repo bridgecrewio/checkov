@@ -132,8 +132,8 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
                 # Fix file path to repo relative path
-                repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
                 if self.original_root_dir:
+                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         repo_file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
