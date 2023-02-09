@@ -7,7 +7,7 @@ class RDSDeletionProtection(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that RDS clusters have deletion protection enabled"
         id = "CKV_AWS_139"
-        supported_resources = ['aws_rds_cluster']
+        supported_resources = ['aws_rds_cluster' ,'aws_db_instance']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
