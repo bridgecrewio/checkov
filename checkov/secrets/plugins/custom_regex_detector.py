@@ -79,7 +79,7 @@ class CustomRegexDetector(RegexBasedDetector):
             # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
             if not self.multiline_regex_to_metadata.values() or \
                     not self.multiline_regex_supported_file_types or \
-                    not any([filename.endswith(file_type) for file_type in self.multiline_regex_supported_file_types]) or \
+                    not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
                     not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
                 return output
             file_content = read_file_safe(filename)
