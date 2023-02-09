@@ -5,7 +5,6 @@ import linecache
 import logging
 import os
 import re
-import tempfile
 
 import git
 from pathlib import Path
@@ -77,6 +76,7 @@ PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requireme
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
+#TODO remove
 SCAN_HISTORY = True
 
 
@@ -155,24 +155,28 @@ class Runner(BaseRunner[None]):
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             if root_folder:
-                enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                block_list_secret_scan = runner_filter.block_list_secret_scan or []
-                block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
-                for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, excluded_paths)
-                    filter_ignored_paths(root, f_names, excluded_paths)
-                    for file in f_names:
-                        if enable_secret_scan_all_files:
-                            if is_docker_file(file):
-                                if 'dockerfile' not in block_list_secret_scan_lower:
+                if runner_filter.enable_git_history_secret_scan:
+                    settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
+                    self._scan_history(root_folder, secrets)
+                    logging.info(f'Secrets scanning git history')
+                else:
+                    enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
+                    block_list_secret_scan = runner_filter.block_list_secret_scan or []
+                    block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
+                    for root, d_names, f_names in os.walk(root_folder):
+                        filter_ignored_paths(root, d_names, excluded_paths)
+                        filter_ignored_paths(root, f_names, excluded_paths)
+                        for file in f_names:
+                            if enable_secret_scan_all_files:
+                                if is_docker_file(file):
+                                    if 'dockerfile' not in block_list_secret_scan_lower:
+                                        files_to_scan.append(os.path.join(root, file))
+                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
-                            elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
+                            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
+                                    file):
                                 files_to_scan.append(os.path.join(root, file))
-                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
-                                file):
-                            files_to_scan.append(os.path.join(root, file))
-                self._scan_history(root_folder, secrets)
-            logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+                    logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
 
@@ -446,9 +450,6 @@ class Runner(BaseRunner[None]):
 
     @staticmethod
     def _scan_history(root_folder: str, secrets: SecretsCollection):
-        if not SCAN_HISTORY:
-            return
-
         try:
             repo = git.Repo(root_folder)
         except InvalidGitRepositoryError:
@@ -457,8 +458,8 @@ class Runner(BaseRunner[None]):
 
         scanned_file_count = 0
         skipped_file_count = 0
-        commits = list(repo.iter_commits(repo.active_branch, max_count=6))
-        # [*scan.scan_diff(full_file_path)]
+        commits = list(repo.iter_commits(repo.active_branch, max_count=2))
+        # we scan the diff between the commit and the next commit - start from the end
         for commit_idx in range(len(commits) - 1, 0, -1):
             next_commit_idx = commit_idx - 1
             added_commit_hash = commits[next_commit_idx].hexsha
@@ -467,21 +468,23 @@ class Runner(BaseRunner[None]):
             for file_diff in git_diff:
                 try:
                     file_content = repo.git.show(f"{added_commit_hash}:{file_diff.b_path}")
-                    file_diff_content = repo.git.diff(added_commit_hash, file_diff.b_path)
+                    if file_diff.renamed:
+                        logging.warning(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
+                        pass
+                    elif file_diff.deleted_file:
+                        logging.warning(f"File {file_diff.b_path} was delete")
+                        pass
+                    else:
+                        file_diff_content = repo.git.diff(added_commit_hash, file_diff.b_path)
+                        file_results = [*scan.scan_diff(file_diff_content)]
+                        if file_results:
+                            logging.info(
+                                f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
+                            logging.info(file_results)
+                        for secret in file_results:
+                            secrets[f'{added_commit_hash}-{secret.filename}'].add(secret)
+                        scanned_file_count += 1
                 except GitCommandError:
                     logging.info(f"File path {file_diff.b_path} does not exist in commit {added_commit_hash}")
                     continue
-
-                if len(file_content) > 100000:
-                    skipped_file_count += 1
-                    continue
-
-                file_results = [*scan.scan_diff(file_diff_content)]
-                if file_results:
-                    logging.info(
-                        f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
-                    logging.info(file_results)
-
-                scanned_file_count += 1
-
-        logging.info(f"Scanned {scanned_file_count} historical files")
+        logging.info(f"Scanned {scanned_file_count} historical files, skipped_file_count {skipped_file_count}")
