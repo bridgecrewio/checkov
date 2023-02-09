@@ -121,5 +121,9 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         # not used
         pass
 
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
+
 
 integration = CustomPoliciesIntegration(bc_integration)

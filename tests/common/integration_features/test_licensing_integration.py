@@ -43,7 +43,7 @@ class TestLicensingIntegration(unittest.TestCase):
             'bitbucket_pipelines', 'circleci_pipelines', 'ansible', 'argo_workflows', 'arm', 'azure_pipelines', 'bicep',
             'cloudformation', 'dockerfile', 'github_configuration', 'github_actions', 'gitlab_configuration',
             'gitlab_ci', 'bitbucket_configuration', 'helm', 'json', 'yaml', 'kubernetes', 'kustomize', 'openapi',
-            'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan'
+            'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan', '3d_policy'
         })
 
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN))
