@@ -132,13 +132,10 @@ class K8sKustomizeRunner(K8sRunner):
             else:
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
                 # Fix file path to repo relative path
+                repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
                 if self.original_root_dir:
-                    repo_file_path_parts = realKustomizeEnvMetadata['filePath'].split(self.original_root_dir)
-                    if len(repo_file_path_parts) > 1:
-                        prefix = self.original_root_dir
-                        if not prefix.startswith('/'):
-                            prefix = f'/{prefix}'
-                        repo_file_path = f'{prefix}{self.original_root_dir.join(repo_file_path_parts[1:])}'
+                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                        repo_file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
@@ -217,7 +214,7 @@ class K8sKustomizeRunner(K8sRunner):
 
 
 class Runner(BaseRunner["KubernetesGraphManager"]):
-    kustomize_command = 'kustomize'  # noqa: CCE003  # a static attribute
+    kustomize_command = '/opt/homebrew/bin/kustomize'  # noqa: CCE003  # a static attribute
     kubectl_command = 'kubectl'  # noqa: CCE003  # a static attribute
     check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
@@ -400,8 +397,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
-        if template_renderer_command == "kustomize":
-            template_render_command_options = "build"
+        template_renderer_command = "/opt/homebrew/bin/kustomize"
+        template_render_command_options = "build"
         proc = subprocess.Popen([template_renderer_command, template_render_command_options, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
