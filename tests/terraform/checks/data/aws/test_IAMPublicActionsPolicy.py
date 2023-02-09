@@ -2,13 +2,13 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.data.aws.IAMPublichActionsPolicy import check
+from checkov.terraform.checks.data.aws.IAMPublicActionsPolicy import check
 from checkov.terraform.runner import Runner
 
 
 class TestIAMPublicActionsPolicy(unittest.TestCase):
     def test(self):
-        test_files_dir = Path(__file__).parent / "example_IAMPublichActionsPolicy"
+        test_files_dir = Path(__file__).parent / "example_IAMPublicActionsPolicy"
 
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
@@ -17,7 +17,8 @@ class TestIAMPublicActionsPolicy(unittest.TestCase):
             "aws_iam_policy_document.pass",
             'aws_iam_policy_document.pass1',
             "aws_iam_policy_document.pass2",
-            "aws_iam_policy_document.pass3"
+            "aws_iam_policy_document.pass3",
+            "aws_iam_policy_document.pass4"
         }
         failing_resources = {
             "aws_iam_policy_document.fail",
