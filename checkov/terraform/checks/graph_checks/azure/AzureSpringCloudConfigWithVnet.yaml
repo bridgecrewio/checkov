@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AZURE_23"
   name: "Ensure Azure spring cloud is configured with Virtual network (Vnet)"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 
 definition:
   
