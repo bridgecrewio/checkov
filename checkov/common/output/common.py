@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from checkov.common.bridgecrew.severities import Severities
+from checkov.common.output.record import DEFAULT_SEVERITY
+
 UNKNOWN_LICENSE = 'Unknown'
 
 
@@ -44,3 +47,8 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
         return license_lst
     else:
         return []
+
+
+def compare_table_items_severity(table_item: dict[str, str]) -> int:
+    severity = (table_item.get("severity") or DEFAULT_SEVERITY).upper()
+    return Severities[severity].level
