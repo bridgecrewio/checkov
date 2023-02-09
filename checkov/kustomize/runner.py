@@ -133,12 +133,9 @@ class K8sKustomizeRunner(K8sRunner):
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
                 # Fix file path to repo relative path
                 if self.original_root_dir:
-                    try:
-                        repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
-                        if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
-                            file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
-                    except Exception as e:
-                        logging.warning(f'cant get relative file path for: {absolute_file_path}, {str(e)}')
+                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                        file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
