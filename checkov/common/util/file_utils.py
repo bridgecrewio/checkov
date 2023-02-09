@@ -59,17 +59,18 @@ def compress_string_io_tar(string_io: io.StringIO) -> io.BytesIO:
         logging.exception("failed to compress logging file")
         raise
 
+
 def read_file_safe(file_path: str) -> str:
-        try:
-            with open(file_path, 'r') as f:
-                file_content = f.read()
-                return file_content
-        except Exception:
-            logging.warning(
-                "Could not open file",
-                extra={"file_path": file_path}
-            )
-            return ""
+    try:
+        with open(file_path, 'r') as f:
+            file_content = f.read()
+            return file_content
+    except Exception:
+        logging.warning(
+            "Could not open file",
+            extra={"file_path": file_path}
+        )
+        return ""
 
 
 def get_file_size_safe(file_path: str) -> int:
