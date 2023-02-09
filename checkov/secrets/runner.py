@@ -154,6 +154,7 @@ class Runner(BaseRunner[None]):
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
+            self._add_custom_detectors_to_metadata_integration()
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
@@ -179,12 +180,12 @@ class Runner(BaseRunner[None]):
                     logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
-
-            self.pbar.initiate(len(files_to_scan))
-            self._scan_files(files_to_scan, secrets, self.pbar)
-            self.pbar.close()
+            if not runner_filter.enable_git_history_secret_scan:
+                self.pbar.initiate(len(files_to_scan))
+                self._scan_files(files_to_scan, secrets, self.pbar)
+                self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
-            self._add_custom_detectors_to_metadata_integration()
+
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
@@ -449,7 +450,7 @@ class Runner(BaseRunner[None]):
                               exc_info=True)
 
     @staticmethod
-    def _scan_history(root_folder: str, secrets: SecretsCollection):
+    def _scan_history(root_folder: str, secrets: SecretsCollection) -> None:
         try:
             repo = git.Repo(root_folder)
         except InvalidGitRepositoryError:
@@ -458,7 +459,7 @@ class Runner(BaseRunner[None]):
 
         scanned_file_count = 0
         skipped_file_count = 0
-        commits = list(repo.iter_commits(repo.active_branch, max_count=2))
+        commits = list(repo.iter_commits(repo.active_branch, max_count=6))
         # we scan the diff between the commit and the next commit - start from the end
         for commit_idx in range(len(commits) - 1, 0, -1):
             next_commit_idx = commit_idx - 1
@@ -467,7 +468,6 @@ class Runner(BaseRunner[None]):
 
             for file_diff in git_diff:
                 try:
-                    file_content = repo.git.show(f"{added_commit_hash}:{file_diff.b_path}")
                     if file_diff.renamed:
                         logging.warning(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                         pass
