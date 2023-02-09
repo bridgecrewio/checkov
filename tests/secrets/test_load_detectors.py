@@ -501,7 +501,6 @@ class TestLoadDetectors(unittest.TestCase):
             detector_obj[x]['isMultiline'] == detectors_expected_result[x]['isMultiline'])
         assert len(detectors_expected_result) == len(detector_obj)
 
-    # Comment out once fix performence:
     def test_custom_multiline_regex_detector(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/multiline_custom_regex_detector"
