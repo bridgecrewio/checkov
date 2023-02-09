@@ -83,9 +83,9 @@ class Policies3DIntegration(BaseIntegrationFeature):
             report = runner.run(checks=checks, scan_reports=scan_reports)
             return report
 
-        except Exception:
+        except Exception as e:
             self.integration_feature_failures = True
-            logging.debug("Scanning without applying 3d policies from the platform.", exc_info=True)
+            logging.debug(f'Scanning without applying 3d policies from the platform.\n{e}')
             return None
 
 
