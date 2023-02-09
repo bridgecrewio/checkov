@@ -3,13 +3,13 @@ from __future__ import annotations
 import logging
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
 
-
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.inject import call_function_with_arguments
 import re
 
+from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
 from checkov.secrets.plugins.load_detectors import load_detectors
 
 MIN_CHARACTERS = 5
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
+    MAX_FILE_SIZE: int = 4 * 1024
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
@@ -29,6 +30,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self.multiline_deny_list = set()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
+        self._multiline_regex_supported_file_types: Set[str] = set()
         detectors = load_detectors()
 
         for detector in detectors:
@@ -38,6 +40,14 @@ class CustomRegexDetector(RegexBasedDetector):
                 continue
             self.denylist.add(re.compile('{}'.format(detector["Regex"])))
             self.regex_to_metadata[detector["Regex"]] = detector
+
+    @property
+    def multiline_regex_supported_file_types(self) -> Set[str]:
+        if self._multiline_regex_supported_file_types:
+            return self._multiline_regex_supported_file_types
+        for regex in self.multiline_regex_to_metadata.values():
+            self._multiline_regex_supported_file_types.update(regex.get("supportedFiles", []))
+        return self._multiline_regex_supported_file_types
 
     def analyze_line(
             self,
@@ -64,29 +74,27 @@ class CustomRegexDetector(RegexBasedDetector):
         )
 
         # ToDo: Comment out once fix performence #  type: ignore
-        # if filename not in self._analyzed_files:
-        #     self._analyzed_files.add(filename)
-        #     file_content = None
-        #     try:
-        #         with open(filename, 'r') as f:
-        #             file_content = f.read()
-        #     except Exception:
-        #         logging.warning(
-        #             "Could not open file in order to detect secrets}",
-        #             extra={"file_path": filename}
-        #         )
-        #     if not file_content:
-        #         return output
-        # this should be indented:
-        # self._find_potential_secret(
-        #     filename=filename,
-        #     string_to_analyze=file_content,
-        #     output=output,
-        #     line_number=0,
-        #     context=raw_context,
-        #     is_multiline=True,
-        #     **kwargs
-        # )
+        if filename not in self._analyzed_files:
+            self._analyzed_files.add(filename)
+            # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
+            if not self.multiline_regex_to_metadata.values() or \
+                    not self.multiline_regex_supported_file_types or \
+                    not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
+                    not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
+                return output
+            file_content = read_file_safe(filename)
+            if not file_content:
+                return output
+
+            self._find_potential_secret(
+                filename=filename,
+                string_to_analyze=file_content,
+                output=output,
+                line_number=1,
+                context=raw_context,
+                is_multiline=True,
+                **kwargs
+            )
 
         return output
 
@@ -100,7 +108,16 @@ class CustomRegexDetector(RegexBasedDetector):
             is_multiline: bool = False,
             **kwargs: Any
     ) -> None:
-        current_denylist: Set[Pattern[str]] = self.multiline_deny_list if is_multiline else self.denylist
+        current_denylist: Set[Pattern[str]] = set()
+        if is_multiline:
+            # We want the multiline regex to execute only if current file is supported by them
+            for regex in self.multiline_deny_list:
+                regex_supported_files = self.multiline_regex_to_metadata.get(regex.pattern, {}).get("supportedFiles", [])
+                if regex_supported_files and any([filename.endswith(regex_supported_file) for regex_supported_file in regex_supported_files]):
+                    current_denylist.add(regex)
+        else:
+            current_denylist = self.denylist
+
         current_regex_to_metadata: dict[str, dict[str, Any]] = self.multiline_regex_to_metadata if is_multiline else self.regex_to_metadata
         kwargs["regex_denylist"] = current_denylist
         for match, regex in self.analyze_string(string_to_analyze, **kwargs):

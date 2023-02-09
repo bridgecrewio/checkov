@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.9",
+        "bc-detect-secrets==1.4.11",
         "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
@@ -61,7 +61,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<4.0.0",
+        "cyclonedx-python-lib<4.0.0,>=2.4.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",

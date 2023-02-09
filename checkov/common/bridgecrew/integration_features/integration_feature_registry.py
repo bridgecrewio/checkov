@@ -35,5 +35,15 @@ class IntegrationFeatureRegistry:
             if integration.is_valid():
                 integration.post_runner(scan_report)
 
+    def run_post_scan(self, scan_reports: list[Report]) -> list[Report]:
+        post_scan_reports = []
+        for integration in self.features:
+            if integration.is_valid():
+                integration_report = integration.post_scan(scan_reports)
+                if integration_report:
+                    post_scan_reports.append(integration_report)
+
+        return post_scan_reports
+
 
 integration_feature_registry = IntegrationFeatureRegistry()
