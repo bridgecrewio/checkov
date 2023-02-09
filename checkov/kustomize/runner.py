@@ -133,9 +133,15 @@ class K8sKustomizeRunner(K8sRunner):
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
                 # Fix file path to repo relative path
                 if self.original_root_dir:
-                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
-                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
-                        file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
+                    # repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+                    # if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                    #     file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
+                    repo_file_path_parts = realKustomizeEnvMetadata['filePath'].split(self.original_root_dir)
+                    if len(repo_file_path_parts) > 1:
+                        prefix = self.original_root_dir
+                        if not prefix.startswith('/'):
+                            prefix = f'/{prefix}'
+                        file_path = f'{prefix}{self.original_root_dir.join(repo_file_path_parts[1:])}'
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
