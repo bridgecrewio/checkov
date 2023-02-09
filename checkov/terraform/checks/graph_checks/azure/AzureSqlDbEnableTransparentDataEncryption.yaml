@@ -4,16 +4,10 @@ metadata:
   category: "GENERAL_SECURITY"
 
 definition:
-  or:
 
-  - cond_type: attribute
-    resource_types: "azurerm_mssql_database"
-    attribute: "transparent_data_encryption_enabled"
-    operator: "not_exists"
-
-  - cond_type: attribute
-    resource_types: "azurerm_mssql_database"
-    attribute: "transparent_data_encryption_enabled"
-    operator: "equals"
-    value: "true"
+  cond_type: attribute
+  resource_types: "azurerm_mssql_database"
+  attribute: "transparent_data_encryption_enabled"
+  operator: "not_equals"
+  value: "false"
 
