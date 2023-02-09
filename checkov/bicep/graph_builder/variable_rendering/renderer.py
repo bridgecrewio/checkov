@@ -51,3 +51,7 @@ class BicepVariableRenderer(VariableRenderer):
                 return "value", new_value
 
         return None, None
+
+    def evaluate_non_rendered_values(self) -> None:
+        # not used
+        pass

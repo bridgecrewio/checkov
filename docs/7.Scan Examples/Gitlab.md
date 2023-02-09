@@ -153,4 +153,4 @@ Process finished with exit code 1
 
 ```
 
-To add more Gitlab policies and configuration to be inspected take a look at [Github policy contribution guide](/docs/6.Contribution/Contribute%20New%20Gitlab%20Policies.md)
+To add more GitLab policies and configuration to be inspected take a look at the [GitLab policy contribution guide](https://www.checkov.io/6.Contribution/Contribute%20New%20Gitlab%20Policies.html)

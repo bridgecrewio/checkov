@@ -24,7 +24,7 @@ class TestCheck(BaseCheck):
 class TestRunnerRegistry(unittest.TestCase):
 
     def test_add_non_wildcard(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_1_check = TestCheck("resource_1")
         registry.register(resource_1_check)
         checks = registry.get_checks("resource_1")
@@ -35,7 +35,7 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertNotIn("resource_1", registry.wildcard_checks)
 
     def test_add_wildcard(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_s_check = TestCheck("resource_*")
         registry.register(resource_s_check)
         checks = registry.get_checks("resource_*")
@@ -55,7 +55,7 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertTrue(BaseCheckRegistry._is_wildcard("aws_[^0-9]"))
 
     def test_get_check_by_id(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_1_check = TestCheck("resource_1", id="CKV_T_1")
         resource_2_check = TestCheck("resource_2", id="CKV_T_2")
         resource_as_check = TestCheck("resource_a*", id="CKV_T_3")
@@ -72,7 +72,7 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertIsNone(registry.get_check_by_id("CKV_T_5"))
 
     def test_get_check_no_wildcard(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_1_check = TestCheck("resource_1", id="CKV_T_1")
         resource_2_check1 = TestCheck("resource_2", id="CKV_T_2")
         resource_2_check2 = TestCheck("resource_2", id="CKV_T_3")
@@ -93,7 +93,7 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertEqual(0, len(registry.get_checks("resource_10")))
 
     def test_get_check_wildcard(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_s_check = TestCheck("resource_*", id="CKV_T_1")
         resource_as_check = TestCheck("resource_a*", id="CKV_T_2")
         s_check = TestCheck("*", id="CKV_T_3")
@@ -139,7 +139,7 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertIn(resource_s_check, resource_checks)
 
     def test_get_check_mixed(self):
-        registry = BaseCheckRegistry()
+        registry = BaseCheckRegistry('')
         resource_1_check = TestCheck("resource_1", id="CKV_T_1")
         resource_2_check = TestCheck("resource_2", id="CKV_T_2")
         resource_s_check = TestCheck("resource_*", id="CKV_T_4")

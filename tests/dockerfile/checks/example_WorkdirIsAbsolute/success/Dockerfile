@@ -4,6 +4,8 @@ RUN pip install --upgrade pip
 WORKDIR /path/to/workdir
 WORKDIR /
 WORKDIR c:\\windows
+WORKDIR "/path/to/workdir"
+WORKDIR "c:\\windows"
 ENV DIRPATH=/path
 ENV GLASSFISH_ARCHIVE glassfish5
 WORKDIR $DIRPATH/$DIRNAME

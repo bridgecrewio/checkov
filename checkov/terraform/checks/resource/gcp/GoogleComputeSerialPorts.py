@@ -13,7 +13,7 @@ class GoogleComputeSerialPorts(BaseResourceNegativeValueCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if ('source_instance_template' in conf.keys() and 'metadata' not in conf.keys()) or \
-                ('source_instance_template' in conf.keys() and 'serial-port-enable' not in
+                ('source_instance_template' in conf.keys() and isinstance(conf['metadata'][0], dict) and 'serial-port-enable' not in
                  conf['metadata'][0].keys()):
             # if the source_instance_template value is there (indicating a google_compute_instance_from_template),
             # and serial-port-enable is not present, then this check cannot PASS, since we don't know what the

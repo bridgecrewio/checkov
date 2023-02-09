@@ -16,13 +16,13 @@ Read also how to [create custom YAML Policies for attribute and composite scanni
 
 Specify a `name`, `ID`, `relevant resources` and `categories`.
 
-| Parameter | Description | Example/Comments |
-| -------- | -------- | -------- |
-| ``name`` | A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy. |  |
-| ``id`` | A mandatory unique identifier of a policy. Native policies written by Bridgecrew contributors will follow the following convention:
-``CKV_providerType_serialNumber`` | `CKV_AWS_9` , `CKV_GCP_12` |
-| ``supported_resources`` | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
-| ``categories`` | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc. |  |
+| Parameter                         | Description                                                                                                                                                                                                                    | Example/Comments                                                                                                                                                                               |
+|-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ``name``                          | A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy.                                                                                                                           |                                                                                                                                                                                                |
+| ``id``                            | A mandatory unique identifier of a policy. Native policies written by Bridgecrew contributors will follow the following convention: ``CKV_providerType_serialNumber``                                                          | `CKV_AWS_9` , `CKV_GCP_12`                                                                                                                                                                                                     |
+| ``supported_resources``           | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
+| ``categories``                    | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc.                                                                                               |                                                                                                                                                                                                |
+| ``guideline``                     | (Optional) Add extra info to help the user to solve the issue.                                                                                                                                                                 | This is not needed                                                                                                                                                                             |
 
 **Note for Supported Resources Parameter:** If you extend `checkov.terraform.checks.resource.base_resource_check.BaseResourceCheck`, the check is registered for all Terraform resources.
 
@@ -89,13 +89,37 @@ def scan_resource_conf(self, conf):
     return CheckResult.FAILED
 ```
 
-6. Conclude the policy name and operationalize it with the statement:
+6. You can also add `details` to be printed on the execution report:
+```python
+def scan_resource_conf(self, conf):
+    """
+        Looks for encryption configuration at aws_db_instance:
+        https://www.terraform.io/docs/providers/aws/d/db_instance.html
+    :param conf: aws_db_instance configuration
+    :return: <CheckResult>
+    """
+    if 'storage_encrypted' in conf.keys():
+        key = conf['storage_encrypted'][0]
+        if key:
+            # The following line sets the evaluated keys
+            self.evaluated_keys = ['storage_encrypted/[0]']
+            return CheckResult.PASSED
+        
+    self.details.append("'storage_encrypted' was not found on the resource configuration")
+    
+    return CheckResult.FAILED
+```
+
+Produces the following CLI report:
+![details-cli-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-scan-cli-details.png)
+
+7. Conclude the policy name and operationalize it with the statement:
 
 ```python
 check = RDSEncryption()
 ```
 
-#### Selecting the best base check class to extend
+### Selecting the best base check class to extend
 Terraform and CloudFormation have two base classes extending `BaseResourceCheck`:
 
 1. **BaseResourceValueCheck**: This check will pass only if the `inspected_key` is within the `expected_values`. If `get_expected_value` is not implemented, the default value is `[True]`. 
@@ -219,7 +243,8 @@ class S3PCIPrivateACL(BaseResourceCheck):
         supported_resources = ['aws_s3_bucket']
         # CheckCategories are defined in models/enums.py
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        guideline = "Follow the link to get more info https://docs.bridgecrew.io/docs"
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
 
     def scan_resource_conf(self, conf):
         """
@@ -239,7 +264,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-scanner = S3PCIPrivateACL()
+check = S3PCIPrivateACL()
 ```
 
 2. With the new custom check in place, run Checkov:
@@ -254,21 +279,22 @@ checkov -d . --external-checks-dir my_extra_checks
 ```
 Verify the results:
 
-```python
+```shell
 Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
 	FAILED for resource: aws_s3_bucket.credit_cards_bucket
 	File: /main.tf:80-90
+	Guide: Follow the link to get more info https://docs.bridgecrew.io/docs
 
 		80 | resource "aws_s3_bucket" "credit_cards_bucket" {
-		81 | region        = var.region
-		82 | bucket        = local.bucket_name
-		83 | acl           = "public-read"
-		84 | force_destroy = true
-		85 | 
-		86 | tags = {
-		87 | Scope = "PCI",
-		88 | 
-		89 | }
+		81 |   region        = var.region
+		82 |   bucket        = local.bucket_name
+		83 |   acl           = "public-read"
+		84 |   force_destroy = true
+		85 |
+		86 |   tags = {
+		87 |     Scope = "PCI",
+		88 |
+		89 |   }
 		90 | }
 ```
 

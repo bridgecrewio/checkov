@@ -5,6 +5,7 @@ from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
 
 
 class TestBaseSolver(TestCase):
@@ -21,6 +22,10 @@ class TestBaseSolver(TestCase):
         report = self.runner.run(root_folder=root_folder, runner_filter=RunnerFilter(checks=[check_id]))
         verification_results = verify_report(report=report, expected_results=expected_results)
         self.assertIsNone(verification_results, verification_results)
+
+    def test_unrendered_variable_source(self):
+        self.assertTrue(BaseAttributeSolver._is_variable_dependant("var.location", "Terraform"))
+        self.assertTrue(BaseAttributeSolver._is_variable_dependant("var.location", "terraform"))
 
 
 def verify_report(report, expected_results):

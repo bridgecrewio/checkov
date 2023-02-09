@@ -25,7 +25,7 @@ class TestYamlPoliciesBase(TestCase):
         self.test_file_path = test_file_path
         self.graph_manager = graph_manager
 
-    def go(self, dir_name, check_name=None):
+    def go(self, dir_name, check_name=None, local_graph_class=None):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(self.test_file_path)),
                                 f"resources/{dir_name}")
         assert os.path.exists(dir_path)
@@ -41,7 +41,7 @@ class TestYamlPoliciesBase(TestCase):
                     assert policy is not None
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
-                    report = self.get_policy_results(dir_path, policy)
+                    report = self.get_policy_results(dir_path, policy, local_graph_class)
                     expected = load_yaml_data("expected.yaml", dir_path)
 
                     expected_to_fail = expected.get('fail', [])
@@ -68,12 +68,15 @@ class TestYamlPoliciesBase(TestCase):
                     break
             self.assertTrue(found, f"expected to find entity {expected_entity}, {'passed' if assertion else 'failed'}")
 
-    def get_policy_results(self, root_folder, policy):
+    def get_policy_results(self, root_folder, policy, local_graph_class=None):
         check_id = policy['metadata']['id']
-        local_graph, _ = self.graph_manager.build_graph_from_source_directory(root_folder)
+        local_graph, _ = self.graph_manager.build_graph_from_source_directory(
+            source_dir=root_folder,
+            local_graph_class=local_graph_class,
+        )
         nx_graph = self.graph_manager.save_graph(local_graph)
         registry = self.get_checks_registry()
-        checks_results = registry.run_checks(nx_graph, RunnerFilter(checks=[check_id]))
+        checks_results = registry.run_checks(nx_graph, RunnerFilter(checks=[check_id]), None)
         return self.create_report_from_graph_checks_results(checks_results, policy['metadata'])
 
     def get_checks_registry(self):

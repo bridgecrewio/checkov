@@ -12,6 +12,16 @@ class ComputeInstanceAdminPassword(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_attribute_result=CheckResult.PASSED)
 
+    def scan_resource_conf(self, conf):
+        admin_pass = conf.get('admin_pass')
+        if isinstance(admin_pass, list):
+            admin_pass = admin_pass[0]
+        if admin_pass:  # should be missing, or an empty string
+            conf[f'{self.id}_secret'] = admin_pass
+            return CheckResult.FAILED
+        else:
+            return CheckResult.PASSED
+
     def get_inspected_key(self) -> str:
         return 'admin_pass'
 

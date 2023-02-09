@@ -9,6 +9,8 @@ resource "azurerm_web_application_firewall_policy" "owasp_3_1_default" {
     managed_rule_set {
       type    = "OWASP"
       version = "3.1"
+
+      rule_group_override = [{}]
     }
   }
 

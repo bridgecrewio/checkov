@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List, Union, Any
 
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.terraform.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
 
 #
 # Functions defined in this file implement terraform functions.
@@ -170,20 +170,23 @@ def _check_map_type_consistency(value: Dict) -> Dict:
     return value
 
 
-def handle_dynamic_values(conf: Dict[str, List[Any]]) -> None:
+def handle_dynamic_values(conf: Dict[str, List[Any]], has_dynamic_block: bool = False) -> bool:
     # recursively search for blocks that are dynamic
     for block_name in conf.keys():
-        if isinstance(conf[block_name], dict):
-            handle_dynamic_values(conf[block_name])
+        conf_block = conf[block_name]
+        if isinstance(conf_block, dict):
+            has_dynamic_block = handle_dynamic_values(conf_block, has_dynamic_block)
 
         # if the configuration is a block element, search down again.
-        if isinstance(conf[block_name], list) and conf[block_name] and isinstance(conf[block_name][0], dict):
-            handle_dynamic_values(conf[block_name][0])
+        if conf_block and isinstance(conf_block, list) and isinstance(conf_block[0], dict):
+            has_dynamic_block = handle_dynamic_values(conf_block[0], has_dynamic_block)
 
-    process_dynamic_values(conf)
+    # if a dynamic block exists somewhere in the resource it will return True
+    return process_dynamic_values(conf) or has_dynamic_block
 
 
-def process_dynamic_values(conf: Dict[str, List[Any]]) -> None:
+def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
+    has_dynamic_block = False
     for dynamic_element in conf.get("dynamic", {}):
         if isinstance(dynamic_element, str):
             try:
@@ -191,5 +194,14 @@ def process_dynamic_values(conf: Dict[str, List[Any]]) -> None:
             except Exception:
                 dynamic_element = {}
 
-        for element_name in dynamic_element.keys():
-            conf[element_name] = dynamic_element[element_name].get("content", [])
+        for element_name, element_value in dynamic_element.items():
+            if "content" in element_value:
+                conf[element_name] = element_value["content"]
+            else:
+                # this should be the result of a successful dynamic block rendering
+                # in some cases a whole dict is added, which doesn't have a list around it
+                conf[element_name] = element_value if isinstance(element_value, list) else [element_value]
+
+        has_dynamic_block = True
+
+    return has_dynamic_block

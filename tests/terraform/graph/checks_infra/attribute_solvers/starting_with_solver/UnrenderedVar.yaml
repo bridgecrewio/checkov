@@ -1,0 +1,12 @@
+metadata:
+  id: "UnrenderedVar"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_s3_bucket"
+  attribute: "bucket"
+  operator: "starting_with"
+  value: "abcdefg"
+

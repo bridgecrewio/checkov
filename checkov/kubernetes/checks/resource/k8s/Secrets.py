@@ -16,10 +16,12 @@ class Secrets(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["env", "envFrom"]
         if conf.get("env"):
             for idx, e in enumerate(conf["env"]):
-                if "valueFrom" in e:
-                    if "secretKeyRef" in e["valueFrom"]:
-                        self.evaluated_container_keys = [f"env/[{idx}]/valueFrom/secretKeyRef"]
-                        return CheckResult.FAILED
+                if not isinstance(e, dict):
+                    return CheckResult.UNKNOWN
+                value_from = e.get("valueFrom")
+                if value_from and "secretKeyRef" in value_from:
+                    self.evaluated_container_keys = [f"env/[{idx}]/valueFrom/secretKeyRef"]
+                    return CheckResult.FAILED
         if conf.get("envFrom"):
             for idx, ef in enumerate(conf["envFrom"]):
                 if "secretRef" in ef:

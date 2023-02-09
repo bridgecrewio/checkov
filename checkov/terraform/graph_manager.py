@@ -4,14 +4,13 @@ import logging
 from typing import Type, Any
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
 
 
-class TerraformGraphManager(GraphManager):
+class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: DBConnector, source: str = "") -> None:
         super().__init__(db_connector=db_connector, parser=Parser(), source=source)
 
@@ -19,14 +18,14 @@ class TerraformGraphManager(GraphManager):
         self,
         source_dir: str,
         render_variables: bool = True,
-        local_graph_class: Type[LocalGraph] = TerraformLocalGraph,
+        local_graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         create_graph: bool = True,
-    ) -> tuple[LocalGraph | None, dict[str, dict[str, Any]]]:
+    ) -> tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]:
         logging.info("Parsing HCL files in source dir")
         module, tf_definitions = self.parser.parse_hcl_module(
             source_dir=source_dir,

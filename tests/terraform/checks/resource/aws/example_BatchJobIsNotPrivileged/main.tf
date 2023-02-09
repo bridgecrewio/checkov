@@ -171,4 +171,14 @@ resource "aws_batch_job_definition" "pass3" {
   })
 }
 
+# not a valid configuration
+resource "aws_batch_job_definition" "unknown3" {
+  name = "tf_test_batch_job_definition"
+  type = "container"
 
+  container_properties = [{
+    "image" : "busybox",
+    "memory" : 1024,
+    "vcpus" : 1,
+  }]
+}

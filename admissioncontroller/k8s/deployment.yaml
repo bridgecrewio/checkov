@@ -30,7 +30,7 @@ spec:
           capabilities:
             drop:
               - ALL
-        image: bridgecrew/whorf@sha256:f1f91aa161defa93af7b0489a109363d14e2b4be2cd188fed63995da3ddf2347
+        image: bridgecrew/whorf@sha256:5768c61b4a596d8f2254f0eb91c3f104a47b31391e8bf0aedb51e0d0a90a6f4c
         imagePullPolicy: Always
         resources:
           limits:
@@ -78,7 +78,6 @@ spec:
           mountPath: "/app/tmp"
         - name: "tmp"
           mountPath: "/tmp"
-        imagePullPolicy: Always
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

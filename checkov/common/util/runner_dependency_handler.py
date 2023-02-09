@@ -1,6 +1,10 @@
-import logging
+from __future__ import annotations
 
-from checkov.common.runners.runner_registry import RunnerRegistry
+import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from checkov.common.runners.runner_registry import RunnerRegistry
 
 logger = logging.getLogger(__name__)
 

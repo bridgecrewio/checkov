@@ -3,19 +3,22 @@ from __future__ import annotations
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Dict, Any, Iterable
+from typing import TYPE_CHECKING, List, Dict, Any, Iterable, TypeVar
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import run_function_multithreaded
 
 if TYPE_CHECKING:
+    from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
     from checkov.common.graph.graph_builder.local_graph import LocalGraph
+
+_Block = TypeVar("_Block", bound="Block")
 
 
 class VariableRenderer(ABC):
     MAX_NUMBER_OF_LOOPS = 50
 
-    def __init__(self, local_graph: "LocalGraph") -> None:
+    def __init__(self, local_graph: LocalGraph[_Block]) -> None:
         self.local_graph = local_graph
         self.run_async = True if os.getenv("RENDER_VARIABLES_ASYNC") == "True" else False
         self.max_workers = int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
@@ -109,5 +112,6 @@ class VariableRenderer(ABC):
             edge_groups.setdefault(f"{edge.origin}{edge.label}", []).append(edge)
         return list(edge_groups.values())
 
+    @abstractmethod
     def evaluate_non_rendered_values(self) -> None:
         pass

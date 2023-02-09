@@ -15,7 +15,7 @@ from checkov.terraform.checks.utils.iam_terraform_document_to_policy_converter i
 class BaseCloudsplainingIAMCheck(BaseDataCheck):
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
-    policy_document_cache: Dict[str, PolicyDocument] = {}
+    policy_document_cache: Dict[str, PolicyDocument] = {}  # noqa: CCE003
 
     def __init__(self, name: str, id: str) -> None:
         super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_data=["aws_iam_policy_document"])

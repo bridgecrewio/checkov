@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest import mock
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.models.consts import SCAN_HCL_FLAG
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -21,7 +21,11 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner, resource_registry
+from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.registry import resource_registry
+from checkov.terraform.checks.module.registry import module_registry
+from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.data.registry import data_registry
 
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
@@ -31,6 +35,12 @@ class TestRunnerValid(unittest.TestCase):
 
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(provider_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(module_registry.report_type, CheckType.TERRAFORM)
+        self.assertEqual(data_registry.report_type, CheckType.TERRAFORM)
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -57,8 +67,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         for record in report.failed_checks:
             self.assertNotIn(record.check_id, checks_denylist)
 
@@ -71,8 +81,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertGreaterEqual(summary['failed'], 1)
@@ -95,7 +105,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(False), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(4, summary['failed'])
@@ -172,6 +182,40 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(passing_custom, 0)
         self.assertEqual(failed_custom, 3)
+
+        graph_record = next(record for record in report.failed_checks if record.check_id == "CKV2_CUSTOM_1")
+        self.assertEqual(graph_record.guideline, "https://docs.bridgecrew.io/docs/ckv2_custom_1")
+
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
+
+    def test_runner_yaml_module_check(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_dir_path = current_dir / "resources/module_check"
+        extra_checks_dir_path = current_dir / "extra_yaml_checks"
+        runner = Runner()
+
+        # when
+        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)])
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {"pass"}
+        failing_resources = {"fail"}
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
@@ -275,6 +319,20 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(f'CKV_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV_AZURE_{i}"')
 
+        alicloud_checks = sorted(
+            list(filter(lambda check_id: '_ALI_' in check_id, unique_checks)),
+            reverse=True,
+            key=lambda s: int(s.split('_')[-1])
+        )
+        for i in range(1, len(alicloud_checks) + 1):
+            if f"CKV_ALI_{i}" == "CKV_ALI_34":
+                continue  # duplicate of CKV_ALI_30
+            if f"CKV_ALI_{i}" in ("CKV_ALI_39", "CKV_ALI_40"):
+                continue  # can't find a reference for it
+
+            self.assertIn(f"CKV_ALI_{i}", alicloud_checks,
+                          msg=f'The new Alibaba Cloud violation should have the ID "CKV_ALI_{i}"')
+
         # add cloudformation checks to graph checks
         graph_registry = get_graph_checks_registry("cloudformation")
         graph_registry.load_checks()
@@ -363,7 +421,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
     def test_terraform_module_checks_are_performed_even_if_supported_resources_is_omitted(self):
         check_name = "TF_M_2"
@@ -396,7 +454,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
     def test_terraform_multiple_module_versions(self):
         # given
@@ -834,8 +892,8 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code(soft_fail=False), 1)
-        self.assertEqual(report.get_exit_code(soft_fail=True), 0)
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
         self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
@@ -843,6 +901,23 @@ class TestRunnerValid(unittest.TestCase):
 
         for record in report.failed_checks:
             self.assertIn(record.check_id, checks_allowlist)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources", "nested_dir")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['terraform'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.TERRAFORM: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -1025,8 +1100,6 @@ class TestRunnerValid(unittest.TestCase):
                 assert record.file_path == "/module/module.tf"
                 self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
-                # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
-                #             A bug might have been fixed.
                 self.assertEqual(record.caller_file_line_range, [6, 8])
 
         self.assertTrue(found_inside)
@@ -1041,7 +1114,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 2)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 3)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1050,11 +1123,14 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 2)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 2)
-        self.assertIn('CUSTOM_GRAPH_AWS_1', [x.id for x in runner.graph_registry.checks])
-        self.assertIn('CKV2_CUSTOM_1', [x.id for x in runner.graph_registry.checks])
+        self.assertEqual(len(runner.graph_registry.checks), 3)
+
+        graph_checks = [x.id for x in runner.graph_registry.checks]
+        self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
+        self.assertIn('CUSTOM_GRAPH_AWS_2', graph_checks)
+        self.assertIn('CKV2_CUSTOM_1', graph_checks)
         runner.graph_registry.checks = []
 
     def test_loading_external_checks_python(self):
@@ -1146,7 +1222,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_do_exist(self):
@@ -1162,7 +1238,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
 
     def test_resource_negative_values_dont_exist(self):
@@ -1178,7 +1254,7 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='terraform',
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 7)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_negative_values_do_exist(self):
@@ -1194,8 +1270,52 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=["terraform"],
                                                        checks=checks_allow_list, skip_checks=skip_checks))
 
-        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 3)
+
+    def test_unrendered_simple_var(self):
+        resources_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
+        file_to_scan = os.path.join(resources_dir, "simple.tf")
+        checks = ['BUCKET_EQUALS', 'BUCKET_EXISTS']
+
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+
+        # plus 1 unknown
+        self.assertEqual(len(report.passed_checks), 3)
+        self.assertEqual(len(report.failed_checks), 0)
+
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'BUCKET_EQUALS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in report.passed_checks))
+
+    def test_unrendered_nested_var(self):
+        resources_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
+        file_to_scan = os.path.join(resources_dir, "nested.tf")
+        checks = ['COMPONENT_EQUALS', 'COMPONENT_EXISTS']
+
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+
+        # plus 3 unknown
+        self.assertEqual(len(report.passed_checks), 5)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.unknown_nested_2_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
+
+        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
+        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
 
     def test_no_duplicate_results(self):
         resources_path = os.path.join(
@@ -1224,39 +1344,18 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         dir_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
-
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
-        self.assertEqual(len(report.resources), 1)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=dir_to_scan, external_checks_dir=None, files=None)
         self.assertEqual(len(report.resources), 2)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_scan_hcl_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         file_to_scan = os.path.join(current_dir, 'resources', 'tf_with_hcl_files', 'example_acl_fail.hcl')
-        orig_value = os.getenv(SCAN_HCL_FLAG)
 
-        os.environ[SCAN_HCL_FLAG] = 'false'
-        runner = Runner()
-        report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
-        self.assertEqual(len(report.resources), 0)
-
-        os.environ[SCAN_HCL_FLAG] = 'true'
         runner = Runner()
         report = runner.run(root_folder=None, external_checks_dir=None, files=[file_to_scan])
         self.assertEqual(len(report.resources), 1)
-
-        if orig_value:
-            os.environ[SCAN_HCL_FLAG] = orig_value
 
     def test_runner_exclude_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

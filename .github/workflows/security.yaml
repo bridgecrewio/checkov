@@ -7,20 +7,23 @@ on:
   push:
     branches:
       - master
+
+permissions: read-all
+
 jobs:
   bandit:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: security test
-        uses: jpetrucciani/bandit-check@master
+        uses: jpetrucciani/bandit-check@4e0dbcc188c035d2c4fb338a108ac93ed9d9d9be  # v1
         with:
           path: 'checkov'
   detect-secrets:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: detect secrets
-        uses: edplato/trufflehog-actions-scan@master
+        uses: edplato/trufflehog-actions-scan@0af17d9dd1410283f740eb76b0b8f6b696cadefc  # v0.9
         with:
           scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"

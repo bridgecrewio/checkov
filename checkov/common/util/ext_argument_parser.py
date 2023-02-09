@@ -74,7 +74,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                 with self._config_file_open_func(output_file_path, "w") as output_file:
                     pass
             except IOError as e:
-                raise ValueError(f"Couldn't open {output_file_path} for writing: {e}")
+                raise ValueError(f"Couldn't open {output_file_path} for writing") from e
         if output_file_paths:
             # generate the config file contents
             config_items = self.get_items_for_config_file_output(

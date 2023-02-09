@@ -2,8 +2,17 @@ import os
 import responses
 import requests
 from unittest import mock
+import pytest
+from pytest_mock import MockerFixture
+from aioresponses import aioresponses
+import aiohttp
 
-from checkov.common.util.http_utils import request_wrapper
+from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper
+
+
+def get_report_url() -> str:
+    base_url = "https://www.bridgecrew.cloud/api/v1/vulnerabilities"
+    return f"{base_url}/results"
 
 
 @responses.activate
@@ -116,3 +125,65 @@ def test_request_wrapper_with_success_for_post_scan(mock_bc_integration, scan_re
     )
     request_wrapper("POST", mock_url, {}, data={'mocked_key': 'mocked_value'})
     responses.assert_call_count(mock_url, 1)
+
+
+@pytest.mark.asyncio
+async def test_aiohttp_client_session_wrapper_with_one_handled_exception(mocker: MockerFixture, mock_bc_integration):
+    # given
+    bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    report_url = get_report_url()
+
+    mocker.patch.dict(os.environ, {"BC_ROOT_DIR": "app", "REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+
+    # when
+    with aioresponses() as m:
+        m.post(report_url, exception=aiohttp.ClientOSError())
+        m.post(report_url, status=200, repeat=True)
+
+        result = await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+
+    # then
+    assert result == 0
+
+
+@pytest.mark.asyncio
+async def test_aiohttp_client_session_wrapper_with_several_handled_exceptions(mocker: MockerFixture, mock_bc_integration):
+    # given
+    bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    report_url = get_report_url()
+
+    mocker.patch.dict(os.environ, {"BC_ROOT_DIR": "app", "REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+
+    # when
+    with aioresponses() as m:
+        m.post(report_url, exception=aiohttp.ClientOSError(), repeat=True)
+        try:
+            await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+
+            # case the specific error wasn't raised
+            assert False
+
+        except aiohttp.ClientOSError:
+            # case the specific error was raised
+            assert True
+
+
+@pytest.mark.asyncio
+async def test_raiohttp_client_session_wrapper_with_one_not_handled_exception(mocker: MockerFixture, mock_bc_integration):
+    # given
+    bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    report_url = get_report_url()
+
+    mocker.patch.dict(os.environ, {"BC_ROOT_DIR": "app", "REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
+
+    # when
+    with aioresponses() as m:
+        m.post(report_url, exception=aiohttp.ServerTimeoutError())
+        try:
+            await aiohttp_client_session_wrapper(get_report_url(), {}, {})
+            # case that specific error wasn't raised
+            assert False
+
+        except aiohttp.ServerTimeoutError:
+            # case the specific error was raised
+            assert True

@@ -8,7 +8,8 @@ from checkov.common.graph.db_connectors.networkx.networkx_db_connector import Ne
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 

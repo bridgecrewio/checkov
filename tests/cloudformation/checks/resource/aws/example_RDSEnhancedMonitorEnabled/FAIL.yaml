@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  Default:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: 'mydb'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'mysql'
+      MasterUsername: 'master'
+      MasterUserPassword: 'password'

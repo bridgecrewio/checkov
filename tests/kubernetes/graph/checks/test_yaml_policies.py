@@ -11,6 +11,9 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 
 class TestYamlPolicies(TestYamlPoliciesBase):
+    def tearDown(self) -> None:
+        self.get_checks_registry().checks = []
+
     def __init__(self, args):
         graph_manager = KubernetesGraphManager(db_connector=NetworkxConnector())
         super().__init__(graph_manager, "checkov/kubernetes/checks/graph_checks",

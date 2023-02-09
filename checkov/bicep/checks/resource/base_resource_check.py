@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any
-
-from pycep.typing import ResourceAttributes
+from typing import Any, TYPE_CHECKING
 
 from checkov.bicep.checks.resource.registry import registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+
+if TYPE_CHECKING:
+    from pycep.typing import ResourceAttributes
 
 
 class BaseResourceCheck(BaseCheck):

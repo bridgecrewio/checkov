@@ -17,8 +17,10 @@ class DBInstanceLogging(BaseResourceValueCheck):
         return "enabled_cloudwatch_logs_exports/[0]"
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        logs_exports = conf.get('enabled_cloudwatch_logs_exports', [[]])[0]
-        return CheckResult.PASSED if logs_exports else CheckResult.FAILED
+        logs_exports = conf.get('enabled_cloudwatch_logs_exports', [[]])
+        if not logs_exports:
+            return CheckResult.FAILED
+        return CheckResult.PASSED if logs_exports[0] else CheckResult.FAILED
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE

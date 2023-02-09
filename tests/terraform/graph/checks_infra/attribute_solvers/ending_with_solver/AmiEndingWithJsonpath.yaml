@@ -1,0 +1,12 @@
+metadata:
+  id: "AmiEndingWithJsonpath"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_instance"
+  attribute: "ami"
+  operator: "jsonpath_ending_with"
+  value: "-0"
+

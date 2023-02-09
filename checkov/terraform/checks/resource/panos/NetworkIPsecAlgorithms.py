@@ -1,17 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class NetworkIPsecAlgorithms(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure IPsec profiles do not specify use of insecure encryption algorithms"
         id = "CKV_PAN_11"
-        supported_resources = ['panos_ipsec_crypto_profile','panos_panorama_ipsec_crypto_profile']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('panos_ipsec_crypto_profile', 'panos_panorama_ipsec_crypto_profile')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-    
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # Check there are encryptions defined in the resource
         if 'encryptions' in conf:
 
@@ -19,7 +22,7 @@ class NetworkIPsecAlgorithms(BaseResourceCheck):
             self.evaluated_keys = ['encryptions']
 
             # Get all the algorithms
-            algorithms = conf.get('encryptions')
+            algorithms = conf['encryptions']
 
             # Iterate over each algorithm, as multiple can be defined in "encryptions"
             for algo in algorithms:
@@ -35,5 +38,6 @@ class NetworkIPsecAlgorithms(BaseResourceCheck):
 
         # If the mandatory "encryptions" attribute is not defined, this is not valid, and will fail during Terraform plan stage, and should therefore be a fail
         return CheckResult.FAILED
+
 
 check = NetworkIPsecAlgorithms()

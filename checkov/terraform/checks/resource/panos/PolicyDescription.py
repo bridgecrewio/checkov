@@ -1,17 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class PolicyDescription(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure description is populated within security policies"
         id = "CKV_PAN_8"
-        supported_resources = ['panos_security_policy','panos_security_rule_group']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('panos_security_policy', 'panos_security_rule_group')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-    
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # Check there is a rule defined in the resource
         if 'rule' in conf:
 
@@ -19,7 +22,7 @@ class PolicyDescription(BaseResourceCheck):
             self.evaluated_keys = ['rule']
 
             # Get all the rules defined in the resource
-            rules = conf.get('rule')
+            rules = conf['rule']
 
             # Iterate over each rule
             for secrule in rules:
@@ -28,7 +31,7 @@ class PolicyDescription(BaseResourceCheck):
                 if 'description' in secrule:
 
                     # If a description is defined, get the value
-                    desc = secrule.get('description')
+                    desc = secrule['description']
 
                     if desc[0].strip() == "":
                         # An empty string is no description, which is a fail
@@ -42,5 +45,6 @@ class PolicyDescription(BaseResourceCheck):
 
         # If there's no rules we have nothing to check
         return CheckResult.UNKNOWN
+
 
 check = PolicyDescription()

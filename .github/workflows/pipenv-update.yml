@@ -4,20 +4,26 @@ on:
     - cron:  '8 22 * * 1'
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   pipenv-update:
     runs-on: [self-hosted, public, linux, x64]
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
         with:
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v4.4.0
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -33,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v4.0.3
+        uses: peter-evans/create-pull-request@b4d51739f96fca8047ad065eccef63442d8e99f7  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

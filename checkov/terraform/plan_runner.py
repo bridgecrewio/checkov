@@ -1,108 +1,120 @@
-import json
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional, List
+import platform
 
+from typing import Type
+
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.terraform.graph_manager import TerraformGraphManager
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
-
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_definitions
+
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.output.report import Report
+from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.plan_parser import parse_tf_plan
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
+
+# set of check IDs with lifecycle condition
+TF_LIFECYCLE_CHECK_IDS = {
+    "CKV_AWS_217",
+    "CKV_AWS_233",
+    "CKV_AWS_237",
+    "CKV_GCP_82",
+}
+
+RESOURCE_ATTRIBUTES_TO_OMIT = {
+    'azurerm_key_vault_secret': 'value',
+    'aws_secretsmanager_secret_version': 'secret_string',
+    'google_kms_secret_ciphertext': 'plaintext',
+    'aws_ssm_parameter': 'value',
+    'aws_db_instance': 'password'
+}
 
 
 class Runner(TerraformRunner):
-    check_type = CheckType.TERRAFORM_PLAN
+    check_type = CheckType.TERRAFORM_PLAN  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+                 graph_manager: TerraformGraphManager | None = None,
+                 db_connector: NetworkxConnector | None = None,
+                 external_registries: list[BaseRegistry] | None = None,
+                 source: str = "Terraform") -> None:
+        super().__init__(
+            graph_class=graph_class,
+            graph_manager=graph_manager,
+            db_connector=db_connector or NetworkxConnector(),
+            external_registries=external_registries,
+            source=source,
+        )
         self.file_extensions = ['.json']  # override what gets set from the TF runner
-        self.template_lines = {}
+        self.definitions = None
+        self.context = None
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
-    block_type_registries = {
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
     }
 
     def run(
-        self,
-        root_folder: Optional[str] = None,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True
+            self,
+            root_folder: str | None = None,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
         report = Report(self.check_type)
-        self.tf_definitions = {}
-        parsing_errors = {}
+        parsing_errors: dict[str, str] = {}
+        if self.definitions is None or self.context is None:
+            self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            self.context = build_definitions_context(self.definitions, definitions_raw)
+            if CHECKOV_CREATE_GRAPH:
+                censored_definitions = omit_secret_value_from_definitions(definitions=self.definitions,
+                                                                          resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
+                graph = self.graph_manager.build_graph_from_definitions(censored_definitions, render_variables=False)
+                self.graph_manager.save_graph(graph)
+
         if external_checks_dir:
             for directory in external_checks_dir:
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
-
-        if root_folder:
-            files = [] if not files else files
-            for root, d_names, f_names in os.walk(root_folder):
-                filter_ignored_paths(root, d_names, runner_filter.excluded_paths)
-                filter_ignored_paths(root, f_names, runner_filter.excluded_paths)
-                for file in f_names:
-                    file_ending = os.path.splitext(file)[1]
-                    if file_ending == '.json':
-                        try:
-                            with open(f'{root}/{file}') as f:
-                                content = json.load(f)
-                            if isinstance(content, dict) and content.get('terraform_version'):
-                                files.append(os.path.join(root, file))
-                        except Exception as e:
-                            logging.debug(f'Failed to load json file {root}/{file}, skipping')
-                            logging.debug('Failure message:')
-                            logging.debug(e, stack_info=True)
-                            parsing_errors[file] = str(e)
-
-        if files:
-            files = [os.path.abspath(file) for file in files]
-            for file in files:
-                if file.endswith(".json"):
-                    tf_definitions, template_lines = parse_tf_plan(file, parsing_errors)
-                    if not tf_definitions:
-                        continue
-                    self.tf_definitions = tf_definitions
-                    self.template_lines = template_lines
-                    self.check_tf_definition(report, runner_filter)
-                else:
-                    logging.debug(f'Failed to load {file} as is not a .json file, skipping')
-
+        self.check_tf_definition(report, root_folder, runner_filter)
         report.add_parsing_errors(parsing_errors.keys())
 
-        if self.tf_definitions:
-            graph = self.graph_manager.build_graph_from_definitions(self.tf_definitions, render_variables=False)
-            self.graph_manager.save_graph(graph)
-
+        if self.definitions:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
-
         return report
 
-    def get_entity_context_and_evaluations(self, entity):
-        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."), entity[CustomAttributes.FILE_PATH])
-        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
-        return raw_context, None
-
-    def check_tf_definition(self, report, runner_filter):
-        for full_file_path, definition in self.tf_definitions.items():
-            scanned_file = f"/{os.path.relpath(full_file_path)}"
+    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
+        for full_file_path, definition in self.definitions.items():
+            if platform.system() == "Windows":
+                temp = os.path.split(full_file_path)[0]
+                scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
+            else:
+                scanned_file = f"/{os.path.relpath(full_file_path)}"
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
-                    self.run_block(definition[block_type], full_file_path, report, scanned_file,
+                    self.run_block(definition[block_type], None, full_file_path, root_folder, report, scanned_file,
                                    block_type, runner_filter)
 
-    def run_block(self, entities, full_file_path, report, scanned_file, block_type, runner_filter=None):
+    def run_block(self, entities,
+                  definition_context,
+                  full_file_path, root_folder, report, scanned_file,
+                  block_type, runner_filter=None, entity_context_path_header=None,
+                  module_referrer: str | None = None):
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -114,11 +126,21 @@ class Runner(TerraformRunner):
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
+                _, _, entity_config = registry.extract_entity_details(entity)
 
-                results = registry.scan(scanned_file, entity, [], runner_filter)
+                results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
-                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                    code_block=entity_code_lines, file_path=scanned_file,
+                    if check.id in TF_LIFECYCLE_CHECK_IDS:
+                        # can't be evaluated in TF plan
+                        continue
+                    censored_code_lines = omit_secret_value_from_checks(check=check,
+                                                                        check_result=check_result,
+                                                                        entity_code_lines=entity_code_lines,
+                                                                        entity_config=entity_config,
+                                                                        resource_attributes_to_omit=RESOURCE_ATTRIBUTES_TO_OMIT)
+                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
+                                    check_result=check_result,
+                                    code_block=censored_code_lines, file_path=scanned_file,
                                     file_line_range=entity_lines_range,
                                     resource=entity_id, resource_address=entity_address, evaluations=None,
                                     check_class=check.__class__.__module__, file_abs_path=full_file_path,
@@ -126,24 +148,12 @@ class Runner(TerraformRunner):
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
+    def get_entity_context_and_evaluations(self, entity):
+        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
+                                              entity[CustomAttributes.FILE_PATH])
+        raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
+        return raw_context, None
+
     def get_entity_context(self, definition_path, full_file_path):
-        entity_context = {}
-
-        if full_file_path not in self.tf_definitions:
-            logging.debug(f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
-            return entity_context
-
-        for resource in self.tf_definitions.get(full_file_path, {}).get('resource', []):
-            resource_type = definition_path[0]
-            if resource_type in resource.keys():
-                resource_name = definition_path[1]
-                if resource_name in resource[resource_type].keys():
-                    resource_defintion = resource[resource_type][resource_name]
-                    entity_context['start_line'] = resource_defintion['start_line'][0]
-                    entity_context['end_line'] = resource_defintion['end_line'][0]
-                    entity_context["code_lines"] = self.template_lines[
-                        entity_context["start_line"]: entity_context["end_line"]
-                    ]
-                    entity_context['address'] = resource_defintion['__address__']
-                    return entity_context
-        return entity_context
+        entity_id = ".".join(definition_path)
+        return self.context.get(full_file_path, {}).get(entity_id)

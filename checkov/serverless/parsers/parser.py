@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
@@ -69,7 +71,7 @@ def is_checked_sls_template(template):
     if template.__contains__('provider'):
         # Case provider is a dictionary
         if isinstance(template['provider'], DictNode):
-            if template['provider'].get('name').lower() not in SUPPORTED_PROVIDERS:
+            if template['provider'].get('name', '').lower() not in SUPPORTED_PROVIDERS:
                 return False
         # Case provider is direct provider name
         if isinstance(template['provider'], StrNode):
@@ -114,7 +116,7 @@ Modifies the template data in-place to resolve variables.
     # More than a couple loops isn't normally expected.
     # NOTE: If this approach proves to be a performance liability, a DAG will be needed.
     loop_count = 0
-    for i in range(0, 25):
+    for _ in range(0, 25):
         loop_count += 1
         made_change = False
 
@@ -151,7 +153,7 @@ Generic processing loop for variables.
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
     def process_items_helper(key_value_iterator, data_map):
         made_change = False
-        for key, value in key_value_iterator():
+        for key, value in key_value_iterator:
             if isinstance(value, str):
                 altered_value = value
                 for match in var_pattern.finditer(value):
@@ -176,11 +178,11 @@ Generic processing loop for variables.
                 if process_variables_loop(value, var_pattern, param_lookup_function):
                     made_change = True
             elif isinstance(value, list):
-                if process_items_helper(lambda: enumerate(value), value):
+                if process_items_helper(enumerate(value), value):
                     made_change = True
         return made_change
 
-    return process_items_helper(template.items, template)
+    return process_items_helper(template.items(), template)
 
 
 def _load_var_data(

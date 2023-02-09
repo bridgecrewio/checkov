@@ -212,16 +212,19 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "sub-module",
                         "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
+                        "idx": 0
                     },
                     {
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
+                        "idx": 3
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 4
                     },
                 ],
             },
@@ -249,11 +252,13 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
+                        "idx": 1
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 5
                     },
                 ],
             },
@@ -281,11 +286,13 @@ class TestLocalGraph(TestCase):
                         "type": "module",
                         "name": "s3",
                         "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
+                        "idx": 2
                     },
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
+                        "idx": 6
                     },
                 ],
             },

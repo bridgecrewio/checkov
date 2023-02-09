@@ -12,36 +12,6 @@ definition:
       value:
         - "aws:kms"
         - "AES256"
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "local."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm
-      operator: starting_with
-      value: "\"${"
     - and:
       - cond_type: filter
         attribute: resource_type
@@ -54,42 +24,11 @@ definition:
         connected_resource_types:
           - aws_s3_bucket_server_side_encryption_configuration
         operator: exists
-      - or:
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: within
-          value:
-            - "aws:kms"
-            - "AES256"
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "module."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "data."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "var."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "local."
-        - cond_type: attribute
-          resource_types:
-            - aws_s3_bucket_server_side_encryption_configuration
-          attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
-          operator: starting_with
-          value: "\"${"
+      - cond_type: attribute
+        resource_types:
+          - aws_s3_bucket_server_side_encryption_configuration
+        attribute: rule.apply_server_side_encryption_by_default.sse_algorithm
+        operator: within
+        value:
+          - "aws:kms"
+          - "AES256"

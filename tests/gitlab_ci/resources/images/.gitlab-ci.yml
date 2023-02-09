@@ -3,8 +3,6 @@ default:
     name: ruby:2.6
     entrypoint: ["/bin/bash"]
 
-  image: nginx:1.18
-
   services:
     - name: privateregistry/stuff/my-postgres:11.7
       alias: db-postgres

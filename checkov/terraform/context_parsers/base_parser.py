@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import logging
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from itertools import islice
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple
 
 import dpath.util
 
@@ -18,14 +20,6 @@ CLOSE_CURLY = "}"
 
 
 class BaseContextParser(ABC):
-    definition_type = ""
-    tf_file = ""
-    tf_file_path: Optional[Path] = None
-    file_lines: List[Tuple[int, str]] = []
-    filtered_lines: List[Tuple[int, str]] = []
-    filtered_line_numbers: List[int] = []
-    context: Dict[str, Any] = defaultdict(dict)
-
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
         self.logger = logging.getLogger("{}".format(self.__module__))
@@ -33,6 +27,13 @@ class BaseContextParser(ABC):
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
         self.definition_type = definition_type
+        self.tf_file = ""
+        self.tf_file_path: Path | None = None
+        self.file_lines: list[tuple[int, str]] = []
+        self.filtered_lines: list[tuple[int, str]] = []
+        self.filtered_line_numbers: list[int] = []
+        self.context: dict[str, Any] = defaultdict(dict)
+
         parser_registry.register(self)
 
     @abstractmethod

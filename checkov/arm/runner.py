@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Optional, List, Dict, Tuple
 
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 from checkov.arm.parser import parse
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
-from checkov.common.output.report import Report, CheckType
+from checkov.common.output.report import Report
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
@@ -16,9 +21,9 @@ ARM_POSSIBLE_ENDINGS = [".json"]
 
 
 class Runner(BaseRunner):
-    check_type = CheckType.ARM
+    check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(file_extensions=ARM_POSSIBLE_ENDINGS)
 
     def run(
@@ -26,9 +31,13 @@ class Runner(BaseRunner):
         root_folder: str,
         external_checks_dir: Optional[List[str]] = None,
         files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
+        runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         files_list = []
         filepath_fn = None
@@ -55,8 +64,10 @@ class Runner(BaseRunner):
         definitions = {k: v for k, v in definitions.items() if v and v.__contains__("resources")}
         definitions_raw = {k: v for k, v in definitions_raw.items() if k in definitions.keys()}
 
-        for arm_file in definitions.keys():
+        self.pbar.initiate(len(definitions))
 
+        for arm_file in definitions.keys():
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(arm_file, root_folder)})
             # There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
             # or there will be no leading slash; root_folder will always be none.
             # If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
@@ -103,16 +114,27 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(resource)
 
                             results = arm_resource_registry.scan(arm_file, {resource_name: resource}, skipped_checks,
-                                                                 runner_filter)
-                            for check, check_result in results.items():
-                                record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=arm_file,
-                                                file_line_range=entity_lines_range,
-                                                resource=resource_id, evaluations=variable_evaluations,
-                                                check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                                severity=check.severity)
-                                record.set_guideline(check.guideline)
-                                report.add_record(record=record)
+                                                                 runner_filter, report_type=CheckType.ARM)
+
+                            if results:
+                                for check, check_result in results.items():
+                                    record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
+                                                    code_block=entity_code_lines, file_path=arm_file,
+                                                    file_line_range=entity_lines_range,
+                                                    resource=resource_id, evaluations=variable_evaluations,
+                                                    check_class=check.__class__.__module__, file_abs_path=file_abs_path,
+                                                    severity=check.severity)
+                                    record.set_guideline(check.guideline)
+                                    report.add_record(record=record)
+                            else:
+                                # resources without checks, but not existing ones
+                                report.extra_resources.add(
+                                    ExtraResource(
+                                        file_abs_path=file_abs_path,
+                                        file_path=arm_file,
+                                        resource=resource_id,
+                                    )
+                                )
 
                 if 'parameters' in definitions[arm_file].keys():
                     parameters = definitions[arm_file]['parameters']
@@ -128,15 +150,19 @@ class Runner(BaseRunner):
                             skipped_checks = ContextParser.collect_skip_comments(parameter_details)
                             results = arm_parameter_registry.scan(arm_file, {resource_name: parameter_details}, skipped_checks, runner_filter)
                             for check, check_result in results.items():
+                                censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                    entity_code_lines,
+                                                                                    parameter_details)
                                 record = Record(check_id=check.id, bc_check_id=check.bc_id, check_name=check.name, check_result=check_result,
-                                                code_block=entity_code_lines, file_path=arm_file,
+                                                code_block=censored_code_lines, file_path=arm_file,
                                                 file_line_range=entity_lines_range,
                                                 resource=resource_id, evaluations=variable_evaluations,
                                                 check_class=check.__class__.__module__, file_abs_path=file_abs_path,
                                                 severity=check.severity)
                                 record.set_guideline(check.guideline)
                                 report.add_record(record=record)
-
+            self.pbar.update()
+        self.pbar.close()
         return report
 
 

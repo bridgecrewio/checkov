@@ -22,7 +22,8 @@ class TestACRAnonymousPullEnabled(unittest.TestCase):
             'azurerm_container_registry.ckv_unittest_pass_2',
             'azurerm_container_registry.ckv_unittest_pass_3',
             'azurerm_container_registry.ckv_unittest_pass_4',
-            'azurerm_container_registry.ckv_unittest_pass_5'
+            'azurerm_container_registry.ckv_unittest_pass_5',
+            'azurerm_container_registry.ckv_unittest_pass_6'
         }
         failing_resources = {
             'azurerm_container_registry.ckv_unittest_fail_1',

@@ -22,6 +22,7 @@ class CustomAttributes:
     MODULE_DEPENDENCY_NUM = "module_dependency_num_"
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
+    TF_RESOURCE_ADDRESS = "__address__"
 
 
 def props(cls: Any) -> List[str]:
@@ -31,12 +32,12 @@ def props(cls: Any) -> List[str]:
 reserved_attribute_names = props(CustomAttributes)
 
 
-class EncryptionValues(Enum):
+class EncryptionValues(str, Enum):
     ENCRYPTED = "ENCRYPTED"
     UNENCRYPTED = "UNENCRYPTED"
 
 
-class EncryptionTypes(Enum):
+class EncryptionTypes(str, Enum):
     KMS_VALUE = "KMS"
     NODE_TO_NODE = "node-to-node"
     DEFAULT_KMS = "Default KMS"

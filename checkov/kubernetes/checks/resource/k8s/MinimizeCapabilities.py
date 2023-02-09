@@ -14,6 +14,8 @@ class MinimizeCapabilities(BaseK8sContainerCheck):
 
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["securityContext/capabilities/drop"]
+        if not isinstance(conf, dict):
+            return CheckResult.FAILED
         if conf.get("securityContext"):
             if conf["securityContext"].get("capabilities"):
                 if conf["securityContext"]["capabilities"].get("drop"):

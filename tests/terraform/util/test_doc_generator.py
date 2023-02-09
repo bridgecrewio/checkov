@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import inspect
 from pathlib import Path
-from typing import List, Set, Optional
 
 import pytest
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.docs_generator import get_checks
 
 
@@ -23,18 +24,58 @@ def test_get_checks_returned_check_number():
 @pytest.mark.parametrize(
     "input_frameworks,expected_frameworks",
     [
-        (["all"], {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                   "github_configuration", "gitlab_configuration", "bitbucket_configuration", "bitbucket_pipelines",
-                   "github_actions", "OpenAPI", "gitlab_ci"}),
-        (None, {"arm", "Bicep", "Cloudformation", "dockerfile", "Kubernetes", "secrets", "serverless", "Terraform",
-                "github_configuration", "bitbucket_pipelines", "gitlab_configuration", "bitbucket_configuration",
-                "github_actions", "OpenAPI", "gitlab_ci"}),
+        (
+            ["all"],
+            {
+                "Argo Workflows",
+                "arm",
+                "Azure Pipelines",
+                "Bicep",
+                "Cloudformation",
+                "dockerfile",
+                "Kubernetes",
+                "secrets",
+                "serverless",
+                "Terraform",
+                "github_configuration",
+                "gitlab_configuration",
+                "bitbucket_configuration",
+                "bitbucket_pipelines",
+                "circleci_pipelines",
+                "github_actions",
+                "OpenAPI",
+                "gitlab_ci",
+            },
+        ),
+        (
+            None,
+            {
+                "Argo Workflows",
+                "arm",
+                "Azure Pipelines",
+                "Bicep",
+                "Cloudformation",
+                "dockerfile",
+                "Kubernetes",
+                "secrets",
+                "serverless",
+                "Terraform",
+                "github_configuration",
+                "bitbucket_pipelines",
+                "circleci_pipelines",
+                "gitlab_configuration",
+                "bitbucket_configuration",
+                "github_actions",
+                "OpenAPI",
+                "gitlab_ci",
+            },
+        ),
         (["terraform"], {"Terraform"}),
         (["cloudformation", "serverless"], {"Cloudformation", "serverless"}),
     ],
     ids=["all", "none", "terraform", "multiple"],
 )
-def test_get_checks_returned_frameworks(input_frameworks: Optional[List[str]], expected_frameworks: Set[str]):
+def test_get_checks_returned_frameworks(input_frameworks: list[str] | None, expected_frameworks: set[str]):
     # when
     checks = get_checks(input_frameworks)
 

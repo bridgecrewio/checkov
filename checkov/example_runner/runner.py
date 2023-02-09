@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Any
 
-from checkov.common.output.report import CheckType
+from checkov.common.bridgecrew.check_type import CheckType
 
 # Import of the checks registry for a specific resource type
 from checkov.example_runner.checks.job_registry import registry as job_registry
@@ -14,6 +14,7 @@ from checkov.yaml_doc.runner import Runner as YamlRunner
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
+
 # Inherit either that YamlRunner or the JSONRunner or ObjectRunner
 # depending on IaC type or for the latter if a totally new IaC type
 class Runner(YamlRunner):
@@ -23,10 +24,10 @@ class Runner(YamlRunner):
     # ...
     #   MY_TYPE = "my_type"
     #
-    check_type = CheckType.MY_TYPE  # type:ignore[attr-defined]  # just used as an example
+    check_type = CheckType.MY_TYPE  # type:ignore[attr-defined]  # noqa: CCE003  # a static attribute
 
     # Define your block type
-    block_type_registries = {
+    block_type_registries = {  # noqa: CCE003  # a static attribute
         "jobs": job_registry,
     }
 
@@ -43,7 +44,7 @@ class Runner(YamlRunner):
         return self.block_type_registries["jobs"]
 
     def _parse_file(
-        self, f: str
+        self, f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         # EDIT" add conditional here to ensure this file is something we should parse.
         # Below is this example for github actions

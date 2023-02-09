@@ -17,18 +17,23 @@ class CleartextCredsOverUnencryptedChannel(BaseOpenapiCheckV3):
                          block_type=BlockType.DOCUMENT)
 
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
-        security_schemes = conf.get("components", {}).get("securitySchemes", {})
-        paths = conf.get('paths', {})
+        components = conf.get("components", {}) or {}
+        security_schemes = components.get("securitySchemes", {}) or {}
+        paths = conf.get('paths', {}) or {}
 
         if isinstance(security_schemes, list):
             security_schemes = security_schemes[0]
         for name, security_scheme in security_schemes.items():
             if name in self.irrelevant_keys:
                 continue
-            if security_scheme.get('type') == 'http' or security_scheme.get('scheme') == 'basic':
+            if isinstance(security_scheme, dict) and (security_scheme.get('type') == 'http' or security_scheme.get('scheme') == 'basic'):
                 return CheckResult.FAILED, security_scheme
 
+        if not isinstance(paths, dict):
+            return CheckResult.PASSED, security_schemes
         for key, path in paths.items():
+            if not path:
+                continue
             if key in self.irrelevant_keys:
                 continue
             for operation in path:

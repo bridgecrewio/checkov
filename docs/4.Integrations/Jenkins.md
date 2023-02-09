@@ -7,7 +7,7 @@ nav_order: 1
 
 # Integrate Checkov with Jenkins
 
-This simple integration into Jenkins will result in build failures whenever developers create and modify infrastructure as code monitored by Checkov. To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
+Below is a simple example integration with Jenkins using the Checkov container image. This will result in build failures whenever developers create and modify infrastructure as code with misconfigurations. To prevent developer frustration from failed builds, we recommend training and encouraging usage of Checkov's inline suppressions.
 
 ## Tutorial
 
@@ -17,44 +17,48 @@ This simple integration into Jenkins will result in build failures whenever deve
 
 2. Add new a stage into the pipeline definition using a `pipeline script`
 
+    ```groovy
+    pipeline {
+        agent any
+        
+        stages {
+            stage('Checkout') {
+                steps {
+                    git branch: 'master', url: 'https://github.com/bridgecrewio/terragoat'
+                    stash includes: '**/*', name: 'terragoat'
+                }
+            }
+            stage('Checkov') {
+                steps {
+                    script {
+                        docker.image('bridgecrew/checkov:latest').inside("--entrypoint=''") {
+                            unstash 'terragoat'
+                            try {
+                                sh 'checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master'
+                                junit skipPublishingChecks: true, testResults: 'results.xml'
+                            } catch (err) {
+                                junit skipPublishingChecks: true, testResults: 'results.xml'
+                                throw err
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        options {
+            preserveStashes()
+            timestamps()
+        }
+    }
+    ```
+
+
+
+   Alternatively, add the following script to install and run Checkov without an image:
+
    ```groovy
-   pipeline {
-       agent {
-           docker {
-               image 'kennethreitz/pipenv:latest'
-               args '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock'
-               label 'agent'
-           }
-       }
-       stages {
-           stage('test') {
-               steps {
-                   checkout([$class: 'GitSCM', branches: [[name: 'master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'github', url: 'git@github.com:bridgecrewio/checkov.git']]])
-                   script {
-                       sh "pipenv install"
-                       sh "pipenv run pip install checkov"
-                       sh "pipenv run checkov --directory tests/terraform/runner/resources/example -o junitxml > result.xml || true"
-                       junit "result.xml"
-                   }
-
-
-               }
-           }
-       }
-       options {
-           preserveStashes()
-           timestamps()
-           ansiColor('xterm')
-       }
-   }
-   ```
-
-
-
-   Modify the directory parameter to enable Checkov on the project terraform directory:
-
-   ```groovy
-   sh "pipenv run checkov --directory $TERRAFORM_MAIN_DIRECTORY_HERE -o junitxml > result.xml || true"
+   sh "pipenv run pip install checkov"
+   sh "pipenv run checkov -d . --use-enforcement-rules -o cli -o junitxml --output-file-path console,results.xml --repo-id example/terragoat --branch master"
    ```
 
 

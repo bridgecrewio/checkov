@@ -16,11 +16,14 @@ from checkov.common.util.type_forcers import force_int
 
 init(autoreset=True)
 
+ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
+CURRENT_LOCAL_DRIVE = Path.cwd().drive
 DEFAULT_SEVERITY = "none"  # equivalent to a score of 0.0 in the CVSS v3.0 Ratings
-
 OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) or 50
 
-ANSI_COLORS_DISABLED = bool(os.getenv('ANSI_COLORS_DISABLED'))
+SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
+SCA_LICENSE_CHECK_NAME = "SCA license"
+
 
 class Record:
     def __init__(
@@ -46,7 +49,8 @@ class Record:
         description: Optional[str] = None,
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
-        connected_node: Optional[Dict[str, Any]] = None
+        connected_node: Optional[Dict[str, Any]] = None,
+        details: Optional[List[str]] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -79,12 +83,13 @@ class Record:
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
+        self.details: List[str] = details or []
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
         # matches file paths given in the BC platform and should always be a unix path
         repo_file_path = Path(file_path)
-        if Path.cwd().drive == repo_file_path.drive:
+        if CURRENT_LOCAL_DRIVE == repo_file_path.drive:
             return convert_to_unix_path(f"/{os.path.relpath(repo_file_path)}").replace("/..", "")
 
         return f"/{'/'.join(repo_file_path.parts[1:])}"
@@ -151,7 +156,17 @@ class Record:
         )
         code_lines = ""
         if self.code_block:
-            code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not(ANSI_COLORS_DISABLED))]))
+            code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not (ANSI_COLORS_DISABLED))]))
+
+        detail = ""
+        if self.details:
+            detail_buffer = [colored(f"\tDetails: {self.details[0]}\n", "blue")]
+
+            for t in self.details[1:]:
+                detail_buffer.append(colored(f"\t         {t}\n", "blue"))
+
+            detail = "".join(detail_buffer)
+
         caller_file_details = ""
         if self.caller_file_path and self.caller_file_line_range:
             caller_file_details = colored(
@@ -175,12 +190,12 @@ class Record:
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{suppress_comment}{file_details}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{suppress_comment}{detail}{file_details}{caller_file_details}{guideline_message}"
         else:
-            return f"{check_message}{status_message}{severity_message}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{evaluation_message}{guideline_message}"
 
     def __str__(self) -> str:
         return self.to_string()

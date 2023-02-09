@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import hashlib
@@ -5,14 +7,15 @@ from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
+from checkov.terraform.module_loading.module_params import ModuleParams
 
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.loader import ModuleLoader
 
 
 class ModuleLoaderRegistry:
-    loaders: List["ModuleLoader"] = []
-    module_content_cache: Dict[str, Optional[ModuleContent]] = {}
+    loaders: List["ModuleLoader"] = []  # noqa: CCE003
+    module_content_cache: Dict[str, Optional[ModuleContent]] = {}  # noqa: CCE003
 
     def __init__(
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
@@ -55,24 +58,23 @@ information, see `loader.ModuleLoader.load`.
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
-                    content = loader.load(
-                        root_dir=self.root_dir,
-                        current_dir=current_dir,
-                        source=source,
-                        source_version=source_version,
-                        dest_dir=local_dir,
-                        external_modules_folder_name=self.external_modules_folder_name,
-                        inner_module=inner_module,
-                    )
+                    module_params = ModuleParams(root_dir=self.root_dir,
+                                                 current_dir=current_dir,
+                                                 source=source,
+                                                 source_version=source_version,
+                                                 dest_dir=local_dir,
+                                                 external_modules_folder_name=self.external_modules_folder_name,
+                                                 inner_module=inner_module)
+                    content = loader.load(module_params)
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
                     last_exception = e
                     continue
                 if content.next_url:
                     next_url = content.next_url
-                    if loader.inner_module:
-                        local_dir = loader.dest_dir
-                        inner_module = loader.inner_module
+                    if module_params.inner_module:
+                        local_dir = module_params.dest_dir
+                        inner_module = module_params.inner_module
                     break
                 if content is None:
                     continue
@@ -93,6 +95,9 @@ information, see `loader.ModuleLoader.load`.
 
     def register(self, loader: "ModuleLoader") -> None:
         self.loaders.append(loader)
+
+    def reset_module_content_cache(self) -> None:
+        self.module_content_cache = {}
 
     def clear_all_loaders(self) -> None:
         self.loaders.clear()

@@ -1,0 +1,13 @@
+metadata:
+  id: "TagsNotIntersect"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "all"
+  attribute: "tags"
+  operator: "intersects"
+  value:
+    - "acme"
+    - "bar"

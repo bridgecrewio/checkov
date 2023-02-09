@@ -46,8 +46,7 @@ def validating_webhook():
     if namespace in ignore_list:
         response = 'Namespace in ignore list. Ignoring validation'
         webhook.logger.error('Namespace in ignore list. Ignoring validation!')
-        return admission_response(True, uid, response)    
-
+        return admission_response(True, uid, response)
 
     jsonfile = "tmp/" + uid + "-req.json"
     yamlfile = "tmp/" + uid + "-req.yaml"
@@ -77,7 +76,6 @@ def validating_webhook():
         f'{request_info["request"]["object"]["kind"]}/'
         f'{request_info["request"]["object"]["metadata"]["name"]}'
     )
-
 
     if cp.returncode != 0:
 
@@ -124,7 +122,7 @@ def validating_webhook():
 def todict(obj):
     if hasattr(obj, 'attribute_map'):
         result = {}
-        for k, v in getattr(obj, 'attribute_map').items():
+        for k, v in obj.attribute_map.items():
             val = getattr(obj, k)
             if val is not None:
                 result[v] = todict(val)
@@ -150,13 +148,15 @@ def admission_response(allowed, uid, message):
                     }
                     })
 
-def getConfig(configfile):  
+
+def getConfig(configfile):
     cf = {}
     with open(configfile) as myfile:
         for line in myfile:
             name, var = line.partition("=")[::2]
             cf[name.strip()] = list(var.strip().split(','))
     return cf
- 
+
+
 if __name__ == '__main__':
     webhook.run(host='0.0.0.0', port=1701)

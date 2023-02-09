@@ -1,17 +1,23 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from collections import defaultdict
-from typing import List, Dict, Callable, Union, Any, Optional, Set, Iterable
+from typing import List, Dict, Callable, Union, Any, Set, Iterable, TypeVar, Generic, TYPE_CHECKING
 
-from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.graph_resources_encription_manager import GraphResourcesEncryptionManager
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
+if TYPE_CHECKING:
+    from checkov.common.graph.graph_builder import Edge
+    from checkov.common.graph.graph_builder.graph_components.blocks import Block  # noqa
 
-class LocalGraph:
+_Block = TypeVar("_Block", bound="Block")
+
+
+class LocalGraph(Generic[_Block]):
     def __init__(self) -> None:
-        self.vertices: List[Block] = []
+        self.vertices: List[_Block] = []
         self.edges: List[Edge] = []
         self.in_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges entering it
         self.out_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges exiting it
@@ -64,7 +70,7 @@ class LocalGraph:
 
     @staticmethod
     @abstractmethod
-    def update_vertex_config(vertex: Block, changed_attributes: Union[List[str], Dict[str, Any]]) -> None:
+    def update_vertex_config(vertex: _Block, changed_attributes: Union[List[str], Dict[str, Any]], has_dynamic_blocks: bool = False) -> None:
         pass
 
     @abstractmethod
@@ -80,7 +86,7 @@ class LocalGraph:
         attribute_key: str,
         attribute_value: Any,
         change_origin_id: int,
-        attribute_at_dest: Optional[Union[str, List[str]]],
+        attribute_at_dest: str,
         transform_step: bool = False
     ) -> None:
         previous_breadcrumbs = []
@@ -97,5 +103,5 @@ class LocalGraph:
             encryption_result = self._graph_resource_encryption_manager.get_encryption_result(vertex)
             if not encryption_result:
                 continue
-            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.enctypted
+            vertex.attributes[CustomAttributes.ENCRYPTION] = encryption_result.encrypted
             vertex.attributes[CustomAttributes.ENCRYPTION_DETAILS] = encryption_result.reason

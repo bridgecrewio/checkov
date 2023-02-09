@@ -19,11 +19,11 @@ class LinodeCredentials(BaseProviderCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
-    @staticmethod
-    def secret_found(conf: Dict[str, List[Any]], field: str, pattern: Pattern[str]) -> bool:
+    def secret_found(self, conf: Dict[str, List[Any]], field: str, pattern: Pattern[str]) -> bool:
         if field in conf.keys():
             value = conf[field][0]
             if re.match(pattern, value) is not None:
+                conf[f'{self.id}_secret'] = value
                 return True
         return False
 

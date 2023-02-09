@@ -126,7 +126,10 @@ SCA
     Base Score: 7.5
     Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
     Risk Factors: ["Has fix", "High severity", "Attack complexity: low", "Attack vector: network", "DoS"]
-    
+    Fix Details:
+      Status: fixed in 2.8.1 
+      Fixed Version: 2.8.1
+  
     Resource: package-lock.json.connect
     File: /package-lock.json: 0-0
     
@@ -141,6 +144,9 @@ SCA
   Link: <CVE link>
   Vector: <CVSS vector string>
   Risk Factors: <list of risk factors>
+  Fix Details:
+    Status: <status of possible fixed versions>
+    Fixed Version: <lowest fixed version>
   
   Resource: <resource ID>
   File: <file path>
@@ -223,7 +229,10 @@ SCA
                 Base Score: 7.5
                 Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
                 Risk Factors: ["Has fix", "High severity", "Attack complexity: low", "Attack vector: network", "DoS"]
-                
+                Fix Details:
+                  Status: fixed in 2.8.1 
+                  Fixed Version: 2.8.1
+
                 Resource: package-lock.json.connect
                 File: /package-lock.json: 0-0
                 

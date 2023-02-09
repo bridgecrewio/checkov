@@ -1,0 +1,9 @@
+# Source: https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/
+
+# Testing empty spec
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+

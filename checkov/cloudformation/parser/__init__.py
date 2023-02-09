@@ -52,20 +52,31 @@ def parse(
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
-                (template, template_lines) = json_parse(filename, allow_nulls=False)
+                result = json_parse(filename, allow_nulls=False)
+                if result:
+                    template, template_lines = result
             except Exception as json_err:  # pylint: disable=W0703
                 error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
                 LOGGER.info(error)
     except YAMLError as err:
-        error = f"Parsing error in file: {filename} - {err}"
-        LOGGER.info(error)
+        if hasattr(err, 'problem') and err.problem in ["expected ',' or '}', but got '<scalar>'"]:
+            try:
+                result = json_parse(filename, allow_nulls=False)
+                if result:
+                    template, template_lines = result
+            except Exception as json_err:  # pylint: disable=W0703
+                error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
+                LOGGER.info(error)
+        else:
+            error = f"Parsing error in file: {filename} - {err}"
+            LOGGER.info(error)
 
     if error:
         out_parsing_errors[filename] = error
 
     if isinstance(template, dict):
         resources = template.get(TemplateSections.RESOURCES.value, None)
-        if resources:
+        if resources and isinstance(resources, dict):
             if "__startline__" in resources:
                 del resources["__startline__"]
             if "__endline__" in resources:

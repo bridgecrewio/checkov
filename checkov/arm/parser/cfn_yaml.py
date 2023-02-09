@@ -116,8 +116,8 @@ NodeConstructor.add_constructor(
 
 class Representer(Representer):
     def represent_none(self, data):
-        return self.represent_scalar(u'tag:yaml.org,2002:null',
-                                     u'')
+        return self.represent_scalar(u'tag:yaml.org,2002:null', u'')
+
 
 class MarkedLoader(Reader, Scanner, Parser, Composer, NodeConstructor, Representer, Resolver):
     """

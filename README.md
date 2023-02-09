@@ -6,7 +6,7 @@
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/1.Welcome/What%20is%20Checkov.html?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
-[![Python Version](https://img.shields.io/github/pipenv/locked/python-version/bridgecrewio/checkov)](#)
+[![Python Version](https://img.shields.io/pypi/pyversions/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 [![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
@@ -15,7 +15,7 @@
 
 **Checkov** is a static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages.
 
-It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md),[Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](docs/7.Scan%20Examples/Bicep.md), [OpenAPI](docs/7.Scan%20Examples/OpenAPI.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
+It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md), [Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](docs/7.Scan%20Examples/Bicep.md), [OpenAPI](docs/7.Scan%20Examples/OpenAPI.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
 
 It performs [Software Composition Analysis (SCA) scanning](docs/7.Scan%20Examples/Sca.md) which is a scan of open source packages and images for Common Vulnerabilities and Exposures (CVEs).
  
@@ -42,6 +42,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
  * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Bicep and ARM template files.
+ * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
  * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
@@ -49,7 +50,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, SARIF and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
  
 ## Screenshots
 
@@ -92,7 +93,7 @@ sudo apt install python3-pip
 sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
 ```
 
-or using homebrew (MacOS only)
+or using [homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
 ```sh
 brew install checkov
@@ -201,8 +202,8 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 
 ### Running or skipping checks 
 
-Using command line flags you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information on how these flags work together.
+By using command line flags, you can specify to run only named checks (allow list) or run all checks except 
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information about how these flags work together.
 
 ## Examples
 
@@ -256,6 +257,29 @@ kube-system namespace:
 ```sh
 checkov -d . --skip-check kube-system
 ```
+
+Run a scan of a container image. First pull or build the image then refer to it by the hash, ID, or name:tag:
+```sh
+checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ...
+
+checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
+
+Run an SCA scan of packages in a repo:
+```sh
+checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
+```
+
+Run a scan of a directory with environment variables removing buffering, adding debug level logs, turning on image referencer:
+```sh
+PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE checkov -d .
+```
+OR enable the environment variables for multiple runs
+```sh
+export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
+checkov -d .
+```
+
 
 ### Suppressing/Ignoring a check
 

@@ -1,11 +1,11 @@
 ---
 layout: default
 published: true
-title: Github Actions
+title: GitHub Actions
 nav_order: 3
 ---
 
-# Integrate Checkov with Github Actions
+# Integrate Checkov with GitHub Actions
 
 Integrating Checkov into GitHub Actions provides a simple, automatic way of applying policies to your Terraform code both during pull request review and as part of any build process.
 

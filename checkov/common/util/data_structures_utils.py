@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, TypeVar
+
+_T = TypeVar("_T")
 
 
 def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict[str, Any]:
@@ -11,7 +13,7 @@ def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict
     return result
 
 
-def merge_dicts(*dicts: dict[Any, Any]) -> dict[Any, Any]:
+def merge_dicts(*dicts: dict[_T, Any]) -> dict[_T, Any]:
     """
     Merges two or more dicts. If there are duplicate keys, later dict arguments take precedence.
 

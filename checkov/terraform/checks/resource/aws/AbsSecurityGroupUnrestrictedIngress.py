@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_list
@@ -5,14 +9,14 @@ from checkov.common.util.type_forcers import force_int
 
 
 class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
-    def __init__(self, check_id, port):
-        name = "Ensure no security groups allow ingress from 0.0.0.0:0 to port %d" % port
-        supported_resources = ['aws_security_group', 'aws_security_group_rule']
-        categories = [CheckCategories.NETWORKING]
+    def __init__(self, check_id: str, port: int) -> None:
+        name = f"Ensure no security groups allow ingress from 0.0.0.0:0 to port {port}"
+        supported_resources = ('aws_security_group', 'aws_security_group_rule')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
         self.port = port
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         """
             Looks for configuration at security group ingress rules :
             https://www.terraform.io/docs/providers/aws/r/security_group.html
@@ -37,8 +41,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if 'ingress' in conf:  # This means it's an SG resource with ingress block(s)
             ingress_conf = conf['ingress']
             for ingress_rule in ingress_conf:
-                ingress_rules = force_list(ingress_rule)
-                for rule in ingress_rules:
+                for rule in force_list(ingress_rule):
                     if isinstance(rule, dict) and self.contains_violation(rule):
                         self.evaluated_keys = [
                             f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
@@ -62,9 +65,9 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         # The result for an SG with no ingress block
         return CheckResult.PASSED
 
-    def contains_violation(self, conf):
-        from_port = force_int(force_list(conf.get('from_port',[{-1}]))[0])
-        to_port = force_int(force_list(conf.get('to_port',[{-1}]))[0])
+    def contains_violation(self, conf: dict[str, list[Any]]) -> bool:
+        from_port = force_int(force_list(conf.get('from_port', [{-1}]))[0])
+        to_port = force_int(force_list(conf.get('to_port', [{-1}]))[0])
 
         if from_port == 0 and to_port == 0:
             to_port = 65535

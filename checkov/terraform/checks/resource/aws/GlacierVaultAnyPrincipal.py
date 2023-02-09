@@ -25,7 +25,10 @@ class GlacierVaultAnyPrincipal(BaseResourceCheck):
             if re.match(DATA_TO_JSON_PATTERN, policy_obj):
                 return CheckResult.UNKNOWN
             else:
-                policy_obj = json.loads(policy_obj)
+                try:
+                    policy_obj = json.loads(policy_obj)
+                except Exception:
+                    return CheckResult.UNKNOWN
         policy = Policy(policy_obj)
         if policy.is_internet_accessible():
             return CheckResult.FAILED

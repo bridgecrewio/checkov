@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class BranchProtectionRequireSignedCommits(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure all commits GPG signed"
+        name = "Ensure GitHub branch protection rules requires signed commits"
         id = "CKV_GIT_6"
         supported_resources = ["github_branch_protection_v3", "github_branch_protection"]
         categories = [CheckCategories.GENERAL_SECURITY]

@@ -10,8 +10,10 @@ class PodSecurityContext(BaseResourceCheck):
         # Security context can be set at pod or container level.
         id = "CKV_K8S_29"
 
-        supported_resources = ['kubernetes_pod', 'kubernetes_deployment', 'kubernetes_daemonset']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('kubernetes_pod', 'kubernetes_pod_v1',
+                               'kubernetes_deployment', 'kubernetes_deployment_v1',
+                               'kubernetes_daemonset', 'kubernetes_daemon_set_v1')
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
@@ -27,7 +29,7 @@ class PodSecurityContext(BaseResourceCheck):
                     return CheckResult.UNKNOWN
 
                 if not container.get("security_context"):
-                    self.evaluated_keys = ["spec/[0]/container/{idx}"]
+                    self.evaluated_keys = [f"spec/[0]/container/{idx}"]
                     return CheckResult.FAILED
             return CheckResult.PASSED
 
@@ -43,7 +45,7 @@ class PodSecurityContext(BaseResourceCheck):
                             return CheckResult.UNKNOWN
 
                         if not container.get("security_context"):
-                            self.evaluated_keys = ["spec/[0]/template/[0]/spec/[0]/container/{idx}"]
+                            self.evaluated_keys = [f"spec/[0]/template/[0]/spec/[0]/container/{idx}"]
                             return CheckResult.FAILED
                     return CheckResult.PASSED
         return CheckResult.FAILED

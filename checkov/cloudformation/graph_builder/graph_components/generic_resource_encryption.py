@@ -34,7 +34,7 @@ ENCRYPTION_BY_RESOURCE_TYPE: Dict[str, Any] = {
     "AWS::EFS::FileSystem": GenericResourceEncryption("AWS::EFS::FileSystem", {"Encrypted": [True], "KmsKeyId": []}),
     "AWS::EC2::Volume": GenericResourceEncryption("AWS::EC2::Volume", {"Encrypted": [True], "KmsKeyId": []}),
     "AWS::ElastiCache::ReplicationGroup": GenericResourceEncryption(
-        "AWS::ElastiCache::ReplicationGroup", {"AtRestEncryptionEnabled": [True], "KmsKeyId": ["arn"],}
+        "AWS::ElastiCache::ReplicationGroup", {"AtRestEncryptionEnabled": [True], "KmsKeyId": ["arn"]}
     ),
     "AWS::Elasticsearch::Domain": GenericResourceEncryption(
         "AWS::Elasticsearch::Domain",

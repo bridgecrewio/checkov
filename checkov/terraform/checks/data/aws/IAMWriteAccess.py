@@ -1,8 +1,11 @@
-from typing import Union, List, Dict, Any
+from __future__ import annotations
 
-from cloudsplaining.scan.policy_document import PolicyDocument
+from typing import Union, List, Dict, Any, TYPE_CHECKING
 
 from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+
+if TYPE_CHECKING:
+    from cloudsplaining.scan.policy_document import PolicyDocument
 
 
 class CloudSplainingWriteAccess(BaseCloudsplainingIAMCheck):

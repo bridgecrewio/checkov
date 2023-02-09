@@ -16,36 +16,6 @@ definition:
           attribute: acl
           operator: not_equals
           value: public-read-write
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "local."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -59,36 +29,6 @@ definition:
             - aws_s3_bucket_acl
           operator: exists
         - or:
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "module."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "data."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "var."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "local."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "\"${"
             - and:
                 - cond_type: attribute
                   resource_types:
@@ -113,12 +53,33 @@ definition:
                         - aws_s3_bucket_acl
                       attribute: access_control_policy.grant
                       operator: not_exists
-                    - cond_type: attribute
-                      resource_types:
-                        - aws_s3_bucket_acl
-                      attribute: access_control_policy.grant.*.grantee.uri
-                      operator: not_equals
-                      value: "http://acs.amazonaws.com/groups/global/AllUsers"
+                    - or:
+                      - cond_type: attribute
+                        resource_types:
+                          - aws_s3_bucket_acl
+                        attribute: access_control_policy.grant.*.grantee.uri
+                        operator: not_equals
+                        value: "http://acs.amazonaws.com/groups/global/AllUsers"
+                      - not:
+                        - or:
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "WRITE"
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "FULL_CONTROL"
+                          - cond_type: attribute
+                            resource_types:
+                              - aws_s3_bucket_acl
+                            attribute: access_control_policy.grant.*.permission
+                            operator: equals
+                            value: "WRITE_ACP"
     - and:
       - cond_type: filter
         attribute: resource_type

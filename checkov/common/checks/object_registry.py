@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:
+        super().__init__(report_type=report_type)
         self._scanner: dict[str, _ScannerCallableAlias] = {
             BlockType.ARRAY: self._scan_array,
             BlockType.OBJECT: self._scan_object,
@@ -107,7 +107,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_document)
                 if check.path:
                     target = entity
@@ -191,7 +191,7 @@ class Registry(BaseCheckRegistry):
 
         result = check_result["result"]
 
-        if result == CheckResult.SKIPPED:
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
             results[result_key] = {
                 "check": check,
                 "result": result,
@@ -219,4 +219,4 @@ class Registry(BaseCheckRegistry):
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}

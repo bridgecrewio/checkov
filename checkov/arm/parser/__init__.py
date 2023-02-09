@@ -20,7 +20,7 @@ def parse(filename: str) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None,
     template = None
     template_lines = None
     try:
-        (template, template_lines) = cfn_yaml.load(filename)
+        template, template_lines = cfn_yaml.load(filename)
     except IOError as e:
         if e.errno == 2:
             LOGGER.error(f"Template file not found: {filename}")
@@ -35,7 +35,9 @@ def parse(filename: str) -> tuple[dict[str, Any], tuple[int, str]] | tuple[None,
     except ScannerError as err:
         if err.problem in ("found character '\\t' that cannot start any token", "found unknown escape character"):
             try:
-                (template, template_lines) = json_parse(filename, allow_nulls=False)
+                result = json_parse(filename, allow_nulls=False)
+                if result:
+                    template, template_lines = result
             except Exception:
                 LOGGER.error(f"Template {filename} is malformed: {err.problem}")
                 LOGGER.error(f"Tried to parse {filename} as JSON", exc_info=True)

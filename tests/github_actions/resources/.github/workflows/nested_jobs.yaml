@@ -1,0 +1,28 @@
+name: "bad-github-actions"
+
+on:
+  pull_request:
+    branches: [ development ]
+
+jobs:
+  action:
+    - name: action-git-diff-suggestions
+      uses: getsentry/action-git-diff-suggestions@v1
+      with:
+        message: 'eslint made the following change'
+    - name: test
+      on: pull_request
+      jobs:
+        test:
+          runs-on: ubuntu-latest
+          steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+              with:
+                node-version: 16
+            - run: npm run lint
+            - uses: getsentry/action-git-diff-suggestions@main
+              with:
+                message: eslint
+            - run: npm test
+

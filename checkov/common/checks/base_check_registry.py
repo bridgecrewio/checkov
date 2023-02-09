@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 class BaseCheckRegistry:
     # NOTE: Needs to be static to because external check loading may be triggered by a registry to which
     #       checks aren't registered. (This happens with Serverless, for example.)
-    __loading_external_checks = False
-    __all_registered_checks: List[BaseCheck] = []
+    __loading_external_checks = False  # noqa: CCE003
+    __all_registered_checks: list[BaseCheck] = []  # noqa: CCE003
 
-    def __init__(self) -> None:
+    def __init__(self, report_type: str) -> None:
         self.logger = logging.getLogger(__name__)
         # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
         self.checks: Dict[str, List[BaseCheck]] = defaultdict(list)
@@ -33,6 +33,8 @@ class BaseCheckRegistry:
         #                      reason to use a dict for this too.
         self.wildcard_checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         self.check_id_allowlist: Optional[List[str]] = None
+        self.report_type = report_type
+        self.definitions_raw: list[tuple[int, str]] | None = None
 
     def register(self, check: BaseCheck) -> None:
         # IMPLEMENTATION NOTE: Checks are registered when the script is loaded
@@ -104,6 +106,7 @@ class BaseCheckRegistry:
         entity: Dict[str, Any],
         skipped_checks: List[_SkippedCheck],
         runner_filter: RunnerFilter,
+        report_type: Optional[str] = None  # allow runners like TF plan to override the type while using the same registry
     ) -> Dict[BaseCheck, _CheckResult]:
 
         (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
@@ -120,7 +123,7 @@ class BaseCheckRegistry:
                 if check.id in [x["id"] for x in skipped_checks]:
                     skip_info = [x for x in skipped_checks if x["id"] == check.id][0]
 
-            if runner_filter.should_run_check(check):
+            if runner_filter.should_run_check(check, report_type=report_type or self.report_type):
                 result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
                 results[check] = result
         return results

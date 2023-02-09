@@ -1,15 +1,37 @@
+from __future__ import annotations
+
 import ast
-from typing import Tuple, List, Union
+from typing import Any
+
+FORBIDDEN_TYPES = {
+    "field",
+}
+SKIP_SPECIAL_ATTRIBUTES = {
+    "__code__",
+    "__slots__",
+}
+SKIP_TYPING_CLASSES = {
+    "Protocol",
+    "TypedDict",
+}
 
 
-def get_class_members_errors(model_parts_info, class_def: ast.ClassDef) -> List[Tuple[int, int, str]]:
-    errors = []
-    forbidden_types = ['field']
+def get_class_members_errors(
+    model_parts_info: list[dict[str, Any]], class_def: ast.ClassDef
+) -> list[tuple[int, int, str]]:
+    errors: list[tuple[int, int, str]] = []
+
     if skip_dataclasses(class_def):
         return errors
+    if skip_typed_dicts(class_def):
+        return errors
     for model_part in model_parts_info:
-        if model_part['type'] in forbidden_types:
+        if model_part['type'] in FORBIDDEN_TYPES:
             node_name = get_node_name(model_part['node'], model_part['type'])
+
+            if node_name in SKIP_SPECIAL_ATTRIBUTES:
+                continue
+
             errors.append((model_part['node'].lineno, model_part['node'].col_offset, f"CCE003 Class level {model_part['type']} '{node_name}' detected in class {model_part['model_name']}",))
     return errors
 
@@ -17,10 +39,19 @@ def get_class_members_errors(model_parts_info, class_def: ast.ClassDef) -> List[
 def skip_dataclasses(class_def: ast.ClassDef) -> bool:
     if class_def.decorator_list is not None:
         for decorator in class_def.decorator_list:
-            if not isinstance(decorator, ast.Load):
+            if not isinstance(decorator, ast.Name):
                 return True
-            decorator: ast.Load
             if decorator.id == 'dataclass':
+                return True
+    return False
+
+
+def skip_typed_dicts(class_def: ast.ClassDef) -> bool:
+    if class_def.bases:
+        for base in class_def.bases:
+            if not isinstance(base, ast.Name):
+                return True
+            if base.id in SKIP_TYPING_CLASSES:
                 return True
     return False
 
@@ -49,7 +80,7 @@ def get_node_name(node, node_type: str):
             return name_getter(node)
 
 
-def get_name_for_field_node_type(node: Union[ast.Assign, ast.AnnAssign]) -> str:
+def get_name_for_field_node_type(node: ast.Assign | ast.AnnAssign) -> str:
     name = '<class_level_assignment>'
     if isinstance(node, ast.AnnAssign):
         name = node.target.id if isinstance(node.target, ast.Name) else name

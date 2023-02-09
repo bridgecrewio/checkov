@@ -12,20 +12,20 @@ _MultiT = TypeVar("_MultiT")
 
 class _MultiSignataureMethod(Protocol):
     __code__: CodeType
-    __multi_signature_wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., _MultiT]]
+    __multi_signature_wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., Any]]
 
-    def __call__(self, *args: Any, **kwargs: Any) -> _MultiT:
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
 
-    def add_signature(self, *, args: list[str], varargs: Any = None, varkw: Any = None) -> Callable[[Callable[..., _MultiT]], Callable[..., _MultiT]]:
+    def add_signature(self, *, args: list[str], varargs: Any = None, varkw: Any = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         ...
 
 
-class MultiSignatureMeta(ABCMeta):
-    __multi_signature_methods__: dict[str, _MultiSignataureMethod]
+class MultiSignatureMeta(ABCMeta):  # noqa: B024  # needs to be ABCMeta, because of the super().__new__ call
+    __multi_signature_methods__: dict[str, _MultiSignataureMethod]  # noqa: CCE003
 
-    def __new__(mcs, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> MultiSignatureMeta:
-        cls = super().__new__(mcs, name, bases, namespace, **kwargs)
+    def __new__(cls, name: str, bases: tuple[Any], namespace: dict[str, Any], **kwargs: Any) -> MultiSignatureMeta:
+        mcs = super().__new__(cls, name, bases, namespace, **kwargs)
         multi_signatures: dict[str, _MultiSignataureMethod] = {
             name: value  # type:ignore[misc]
             for name, value in namespace.items()
@@ -44,9 +44,9 @@ class MultiSignatureMeta(ABCMeta):
                         else:
                             multi_signatures[name] = cast(_MultiSignataureMethod, value)
 
-        cls.__multi_signature_methods__ = multi_signatures
+        mcs.__multi_signature_methods__ = multi_signatures
         for name, value in multi_signatures.items():
-            wrapped = getattr(cls, name)
+            wrapped = getattr(mcs, name)
             arguments = inspect.getargs(wrapped.__code__)
             if arguments == inspect.getargs(value.__code__):
                 # Do not replace if the signature is the same
@@ -56,14 +56,14 @@ class MultiSignatureMeta(ABCMeta):
             multi_signature_key = tuple(args), varargs, varkw
             get_wrapper = value.__multi_signature_wrappers__.get(tuple(multi_signature_key), None)
             if get_wrapper:
-                wrapper = get_wrapper(cls, wrapped)
+                wrapper = get_wrapper(mcs, wrapped)
                 update_wrapper(wrapper, wrapped)
-                setattr(cls, name, wrapper)
+                setattr(mcs, name, wrapper)
             else:
                 # unknown implementation
                 raise NotImplementedError(f"The signature {multi_signature_key} for {name} is not supported.")
 
-        return cls
+        return mcs
 
 
 class multi_signature:
@@ -76,7 +76,7 @@ class multi_signature:
     """
 
     def __init__(self) -> None:
-        self.__wrappers__: dict[Any, Callable[..., _MultiT]] = {}
+        self.__wrappers__: dict[tuple[tuple[str, ...], Any, Any], Callable[..., _MultiT]] = {}
 
     def __call__(self, fn: Callable[..., _MultiT]) -> _MultiSignataureMethod:
         fn.add_signature = self.add_signature  # type:ignore[attr-defined]

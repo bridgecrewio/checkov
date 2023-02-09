@@ -1,30 +1,61 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from json import JSONDecoder
-from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray
-from typing import List, Any
+from json.decoder import WHITESPACE, WHITESPACE_STR, BACKSLASH, STRINGCHUNK, JSONArray  # type:ignore[attr-defined]  # they are not explicitly exported
+from typing import Any, Callable, Pattern, Match
 
-from json.scanner import NUMBER_RE
+from json.scanner import NUMBER_RE  # type:ignore[import]  # is not explicitly exported
 
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
 
 
-class Mark(object):
-    """Mark of line and column"""
-    line = 1
-    column = 1
+class SimpleDecoder(JSONDecoder):
+    def __init__(
+        self,
+        *,
+        object_hook: Callable[[dict[str, Any]], Any] | None = None,
+        parse_float: Callable[[str], Any] | None = None,
+        parse_int: Callable[[str], Any] | None = None,
+        parse_constant: Callable[[str], Any] | None = None,
+        strict: bool = True,
+        object_pairs_hook: Callable[[list[tuple[str, Any]]], Any] | None = None,
+    ) -> None:
+        super().__init__(
+            object_hook=self.object_hook,
+            parse_float=parse_float,
+            parse_int=parse_int,
+            parse_constant=parse_constant,
+            strict=strict,
+            object_pairs_hook=object_pairs_hook,
+        )
 
-    def __init__(self, line, column):
+    def object_hook(self, obj: dict[str, Any]) -> Any:
+        obj["start_line"] = 0
+        obj["end_line"] = 0
+        return obj
+
+
+class Mark:
+    """Mark of line and column"""
+    __slots__ = ("column", "line")
+
+    def __init__(self, line: int, column: int) -> None:
         self.line = line
         self.column = column
 
 
 # pylint: disable=W0102
 # Exception based on builtin Python Function
-def py_scanstring(s, end, strict=True,
-                  _b=BACKSLASH, _m=STRINGCHUNK.match):
+def py_scanstring(
+    s: str,
+    end: int,
+    strict: bool = True,
+    _b: dict[str, str] = BACKSLASH,
+    _m: Callable[[str | Pattern[str], int], Match[str]] = STRINGCHUNK.match
+) -> tuple[str, int]:
     """Scan the string s for a JSON string. End is the index of the
     character in s after the quote that started the JSON string.
     Unescapes all valid JSON string escape sequences and raises ValueError
@@ -32,7 +63,7 @@ def py_scanstring(s, end, strict=True,
     control characters are allowed in the string.
     Returns a tuple of the decoded string and the index of the character in s
     after the end quote."""
-    chunks = []
+    chunks: list[str] = []
     _append = chunks.append
     begin = end - 1
     while 1:
@@ -56,15 +87,15 @@ def py_scanstring(s, end, strict=True,
             continue
         try:
             esc = s[end]
-        except IndexError:
-            raise DecodeError('Unterminated string starting at', s, begin)
+        except IndexError as err:
+            raise DecodeError('Unterminated string starting at', s, begin) from err
         # If not a unicode escape sequence, must be in the lookup table
         if esc != 'u':
             try:
                 char = _b[esc]
-            except KeyError:
+            except KeyError as err:
                 msg = 'Invalid \\escape: {0!r}'.format(esc)
-                raise DecodeError(msg, s, end)
+                raise DecodeError(msg, s, end) from err
             end += 1
         else:
             uni = _decode_uXXXX(s, end)
@@ -74,16 +105,12 @@ def py_scanstring(s, end, strict=True,
                 if 0xdc00 <= uni2 <= 0xdfff:
                     uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
                     end += 6
-            # pylint: disable=undefined-variable
-            try:
-                char = unichr(uni)
-            except NameError:
-                char = chr(uni)
+            char = chr(uni)
         _append(char)
     return ''.join(chunks), end
 
 
-def _decode_uXXXX(s, pos):
+def _decode_uXXXX(s: str, pos: int) -> int:
     esc = s[pos + 1:pos + 5]
     if len(esc) == 4 and esc[1] not in 'xX':
         try:
@@ -94,7 +121,7 @@ def _decode_uXXXX(s, pos):
     raise DecodeError(msg, s, pos)
 
 
-def py_make_scanner(context):
+def py_make_scanner(context: Decoder) -> Callable[[str, int], tuple[Any, int]]:
     """
         Make python based scanner
         For this use case we will not use the C based scanner
@@ -104,28 +131,40 @@ def py_make_scanner(context):
     parse_string = context.parse_string
     match_number = NUMBER_RE.match
     strict = context.strict
-    parse_float = context.parse_float
-    parse_int = context.parse_int
-    parse_constant = context.parse_constant
-    object_hook = context.object_hook
-    object_pairs_hook = context.object_pairs_hook
+    parse_float = context.parse_float  # type:ignore[misc]  # mypy bug
+    parse_int = context.parse_int  # type:ignore[misc]
+    parse_constant = context.parse_constant  # type:ignore[misc]
+    object_hook = context.object_hook  # type:ignore[misc]
+    object_pairs_hook = context.object_pairs_hook  # type:ignore[misc]
     memo = context.memo
 
     # pylint: disable=R0911
     # Based on Python standard function
-    def _scan_once(string, idx):
+    def _scan_once(string: str, idx: int) -> tuple[Any, int]:
         """ Scan once internal function """
         try:
             nextchar = string[idx]
-        except IndexError:
-            raise StopIteration(idx)
+        except IndexError as err:
+            raise StopIteration(idx) from err
 
-        if nextchar == '"':
+        try:
+            nextchar_plus_1 = string[idx + 1]
+        except IndexError:
+            nextchar_plus_1 = None
+        try:
+            nextchar_plus_2 = string[idx + 2]
+        except IndexError:
+            nextchar_plus_2 = None
+        
+        if nextchar == '"' and (nextchar_plus_1 != '"' or nextchar_plus_2 != '"'):
             return parse_string(string, idx + 1, strict)
+        if nextchar == '"' and nextchar_plus_1 == '"' and nextchar_plus_2 == '"':
+            result, end = parse_string(string, idx + 3, strict)
+            return result, end + 2
         if nextchar == '{':
             return parse_object(
                 (string, idx + 1), strict,
-                scan_once, object_hook, object_pairs_hook, memo)
+                scan_once, object_hook, object_pairs_hook, memo)  # type:ignore[arg-type]  # mypy bug
         if nextchar == '[':
             return parse_array((string, idx + 1), _scan_once)
         if nextchar == 'n' and string[idx:idx + 4] == 'null':
@@ -139,20 +178,20 @@ def py_make_scanner(context):
         if m is not None:
             integer, frac, exp = m.groups()
             if frac or exp:
-                res = parse_float(integer + (frac or '') + (exp or ''))
+                res = parse_float(integer + (frac or '') + (exp or ''))  # type:ignore[call-arg]  # mypy bug
             else:
-                res = parse_int(integer)
+                res = parse_int(integer)  # type:ignore[call-arg]  # mypy bug
             return res, m.end()
         if nextchar == 'N' and string[idx:idx + 3] == 'NaN':
-            return parse_constant('NaN'), idx + 3
+            return parse_constant('NaN'), idx + 3  # type:ignore[call-arg]  # mypy bug
         if nextchar == 'I' and string[idx:idx + 8] == 'Infinity':
-            return parse_constant('Infinity'), idx + 8
+            return parse_constant('Infinity'), idx + 8  # type:ignore[call-arg]  # mypy bug
         if nextchar == '-' and string[idx:idx + 9] == '-Infinity':
-            return parse_constant('-Infinity'), idx + 9
+            return parse_constant('-Infinity'), idx + 9  # type:ignore[call-arg]  # mypy bug
 
         raise StopIteration(idx)
 
-    def scan_once(string, idx):
+    def scan_once(string: str, idx: int) -> tuple[Any, int]:
         """ Scan Once"""
         try:
             return _scan_once(string, idx)
@@ -162,12 +201,12 @@ def py_make_scanner(context):
     return _scan_once
 
 
-def find_indexes(s, ch='\n'):
+def find_indexes(s: str, ch: str = "\n") -> list[int]:
     """Finds all instances of given char and returns list of indexes """
     return [i for i, ltr in enumerate(s) if ltr == ch]
 
 
-def count_occurrences(arr, key):
+def count_occurrences(arr: Sequence[int], key: int) -> int:
     """Binary search indexes to replace str.count """
     n = len(arr)
     left = 0
@@ -185,12 +224,12 @@ def count_occurrences(arr, key):
     return count
 
 
-def largest_less_than(indexes: List[int], line_num: int, pos: int) -> int:
+def largest_less_than(indexes: list[int], line_num: int, pos: int) -> int:
     """Replacement func for python str.rfind using indexes """
     return indexes[line_num - 1] if indexes and count_occurrences(indexes, pos) else -1
 
 
-def get_beg_end_mark(s, start, end, indexes):
+def get_beg_end_mark(s: str, start: int, end: int, indexes: list[int]) -> tuple[Mark, Mark]:
     """Get the Start and End Mark """
     beg_lineno = count_occurrences(indexes, start)
     beg_colno = start - largest_less_than(indexes, beg_lineno, start)
@@ -210,36 +249,47 @@ class Decoder(JSONDecoder):
     into strings using the DateTimeAwareJSONEncoder, into a python object.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.allow_nulls = kwargs.pop("allow_nulls", True)
         JSONDecoder.__init__(self, *args, **kwargs)
         self.parse_object = self.json_object
         self.parse_array = self.json_array
         self.parse_string = py_scanstring
-        self.memo = {}
-        self.object_pairs_hook = self.check_duplicates
+        self.memo: dict[str, str] = {}
+        setattr(self, "object_pairs_hook", self.check_duplicates)  # noqa: B010  # it is method assignment
         self.scan_once = py_make_scanner(self)
-        self.newline_indexes = []
+        self.newline_indexes: list[int] = []
 
-    def decode(self, s: str, _w: None = None) -> Any:
+    def decode(self, s: str, _w: Callable[..., Any] | None = None) -> Any:
         """Overridden to retrieve indexes """
         self.newline_indexes = find_indexes(s)
         obj = super().decode(s)
         return obj
 
-    def json_array(self, s_and_end, scan_once, **kwargs):
+    def json_array(
+        self, s_and_end: tuple[str, int], scan_once: Callable[[str, int], tuple[Any, int]], **kwargs: Any
+    ) -> tuple[ListNode, int]:
         """ Convert JSON array to be a list_node object """
         values, end = JSONArray(s_and_end, scan_once, **kwargs)
         s, start = s_and_end
         beg_mark, end_mark = get_beg_end_mark(s, start, end, self.newline_indexes)
         return ListNode(values, beg_mark, end_mark), end
 
-    def json_object(self, s_and_end, strict, scan_once, object_hook, object_pairs_hook,
-                    memo=None, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
+    def json_object(
+        self,
+        s_and_end: tuple[str, int],
+        strict: bool,
+        scan_once: Callable[[str, int], tuple[Any, int]],
+        object_hook: Callable[[dict[str, Any], Mark, Mark], Any],
+        object_pairs_hook: Callable[[list[tuple[str, Any]], Mark, Mark], Any],
+        memo: dict[str, str] | None = None,
+        _w: Callable[[str | Pattern[str], int], Match[str]] = WHITESPACE.match,
+        _ws: str = WHITESPACE_STR,
+    ) -> tuple[DictNode, int]:
         """ Custom Cfn JSON Object to store keys with start and end times """
         s, end = s_and_end
         orginal_end = end
-        pairs = []
+        pairs = []  # type:ignore[var-annotated]  # overload var, don't bother fixing the type
         pairs_append = pairs.append
         # Backwards compatibility
         if memo is None:
@@ -261,9 +311,9 @@ class Decoder(JSONDecoder):
                         result = object_pairs_hook(pairs, beg_mark, end_mark)
                         return result, end + 1
                     except DuplicateError as err:
-                        raise DecodeError('Duplicate found {}'.format(err), s, end)
+                        raise DecodeError('Duplicate found', s, end) from err
                     except NullError as err:
-                        raise DecodeError('Null Error {}'.format(err), s, end)
+                        raise DecodeError('Null Error', s, end) from err
                 pairs = {}
                 if object_hook is not None:
                     beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end + 1, self.newline_indexes)
@@ -299,8 +349,8 @@ class Decoder(JSONDecoder):
             try:
                 value, end = scan_once(s, end)
             except StopIteration as err:
-                logging.error(err)
-                raise DecodeError('Expecting value', s, end_mark.line)
+                logging.debug("Failed to scan string", exc_info=True)
+                raise DecodeError('Expecting value', s, end_mark.line) from err
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))
             try:
@@ -327,9 +377,9 @@ class Decoder(JSONDecoder):
                 beg_mark, end_mark = get_beg_end_mark(s, orginal_end, end, self.newline_indexes)
                 result = object_pairs_hook(pairs, beg_mark, end_mark)
             except DuplicateError as err:
-                raise DecodeError('Duplicate found {}'.format(err), s, begin, key)
+                raise DecodeError('Duplicate found', s, begin, key) from err
             except NullError as err:
-                raise DecodeError('Null Error {}'.format(err), s, begin, key)
+                raise DecodeError('Null Error', s, begin, key) from err
             return result, end
 
         pairs = dict(pairs)
@@ -338,7 +388,7 @@ class Decoder(JSONDecoder):
             pairs = object_hook(pairs, beg_mark, end_mark)
         return pairs, end
 
-    def check_duplicates(self, ordered_pairs, beg_mark, end_mark):
+    def check_duplicates(self, ordered_pairs: list[tuple[str, Any]], beg_mark: Mark, end_mark: Mark) -> DictNode:
         """
             Check for duplicate keys on the current level, this is not desirable
             because a dict does not support this. It overwrites it with the last

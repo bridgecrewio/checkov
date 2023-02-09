@@ -1,0 +1,23 @@
+name: PR Test
+
+on: pull_request
+
+permissions: read-all
+
+jobs:
+  pre-commit:
+    name: Run Pre-commit Hooks
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write  # https://github.com/EnricoMi/publish-unit-test-result-action#permissions
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Publish test results to GitHub.
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          junit_files: |
+            reports/jest/junit.xml
+            reports/junit/*.xml
+          comment_mode: off

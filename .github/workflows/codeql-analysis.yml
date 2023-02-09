@@ -21,6 +21,7 @@ on:
     - cron: '17 4 * * 2'
   workflow_dispatch:
 
+permissions: read-all
 
 jobs:
   analyze:
@@ -32,17 +33,17 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
         run: |
-          python -m pip install --upgrade pip pipenv
+          python -m pip install --no-cache-dir --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@v9
+        uses: tj-actions/verify-changed-files@a3391b5a01114c49c3a8d55181a9ff4c99bf0db7  # v12
         id: changed_files
         with:
           files: Pipfile.lock
@@ -52,11 +53,11 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2
         with:
           languages: python
           setup-python-dependencies: false
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        uses: github/codeql-action/autobuild@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@c3b6fce4ee2ca25bc1066aa3bf73962fda0e8898  # v2

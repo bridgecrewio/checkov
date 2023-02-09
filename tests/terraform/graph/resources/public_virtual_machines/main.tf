@@ -20,7 +20,7 @@ resource "aws_subnet" "subnet_public_ip" {
 resource "aws_subnet" "subnet_not_public_ip" {
   vpc_id            = aws_vpc.my_vpc.id
   cidr_block        = "172.16.10.0/24"
-  availability_zone = "us-west-2a"
+  availability_zone = "eu-central-1"
 
   tags = {
     Name = "second-tf-example"

@@ -2,6 +2,8 @@ from typing import Any
 
 
 class Edge:
+    __slots__ = ("dest", "label", "origin")
+
     def __init__(self, origin: int, dest: int, label: str) -> None:
         self.origin = origin
         self.dest = dest

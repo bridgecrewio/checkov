@@ -1,0 +1,18 @@
+# ref: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/creating-response-headers-policies.html
+metadata:
+  id: "CKV2_AWS_32"
+  name: "Ensure CloudFront distribution has a response headers policy attached"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - aws_cloudfront_distribution
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      operator: exists
+      resource_types:
+      - aws_cloudfront_distribution
+      connected_resource_types:
+      - aws_cloudfront_response_headers_policy

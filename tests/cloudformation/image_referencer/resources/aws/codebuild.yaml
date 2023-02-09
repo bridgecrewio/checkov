@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  CodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: myProjectName
+      Description: A description about my project
+      ServiceRole: !GetAtt ServiceRole.Arn
+      Artifacts:
+        Type: no_artifacts
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:3.0
+      TimeoutInMinutes: 10

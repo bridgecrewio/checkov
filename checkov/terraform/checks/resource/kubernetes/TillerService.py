@@ -10,7 +10,7 @@ class TillerService(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that the Tiller Service (Helm v2) is deleted"
         id = "CKV_K8S_44"
-        supported_resources = ["kubernetes_service"]
+        supported_resources = ["kubernetes_service", "kubernetes_service_v1"]
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

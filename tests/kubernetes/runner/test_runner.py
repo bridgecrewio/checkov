@@ -5,7 +5,9 @@ import unittest
 from collections import defaultdict
 from pathlib import Path
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.runner_filter import RunnerFilter
@@ -16,6 +18,29 @@ from checkov.kubernetes.checks.resource.registry import registry
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = registry.checks
+
+    def test_registry_has_type(self):
+        self.assertEqual(registry.report_type, CheckType.KUBERNETES)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources")
+
+        external_checks = os.path.join(current_dir, '..', 'graph', 'checks', 'test_checks')
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['kubernetes'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.KUBERNETES: Severities[BcSeverities.OFF]}
+        # load the test graph checks because there are no k8s graph checks at the moment, but we need to test that the graph registry knows what type it is
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=[external_checks],
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 
@@ -297,6 +322,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self):
         registry.checks = self.orig_checks
+        get_graph_checks_registry("kubernetes").checks = []
 
 
 if __name__ == '__main__':

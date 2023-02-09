@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: A sample template
+Resources:
+  ## Missing Properties
+  MyEC2Instance1:
+    Type: "AWS::EC2::Instance1"
+  myIamProfile:
+    Type: "AWS::IAM::Role"

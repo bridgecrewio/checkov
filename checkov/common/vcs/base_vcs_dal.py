@@ -15,9 +15,17 @@ from checkov.common.util.http_utils import get_user_agent_header
 
 class BaseVCSDAL:
     def __init__(self) -> None:
-        self.http: urllib3.PoolManager | None = None
+        self.api_url = ""
+        self.graphql_api_url = ""
+        self.token = ""  # nosec
+        self.current_repository = ""
+        self.current_branch = ""
+        self.repo_owner = ""
+        self.default_branch_cache: dict[str, Any] = {}
+
         self.request_lib_http = None
         self._organization_security = None
+        self.http: urllib3.PoolManager | None = None
         self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
         self.setup_conf_dir()
@@ -27,12 +35,7 @@ class BaseVCSDAL:
         """
             discover parameters from execution context of checkov. usually from env variable
         """
-        self.api_url = None
-        self.graphql_api_url = None
-        self.token = None
-        self.current_repository = None
-        self.current_branch = None
-        self.default_branch_cache: dict[str, Any] = {}
+        self.default_branch_cache = {}
 
     def setup_http_manager(self, ca_certificate: str | None = None) -> None:
         """
@@ -44,30 +47,38 @@ class BaseVCSDAL:
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             try:
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
-                                                 ca_certs=ca_certificate)
+                                                 ca_certs=ca_certificate,
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
                 self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
         else:
             try:
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'])
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
                 self.http = urllib3.PoolManager()
 
-    def _request(self, endpoint: str) -> dict[str, Any] | None:
+    def _request(self, endpoint: str, allowed_status_codes: list[int]) -> dict[str, Any] | None:
+        if allowed_status_codes is None:
+            allowed_status_codes = [200]
         if not self.token:
             return None
         url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             headers = self._headers()
-            request = self.http.request("GET", url_endpoint, headers=headers)
-            if request.status == 200:
-                data = json.loads(request.data.decode("utf8"))
-                if isinstance(data, dict) and 'errors' in data.keys():
-                    return None
-                return data
+            if self.http:
+                request = self.http.request("GET", url_endpoint, headers=headers)  # type:ignore[no-untyped-call]
+                if request.status in allowed_status_codes:
+                    data: dict[str, Any] = json.loads(request.data.decode("utf8"))
+                    if isinstance(data, dict) and 'errors' in data.keys():
+                        return None
+                    return data
         except Exception:
             logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
+        return None
 
     @abstractmethod
     def _headers(self) -> dict[str, Any]:
@@ -84,16 +95,16 @@ class BaseVCSDAL:
 
         body = json.dumps({'query': query, 'variables': variables})
         try:
-            request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)
-            if request.status == 200:
-                data = json.loads(request.data.decode("utf8"))
-                if isinstance(data, dict) and 'errors' in data.keys():
-                    logging.debug("received errors %s", data)
-                    return None
-                return data
-
-            else:
-                logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
+            if self.http:
+                request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)  # type:ignore[no-untyped-call]
+                if request.status == 200:
+                    data = json.loads(request.data.decode("utf8"))
+                    if isinstance(data, dict) and 'errors' in data.keys():
+                        logging.debug("received errors %s", data)
+                        return None
+                    return data
+                else:
+                    logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception:
             logging.debug(f"Query failed {query}", exc_info=True)
 

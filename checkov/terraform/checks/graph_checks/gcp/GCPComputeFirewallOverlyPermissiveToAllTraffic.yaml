@@ -1,0 +1,34 @@
+metadata:
+  name: "Ensure GCP compute firewall ingress does not allow unrestricted access to all ports"
+  id: "CKV2_GCP_12"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "disabled"
+      operator: "equals"
+      value: "true"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "direction"
+      operator: "equals"
+      value: "EGRESS"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "allow.protocol"
+      operator: "not_equals"
+      value: "all"
+    - cond_type: "attribute"
+      resource_types:
+        - "google_compute_firewall"
+      attribute: "source_ranges"
+      operator: "within"
+      value:
+        - "::/0"
+        - "::0"
+        - "0.0.0.0"
+        - "0.0.0.0/0"

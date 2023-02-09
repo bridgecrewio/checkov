@@ -3,45 +3,53 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Optional, List, Type
+from typing import Type, Any, TYPE_CHECKING
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
-from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.cloudformation.graph_builder.graph_to_definitions import convert_graph_vertices_to_definitions
 from checkov.cloudformation.graph_builder.local_graph import CloudformationLocalGraph
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
+from checkov.cloudformation.image_referencer.manager import CloudFormationImageReferencerManager
+from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
-from checkov.common.graph.graph_manager import GraphManager
+from checkov.common.images.image_referencer import ImageReferencerMixin
+from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
+if TYPE_CHECKING:
+    from networkx import DiGraph
+    from checkov.common.images.image_referencer import Image
 
-class Runner(BaseRunner):
-    check_type = CheckType.CLOUDFORMATION
+
+class Runner(ImageReferencerMixin, BaseRunner[CloudformationGraphManager]):
+    check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
 
     def __init__(
-        self,
-        db_connector: NetworkxConnector = NetworkxConnector(),
-        source: str = "CloudFormation",
-        graph_class: Type[LocalGraph] = CloudformationLocalGraph,
-        graph_manager: Optional[GraphManager] = None,
-        external_registries: Optional[List[BaseRegistry]] = None
+            self,
+            db_connector: NetworkxConnector | None = None,
+            source: str = "CloudFormation",
+            graph_class: Type[CloudformationLocalGraph] = CloudformationLocalGraph,
+            graph_manager: CloudformationGraphManager | None = None,
+            external_registries: list[BaseRegistry] | None = None
     ) -> None:
+        db_connector = db_connector or NetworkxConnector()
+
         super().__init__(file_extensions=['.json', '.yml', '.yaml', '.template'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.graph_manager = (
+        self.graph_manager: CloudformationGraphManager = (
             graph_manager
             if graph_manager is not None
             else CloudformationGraphManager(source=source, db_connector=db_connector)
@@ -50,18 +58,23 @@ class Runner(BaseRunner):
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
     def run(
-        self,
-        root_folder: str,
-        external_checks_dir: Optional[List[str]] = None,
-        files: Optional[List[str]] = None,
-        runner_filter: RunnerFilter = RunnerFilter(),
-        collect_skip_comments: bool = True,
-    ) -> Report:
+            self,
+            root_folder: str,
+            external_checks_dir: list[str] | None = None,
+            files: list[str] | None = None,
+            runner_filter: RunnerFilter | None = None,
+            collect_skip_comments: bool = True,
+    ) -> Report | list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
-            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
+            self.definitions, self.definitions_raw = create_definitions(root_folder, files, runner_filter,
+                                                                        parsing_errors)
             report.add_parsing_errors(list(parsing_errors.keys()))
 
             if external_checks_dir:
@@ -82,7 +95,8 @@ class Runner(BaseRunner):
                     if vertex.block_type == BlockType.RESOURCE:
                         report.add_resource(f'{vertex.path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices, root_folder)
+                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(local_graph.vertices,
+                                                                                           root_folder)
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():
@@ -95,6 +109,8 @@ class Runner(BaseRunner):
                 )
                 cf_context_parser.evaluate_default_refs()
 
+        self.pbar.initiate(len(self.definitions))
+
         # run checks
         self.check_definitions(root_folder, runner_filter, report)
 
@@ -103,13 +119,27 @@ class Runner(BaseRunner):
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
+        if runner_filter.run_image_referencer:
+            if files:
+                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
+                root_folder = os.path.split(os.path.commonprefix(files))[0]
+
+            image_report = self.check_container_image_references(
+                graph_connector=self.graph_manager.get_reader_endpoint(),
+                root_path=root_folder,
+                runner_filter=runner_filter,
+            )
+
+            if image_report:
+                # due too many tests failing only return a list, if there is an image report
+                return [report, image_report]
+
         return report
 
-    def check_definitions(self, root_folder, runner_filter, report):
+    def check_definitions(self, root_folder: str, runner_filter: RunnerFilter, report: Report) -> None:
         for file_abs_path, definition in self.definitions.items():
-
             cf_file = f"/{os.path.relpath(file_abs_path, root_folder)}"
-
+            self.pbar.set_additional_data({'Current File Scanned': cf_file})
             if isinstance(definition, dict) and TemplateSections.RESOURCES in definition.keys():
                 for resource_name, resource in definition[TemplateSections.RESOURCES].items():
                     resource_id = ContextParser.extract_cf_resource_id(resource, resource_name)
@@ -126,33 +156,48 @@ class Runner(BaseRunner):
                             entity = {resource_name: resource}
                             results = cfn_registry.scan(cf_file, entity, skipped_checks, runner_filter)
                             tags = cfn_utils.get_resource_tags(entity)
-                            for check, check_result in results.items():
-                                record = Record(
-                                    check_id=check.id,
-                                    bc_check_id=check.bc_id,
-                                    check_name=check.name,
-                                    check_result=check_result,
-                                    code_block=entity_code_lines,
-                                    file_path=cf_file,
-                                    file_line_range=entity_lines_range,
-                                    resource=resource_id,
-                                    evaluations=variable_evaluations,
-                                    check_class=check.__class__.__module__,
-                                    file_abs_path=file_abs_path,
-                                    entity_tags=tags,
-                                    severity=check.severity
-                                )
+                            if results:
+                                for check, check_result in results.items():
+                                    censored_code_lines = omit_secret_value_from_checks(check, check_result,
+                                                                                        entity_code_lines,
+                                                                                        resource)
+                                    record = Record(
+                                        check_id=check.id,
+                                        bc_check_id=check.bc_id,
+                                        check_name=check.name,
+                                        check_result=check_result,
+                                        code_block=censored_code_lines,
+                                        file_path=cf_file,
+                                        file_line_range=entity_lines_range,
+                                        resource=resource_id,
+                                        evaluations=variable_evaluations,
+                                        check_class=check.__class__.__module__,
+                                        file_abs_path=file_abs_path,
+                                        entity_tags=tags,
+                                        severity=check.severity
+                                    )
 
-                                if CHECKOV_CREATE_GRAPH:
-                                    breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
-                                    if breadcrumb:
-                                        record = GraphRecord(record, breadcrumb)
-                                record.set_guideline(check.guideline)
-                                report.add_record(record=record)
+                                    if CHECKOV_CREATE_GRAPH:
+                                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
+                                        if breadcrumb:
+                                            record = GraphRecord(record, breadcrumb)
+                                    record.set_guideline(check.guideline)
+                                    report.add_record(record=record)
+                            else:
+                                # resources without checks, but not existing ones
+                                report.extra_resources.add(
+                                    ExtraResource(
+                                        file_abs_path=str(file_abs_path),
+                                        file_path=cf_file,
+                                        resource=resource_id,
+                                    )
+                                )
+            self.pbar.update()
+        self.pbar.close()
 
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
@@ -187,3 +232,18 @@ class Runner(BaseRunner):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+    def extract_images(
+        self,
+        graph_connector: DiGraph | None = None,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
+        definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = CloudFormationImageReferencerManager(graph_connector=graph_connector)
+        images: list[Image] = manager.extract_images_from_resources()
+
+        return images

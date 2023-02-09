@@ -67,5 +67,6 @@ class TestGraphBuilder(TestCase):
                 bc = bc[0]
                 self.assertEqual(bc.get('type'), 'module')
                 self.assertEqual(os.path.relpath(bc.get('path'), resources_path), 'examples/complete/main.tf')
+                self.assertEqual(record.resource, 'module.s3_bucket.aws_s3_bucket.default')
 
         self.assertTrue(found_versioning_failure)

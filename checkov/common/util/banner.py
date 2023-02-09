@@ -1,3 +1,4 @@
+# flake8: noqa
 from termcolor import colored
 
 from checkov.version import version
@@ -15,5 +16,14 @@ By bridgecrew.io | version: {} """.format(version)
 
 new_version = check_for_update("checkov", version)
 if new_version:
-    banner = "\n" + banner + "\nUpdate available " + colored(version,"grey") + " -> " + colored(new_version, "green") + "\nRun " + colored(
-        "pip3 install -U checkov", "magenta") + " to update \n"
+    banner = (
+        "\n"
+        + banner
+        + "\nUpdate available "
+        + colored(version, "grey")
+        + " -> "
+        + colored(new_version, "green")
+        + "\nRun "
+        + colored("pip3 install -U checkov", "magenta")
+        + " to update \n"
+    )

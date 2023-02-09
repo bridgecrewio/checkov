@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from typing import List, Dict, Type, Optional, Tuple
@@ -11,15 +13,15 @@ from checkov.common.graph.db_connectors.db_connector import DBConnector
 from checkov.common.graph.graph_manager import GraphManager
 
 
-class CloudformationGraphManager(GraphManager):
+class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[str, DictNode]"]):
     def __init__(self, db_connector: DBConnector, source: str = "CloudFormation") -> None:
         super().__init__(db_connector=db_connector, parser=None, source=source)
 
     def build_graph_from_source_directory(
         self,
         source_dir: str,
-        render_variables: bool = True,
         local_graph_class: Type[CloudformationLocalGraph] = CloudformationLocalGraph,
+        render_variables: bool = True,
         parsing_errors: Optional[Dict[str, Exception]] = None,
         download_external_modules: bool = False,
         excluded_paths: Optional[List[str]] = None,

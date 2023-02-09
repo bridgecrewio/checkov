@@ -1,17 +1,20 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
 
 class PolicyLoggingEnabled(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure logging at session end is enabled within security policies"
         id = "CKV_PAN_10"
-        supported_resources = ['panos_security_policy','panos_security_rule_group']
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ('panos_security_policy', 'panos_security_rule_group')
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-    
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # Check there is a rule defined in the resource
         if 'rule' in conf:
 
@@ -19,7 +22,7 @@ class PolicyLoggingEnabled(BaseResourceCheck):
             self.evaluated_keys = ['rule']
 
             # Get all the rules defined in the resource
-            rules = conf.get('rule')
+            rules = conf['rule']
 
             # Iterate over each rule
             for secrule in rules:
@@ -28,7 +31,7 @@ class PolicyLoggingEnabled(BaseResourceCheck):
                 if 'log_end' in secrule:
 
                     # If logging at session end is defined, get the value
-                    logstatus = secrule.get('log_end')
+                    logstatus = secrule['log_end']
 
                     # Setting log_end to false is a fail, logging will be disabled
                     if not logstatus[0]:
@@ -41,5 +44,6 @@ class PolicyLoggingEnabled(BaseResourceCheck):
 
         # If there's no rules we have nothing to check
         return CheckResult.UNKNOWN
+
 
 check = PolicyLoggingEnabled()

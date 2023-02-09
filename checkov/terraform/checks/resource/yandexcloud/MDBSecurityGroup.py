@@ -1,12 +1,15 @@
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 
+
 class MDBSecurityGroup(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure security group is assigned to database cluster."
         id = "CKV_YC_1"
-        supported_resources = [
+        supported_resources = (
             "yandex_mdb_postgresql_cluster",
             "yandex_mdb_sqlserver_cluster",
             "yandex_mdb_redis_cluster",
@@ -16,14 +19,15 @@ class MDBSecurityGroup(BaseResourceValueCheck):
             "yandex_mdb_greenplum_cluster",
             "yandex_mdb_elasticsearch_cluster",
             "yandex_mdb_clickhouse_cluster",
-        ]
-        categories = [CheckCategories.NETWORKING]
+        )
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "security_group_ids"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         return ANY_VALUE
-    
+
+
 check = MDBSecurityGroup()

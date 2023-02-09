@@ -5,22 +5,29 @@ on:
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   update-coverage:
     runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      contents: write
+    environment: release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8  # v3
+        with:
+          token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v4.4.0
+        uses: crazy-max/ghaction-import-gpg@111c56156bcc6918c056dbef52164cfa583dc549  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984  # v4
         with:
           python-version: 3.7
-      - uses: imranismail/setup-kustomize@v1
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv

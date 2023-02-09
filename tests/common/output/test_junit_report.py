@@ -73,13 +73,12 @@ class TestJunitReport(unittest.TestCase):
                 "".join(
                     [
                         '<?xml version="1.0" ?>\n',
-                        '<testsuites disabled="0" errors="0" failures="1" tests="3" time="0.0">\n',
-                        '\t<testsuite disabled="0" errors="0" failures="1" name="terraform scan" skipped="1" tests="3" time="0">\n',
+                        '<testsuites disabled="0" errors="0" failures="1" tests="2" time="0.0">\n',
+                        '\t<testsuite disabled="0" errors="0" failures="1" name="terraform scan" skipped="1" tests="2" time="0">\n',
                         "\t\t<properties>\n",
                         '\t\t\t<property name="file" value="fixtures/main.tf"/>\n',
                         '\t\t\t<property name="framework" value="[\'terraform\']"/>\n',
                         "\t\t</properties>\n",
-                        '\t\t<testcase name="[NONE][CKV_AWS_21] Ensure all data stored in the S3 bucket have versioning enabled" classname="/main.tf.aws_s3_bucket.destination" file="/main.tf"/>\n',
                         '\t\t<testcase name="[NONE][CKV_AWS_18] Ensure the S3 bucket has access logging enabled" classname="/main.tf.aws_s3_bucket.destination" file="/main.tf">\n',
                         '\t\t\t<failure type="failure" message="Ensure the S3 bucket has access logging enabled">\n',
                         "Resource: aws_s3_bucket.destination\n",

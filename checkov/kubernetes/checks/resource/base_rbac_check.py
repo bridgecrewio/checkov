@@ -1,6 +1,11 @@
+from __future__ import annotations
+
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.common.models.enums import CheckCategories, CheckResult
-from typing import Dict, Any, List
+from typing import Dict, Any, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class RbacOperation():
@@ -10,11 +15,12 @@ class RbacOperation():
     control_webhooks = RbacOperation(
         apigroups=["admissionregistration.k8s.io"],
         verbs=["create", "update", "patch"],
-        resources=["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]) 
+        resources=["mutatingwebhookconfigurations", "validatingwebhookconfigurations"])
     Rules matching an apiGroup, verb and resource should be able to perform the operation.
     """
-    def __init__(self, apigroups: List[str], verbs: List[str],
-                 resources: List[str]):
+    __slots__ = ("apigroups", "resources", "verbs")
+
+    def __init__(self, apigroups: List[str], verbs: List[str], resources: List[str]) -> None:
         self.apigroups = apigroups
         self.verbs = verbs
         self.resources = resources
@@ -24,15 +30,15 @@ class BaseRbacK8sCheck(BaseK8Check):
     """
     Base class for checks that evaluate RBAC permissions in Roles and ClusterRoles
     """
-    def __init__(self, name, id, supported_entities=None):
+    def __init__(self, name: str, id: str, supported_entities: Iterable[str] | None = None) -> None:
         if supported_entities is None:
-            supported_entities = ["Role", "ClusterRole"]
-        categories = [CheckCategories.KUBERNETES]
+            supported_entities = ("Role", "ClusterRole")
+        categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities)
         # A role that grants *ALL* the RbacOperation in failing_operations fails this check
-        self.failing_operations: RbacOperation = []
+        self.failing_operations: list[RbacOperation] = []
 
-    def scan_spec_conf(self, conf):
+    def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         rules = conf.get("rules")
         if rules and isinstance(rules, list):
             for operation in self.failing_operations:

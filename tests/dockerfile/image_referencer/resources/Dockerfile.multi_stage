@@ -1,0 +1,16 @@
+# Build stage
+FROM maven:3.8-openjdk-17-slim AS build
+
+COPY pom.xml /app/pom.xml
+COPY src /app/src
+
+RUN mvn -f /app/pom.xml clean package
+
+# Run stage
+FROM amazonlinux:2 AS run
+
+RUN yum install -y java-17-amazon-corretto-headless
+
+COPY --from=build /app/target/main-1.0-SNAPSHOT-jar-with-dependencies.jar /app/app.jar
+
+CMD ["java","-jar","/app/app.jar"]

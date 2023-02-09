@@ -1,0 +1,8 @@
+pass:
+  - "pass.yaml.permissions.permissions"
+  - "scope.yaml.permissions.permissions"
+fail:
+  - "fail.yaml.permissions.permissions"
+  - "default.yaml.permissions.permissions"
+evaluated_keys:
+  - "permissions"

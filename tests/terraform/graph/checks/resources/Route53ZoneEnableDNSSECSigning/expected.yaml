@@ -1,0 +1,4 @@
+pass:
+  - "aws_route53_zone.pass"
+fail:
+  - "aws_route53_zone.fail"

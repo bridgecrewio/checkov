@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+from ast import literal_eval
 import logging
 import os
 import re
 from collections.abc import Hashable
 from copy import deepcopy
+import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
 from lark.tree import Tree
@@ -16,7 +20,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
-    attribute_has_nested_attributes,
+    attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
@@ -25,11 +29,18 @@ from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform impor
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-ATTRIBUTES_NO_EVAL = ["template_body", "template"]
-VAR_TYPE_DEFAULT_VALUES = {
+VAR_TYPE_DEFAULT_VALUES: dict[str, list[Any] | dict[str, Any]] = {
     'list': [],
     'map': {}
 }
+
+DYNAMIC_STRING = 'dynamic'
+DYNAMIC_BLOCKS_LISTS = 'list'
+DYNAMIC_BLOCKS_MAPS = 'map'
+LEFT_BRACKET_WITH_QUOTATION = '["'
+RIGHT_BRACKET_WITH_QUOTATION = '"]'
+LEFT_BRACKET = '['
+
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
@@ -39,6 +50,25 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 class TerraformVariableRenderer(VariableRenderer):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         super().__init__(local_graph)
+
+    def attributes_no_eval(self, attribute: str, vertex_index: int) -> bool:
+        """
+        Check if the attribute should not be evaluated.
+        :param attribute: the attribute to check
+        :param vertex_index: the index of the current vertex
+        :return bool: True if the attribute should not be evaluated and False otherwise
+        """
+        if attribute in {"template_body", "template"}:
+            return True
+
+        # OCI policy statements have a special syntax and should not be evaluated.
+        # Check if the vertex at this index is an OCI terraform resource.
+        if attribute == "statements":
+            vertex_attributes = self.local_graph.get_vertex_attributes_by_index(vertex_index)
+            if vertex_attributes and vertex_attributes.get("resource_type", "").startswith("oci_"):
+                return True
+
+        return False
 
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
@@ -137,7 +167,7 @@ class TerraformVariableRenderer(VariableRenderer):
             if value is not None:
                 return value
 
-        if attributes.get(CustomAttributes.BLOCK_TYPE) in [BlockType.VARIABLE, BlockType.TF_VARIABLE]:
+        if attributes.get(CustomAttributes.BLOCK_TYPE) in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
             var_type = attributes.get('type')
             default_val = attributes.get("default")
             if default_val is None:
@@ -146,14 +176,25 @@ class TerraformVariableRenderer(VariableRenderer):
             value = None
             if isinstance(default_val, dict):
                 value = self.extract_value_from_vertex(key_path, default_val)
+            elif (
+                isinstance(var_type, str)
+                and var_type.startswith("${object")
+                and isinstance(default_val, str)
+            ):
+                try:
+                    default_val_eval = literal_eval(default_val)
+                    if isinstance(default_val_eval, dict):
+                        value = self.extract_value_from_vertex(key_path, default_val_eval)
+                except Exception:
+                    logging.debug(f"cant evaluate this rendered value: {default_val}")
             return default_val if not value else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
 
     @staticmethod
-    def get_default_placeholder_value(var_type):
-        if not var_type or type(var_type) != str:
+    def get_default_placeholder_value(var_type: Any) -> list[Any] | dict[str, Any] | None:
+        if not var_type or not isinstance(var_type, str):
             return None
         match = TYPE_REGEX.match(var_type)
         return VAR_TYPE_DEFAULT_VALUES.get(match.group(2)) if match else None
@@ -201,12 +242,12 @@ class TerraformVariableRenderer(VariableRenderer):
         """
         str_to_evaluate = (
             str(changed_attribute_value)
-            if changed_attribute_key in ATTRIBUTES_NO_EVAL
+            if self.attributes_no_eval(changed_attribute_key, vertex)
             else f'"{str(changed_attribute_value)}"'
         )
         str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
         evaluated_attribute_value = (
-            str_to_evaluate if changed_attribute_key in ATTRIBUTES_NO_EVAL else evaluate_terraform(str_to_evaluate)
+            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluate_terraform(str_to_evaluate)
         )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
@@ -245,18 +286,160 @@ class TerraformVariableRenderer(VariableRenderer):
         return new_val
 
     def _render_variables_from_vertices(self) -> None:
-        pass
+        self._render_dynamic_blocks()
+
+    def _render_dynamic_blocks(self) -> None:
+        vertex_indices = self.local_graph.vertices_by_block_type[BlockType.RESOURCE]
+
+        for idx in vertex_indices:
+            vertex = self.local_graph.vertices[idx]
+            if vertex.has_dynamic_block:
+                # only check dynamic blocks on the root level for now
+                dynamic_blocks = vertex.attributes.get("dynamic")
+                if dynamic_blocks:
+                    try:
+                        rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
+                    except Exception:
+                        logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
+                                     f' for blocks: {dynamic_blocks}', exc_info=True)
+                        continue
+                    changed_attributes = []
+
+                    for block_name, block_confs in rendered_blocks.items():
+                        vertex.update_inner_attribute(block_name, vertex.attributes, block_confs)
+                        changed_attributes.append(block_name)
+
+                    self.local_graph.update_vertex_config(vertex, changed_attributes, True)
+
+    @staticmethod
+    def _extract_dynamic_arguments(block_name: str, block_content: Dict[str, Any], dynamic_arguments: List[str],
+                                   path_accumulator: List[str]) -> None:
+        dynamic_value_dot_ref = f"{block_name}.value"
+        dynamic_value_bracket_ref = f'{block_name}["value"]'
+        dynamic_value_refs = (dynamic_value_dot_ref, dynamic_value_bracket_ref)
+        for argument, value in block_content.items():
+            if value in dynamic_value_refs or isinstance(value, str) and dynamic_value_dot_ref in value:
+                dynamic_arguments.append('.'.join(filter(None, [*path_accumulator, argument])))
+            elif isinstance(value, dict):
+                TerraformVariableRenderer._extract_dynamic_arguments(block_name, value, dynamic_arguments,
+                                                                     path_accumulator + [argument])
+
+    @staticmethod
+    def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
+            str, list[dict[str, Any]]]:
+        rendered_blocks: dict[str, list[dict[str, Any]] | dict[str, Any]] = {}
+
+        if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
+            logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
+
+        dynamic_type = DYNAMIC_BLOCKS_LISTS
+        if isinstance(dynamic_blocks, dict):
+            dynamic_blocks = [dynamic_blocks]
+            dynamic_type = DYNAMIC_BLOCKS_MAPS
+
+        for block in dynamic_blocks:
+            block_name, block_values = next(iter(block.items()))  # only one block per dynamic_block
+            block_content = block_values.get("content")
+            dynamic_values = block_values.get("for_each")
+            if not block_content or not dynamic_values or isinstance(dynamic_values, str):
+                continue
+
+            dynamic_arguments = []
+            TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
+            if dynamic_arguments:
+                block_confs = []
+                for dynamic_value in dynamic_values:
+                    block_conf = deepcopy(block_content)
+                    block_conf.pop(DYNAMIC_STRING, None)
+                    for dynamic_argument in dynamic_arguments:
+                        if dynamic_type == DYNAMIC_BLOCKS_MAPS:
+                            if not isinstance(dynamic_value, dict):
+                                continue
+                            TerraformVariableRenderer._assign_dynamic_value_for_list(
+                                dynamic_value=dynamic_value,
+                                dynamic_argument=dynamic_argument,
+                                block_conf=block_conf,
+                                block_content=block_content,
+                                block_name=block_name
+                            )
+
+                        else:
+                            TerraformVariableRenderer._assign_dynamic_value_for_map(
+                                dynamic_value=dynamic_value,
+                                dynamic_argument=dynamic_argument,
+                                block_conf=block_conf,
+                                block_content=block_content,
+                            )
+
+                    block_confs.append(block_conf)
+                rendered_blocks[block_name] = block_confs if len(block_confs) > 1 else block_confs[0]
+
+            if DYNAMIC_STRING in block_content:
+                try:
+                    next_key = next(iter(block_content[DYNAMIC_STRING].keys()))
+                except (StopIteration, AttributeError):
+                    continue
+                block_content[DYNAMIC_STRING][next_key]['for_each'] = dynamic_values
+
+                flatten_key = next(iter(rendered_blocks.keys()))
+                if next_key in rendered_blocks[flatten_key]:
+                    rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                else:
+                    rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+
+        return rendered_blocks
+
+    @staticmethod
+    def _assign_dynamic_value_for_list(
+            dynamic_value: str | dict[str, Any] | dict[str, list[dict[str, Any]]],
+            dynamic_argument: str,
+            block_conf: dict[str, Any],
+            block_content: dict[str, Any],
+            block_name: str,
+    ):
+        dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
+            dpath.get(block_content, dynamic_argument, separator='.')
+        )
+        if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
+            dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator='.')
+        else:
+            dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator='.')
+
+    @staticmethod
+    def _assign_dynamic_value_for_map(
+            dynamic_value: str | dict[str, Any],
+            dynamic_argument: str,
+            block_conf: dict[str, Any],
+            block_content: dict[str, Any],
+    ):
+        if isinstance(dynamic_value, dict):
+            if dynamic_argument in dynamic_value:
+                dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator='.')
+            else:
+                if isinstance(block_content, dict) and dynamic_argument in block_content and isinstance(block_content[dynamic_argument], str):
+                    lookup_value: str = ''
+                    if 'None' in block_content[dynamic_argument]:
+                        lookup_value = 'null'
+                    elif 'False' in block_content[dynamic_argument]:
+                        lookup_value = 'false'
+                    elif 'True' in block_content[dynamic_argument]:
+                        lookup_value = 'true'
+                    dpath.set(block_conf, dynamic_argument, lookup_value, separator='.')
+        else:
+            dpath.set(block_conf, dynamic_argument, dynamic_value, separator='.')
 
     def evaluate_non_rendered_values(self) -> None:
-        for vertex in self.local_graph.vertices:
+        for index, vertex in enumerate(self.local_graph.vertices):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
-            for attribute in filter(
-                lambda attr: attr not in reserved_attribute_names
-                and not attribute_has_nested_attributes(attr, vertex.attributes),
-                vertex.attributes,
-            ):
+            filtered_attributes = [
+                attr
+                for attr in vertex.attributes
+                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+                and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
+            ]
+            for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val
                 if not isinstance(lst_curr_val, list):
@@ -267,8 +450,8 @@ class TerraformVariableRenderer(VariableRenderer):
                 for inner_val in lst_curr_val:
                     if (
                         isinstance(inner_val, str)
-                        and not any(c in inner_val for c in ["{", "}", "[", "]", "="])
-                        or attribute in ATTRIBUTES_NO_EVAL
+                        and not any(c in inner_val for c in ("{", "}", "[", "]", "="))
+                        or self.attributes_no_eval(attribute, index)
                     ):
                         evaluated_lst.append(inner_val)
                         continue
@@ -282,12 +465,19 @@ class TerraformVariableRenderer(VariableRenderer):
                     changed_attributes[attribute] = evaluated
             self.local_graph.update_vertex_config(vertex, changed_attributes)
 
+    @staticmethod
+    def extract_dynamic_value_in_map(dynamic_value: str) -> str:
+        dynamic_value_in_map = dynamic_value.split('.')[-1]
+        if LEFT_BRACKET not in dynamic_value_in_map:
+            return dynamic_value_in_map
+        return dynamic_value_in_map.split(LEFT_BRACKET_WITH_QUOTATION)[-1].replace(RIGHT_BRACKET_WITH_QUOTATION, '')
+
     def evaluate_value(self, val: Any) -> Any:
         val_length: int = len(str(val))
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < val_length:
-            logging.info(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
-                         f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                         f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
+            logging.debug(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
+                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+                          f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
             return val
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val

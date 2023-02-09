@@ -2,9 +2,6 @@ pass:
   - "aws_s3_bucket.enabled"
   - "aws_s3_bucket.enabled_v4"
   - "aws_s3_bucket.enabled_var"
-  - "aws_s3_bucket.unknown_var"
-  - "aws_s3_bucket.legacy_syntax"
-  - "aws_s3_bucket.legacy_syntax_v4"
 fail:
   - "aws_s3_bucket.default"
   - "aws_s3_bucket.disabled"

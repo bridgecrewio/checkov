@@ -1,0 +1,4 @@
+{
+    "message": "Branch not protected",
+    "documentation_url": "https://docs.github.com/rest/reference/repos#get-branch-protection"
+}

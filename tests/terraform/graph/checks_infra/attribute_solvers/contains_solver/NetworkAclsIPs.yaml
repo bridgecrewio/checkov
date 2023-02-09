@@ -1,0 +1,11 @@
+metadata:
+  id: "NetworkACL"
+scope:
+  provider: "Azure"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_key_vault"
+  attribute: "network_acls.ip_rules"
+  operator: "contains"
+  value: "acme"

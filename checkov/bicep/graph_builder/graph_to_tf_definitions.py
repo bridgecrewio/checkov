@@ -4,15 +4,14 @@ import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, cast
 
-from pycep.typing import BicepJson
-
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType, BlockTypeAlias
 from checkov.bicep.graph_builder.local_graph import BicepElements, BicepElementsAlias
 
 if TYPE_CHECKING:
     from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock
+    from pycep.typing import BicepJson
 
-BLOCK_TYPE_TO_BICEP_ELEMENTS_MAP: dict[BlockTypeAlias, BicepElements] = {
+BLOCK_TYPE_TO_BICEP_ELEMENTS_MAP = {
     BlockType.MODULE: BicepElements.MODULES,
     BlockType.OUTPUT: BicepElements.OUTPUTS,
     BlockType.PARAM: BicepElements.PARAMETERS,
@@ -30,7 +29,7 @@ def convert_graph_vertices_to_tf_definitions(
     for vertex in vertices:
         block_path = Path(vertex.path)
         # in theory block_type could be any string, but not in a Bicep Graph
-        block_type = cast(BlockTypeAlias, vertex.block_type)
+        block_type = cast("BlockTypeAlias", vertex.block_type)
         bicep_element: BicepElementsAlias = BLOCK_TYPE_TO_BICEP_ELEMENTS_MAP[block_type].value
         element_name = vertex.name
 
