@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.356...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.0...HEAD)
+
+## [2.3.0](https://github.com/bridgecrewio/checkov/compare/2.2.356...2.3.0) - 2023-02-09
+
+### Breaking Change
+
+- **gha:** adjust the attribute reference for GitHub Actions graph checks - [#4445](https://github.com/bridgecrewio/checkov/pull/4445)
+- **terraform:** enable nested modules by default - [#4448](https://github.com/bridgecrewio/checkov/pull/4448)
+
+### Feature
+
+- **general:** Create 3d combinations post runner - [#4353](https://github.com/bridgecrewio/checkov/pull/4353)
+
+### Bug Fix
+
+- **gha:** fix GHA _get_jobs edge case (string step) - [#4444](https://github.com/bridgecrewio/checkov/pull/4444)
+- **graph:** added graph init to igraph db connector - [#4455](https://github.com/bridgecrewio/checkov/pull/4455)
 
 ## [2.2.356](https://github.com/bridgecrewio/checkov/compare/2.2.348...2.2.356) - 2023-02-08
 
