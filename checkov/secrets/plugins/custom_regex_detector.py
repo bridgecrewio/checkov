@@ -35,8 +35,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
         for detector in detectors:
             if detector.get("isMultiline"):
-                self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                # self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                # self.multiline_regex_to_metadata[detector["Regex"]] = detector
                 continue
             self.denylist.add(re.compile('{}'.format(detector["Regex"])))
             self.regex_to_metadata[detector["Regex"]] = detector
