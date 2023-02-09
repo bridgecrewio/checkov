@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import yaml
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -33,11 +33,15 @@ def modify_secrets_policy_to_detectors(policies_list: List[dict[str, Any]]) -> L
 
 
 def add_to_custom_detectors(custom_detectors: List[Dict[str, Any]], name: str, check_id: str, regex: str,
-                            is_custom: str) -> None:
-    custom_detectors.append({'Name': name,
-                             'Check_ID': check_id,
-                             'Regex': regex,
-                             'isCustom': is_custom})
+                            is_custom: str, is_multiline: bool = False, supported_files: Optional[List[str]] = None) -> None:
+    custom_detectors.append({
+        'Name': name,
+        'Check_ID': check_id,
+        'Regex': regex,
+        'isCustom': is_custom,
+        'isMultiline': is_multiline,
+        'supportedFiles': supported_files if supported_files else []
+    })
 
 
 def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], condition_query: Dict[str, Any],
@@ -65,7 +69,15 @@ def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, s
             if type(code_dict['definition']['value']) is str:
                 code_dict['definition']['value'] = [code_dict['definition']['value']]
             for regex in code_dict['definition']['value']:
-                add_to_custom_detectors(custom_detectors, secret_policy['title'], check_id, regex, secret_policy['isCustom'])
+                add_to_custom_detectors(
+                    custom_detectors,
+                    secret_policy['title'],
+                    check_id,
+                    regex,
+                    secret_policy['isCustom'],
+                    code_dict['definition'].get("multiline", False),
+                    code_dict['definition'].get("supported_files", [])
+                )
     return parsed
 
 

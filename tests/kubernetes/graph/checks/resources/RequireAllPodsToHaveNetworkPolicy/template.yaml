@@ -107,3 +107,17 @@ spec:
       ports:
         - protocol: TCP
           port: 5978
+---
+metadata:
+  annotations: {}
+  labels:
+    policyname: default
+  name: achia-yoyo
+  namespace: ns2
+podSelector:
+  matchExpressions: []
+  matchLabels: {}
+policyTypes: []
+spec: 
+kind: NetworkPolicy
+apiVersion: extensions/achia

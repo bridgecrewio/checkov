@@ -40,6 +40,7 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
+    CheckType.POLICY_3D: CodeCategoryType.IAC
 }
 
 

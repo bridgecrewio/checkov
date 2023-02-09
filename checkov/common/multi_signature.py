@@ -123,7 +123,7 @@ class multi_signature:
         """
 
         def wrapper(fn: Callable[..., _MultiT]) -> Callable[..., _MultiT]:
-            self.__wrappers__[(tuple(args), varargs, varkw)] = fn
+            self.__wrappers__[(tuple(args), varargs, varkw)] = fn  # type:ignore[assignment]  # mypy bug
             return fn
 
         return wrapper

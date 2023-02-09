@@ -4,7 +4,7 @@
       {
         "common": {
           "source": ["./common"],
-          "__resolved__": ["common/common.tf([{main.tf#0}])"],
+          "__resolved__": ["common/common.tf([{main.tf#*#0}])"],
           "__start_line__": 1,
           "__end_line__": 3,
           "__address__": "common"
@@ -19,7 +19,7 @@
               "Color": "red"
             }
           ],
-          "__resolved__": ["bucket/bucket.tf([{main.tf#1}])"],
+          "__resolved__": ["bucket/bucket.tf([{main.tf#*#1}])"],
           "__start_line__": 4,
           "__end_line__": 7,
           "__address__": "bucket"
@@ -27,7 +27,7 @@
       }
     ]
   },
-  "bucket/bucket.tf([{main.tf#1}])": {
+  "bucket/bucket.tf([{main.tf#*#1}])": {
     "variable": [
       {
         "tags": {
@@ -57,7 +57,7 @@
       }
     ]
   },
-  "common/common.tf([{main.tf#0}])": {
+  "common/common.tf([{main.tf#*#0}])": {
     "output": [
       {
         "tags": {

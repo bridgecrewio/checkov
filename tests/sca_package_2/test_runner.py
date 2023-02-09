@@ -35,11 +35,13 @@ def test_upload_scannable_files():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
-                      s3_file_key='go.mod')
+                      s3_file_key='go.mod'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
+                      s3_file_key='Microsoft.NET.Sdk.csproj')
     }
 
     # then
-    assert len(input_paths) == 5
+    assert len(input_paths) == 6
 
     assert set(input_paths) == expected_output
 
@@ -59,11 +61,13 @@ def test_upload_scannable_files_exclude_go_and_requirements():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
-                      s3_file_key='go.mod')
+                      s3_file_key='go.mod'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
+                      s3_file_key='Microsoft.NET.Sdk.csproj')
     }
 
     # then
-    assert len(input_output_paths) == 3
+    assert len(input_output_paths) == 4
 
     assert set(input_output_paths) == expected_output
 
@@ -78,6 +82,7 @@ def test_upload_scannable_files_file_config():
             str(EXAMPLES_DIR / 'package-lock.json'),
             str(EXAMPLES_DIR / 'package.json'),
             str(EXAMPLES_DIR / 'go.mod'),
+            str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj')
         ],
         excluded_paths=set(),
         excluded_file_names=set()
@@ -93,11 +98,13 @@ def test_upload_scannable_files_file_config():
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
                       s3_file_key='package.json'),
         FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
-                      s3_file_key='go.mod')
+                      s3_file_key='go.mod'),
+        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
+                      s3_file_key='Microsoft.NET.Sdk.csproj')
     }
 
     # then
-    assert len(input_output_paths) == 5
+    assert len(input_output_paths) == 6
 
     assert set(input_output_paths) == expected_output
 

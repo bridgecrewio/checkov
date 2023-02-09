@@ -112,7 +112,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
     def _remove_unrelated_edges(self, edges_to_render: List[Edge]) -> List[Edge]:
         new_edges_to_render = []
         for edge in edges_to_render:
-            if not self.local_graph.vertices[edge.origin] == BlockType.RESOURCE and edge.origin not in self.vertices_index_to_render:
+            if not self.local_graph.vertices[edge.origin] == BlockType.RESOURCE or edge.origin not in self.vertices_index_to_render:
                 new_edges_to_render.append(edge)
         return new_edges_to_render
 

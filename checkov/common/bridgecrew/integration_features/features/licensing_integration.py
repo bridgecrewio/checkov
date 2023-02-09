@@ -78,5 +78,9 @@ class LicensingIntegration(BaseIntegrationFeature):
     def pre_runner(self, runner: _BaseRunner) -> None:
         pass
 
+    def post_scan(self, merged_reports: list[Report]) -> None:
+        # not used
+        pass
+
 
 integration = LicensingIntegration(bc_integration)
