@@ -40,7 +40,7 @@ CodeCategoryMapping = {
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
-    CheckType.POLICY_3D: CodeCategoryType.IMAGES
+    CheckType.POLICY_3D: CodeCategoryType.IAC
 }
 
 
