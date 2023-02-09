@@ -571,10 +571,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 for module in source_module:
                     address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = f'{address_prefix}{vertex.name}'
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            entity_context_path = context_parser.get_entity_context_path(vertex.config)
+            resource_id = '.'.join(entity_context_path) if entity_context_path else vertex.name
+            address = f'{address_prefix}{resource_id}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-            context_parser = parser_registry.context_parsers[vertex.block_type]
             vertex_context = vertex.config
             definition_path = context_parser.get_entity_definition_path(vertex.config)
             for path in definition_path:
@@ -657,6 +659,6 @@ def update_list_attribute(
 def get_path_with_nested_modules(block: TerraformBlock) -> str:
     if not block.module_dependency:
         return block.path
-    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
+    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
         return unify_dependency_path([block.module_dependency, block.path])
     return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)
