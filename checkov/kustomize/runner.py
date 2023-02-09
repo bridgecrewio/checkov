@@ -214,7 +214,7 @@ class K8sKustomizeRunner(K8sRunner):
 
 
 class Runner(BaseRunner["KubernetesGraphManager"]):
-    kustomize_command = '/opt/homebrew/bin/kustomize'  # noqa: CCE003  # a static attribute
+    kustomize_command = 'kustomize'  # noqa: CCE003  # a static attribute
     kubectl_command = 'kubectl'  # noqa: CCE003  # a static attribute
     check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
@@ -397,8 +397,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
-        template_renderer_command = "/opt/homebrew/bin/kustomize"
-        template_render_command_options = "build"
+        if template_renderer_command == "kustomize":
+            template_render_command_options = "build"
         proc = subprocess.Popen([template_renderer_command, template_render_command_options, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
         logging.info(
