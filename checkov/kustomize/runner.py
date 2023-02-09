@@ -125,7 +125,7 @@ class K8sKustomizeRunner(K8sRunner):
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
             external_run_indicator = "Bc"
-            repo_file_path = realKustomizeEnvMetadata['filePath']
+            file_path = realKustomizeEnvMetadata['filePath']
             # means this scan originated in the platform
             if type(self.graph_manager).__name__.startswith(external_run_indicator):
                 absolute_file_path = file_abs_path
@@ -133,18 +133,15 @@ class K8sKustomizeRunner(K8sRunner):
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
                 # Fix file path to repo relative path
                 if self.original_root_dir:
-                    repo_file_path_parts = realKustomizeEnvMetadata['filePath'].split(self.original_root_dir)
-                    if len(repo_file_path_parts) > 1:
-                        prefix = self.original_root_dir
-                        if not prefix.startswith('/'):
-                            prefix = f'/{prefix}'
-                        repo_file_path = f'{prefix}{self.original_root_dir.join(repo_file_path_parts[1:])}'
+                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                        file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=code_lines, file_path=repo_file_path,
+                check_result=check_result, code_block=code_lines, file_path=file_path,
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=absolute_file_path, severity=check.severity)
