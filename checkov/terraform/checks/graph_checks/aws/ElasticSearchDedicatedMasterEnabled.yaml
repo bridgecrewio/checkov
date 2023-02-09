@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_59"
-  name: "Ensure Elastic Search has dedicated master node enabled"
+  name: "Ensure ElasticSearch/OpenSearch has dedicated master node enabled"
   category: "GENERAL_SECURITY"
 definition:
   and:
