@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.348...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.356...HEAD)
+
+## [2.2.356](https://github.com/bridgecrewio/checkov/compare/2.2.348...2.2.356) - 2023-02-08
+
+### Feature
+
+- **sca:** Add support for Dotnet files - [#4189](https://github.com/bridgecrewio/checkov/pull/4189)
+- **terraform:** Create new resources for count/foreach resources - [#4427](https://github.com/bridgecrewio/checkov/pull/4427)
+- **terraform:** extend CKV2_AWS_5 to support aws_ec2_spot_fleet_request - [#4438](https://github.com/bridgecrewio/checkov/pull/4438)
+
+### Bug Fix
+
+- **general:** Correct BigQueryDatasetEncryptedWithCMK name field - [#4443](https://github.com/bridgecrewio/checkov/pull/4443)
+- **kubernetes:** Fix empty spec in k8s file - [#4452](https://github.com/bridgecrewio/checkov/pull/4452)
+- **kustomize:** Fix kustomize cli file path - [#4447](https://github.com/bridgecrewio/checkov/pull/4447)
+- **secrets:** remove CKV_SECRET_78 from SECRET_TYPE_TO_ID - [#4446](https://github.com/bridgecrewio/checkov/pull/4446)
+- **terraform:** change module index separator in full path - [#4437](https://github.com/bridgecrewio/checkov/pull/4437)
 
 ## [2.2.348](https://github.com/bridgecrewio/checkov/compare/2.2.341...2.2.348) - 2023-02-07
 
