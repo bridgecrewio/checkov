@@ -151,6 +151,7 @@ class Report:
         # if we are using enforcement rules, then there are two different sets of thresholds that apply for licenses and vulnerabilities
         # and we have to handle that throughout while processing the report
         # if we are not using enforcement rules, then we can combine licenses and vulnerabilities like normal and same as all other report types
+        # this determination is made in runner_registry.get_fail_thresholds
         has_split_enforcement = CodeCategoryType.LICENSES in exit_code_thresholds
 
         hard_fail_threshold: Optional[Severity | Dict[str, Severity]]

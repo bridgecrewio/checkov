@@ -207,6 +207,10 @@ class RunnerRegistry:
 
         soft_fail_on_checks = []
         soft_fail_threshold = None
+
+        # these specifically check the --hard-fail-on and --soft-fail-on args, NOT enforcement rules, so
+        # we don't care about SCA as a special case
+
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(config.soft_fail_on):
             if val.upper() in Severities:
@@ -240,8 +244,8 @@ class RunnerRegistry:
         if not config.use_enforcement_rules:
             logging.debug('Use enforcement rules is FALSE')
 
-        # no need to get into this level of detail if we overrode the behavior with CLI args
-        # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules
+        # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules and skip this
+        # it means that SCA will not be treated as having two different thresholds in that case
         # if the lists only contain check IDs, then we will merge them with the enforcement rule value
         elif not soft_fail and not soft_fail_threshold and not hard_fail_threshold:
             if 'sca_' in report_type:
