@@ -8,8 +8,6 @@ from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.plugins.base import RegexBasedDetector
 from detect_secrets.util.inject import call_function_with_arguments
 import re
-
-from checkov.common.util.file_utils import read_file_safe, get_file_size_safe
 from checkov.secrets.plugins.load_detectors import load_detectors
 
 MIN_CHARACTERS = 5
@@ -35,8 +33,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
         for detector in detectors:
             if detector.get("isMultiline"):
-                # self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                # self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                self.multiline_regex_to_metadata[detector["Regex"]] = detector
                 continue
             self.denylist.add(re.compile('{}'.format(detector["Regex"])))
             self.regex_to_metadata[detector["Regex"]] = detector
@@ -74,27 +72,27 @@ class CustomRegexDetector(RegexBasedDetector):
         )
 
         # ToDo: Comment out once fix performence #  type: ignore
-        if filename not in self._analyzed_files:
-            self._analyzed_files.add(filename)
-            # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
-            if not self.multiline_regex_to_metadata.values() or \
-                    not self.multiline_regex_supported_file_types or \
-                    not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
-                    not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
-                return output
-            file_content = read_file_safe(filename)
-            if not file_content:
-                return output
-
-            self._find_potential_secret(
-                filename=filename,
-                string_to_analyze=file_content,
-                output=output,
-                line_number=1,
-                context=raw_context,
-                is_multiline=True,
-                **kwargs
-            )
+        # if filename not in self._analyzed_files:
+        #     self._analyzed_files.add(filename)
+        #     # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
+        #     if not self.multiline_regex_to_metadata.values() or \
+        #             not self.multiline_regex_supported_file_types or \
+        #             not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
+        #             not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
+        #         return output
+        #     file_content = read_file_safe(filename)
+        #     if not file_content:
+        #         return output
+        #
+        #     self._find_potential_secret(
+        #         filename=filename,
+        #         string_to_analyze=file_content,
+        #         output=output,
+        #         line_number=1,
+        #         context=raw_context,
+        #         is_multiline=True,
+        #         **kwargs
+        #     )
 
         return output
 
