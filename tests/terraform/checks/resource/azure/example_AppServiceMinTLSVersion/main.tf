@@ -92,3 +92,18 @@ resource "azurerm_linux_web_app" "pass_tfvar" {
     minimum_tls_version = var.min_tls_version
   }
 }
+
+resource "azurerm_linux_web_app" "pass_tfvar2" {
+  name                = "${var.prefix}-example"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  service_plan_id     = azurerm_service_plan.example.id
+
+  site_config {
+    application_stack {
+      python_version = "3.9"
+    }
+    minimum_tls_version = var.min_tls_version
+    http2_enabled       = false
+  }
+}
