@@ -30,7 +30,7 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: s3.amazonaws.com
       SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !GetAtt bucket.Arn
+      SourceArn: TestBucket.Arn
   
   ExampleEventsServicePermission:
     Type: AWS::Lambda::Permission
@@ -39,4 +39,4 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceAccount: !Ref 'AWS::AccountId'
-      SourceArn: !GetAtt bucket.Arn
+      SourceArn: TestBucket.Arn
