@@ -20,6 +20,9 @@ pip3 install checkov
 
 ### Install on Alpine
 
+In general, it is not recommended to use Alpine with bigger Python projects, like `checkov`, due to the incompatibility of C extensions.
+Currently, it is only possible to install it on Alpine with Python 3.11+.
+
 ```shell
 pip3 install --upgrade pip && pip3 install --upgrade setuptools
 pip3 install checkov
