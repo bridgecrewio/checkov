@@ -19,10 +19,8 @@ class KMSRotation(BaseResourceValueCheck):
             if 'KeySpec' in conf['Properties'].keys():
                 spec = conf['Properties']['KeySpec']
                 if not spec or 'SYMMETRIC_DEFAULT' in spec or 'HMAC' in spec:
-                    print("Symmetric Key")
                     return super().scan_resource_conf(conf)
                 else:
-                    print("Found Assymetric Key")
                     return CheckResult.PASSED
         return super().scan_resource_conf(conf)
 
