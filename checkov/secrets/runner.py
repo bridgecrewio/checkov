@@ -76,9 +76,6 @@ PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requireme
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
-#TODO remove
-SCAN_HISTORY = True
-
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
@@ -159,7 +156,7 @@ class Runner(BaseRunner[None]):
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     self._scan_history(root_folder, secrets)
-                    logging.info(f'Secrets scanning git history')
+                    logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
                     block_list_secret_scan = runner_filter.block_list_secret_scan or []
