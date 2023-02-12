@@ -1,6 +1,87 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.335...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.3...HEAD)
+
+## [2.3.3](https://github.com/bridgecrewio/checkov/compare/2.3.0...2.3.3) - 2023-02-09
+
+### Feature
+
+- **secrets:** limit multiline regex detector run - [#4453](https://github.com/bridgecrewio/checkov/pull/4453)
+- **terraform:** Add foreach_attrs to config objects + UTs - [#4463](https://github.com/bridgecrewio/checkov/pull/4463)
+- **terraform:** GCP: Ensure Basic role are not used at Org/Folder/Project level (CKV_GCP_115, CKV_GCP_116, CKV_GCP_117) - [#4390](https://github.com/bridgecrewio/checkov/pull/4390)
+
+### Bug Fix
+
+- **kustomize:** fix kustomize file path cli - [#4466](https://github.com/bridgecrewio/checkov/pull/4466)
+- **terraform:** Allow different type of value in BaseResourceValueCheck - [#4470](https://github.com/bridgecrewio/checkov/pull/4470)
+- **terraform:** deny statements with wildcards are valid - [#4440](https://github.com/bridgecrewio/checkov/pull/4440)
+
+## [2.3.0](https://github.com/bridgecrewio/checkov/compare/2.2.356...2.3.0) - 2023-02-09
+
+### Breaking Change
+
+- **gha:** adjust the attribute reference for GitHub Actions graph checks - [#4445](https://github.com/bridgecrewio/checkov/pull/4445)
+- **terraform:** enable nested modules by default - [#4448](https://github.com/bridgecrewio/checkov/pull/4448)
+
+### Feature
+
+- **general:** Create 3d combinations post runner - [#4353](https://github.com/bridgecrewio/checkov/pull/4353)
+
+### Bug Fix
+
+- **gha:** fix GHA _get_jobs edge case (string step) - [#4444](https://github.com/bridgecrewio/checkov/pull/4444)
+- **graph:** added graph init to igraph db connector - [#4455](https://github.com/bridgecrewio/checkov/pull/4455)
+
+## [2.2.356](https://github.com/bridgecrewio/checkov/compare/2.2.348...2.2.356) - 2023-02-08
+
+### Feature
+
+- **sca:** Add support for Dotnet files - [#4189](https://github.com/bridgecrewio/checkov/pull/4189)
+- **terraform:** Create new resources for count/foreach resources - [#4427](https://github.com/bridgecrewio/checkov/pull/4427)
+- **terraform:** extend CKV2_AWS_5 to support aws_ec2_spot_fleet_request - [#4438](https://github.com/bridgecrewio/checkov/pull/4438)
+
+### Bug Fix
+
+- **general:** Correct BigQueryDatasetEncryptedWithCMK name field - [#4443](https://github.com/bridgecrewio/checkov/pull/4443)
+- **kubernetes:** Fix empty spec in k8s file - [#4452](https://github.com/bridgecrewio/checkov/pull/4452)
+- **kustomize:** Fix kustomize cli file path - [#4447](https://github.com/bridgecrewio/checkov/pull/4447)
+- **secrets:** remove CKV_SECRET_78 from SECRET_TYPE_TO_ID - [#4446](https://github.com/bridgecrewio/checkov/pull/4446)
+- **terraform:** change module index separator in full path - [#4437](https://github.com/bridgecrewio/checkov/pull/4437)
+
+## [2.2.348](https://github.com/bridgecrewio/checkov/compare/2.2.341...2.2.348) - 2023-02-07
+
+### Feature
+
+- **cloudformation:** support new default s3 encryption - [#4429](https://github.com/bridgecrewio/checkov/pull/4429)
+- **graph:** added indices to igraph nodes - [#4433](https://github.com/bridgecrewio/checkov/pull/4433)
+- **secrets:** Add args to analyze line is added and is removed for git history scan - [#4426](https://github.com/bridgecrewio/checkov/pull/4426)
+
+### Bug Fix
+
+- **secrets:** Comment out checkob multiline regex detectors - [#4441](https://github.com/bridgecrewio/checkov/pull/4441)
+- **terraform:** Fix updating resource config - [#4432](https://github.com/bridgecrewio/checkov/pull/4432)
+
+### Platform
+
+- **secrets:** Add secrets custom regex on file - [#4430](https://github.com/bridgecrewio/checkov/pull/4430)
+
+## [2.2.341](https://github.com/bridgecrewio/checkov/compare/2.2.335...2.2.341) - 2023-02-06
+
+### Feature
+
+- **ansible:** add support for Ansible blocks - [#4419](https://github.com/bridgecrewio/checkov/pull/4419)
+- **general:** Control check failure logging level - [#4431](https://github.com/bridgecrewio/checkov/pull/4431)
+- **graph:** add validation for graph checks - [#4352](https://github.com/bridgecrewio/checkov/pull/4352)
+- **kubernetes:** support inline skips for Kubernetes graph checks - [#4412](https://github.com/bridgecrewio/checkov/pull/4412)
+- **secrets:** remove secrets dependency in generic record - [#4424](https://github.com/bridgecrewio/checkov/pull/4424)
+
+### Bug Fix
+
+- **kustomize:** remove redundant error in kustomize runner - [#4428](https://github.com/bridgecrewio/checkov/pull/4428)
+
+### Documentation
+
+- **general:** fix graph check link in docs - [#4420](https://github.com/bridgecrewio/checkov/pull/4420)
 
 ## [2.2.335](https://github.com/bridgecrewio/checkov/compare/2.2.332...2.2.335) - 2023-02-05
 

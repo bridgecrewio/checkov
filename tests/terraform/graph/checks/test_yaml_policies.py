@@ -9,7 +9,7 @@ from typing import Any
 
 import yaml
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
@@ -341,7 +341,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
 
     def test_registry_load(self):
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         registry.load_checks()
         self.assertGreater(len(registry.checks), 0)
@@ -363,7 +363,6 @@ class TestYamlPolicies(unittest.TestCase):
                     expected = load_yaml_data("expected.yaml", dir_path)
                     assert expected is not None
                     report = get_policy_results(dir_path, policy)
-                    expected = load_yaml_data("expected.yaml", dir_path)
 
                     expected_to_fail = expected.get('fail', [])
                     expected_to_pass = expected.get('pass', [])

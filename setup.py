@@ -29,13 +29,13 @@ setup(
             "coverage-badge",
             "GitPython==3.1.7",
             "bandit",
-            "jsonschema"
+            "jsonschema",
         ]
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.9",
-        "bc-jsonpath-ng==1.5.8",
+        "bc-detect-secrets==1.4.11",
+        "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
         "colorama",

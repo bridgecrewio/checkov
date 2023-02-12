@@ -8,12 +8,13 @@ from typing import List, Union, Dict, Any
 
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
+from checkov.common.output.common import compare_table_items_severity
 
 
 @dataclass
@@ -72,11 +73,6 @@ def calculate_lowest_compliant_version(
     return UNFIXABLE_VERSION
 
 
-def compare_cve_severity(cve: Dict[str, str]) -> int:
-    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
-    return Severities[severity].level
-
-
 def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
     cli_outputs = []
     group_by_file_path_package_map: dict[str, dict[str, list[Record]]] = defaultdict(dict)
@@ -127,8 +123,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 
                     # best way to dynamically access a class instance attribute.
                     # (we can't just do cve_count.severity_str to access the correct severity)
-                    severity_str = record.severity.name.lower() if record.severity else BcSeverities.NONE.lower()
-                    setattr(cve_count, severity_str, getattr(cve_count, severity_str) + 1)
+                    severity_str = record.severity.name.upper() if record.severity else BcSeverities.NONE.upper()
+                    setattr(cve_count, severity_str.lower(), getattr(cve_count, severity_str.lower()) + 1)
 
                     if record.vulnerability_details["lowest_fixed_version"] != UNFIXABLE_VERSION:
                         cve_count.has_fix += 1
@@ -167,7 +163,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     )
 
             if root_package_alias in package_cves_details_map:
-                package_cves_details_map[root_package_alias]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[root_package_alias]["cves"].sort(key=compare_table_items_severity, reverse=True)
                 package_cves_details_map[root_package_alias]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists)
 

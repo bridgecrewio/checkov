@@ -65,6 +65,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             try:
                 foreach_handler = foreach_module.ForeachHandler(self)
                 foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                self._arrange_graph_data()
+                self._build_edges()
                 logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
             except Exception as e:
                 logging.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
@@ -88,23 +90,39 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
-
-            self.vertices_by_block_type[block.block_type].append(i)
-            self.vertices_block_name_map[block.block_type][block.name].append(i)
-
-            if block.block_type == BlockType.MODULE:
-                # map between file paths and module vertices indexes from that file
-                self.map_path_to_module.setdefault(block.path, []).append(i)
-
-            self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(i)
-            self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(i)
-
-            self.in_edges[i] = []
-            self.out_edges[i] = []
-
+            self._add_block_data_to_graph(i, block)
             if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
                     and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
+
+    def _add_block_data_to_graph(self, idx: int, block: TerraformBlock) -> None:
+        self.vertices_by_block_type[block.block_type].append(idx)
+        self.vertices_block_name_map[block.block_type][block.name].append(idx)
+
+        if block.block_type == BlockType.MODULE:
+            # map between file paths and module vertices indexes from that file
+            self.map_path_to_module.setdefault(block.path, []).append(idx)
+
+        self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(idx)
+        self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(idx)
+
+        self.in_edges[idx] = []
+        self.out_edges[idx] = []
+
+    def _arrange_graph_data(self) -> None:
+        # reset all the relevant data
+        self.vertices_by_block_type = defaultdict(list)
+        self.vertices_block_name_map = defaultdict(lambda: defaultdict(list))
+        self.map_path_to_module = {}
+        self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency_by_name = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.edges = []
+        for i in range(len(self.vertices)):
+            self.out_edges[i] = []
+            self.in_edges[i] = []
+
+        for i, block in enumerate(self.vertices):
+            self._add_block_data_to_graph(i, block)
 
     def _set_variables_values_from_modules(self) -> List[Undetermined]:
         undetermined_values: List[Undetermined] = []
@@ -285,14 +303,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             ]
             if len(target_variables) == 1:
                 self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
-
-    def reset_edges(self) -> None:
-        self.edges = []
-        self.out_edges = defaultdict(list)
-        self.in_edges = defaultdict(list)
-        for i in range(len(self.vertices)):
-            self.out_edges[i] = []
-            self.in_edges[i] = []
 
     def _build_cross_variable_edges(self):
         target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
@@ -561,10 +571,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 for module in source_module:
                     address_prefix += f"{module.get('type')}.{module.get('name')}."
 
-            address = f'{address_prefix}{vertex.name}'
+            context_parser = parser_registry.context_parsers[vertex.block_type]
+            entity_context_path = context_parser.get_entity_context_path(vertex.config)
+            resource_id = '.'.join(entity_context_path) if entity_context_path else vertex.name
+            address = f'{address_prefix}{resource_id}'
             vertex.attributes[CustomAttributes.TF_RESOURCE_ADDRESS] = address
 
-            context_parser = parser_registry.context_parsers[vertex.block_type]
             vertex_context = vertex.config
             definition_path = context_parser.get_entity_definition_path(vertex.config)
             for path in definition_path:
@@ -634,9 +646,12 @@ def update_list_attribute(
 
             inner_config[idx] = new_value
             return config
-
+    entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
-        config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        if entry_to_update == -1:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=key_to_update, new_value=new_value, dynamic_blocks=dynamic_blocks)
+        elif entry_to_update == i:
+            config[i] = update_dictionary_attribute(config=config_value, key_to_update=".".join(key_parts[1:]), new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
 
@@ -644,6 +659,6 @@ def update_list_attribute(
 def get_path_with_nested_modules(block: TerraformBlock) -> str:
     if not block.module_dependency:
         return block.path
-    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False')):
+    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
         return unify_dependency_path([block.module_dependency, block.path])
     return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)

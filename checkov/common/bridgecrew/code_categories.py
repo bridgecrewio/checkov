@@ -42,6 +42,7 @@ CodeCategoryMapping = {
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
     CheckType.SAST: CodeCategoryType.SAST,
+    CheckType.POLICY_3D: CodeCategoryType.IAC
 }
 
 
