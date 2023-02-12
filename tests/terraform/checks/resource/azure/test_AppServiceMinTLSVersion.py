@@ -21,6 +21,8 @@ class TestAppServiceMinTLSVersion(unittest.TestCase):
             'azurerm_app_service.pass',
             'azurerm_windows_web_app.pass',
             'azurerm_linux_web_app.pass',
+            'azurerm_linux_web_app.pass_tfvar',
+            'azurerm_linux_web_app.pass_tfvar2',
         }
         failing_resources = {
             'azurerm_app_service.fail',

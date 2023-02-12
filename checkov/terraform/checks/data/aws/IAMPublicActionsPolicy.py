@@ -18,13 +18,15 @@ class IAMPublicActionsPolicy(BaseDataCheck):
         for statement in statements:
             if isinstance(statement, dict):
                 if not statement.get('condition'):
-                    principals = force_list(statement.get('principals'))
-                    for principal in principals:
-                        if isinstance(principal, dict):
-                            principal_type = principal.get('type', [''])[0]
-                            principal_identifiers = principal.get('identifiers', [])
-                            if principal_type == 'AWS' and principal_identifiers and isinstance(principal_identifiers[0], list) and '*' in principal_identifiers[0]:
-                                return CheckResult.FAILED
+                    # * on Deny is fine
+                    if not statement.get('effect') == ["Deny"]:
+                        principals = force_list(statement.get('principals'))
+                        for principal in principals:
+                            if isinstance(principal, dict):
+                                principal_type = principal.get('type', [''])[0]
+                                principal_identifiers = principal.get('identifiers', [])
+                                if principal_type == 'AWS' and principal_identifiers and isinstance(principal_identifiers[0], list) and '*' in principal_identifiers[0]:
+                                    return CheckResult.FAILED
 
         return CheckResult.PASSED
 

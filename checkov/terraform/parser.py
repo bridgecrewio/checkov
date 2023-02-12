@@ -65,7 +65,7 @@ class Parser:
         # Tuple is <file>, <module_index>, <name> (see _load_modules)
         self._loaded_modules: Set[Tuple[str, int, str]] = set()
         self.external_variables_data = []
-        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
 
     def _init(self, directory: str, out_definitions: Optional[Dict],
               out_evaluations_context: Dict[str, Dict[str, EvaluationContext]],
@@ -390,7 +390,7 @@ class Parser:
             if self.get_dirname(file) != root_dir:
                 continue
             # Don't process a file reference which has already been processed
-            if file.endswith("]"):
+            if file.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
                 continue
 
             file_data = self.out_definitions.get(file)
@@ -502,7 +502,7 @@ class Parser:
 
                         keys = list(module_definitions.keys())
                         for key in keys:
-                            if key.endswith("]") or file.endswith("]"):
+                            if key.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) or file.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
                                 continue
                             keys_referenced_as_modules.add(key)
                             if self.enable_nested_modules:

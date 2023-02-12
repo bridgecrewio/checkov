@@ -41,7 +41,8 @@ from checkov.runner_filter import RunnerFilter
                 "sca_package",
                 "openapi",
                 "sca_image",
-                "sast"
+                "sast",
+                "3d_policy"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

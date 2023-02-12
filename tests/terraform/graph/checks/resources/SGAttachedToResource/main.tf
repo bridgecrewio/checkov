@@ -182,6 +182,22 @@ resource "aws_launch_template" "pass_ec2_launch_template" {
   vpc_security_group_ids = [aws_security_group.pass_ec2_launch_template.id]
 }
 
+resource "aws_security_group" "pass_ec2_spot_fleet_request" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_ec2_spot_fleet_request" "pass_ec2_spot_fleet_request" {
+  ami             = "aws_ec2_spot_fleet_request.this.id"
+  instance_type   = "t3.micro"
+  security_groups = [aws_security_group.pass_ec2_spot_fleet_request.id]
+}
+
 # ECS
 
 resource "aws_security_group" "pass_ecs" {

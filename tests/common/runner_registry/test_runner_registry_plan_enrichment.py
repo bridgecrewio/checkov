@@ -14,7 +14,7 @@ from checkov.terraform.plan_runner import Runner as tf_plan_runner
 
 class TestRunnerRegistryEnrichment(unittest.TestCase):
     def test_enrichment_of_plan_report(self):
-        allowed_checks = ["CKV_AWS_19", "CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
+        allowed_checks = ["CKV_AWS_20", "CKV_AWS_28", "CKV_AWS_63", "CKV_AWS_119"]
         runner_registry = RunnerRegistry(
             banner, RunnerFilter(checks=allowed_checks, framework=["terraform_plan"]), tf_plan_runner()
         )
@@ -26,7 +26,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
-        expected_failed_check_ids = {"CKV_AWS_19", "CKV_AWS_63", "CKV_AWS_119"}
+        expected_failed_check_ids = {"CKV_AWS_63", "CKV_AWS_119"}
         expected_skipped_check_ids = {"CKV_AWS_20", "CKV_AWS_28"}
 
         enriched_data = {(c.file_path, tuple(c.file_line_range), tuple(c.code_block)) for c in report.failed_checks}
@@ -57,29 +57,6 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
                 ),
             ),
             (
-                "s3.tf",
-                (1, 17),
-                (
-                    (1, 'resource "aws_s3_bucket" "test-bucket1" {\n'),
-                    (2, '  bucket = "test-bucket1"\n'),
-                    (3, "  # checkov:skip=CKV_AWS_20: The bucket is a public static content " "host\n"),
-                    (4, '  acl    = "public-read"\n'),
-                    (5, "  lifecycle_rule {\n"),
-                    (6, '    id      = "90 Day Lifecycle"\n'),
-                    (7, "    enabled = true\n"),
-                    (8, "    expiration {\n"),
-                    (9, "      days = 90\n"),
-                    (10, "    }\n"),
-                    (11, "    noncurrent_version_expiration {\n"),
-                    (12, "      days = 90\n"),
-                    (13, "    }\n"),
-                    (14, "    abort_incomplete_multipart_upload_days = 90\n"),
-                    (15, "  }\n"),
-                    (16, "  provider = aws.current_region\n"),
-                    (17, "}"),
-                ),
-            ),
-            (
                 "dynamodb.tf",
                 (1, 12),
                 (
@@ -99,7 +76,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
             ),
         }
 
-        self.assertEqual(len(failed_check_ids), 3)
+        self.assertEqual(len(failed_check_ids), 2)
         self.assertEqual(failed_check_ids, expected_failed_check_ids)
         self.assertEqual(len(skipped_check_ids), 2)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
@@ -175,10 +152,10 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
-        expected_skipped_check_ids = set(allowed_checks)
+        expected_skipped_check_ids = { "CKV2_AWS_6" }
 
         self.assertEqual(len(failed_check_ids), 0)
-        self.assertEqual(len(skipped_check_ids), 2)
+        self.assertEqual(len(skipped_check_ids), 1)
         self.assertEqual(skipped_check_ids, expected_skipped_check_ids)
 
 

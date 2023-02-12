@@ -50,6 +50,7 @@ class K8sKustomizeRunner(K8sRunner):
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
+        self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
 
     def run(
@@ -124,17 +125,23 @@ class K8sKustomizeRunner(K8sRunner):
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
             external_run_indicator = "Bc"
+            file_path = realKustomizeEnvMetadata['filePath']
             # means this scan originated in the platform
             if type(self.graph_manager).__name__.startswith(external_run_indicator):
                 absolute_file_path = file_abs_path
             else:
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
+                # Fix file path to repo relative path
+                if self.original_root_dir:
+                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                        file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
+                check_result=check_result, code_block=code_lines, file_path=file_path,
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=absolute_file_path, severity=check.severity)
@@ -159,8 +166,9 @@ class K8sKustomizeRunner(K8sRunner):
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kustomize runner was not set")
+            if self.context is None:
+                # this shouldn't happen
+                logging.error("Context for Kustomize runner was not set")
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
@@ -550,6 +558,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
             target_dir = self.get_k8s_target_folder_path()
             k8s_runner.report_mutator_data = self.get_kustomize_metadata()
+            if root_folder:
+                k8s_runner.original_root_dir = root_folder
 
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)

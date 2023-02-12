@@ -30,6 +30,7 @@ class CheckType:
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
     SAST = 'sast'
+    POLICY_3D = "3d_policy"
 
 
 @dataclass

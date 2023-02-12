@@ -60,7 +60,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
                 break
             evaluated_edges_cache.append(edges_to_render)
 
-            logging.info(f"evaluating {len(edges_to_render)} edges")
+            logging.debug(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
@@ -96,9 +96,9 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
         if self.vertices_index_to_render:
             return
         self.local_graph.update_vertices_configs()
-        logging.info("done evaluating edges")
+        logging.debug("done evaluating edges")
         self.evaluate_non_rendered_values()
-        logging.info("done evaluate_non_rendered_values")
+        logging.debug("done evaluate_non_rendered_values")
 
     @abstractmethod
     def _render_variables_from_vertices(self) -> None:
@@ -112,7 +112,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
     def _remove_unrelated_edges(self, edges_to_render: List[Edge]) -> List[Edge]:
         new_edges_to_render = []
         for edge in edges_to_render:
-            if not self.local_graph.vertices[edge.origin] == BlockType.RESOURCE and edge.origin not in self.vertices_index_to_render:
+            if not self.local_graph.vertices[edge.origin] == BlockType.RESOURCE or edge.origin not in self.vertices_index_to_render:
                 new_edges_to_render.append(edge)
         return new_edges_to_render
 

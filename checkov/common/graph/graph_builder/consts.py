@@ -1,6 +1,9 @@
 from enum import Enum
 
 
+SELF_REFERENCE = "__self__"
+
+
 class GraphSource(str, Enum):
     ANSIBLE = "Ansible"
     BICEP = "Bicep"
