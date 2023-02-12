@@ -5,11 +5,13 @@ import pytest
 import time
 
 from checkov.cloudformation.runner import Runner as cfn_runner
+from checkov.sast.consts import SastLanguages
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+from checkov.sast.runner import Runner as sast_runner
 
 # Ensure repo_name is a cloned repository into performance_tests directory.
 # Thresholds are in ms, and are set to the current maximum duration of checkov on the repository
@@ -35,6 +37,30 @@ performance_configurations = {
         'threshold': {
             "Darwin": 550.0,
             "Linux": 180.0,
+            "Windows": 500.0,
+        }
+    },
+    'sast_python': {
+        'repo_name': 'Python-Mini-Projects',
+        'threshold': {
+            "Darwin": 550.0,
+            "Linux": 300.0,
+            "Windows": 500.0,
+        }
+    },
+    'sast_javascript': {
+        'repo_name': 'NodeJs',
+        'threshold': {
+            "Darwin": 550.0,
+            "Linux": 300.0,
+            "Windows": 500.0,
+        }
+    },
+    'sast_java': {
+        'repo_name': 'Mini-Project-using-Java',
+        'threshold': {
+            "Darwin": 550.0,
+            "Linux": 300.0,
             "Windows": 500.0,
         }
     }
@@ -117,3 +143,32 @@ def test_k8_performance(benchmark):
 
     benchmark(run_kubernetes_scan)
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
+
+
+@pytest.mark.benchmark(
+    group="sast-performance-tests",
+    disable_gc=True,
+    min_time=0.1,
+    max_time=0.5,
+    min_rounds=5,
+    timer=time.time,
+    warmup=False
+)
+def test_sast_performance(benchmark):
+    def run_sast_scan(lang_key):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files_dir = os.path.join(current_dir, repo_name)
+        runner_filter = RunnerFilter(framework=[lang_key])
+        runner_registry = RunnerRegistry(banner, runner_filter, sast_runner())
+        reports = runner_registry.run(root_folder=test_files_dir)
+        assert len(reports) > 0
+
+    for sast_lang in SastLanguages.list():
+        lang_key = f'sast_{sast_lang}'
+        repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
+        repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
+        if not repo_name:
+            continue
+
+        benchmark(run_sast_scan, lang_key)
+        assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
