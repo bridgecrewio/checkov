@@ -26,6 +26,7 @@ HEADER_OSS_PACKAGES = [
     "Vulnerability",
     "Severity",
     "Licenses",
+    "URL",
 ]
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
@@ -87,6 +88,7 @@ class CSVSBOM:
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
                 "Licenses": resource.vulnerability_details.get("licenses"),
+                "URL": resource.vulnerability_details["package_registry"]
             }
         )
 

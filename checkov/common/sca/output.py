@@ -467,7 +467,7 @@ def add_to_report_sca_data(
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
 ) -> None:
-    packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["name"]): p for p in packages}
+    packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
                                          packages_map, license_statuses, sca_details, report_type)
