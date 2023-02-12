@@ -72,6 +72,13 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 # this happens when modules have no parameters and are directly used with the user input
                 # ex. ansible.builtin.command: cat /etc/passwd
                 config = {SELF_REFERENCE: config}
+            elif config is None:
+                # this happens when modules have no parameters and are passed no value
+                # ex. amazon.aws.ec2_instance_info:
+                config = {
+                    START_LINE: task[START_LINE],
+                    END_LINE: task[END_LINE],
+                }
 
             attributes = deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
