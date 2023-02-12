@@ -132,7 +132,7 @@ def test_sast_runner_create_report():
                                                        start=core.Position(line=2, col=1, offset=25),
                                                        end=core.Position(line=2, col=14, offset=38)),
                                 extra=core.CoreMatchExtra(metavars=core.Metavars(value={'$ARG': core.MetavarValue(start=core.Position(line=2, col=10, offset=34), end=core.Position(line=2, col=13, offset=37), abstract_content='443', propagated_value=None)}),
-                                                          message='module setting superuser port', dataflow_trace=None, rendered_fix=None))
+                                                          message='module setting superuser port', dataflow_trace=None, rendered_fix=None, engine_kind=None))
     match = RuleMatch(match=rule_match,
                       severity=RuleSeverity.INFO,
                       fix=None,
