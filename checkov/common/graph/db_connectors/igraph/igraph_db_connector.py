@@ -38,6 +38,7 @@ class IgraphConnector(DBConnector[Graph]):
         # random_colors_len = len(random_colors)
         # randrange(len(random_colors))
 
+        self.graph = Graph(directed=True)
         for index, vertex in enumerate(local_graph.vertices):
             attr = vertex.get_attribute_dict()
             self.graph.add_vertex(
