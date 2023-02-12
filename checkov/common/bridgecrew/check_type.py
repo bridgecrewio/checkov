@@ -29,6 +29,7 @@ class CheckType:
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
+    POLICY_3D = "3d_policy"
 
 
 # needs to be at the end

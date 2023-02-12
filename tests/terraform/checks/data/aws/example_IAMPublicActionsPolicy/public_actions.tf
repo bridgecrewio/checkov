@@ -104,3 +104,19 @@ data "aws_iam_policy_document" "fail2" {
     resources = [aws_sns_topic.some-topic.arn]
   }
 }
+
+
+data "aws_iam_policy_document" "pass4" {
+   statement {
+     sid = "DenyObjectDelete"
+
+     principals {
+       type        = "AWS"
+       identifiers = ["*"]
+     }
+
+     effect = "Deny"
+     actions = ["s3:DeleteObject"]
+     resources = ["${aws_s3_bucket.migrations.arn}/*"]
+   }
+}
