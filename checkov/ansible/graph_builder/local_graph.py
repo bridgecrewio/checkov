@@ -36,21 +36,22 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 else:
                     self._process_blocks(file_path=file_path, task=code_block)
 
-    def _process_blocks(self, file_path: str, task: Any) -> None:
+    def _process_blocks(self, file_path: str, task: Any, prefix: str = "") -> None:
         """Checks for possible block usage"""
 
         if not task or not isinstance(task, dict):
             return
 
         if "block" in task and isinstance(task["block"], list):
-            self._create_block_vertices(file_path=file_path, block=task)
+            prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
+            self._create_block_vertices(file_path=file_path, block=task, prefix=prefix)
 
             for block_task in task["block"]:
-                self._create_tasks_vertices(file_path=file_path, task=block_task)
+                self._process_blocks(file_path=file_path, task=block_task, prefix=prefix)
         else:
-            self._create_tasks_vertices(file_path=file_path, task=task)
+            self._create_tasks_vertices(file_path=file_path, task=task, prefix=prefix)
 
-    def _create_tasks_vertices(self, file_path: str, task: Any) -> None:
+    def _create_tasks_vertices(self, file_path: str, task: Any, prefix: str = "") -> None:
         """Creates tasks vertices"""
 
         if not task or not isinstance(task, dict):
@@ -66,7 +67,6 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 continue
 
             resource_type = f"{ResourceType.TASKS}.{name}"
-            block_name = f"{resource_type}.{task_name}"
 
             if isinstance(config, str):
                 # this happens when modules have no parameters and are directly used with the user input
@@ -83,12 +83,12 @@ class AnsibleLocalGraph(ObjectLocalGraph):
 
             self.vertices.append(
                 Block(
-                    name=block_name,
+                    name=f"{resource_type}.{task_name}",
                     config=config,
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=block_name,
+                    id=f"{resource_type}.{prefix}{task_name}",
                     source=self.source,
                 )
             )
@@ -96,11 +96,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             # no need to further check
             break
 
-    def _create_block_vertices(self, file_path: str, block: dict[str, Any]) -> None:
+    def _create_block_vertices(self, file_path: str, block: dict[str, Any], prefix: str = "") -> None:
         """Creates block vertices"""
 
         # grab the block name, if it exists
-        block_name = f'{ResourceType.BLOCK}.{block.get("name") or "unknown"}'
+        block_name = block.get("name") or "unknown"
 
         config = block
         attributes = deepcopy(config)
@@ -109,12 +109,12 @@ class AnsibleLocalGraph(ObjectLocalGraph):
 
         self.vertices.append(
             Block(
-                name=block_name,
+                name=f"{ResourceType.BLOCK}.{block_name}",
                 config=config,
                 path=file_path,
                 block_type=BlockType.RESOURCE,
                 attributes=attributes,
-                id=block_name,
+                id=f"{prefix}{block_name}",
                 source=self.source,
             )
         )

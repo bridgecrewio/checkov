@@ -1,0 +1,34 @@
+---
+
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: 1st level block
+      block:
+        - name: 2nd level block
+          block:
+            - name: 3rd level block
+              block:
+                - name: 4th level block
+                  block:
+                    - name: 5th level block
+                      block:
+                        - name: 6th level uri
+                          ansible.builtin.uri:
+                            url: https://www.example.com
+                    - name: 5th level uri
+                      ansible.builtin.uri:
+                        url: https://www.example.com
+                - name: 4th level uri
+                  ansible.builtin.uri:
+                    url: https://www.example.com
+            - name: 3rd level uri
+              ansible.builtin.uri:
+                url: https://www.example.com
+        - name: 2nd level uri
+          ansible.builtin.uri:
+            url: https://www.example.com
+    - name: 1st level uri
+      ansible.builtin.uri:
+        url: https://www.example.com
