@@ -183,7 +183,7 @@ class Runner(BaseRunner[None]):
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
-                if is_potential_uuid(secret.secret_value):
+                if secret.secret_value and is_potential_uuid(secret.secret_value):
                     logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
                 if secret_key in secrets_duplication:
