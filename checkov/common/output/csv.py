@@ -203,6 +203,8 @@ class CSVSBOM:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
                     csv_output += f'\"{field}\"'
+                elif header == header == 'Description':
+                    csv_output += f',\"{field}\"'
                 elif header == 'Licenses':
                     field = str(field).replace('","', ", ")
                     field = field[1:-1] if field.startswith('"') and field.endswith('"') else field
