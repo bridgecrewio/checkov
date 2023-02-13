@@ -72,6 +72,7 @@ class Runner():
         output_settings = OutputSettings(output_format=OutputFormat.JSON)
         output_handler = OutputHandler(output_settings)
 
+        registry.set_runner_filter(runner_filter)
         registry.load_rules(runner_filter.sast_languages)
         if external_checks_dir:
             for external_checks in external_checks_dir:

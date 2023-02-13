@@ -215,3 +215,14 @@ def test_get_generic_ast():
     result = Runner._get_generic_ast(SastLanguages.PYTHON, path)
     result_json = json.dumps(result).replace(str(cur_dir), '')
     assert json.dumps(get_generic_ast_mock()) == result_json
+
+
+def test_sast_skip_checks():
+    runner = Runner()
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    source = os.path.join(cur_dir, 'source_code')
+    external_dir_checks = os.path.join(cur_dir, 'external_checks')
+    report = runner.run(source, runner_filter=RunnerFilter(framework=['sast'], skip_checks=['CKV_SAST_1']), external_checks_dir=[external_dir_checks])
+    assert report.check_type == CheckType.SAST
+    assert len(report.failed_checks) > 0
+    assert 'CKV_SAST_1' not in [check.check_id for check in report.failed_checks]
