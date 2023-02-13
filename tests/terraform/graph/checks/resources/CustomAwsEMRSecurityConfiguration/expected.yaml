@@ -1,0 +1,4 @@
+pass:
+  - "aws_emr_cluster.passing_cluster"
+fail:
+  - "aws_emr_cluster.failing_cluster"
