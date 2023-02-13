@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import logging
+import json
 import re
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, LEFT_BRACKET, \
+    FOR_LOOP, find_match_bracket_index
 import checkov.terraform.graph_builder.local_graph as l_graph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
 
@@ -123,6 +125,7 @@ class ForeachHandler(object):
         sub_graph = self._build_sub_graph(blocks_to_render)
         self._render_sub_graph(sub_graph, blocks_to_render)
         for block_idx in blocks_to_render:
+            self._handle_for_loop_in_foreach(block_idx, sub_graph)
             if not self._is_static_statement(block_idx, sub_graph):
                 rendered_statements_by_idx[block_idx] = None
             else:
@@ -232,3 +235,49 @@ class ForeachHandler(object):
             else:
                 self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
         self._delete_main_resource(block_index_to_statement)
+
+    def _handle_for_loop_in_foreach(self, block_idx: int, sub_graph: l_graph.TerraformLocalGraph) -> None:
+        block = sub_graph.vertices[block_idx]
+        foreach_statement = evaluate_terraform(block.attributes.get(FOREACH_STRING))
+        if not foreach_statement:
+            return
+
+        foreach_statement = self.extract_from_list(foreach_statement)
+        if isinstance(foreach_statement, str) and FOR_LOOP in foreach_statement:
+            if foreach_statement.startswith('${') and foreach_statement.endswith('}'):
+                foreach_statement = foreach_statement[2:-1]
+
+            start_bracket_idx = foreach_statement[1:].find(LEFT_BRACKET)
+            end_bracket_idx = find_match_bracket_index(foreach_statement, start_bracket_idx + 1)
+            if not start_bracket_idx != -1 and end_bracket_idx != -1:
+                return
+
+            rendered_foreach_statement = foreach_statement[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            if foreach_statement.startswith('{'):
+                rendered_foreach_statement = json.loads(rendered_foreach_statement)
+                block.attributes[FOREACH_STRING] = self._handle_for_loop_in_dict(rendered_foreach_statement, foreach_statement, end_bracket_idx + 1)
+            elif foreach_statement.startswith(LEFT_BRACKET):
+                rendered_foreach_statement = evaluate_terraform(rendered_foreach_statement)
+                block.attributes[FOREACH_STRING] = self._handle_for_loop_in_list(rendered_foreach_statement, foreach_statement, end_bracket_idx + 1)
+
+    @staticmethod
+    def _handle_for_loop_in_dict(object_to_run_on: list[dict[str, Any]], statement: str, start_expression_idx: int) -> dict[str, Any]:
+        expression = statement[start_expression_idx + 3:-1]  # 3 for 'bla bla' : -> " : " == 3
+        k_expression, v_expression = expression.replace(' ', '').split(':>')
+        obj_key = statement.split(' ')[1]
+        if k_expression.startswith(f'{obj_key}.'):
+            k_expression = k_expression.replace(f'{obj_key}.', '')
+        rendered_result = {}
+        for obj in object_to_run_on:
+            val_to_assign = obj if statement.startswith('{' + f'{FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
+            rendered_result[obj[k_expression]] = val_to_assign
+        return rendered_result
+
+    @staticmethod
+    def _handle_for_loop_in_list(object_to_run_on: list[str, int, bool], statement: str, start_expression_idx: int) -> list[str]:
+        expression = statement[start_expression_idx + 3:-1]  # 3 for 'bla bla' : -> " : " == 3
+        rendered_result = []
+        for obj in object_to_run_on:
+            val_to_assign = obj if statement.startswith(f'{LEFT_BRACKET}{FOR_LOOP} {expression}') else evaluate_terraform(expression)
+            rendered_result.append(val_to_assign)
+        return rendered_result

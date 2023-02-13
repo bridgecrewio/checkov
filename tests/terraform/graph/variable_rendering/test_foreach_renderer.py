@@ -225,3 +225,35 @@ def test_update_attrs(attrs, k_v_to_change, expected_res):
     foreach_handler = ForeachHandler(local_graph)
     foreach_handler._update_attributes(attrs, k_v_to_change)
     assert attrs == expected_res
+
+
+def test_handle_for_loop_in_dict():
+    object_to_run_on = [
+        {"name": "Alice", "age": 30},
+        {"name": "Bob", "age": 40},
+        {"name": "Charlie", "age": 50},
+    ]
+    statement = '{for name in var.people : name.name :> name}'
+    start_expression_idx = len('for name in var.people')
+    expected_result = {
+        "Alice": {"name": "Alice", "age": 30},
+        "Bob": {"name": "Bob", "age": 40},
+        "Charlie": {"name": "Charlie", "age": 50},
+    }
+    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+    local_graph = build_and_get_graph_by_path('')[0]
+    foreach_handler = ForeachHandler(local_graph)
+    result = foreach_handler._handle_for_loop_in_dict(object_to_run_on, statement, start_expression_idx)
+    assert result == expected_result
+
+
+def test_handle_for_loop_in_list():
+    object_to_run_on = [1, 2, 3, 4, 5]
+    statement = '[for var in var.numbers : var]'
+    start_expression_idx = len('for var in var.numbers ')
+    expected_result = [1, 2, 3, 4, 5]
+    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
+    local_graph = build_and_get_graph_by_path('')[0]
+    foreach_handler = ForeachHandler(local_graph)
+    result = foreach_handler._handle_for_loop_in_list(object_to_run_on, statement, start_expression_idx)
+    assert result == expected_result
