@@ -306,12 +306,6 @@ def test_get_csv_report(sca_package_2_report, tmp_path: Path):
         '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"","OSI_APACHE",',
         '']
     csv_output_str_as_list = csv_output_str.split("\n")
-    for i, item in enumerate(csv_output_str_as_list):
-        if item != expected_csv_output_str[i]:
-            print(i)
-            print(item)
-            print(expected_csv_output_str[i])
-            print()
     assert csv_output_str_as_list == expected_csv_output_str
 
 
