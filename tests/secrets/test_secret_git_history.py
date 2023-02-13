@@ -1,9 +1,18 @@
 import os
+from unittest.mock import MagicMock, patch
+import git
+from pytest_mock import MockerFixture
+
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-def test_sanity_check_secrets():
+# @patch('git.Repo', MagicMock(spec=git.Repo))
+def test_sanity_check_secrets(mocker: MockerFixture, mock_git_repo):
+    mocker.patch('checkov.secrets.runner.git.Repo', return_value=mock_git_repo)
+    # with patch('git.Repo', MagicMock(spec=git.Repo)):
+    #     git.Repo.return_value = mock_git_repo
+
     current_dir = os.path.dirname(os.path.realpath(__file__))
     valid_dir_path = current_dir + "/git_history/test2"
     runner = Runner()

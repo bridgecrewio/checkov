@@ -1,3 +1,5 @@
+import pickle
+
 import pytest
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -66,3 +68,10 @@ def secrets_report_invalid_status() -> Report:
     report.add_record(record_5)
 
     return report
+
+
+@pytest.fixture
+def mock_git_repo():
+    with open('git_history/repo.pkl', 'rb') as f:
+        mock_repo = pickle.load(f)
+    return mock_repo
