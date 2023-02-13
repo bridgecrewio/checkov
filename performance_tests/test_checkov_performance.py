@@ -5,7 +5,6 @@ import pytest
 import time
 
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.sast.consts import SastLanguages
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
@@ -145,8 +144,17 @@ def test_k8_performance(benchmark):
     assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
 
 
+def run_sast_scan(lang_key, repo_name):
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    test_files_dir = os.path.join(current_dir, repo_name)
+    runner_filter = RunnerFilter(framework=[lang_key])
+    runner_registry = RunnerRegistry(banner, runner_filter, sast_runner())
+    reports = runner_registry.run(root_folder=test_files_dir)
+    assert len(reports) > 0
+
+
 @pytest.mark.benchmark(
-    group="sast-performance-tests",
+    group="sast-python-performance-tests",
     disable_gc=True,
     min_time=0.1,
     max_time=0.5,
@@ -154,21 +162,52 @@ def test_k8_performance(benchmark):
     timer=time.time,
     warmup=False
 )
-def test_sast_performance(benchmark):
-    def run_sast_scan(lang_key):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = os.path.join(current_dir, repo_name)
-        runner_filter = RunnerFilter(framework=[lang_key])
-        runner_registry = RunnerRegistry(banner, runner_filter, sast_runner())
-        reports = runner_registry.run(root_folder=test_files_dir)
-        assert len(reports) > 0
+def test_sast_python_performance(benchmark):
+    lang_key = 'sast_python'
+    repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
+    repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
+    if not repo_name:
+        raise Exception(f'No repo to run performace test: {lang_key}')
 
-    for sast_lang in SastLanguages.list():
-        lang_key = f'sast_{sast_lang}'
-        repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
-        repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
-        if not repo_name:
-            continue
+    benchmark(run_sast_scan, lang_key, repo_name)
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
 
-        benchmark(run_sast_scan, lang_key)
-        assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
+
+@pytest.mark.benchmark(
+    group="sast-javascript-performance-tests",
+    disable_gc=True,
+    min_time=0.1,
+    max_time=0.5,
+    min_rounds=5,
+    timer=time.time,
+    warmup=False
+)
+def test_sast_javascript_performance(benchmark):
+    lang_key = 'sast_javascript'
+    repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
+    repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
+    if not repo_name:
+        raise Exception(f'No repo to run performace test: {lang_key}')
+
+    benchmark(run_sast_scan, lang_key, repo_name)
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
+
+
+@pytest.mark.benchmark(
+    group="sast-java-performance-tests",
+    disable_gc=True,
+    min_time=0.1,
+    max_time=0.5,
+    min_rounds=5,
+    timer=time.time,
+    warmup=False
+)
+def test_sast_java_performance(benchmark):
+    lang_key = 'sast_java'
+    repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
+    repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
+    if not repo_name:
+        raise Exception(f'No repo to run performace test: {lang_key}')
+
+    benchmark(run_sast_scan, lang_key, repo_name)
+    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
