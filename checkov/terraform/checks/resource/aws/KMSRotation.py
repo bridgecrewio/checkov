@@ -19,7 +19,7 @@ class KMSRotation(BaseResourceValueCheck):
         if not spec or 'SYMMETRIC_DEFAULT' in spec or 'HMAC' in spec:
             return super().scan_resource_conf(conf)
         else:
-            return CheckResult.PASSED
+            return CheckResult.UNKNOWN
 
 
 check = KMSRotation()
