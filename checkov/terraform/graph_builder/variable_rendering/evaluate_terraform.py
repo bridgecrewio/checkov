@@ -221,9 +221,11 @@ def _extract_expression_from_statement(statement: str, start_expression_idx: int
     return statement[start_expression_idx + 3:-1]
 
 
-def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: str, start_expression_idx: int) -> str:
+def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: str, start_expression_idx: int) -> Optional[str]:
     expression = _extract_expression_from_statement(statement, start_expression_idx)
-    k_expression, v_expression = expression.replace(' ', '').split(':>')
+    if renderer.FOR_EXPRESSION_DICT not in expression:
+        return
+    k_expression, v_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
     obj_key = statement.split(' ')[1]
     if k_expression.startswith(f'{obj_key}.'):
         k_expression = k_expression.replace(f'{obj_key}.', '')
