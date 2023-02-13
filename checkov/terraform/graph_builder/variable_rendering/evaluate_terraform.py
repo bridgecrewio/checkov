@@ -51,7 +51,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
-    evaluated_value = handle_for_loop_in_foreach(evaluated_value)
+    evaluated_value = handle_for_loop(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
     if callable(second_evaluated_value):
@@ -181,23 +181,7 @@ def _handle_literal(input_str: str) -> str:
         return input_str
 
 
-def _handle_for_dict(rendered_foreach_statement: str, input_str: str, end_bracket_idx: int) -> Optional[str]:
-    try:
-        rendered_foreach_statement = json.loads(rendered_foreach_statement)
-    except JSONDecodeError:
-        return
-    return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
-
-
-def _handle_for_list(rendered_foreach_statement: str, input_str: str, end_bracket_idx: int) -> Optional[str]:
-    try:
-        rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
-    except (ValueError, SyntaxError):
-        return
-    return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
-
-
-def handle_for_loop_in_foreach(input_str: Union[str, int, bool]) -> str:
+def handle_for_loop(input_str: Union[str, int, bool]) -> str:
     if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         input_str = _handle_literal(input_str)
@@ -210,12 +194,12 @@ def handle_for_loop_in_foreach(input_str: Union[str, int, bool]) -> str:
             if start_bracket_idx == -1 or end_bracket_idx == -1:
                 return old_input_str
 
-            rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            rendered_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
             new_val = ''
             if input_str.startswith(renderer.LEFT_CURLY):
-                new_val = _handle_for_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                new_val = _handle_for_loop_in_dict(rendered_statement, input_str, end_bracket_idx + 1)
             elif input_str.startswith(renderer.LEFT_BRACKET):
-                new_val = _handle_for_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                new_val = _handle_for_loop_in_list(rendered_statement, input_str, end_bracket_idx + 1)
             return new_val if new_val else old_input_str
         else:
             return input_str
@@ -236,7 +220,11 @@ def _extract_expression_from_statement(statement: str, start_expression_idx: int
     return statement[start_expression_idx + len(renderer.KEY_VALUE_SEPERATOR):-1]
 
 
-def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: str, start_expression_idx: int) -> Optional[str]:
+def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = json.loads(object_to_run_on)
+    except JSONDecodeError:
+        return
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     if renderer.FOR_EXPRESSION_DICT not in expression:
         return
@@ -251,7 +239,11 @@ def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: 
     return json.dumps(rendered_result)
 
 
-def _handle_for_loop_in_list(object_to_run_on: List[Union[str, bool, int]], statement: str, start_expression_idx: int) -> Optional[str]:
+def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+    except (ValueError, SyntaxError):
+        return
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     if renderer.DOLLAR_PREFIX in expression or renderer.LOOKUP in expression:
         return
