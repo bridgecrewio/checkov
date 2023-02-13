@@ -215,7 +215,7 @@ class Runner(BaseRunner[None]):
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
-                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
+                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(SecretsRecord(
                     check_id=check_id,
@@ -325,11 +325,13 @@ class Runner(BaseRunner[None]):
                 }
         return None
 
-    def save_secret_to_coordinator(self, secret_value: Optional[str], bc_check_id: str, resource: str,
-                                   result: _CheckResult) \
-            -> None:
+    def save_secret_to_coordinator(
+            self, secret_value: Optional[str], bc_check_id: str, resource: str, line_number: int,result: _CheckResult
+    ) -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
-            enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
+            enriched_secret = EnrichedSecret(
+                original_secret=secret_value, bc_check_id=bc_check_id, resource=resource, line_number=line_number
+            )
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
     @time_it
