@@ -326,7 +326,7 @@ class Runner(BaseRunner[None]):
         return None
 
     def save_secret_to_coordinator(
-            self, secret_value: Optional[str], bc_check_id: str, resource: str, line_number: int,result: _CheckResult
+            self, secret_value: Optional[str], bc_check_id: str, resource: str, line_number: int, result: _CheckResult
     ) -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
             enriched_secret = EnrichedSecret(
