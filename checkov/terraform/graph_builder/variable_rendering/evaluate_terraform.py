@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -65,9 +66,12 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
             return evaluate(f'"{input_str}"')
         except Exception:
             try:
-                # Terraform's true value is with small t while python is with capital T,
-                # which makes eval fail if we get a value containing true
-                return evaluate(input_str.replace('true', 'True'))
+                # Sometimes eval can fail on correct terraform input like 'true'/'false',
+                # as python's values are with capital T/F.
+                # However, json does know how to handle it, so we use it instead.
+                if isinstance(input_str, str):
+                    return json.loads(input_str)
+                return input_str
             except Exception:
                 return input_str
 
