@@ -19,3 +19,5 @@ Resources:
                 - :root
           Action: kms:*
           Resource: '*'
+      EnableKeyRotation: true
+  
