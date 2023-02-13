@@ -36,7 +36,7 @@ class TestNotExistsSolver(TestBaseSolver):
 
     def test_nested_attribute_doesnt_exists_policy(self):
         root_folder = 'resources'
-        check_id = "arun"
+        check_id = "SecureTransport"
         should_pass = []
         should_fail = ['aws_s3_bucket_policy.allow_access']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
