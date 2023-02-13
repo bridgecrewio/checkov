@@ -181,14 +181,16 @@ def _handle_literal(input_str: str) -> str:
         return input_str
 
 
+def _remove_variable_formatting(input_str: str) -> str:
+    return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
+
+
 def handle_for_loop(input_str: Union[str, int, bool]) -> str:
     if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         input_str = _handle_literal(input_str)
         if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
-            if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY):
-                input_str = input_str[2:-1]
-
+            input_str = _remove_variable_formatting(input_str)
             start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
             end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
             if start_bracket_idx == -1 or end_bracket_idx == -1:
