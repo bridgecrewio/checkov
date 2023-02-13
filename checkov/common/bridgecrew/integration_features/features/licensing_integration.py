@@ -68,6 +68,7 @@ class LicensingIntegration(BaseIntegrationFeature):
     @staticmethod
     def get_subscription_for_runner(runner_check_type: str) -> CustomerSubscription:
         if 'sca_' in runner_check_type:
+            # SCA runners currently have two CodeCategoryTypes
             return CustomerSubscription.SCA
         else:
             return CategoryToSubscriptionMapping[cast(CodeCategoryType, CodeCategoryMapping[runner_check_type])]

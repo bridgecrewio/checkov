@@ -158,9 +158,9 @@ class Report:
         soft_fail: Optional[bool | Dict[str, bool]]
 
         if has_split_enforcement:
-            sca_thresholds: _ScaExitCodeThresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
+            sca_thresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
             # these three are the same even in split enforcement rules
-            generic_thresholds: _ExitCodeThresholds = cast(_ExitCodeThresholds, next(iter(sca_thresholds.values())))
+            generic_thresholds = cast(_ExitCodeThresholds, next(iter(sca_thresholds.values())))
             soft_fail_on_checks = generic_thresholds['soft_fail_checks']
             soft_fail_threshold = generic_thresholds['soft_fail_threshold']
             hard_fail_on_checks = generic_thresholds['hard_fail_checks']
@@ -193,7 +193,7 @@ class Report:
                 logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
                 return 1
         else:
-            non_sca_thresholds: _ExitCodeThresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
+            non_sca_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
             soft_fail_on_checks = non_sca_thresholds['soft_fail_checks']
             soft_fail_threshold = non_sca_thresholds['soft_fail_threshold']
             hard_fail_on_checks = non_sca_thresholds['hard_fail_checks']

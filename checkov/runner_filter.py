@@ -58,7 +58,7 @@ class RunnerFilter(object):
                                                         for skip_check in skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
-        self.enforcement_rule_configs: Optional[Dict[str, Severity | Dict[CodeCategoryType, Severity]]] = None
+        self.enforcement_rule_configs: Dict[str, Severity | Dict[CodeCategoryType, Severity]] = {}
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -149,11 +149,11 @@ class RunnerFilter(object):
 
     def extract_enforcement_rule_threshold(self, check_id: str, report_type: str) -> Severity:
         if 'sca_' in report_type and '_LIC_' in check_id:
-            return cast(Severity, self.enforcement_rule_configs[report_type][CodeCategoryType.LICENSES])  # type:ignore[index] # mypy thinks it might be null
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.LICENSES]
         elif 'sca_' in report_type:  # vulnerability
-            return cast(Severity, self.enforcement_rule_configs[report_type][CodeCategoryType.VULNERABILITIES])  # type:ignore[index] # mypy thinks it might be null
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.VULNERABILITIES]
         else:
-            return cast(Severity, self.enforcement_rule_configs[report_type])  # type:ignore[index] # mypy thinks it might be null
+            return cast(Severity, self.enforcement_rule_configs[report_type])
 
     def should_run_check(
             self,

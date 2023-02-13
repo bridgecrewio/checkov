@@ -249,8 +249,8 @@ class RunnerRegistry:
         # if the lists only contain check IDs, then we will merge them with the enforcement rule value
         elif not soft_fail and not soft_fail_threshold and not hard_fail_threshold:
             if 'sca_' in report_type:
-                code_category_types: List[CodeCategoryType] = cast(List[CodeCategoryType], CodeCategoryMapping[report_type])
-                category_rules: Dict[CodeCategoryType, CodeCategoryConfiguration] = {
+                code_category_types = cast(List[CodeCategoryType], CodeCategoryMapping[report_type])
+                category_rules = {
                     category: repo_config_integration.code_category_configs[category] for category in code_category_types
                 }
                 return cast(_ScaExitCodeThresholds, {
@@ -263,8 +263,8 @@ class RunnerRegistry:
                     } for category in code_category_types
                 })
             else:
-                code_category_type: CodeCategoryType = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
-                enf_rule: CodeCategoryConfiguration = repo_config_integration.code_category_configs[code_category_type]
+                code_category_type = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
+                enf_rule = repo_config_integration.code_category_configs[code_category_type]
 
                 if enf_rule:
                     logging.debug('Use enforcement rules is TRUE')
@@ -276,13 +276,13 @@ class RunnerRegistry:
         else:
             logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 
-        return cast(_ExitCodeThresholds, {
+        return {
             'soft_fail': soft_fail,
             'soft_fail_checks': soft_fail_on_checks,
             'soft_fail_threshold': soft_fail_threshold,
             'hard_fail_checks': hard_fail_on_checks,
             'hard_fail_threshold': hard_fail_threshold
-        })
+        }
 
     def print_reports(
             self,

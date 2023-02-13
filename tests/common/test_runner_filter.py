@@ -704,7 +704,8 @@ class TestRunnerFilter(unittest.TestCase):
             'secrets': Severities[BcSeverities.OFF],
             'serverless': Severities[BcSeverities.LOW],
             'terraform': Severities[BcSeverities.LOW],
-            'terraform_plan': Severities[BcSeverities.LOW]
+            'terraform_plan': Severities[BcSeverities.LOW],
+            '3d_policy': Severities[BcSeverities.LOW],
         }
         self.assertEqual(instance.enforcement_rule_configs, expected)
 
