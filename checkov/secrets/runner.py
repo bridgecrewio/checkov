@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import hashlib
 import linecache
 import logging
 import os
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
+from detect_secrets.filters.heuristic import is_potential_uuid
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -168,6 +170,7 @@ class Runner(BaseRunner[None]):
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
 
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
@@ -180,6 +183,9 @@ class Runner(BaseRunner[None]):
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
+                if is_potential_uuid(secret.secret_value):
+                    logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                    continue
                 if secret_key in secrets_duplication:
                     logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
