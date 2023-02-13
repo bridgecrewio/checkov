@@ -26,8 +26,7 @@ from checkov.terraform.graph_builder.utils import (
     attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
-    evaluate_terraform
+import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
 
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -259,7 +258,7 @@ class TerraformVariableRenderer(VariableRenderer):
         )
         str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
         evaluated_attribute_value = (
-            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluate_terraform(str_to_evaluate)
+            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluator.evaluate_terraform(str_to_evaluate)
         )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
@@ -274,7 +273,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 origin_value = decoded_attributes[attr]
                 if not isinstance(origin_value, str):
                     continue
-                evaluated_attribute_value = evaluate_terraform(origin_value)
+                evaluated_attribute_value = evaluator.evaluate_terraform(origin_value)
                 if origin_value != evaluated_attribute_value:
                     vertex.update_inner_attribute(attr, vertex.attributes, evaluated_attribute_value)
 
@@ -289,7 +288,7 @@ class TerraformVariableRenderer(VariableRenderer):
     ) -> Union[Any, List[Any]]:
         if count > 1:
             return original_val
-        new_val = replace_string_value(
+        new_val = evaluator.replace_string_value(
             original_str=original_val,
             str_to_replace=replaced_key,
             replaced_value=replaced_value,
@@ -526,7 +525,7 @@ class TerraformVariableRenderer(VariableRenderer):
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val
         elif isinstance(val, str):
-            evaluated_val = evaluate_terraform(val, keep_interpolations=False)
+            evaluated_val = evaluator.evaluate_terraform(val, keep_interpolations=False)
         elif isinstance(val, list):
             evaluated_val = []
             for v in val:

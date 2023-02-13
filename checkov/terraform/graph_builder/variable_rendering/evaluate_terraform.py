@@ -172,7 +172,8 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
 
 
 def handle_for_loop_in_foreach(input_str: str) -> str:
-    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
+    # not implementing for loop with condition for now
+    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         try:
             e = ast.literal_eval(input_str)
@@ -190,12 +191,17 @@ def handle_for_loop_in_foreach(input_str: str) -> str:
                 return old_input_str
 
             rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            new_val = ''
             if input_str.startswith(renderer.LEFT_CURLY):
                 rendered_foreach_statement = json.loads(rendered_foreach_statement)
-                return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                new_val = _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
             elif input_str.startswith(renderer.LEFT_BRACKET):
-                rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
-                return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                try:
+                    rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
+                except (ValueError, SyntaxError):
+                    return old_input_str
+                new_val = _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+            return new_val if new_val else old_input_str
         else:
             return input_str
     else:
@@ -228,8 +234,10 @@ def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: 
     return json.dumps(rendered_result)
 
 
-def _handle_for_loop_in_list(object_to_run_on: List[Union[str, bool, int]], statement: str, start_expression_idx: int) -> str:
+def _handle_for_loop_in_list(object_to_run_on: List[Union[str, bool, int]], statement: str, start_expression_idx: int) -> Optional[str]:
     expression = _extract_expression_from_statement(statement, start_expression_idx)
+    if renderer.DOLLAR_PREFIX in expression or renderer.LOOKUP in expression:
+        return
     rendered_result = []
     for obj in object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
