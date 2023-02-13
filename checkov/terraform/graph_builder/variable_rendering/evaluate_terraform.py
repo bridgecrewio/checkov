@@ -184,18 +184,20 @@ def handle_for_loop_in_foreach(input_str: str) -> str:
             if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY):
                 input_str = input_str[2:-1]
 
-        start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
-        end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
-        if start_bracket_idx == -1 or end_bracket_idx == -1:
-            return old_input_str
+            start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
+            end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
+            if start_bracket_idx == -1 or end_bracket_idx == -1:
+                return old_input_str
 
-        rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
-        if input_str.startswith(renderer.LEFT_CURLY):
-            rendered_foreach_statement = json.loads(rendered_foreach_statement)
-            return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
-        elif input_str.startswith(renderer.LEFT_BRACKET):
-            rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
-            return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+            rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            if input_str.startswith(renderer.LEFT_CURLY):
+                rendered_foreach_statement = json.loads(rendered_foreach_statement)
+                return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+            elif input_str.startswith(renderer.LEFT_BRACKET):
+                rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
+                return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+        else:
+            return input_str
     else:
         return input_str
 

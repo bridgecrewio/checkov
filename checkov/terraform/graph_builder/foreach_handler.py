@@ -8,8 +8,7 @@ from typing import Any, Optional, TypeVar
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, LEFT_BRACKET, \
-    FOR_LOOP, find_match_bracket_index
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 import checkov.terraform.graph_builder.local_graph as l_graph
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
 
