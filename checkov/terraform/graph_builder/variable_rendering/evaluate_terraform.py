@@ -197,8 +197,8 @@ def _handle_for_list(rendered_foreach_statement: str, input_str: str, end_bracke
     return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
 
 
-def handle_for_loop_in_foreach(input_str: str) -> str:
-    if renderer.FOR_LOOP in input_str and '?' not in input_str:
+def handle_for_loop_in_foreach(input_str: Union[str, int, bool]) -> str:
+    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         input_str = _handle_literal(input_str)
         if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
