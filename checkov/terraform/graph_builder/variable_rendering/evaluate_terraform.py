@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import re
@@ -64,7 +65,15 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
         try:
             return evaluate(f'"{input_str}"')
         except Exception:
-            return input_str
+            try:
+                # Sometimes eval can fail on correct terraform input like 'true'/'false',
+                # as python's values are with capital T/F.
+                # However, json does know how to handle it, so we use it instead.
+                if isinstance(input_str, str):
+                    return json.loads(input_str)
+                return input_str
+            except Exception:
+                return input_str
 
 
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
