@@ -218,8 +218,10 @@ class BaseAttributeSolver(BaseSolver):
         }
         """
         try:
-            value_to_check = json.loads(value_to_check)
-            return value_to_check
+            # Check if the value looks like a json object, and if it is try to parse it
+            if isinstance(value_to_check, str) and value_to_check.strip().startswith('{'):
+                value_to_check = json.loads(value_to_check)
+                return value_to_check
         except Exception as e:
             logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
