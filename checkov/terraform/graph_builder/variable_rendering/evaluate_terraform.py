@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+from json import JSONDecodeError
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
@@ -193,7 +194,10 @@ def handle_for_loop_in_foreach(input_str: str) -> str:
             rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
             new_val = ''
             if input_str.startswith(renderer.LEFT_CURLY):
-                rendered_foreach_statement = json.loads(rendered_foreach_statement)
+                try:
+                    rendered_foreach_statement = json.loads(rendered_foreach_statement)
+                except JSONDecodeError:
+                    return old_input_str
                 new_val = _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
             elif input_str.startswith(renderer.LEFT_BRACKET):
                 try:
