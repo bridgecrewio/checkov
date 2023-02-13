@@ -226,7 +226,7 @@ def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: 
     return json.dumps(rendered_result)
 
 
-def _handle_for_loop_in_list(object_to_run_on: List[str, int, bool], statement: str, start_expression_idx: int) -> str:
+def _handle_for_loop_in_list(object_to_run_on: List[Union[str, bool, int]], statement: str, start_expression_idx: int) -> str:
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     rendered_result = []
     for obj in object_to_run_on:
