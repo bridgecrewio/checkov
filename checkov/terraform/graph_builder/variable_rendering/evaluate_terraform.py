@@ -172,16 +172,35 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
     return input_str
 
 
+def _handle_literal(input_str: str) -> str:
+    try:
+        e = ast.literal_eval(input_str)
+        if isinstance(e, list) and len(e) == 1:
+            return e[0]
+    except (ValueError, SyntaxError):
+        return input_str
+
+
+def _handle_for_dict(rendered_foreach_statement: str, input_str: str, end_bracket_idx: int) -> Optional[str]:
+    try:
+        rendered_foreach_statement = json.loads(rendered_foreach_statement)
+    except JSONDecodeError:
+        return
+    return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+
+
+def _handle_for_list(rendered_foreach_statement: str, input_str: str, end_bracket_idx: int) -> Optional[str]:
+    try:
+        rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
+    except (ValueError, SyntaxError):
+        return
+    return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+
+
 def handle_for_loop_in_foreach(input_str: str) -> str:
-    # not implementing for loop with condition for now
-    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
+    if renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
-        try:
-            e = ast.literal_eval(input_str)
-            if isinstance(e, list) and len(e) == 1:
-                input_str = e[0]
-        except (ValueError, SyntaxError):
-            pass
+        input_str = _handle_literal(input_str)
         if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
             if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY):
                 input_str = input_str[2:-1]
@@ -194,17 +213,9 @@ def handle_for_loop_in_foreach(input_str: str) -> str:
             rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
             new_val = ''
             if input_str.startswith(renderer.LEFT_CURLY):
-                try:
-                    rendered_foreach_statement = json.loads(rendered_foreach_statement)
-                except JSONDecodeError:
-                    return old_input_str
-                new_val = _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                new_val = _handle_for_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
             elif input_str.startswith(renderer.LEFT_BRACKET):
-                try:
-                    rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
-                except (ValueError, SyntaxError):
-                    return old_input_str
-                new_val = _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+                new_val = _handle_for_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
             return new_val if new_val else old_input_str
         else:
             return input_str
@@ -222,7 +233,7 @@ def _extract_expression_from_statement(statement: str, start_expression_idx: int
     start_expression_idx: len(" for val in {"name": "a", "val": "val"}")
     output: val.name => true
     """
-    return statement[start_expression_idx + 3:-1]
+    return statement[start_expression_idx + len(renderer.KEY_VALUE_SEPERATOR):-1]
 
 
 def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: str, start_expression_idx: int) -> Optional[str]:

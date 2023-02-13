@@ -50,6 +50,7 @@ LEFT_CURLY = '{'
 RIGHT_CURLY = '}'
 DOLLAR_PREFIX = '$'
 FOR_EXPRESSION_DICT = ':>'
+KEY_VALUE_SEPERATOR = ' : '
 
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
