@@ -64,7 +64,12 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
         try:
             return evaluate(f'"{input_str}"')
         except Exception:
-            return input_str
+            try:
+                # Terraform's true value is with small t while python is with capital T,
+                # which makes eval fail if we get a value containing true
+                return evaluate(input_str.replace('true', 'True'))
+            except Exception:
+                return input_str
 
 
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:

@@ -38,8 +38,8 @@ resource "aws_emr_security_configuration" "good_config" {
                 "AwsKmsKey": "${aws_kms_key.test.arn}"
             }
         },
-        "EnableInTransitEncryption": "true",
-        "EnableAtRestEncryption": "true"
+        "EnableInTransitEncryption": true,
+        "EnableAtRestEncryption": true
     }
 }
 EOF
@@ -82,8 +82,8 @@ resource "aws_emr_security_configuration" "bad_config" {
                 "AwsKmsKey": "${aws_kms_key.test.arn}"
             }
         },
-        "EnableInTransitEncryption": "false",
-        "EnableAtRestEncryption": "true"
+        "EnableInTransitEncryption": false,
+        "EnableAtRestEncryption": true
     }
 }
 EOF
