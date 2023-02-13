@@ -15,13 +15,12 @@ class KMSRotation(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf):
         # Only symmetric keys support auto rotation. The attribute is optional and defaults to symmetric.
-        if 'Properties' in conf.keys():
-            if 'KeySpec' in conf['Properties'].keys():
-                spec = conf['Properties']['KeySpec']
-                if not spec or 'SYMMETRIC_DEFAULT' in spec or 'HMAC' in spec:
-                    return super().scan_resource_conf(conf)
-                else:
-                    return CheckResult.PASSED
+        properties = conf.get("Properties")
+        if properties and isinstance(properties, dict):
+            spec = properties.get("KeySpec")
+            if spec and isinstance(spec, str):
+                if 'SYMMETRIC_DEFAULT' not in spec and 'HMAC' not in spec:
+                    return CheckResult.UNKNOWN
         return super().scan_resource_conf(conf)
 
 
