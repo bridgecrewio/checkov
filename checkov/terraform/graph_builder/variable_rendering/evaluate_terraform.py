@@ -1,3 +1,5 @@
+import ast
+import json
 import logging
 import os
 import re
@@ -5,6 +7,7 @@ from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
+import checkov.terraform.graph_builder.variable_rendering.renderer as renderer
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
@@ -47,6 +50,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
+    evaluated_value = handle_for_loop_in_foreach(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
     if callable(second_evaluated_value):
@@ -165,6 +169,70 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
                     return input_str
 
     return input_str
+
+
+def handle_for_loop_in_foreach(input_str: str) -> str:
+    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
+        old_input_str = input_str
+        try:
+            e = ast.literal_eval(input_str)
+            if isinstance(e, list) and len(e) == 1:
+                input_str = e[0]
+        except (ValueError, SyntaxError):
+            pass
+        if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
+            if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY):
+                input_str = input_str[2:-1]
+
+        start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
+        end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
+        if start_bracket_idx == -1 or end_bracket_idx == -1:
+            return old_input_str
+
+        rendered_foreach_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+        if input_str.startswith(renderer.LEFT_CURLY):
+            rendered_foreach_statement = json.loads(rendered_foreach_statement)
+            return _handle_for_loop_in_dict(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+        elif input_str.startswith(renderer.LEFT_BRACKET):
+            rendered_foreach_statement = ast.literal_eval(rendered_foreach_statement.replace(' ', ''))
+            return _handle_for_loop_in_list(rendered_foreach_statement, input_str, end_bracket_idx + 1)
+    else:
+        return input_str
+
+
+def _extract_expression_from_statement(statement: str, start_expression_idx: int) -> str:
+    """
+    statement: [ for val in ["v", "k"] : val ]
+    start_expression_idx: len(" for val in ["v", "k"]")
+    output: "val"
+
+    statement: { for val in {"name": "a", "val": "val"} : val.name => true }
+    start_expression_idx: len(" for val in {"name": "a", "val": "val"}")
+    output: val.name => true
+    """
+    return statement[start_expression_idx + 3:-1]
+
+
+def _handle_for_loop_in_dict(object_to_run_on: List[Dict[str, Any]], statement: str, start_expression_idx: int) -> str:
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    k_expression, v_expression = expression.replace(' ', '').split(':>')
+    obj_key = statement.split(' ')[1]
+    if k_expression.startswith(f'{obj_key}.'):
+        k_expression = k_expression.replace(f'{obj_key}.', '')
+    rendered_result = {}
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
+        rendered_result[obj[k_expression]] = val_to_assign
+    return json.dumps(rendered_result)
+
+
+def _handle_for_loop_in_list(object_to_run_on: List[str, int, bool], statement: str, start_expression_idx: int) -> str:
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    rendered_result = []
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
+        rendered_result.append(val_to_assign)
+    return json.dumps(rendered_result)
 
 
 def evaluate_json_types(input_str: Any) -> Any:

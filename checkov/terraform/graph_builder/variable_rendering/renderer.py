@@ -47,6 +47,9 @@ LEFT_BRACKET_WITH_QUOTATION = '["'
 RIGHT_BRACKET_WITH_QUOTATION = '"]'
 LEFT_BRACKET = '['
 RIGHT_BRACKET = ']'
+LEFT_CURLY = '{'
+RIGHT_CURLY = '}'
+DOLLAR_PREFIX = '$'
 
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)

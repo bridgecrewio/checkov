@@ -81,7 +81,7 @@ variable "loop_list" {
 }
 
 resource "aws_instance" "public_foreach_loop" {
-  for_each = { for val in var.public_loop : val.name => true}
+  for_each = { for val in var.public_loop : val.name => true }
   ami           = "ami-12345"
   instance_type = "t3.micro"
 
@@ -89,7 +89,7 @@ resource "aws_instance" "public_foreach_loop" {
 }
 
 resource "aws_instance" "public_foreach_loop_list" {
-  for_each = [ for val in var.loop_list : val]
+  for_each = [ for val in var.loop_list : val ]
   ami           = "ami-12345"
   instance_type = "t3.micro"
   associate_public_ip_address = each.value
