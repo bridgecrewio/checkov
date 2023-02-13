@@ -209,22 +209,24 @@ def test_tf_definitions_and_breadcrumbs():
 
 
 @pytest.mark.parametrize(
-    "attrs,k_v_to_change,expected_res",
+    "attrs,k_v_to_change,expected_attrs,expected_res",
     [
-        ({"test_key": ["${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]}),
-        ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
-        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}),
-        ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}),
-        ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}),
-        ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]})
+        ({"test_key": ["${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]}, ['test_key']),
+        ({"test_key": ["${test}"]}, {"test_val": "new_val"}, {"test_key": ["${test}"]}, []),
+        ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
+        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}, ['nested_key']),
+        ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
+        ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}, ['test_key']),
+        ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key'])
     ]
 )
-def test_update_attrs(attrs, k_v_to_change, expected_res):
+def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
     from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     local_graph = build_and_get_graph_by_path('')[0]
     foreach_handler = ForeachHandler(local_graph)
-    foreach_handler._update_attributes(attrs, k_v_to_change)
-    assert attrs == expected_res
+    res = foreach_handler._update_attributes(attrs, k_v_to_change)
+    assert attrs == expected_attrs
+    assert res == expected_res
 
 
 def test_handle_for_loop_in_dict():

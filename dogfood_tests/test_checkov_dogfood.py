@@ -55,6 +55,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
         CheckType.TERRAFORM_PLAN,
+        CheckType.POLICY_3D
     }, "Don't forget to add a test case for the new runner here"
 
 

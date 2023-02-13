@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.2.356...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.3...HEAD)
+
+## [2.3.3](https://github.com/bridgecrewio/checkov/compare/2.3.0...2.3.3) - 2023-02-09
+
+### Feature
+
+- **secrets:** limit multiline regex detector run - [#4453](https://github.com/bridgecrewio/checkov/pull/4453)
+- **terraform:** Add foreach_attrs to config objects + UTs - [#4463](https://github.com/bridgecrewio/checkov/pull/4463)
+- **terraform:** GCP: Ensure Basic role are not used at Org/Folder/Project level (CKV_GCP_115, CKV_GCP_116, CKV_GCP_117) - [#4390](https://github.com/bridgecrewio/checkov/pull/4390)
+
+### Bug Fix
+
+- **kustomize:** fix kustomize file path cli - [#4466](https://github.com/bridgecrewio/checkov/pull/4466)
+- **terraform:** Allow different type of value in BaseResourceValueCheck - [#4470](https://github.com/bridgecrewio/checkov/pull/4470)
+- **terraform:** deny statements with wildcards are valid - [#4440](https://github.com/bridgecrewio/checkov/pull/4440)
+
+## [2.3.0](https://github.com/bridgecrewio/checkov/compare/2.2.356...2.3.0) - 2023-02-09
+
+### Breaking Change
+
+- **gha:** adjust the attribute reference for GitHub Actions graph checks - [#4445](https://github.com/bridgecrewio/checkov/pull/4445)
+- **terraform:** enable nested modules by default - [#4448](https://github.com/bridgecrewio/checkov/pull/4448)
+
+### Feature
+
+- **general:** Create 3d combinations post runner - [#4353](https://github.com/bridgecrewio/checkov/pull/4353)
+
+### Bug Fix
+
+- **gha:** fix GHA _get_jobs edge case (string step) - [#4444](https://github.com/bridgecrewio/checkov/pull/4444)
+- **graph:** added graph init to igraph db connector - [#4455](https://github.com/bridgecrewio/checkov/pull/4455)
 
 ## [2.2.356](https://github.com/bridgecrewio/checkov/compare/2.2.348...2.2.356) - 2023-02-08
 

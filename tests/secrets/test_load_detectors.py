@@ -501,137 +501,202 @@ class TestLoadDetectors(unittest.TestCase):
             detector_obj[x]['isMultiline'] == detectors_expected_result[x]['isMultiline'])
         assert len(detectors_expected_result) == len(detector_obj)
 
-    # Comment out once fix performence:
-    # def test_custom_multiline_regex_detector(self):
-    #     current_dir = os.path.dirname(os.path.realpath(__file__))
-    #     valid_dir_path = current_dir + "/custom_regex_detector"
-    #     bc_integration.customer_run_config_response = {"secretsPolicies": [
-    #         {
-    #             "incidentId": "test1",
-    #             "category": "Secrets",
-    #             "severity": "MEDIUM",
-    #             "incidentType": "Violation",
-    #             "title": "test1",
-    #             "guideline": "test",
-    #             "laceworkViolationId": None,
-    #             "prowlerCheckId": None,
-    #             "checkovCheckId": None,
-    #             "resourceTypes":
-    #                 [
-    #                     "aws_instance"
-    #                 ],
-    #             "provider": "AWS",
-    #             "remediationIds":
-    #                 [],
-    #             "customerName": "test1",
-    #             "isCustom": True,
-    #             "code": "definition:\n  cond_type: secrets\n  multiline: true\n  value:\n  - '[\\s\\S]*HANA*'",
-    #             "descriptiveTitle": None,
-    #             "constructiveTitle": None,
-    #             "pcPolicyId": None,
-    #             "additionalPcPolicyIds": None,
-    #             "pcSeverity": None,
-    #             "sourceIncidentId": None
-    #         },
-    #         {
-    #             "incidentId": "test2",
-    #             "category": "Secrets",
-    #             "severity": "MEDIUM",
-    #             "incidentType": "Violation",
-    #             "title": "test2",
-    #             "guideline": "test2",
-    #             "laceworkViolationId": None,
-    #             "prowlerCheckId": None,
-    #             "checkovCheckId": None,
-    #             "conditionQuery": {
-    #                 "value": ["(?:^|\W)LIR(?:$|\W)"],
-    #                 "cond_type": "secrets"
-    #             },
-    #             "resourceTypes":
-    #                 [
-    #                     "aws_instance"
-    #                 ],
-    #             "provider": "AWS",
-    #             "remediationIds":
-    #                 [],
-    #             "customerName": "test2",
-    #             "isCustom": True,
-    #             "code": None,
-    #             "descriptiveTitle": None,
-    #             "constructiveTitle": None,
-    #             "pcPolicyId": None,
-    #             "additionalPcPolicyIds": None,
-    #             "pcSeverity": None,
-    #             "sourceIncidentId": None
-    #         }
-    #     ]}
-    #     runner = Runner()
-    #     report = runner.run(root_folder=valid_dir_path,
-    #                         runner_filter=RunnerFilter(framework=['secrets'],
-    #                                                    enable_secret_scan_all_files=True))
-    #     self.assertEqual(len(report.failed_checks), 3)
-    #
-    # def test_custom_multiline_regex_detector_second(self):
-    #     current_dir = os.path.dirname(os.path.realpath(__file__))
-    #     valid_dir_path = current_dir + "/custom_regex_detector"
-    #     bc_integration.customer_run_config_response = {"secretsPolicies": [
-    #         {
-    #             "incidentId": "test1",
-    #             "category": "Secrets",
-    #             "severity": "MEDIUM",
-    #             "incidentType": "Violation",
-    #             "title": "test1",
-    #             "guideline": "test",
-    #             "laceworkViolationId": None,
-    #             "prowlerCheckId": None,
-    #             "checkovCheckId": None,
-    #             "resourceTypes":
-    #                 [
-    #                     "aws_instance"
-    #                 ],
-    #             "provider": "AWS",
-    #             "remediationIds":
-    #                 [],
-    #             "customerName": "test1",
-    #             "isCustom": True,
-    #             "code": "definition:\n  cond_type: secrets\n  multiline: true\n  value:\n  - '[\\s\\S]*HANA*'",
-    #             "descriptiveTitle": None,
-    #             "constructiveTitle": None,
-    #             "pcPolicyId": None,
-    #             "additionalPcPolicyIds": None,
-    #             "pcSeverity": None,
-    #             "sourceIncidentId": None
-    #         },
-    #         {
-    #             "incidentId": "test2",
-    #             "category": "Secrets",
-    #             "severity": "MEDIUM",
-    #             "incidentType": "Violation",
-    #             "title": "test2",
-    #             "guideline": "test2",
-    #             "laceworkViolationId": None,
-    #             "prowlerCheckId": None,
-    #             "checkovCheckId": None,
-    #             "resourceTypes":
-    #                 [
-    #                     "aws_instance"
-    #                 ],
-    #             "provider": "AWS",
-    #             "remediationIds":
-    #                 [],
-    #             "customerName": "test2",
-    #             "isCustom": True,
-    #             "code": "definition:\n  cond_type: secrets\n  multiline: true\n  value:\n  - '[\\s\\S]*LIR*'",
-    #             "descriptiveTitle": None,
-    #             "constructiveTitle": None,
-    #             "pcPolicyId": None,
-    #             "additionalPcPolicyIds": None,
-    #             "pcSeverity": None,
-    #             "sourceIncidentId": None
-    #         }
-    #     ]}
-    #     runner = Runner()
-    #     report = runner.run(root_folder=valid_dir_path,
-    #                         runner_filter=RunnerFilter(framework=['secrets'],
-    #                                                    enable_secret_scan_all_files=True))
-    #     self.assertEqual(len(report.failed_checks), 2)
+    def test_custom_multiline_regex_detector(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/multiline_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test1",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test1",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  supported_files:\n  - .mine\n  value:\n  - '[\\s\\S]*HANA*'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            },
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["(?:^|\W)LIR(?:$|\W)"],
+                    "cond_type": "secrets"
+                },
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": None,
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(
+                                framework=['secrets'],
+                                enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 3)
+
+    def test_custom_multiline_regex_detector_only_scan_file(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/multiline_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test1",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test1",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  supported_files:\n  - .mine\n  value:\n  - '[\\s\\S]*HANA*'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            },
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  supported_files:\n  - .mine\n  value:\n  - '[\\s\\S]*LIR*'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 2)
+
+    def test_custom_multiline_regex_detector_only_supported_files(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/multiline_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test1",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test1",
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  supported_files:\n  - .mine\n  value:\n  - '[\\s\\S]*HANA*'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            },
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "definition:\n  cond_type: secrets\n  multiline: true\n  value:\n  - '[\\s\\S]*LIR*'",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path,
+                            runner_filter=RunnerFilter(framework=['secrets'],
+                                                       enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 1)
