@@ -436,7 +436,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
                                   package: dict[str, Any], package_alias: str,
                                   licenses_per_package_map: dict[str, list[str]],
                                   sca_details: Optional[SCADetails]) -> None:
-    package_name, package_version, package_registry = package["name"], package["version"],  package.get("registry", "")
+    package_name, package_version, package_registry = package["name"], package["version"], package.get("registry", "")
     report.extra_resources.add(
         ExtraResource(
             file_abs_path=scanned_file_path,
