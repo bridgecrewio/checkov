@@ -84,7 +84,7 @@ class BaseAttributeSolver(BaseSolver):
         for attr in attr_parts:
             attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
             value_to_check = vertex.get(attr_to_check)
-            value_to_check = self._render_json_str(value_to_check, attr, vertex)
+            value_to_check = self._render_json_str(value_to_check)
 
             # we can only check is_attribute_value_check when evaluating the full attribute
             # for example, if we have a policy that says "tags.component exists", and tags = local.tags, then
@@ -199,11 +199,27 @@ class BaseAttributeSolver(BaseSolver):
         return False
 
     @staticmethod
-    def _render_json_str(value_to_check: Any, attr: str, vertex: Dict[str, Any]) -> Any:
-        if attr == 'policy' and vertex.get('resource_type', '').endswith('policy'):
-            try:
-                value_to_check = json.loads(value_to_check)
-                return value_to_check
-            except Exception as e:
-                logging.info(f'cant parse policy str to object, {str(e)}')
+    def _render_json_str(value_to_check: Any) -> Any:
+        """
+        Tries to render objects containing json dict, for example:
+        - resource "aws_iam_policy" "example1" {
+            policy == <<POLICY
+                {
+                ... json-data
+                }
+            POLICY
+        }
+        - resource "aws_emr_security_configuration" "example2" {
+            configuration = <<EOF
+                {
+                ... json-data
+                }
+            EOF
+        }
+        """
+        try:
+            value_to_check = json.loads(value_to_check)
+            return value_to_check
+        except Exception as e:
+            logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
