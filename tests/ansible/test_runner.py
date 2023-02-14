@@ -229,6 +229,29 @@ def test_runner_with_nested_blocks(graph_connector):
         IgraphConnector,
     ],
 )
+def test_runner_with_nested_blocks(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "no_tasks.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)])
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
 def test_get_resource(graph_connector):
     # given
     file_path = "/example/site.yml"

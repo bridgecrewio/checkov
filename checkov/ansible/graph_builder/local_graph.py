@@ -33,8 +33,10 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 if ResourceType.TASKS in code_block:
                     for task in code_block[ResourceType.TASKS]:
                         self._process_blocks(file_path=file_path, task=task)
-                else:
+                elif ResourceType.BLOCK in code_block:
                     self._process_blocks(file_path=file_path, task=code_block)
+                else:
+                    logging.debug(f"File {file_path} has no supported resources")
 
     def _process_blocks(self, file_path: str, task: Any, prefix: str = "") -> None:
         """Checks for possible block usage"""
@@ -42,11 +44,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
         if not task or not isinstance(task, dict):
             return
 
-        if "block" in task and isinstance(task["block"], list):
+        if ResourceType.BLOCK in task and isinstance(task[ResourceType.BLOCK], list):
             prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
             self._create_block_vertices(file_path=file_path, block=task, prefix=prefix)
 
-            for block_task in task["block"]:
+            for block_task in task[ResourceType.BLOCK]:
                 self._process_blocks(file_path=file_path, task=block_task, prefix=prefix)
         else:
             self._create_tasks_vertices(file_path=file_path, task=task, prefix=prefix)
