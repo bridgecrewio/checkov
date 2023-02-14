@@ -8,7 +8,7 @@ from detect_secrets.core import scan
 from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
 
 
-def _get_commits(root_folder: str) -> list[Commit] | None:
+def get_commits(root_folder: str) -> list[Commit] | None:
     try:
         repo = git.Repo(root_folder)
     except InvalidGitRepositoryError:
@@ -18,7 +18,7 @@ def _get_commits(root_folder: str) -> list[Commit] | None:
 
 
 def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
-    commits = _get_commits(root_folder)
+    commits = get_commits(root_folder)
     if not commits:
         return
     scanned_file_count = 0

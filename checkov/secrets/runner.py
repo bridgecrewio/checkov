@@ -6,12 +6,10 @@ import logging
 import os
 import re
 
-import git
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
-from git import InvalidGitRepositoryError, GitCommandError, Commit
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
 
@@ -40,6 +38,7 @@ from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
+from checkov.secrets.scan_git_history import scan_history
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 
 if TYPE_CHECKING:
@@ -154,7 +153,7 @@ class Runner(BaseRunner[None]):
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-                    self._scan_history(root_folder, secrets)
+                    scan_history(root_folder, secrets)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
@@ -444,48 +443,3 @@ class Runner(BaseRunner[None]):
                 logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
-
-    @staticmethod
-    def _get_commits(root_folder: str) -> list[Commit] | None:
-        try:
-            repo = git.Repo(root_folder)
-        except InvalidGitRepositoryError:
-            logging.error(f"Folder {root_folder} is not a GIT project")
-            return None
-        return list(repo.iter_commits(repo.active_branch, max_count=7))
-
-    def _scan_history(self, root_folder: str, secrets: SecretsCollection) -> None:
-        commits = self._get_commits(root_folder)
-        if not commits:
-            return
-        scanned_file_count = 0
-        skipped_file_count = 0
-
-        # we scan the diff between the commit and the next commit - start from the end
-        for previous_commit_idx in range(len(commits) - 1, 0, -1):
-            current_commit_idx = previous_commit_idx - 1
-            current_commit_hash = commits[current_commit_idx].hexsha
-            git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
-
-            for file_diff in git_diff:
-                try:
-                    if file_diff.renamed:
-                        logging.warning(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
-                        pass
-                    elif file_diff.deleted_file:
-                        logging.warning(f"File {file_diff.b_path} was delete")
-                        pass
-                    else:
-                        base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
-                        file_results = [*scan.scan_diff(base_diff_format+file_diff.diff.decode())]
-                        if file_results:
-                            logging.info(
-                                f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {current_commit_hash}")
-                            logging.info(file_results)
-                        for secret in file_results:
-                            secrets[f'{current_commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
-                        scanned_file_count += 1
-                except GitCommandError:
-                    logging.info(f"File path {file_diff.b_path} does not exist in commit {current_commit_hash}")
-                    continue
-        logging.info(f"Scanned {scanned_file_count} historical files, skipped_file_count {skipped_file_count}")
