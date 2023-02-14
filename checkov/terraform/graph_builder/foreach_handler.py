@@ -158,7 +158,7 @@ class ForeachHandler(object):
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-            resource_idx = block_idx if i == 0 else None
+            resource_idx = block_idx if i == 0 else -1
             self._create_new_resource(main_resource, i, resource_idx=resource_idx)
 
     @staticmethod
@@ -207,7 +207,7 @@ class ForeachHandler(object):
             main_resource: TerraformBlock,
             new_value: int | str,
             new_key: Optional[str] = None,
-            resource_idx: Optional[int] = None
+            resource_idx: int = -1
     ):
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
@@ -224,7 +224,7 @@ class ForeachHandler(object):
 
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
-        if resource_idx is not None:
+        if resource_idx != -1:
             self.local_graph.vertices[resource_idx] = new_resource
         else:
             self.local_graph.vertices.append(new_resource)
@@ -233,11 +233,11 @@ class ForeachHandler(object):
         main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                resource_idx = block_idx if i == 0 else None
+                resource_idx = block_idx if i == 0 else -1
                 self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=resource_idx)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                resource_idx = block_idx if i == 0 else None
+                resource_idx = block_idx if i == 0 else -1
                 self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=resource_idx)
 
     @staticmethod
