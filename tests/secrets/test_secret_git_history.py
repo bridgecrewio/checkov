@@ -18,7 +18,7 @@ def mock_git_repo_commits(root_folder: str) -> list[Commit] | None:
     return mock_repo  # type: ignore
 
 
-@mock.patch('checkov.secrets.git_history_scan.get_commits', mock_git_repo_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_git_repo_commits)
 def test_scan_git_history() -> None:
     valid_dir_path = "/git_history/test2"
 
@@ -33,7 +33,7 @@ def test_scan_git_history() -> None:
     assert len(report.skipped_checks) == 0
 
 
-@mock.patch('checkov.secrets.git_history_scan.get_commits', mock_git_repo_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits', mock_git_repo_commits)
 def test_scan_history_secrets() -> None:
     valid_dir_path = "/git_history/test2"
     secrets = SecretsCollection()

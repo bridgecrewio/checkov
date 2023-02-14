@@ -1,6 +1,21 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.3...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.7...HEAD)
+
+## [2.3.7](https://github.com/bridgecrewio/checkov/compare/2.3.3...2.3.7) - 2023-02-13
+
+### Feature
+
+- **graph:** Add UT as an example of not-exists for the nested list. - [#4484](https://github.com/bridgecrewio/checkov/pull/4484)
+- **secrets:** Save secrets line number - [#4488](https://github.com/bridgecrewio/checkov/pull/4488)
+- **terraform:** AWS:check global DocDB cluster is encrypted - [#4405](https://github.com/bridgecrewio/checkov/pull/4405)
+- **terraform:** check msk nodes are private - [#4392](https://github.com/bridgecrewio/checkov/pull/4392)
+- **terraform:** support more json encoded objects as part of terraform resource and fix evaluation of true/false in json - [#4487](https://github.com/bridgecrewio/checkov/pull/4487)
+
+### Bug Fix
+
+- **ansible:** support nested blocks and empty module values - [#4479](https://github.com/bridgecrewio/checkov/pull/4479)
+- **cloudformation:** Updated AWS_CKV_7 to not require rotation on asymmetric keys - [#4476](https://github.com/bridgecrewio/checkov/pull/4476)
 
 ## [2.3.3](https://github.com/bridgecrewio/checkov/compare/2.3.0...2.3.3) - 2023-02-09
 

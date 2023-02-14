@@ -139,7 +139,8 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             filtered_result[check] = [result for result in results if runner_filter.should_run_check(
                 check,
                 check_id=check.id,
-                file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH, "")]
+                file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH, "")],
+                report_type=self.check_type
             )]
 
         return filtered_result
