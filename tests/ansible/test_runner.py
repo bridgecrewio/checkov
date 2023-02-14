@@ -16,12 +16,13 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def test_registry_has_type():
     assert registry.report_type == CheckType.ANSIBLE
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
 )
 def test_runner_honors_enforcement_rules(graph_connector):
     # given
@@ -42,19 +43,22 @@ def test_runner_honors_enforcement_rules(graph_connector):
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
 )
 def test_runner_passing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "site.yml"
 
     # when
-    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_135"]))
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_135"])
+    )
 
     # then
     summary = report.get_summary()
@@ -64,19 +68,22 @@ def test_runner_passing_check(graph_connector):
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
 )
 def test_runner_failing_check(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "site.yml"
 
     # when
-    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_88"]))
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_88"])
+    )
 
     # then
     summary = report.get_summary()
@@ -86,12 +93,13 @@ def test_runner_failing_check(graph_connector):
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
 )
 def test_runner_with_flat_tasks(graph_connector):
     # given
@@ -124,12 +132,102 @@ def test_runner_with_flat_tasks(graph_connector):
     assert passing_resources == passed_check_resources
     assert failing_resources == failed_check_resources
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
+)
+def test_runner_with_block(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "blocks.yml"
+    checks = ["CKV_ANSIBLE_3", "CKV_ANSIBLE_4", "CKV2_ANSIBLE_3"]
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 2
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    passing_resources = {
+        "tasks.block.ansible.builtin.yum.Install httpd and memcached",
+    }
+
+    failing_resources = {
+        "tasks.block.ansible.builtin.yum.Install httpd and memcached",
+        "block.Install, configure, and start Apache",
+    }
+
+    passed_check_resources = {check.resource for check in report.passed_checks}
+    failed_check_resources = {check.resource for check in report.failed_checks}
+
+    assert passing_resources == passed_check_resources
+    assert failing_resources == failed_check_resources
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
+def test_runner_with_nested_blocks(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "nested_blocks.yml"
+    checks = ["CKV_ANSIBLE_1", "CKV2_ANSIBLE_3"]
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
+    )
+
+    # then
+    summary = report.get_summary()
+
+    # if we increase the level of nested block levels for Python checks, then this goes up to 6
+    assert summary["passed"] == 4
+    assert summary["failed"] == 5
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    passing_resources = {
+        "tasks.ansible.builtin.uri.1st level uri",
+        "tasks.block.ansible.builtin.uri.2nd level uri",
+        "tasks.block.block.ansible.builtin.uri.3rd level uri",
+        "tasks.block.block.block.ansible.builtin.uri.4th level uri",
+    }
+
+    failing_resources = {
+        "block.1st level block",
+        "block.block.2nd level block",
+        "block.block.block.3rd level block",
+        "block.block.block.block.4th level block",
+        "block.block.block.block.block.5th level block",
+    }
+
+    passed_check_resources = {check.resource for check in report.passed_checks}
+    failed_check_resources = {check.resource for check in report.failed_checks}
+
+    assert passing_resources == passed_check_resources
+    assert failing_resources == failed_check_resources
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
 )
 def test_get_resource(graph_connector):
     # given
@@ -180,12 +278,13 @@ def test_get_resource(graph_connector):
     # then
     assert new_key == "tasks.amazon.aws.ec2_instance.enabled"
 
+
 @pytest.mark.parametrize(
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
-    ]
+        IgraphConnector,
+    ],
 )
 def test_get_resource_without_name(graph_connector):
     # given

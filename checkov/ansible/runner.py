@@ -74,19 +74,58 @@ class Runner(YamlRunner):
                 if ResourceType.TASKS in code_block:
                     for task in code_block[ResourceType.TASKS]:
                         if task[START_LINE] <= start_line <= end_line <= task[END_LINE]:
-                            return self._generate_resource_name(task) or resource_key
+                            if ResourceType.BLOCK in task:
+                                resource_name = self._handle_block_tasks(
+                                    start_line=start_line,
+                                    end_line=end_line,
+                                    code_block=task,
+                                )
+                                if resource_name is not None:
+                                    return resource_name
+                            return self._generate_resource_name(task=task) or resource_key
+                elif ResourceType.BLOCK in code_block:
+                    resource_name = self._handle_block_tasks(
+                        start_line=start_line,
+                        end_line=end_line,
+                        code_block=code_block,
+                    )
+                    if resource_name is not None:
+                        return resource_name
                 else:
-                    return self._generate_resource_name(code_block) or resource_key
+                    return self._generate_resource_name(task=code_block) or resource_key
 
         return resource_key
 
-    def _generate_resource_name(self, task: dict[str, Any]) -> str | None:
+    def _handle_block_tasks(
+        self, start_line: int, end_line: int, code_block: dict[str, Any], prefix: str = ""
+    ) -> str | None:
+        for block_task in code_block[ResourceType.BLOCK]:
+            if block_task[START_LINE] <= start_line <= end_line <= block_task[END_LINE]:
+                prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
+                if ResourceType.BLOCK in block_task:
+                    resource_name = self._handle_block_tasks(
+                        start_line=start_line,
+                        end_line=end_line,
+                        code_block=block_task,
+                        prefix=prefix,
+                    )
+                    if resource_name is not None:
+                        return resource_name
+                return self._generate_resource_name(task=block_task, prefix=prefix)
+
+        return None
+
+    def _generate_resource_name(self, task: dict[str, Any], prefix: str = "") -> str | None:
         # grab the task name at the beginning before trying to find the actual module name
         task_name = task.get("name") or "unknown"
 
         for name in task:
             if name in TASK_RESERVED_KEYWORDS:
                 continue
+
+            if prefix:
+                # if the task is found in a block, then prefix the module name with 'block'
+                name = f"{prefix}{name}"
 
             return f"{ResourceType.TASKS}.{name}.{task_name}"
 

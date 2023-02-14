@@ -41,9 +41,11 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         )
 
     def setUp(self) -> None:
-        os.environ["UNIQUE_TAG"] = ""
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+    def test_BlockErrorHandling(self):
+        self.go("BlockErrorHandling", local_graph_class=AnsibleLocalGraph)
 
     def test_GetUrlHttpsOnly(self):
         self.go("GetUrlHttpsOnly", local_graph_class=AnsibleLocalGraph)

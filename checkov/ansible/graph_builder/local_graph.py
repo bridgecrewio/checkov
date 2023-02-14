@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.consts import GraphSource
+from checkov.common.graph.graph_builder.consts import GraphSource, SELF_REFERENCE
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
@@ -32,11 +32,26 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             for code_block in definition:
                 if ResourceType.TASKS in code_block:
                     for task in code_block[ResourceType.TASKS]:
-                        self._create_tasks_vertices(file_path=file_path, task=task)
+                        self._process_blocks(file_path=file_path, task=task)
                 else:
-                    self._create_tasks_vertices(file_path=file_path, task=code_block)
+                    self._process_blocks(file_path=file_path, task=code_block)
 
-    def _create_tasks_vertices(self, file_path: str, task: Any) -> None:
+    def _process_blocks(self, file_path: str, task: Any, prefix: str = "") -> None:
+        """Checks for possible block usage"""
+
+        if not task or not isinstance(task, dict):
+            return
+
+        if "block" in task and isinstance(task["block"], list):
+            prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
+            self._create_block_vertices(file_path=file_path, block=task, prefix=prefix)
+
+            for block_task in task["block"]:
+                self._process_blocks(file_path=file_path, task=block_task, prefix=prefix)
+        else:
+            self._create_tasks_vertices(file_path=file_path, task=task, prefix=prefix)
+
+    def _create_tasks_vertices(self, file_path: str, task: Any, prefix: str = "") -> None:
         """Creates tasks vertices"""
 
         if not task or not isinstance(task, dict):
@@ -52,7 +67,18 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 continue
 
             resource_type = f"{ResourceType.TASKS}.{name}"
-            block_name = f"{resource_type}.{task_name}"
+
+            if isinstance(config, str):
+                # this happens when modules have no parameters and are directly used with the user input
+                # ex. ansible.builtin.command: cat /etc/passwd
+                config = {SELF_REFERENCE: config}
+            elif config is None:
+                # this happens when modules have no parameters and are passed no value
+                # ex. amazon.aws.ec2_instance_info:
+                config = {
+                    START_LINE: task[START_LINE],
+                    END_LINE: task[END_LINE],
+                }
 
             attributes = deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
@@ -64,18 +90,41 @@ class AnsibleLocalGraph(ObjectLocalGraph):
 
             self.vertices.append(
                 Block(
-                    name=block_name,
+                    name=f"{resource_type}.{task_name}",
                     config=config,
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=block_name,
+                    id=f"{resource_type}.{prefix}{task_name}",
                     source=self.source,
                 )
             )
 
             # no need to further check
             break
+
+    def _create_block_vertices(self, file_path: str, block: dict[str, Any], prefix: str = "") -> None:
+        """Creates block vertices"""
+
+        # grab the block name, if it exists
+        block_name = block.get("name") or "unknown"
+
+        config = block
+        attributes = deepcopy(config)
+        attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.BLOCK
+        del attributes[ResourceType.BLOCK]  # the real block content are tasks, which have their own vertices
+
+        self.vertices.append(
+            Block(
+                name=f"{ResourceType.BLOCK}.{block_name}",
+                config=config,
+                path=file_path,
+                block_type=BlockType.RESOURCE,
+                attributes=attributes,
+                id=f"{prefix}{block_name}",
+                source=self.source,
+            )
+        )
 
     def _create_edges(self) -> None:
         return None

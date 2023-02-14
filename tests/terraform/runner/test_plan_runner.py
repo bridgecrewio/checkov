@@ -635,7 +635,7 @@ class TestRunnerValid(unittest.TestCase):
         tf_file_path = Path(__file__).parent / "resources/plan_nested_child_modules_with_connections/tfplan.json"
 
         passing_resources = {
-            "module.s3_submodule.aws_s3_bucket.submodule_bucket",
+            "module.s3_module.module.s3_submodule.aws_s3_bucket.submodule_bucket",
             "module.s3_module.aws_s3_bucket.module_bucket",
             "aws_s3_bucket.root_bucket",
         }

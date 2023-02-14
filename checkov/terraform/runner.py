@@ -27,7 +27,8 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
-    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -87,7 +88,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
-        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'False'))
+        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -371,7 +372,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
                     full_definition_path = entity_id.split('.')
-                    module_name_index = len(full_definition_path) - full_definition_path[::-1].index(BlockType.MODULE)  # the next item after the last 'module' prefix is the module name
+                    module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
@@ -382,7 +383,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
                 if referrer_id:
                     entity_id = f"{referrer_id}.{entity_id}"  # ex: module.my_module.aws_s3_bucket.my_bucket
-                    abs_caller_file = module_referrer[:module_referrer.rindex("#")]
+                    abs_caller_file = module_referrer[:module_referrer.rindex(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR)]
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
                     try:

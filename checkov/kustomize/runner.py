@@ -25,6 +25,7 @@ from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kustomize.utils import get_kustomize_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -49,6 +50,7 @@ class K8sKustomizeRunner(K8sRunner):
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries, CheckType.KUSTOMIZE)
         self.check_type = CheckType.KUSTOMIZE
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
+        self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
 
     def run(
@@ -123,17 +125,23 @@ class K8sKustomizeRunner(K8sRunner):
                 kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{resource_id}'
 
             external_run_indicator = "Bc"
+            file_path = realKustomizeEnvMetadata['filePath']
             # means this scan originated in the platform
             if type(self.graph_manager).__name__.startswith(external_run_indicator):
                 absolute_file_path = file_abs_path
             else:
                 absolute_file_path = realKustomizeEnvMetadata['filePath']
+                # Fix file path to repo relative path
+                if self.original_root_dir:
+                    repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                        file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=code_lines, file_path=realKustomizeEnvMetadata['filePath'],
+                check_result=check_result, code_block=code_lines, file_path=file_path,
                 file_line_range=file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=absolute_file_path, severity=check.severity)
@@ -158,8 +166,9 @@ class K8sKustomizeRunner(K8sRunner):
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kustomize runner was not set")
+            if self.context is None:
+                # this shouldn't happen
+                logging.error("Context for Kustomize runner was not set")
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
@@ -283,39 +292,31 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         if shutil.which(self.kubectl_command) is not None:
             try:
-                proc = subprocess.Popen([self.kubectl_command, 'version', '--client=true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
+                proc = subprocess.run([self.kubectl_command, 'version', '--client=true'], capture_output=True)  # nosec
+                version_output = proc.stdout.decode("utf-8")
 
-                if "Client Version:" in oString:
-                    kubectlVersionMajor = oString.split('\n')[0].split('Major:\"')[1].split('"')[0]
-                    kubectlVersionMinor = oString.split('\n')[0].split('Minor:\"')[1].split('"')[0]
-                    kubectlVersion = float(f"{kubectlVersionMajor}.{kubectlVersionMinor}")
-                    if kubectlVersion >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectlVersion}")
+                if "Client Version:" in version_output:
+                    kubectl_version_major = version_output.split('\n')[0].split('Major:\"')[1].split('"')[0]
+                    kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
+                    kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
+                    if kubectl_version >= 1.14:
+                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
                         self.templateRendererCommand = self.kubectl_command
                         return None
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command: {e.decode()}")
+                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
 
         elif shutil.which(self.kustomize_command) is not None:
-            try:
-                proc = subprocess.Popen([self.kustomize_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
-                o, e = proc.communicate()
-                oString = str(o, 'utf-8')
-
-                if "Version:" in oString:
-                    kustomizeVersionOutput = oString[oString.find('/') + 1: oString.find('G') - 1]
-                    logging.info(f"Found working version of {self.check_type} dependancy {self.kustomize_command}: {kustomizeVersionOutput}")
-                    self.templateRendererCommand = self.kustomize_command
-                    return None
-                else:
-                    return self.check_type
-
-            except Exception:
-                logging.debug(f"An error occured testing the {self.kustomize_command} command: {e.decode()}")
-
+            kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
+            if kustomize_version:
+                logging.info(
+                    f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
+                )
+                self.templateRendererCommand = self.kustomize_command
+                return None
+            else:
+                return self.check_type
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
@@ -557,6 +558,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             # k8s_runner.run() will kick off both CKV_ and CKV2_ checks and return a merged results object.
             target_dir = self.get_k8s_target_folder_path()
             k8s_runner.report_mutator_data = self.get_kustomize_metadata()
+            if root_folder:
+                k8s_runner.original_root_dir = root_folder
 
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)

@@ -1,10 +1,14 @@
+import ast
+import json
 import logging
 import os
 import re
+from json import JSONDecodeError
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
+import checkov.terraform.graph_builder.variable_rendering.renderer as renderer
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
@@ -47,6 +51,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
+    evaluated_value = handle_for_loop(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
     if callable(second_evaluated_value):
@@ -64,7 +69,15 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
         try:
             return evaluate(f'"{input_str}"')
         except Exception:
-            return input_str
+            try:
+                # Sometimes eval can fail on correct terraform input like 'true'/'false',
+                # as python's values are with capital T/F.
+                # However, json does know how to handle it, so we use it instead.
+                if isinstance(input_str, str):
+                    return json.loads(input_str)
+                return input_str
+            except Exception:
+                return input_str
 
 
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
@@ -161,10 +174,97 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
             if a and b and op:
                 try:
                     return apply_binary_op(evaluate_terraform(a), evaluate_terraform(b), op)
-                except TypeError or SyntaxError:
+                except (TypeError, SyntaxError):
                     return input_str
 
     return input_str
+
+
+def _handle_literal(input_str: str) -> str:
+    try:
+        e = ast.literal_eval(input_str)
+        if isinstance(e, list) and len(e) == 1:
+            return e[0]
+    except (ValueError, SyntaxError):
+        return input_str
+
+
+def _remove_variable_formatting(input_str: str) -> str:
+    return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
+
+
+def handle_for_loop(input_str: Union[str, int, bool]) -> str:
+    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
+        old_input_str = input_str
+        input_str = _handle_literal(input_str)
+        if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
+            input_str = _remove_variable_formatting(input_str)
+            start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
+            end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
+            if start_bracket_idx == -1 or end_bracket_idx == -1:
+                return old_input_str
+
+            rendered_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            new_val = ''
+            if input_str.startswith(renderer.LEFT_CURLY):
+                new_val = _handle_for_loop_in_dict(rendered_statement, input_str, end_bracket_idx + 1)
+            elif input_str.startswith(renderer.LEFT_BRACKET):
+                new_val = _handle_for_loop_in_list(rendered_statement, input_str, end_bracket_idx + 1)
+            return new_val if new_val else old_input_str
+        else:
+            return input_str
+    else:
+        return input_str
+
+
+def _extract_expression_from_statement(statement: str, start_expression_idx: int) -> str:
+    """
+    statement: [ for val in ["v", "k"] : val ]
+    start_expression_idx: len(" for val in ["v", "k"]")
+    output: "val"
+
+    statement: { for val in {"name": "a", "val": "val"} : val.name => true }
+    start_expression_idx: len(" for val in {"name": "a", "val": "val"}")
+    output: val.name => true
+    """
+    return statement[start_expression_idx + len(renderer.KEY_VALUE_SEPERATOR):-1]
+
+
+def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = json.loads(object_to_run_on)
+    except JSONDecodeError:
+        return
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    if renderer.FOR_EXPRESSION_DICT not in expression:
+        return
+    k_expression, v_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    obj_key = statement.split(' ')[1]
+    if k_expression.startswith(f'{obj_key}.'):
+        k_expression = k_expression.replace(f'{obj_key}.', '')
+    rendered_result = {}
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
+        try:
+            rendered_result[obj[k_expression]] = val_to_assign
+        except TypeError:
+            return
+    return json.dumps(rendered_result)
+
+
+def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+    except (ValueError, SyntaxError):
+        return
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    if renderer.DOLLAR_PREFIX in expression or renderer.LOOKUP in expression:
+        return
+    rendered_result = []
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
+        rendered_result.append(val_to_assign)
+    return json.dumps(rendered_result)
 
 
 def evaluate_json_types(input_str: Any) -> Any:

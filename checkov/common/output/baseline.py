@@ -58,7 +58,8 @@ class Baseline:
             formatted_findings = []
             for finding in findings:
                 formatted_findings.append({"resource": finding["resource"], "check_ids": finding["check_ids"]})
-            failed_checks_list.append({"file": file, "findings": sorted(formatted_findings, key=itemgetter("resource"))})
+            sorted_findings = sorted(formatted_findings, key=itemgetter("resource"))
+            failed_checks_list.append({"file": file, "findings": sorted_findings})
 
         resp = {"failed_checks": sorted(failed_checks_list, key=itemgetter("file"))}
         return resp

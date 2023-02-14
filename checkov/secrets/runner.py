@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import hashlib
 import linecache
 import logging
 import os
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
+from detect_secrets.filters.heuristic import is_potential_uuid
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -53,7 +55,6 @@ SECRET_TYPE_TO_ID = {
     'Basic Auth Credentials': 'CKV_SECRET_4',
     'Cloudant Credentials': 'CKV_SECRET_5',
     'Base64 High Entropy String': 'CKV_SECRET_6',
-    'Random High Entropy String': 'CKV_SECRET_78',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
     'JSON Web Token': 'CKV_SECRET_9',
@@ -169,6 +170,7 @@ class Runner(BaseRunner[None]):
             logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
+            settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
 
             self.pbar.initiate(len(files_to_scan))
             self._scan_files(files_to_scan, secrets, self.pbar)
@@ -181,6 +183,9 @@ class Runner(BaseRunner[None]):
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
+                if secret.secret_value and is_potential_uuid(secret.secret_value):
+                    logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                    continue
                 if secret_key in secrets_duplication:
                     logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
@@ -216,7 +221,7 @@ class Runner(BaseRunner[None]):
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
-                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, result)
+                self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
                 report.add_record(SecretsRecord(
                     check_id=check_id,
@@ -326,11 +331,13 @@ class Runner(BaseRunner[None]):
                 }
         return None
 
-    def save_secret_to_coordinator(self, secret_value: Optional[str], bc_check_id: str, resource: str,
-                                   result: _CheckResult) \
-            -> None:
+    def save_secret_to_coordinator(
+            self, secret_value: Optional[str], bc_check_id: str, resource: str, line_number: int, result: _CheckResult
+    ) -> None:
         if result.get('result') == CheckResult.FAILED and secret_value is not None:
-            enriched_secret = EnrichedSecret(original_secret=secret_value, bc_check_id=bc_check_id, resource=resource)
+            enriched_secret = EnrichedSecret(
+                original_secret=secret_value, bc_check_id=bc_check_id, resource=resource, line_number=line_number
+            )
             self.secrets_coordinator.add_secret(enriched_secret=enriched_secret)
 
     @time_it

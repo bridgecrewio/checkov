@@ -49,13 +49,13 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install pipenv
-        run: |
-          python -m pip install --no-cache-dir --upgrade pipenv
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
         if: ${{ runner.os != 'windows' }}
         with:
-          kustomize-version: 4.x
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
           pipenv --python ${{ matrix.python }}
@@ -117,6 +117,12 @@ jobs:
         uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: 3.7
+      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -124,8 +130,6 @@ jobs:
         run: |
           pipenv --python 3.7
           pipenv install --dev
-      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-        if: ${{ runner.os != 'windows' }}
       - name: Test with pytest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -193,6 +197,8 @@ jobs:
         run: |
           ## update docs
           export PYTHONPATH='.'
+          # change the doc links to proper markdown versions
+          export CHECKOV_CREATE_MARKDOWN_HYPERLINKS='True'
           git pull
 
           for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines all
@@ -260,7 +266,7 @@ jobs:
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18  # v2
         with:
           platforms: 'arm64,arm'
-      - uses: docker/setup-buildx-action@5e716dcfd653738c2d1db099bfba194a84158be4  # v2
+      - uses: docker/setup-buildx-action@f03ac48505955848960e80bbb68046aa35c7b9e7  # v2
       - name: Login to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
         with:
@@ -283,7 +289,7 @@ jobs:
       - name: Build and export image to Docker
         # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
         # so it is built and loaded to Docker and in the next step pushed to the registry
-        uses: docker/build-push-action@37abcedcc1da61a57767b7588cb9d03eb57e28b3  # v3
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671  # v4
         with:
           context: .
           no-cache: true
@@ -292,7 +298,7 @@ jobs:
           tags: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
       - name: Push Docker image
         id: docker_push
-        uses: docker/build-push-action@37abcedcc1da61a57767b7588cb9d03eb57e28b3  # v3
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671  # v4
         with:
           context: .
           platforms: 'linux/amd64,linux/arm64'
