@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import git
 
-
 from detect_secrets.core import scan
 from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
 
