@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 class SchedulerScheduleUsesCMK(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure Scheduler Schedule uses CMK"
-        id = "CKV_AWS_291"
+        id = "CKV_AWS_297"
         supported_resources = ['aws_scheduler_schedule']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

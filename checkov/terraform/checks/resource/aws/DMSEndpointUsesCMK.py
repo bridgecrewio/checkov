@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class DMSEndpointUsesCMK(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure DMS endpoint Uses Customer managed key"
-        id = "CKV_AWS_292"
+        id = "CKV_AWS_296"
         supported_resources = ("aws_dms_endpoint",)
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
