@@ -1,35 +1,28 @@
-import os
 import unittest
 from pathlib import Path
-from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.EC2PublicIP import check
+from checkov.terraform.checks.resource.aws.MSKClusterNodesArePrivate import check
 from checkov.terraform.runner import Runner
 
 
-class TestEC2PublicIP(unittest.TestCase):
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+class TestMSKClusterNodesArePrivate(unittest.TestCase):
     def test(self):
-        test_files_dir = Path(__file__).parent / "example_EC2PublicIP"
+        # given
+        test_files_dir = Path(__file__).parent / "example_MSKClusterNodesArePrivate"
+
+        # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_instance.default",
-            "aws_instance.private",
-            "aws_launch_template.default",
-            "aws_launch_template.private",
-            "aws_instance.public_foreach[key2]",
-            "aws_instance.public_foreach_loop_list[k]",
-            "aws_instance.public_foreach_loop_list[v]",
+            "aws_msk_cluster.pass",
+            "aws_msk_cluster.pass2",
         }
         failing_resources = {
-            "aws_instance.public",
-            "aws_launch_template.public",
-            "aws_instance.public_foreach[key1]",
-            "aws_instance.public_foreach_loop[key3]",
-            "aws_instance.public_foreach_loop[key4]",
+            "aws_msk_cluster.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

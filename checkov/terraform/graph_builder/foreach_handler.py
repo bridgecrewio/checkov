@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import json
 import re
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
@@ -94,6 +95,11 @@ class ForeachHandler(object):
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)
         evaluated_statement = evaluate_terraform(statement)
+        if isinstance(evaluated_statement, str):
+            try:
+                evaluated_statement = json.loads(evaluated_statement)
+            except ValueError:
+                pass
         if isinstance(evaluated_statement, set):
             evaluated_statement = list(evaluated_statement)
         if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
