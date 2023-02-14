@@ -447,3 +447,12 @@ class TestTerraformEvaluation(TestCase):
         input_str = 'formatdate("HH \'Hours and \'M \'Minute(s)\'", "2018-01-02T23:12:01Z")'
         expected = "11 Hours and 1 Minute(s)"
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_handle_for_loop(self):
+        input_str = "{for val in [{'name': 'key3'},{'name': 'key4'}] : val.name => true}"
+        expected = {'key3': 'true', 'key4': 'true'}
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = "[for val in ['k', 'v'] : val]"
+        expected = ['k', 'v']
+        self.assertEqual(expected, evaluate_terraform(input_str))

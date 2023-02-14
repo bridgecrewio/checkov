@@ -16,7 +16,7 @@ class EMRClusterIsEncryptedKMS(BaseResourceCheck):
         if 'configuration' not in conf:
             return CheckResult.SKIPPED
         configuration = conf['configuration'][0]
-        if "SSE-KMS" in configuration:
+        if "SSE-KMS" in str(configuration):
             return CheckResult.PASSED
         return CheckResult.FAILED
 

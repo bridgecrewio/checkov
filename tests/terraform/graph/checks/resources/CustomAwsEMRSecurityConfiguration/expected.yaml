@@ -1,0 +1,5 @@
+pass:
+  - "aws_emr_cluster.passing_cluster"
+  - "aws_emr_cluster.also_passing_cluster"
+fail:
+  - "aws_emr_cluster.failing_cluster"

@@ -118,7 +118,7 @@ def test_new_resources_count():
 
     foreach_handler = ForeachHandler(local_graph)
     foreach_handler.handle_foreach_rendering({'resource': [3], 'module': []})
-    for i, resource in enumerate([local_graph.vertices[7], local_graph.vertices[8], local_graph.vertices[9]]):
+    for i, resource in enumerate([local_graph.vertices[3], local_graph.vertices[8], local_graph.vertices[9]]):
         assert resource.name.endswith(f"[{i}]")
         assert resource.id.endswith(f"[{i}]")
         assert list(resource.config['aws_s3_bucket'].keys())[0].endswith(f'[{i}]')
@@ -133,7 +133,7 @@ def test_new_resources_foreach():
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
     foreach_handler.handle_foreach_rendering({'resource': [0, 1], 'module': []})
-    for resource in [local_graph.vertices[3], local_graph.vertices[4], local_graph.vertices[5], local_graph.vertices[6]]:
+    for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[6]]:
         assert resource.name.endswith("[bucket_a]") or resource.name.endswith("[bucket_b]")
         assert resource.id.endswith("[bucket_a]") or resource.id.endswith("[bucket_b]")
         config_name = list(resource.config['aws_s3_bucket'].keys())[0]
@@ -144,17 +144,17 @@ def test_new_resources_foreach():
 def test_resources_flow():
     dir_name = 'foreach_examples/depend_resources'
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
-    assert local_graph.vertices_by_block_type['variable'] == [0, 1]
-    assert local_graph.vertices_by_block_type['resource'] == [2, 3]
+    assert local_graph.vertices_by_block_type['variable'] == [1, 2]
+    assert local_graph.vertices_by_block_type['resource'] == [0, 3]
 
-    assert local_graph.vertices_block_name_map['variable'] == {'foreach_map': [0], 'test': [1]}
-    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[bucket_a]': [2], 'aws_s3_bucket.foreach_map[bucket_b]': [3]}
+    assert local_graph.vertices_block_name_map['variable'] == {'foreach_map': [1], 'test': [2]}
+    assert local_graph.vertices_block_name_map['resource'] == {'aws_s3_bucket.foreach_map[bucket_a]': [0], 'aws_s3_bucket.foreach_map[bucket_b]': [3]}
 
-    assert local_graph.edges[0].dest == 1
-    assert local_graph.edges[0].origin == 2
+    assert local_graph.edges[0].dest == 2
+    assert local_graph.edges[0].origin == 0
     assert local_graph.edges[0].label == 'location'
 
-    assert local_graph.edges[1].dest == 1
+    assert local_graph.edges[1].dest == 2
     assert local_graph.edges[1].origin == 3
     assert local_graph.edges[1].label == 'location'
 
