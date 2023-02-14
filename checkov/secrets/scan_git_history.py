@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-
 import git
+
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
