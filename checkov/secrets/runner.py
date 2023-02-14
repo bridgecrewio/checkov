@@ -11,8 +11,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
-from git import InvalidGitRepositoryError, GitCommandError
-
+from git import InvalidGitRepositoryError, GitCommandError, Commit
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
 
@@ -447,21 +446,26 @@ class Runner(BaseRunner[None]):
                               exc_info=True)
 
     @staticmethod
-    def _scan_history(root_folder: str, secrets: SecretsCollection) -> None:
+    def _get_commits(root_folder: str) -> list[Commit] | None:
         try:
             repo = git.Repo(root_folder)
         except InvalidGitRepositoryError:
             logging.error(f"Folder {root_folder} is not a GIT project")
-            return
+            return None
+        return list(repo.iter_commits(repo.active_branch, max_count=7))
 
+    def _scan_history(self, root_folder: str, secrets: SecretsCollection) -> None:
+        commits = self._get_commits(root_folder)
+        if not commits:
+            return
         scanned_file_count = 0
         skipped_file_count = 0
-        commits = list(repo.iter_commits(repo.active_branch, max_count=6))
+
         # we scan the diff between the commit and the next commit - start from the end
-        for commit_idx in range(len(commits) - 1, 0, -1):
-            next_commit_idx = commit_idx - 1
-            added_commit_hash = commits[next_commit_idx].hexsha
-            git_diff = commits[commit_idx].diff(added_commit_hash, create_patch=True)
+        for previous_commit_idx in range(len(commits) - 1, 0, -1):
+            current_commit_idx = previous_commit_idx - 1
+            current_commit_hash = commits[current_commit_idx].hexsha
+            git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
             for file_diff in git_diff:
                 try:
@@ -472,16 +476,16 @@ class Runner(BaseRunner[None]):
                         logging.warning(f"File {file_diff.b_path} was delete")
                         pass
                     else:
-                        file_diff_content = repo.git.diff(added_commit_hash, file_diff.b_path)
-                        file_results = [*scan.scan_diff(file_diff_content)]
+                        base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
+                        file_results = [*scan.scan_diff(base_diff_format+file_diff.diff.decode())]
                         if file_results:
                             logging.info(
-                                f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {added_commit_hash}")
+                                f"Found {len(file_results)} secrets in file path {file_diff.b_path} in commit {current_commit_hash}")
                             logging.info(file_results)
                         for secret in file_results:
-                            secrets[f'{added_commit_hash}-{secret.filename}'].add(secret)
+                            secrets[f'{current_commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
                         scanned_file_count += 1
                 except GitCommandError:
-                    logging.info(f"File path {file_diff.b_path} does not exist in commit {added_commit_hash}")
+                    logging.info(f"File path {file_diff.b_path} does not exist in commit {current_commit_hash}")
                     continue
         logging.info(f"Scanned {scanned_file_count} historical files, skipped_file_count {skipped_file_count}")
