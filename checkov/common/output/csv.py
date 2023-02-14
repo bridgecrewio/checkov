@@ -11,7 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
-from checkov.common.util.consts import CHECKOV_SUPPORT_PRIVATE_REGISTRIES
+from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -29,7 +29,7 @@ HEADER_OSS_PACKAGES = [
     "Description",
     "Licenses",
 ]
-if CHECKOV_SUPPORT_PRIVATE_REGISTRIES:
+if CHECKOV_DISPLAY_REGISTRY_URL:
     # for now, getting "Registry URL" from the platform isn't fully supported yet, so in case it wasn't attached to
     # the report, we will hide this column here.
     # after it is fully supported, we can delete this function, and always set "Registry URL" to be one of the headers
@@ -100,7 +100,7 @@ class CSVSBOM:
         )
 
         registry_url = resource.vulnerability_details.get("package_registry")
-        if CHECKOV_SUPPORT_PRIVATE_REGISTRIES:
+        if CHECKOV_DISPLAY_REGISTRY_URL:
             csv_table[check_type][-1]["Registry URL"] = registry_url
 
     def add_iac_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
