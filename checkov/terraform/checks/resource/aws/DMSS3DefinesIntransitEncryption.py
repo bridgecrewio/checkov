@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
-from checkov.common.models.consts import ANY_VALUE
 
 
 class DMSS3DefinesIntransitEncryption(BaseResourceValueCheck):
