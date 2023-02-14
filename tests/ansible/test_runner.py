@@ -229,7 +229,7 @@ def test_runner_with_nested_blocks(graph_connector):
         IgraphConnector,
     ],
 )
-def test_runner_with_nested_blocks(graph_connector):
+def test_runner_with_no_tasks(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "no_tasks.yml"
 
