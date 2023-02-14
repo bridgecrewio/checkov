@@ -6,16 +6,17 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
-from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.bridgecrew.code_categories import CodeCategoryType
+from checkov.common.bridgecrew.severities import BcSeverities, Severity
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult, ErrorStatus
-from checkov.common.typing import _ExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -128,7 +129,7 @@ class Report:
                 "url": url,
             }
 
-    def get_exit_code(self, exit_code_thresholds: _ExitCodeThresholds) -> int:
+    def get_exit_code(self, exit_code_thresholds: Union[_ExitCodeThresholds, _ScaExitCodeThresholds]) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
@@ -138,24 +139,76 @@ class Report:
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
         logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
-        soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
-        soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
-        hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']
-        hard_fail_threshold = exit_code_thresholds['hard_fail_threshold']
-        soft_fail = exit_code_thresholds['soft_fail']
-
-        has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
-        has_hard_fail_values = hard_fail_on_checks or hard_fail_threshold
-
         if self.parsing_errors and hard_fail_on_parsing_errors:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
-        elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
-            logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+
+        if not self.failed_checks:
+            logging.debug('No failed checks in this report - returning 0')
             return 0
-        elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
-            logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
-            return 1
+
+        # we will have two different sets of logic in this method, determined by this variable.
+        # if we are using enforcement rules, then there are two different sets of thresholds that apply for licenses and vulnerabilities
+        # and we have to handle that throughout while processing the report
+        # if we are not using enforcement rules, then we can combine licenses and vulnerabilities like normal and same as all other report types
+        # this determination is made in runner_registry.get_fail_thresholds
+        has_split_enforcement = CodeCategoryType.LICENSES in exit_code_thresholds
+
+        hard_fail_threshold: Optional[Severity | Dict[str, Severity]]
+        soft_fail: Optional[bool | Dict[str, bool]]
+
+        if has_split_enforcement:
+            sca_thresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
+            # these three are the same even in split enforcement rules
+            generic_thresholds = cast(_ExitCodeThresholds, next(iter(sca_thresholds.values())))
+            soft_fail_on_checks = generic_thresholds['soft_fail_checks']
+            soft_fail_threshold = generic_thresholds['soft_fail_threshold']
+            hard_fail_on_checks = generic_thresholds['hard_fail_checks']
+
+            # these two can be different for licenses / vulnerabilities
+            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object, can't possibly be more clear
+            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object
+
+            failed_checks_by_category = {
+                CodeCategoryType.LICENSES: [fc for fc in self.failed_checks if '_LIC_' in fc.check_id],
+                CodeCategoryType.VULNERABILITIES: [fc for fc in self.failed_checks if '_VUL_' in fc.check_id]
+            }
+
+            has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+
+            if all(
+                not failed_checks_by_category[cast(CodeCategoryType, c)] or (
+                    not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and soft_fail[c]
+                )
+                for c in sca_thresholds.keys()
+            ):
+                logging.debug(
+                    'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty for all SCA types - returning 0')
+                return 0
+
+            if any(
+                not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and failed_checks_by_category[cast(CodeCategoryType, c)]
+                for c in sca_thresholds.keys()
+            ):
+                logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
+                return 1
+        else:
+            non_sca_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
+            soft_fail_on_checks = non_sca_thresholds['soft_fail_checks']
+            soft_fail_threshold = non_sca_thresholds['soft_fail_threshold']
+            hard_fail_on_checks = non_sca_thresholds['hard_fail_checks']
+            hard_fail_threshold = non_sca_thresholds['hard_fail_threshold']
+            soft_fail = non_sca_thresholds['soft_fail']
+
+            has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+            has_hard_fail_values = hard_fail_threshold or hard_fail_on_checks
+
+            if not has_soft_fail_values and not has_hard_fail_values and soft_fail:
+                logging.debug('Soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+                return 0
+            elif not has_soft_fail_values and not has_hard_fail_values:
+                logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
+                return 1
 
         for failed_check in self.failed_checks:
             check_id = failed_check.check_id
@@ -163,8 +216,23 @@ class Report:
             severity = failed_check.severity
             secret_validation_status = failed_check.validation_status if hasattr(failed_check, 'validation_status') else ''
 
+            hf_threshold: Severity
+            sf: bool
+
+            if has_split_enforcement:
+                category = CodeCategoryType.LICENSES if '_LIC_' in check_id else CodeCategoryType.VULNERABILITIES
+                hard_fail_threshold = cast(Dict[str, Severity], hard_fail_threshold)
+                hf_threshold = hard_fail_threshold[category]
+                soft_fail = cast(Dict[str, bool], soft_fail)
+                sf = soft_fail[category]
+            else:
+                hard_fail_threshold = cast(Severity, hard_fail_threshold)
+                hf_threshold = hard_fail_threshold
+                soft_fail = cast(bool, soft_fail)
+                sf = soft_fail
+
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
-            hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
+            hard_fail_severity = severity and hf_threshold and severity.level >= hf_threshold.level
             explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
             explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
             explicit_secrets_soft_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, soft_fail_on_checks)
@@ -174,7 +242,7 @@ class Report:
 
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
-                    (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                    (implicit_hard_fail and not implicit_soft_fail and not sf):
                 logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
