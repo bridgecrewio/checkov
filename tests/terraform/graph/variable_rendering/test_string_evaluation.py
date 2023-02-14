@@ -456,3 +456,7 @@ class TestTerraformEvaluation(TestCase):
         input_str = "[for val in ['k', 'v'] : val]"
         expected = ['k', 'v']
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = "{for val in ['k', 'v'] : val.name => true}"
+        expected = "{for val in ['k', 'v'] : val.name :> true}"
+        self.assertEqual(expected, evaluate_terraform(input_str))
