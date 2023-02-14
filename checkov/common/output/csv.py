@@ -48,6 +48,7 @@ class CSVSBOM:
         self.package_rows: list[dict[str, Any]] = []
 
         self.iac_rows_have_details: bool = False
+        self.sca_rows_have_registry_url: bool = False
 
         self.iac_resource_cache: set[str] = set()  # used to check, if a resource was already added
 
@@ -90,9 +91,13 @@ class CSVSBOM:
                 "Severity": severity,
                 "Description": resource.vulnerability_details.get("description"),
                 "Licenses": resource.vulnerability_details.get("licenses"),
-                "Registry URL": resource.vulnerability_details.get("package_registry")
             }
         )
+
+        registry_url = resource.vulnerability_details.get("package_registry")
+        if registry_url:
+            self.sca_rows_have_registry_url = True
+            csv_table[check_type][-1]["Registry URL"] = registry_url
 
     def add_iac_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
         resource_id = f"{git_org}/{git_repository}/{resource.file_path}/{resource.resource}"
@@ -158,7 +163,7 @@ class CSVSBOM:
     def persist_report_oss_packages(self, file_name: str, is_api_key: bool, output_path: str = "") -> None:
         CSVSBOM.write_section(
             file=os.path.join(output_path, file_name),
-            header=HEADER_OSS_PACKAGES,
+            header=self._get_headers_to_display_packages(),
             rows=self.package_rows,
             is_api_key=is_api_key,
         )
@@ -192,14 +197,15 @@ class CSVSBOM:
 
     def get_csv_output_packages(self, check_type: str) -> str:
         # header
-        csv_output = ','.join(HEADER_OSS_PACKAGES) + '\n'
+        headers_to_display = self._get_headers_to_display_packages()
+        csv_output = ','.join(headers_to_display) + '\n'
         csv_table = {
             CheckType.SCA_PACKAGE: self.package_rows,
             CheckType.SCA_IMAGE: self.container_rows
         }
 
         for row in csv_table[check_type]:
-            for header in HEADER_OSS_PACKAGES:
+            for header in headers_to_display:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
                     csv_output += f'\"{field}\"'
@@ -214,3 +220,12 @@ class CSVSBOM:
             csv_output += '\n'
 
         return csv_output
+
+    def _get_headers_to_display_packages(self) -> list[str]:
+        """
+        for now, getting "Registry URL" from the platform isn't fully supported yet, so in case it wasn't attached to
+        the report, we will hide this column here.
+        after it is fully supported, we can delete this function, and always set "Registry URL" to be one of the headers
+        """
+        return HEADER_OSS_PACKAGES if self.sca_rows_have_registry_url else \
+            [header for header in HEADER_OSS_PACKAGES if header != "Registry URL"]
