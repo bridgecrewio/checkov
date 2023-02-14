@@ -245,7 +245,10 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     rendered_result = {}
     for obj in object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
-        rendered_result[obj[k_expression]] = val_to_assign
+        try:
+            rendered_result[obj[k_expression]] = val_to_assign
+        except TypeError:
+            return
     return json.dumps(rendered_result)
 
 
