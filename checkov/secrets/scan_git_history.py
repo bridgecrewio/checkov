@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import git
 import logging
 from typing import TYPE_CHECKING
-
+from detect_secrets.core import scan
+from git import InvalidGitRepositoryError, GitCommandError
 
 if TYPE_CHECKING:
-    import git
     from detect_secrets import SecretsCollection
-    from detect_secrets.core import scan
-    from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
+    from git import Commit  # type: ignore
 
 
 def get_commits(root_folder: str) -> list[Commit] | None:
