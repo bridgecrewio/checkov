@@ -1,6 +1,28 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.7...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.14...HEAD)
+
+## [2.3.14](https://github.com/bridgecrewio/checkov/compare/2.3.7...2.3.14) - 2023-02-14
+
+### Feature
+
+- **secrets:** log and filter potential uuid case - [#4486](https://github.com/bridgecrewio/checkov/pull/4486)
+- **terraform:** Assign/override main vertices by the first new vertice. - [#4493](https://github.com/bridgecrewio/checkov/pull/4493)
+- **terraform:** Support for loops in foreach statements - [#4483](https://github.com/bridgecrewio/checkov/pull/4483)
+
+### Bug Fix
+
+- **terraform:** Handle KeyError in hadle_for_loop func - [#4501](https://github.com/bridgecrewio/checkov/pull/4501)
+- **terraform:** Handle type error in `_handle_for_loop_in_dict` - [#4495](https://github.com/bridgecrewio/checkov/pull/4495)
+- **terraform:** skip loading module that calls to the same dir - [#4499](https://github.com/bridgecrewio/checkov/pull/4499)
+
+### Platform
+
+- **general:** Use new enforcement categories - [#4456](https://github.com/bridgecrewio/checkov/pull/4456)
+
+### Documentation
+
+- **general:** update installation on Alpine docs - [#4474](https://github.com/bridgecrewio/checkov/pull/4474)
 
 ## [2.3.7](https://github.com/bridgecrewio/checkov/compare/2.3.3...2.3.7) - 2023-02-13
 
