@@ -166,7 +166,13 @@ def _prepare_resource_block(
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
 
-        resource_block[resource["type"]][resource.get("name", "default")] = resource_conf
+        # Get the complete name from the address field instead of from the key name
+        # With this the output points to the correct lines in the tf-plan file
+        name_from_address = resource_address.split("." + resource["name"])[1]
+        if name_from_address:
+            resource_block[resource["type"]][name_from_address] = resource_conf
+        else:    
+            resource_block[resource["type"]][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, prepared
 
