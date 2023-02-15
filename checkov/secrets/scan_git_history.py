@@ -55,7 +55,7 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
                             f'{current_commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(
                             secret)
                     scanned_file_count += 1
-            except GitCommandError:
+            except Exception:
                 logging.info(f"File path {file_diff.b_path} does not exist in commit {current_commit_hash}")
                 continue
     logging.info(f"Scanned {scanned_file_count} historical files, skipped_file_count {skipped_file_count}")
