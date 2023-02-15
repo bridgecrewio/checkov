@@ -173,5 +173,3 @@ tests/20*
 .vim/
 .vimspector.json
 !tests/terraform/graph/variable_rendering/test_resources/tfvar_module_variables/modules/instance
-tests/common/runner_registry/packages_csv_results/
-tests/console
